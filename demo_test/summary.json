@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0",
+  "scan_info": {
+    "timestamp": "2025-10-22 14:00:12",
+    "scan_path": "C:\\Github\\AppDoc2\\docs\\assets\\demo",
+    "duration_seconds": 0.004336833953857422,
+    "total_files": 2,
+    "total_lines": 174,
+    "overall_coverage": 100.0
+  },
+  "languages": {
+    "csharp": {
+      "files": 1,
+      "lines": 110,
+      "functions": 0,
+      "documented_functions": 0,
+      "classes": 0,
+      "documented_classes": 0,
+      "coverage_percentage": 0.0
+    },
+    "python": {
+      "files": 1,
+      "lines": 64,
+      "functions": 5,
+      "documented_functions": 5,
+      "classes": 0,
+      "documented_classes": 0,
+      "coverage_percentage": 100.0
+    }
+  },
+  "files": [
+    {
+      "path": "C:\\Github\\AppDoc2\\docs\\assets\\demo\\csharp\\Models.cs",
+      "language": "csharp",
+      "lines": 110,
+      "functions": 0,
+      "documented_functions": 0,
+      "classes": 0,
+      "documented_classes": 0,
+      "coverage_percentage": 0.0,
+      "dependencies": [],
+      "complexity": null
+    },
+    {
+      "path": "C:\\Github\\AppDoc2\\docs\\assets\\demo\\python\\app.py",
+      "language": "python",
+      "lines": 64,
+      "functions": 5,
+      "documented_functions": 5,
+      "classes": 0,
+      "documented_classes": 0,
+      "coverage_percentage": 100.0,
+      "dependencies": [
+        "flask",
+        "datetime"
+      ],
+      "complexity": null
+    }
+  ],
+  "dependency_graph": {
+    "directed": true,
+    "multigraph": false,
+    "graph": {},
+    "nodes": [
+      {
+        "language": "csharp",
+        "lines": 110,
+        "functions": 0,
+        "classes": 0,
+        "coverage": 0.0,
+        "id": "csharp\\Models.cs"
+      },
+      {
+        "language": "python",
+        "lines": 64,
+        "functions": 5,
+        "classes": 0,
+        "coverage": 100.0,
+        "id": "python\\app.py"
+      }
+    ],
+    "links": []
+  }
+}

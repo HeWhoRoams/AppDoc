@@ -2,10 +2,13 @@
 
 import os
 import sys
+import webbrowser
 from pathlib import Path
 from typing import List, Optional
 
 import click
+import questionary
+import yaml
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
@@ -22,6 +25,123 @@ console = Console()
 def cli():
     """AppDoc: Multi-language documentation analysis tool."""
     pass
+
+
+@cli.command()
+def init():
+    """Initialize a new AppDoc configuration interactively.
+
+    This command will prompt you for configuration options and create
+    a .appdoc.yml config file in the current directory.
+    """
+    console.print("[bold blue]AppDoc Configuration Wizard[/bold blue]")
+    console.print("Let's set up your AppDoc configuration.\n")
+
+    try:
+        # Gather configuration options
+        output_dir = questionary.text(
+            "Output directory for reports:",
+            default="./appdoc_output"
+        ).ask()
+
+        if not output_dir:
+            console.print("[red]Cancelled by user.[/red]")
+            return
+
+        max_files = questionary.text(
+            "Maximum number of files to process (leave empty for unlimited):",
+            validate=lambda text: text.isdigit() or text == ""
+        ).ask()
+
+        max_files = int(max_files) if max_files else None
+
+        threads = questionary.text(
+            "Number of threads (leave empty for auto-detect):",
+            validate=lambda text: text.isdigit() or text == ""
+        ).ask()
+
+        threads = int(threads) if threads else None
+
+        languages_input = questionary.text(
+            "Languages to analyze (comma-separated, leave empty for all):"
+        ).ask()
+
+        languages = [lang.strip() for lang in languages_input.split(',')] if languages_input else None
+
+        ignore_patterns_input = questionary.text(
+            "Ignore patterns (comma-separated globs):",
+            default="*.pyc,__pycache__/,node_modules/"
+        ).ask()
+
+        ignore_patterns = [pattern.strip() for pattern in ignore_patterns_input.split(',')] if ignore_patterns_input else []
+
+        verbose = questionary.confirm("Enable verbose output?", default=False).ask()
+
+        # Generate config dict
+        config = {}
+
+        if output_dir and output_dir != "./appdoc_output":
+            config['output'] = output_dir
+
+        if max_files:
+            config['max_files'] = max_files
+
+        if threads:
+            config['threads'] = threads
+
+        if languages:
+            config['languages'] = languages
+
+        if ignore_patterns:
+            config['ignore'] = ignore_patterns
+
+        if verbose:
+            config['verbose'] = verbose
+
+        # Write config file
+        config_file = Path('.appdoc.yml')
+        with open(config_file, 'w') as f:
+            yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+
+        console.print(f"\n[green]✓[/green] Configuration saved to {config_file}")
+        console.print("You can now run [bold]appdoc scan .[/bold] to analyze your project.")
+
+    except KeyboardInterrupt:
+        console.print("\n[red]Configuration cancelled.[/red]")
+        return
+    except Exception as e:
+        console.print(f"[red]Error creating configuration:[/red] {e}")
+        return
+
+
+@cli.command()
+def docs():
+    """Open the AppDoc documentation site.
+
+    This command opens the MkDocs documentation site in your default browser.
+    If the docs are not currently being served, it will attempt to start a
+    development server.
+
+    Examples:
+        appdoc docs                      # Open docs in browser
+        cd docs && mkdocs serve --open   # Start server manually if needed
+    """
+    docs_url = "http://localhost:8000"
+
+    # Try to open in browser first
+    try:
+        webbrowser.open(docs_url)
+        console.print(f"[green]Opening documentation at:[/green] {docs_url}")
+    except Exception as e:
+        console.print(f"[yellow]Could not open browser automatically:[/yellow] {e}")
+        console.print(f"Please visit: {docs_url}")
+
+    # Optionally suggest running mkdocs serve
+    console.print(
+        "\n[dim]If docs don't load, ensure MkDocs is running:[/dim]\n"
+        "  [blue]mkdocs serve[/blue]  # Start development server\n"
+        "  [blue]mkdocs build[/blue]   # Build static site\n"
+    )
 
 
 @cli.command()
@@ -58,6 +178,12 @@ def scan(path: str, out: str, max_files: Optional[int], threads: Optional[int],
     PATH is the directory to scan.
 
     OUT is the directory where reports will be generated.
+
+    Examples:
+        appdoc scan . ./reports                    # Scan current dir, output to ./reports
+        appdoc scan /path/to/project output_dir    # Scan specific project
+        appdoc scan . out --languages python,js   # Only analyze Python and JavaScript
+        appdoc scan . out --ignore "*.tmp" --ignore "__pycache__/" --verbose
     """
     try:
         # Parse languages

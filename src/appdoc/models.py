@@ -5,6 +5,25 @@ from typing import Dict, List, Optional
 
 
 @dataclass
+class FunctionDetail:
+    """Details for a single function or method."""
+    name: str
+    line_number: int
+    is_documented: bool
+    type: str  # 'function' or 'method'
+
+    def __post_init__(self):
+        """Validate inputs."""
+        if self.line_number < 0:
+    """Details for a single class."""
+    name: str
+    line_number: int
+    is_documented: bool
+    methods: int = 0
+    documented_methods: int = 0
+
+
+@dataclass
 class FileMetric:
     """Metrics for a single analyzed file."""
     path: str
@@ -16,6 +35,8 @@ class FileMetric:
     documented_classes: int = 0
     dependencies: List[str] = field(default_factory=list)
     complexity: Optional[int] = None
+    function_details: List[FunctionDetail] = field(default_factory=list)
+    class_details: List[ClassDetail] = field(default_factory=list)
 
     @property
     def documentation_coverage(self) -> float:

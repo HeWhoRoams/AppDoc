@@ -24,6 +24,7 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - Usage: usage.md
+  - Demo: demo.md
   - Developer Guide: dev-guide.md
   - Architecture: architecture.md
   - Reference:

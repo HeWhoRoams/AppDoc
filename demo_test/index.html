@@ -299,7 +299,7 @@
     <div class="header">
         <div class="container">
             <h1>AppDoc Analysis Report</h1>
-            <p>Generated on {{ result.timestamp }} • Scanned: {{ result.scan_path }}</p>
+            <p>Generated on 2025-10-22 14:00:12 • Scanned: C:\Github\AppDoc2\docs\assets\demo</p>
         </div>
     </div>
 
@@ -308,48 +308,48 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <h3>Total Files</h3>
-                <div class="value">{{ result.total_files }}</div>
+                <div class="value">2</div>
                 <div class="label">Source files analyzed</div>
             </div>
             <div class="stat-card">
                 <h3>Total Lines</h3>
-                <div class="value">{{ result.total_lines }}</div>
+                <div class="value">174</div>
                 <div class="label">Lines of code</div>
             </div>
             <div class="stat-card">
                 <h3>Documentation Coverage</h3>
-                <div class="value">{{ result.overall_coverage|round(1) }}%</div>
+                <div class="value">100.0%</div>
                 <div class="label">Functions & classes documented</div>
             </div>
             <div class="stat-card">
                 <h3>Scan Time</h3>
-                <div class="value">{{ result.duration_seconds|round(2) }}s</div>
+                <div class="value">0.0s</div>
                 <div class="label">Analysis duration</div>
             </div>
         </div>
 
         <!-- Language Distribution Chart -->
-        {% if chart_data.language_data %}
+        
         <div class="section">
             <h2>Language Distribution</h2>
             <div class="chart-container">
                 <canvas id="languageChart"></canvas>
             </div>
         </div>
-        {% endif %}
+        
 
         <!-- Documentation Coverage Chart -->
-        {% if chart_data.coverage_data %}
+        
         <div class="section">
             <h2>Documentation Coverage by Language</h2>
             <div class="chart-container">
                 <canvas id="coverageChart"></canvas>
             </div>
         </div>
-        {% endif %}
+        
 
         <!-- Dependency Graph -->
-        {% if result.dependency_graph and result.dependency_graph.nodes %}
+        
         <div class="section">
             <h2>Dependency Graph</h2>
             <div id="dependency-graph" style="height: 600px; width: 100%; border: 1px solid var(--border-color); border-radius: 4px;"></div>
@@ -357,10 +357,10 @@
                 Node size represents lines of code. Edge direction shows dependencies. Hover for details.
             </p>
         </div>
-        {% endif %}
+        
 
         <!-- Language Details Table -->
-        {% if result.language_summaries %}
+        
         <div class="section">
             <h2>Language Breakdown</h2>
             <table class="language-table">
@@ -375,60 +375,106 @@
                     </tr>
                 </thead>
                 <tbody>
-                {% for lang, summary in result.language_summaries.items() %}
+                
                     <tr>
-                        <td>{{ lang|title }}</td>
-                        <td>{{ summary.files }}</td>
-                        <td>{{ summary.lines }}</td>
-                        <td>{{ summary.functions }}</td>
-                        <td>{{ summary.documented_functions }}</td>
+                        <td>Csharp</td>
+                        <td>1</td>
+                        <td>110</td>
+                        <td>0</td>
+                        <td>0</td>
                         <td>
-                            <div>{{ summary.documentation_coverage|round(1) }}%</div>
+                            <div>0.0%</div>
                             <div class="coverage-bar">
-                                <div class="coverage-fill {{ 'good' if summary.documentation_coverage >= 80 else 'medium' if summary.documentation_coverage >= 50 else 'low' }}" style="width: {{ summary.documentation_coverage }}%"></div>
+                                <div class="coverage-fill low" style="width: 0.0%"></div>
                             </div>
                         </td>
                     </tr>
-                {% endfor %}
+                
+                    <tr>
+                        <td>Python</td>
+                        <td>1</td>
+                        <td>64</td>
+                        <td>5</td>
+                        <td>5</td>
+                        <td>
+                            <div>100.0%</div>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill good" style="width: 100.0%"></div>
+                            </div>
+                        </td>
+                    </tr>
+                
                 </tbody>
             </table>
         </div>
-        {% endif %}
+        
 
         <!-- File Details -->
-        {% if result.file_metrics %}
+        
         <div class="section">
             <h2>File Details</h2>
             <p style="margin-bottom: 1rem; color: var(--secondary-color); font-size: 0.9rem;">
                 Click on any file to expand and see detailed function information.
             </p>
-            {% for metric in result.file_metrics[:50] %}  <!-- Limit to first 50 files for performance -->
-            <div class="file-item" onclick="toggleFileDetails(this)" role="button" aria-expanded="false" aria-controls="details-{{ loop.index }}" tabindex="0" onkeydown="handleKeyDown(event, this)">
+              <!-- Limit to first 50 files for performance -->
+            <div class="file-item" onclick="toggleFileDetails(this)" role="button" aria-expanded="false" aria-controls="details-1" tabindex="0" onkeydown="handleKeyDown(event, this)">
                 <div class="file-header">
-                    <span class="file-path">{{ metric.path|truncate(80) }}</span>
-                    <span class="file-language">{{ metric.language }}</span>
+                    <span class="file-path">C:\Github\AppDoc2\docs\assets\demo\csharp\Models.cs</span>
+                    <span class="file-language">csharp</span>
                 </div>
                 <div class="file-metrics">
                     <div class="metric">
-                        <div class="value" aria-label="{{ metric.lines }} lines of code">{{ metric.lines }}</div>
+                        <div class="value" aria-label="110 lines of code">110</div>
                         <div class="label">Lines</div>
                     </div>
                     <div class="metric">
-                        <div class="value" aria-label="{{ metric.functions }} functions">{{ metric.functions }}</div>
+                        <div class="value" aria-label="0 functions">0</div>
                         <div class="label">Functions</div>
                     </div>
                     <div class="metric">
-                        <div class="value" aria-label="{{ metric.classes }} classes">{{ metric.classes }}</div>
+                        <div class="value" aria-label="0 classes">0</div>
                         <div class="label">Classes</div>
                     </div>
                     <div class="metric">
-                        <div class="value" aria-label="{{ metric.documentation_coverage|round(1) }} percent documentation coverage">{{ metric.documentation_coverage|round(1) }}%</div>
+                        <div class="value" aria-label="0.0 percent documentation coverage">0.0%</div>
                         <div class="label">Coverage</div>
                     </div>
                 </div>
-                <div class="file-details" id="details-{{ loop.index }}" aria-labelledby="header-{{ loop.index }}">
-                    {% if metric.function_details %}
-                    <table class="functions-table" role="table" aria-label="Functions in {{ metric.path }}">
+                <div class="file-details" id="details-1" aria-labelledby="header-1">
+                    
+                    <p style="margin: 1rem 0; color: var(--secondary-color); font-style: italic;" role="status" aria-live="polite">
+                        No function details available for this file.
+                    </p>
+                    
+                </div>
+            </div>
+              <!-- Limit to first 50 files for performance -->
+            <div class="file-item" onclick="toggleFileDetails(this)" role="button" aria-expanded="false" aria-controls="details-2" tabindex="0" onkeydown="handleKeyDown(event, this)">
+                <div class="file-header">
+                    <span class="file-path">C:\Github\AppDoc2\docs\assets\demo\python\app.py</span>
+                    <span class="file-language">python</span>
+                </div>
+                <div class="file-metrics">
+                    <div class="metric">
+                        <div class="value" aria-label="64 lines of code">64</div>
+                        <div class="label">Lines</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value" aria-label="5 functions">5</div>
+                        <div class="label">Functions</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value" aria-label="0 classes">0</div>
+                        <div class="label">Classes</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value" aria-label="100.0 percent documentation coverage">100.0%</div>
+                        <div class="label">Coverage</div>
+                    </div>
+                </div>
+                <div class="file-details" id="details-2" aria-labelledby="header-2">
+                    
+                    <table class="functions-table" role="table" aria-label="Functions in C:\Github\AppDoc2\docs\assets\demo\python\app.py">
                         <thead>
                             <tr role="row">
                                 <th role="columnheader" scope="col">Name</th>
@@ -438,57 +484,93 @@
                             </tr>
                         </thead>
                         <tbody>
-                        {% for func in metric.function_details %}
+                        
                             <tr role="row">
-                                <td role="cell"><code>{{ func.name }}</code></td>
-                                <td role="cell">{{ func.type }}</td>
-                                <td role="cell">{{ func.line_number }}</td>
+                                <td role="cell"><code>get_user_data</code></td>
+                                <td role="cell">function</td>
+                                <td role="cell">13</td>
                                 <td role="cell">
-                                    {% if func.is_documented %}
+                                    
                                         <span class="status-documented" aria-label="Documented">✓ Documented</span>
-                                    {% else %}
-                                        <span class="status-undocumented" aria-label="Undocumented">✗ Undocumented</span>
-                                    {% endif %}
+                                    
                                 </td>
                             </tr>
-                        {% endfor %}
+                        
+                            <tr role="row">
+                                <td role="cell"><code>process_data</code></td>
+                                <td role="cell">function</td>
+                                <td role="cell">28</td>
+                                <td role="cell">
+                                    
+                                        <span class="status-documented" aria-label="Documented">✓ Documented</span>
+                                    
+                                </td>
+                            </tr>
+                        
+                            <tr role="row">
+                                <td role="cell"><code>validate_input</code></td>
+                                <td role="cell">function</td>
+                                <td role="cell">34</td>
+                                <td role="cell">
+                                    
+                                        <span class="status-documented" aria-label="Documented">✓ Documented</span>
+                                    
+                                </td>
+                            </tr>
+                        
+                            <tr role="row">
+                                <td role="cell"><code>get_user</code></td>
+                                <td role="cell">function</td>
+                                <td role="cell">42</td>
+                                <td role="cell">
+                                    
+                                        <span class="status-documented" aria-label="Documented">✓ Documented</span>
+                                    
+                                </td>
+                            </tr>
+                        
+                            <tr role="row">
+                                <td role="cell"><code>health_check</code></td>
+                                <td role="cell">function</td>
+                                <td role="cell">52</td>
+                                <td role="cell">
+                                    
+                                        <span class="status-documented" aria-label="Documented">✓ Documented</span>
+                                    
+                                </td>
+                            </tr>
+                        
                         </tbody>
                     </table>
-                    {% else %}
-                    <p style="margin: 1rem 0; color: var(--secondary-color); font-style: italic;" role="status" aria-live="polite">
-                        No function details available for this file.
-                    </p>
-                    {% endif %}
+                    
                 </div>
             </div>
-            {% endfor %}
-            {% if result.file_metrics|length > 50 %}
-            <p><em>Showing first 50 files. See summary.json for complete results.</em></p>
-            {% endif %}
+            
+            
         </div>
-        {% endif %}
+        
     </div>
 
     <div class="footer">
         <div style="margin-bottom: 10px;">
             <strong>Performance Metrics:</strong>
-            Time elapsed: {{ result.duration_seconds|round(2) }}s |
-            Files scanned: {{ result.files_scanned }} |
-            Ignored patterns: {{ result.ignored_patterns|join(', ') or 'None' }}
+            Time elapsed: 0.0s |
+            Files scanned: 2 |
+            Ignored patterns: None
         </div>
         <p>Generated by <strong>AppDoc</strong> • Multi-language documentation analysis tool</p>
     </div>
 
     <script>
         // Language Distribution Chart
-        {% if chart_data.language_data %}
+        
         const languageCtx = document.getElementById('languageChart').getContext('2d');
         new Chart(languageCtx, {
             type: 'doughnut',
             data: {
-                labels: {{ chart_data.language_labels|tojson }},
+                labels: ["Csharp", "Python"],
                 datasets: [{
-                    data: {{ chart_data.language_data }},
+                    data: [1, 1],
                     backgroundColor: [
                         '#007acc',
                         '#28a745',
@@ -509,18 +591,18 @@
                 }
             }
         });
-        {% endif %}
+        
 
         // Documentation Coverage Chart
-        {% if chart_data.coverage_data %}
+        
         const coverageCtx = document.getElementById('coverageChart').getContext('2d');
         new Chart(coverageCtx, {
             type: 'bar',
             data: {
-                labels: {{ chart_data.coverage_labels|tojson }},
+                labels: ["Csharp", "Python"],
                 datasets: [{
                     label: 'Documentation Coverage (%)',
-                    data: {{ chart_data.coverage_data }},
+                    data: [0.0, 100.0],
                     backgroundColor: 'rgba(0, 122, 204, 0.8)',
                     borderColor: 'rgba(0, 122, 204, 1)',
                     borderWidth: 1
@@ -537,11 +619,11 @@
                 }
             }
         });
-        {% endif %}
+        
 
         // Dependency Graph Visualization
-        {% if result.dependency_graph and result.dependency_graph.nodes %}
-        const graphData = {{ result.dependency_graph|tojson }};
+        
+        const graphData = {"directed": true, "graph": {}, "links": [], "multigraph": false, "nodes": [{"classes": 0, "coverage": 0.0, "functions": 0, "id": "csharp\\Models.cs", "language": "csharp", "lines": 110}, {"classes": 0, "coverage": 100.0, "functions": 5, "id": "python\\app.py", "language": "python", "lines": 64}]};
         const width = 800;
         const height = 600;
 
@@ -655,7 +737,7 @@
             d.fx = null;
             d.fy = null;
         }
-        {% endif %}
+        
 
         // Toggle file details expansion
         function toggleFileDetails(element) {

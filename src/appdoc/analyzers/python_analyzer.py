@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Set
 
 from . import BaseAnalyzer
-from ..models import FileMetric
+from ..models import FileMetric, FunctionDetail, ClassDetail
 
 
 class PythonAnalyzer(BaseAnalyzer):
@@ -30,21 +30,37 @@ class PythonAnalyzer(BaseAnalyzer):
             analyzer = ASTAnalyzer()
             analyzer.visit(tree)
 
-            # Count documented items
-            documented_functions = sum(1 for node in analyzer.functions
-                                     if self._has_docstring(node))
-            documented_classes = sum(1 for node in analyzer.classes
-                                   if self._has_docstring(node))
+            # The analyzer now tracks functions with their parent class info
+            function_details = [
+                FunctionDetail(
+                    name=node.name,
+                    line_number=node.lineno,
+                    is_documented=self._has_docstring(node),
+                    type=node.func_type
+                )
+                for node in analyzer.functions
+            ]
+
+            class_details = [
+                ClassDetail(
+                    name=node.name,
+                    line_number=node.lineno,
+                    is_documented=self._has_docstring(node)
+                )
+                for node in analyzer.classes
+            ]
 
             return FileMetric(
                 path=str(file_path),
                 language=self.language_name,
                 lines=lines,
                 functions=len(analyzer.functions),
-                documented_functions=documented_functions,
+                documented_functions=sum(1 for fd in function_details if fd.is_documented),
                 classes=len(analyzer.classes),
-                documented_classes=documented_classes,
+                documented_classes=sum(1 for cd in class_details if cd.is_documented),
                 dependencies=analyzer.imports,
+                function_details=function_details,
+                class_details=class_details,
             )
 
         except (SyntaxError, UnicodeDecodeError, OSError) as e:
@@ -84,21 +100,27 @@ class ASTAnalyzer(ast.NodeVisitor):
         self.functions = []
         self.classes = []
         self.imports = []
+        self.current_class = None
 
     def visit_FunctionDef(self, node):
         """Visit function definitions."""
+        node.func_type = 'method' if self.current_class else 'function'
         self.functions.append(node)
         self.generic_visit(node)
 
     def visit_AsyncFunctionDef(self, node):
         """Visit async function definitions."""
+        node.func_type = 'method' if self.current_class else 'function'
         self.functions.append(node)
         self.generic_visit(node)
 
     def visit_ClassDef(self, node):
         """Visit class definitions."""
         self.classes.append(node)
+        prev_class = self.current_class
+        self.current_class = node.name
         self.generic_visit(node)
+        self.current_class = prev_class
 
     def visit_Import(self, node):
         """Visit import statements."""
