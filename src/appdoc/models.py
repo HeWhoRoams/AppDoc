@@ -4,6 +4,10 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 
+# ---------------------------------------------------------------------------
+# FunctionDetail
+# ---------------------------------------------------------------------------
+
 @dataclass
 class FunctionDetail:
     """Details for a single function or method."""
@@ -15,6 +19,15 @@ class FunctionDetail:
     def __post_init__(self):
         """Validate inputs."""
         if self.line_number < 0:
+            raise ValueError("line_number must be non-negative")
+
+
+# ---------------------------------------------------------------------------
+# ClassDetail
+# ---------------------------------------------------------------------------
+
+@dataclass
+class ClassDetail:
     """Details for a single class."""
     name: str
     line_number: int
@@ -22,6 +35,10 @@ class FunctionDetail:
     methods: int = 0
     documented_methods: int = 0
 
+
+# ---------------------------------------------------------------------------
+# FileMetric
+# ---------------------------------------------------------------------------
 
 @dataclass
 class FileMetric:
@@ -40,13 +57,17 @@ class FileMetric:
 
     @property
     def documentation_coverage(self) -> float:
-        """Calculate documentation coverage percentage."""
+        """Calculate documentation coverage percentage for this file."""
         total_items = self.functions + self.classes
         if total_items == 0:
             return 0.0
         documented_items = self.documented_functions + self.documented_classes
         return (documented_items / total_items) * 100
 
+
+# ---------------------------------------------------------------------------
+# LanguageSummary
+# ---------------------------------------------------------------------------
 
 @dataclass
 class LanguageSummary:
@@ -68,6 +89,10 @@ class LanguageSummary:
         documented_items = self.documented_functions + self.documented_classes
         return (documented_items / total_items) * 100
 
+
+# ---------------------------------------------------------------------------
+# ScanResult
+# ---------------------------------------------------------------------------
 
 @dataclass
 class ScanResult:

@@ -1,0 +1,16 @@
+{
+  "ignore": [
+    "tests/",
+    "venv/",
+    "node_modules/"
+  ],
+  "report_format": "html",
+  "include_docstrings": true,
+  "extensions": [
+    ".py",
+    ".js",
+    ".ts",
+    ".java",
+    ".cs"
+  ]
+}

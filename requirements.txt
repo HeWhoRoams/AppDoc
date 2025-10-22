@@ -5,4 +5,3 @@ tqdm==4.66.1
 networkx==3.2.1
 pathlib2==2.3.7.post1
 questionary==2.0.1
-PyYAML==6.0
