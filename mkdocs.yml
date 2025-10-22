@@ -26,6 +26,8 @@ nav:
   - Usage: usage.md
   - Developer Guide: dev-guide.md
   - Architecture: architecture.md
+  - Reference:
+      - JSON Schema: reference/json-schema.md
   - Changelog: changelog.md
 
 markdown_extensions:

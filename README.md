@@ -15,7 +15,26 @@ AppDoc is a multi-language code documentation analysis tool that scans codebases
 - **🎯 Documentation Focus**: Specialized in measuring documentation coverage and gaps
 - **🔧 CLI-First Design**: Simple command-line interface for CI/CD integration
 
+## 🛠️ Supported Languages
+
+### Currently Supported
+- **Python** (AST-based analysis, full docstring extraction and coverage)
+- **JavaScript/TypeScript** (Regex-based JSDoc/TSDoc extraction)
+
+### Planned Languages
+See our [roadmap](ROADMAP.md) for upcoming language support including Go, Rust, Java, C#, Ruby, and more.
+
+### Adding New Languages
+Adding support for a new language is straightforward - see the [Developer Guide](docs/dev-guide.md) for instructions.
+
 ## 🚀 Quick Start
+
+### System Requirements
+- **Python**: 3.8 or higher
+- **OS**: Linux, macOS, Windows
+- **Dependencies**: See [requirements.txt](requirements.txt)
+
+### Installation & Usage
 
 ```bash
 # Install dependencies
@@ -110,11 +129,26 @@ black src/ && isort src/
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Add tests and documentation
-4. Ensure CI passes (`mkdocs build`)
-5. Submit a pull request
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for detailed information on:
+
+- Development workflow and coding standards
+- Adding new language analyzers
+- Testing and documentation guidelines
+- Conventional commit messages
+
+### Quick Links
+- [Contributing Guidelines](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Roadmap](ROADMAP.md)
+- [Issue Tracker](https://github.com/HeWhoRoams/AppDoc/issues)
+- [Discussions](https://github.com/HeWhoRoams/AppDoc/discussions)
+
+## 🆘 Getting Help
+
+- **Documentation**: Full docs at [https://HeWhoRoams.github.io/AppDoc/](https://HeWhoRoams.github.io/AppDoc/)
+- **Questions**: Use [GitHub Discussions](https://github.com/HeWhoRoams/AppDoc/discussions) for questions
+- **Issues**: Report bugs via [GitHub Issues](https://github.com/HeWhoRoams/AppDoc/issues)
+- **Community**: Follow along with the [ROADMAP.md](ROADMAP.md) for upcoming features
 
 ## 📄 License
 
