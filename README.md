@@ -1,44 +1,124 @@
 ***REMOVED*** AppDoc
 
-AppDoc is a template-driven documentation automation system designed to extract, analyze, and generate comprehensive documentation for any codebase. It is built for extensibility, auditability, and non-destructive workflows, making it ideal for teams seeking reliable, versioned documentation.
+[![Documentation Status](https://img.shields.io/badge/docs-MkDocs-blue)](https://HeWhoRoams.github.io/AppDoc/)
+[![CI](https://img.shields.io/github/actions/workflow/status/HeWhoRoams/AppDoc/build-docs.yml)](https://github.com/HeWhoRoams/AppDoc/actions)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-***REMOVED******REMOVED*** Key Features
-- **Template-Based Architecture:** All documentation is generated using Markdown templates found in `appdoc.templates/`. This ensures consistency and easy customization.
-- **Multi-Stage Workflow:** The system uses workflow prompts (in `.github/prompts/`) to orchestrate multi-phase documentation processes, including analysis, drafting, and auditing.
-- **Non-Destructive Principle:** Data gaps and uncertainties are preserved as placeholders, never overwritten or fabricated, ensuring traceable and actionable documentation.
-- **Version Tracking:** Documentation versions are managed and tracked, supporting incremental updates and historical audits.
+AppDoc is a multi-language code documentation analysis tool that scans codebases to extract documentation coverage, metrics, and dependency insights. It provides both machine-readable JSON reports and interactive HTML visualizations.
 
-***REMOVED******REMOVED*** Directory Structure
-- `appdoc.templates/`: Core Markdown templates for architecture, audit reports, logic/workflows, documentation tasks, and troubleshooting playbooks.
-- `.github/prompts/`: Workflow prompt files that drive documentation automation and agent behavior.
-- `.github/copilot-instructions.md`: Persistent instructions for AI coding agents, detailing conventions, workflow mandates, and integration points.
+***REMOVED******REMOVED*** ✨ Key Features
 
-***REMOVED******REMOVED*** How It Works
-1. **Select a Template:** Choose the appropriate template from `appdoc.templates/` for your documentation need.
-2. **Run Workflow Prompt:** Use the relevant prompt in `.github/prompts/` to guide the documentation process.
-3. **Generate Output:** Documentation is produced in Markdown, strictly following the template structure and conventions.
-4. **Audit & Update:** Use audit templates and version tracking to review and improve documentation over time.
+- **🔍 Multi-Language Support**: Out-of-the-box support for Python (AST-based) and JavaScript/TypeScript (regex-based)
+- **🧩 Modular Architecture**: Plugin system for easy addition of new programming languages
+- **📊 Rich Reporting**: JSON summaries + responsive HTML reports with Chart.js visualizations
+- **⚡ Concurrent Processing**: Fast analysis using Python's ThreadPoolExecutor
+- **🎯 Documentation Focus**: Specialized in measuring documentation coverage and gaps
+- **🔧 CLI-First Design**: Simple command-line interface for CI/CD integration
 
-***REMOVED******REMOVED*** Project Conventions
-- All documentation is Markdown-based and must conform to the structure defined in the templates.
-- Section headers, data fields, and formatting are strictly enforced for consistency.
-- Placeholders follow the `$<SOURCE_TYPE>_<DATA_TYPE>_<NAME>[CONFIDENCE:LEVEL]` pattern for traceability.
+***REMOVED******REMOVED*** 🚀 Quick Start
 
-***REMOVED******REMOVED*** Integration & Extensibility
-- The system is file-based with no external dependencies or build/test scripts required.
-- New documentation types can be added by creating new templates in `appdoc.templates/` and updating workflow prompts as needed.
+```bash
+***REMOVED*** Install dependencies
+pip install -r requirements.txt -r requirements-dev.txt
 
-***REMOVED******REMOVED*** Example Templates
-- `appdoc.templates/architecture.template.md`: For architectural summaries.
-- `appdoc.templates/audit.report.template.md`: For audit reports and metrics.
-- `appdoc.templates/logic-and-workflows.template.md`: For documenting functions, classes, and workflows.
-- `appdoc.templates/documentation.tasks.template.md`: For tracking documentation tasks and remediation.
-- `appdoc.templates/troubleshooting.playbook.template.md`: For troubleshooting guides and operational playbooks.
+***REMOVED*** Analyze a codebase
+python -m appdoc.cli scan --path . --out ./report
 
-***REMOVED******REMOVED*** Getting Started
-1. Review the templates in `appdoc.templates/` to understand documentation structure.
-2. Read `.github/copilot-instructions.md` for agent guidance and workflow details.
-3. Use or modify workflow prompts in `.github/prompts/` to automate documentation generation.
+***REMOVED*** View results in browser
+open ./report/index.html
+```
+
+***REMOVED******REMOVED*** 📈 What It Measures
+
+- **Documentation Coverage**: Functions/classes with/without docstrings or JSDoc comments
+- **Code Metrics**: Lines of code, function counts, class counts per file
+- **Language Breakdown**: Statistics segmented by programming language
+- **Dependency Analysis**: Import/export relationships (expandable with NetworkX)
+
+***REMOVED******REMOVED*** 🏗️ Architecture
+
+```
+appdoc/
+├── cli/           ***REMOVED*** Command-line interface with Rich console output
+├── analyzers/     ***REMOVED*** Language-specific analyzers (Python AST, JS regex)
+├── core/          ***REMOVED*** Concurrent scanning and coordination logic
+├── models/        ***REMOVED*** Data classes for metrics and results
+├── reporting/     ***REMOVED*** Jinja2 HTML reports + JSON summaries
+└── templates/     ***REMOVED*** HTML report templates with Chart.js
+```
+
+***REMOVED******REMOVED*** 📚 Documentation
+
+Full documentation is available at [https://HeWhoRoams.github.io/AppDoc/](https://HeWhoRoams.github.io/AppDoc/)
+
+- [Getting Started](docs/getting-started.md) - Installation and first analysis
+- [Usage Guide](docs/usage.md) - CLI options and configuration
+- [Developer Guide](docs/dev-guide.md) - Adding new language analyzers
+- [Architecture](docs/architecture.md) - System design and extensibility
+
+***REMOVED******REMOVED*** 🔌 Adding New Languages
+
+Adding support for a new language (e.g., Go, Rust, C***REMOVED***) is straightforward:
+
+1. **Create an analyzer** in `src/appdoc/analyzers/newlang_analyzer.py`
+2. **Implement the interface**:
+   ```python
+   from .base import BaseAnalyzer
+
+   class NewLangAnalyzer(BaseAnalyzer):
+       file_extensions = {'.nl'}
+       language_name = 'newlang'
+   ```
+3. **Register** in `src/appdoc/analyzers/__init__.py`
+4. **Add extension mapping** to `EXTENSION_TO_LANGUAGE`
+
+***REMOVED******REMOVED*** 📊 Sample Output
+
+**HTML Report Features:**
+- Interactive charts showing language distribution
+- Documentation coverage visualization
+- Per-file breakdown with coverage percentages
+- Responsive design with mobile support
+
+**JSON Summary:**
+```json
+{
+  "scan_info": {
+    "total_files": 42,
+    "total_lines": 3456,
+    "overall_coverage": 67.8
+  },
+  "languages": {
+    "python": {"files": 23, "coverage_percentage": 85.2},
+    "javascript": {"files": 19, "coverage_percentage": 45.1}
+  }
+}
+```
+
+***REMOVED******REMOVED*** 🛠️ Development
+
+```bash
+***REMOVED*** Set up pre-commit hooks
+pre-commit install
+
+***REMOVED*** Run documentation locally
+mkdocs serve
+
+***REMOVED*** Format code
+black src/ && isort src/
+```
+
+***REMOVED******REMOVED*** 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests and documentation
+4. Ensure CI passes (`mkdocs build`)
+5. Submit a pull request
+
+***REMOVED******REMOVED*** 📄 License
+
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
-_Last updated: October 22, 2025_
+**AppDoc** - Understanding what your codebase actually documents. 🚀

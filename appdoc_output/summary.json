@@ -1,0 +1,189 @@
+{
+  "scan_info": {
+    "timestamp": "2025-10-22 13:22:25",
+    "scan_path": "C:\\Github\\AppDoc2\\src",
+    "duration_seconds": 0.02097940444946289,
+    "total_files": 10,
+    "total_lines": 903,
+    "overall_coverage": 97.72727272727273
+  },
+  "languages": {
+    "python": {
+      "files": 10,
+      "lines": 903,
+      "functions": 36,
+      "documented_functions": 35,
+      "classes": 8,
+      "documented_classes": 8,
+      "coverage_percentage": 97.72727272727273
+    }
+  },
+  "files": [
+    {
+      "path": "C:\\Github\\AppDoc2\\src\\appdoc\\models.py",
+      "language": "python",
+      "lines": 89,
+      "functions": 7,
+      "documented_functions": 7,
+      "classes": 3,
+      "documented_classes": 3,
+      "coverage_percentage": 100.0,
+      "dependencies": [
+        "dataclasses",
+        "typing"
+      ],
+      "complexity": null
+    },
+    {
+      "path": "C:\\Github\\AppDoc2\\src\\appdoc\\core\\scanner.py",
+      "language": "python",
+      "lines": 228,
+      "functions": 7,
+      "documented_functions": 7,
+      "classes": 1,
+      "documented_classes": 1,
+      "coverage_percentage": 100.0,
+      "dependencies": [
+        "time",
+        "os",
+        "pathlib",
+        "typing",
+        "concurrent",
+        "analyzers",
+        "models",
+        "reporting",
+        "fnmatch"
+      ],
+      "complexity": null
+    },
+    {
+      "path": "C:\\Github\\AppDoc2\\src\\appdoc\\analyzers\\python_analyzer.py",
+      "language": "python",
+      "lines": 113,
+      "functions": 8,
+      "documented_functions": 7,
+      "classes": 2,
+      "documented_classes": 2,
+      "coverage_percentage": 90.0,
+      "dependencies": [
+        "ast",
+        "pathlib",
+        "typing",
+        "models"
+      ],
+      "complexity": null
+    },
+    {
+      "path": "C:\\Github\\AppDoc2\\src\\appdoc\\core\\__init__.py",
+      "language": "python",
+      "lines": 1,
+      "functions": 0,
+      "documented_functions": 0,
+      "classes": 0,
+      "documented_classes": 0,
+      "coverage_percentage": 0.0,
+      "dependencies": [],
+      "complexity": null
+    },
+    {
+      "path": "C:\\Github\\AppDoc2\\src\\appdoc\\cli\\__init__.py",
+      "language": "python",
+      "lines": 1,
+      "functions": 0,
+      "documented_functions": 0,
+      "classes": 0,
+      "documented_classes": 0,
+      "coverage_percentage": 0.0,
+      "dependencies": [],
+      "complexity": null
+    },
+    {
+      "path": "C:\\Github\\AppDoc2\\src\\appdoc\\analyzers\\__init__.py",
+      "language": "python",
+      "lines": 39,
+      "functions": 2,
+      "documented_functions": 2,
+      "classes": 1,
+      "documented_classes": 1,
+      "coverage_percentage": 100.0,
+      "dependencies": [
+        "abc",
+        "typing",
+        "pathlib",
+        "python_analyzer",
+        "javascript_analyzer"
+      ],
+      "complexity": null
+    },
+    {
+      "path": "C:\\Github\\AppDoc2\\src\\appdoc\\cli\\main.py",
+      "language": "python",
+      "lines": 153,
+      "functions": 3,
+      "documented_functions": 3,
+      "classes": 0,
+      "documented_classes": 0,
+      "coverage_percentage": 100.0,
+      "dependencies": [
+        "os",
+        "sys",
+        "pathlib",
+        "typing",
+        "click",
+        "rich",
+        "rich",
+        "rich",
+        "core",
+        "reporting"
+      ],
+      "complexity": null
+    },
+    {
+      "path": "C:\\Github\\AppDoc2\\src\\appdoc\\analyzers\\javascript_analyzer.py",
+      "language": "python",
+      "lines": 154,
+      "functions": 5,
+      "documented_functions": 5,
+      "classes": 1,
+      "documented_classes": 1,
+      "coverage_percentage": 100.0,
+      "dependencies": [
+        "re",
+        "pathlib",
+        "typing",
+        "models"
+      ],
+      "complexity": null
+    },
+    {
+      "path": "C:\\Github\\AppDoc2\\src\\appdoc\\reporting\\__init__.py",
+      "language": "python",
+      "lines": 121,
+      "functions": 4,
+      "documented_functions": 4,
+      "classes": 0,
+      "documented_classes": 0,
+      "coverage_percentage": 100.0,
+      "dependencies": [
+        "pathlib",
+        "typing",
+        "json",
+        "jinja2",
+        "models"
+      ],
+      "complexity": null
+    },
+    {
+      "path": "C:\\Github\\AppDoc2\\src\\appdoc\\__init__.py",
+      "language": "python",
+      "lines": 4,
+      "functions": 0,
+      "documented_functions": 0,
+      "classes": 0,
+      "documented_classes": 0,
+      "coverage_percentage": 0.0,
+      "dependencies": [],
+      "complexity": null
+    }
+  ]
+}
