@@ -1,0 +1,62 @@
+{
+  "scan_info": {
+    "timestamp": "2025-10-22 13:22:25",
+    "scan_path": "/path/to/project",
+    "duration_seconds": 0.021,
+    "total_files": 45,
+    "total_lines": 3456,
+    "overall_coverage": 67.8
+  },
+  "languages": {
+    "python": {
+      "files": 23,
+      "lines": 2156,
+      "functions": 120,
+      "documented_functions": 95,
+      "classes": 25,
+      "documented_classes": 20,
+      "coverage_percentage": 85.2
+    },
+    "javascript": {
+      "files": 22,
+      "lines": 1300,
+      "functions": 85,
+      "documented_functions": 38,
+      "classes": 12,
+      "documented_classes": 8,
+      "coverage_percentage": 45.1
+    }
+  },
+  "files": [
+    {
+      "path": "src/main.py",
+      "language": "python",
+      "lines": 234,
+      "functions": 12,
+      "documented_functions": 10,
+      "classes": 3,
+      "documented_classes": 2,
+      "coverage_percentage": 83.3,
+      "dependencies": [
+        "os",
+        "sys",
+        "pathlib"
+      ],
+      "complexity": null
+    },
+    {
+      "path": "src/utils.js",
+      "language": "javascript",
+      "lines": 156,
+      "functions": 8,
+      "documented_functions": 3,
+      "classes": 2,
+      "documented_classes": 1,
+      "coverage_percentage": 40.0,
+      "dependencies": [
+        "lodash"
+      ],
+      "complexity": null
+    }
+  ]
+}
