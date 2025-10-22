@@ -1,0 +1,2 @@
+[console_scripts]
+appdoc = appdoc.cli.main:cli

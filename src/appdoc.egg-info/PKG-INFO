@@ -1,3 +1,48 @@
+Metadata-Version: 2.4
+Name: appdoc
+Version: 0.1.0
+Summary: Multi-language documentation analysis tool
+Home-page: https://github.com/HeWhoRoams/AppDoc
+Author: AppDoc Team
+Author-email: 
+Keywords: documentation analysis code-metrics python javascript
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Topic :: Software Development :: Documentation
+Classifier: Topic :: Software Development :: Quality Assurance
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: jinja2==3.1.2
+Requires-Dist: click==8.1.7
+Requires-Dist: rich==13.7.0
+Requires-Dist: tqdm==4.66.1
+Requires-Dist: networkx==3.2.1
+Requires-Dist: pathlib2==2.3.7.post1
+Provides-Extra: dev
+Requires-Dist: mkdocs==1.5.3; extra == "dev"
+Requires-Dist: mkdocs-material==9.4.5; extra == "dev"
+Requires-Dist: black==23.11.0; extra == "dev"
+Requires-Dist: isort==5.12.0; extra == "dev"
+Requires-Dist: flake8==6.1.0; extra == "dev"
+Requires-Dist: pre-commit==3.5.0; extra == "dev"
+Dynamic: author
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
 # AppDoc
 
 [![Documentation Status](https://img.shields.io/badge/docs-MkDocs-blue)](https://HeWhoRoams.github.io/AppDoc/)

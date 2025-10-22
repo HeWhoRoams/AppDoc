@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AppDoc Analysis Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #007acc;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-bg: #f8f9fa;
+            --dark-text: #212529;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-text);
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), #0056b3);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+
+        .header p {
+            margin: 0.5rem 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 0.5rem;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 300;
+            color: var(--dark-text);
+            margin: 0;
+        }
+
+        .stat-card .label {
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            margin: 0.5rem 0 0;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            margin: 0 0 1.5rem;
+            color: var(--dark-text);
+            font-size: 1.5rem;
+            font-weight: 400;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .chart-container {
+            margin: 2rem 0;
+            height: 300px;
+        }
+
+        .language-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .language-table th,
+        .language-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .language-table th {
+            background-color: var(--light-bg);
+            font-weight: 600;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .language-table tbody tr:hover {
+            background-color: var(--light-bg);
+        }
+
+        .coverage-bar {
+            background-color: var(--border-color);
+            border-radius: 4px;
+            height: 8px;
+            margin: 0.25rem 0;
+            overflow: hidden;
+        }
+
+        .coverage-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .coverage-fill.good { background-color: var(--success-color); }
+        .coverage-fill.medium { background-color: var(--warning-color); }
+        .coverage-fill.low { background-color: var(--danger-color); }
+
+        .file-item {
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin: 0.5rem 0;
+            background: var(--light-bg);
+        }
+
+        .file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-path {
+            font-family: 'Monaco', 'Menlo', monospace;
+            color: var(--dark-text);
+            font-weight: 500;
+        }
+
+        .file-language {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .file-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric .value {
+            font-weight: 600;
+            color: var(--dark-text);
+        }
+
+        .metric .label {
+            color: var(--secondary-color);
+            font-size: 0.8rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--secondary-color);
+            border-top: 1px solid var(--border-color);
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 1rem 0;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .file-metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>AppDoc Analysis Report</h1>
+            <p>Generated on 2025-10-22 13:22:25 • Scanned: C:\Github\AppDoc2\src</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Overview Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Files</h3>
+                <div class="value">10</div>
+                <div class="label">Source files analyzed</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Lines</h3>
+                <div class="value">903</div>
+                <div class="label">Lines of code</div>
+            </div>
+            <div class="stat-card">
+                <h3>Documentation Coverage</h3>
+                <div class="value">97.7%</div>
+                <div class="label">Functions & classes documented</div>
+            </div>
+            <div class="stat-card">
+                <h3>Scan Time</h3>
+                <div class="value">0.02s</div>
+                <div class="label">Analysis duration</div>
+            </div>
+        </div>
+
+        <!-- Language Distribution Chart -->
+        
+        <div class="section">
+            <h2>Language Distribution</h2>
+            <div class="chart-container">
+                <canvas id="languageChart"></canvas>
+            </div>
+        </div>
+        
+
+        <!-- Documentation Coverage Chart -->
+        
+        <div class="section">
+            <h2>Documentation Coverage by Language</h2>
+            <div class="chart-container">
+                <canvas id="coverageChart"></canvas>
+            </div>
+        </div>
+        
+
+        <!-- Language Details Table -->
+        
+        <div class="section">
+            <h2>Language Breakdown</h2>
+            <table class="language-table">
+                <thead>
+                    <tr>
+                        <th>Language</th>
+                        <th>Files</th>
+                        <th>Lines</th>
+                        <th>Functions</th>
+                        <th>Documented</th>
+                        <th>Coverage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                
+                    <tr>
+                        <td>Python</td>
+                        <td>10</td>
+                        <td>903</td>
+                        <td>36</td>
+                        <td>35</td>
+                        <td>
+                            <div>97.7%</div>
+                            <div class="coverage-bar">
+                                <div class="coverage-fill good" style="width: 97.72727272727273%"></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                </tbody>
+            </table>
+        </div>
+        
+
+        <!-- File Details -->
+        
+        <div class="section">
+            <h2>File Details</h2>
+              <!-- Limit to first 50 files for performance -->
+            <div class="file-item">
+                <div class="file-header">
+                    <span class="file-path">C:\Github\AppDoc2\src\appdoc\models.py</span>
+                    <span class="file-language">python</span>
+                </div>
+                <div class="file-metrics">
+                    <div class="metric">
+                        <div class="value">89</div>
+                        <div class="label">Lines</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">7</div>
+                        <div class="label">Functions</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">3</div>
+                        <div class="label">Classes</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">100.0%</div>
+                        <div class="label">Coverage</div>
+                    </div>
+                </div>
+            </div>
+              <!-- Limit to first 50 files for performance -->
+            <div class="file-item">
+                <div class="file-header">
+                    <span class="file-path">C:\Github\AppDoc2\src\appdoc\core\scanner.py</span>
+                    <span class="file-language">python</span>
+                </div>
+                <div class="file-metrics">
+                    <div class="metric">
+                        <div class="value">228</div>
+                        <div class="label">Lines</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">7</div>
+                        <div class="label">Functions</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">1</div>
+                        <div class="label">Classes</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">100.0%</div>
+                        <div class="label">Coverage</div>
+                    </div>
+                </div>
+            </div>
+              <!-- Limit to first 50 files for performance -->
+            <div class="file-item">
+                <div class="file-header">
+                    <span class="file-path">C:\Github\AppDoc2\src\appdoc\analyzers\python_analyzer.py</span>
+                    <span class="file-language">python</span>
+                </div>
+                <div class="file-metrics">
+                    <div class="metric">
+                        <div class="value">113</div>
+                        <div class="label">Lines</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">8</div>
+                        <div class="label">Functions</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">2</div>
+                        <div class="label">Classes</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">90.0%</div>
+                        <div class="label">Coverage</div>
+                    </div>
+                </div>
+            </div>
+              <!-- Limit to first 50 files for performance -->
+            <div class="file-item">
+                <div class="file-header">
+                    <span class="file-path">C:\Github\AppDoc2\src\appdoc\core\__init__.py</span>
+                    <span class="file-language">python</span>
+                </div>
+                <div class="file-metrics">
+                    <div class="metric">
+                        <div class="value">1</div>
+                        <div class="label">Lines</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">0</div>
+                        <div class="label">Functions</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">0</div>
+                        <div class="label">Classes</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">0.0%</div>
+                        <div class="label">Coverage</div>
+                    </div>
+                </div>
+            </div>
+              <!-- Limit to first 50 files for performance -->
+            <div class="file-item">
+                <div class="file-header">
+                    <span class="file-path">C:\Github\AppDoc2\src\appdoc\cli\__init__.py</span>
+                    <span class="file-language">python</span>
+                </div>
+                <div class="file-metrics">
+                    <div class="metric">
+                        <div class="value">1</div>
+                        <div class="label">Lines</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">0</div>
+                        <div class="label">Functions</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">0</div>
+                        <div class="label">Classes</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">0.0%</div>
+                        <div class="label">Coverage</div>
+                    </div>
+                </div>
+            </div>
+              <!-- Limit to first 50 files for performance -->
+            <div class="file-item">
+                <div class="file-header">
+                    <span class="file-path">C:\Github\AppDoc2\src\appdoc\analyzers\__init__.py</span>
+                    <span class="file-language">python</span>
+                </div>
+                <div class="file-metrics">
+                    <div class="metric">
+                        <div class="value">39</div>
+                        <div class="label">Lines</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">2</div>
+                        <div class="label">Functions</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">1</div>
+                        <div class="label">Classes</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">100.0%</div>
+                        <div class="label">Coverage</div>
+                    </div>
+                </div>
+            </div>
+              <!-- Limit to first 50 files for performance -->
+            <div class="file-item">
+                <div class="file-header">
+                    <span class="file-path">C:\Github\AppDoc2\src\appdoc\cli\main.py</span>
+                    <span class="file-language">python</span>
+                </div>
+                <div class="file-metrics">
+                    <div class="metric">
+                        <div class="value">153</div>
+                        <div class="label">Lines</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">3</div>
+                        <div class="label">Functions</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">0</div>
+                        <div class="label">Classes</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">100.0%</div>
+                        <div class="label">Coverage</div>
+                    </div>
+                </div>
+            </div>
+              <!-- Limit to first 50 files for performance -->
+            <div class="file-item">
+                <div class="file-header">
+                    <span class="file-path">C:\Github\AppDoc2\src\appdoc\analyzers\javascript_analyzer.py</span>
+                    <span class="file-language">python</span>
+                </div>
+                <div class="file-metrics">
+                    <div class="metric">
+                        <div class="value">154</div>
+                        <div class="label">Lines</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">5</div>
+                        <div class="label">Functions</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">1</div>
+                        <div class="label">Classes</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">100.0%</div>
+                        <div class="label">Coverage</div>
+                    </div>
+                </div>
+            </div>
+              <!-- Limit to first 50 files for performance -->
+            <div class="file-item">
+                <div class="file-header">
+                    <span class="file-path">C:\Github\AppDoc2\src\appdoc\reporting\__init__.py</span>
+                    <span class="file-language">python</span>
+                </div>
+                <div class="file-metrics">
+                    <div class="metric">
+                        <div class="value">121</div>
+                        <div class="label">Lines</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">4</div>
+                        <div class="label">Functions</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">0</div>
+                        <div class="label">Classes</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">100.0%</div>
+                        <div class="label">Coverage</div>
+                    </div>
+                </div>
+            </div>
+              <!-- Limit to first 50 files for performance -->
+            <div class="file-item">
+                <div class="file-header">
+                    <span class="file-path">C:\Github\AppDoc2\src\appdoc\__init__.py</span>
+                    <span class="file-language">python</span>
+                </div>
+                <div class="file-metrics">
+                    <div class="metric">
+                        <div class="value">4</div>
+                        <div class="label">Lines</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">0</div>
+                        <div class="label">Functions</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">0</div>
+                        <div class="label">Classes</div>
+                    </div>
+                    <div class="metric">
+                        <div class="value">0.0%</div>
+                        <div class="label">Coverage</div>
+                    </div>
+                </div>
+            </div>
+            
+            
+        </div>
+        
+    </div>
+
+    <div class="footer">
+        <p>Generated by <strong>AppDoc</strong> • Multi-language documentation analysis tool</p>
+    </div>
+
+    <script>
+        // Language Distribution Chart
+        
+        const languageCtx = document.getElementById('languageChart').getContext('2d');
+        new Chart(languageCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ["Python"],
+                datasets: [{
+                    data: [10],
+                    backgroundColor: [
+                        '#007acc',
+                        '#28a745',
+                        '#ffc107',
+                        '#dc3545',
+                        '#6c757d'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+
+        // Documentation Coverage Chart
+        
+        const coverageCtx = document.getElementById('coverageChart').getContext('2d');
+        new Chart(coverageCtx, {
+            type: 'bar',
+            data: {
+                labels: ["Python"],
+                datasets: [{
+                    label: 'Documentation Coverage (%)',
+                    data: [97.7],
+                    backgroundColor: 'rgba(0, 122, 204, 0.8)',
+                    borderColor: 'rgba(0, 122, 204, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+        
+    </script>
+</body>
+</html>
