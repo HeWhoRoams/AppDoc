@@ -6,15 +6,15 @@ This file supplies persistent workspace context to guide Copilot Chat's behavior
 
 1. Key Directories & Template Roles 📁
 
-The system relies on three files in the Templates/ directory to control ALL documentation output structure.
+The system relies on three files in the appdoc.templates/ directory to control ALL documentation output structure.
 
 Template Roles (Mandatory Reference)
 
-    architecture.template.md: Initial Analysis/Input Constraint. Defines the structure for the codebase's architectural summary.
+    appdoc.templates/architecture.template.md: Initial Analysis/Input Constraint. Defines the structure for the codebase's architectural summary.
 
-    logic-and-workflows.template.md: Drafting Constraint. Defines the required structure and style for function/class documentation (logic-and-workflows.md).
+    appdoc.templates/logic-and-workflows.template.md: Drafting Constraint. Defines the required structure and style for function/class documentation (logic-and-workflows.md).
 
-    audit.report.template.md: Final Output Constraint. Defines the structure and mandatory metrics for the final Audit Report.
+    appdoc.templates/audit.report.template.md: Final Output Constraint. Defines the structure and mandatory metrics for the final Audit Report.
 
 Workflow Prompts
 
