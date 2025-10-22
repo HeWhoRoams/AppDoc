@@ -1,7 +1,8 @@
 # AppDoc
 
 [![Documentation Status](https://img.shields.io/badge/docs-MkDocs-blue)](https://HeWhoRoams.github.io/AppDoc/)
-[![CI](https://img.shields.io/github/actions/workflow/status/HeWhoRoams/AppDoc/build-docs.yml)](https://github.com/HeWhoRoams/AppDoc/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/HeWhoRoams/AppDoc/ci.yml)](https://github.com/HeWhoRoams/AppDoc/actions)
+[![codecov](https://codecov.io/gh/HeWhoRoams/AppDoc/branch/main/graph/badge.svg)](https://codecov.io/gh/HeWhoRoams/AppDoc)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 AppDoc is a multi-language code documentation analysis tool that scans codebases to extract documentation coverage, metrics, and dependency insights. It provides both machine-readable JSON reports and interactive HTML visualizations.

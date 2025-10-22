@@ -113,6 +113,11 @@ The human-readable report includes:
 - **File Listing**: Individual file analysis with coverage percentages
 - **Interactive Elements**: Expandable sections and filtering
 
+!!! note "Sample HTML Report"
+    You can view a sample HTML report generated from analyzing the AppDoc source code itself at [appdoc_output/index.html](../appdoc_output/index.html).
+
+    *Note: Screenshots of the report interface will be added to the documentation site once deployed.*
+
 ## Integration with CI/CD
 
 ### GitHub Actions Example
