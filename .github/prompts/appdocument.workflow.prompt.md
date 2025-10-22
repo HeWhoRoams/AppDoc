@@ -328,7 +328,7 @@ Strictly follow `audit.report.template.md` with enhanced metrics:
 # [OUTPUT RULES]
 
 * **Only display summary + audit report** in final output.
-* All generated documents must be saved within `/$ARGUMENTS Documentation/` and suppressed from chat output.
+* All generated documents must be saved within `/$ARGUMENTS Documentation/` and creation confirmed through chat output.
 * `.meta/` folder contents are for internal use only, not shown to user.
 
 ---
