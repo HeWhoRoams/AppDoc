@@ -5,11 +5,14 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional, Set
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import networkx as nx
 
 from ..analyzers import (
     EXTENSION_TO_LANGUAGE,
     PythonAnalyzer,
     JavaScriptAnalyzer,
+    TypeScriptAnalyzer,
+    CSharpAnalyzer,
     BaseAnalyzer
 )
 from ..models import (
@@ -37,6 +40,8 @@ class Scanner:
         self.analyzers: Dict[str, BaseAnalyzer] = {
             'python': PythonAnalyzer(),
             'javascript': JavaScriptAnalyzer(),
+            'typescript': TypeScriptAnalyzer(),
+            'csharp': CSharpAnalyzer(),
         }
 
         self.analyzer_instances = list(self.analyzers.values())
@@ -88,6 +93,9 @@ class Scanner:
 
         duration = time.time() - start_time
 
+        # Build dependency graph
+        dependency_graph = self._build_dependency_graph(file_metrics, scan_path)
+
         return ScanResult(
             total_files=total_files,
             total_lines=total_lines,
@@ -96,6 +104,9 @@ class Scanner:
             duration_seconds=duration,
             scan_path=str(scan_path),
             timestamp=time.strftime('%Y-%m-%d %H:%M:%S'),
+            dependency_graph=dependency_graph,
+            files_scanned=len(file_metrics),
+            ignored_patterns=ignore_patterns if ignore_patterns else [],
         )
 
     def _discover_files(self, root_path: Path, analyzers: List[BaseAnalyzer],
@@ -226,3 +237,65 @@ class Scanner:
             lang: LanguageSummary(language=lang, **data)
             for lang, data in language_data.items()
         }
+
+    def _build_dependency_graph(self, file_metrics: List[FileMetric], scan_path: Path) -> Dict:
+        """Build a dependency graph from file metrics.
+
+        Returns:
+            NetworkX graph data in node-link format for JSON serialization.
+        """
+        # Create a directed graph
+        G = nx.DiGraph()
+
+        # Create a mapping from file paths to relative paths
+        file_to_rel = {}
+        for metric in file_metrics:
+            file_path = Path(metric.path)
+            rel_path = file_path.relative_to(scan_path)
+            file_to_rel[metric.path] = str(rel_path)
+
+        # Add nodes with metadata
+        for metric in file_metrics:
+            rel_path = file_to_rel[metric.path]
+            G.add_node(
+                rel_path,
+                language=metric.language,
+                lines=metric.lines,
+                functions=metric.functions,
+                classes=metric.classes,
+                coverage=metric.documentation_coverage
+            )
+
+        # Build a reverse index of files by module names
+        module_to_files = {}
+        for metric in file_metrics:
+            rel_path = file_to_rel[metric.path]
+
+            # Extract module name from file path (remove extension and use as potential module name)
+            module_name = Path(rel_path).with_suffix('').as_posix().replace('/', '.')
+
+            # Also consider the module names from dependencies
+            potential_modules = [module_name] + [d.split('.')[0] for d in metric.dependencies]
+
+            for mod in potential_modules:
+                if mod not in module_to_files:
+                    module_to_files[mod] = []
+                module_to_files[mod].append(rel_path)
+
+        # Add edges based on dependencies
+        for metric in file_metrics:
+            rel_path = file_to_rel[metric.path]
+
+            for dep in metric.dependencies:
+                # Find potential target files
+                dep_base = dep.split('.')[0]  # Get the base module name
+                if dep_base in module_to_files:
+                    target_files = module_to_files[dep_base]
+                    # For now, connect to first matching file (could be improved)
+                    if target_files:
+                        target = target_files[0]
+                        if target != rel_path:  # Avoid self-dependencies
+                            G.add_edge(rel_path, target, weight=1)
+
+        # Convert to node-link format for JSON serialization
+        return nx.node_link_data(G)

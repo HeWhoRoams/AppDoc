@@ -22,18 +22,24 @@ class BaseAnalyzer(ABC):
 # Import analyzers for registry
 from .python_analyzer import PythonAnalyzer
 from .javascript_analyzer import JavaScriptAnalyzer
+from .typescript_analyzer import TypeScriptAnalyzer
+from .csharp_analyzer import CSharpAnalyzer
 
 # Language extension mapping
 EXTENSION_TO_LANGUAGE = {
     '.py': 'python',
     '.js': 'javascript',
     '.mjs': 'javascript',
-    '.ts': 'javascript',  # Will be upgraded to TypeScript analyzer
+    '.ts': 'typescript',
+    '.tsx': 'typescript',
+    '.cs': 'csharp',
 }
 
 __all__ = [
     'BaseAnalyzer',
     'PythonAnalyzer',
     'JavaScriptAnalyzer',
+    'TypeScriptAnalyzer',
+    'CSharpAnalyzer',
     'EXTENSION_TO_LANGUAGE',
 ]

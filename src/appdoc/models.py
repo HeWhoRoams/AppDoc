@@ -58,6 +58,9 @@ class ScanResult:
     duration_seconds: float
     scan_path: str
     timestamp: str
+    dependency_graph: Dict = field(default_factory=dict)
+    files_scanned: int = 0
+    ignored_patterns: List[str] = field(default_factory=list)
 
     @property
     def total_functions(self) -> int:

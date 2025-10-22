@@ -3,6 +3,7 @@
 from pathlib import Path
 from typing import Dict, Any
 import json
+import networkx as nx
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from ..models import ScanResult
@@ -30,6 +31,7 @@ def generate_reports(result: ScanResult, output_dir: Path):
 def _generate_json_report(result: ScanResult, output_path: Path):
     """Generate JSON summary report."""
     data = {
+        "schema_version": "1.0",
         "scan_info": {
             "timestamp": result.timestamp,
             "scan_path": result.scan_path,
@@ -64,7 +66,8 @@ def _generate_json_report(result: ScanResult, output_path: Path):
                 "complexity": metric.complexity,
             }
             for metric in result.file_metrics
-        ]
+        ],
+        "dependency_graph": result.dependency_graph,
     }
 
     with open(output_path, 'w', encoding='utf-8') as f:

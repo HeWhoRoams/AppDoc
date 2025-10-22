@@ -5,6 +5,38 @@ All notable changes to AppDoc will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2025-10-22
+
+### Added
+- **Testing Layer**: Comprehensive test suite with pytest and coverage reporting
+  - Unit tests for Python analyzer (LOC, doc density, import detection)
+  - Integration tests for CLI scan execution and JSON output validation
+  - Continuous integration with GitHub Actions and status badge
+- **Dependency Graph Visualization**: Interactive graph showing file dependencies
+  - NetworkX-based graph construction from import relationships
+  - D3.js visualization in HTML reports with zoomable node-link diagrams
+  - Node size represents lines of code, colors indicate programming language
+- **Output Schema Versioning**: Versioned JSON outputs with `schema_version` field
+  - Updated JSON schema documentation with dependency graph structure
+  - Backward-compatible schema design for future extensions
+- **Performance & Profiling Metrics**: Enhanced reporting with runtime statistics
+  - Time elapsed, files scanned, and ignored patterns in HTML footer
+  - Performance metrics exported to JSON for benchmarking
+- **Language Analyzer Foundations**: Stubs for TypeScript and C# analyzers
+  - Extensible analyzer architecture for multi-language support
+  - TypeScript analyzer stub with `.ts`/`.tsx` support
+  - C# analyzer stub with `.cs` support for future Roslyn integration
+
+### Changed
+- **Major version bump** from 0.1.0 to 1.0.0 reflecting stable production-ready features
+- Updated development status classifier to reflect v1.0.0 milestone
+- Enhanced HTML report template with interactive dependency graph section
+
+### Performance
+- Optimized dependency graph building using NetworkX algorithms
+- Maintained concurrent file processing performance with new analyzers
+- Added performance metrics collection during scan operations
+
 ## [0.1.0] - 2025-10-22
 
 ### Added

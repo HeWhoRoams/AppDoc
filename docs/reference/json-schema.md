@@ -10,6 +10,7 @@ AppDoc generates a comprehensive summary in JSON format that can be consumed by 
 
 ```json
 {
+  "schema_version": "1.0",
   "scan_info": {
     // Scan metadata
   },
@@ -18,7 +19,10 @@ AppDoc generates a comprehensive summary in JSON format that can be consumed by 
   },
   "files": [
     // Per-file details
-  ]
+  ],
+  "dependency_graph": {
+    // NetworkX graph data for dependency visualization
+  }
 }
 ```
 
