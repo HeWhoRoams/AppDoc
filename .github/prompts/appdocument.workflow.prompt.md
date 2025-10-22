@@ -19,15 +19,15 @@ All artifacts must be **non-destructive**, **file-based**, **versioned**, and **
    The variable `$ARGUMENTS` (e.g., `PaymentService`) is the **Application Name**.  
 
 2. **Source Directory (Read-Only):**  
-   `/AppDocument/Templates`
+  `/AppDocument/appdoc.templates`
 
 3. **Required Templates (MANDATORY):**  
-   You must reference and conform to the structure, fields, and intent of the following templates:  
-   - `architecture.template.md`  
-   - `audit.report.template.md`  
-   - `logic-and-workflows.template.md`
-   - `inference-evidence.template.md` (NEW)
-   - `change-impact-map.template.md` (NEW)
+  You must reference and conform to the structure, fields, and intent of the following templates:  
+  - `appdoc.templates/architecture.template.md`  
+  - `appdoc.templates/audit.report.template.md`  
+  - `appdoc.templates/logic-and-workflows.template.md`
+  - `appdoc.templates/inference-evidence.template.md` (NEW)
+  - `appdoc.templates/change-impact-map.template.md` (NEW)
 
 4. **Target Scope (Data Extraction):**  
    The **entire current project context**, including:
