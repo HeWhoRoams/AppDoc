@@ -109200,9 +109200,9 @@
       "class_details": []
     }
   ],
-  "duration_seconds": 9.21,
+  "duration_seconds": 147.45,
   "scan_path": "C:\\Github\\DegreeAudit",
-  "timestamp": "2025-10-22 15:18:47",
+  "timestamp": "2025-10-22 16:00:30",
   "dependency_graph": {},
   "files_scanned": 8365,
   "ignored_patterns": [
