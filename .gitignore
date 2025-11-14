@@ -18,3 +18,7 @@ build/
 # OS files
 .DS_Store
 Thumbs.db
+.github/prompts/speckit.*
+.specify/
+specs/
+tests/
