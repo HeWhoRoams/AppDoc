@@ -4,7 +4,9 @@ param(
     [Parameter(Mandatory=$false)]
     [switch]$IncludeAssessment,
     [Parameter(Mandatory=$false)]
-    [string]$SampleDir
+    [string]$SampleDir,
+    [Parameter(Mandatory=$false)]
+    [switch]$SkipDiagrams
 )
 
 <#
@@ -24,9 +26,13 @@ param(
 .PARAMETER SampleDir
     Directory containing AI samples for assessment. Required if IncludeAssessment is used.
 
+.PARAMETER SkipDiagrams
+    Skip C4 architecture diagram generation.
+
 .EXAMPLE
     .\run-all-generators.ps1 -RootPath "c:\myproject"
     .\run-all-generators.ps1 -RootPath "c:\myproject" -IncludeAssessment -SampleDir "AppDoc.ai_samples"
+    .\run-all-generators.ps1 -RootPath "c:\myproject" -SkipDiagrams
 #>
 
 # Validation function to detect placeholder content and assess quality
@@ -143,6 +149,24 @@ foreach ($script in $scripts) {
     } else {
         Write-Warning "Script $script not found"
     }
+}
+
+# Generate C4 architecture diagrams (unless skipped)
+if (-not $SkipDiagrams) {
+    Write-Host "Generating C4 architecture diagrams..."
+    $c4Script = Join-Path $PSScriptRoot "generate-c4-diagrams.ps1"
+    if (Test-Path $c4Script) {
+        try {
+            $docsPath = Join-Path $RootPath "docs"
+            & $c4Script -CodebasePath $RootPath -OutputPath $docsPath -RenderMode Local -DiagramLevels All
+        } catch {
+            Write-Warning "Failed to generate C4 diagrams: $_"
+        }
+    } else {
+        Write-Verbose "C4 diagram generator not found (optional feature)"
+    }
+} else {
+    Write-Host "Skipping C4 diagram generation (SkipDiagrams flag set)" -ForegroundColor Gray
 }
 
 # Run assessment if requested
