@@ -1,0 +1,73 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        // General PowerShell commands
+        "pwsh": true,
+        "Set-ExecutionPolicy": true,
+        "Get-ChildItem": true,
+        "Get-Content": true,
+        "Copy-Item": true,
+        "Remove-Item": true,
+        "Test-Path": true,
+        "Write-Host": true,
+        
+        // Git commands
+        "git": true,
+        "git fetch": true,
+        "git status": true,
+        
+        // Phase 0: Analysis scripts (allow any path variation)
+        "**/analyze-repository.ps1": true,
+        "**/analyze-codebase.ps1": true,
+        "**/extract-config.ps1": true,
+        "**/generate-dependency-graph.ps1": true,
+        
+        // Phase 2: Generator scripts
+        "**/generate-overview.ps1": true,
+        "**/generate-api-inventory.ps1": true,
+        "**/generate-data-model.ps1": true,
+        "**/generate-config-catalog.ps1": true,
+        "**/generate-build-cookbook.ps1": true,
+        "**/generate-test-catalog.ps1": true,
+        "**/generate-debt-register.ps1": true,
+        "**/generate-dependencies-catalog.ps1": true,
+        "**/run-all-generators.ps1": true,
+        
+        // Phase 4: Validation scripts
+        "**/validate-api-inventory.ps1": true,
+        "**/validate-data-model.ps1": true,
+        "**/validate-config-catalog.ps1": true,
+        "**/validate-build-cookbook.ps1": true,
+        "**/validate-test-catalog.ps1": true,
+        "**/validate-debt-register.ps1": true,
+        "**/validate-overview.ps1": true,
+        
+        // Phase 6: Assessment scripts
+        "**/generate-assessment-report.ps1": true,
+        "**/synthesize-assessment-report.ps1": true,
+        
+        // Archived/legacy scripts
+        "**/catalog-samples.ps1": true,
+        "**/analyze-capability-gaps.ps1": true,
+        "**/generate-improvements.ps1": true,
+        "**/calculate-quality-metrics.ps1": true,
+        
+        // Allow .AppDoc path patterns (for when scripts are called with relative paths)
+        ".\\.AppDoc\\\\scripts\\\\powershell\\\\*.ps1": true,
+        ".AppDoc/scripts/powershell/*.ps1": true,
+        
+        // Allow common parameter patterns
+        "-RootPath": true,
+        "-Json": true,
+        "-Verbose": true,
+        "-ErrorAction": true
+    },
+    
+    // Enable Copilot chat features
+    "github.copilot.chat.executions.enabled": true,
+    
+    // Auto-approve safe file operations
+    "chat.tools.fileOperations.autoApprove": {
+        "read": true,
+        "list": true
+    }
+}

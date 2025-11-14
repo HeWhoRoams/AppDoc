@@ -1,0 +1,20 @@
+# Exclude test/example repositories
+LmsConnect-master/
+
+# Node modules
+node_modules/
+
+# Build outputs
+bin/
+obj/
+dist/
+build/
+
+# IDE files
+.vs/
+*.suo
+*.user
+
+# OS files
+.DS_Store
+Thumbs.db
