@@ -21,6 +21,10 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 
 **Summary:** Add prominent documentation about PowerShell Core (pwsh) requirement to prevent immediate user failures.
 
+**Complexity/Effort:** Low
+
+**Benefit/Reward:** High
+
 **Implementation Details:**
 1. Update `README.md` with a Prerequisites section at the top
 2. Add banner in `appdoc.begin.prompt.md` stating PowerShell Core requirement
@@ -64,6 +68,10 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 - [ ] Integrated into `appdoc.begin.prompt.md` workflow
 - [ ] Unit tests validate diagnostic checks work correctly
 
+**Complexity/Effort:** Medium
+
+**Benefit/Reward:** High
+
 ---
 
 ### HP-3: Improve Error Reporting
@@ -95,6 +103,10 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 - [ ] `--verbose` flag implemented for debugging
 - [ ] Documentation updated with error category reference
 - [ ] Validation scripts distinguish false positives from real issues
+
+**Complexity/Effort:** Medium
+
+**Benefit/Reward:** High
 
 ---
 
@@ -129,6 +141,23 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 - [ ] Document linked from README.md and prompt files
 - [ ] Contribution guide included for adding framework support
 - [ ] Automated test validates support matrix accuracy
+
+**Complexity/Effort:** Low
+
+**Benefit/Reward:** Medium
+
+---
+
+## Audit Suggestions From Recent Run
+
+The following practical improvements were observed during the LmsConnect run and are recommended to be added to the roadmap as actionable items.
+
+- AST migration pilot (C# Roslyn for `data-model` extraction): **Complexity/Effort:** High — **Benefit/Reward:** High
+- CI preflight & generator linting (syntax checks + unit tests for parsing patterns): **Complexity/Effort:** Low-Medium — **Benefit/Reward:** High
+- Non-destructive dry-run / preview mode (`docs_preview/`) + `--preview` flag: **Complexity/Effort:** Low — **Benefit/Reward:** High
+- Structured cross-validation (compare generated entities against compiled assemblies or NHibernate maps): **Complexity/Effort:** Medium — **Benefit/Reward:** High
+- Harden PowerShell parsing helpers (move complex parsing to helper modules or external analyzers): **Complexity/Effort:** Low-Medium — **Benefit/Reward:** Medium
+
 
 ---
 
@@ -165,6 +194,10 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 - [ ] Accuracy validation shows 95%+ improvement over regex
 - [ ] Documentation includes AST parser usage examples
 
+**Complexity/Effort:** High
+
+**Benefit/Reward:** High
+
 ---
 
 ### MP-2: Add Spring Boot/Django/Flask Detection
@@ -200,6 +233,10 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 - [ ] `FRAMEWORK_SUPPORT.md` updated with new framework support
 - [ ] API inventory template includes framework-specific sections
 - [ ] Test suite includes sample projects for each framework
+
+**Complexity/Effort:** Medium
+
+**Benefit/Reward:** High
 
 ---
 
@@ -239,6 +276,10 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 - [ ] All templates updated to include diagram sections
 - [ ] Diagrams validated against 3+ real-world projects
 - [ ] Documentation includes diagram customization guide
+
+**Complexity/Effort:** Medium
+
+**Benefit/Reward:** Medium
 
 ---
 
@@ -282,6 +323,10 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 - [ ] Audit trail logged to `generation-log.json`
 - [ ] Documentation includes incremental mode usage guide
 
+**Complexity/Effort:** Medium
+
+**Benefit/Reward:** High
+
 ---
 
 ## Low Priority Features
@@ -315,6 +360,10 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 - [ ] API inventory template includes GraphQL/gRPC sections
 - [ ] Tested against Apollo Server, Hot Chocolate, grpc-node projects
 - [ ] Documentation includes GraphQL/gRPC examples
+
+**Complexity/Effort:** Medium
+
+**Benefit/Reward:** Medium
 
 ---
 
@@ -350,6 +399,10 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 - [ ] GitHub Action workflow created for CI integration
 - [ ] Documentation includes quality scoring guide
 - [ ] Dashboard validated against 5+ real projects
+
+**Complexity/Effort:** Medium
+
+**Benefit/Reward:** Medium
 
 ---
 
@@ -391,6 +444,10 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 - [ ] Documentation includes extension usage guide
 - [ ] Telemetry dashboard shows user adoption metrics
 
+**Complexity/Effort:** High
+
+**Benefit/Reward:** Medium
+
 ---
 
 ## Experimental Features
@@ -431,6 +488,10 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 - [ ] Cost tracking dashboard shows API usage
 - [ ] Documentation includes AI enhancement guide with examples
 
+**Complexity/Effort:** High
+
+**Benefit/Reward:** High
+
 ---
 
 ### EX-2: Multi-Repository Documentation Aggregation
@@ -465,6 +526,10 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 - [ ] Parallel generation reduces total time by 50%+
 - [ ] Tested with 5+ microservice architectures
 - [ ] Documentation includes multi-repo setup guide
+
+**Complexity/Effort:** High
+
+**Benefit/Reward:** High
 
 ---
 
