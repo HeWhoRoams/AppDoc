@@ -213,9 +213,36 @@ try {
             }
             
             # Extract description from XML /// <summary> comments
+            # Improved to handle multi-line comments and attributes between comment and method
             $description = "API endpoint"
-            if ($methodContext -match '///\s*<summary>\s*([^<]+)</summary>') {
-                $description = $Matches[1].Trim() -replace '///\s*', '' -replace '\s+', ' '
+            $lookBehind = $content.Substring([Math]::Max(0, $match.Index - 500), [Math]::Min(500, $match.Index))
+            
+            # Extract all XML doc lines (///) before the method
+            $xmlDocLines = @()
+            $lines = ($lookBehind -split "`n")
+            for ($idx = $lines.Count - 1; $idx -ge 0; $idx--) {
+                if ($lines[$idx] -match '^\\s*///') {
+                    $xmlDocLines = @($lines[$idx]) + $xmlDocLines
+                } elseif ($lines[$idx] -match '^\\s*\\[' -or $lines[$idx] -match '^\\s*$') {
+                    # Skip attribute lines and blank lines
+                    continue
+                } else {
+                    break
+                }
+            }
+            
+            if ($xmlDocLines.Count -gt 0) {
+                $xmlDoc = $xmlDocLines -join "`n"
+                # Extract summary content
+                if ($xmlDoc -match '///\\s*<summary>\\s*([\\s\\S]+?)</summary>') {
+                    $summaryContent = $Matches[1].Trim()
+                    # Remove XML tags and triple slashes
+                    $description = $summaryContent -replace '///\\s*', '' -replace '<[^>]+>', '' -replace '\\s+', ' ' -replace '^\\s+', ''
+                }
+                # If no summary tag, try to extract first meaningful comment line
+                elseif ($xmlDoc -match '///\\s*([^<@][^\\n]{10,})') {
+                    $description = $Matches[1].Trim()
+                }
             }
             
             $inventory.endpoints += @{
@@ -322,6 +349,153 @@ try {
             }
         }
     }
+    
+    # Scan for external API dependencies (HttpClient usage in service layer)
+    Write-Progress -Activity "Generating API Inventory" -Status "Scanning for external API calls..." -PercentComplete 35
+    
+    $externalApis = @()
+    $serviceFiles = Get-ChildItem -Path $RootPath -Recurse -Include "*.cs","*.ts","*.js" -ErrorAction Stop |
+        Where-Object { $_.FullName -notmatch '(\\node_modules\\|\\bin\\|\\obj\\|\\__pycache__)' -and
+                       ($_.Name -match "Service|Client|Api|Provider") }
+    
+    foreach ($file in $serviceFiles) {
+        $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
+        if (-not $content) { continue }
+        
+        $relativePath = $file.FullName.Replace($RootPath, "").TrimStart('\', '/')
+        
+        # C# HttpClient patterns
+        if ($file.Extension -eq '.cs') {
+            # Pattern: httpClient.GetAsync("url") or PostAsync, PutAsync, DeleteAsync
+            $httpCalls = [regex]::Matches($content, '(?:httpClient|_client|client)\.(Get|Post|Put|Delete|Patch)Async\s*\(\s*["\']([^"\']+)["\']')
+            foreach ($match in $httpCalls) {
+                $method = $match.Groups[1].Value.Replace('Async', '').ToUpper()
+                $url = $match.Groups[2].Value
+                $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
+                
+                $externalApis += @{
+                    method = $method
+                    url = $url
+                    file = $file.Name
+                    filePath = $relativePath
+                    lineNumber = $lineNumber
+                    type = "HttpClient"
+                }
+            }
+            
+            # Pattern: new HttpRequestMessage(HttpMethod.METHOD, "url")
+            $httpRequests = [regex]::Matches($content, 'new\\s+HttpRequestMessage\\s*\\(\\s*HttpMethod\\.(Get|Post|Put|Delete|Patch)\\s*,\\s*["\']([^"\']+)["\']')
+            foreach ($match in $httpRequests) {
+                $method = $match.Groups[1].Value.ToUpper()
+                $url = $match.Groups[2].Value
+                $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
+                
+                if ($externalApis | Where-Object { $_.url -eq $url -and $_.lineNumber -eq $lineNumber }) {
+                    continue # Skip duplicates
+                }
+                
+                $externalApis += @{
+                    method = $method
+                    url = $url
+                    file = $file.Name
+                    filePath = $relativePath
+                    lineNumber = $lineNumber
+                    type = "HttpRequestMessage"
+                }
+            }
+        }
+        
+        # JavaScript/TypeScript axios, fetch patterns
+        if ($file.Extension -in @('.ts', '.js')) {
+            # Pattern: axios.get('url') or fetch('url', { method: 'POST' })
+            $axiosCalls = [regex]::Matches($content, 'axios\\.(get|post|put|delete|patch)\\s*\\(\\s*["\' + "'" + ']([^"' + "'" + ']+)["\' + "'" + ']')
+            foreach ($match in $axiosCalls) {
+                $method = $match.Groups[1].Value.ToUpper()
+                $url = $match.Groups[2].Value
+                $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
+                
+                $externalApis += @{
+                    method = $method
+                    url = $url
+                    file = $file.Name
+                    filePath = $relativePath
+                    lineNumber = $lineNumber
+                    type = "axios"
+                }
+            }
+            
+            $fetchCalls = [regex]::Matches($content, 'fetch\\s*\\(\\s*["\' + "'" + ']([^"' + "'" + ']+)["\' + "'" + ']')
+            foreach ($match in $fetchCalls) {
+                $url = $match.Groups[1].Value
+                $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
+                
+                $externalApis += @{
+                    method = "GET" # Default, could be enhanced
+                    url = $url
+                    file = $file.Name
+                    filePath = $relativePath
+                    lineNumber = $lineNumber
+                    type = "fetch"
+                }
+            }
+        }
+    }
+    
+    # Scan Startup.cs for OAuth/Authentication middleware
+    Write-Progress -Activity "Generating API Inventory" -Status "Detecting authentication..." -PercentComplete 40
+    
+    $authInfo = @{
+        oauth = $false
+        jwtBearer = $false
+        apiKey = $false
+        basic = $false
+        details = @()
+    }
+    
+    $startupFiles = Get-ChildItem -Path $RootPath -Recurse -Include "Startup.cs","Program.cs" -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -notmatch '(\\bin\\|\\obj\\)' }
+    
+    foreach ($file in $startupFiles) {
+        $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
+        if (-not $content) { continue }
+        
+        # Detect JWT Bearer authentication
+        if ($content -match 'AddJwtBearer|UseJwtBearerAuthentication') {
+            $authInfo.jwtBearer = $true
+            $authInfo.details += "JWT Bearer authentication configured in $($file.Name)"
+            
+            # Extract authority/issuer if present
+            if ($content -match 'Authority\\s*=\\s*["\']([^"\']+)["\']') {
+                $authInfo.details += "JWT Authority: $($Matches[1])"
+            }
+        }
+        
+        # Detect OAuth
+        if ($content -match 'AddOAuth|UseOAuthAuthentication') {
+            $authInfo.oauth = $true
+            $authInfo.details += "OAuth configured in $($file.Name)"
+        }
+        
+        # Detect API Key middleware
+        if ($content -match 'UseApiKey|ApiKeyAuthentication') {
+            $authInfo.apiKey = $true
+            $authInfo.details += "API Key authentication configured in $($file.Name)"
+        }
+        
+        # Detect Basic Auth
+        if ($content -match 'UseBasicAuthentication|AddBasicAuth') {
+            $authInfo.basic = $true
+            $authInfo.details += "Basic authentication configured in $($file.Name)"
+        }
+        
+        # Detect authorization policies
+        $policies = [regex]::Matches($content, 'AddPolicy\\(["\']([^"\']+)["\']')
+        if ($policies.Count -gt 0) {
+            $policyNames = $policies | ForEach-Object { $_.Groups[1].Value }
+            $authInfo.details += "Authorization Policies: $($policyNames -join ', ')"
+        }
+    }
+    
 } catch {
     Write-Warning "Error scanning API files: $_"
 }

@@ -22,6 +22,51 @@ if (Test-Path $helpersPath) {
 
 Write-Host "⚙️  Generating Config Catalog..." -ForegroundColor Cyan
 
+# Helper function to classify if a config is likely required (heuristic-based)
+function Test-IsRequiredConfig {
+    param(
+        [string]$Key,
+        [string]$Value,
+        [string]$Type
+    )
+    
+    # Required patterns
+    $requiredKeywords = @(
+        'Connection', 'Database', 'DB', 'DataSource',
+        'Host', 'Server', 'Port', 'Url', 'BaseUrl', 'ApiUrl',
+        'Secret', 'Key', 'Token', 'Auth',
+        'Required', 'Mandatory'
+    )
+    
+    # Optional patterns
+    $optionalKeywords = @(
+        'Debug', 'Trace', 'Log', 'Cache', 'Timeout',
+        'Optional', 'Feature', 'Enable', 'Disable'
+    )
+    
+    # Check if key contains required keywords
+    foreach ($keyword in $requiredKeywords) {
+        if ($Key -match $keyword) {
+            return $true
+        }
+    }
+    
+    # Check if key contains optional keywords
+    foreach ($keyword in $optionalKeywords) {
+        if ($Key -match $keyword) {
+            return $false
+        }
+    }
+    
+    # Connection strings are always required
+    if ($Type -match 'Connection String') {
+        return $true
+    }
+    
+    # Default to optional for safety
+    return $false
+}
+
 # Validate root path
 if (-not (Test-Path $RootPath)) {
     Write-Error "Root path does not exist: $RootPath"
@@ -76,12 +121,15 @@ try {
                 foreach ($line in $lines) {
                     $lineNum++
                     if ($line -match "^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$") {
+                        $key = $matches[1].Trim()
+                        $value = $matches[2].Trim()
                         $configs += @{
-                            key = $matches[1].Trim()
-                            value = $matches[2].Trim()
+                            key = $key
+                            value = $value
                             file = $relativePath
                             type = "Environment Variable"
                             source = "$relativePath`:$lineNum"
+                            required = Test-IsRequiredConfig -Key $key -Value $value -Type "Environment Variable"
                         }
                     }
                 }
@@ -101,6 +149,7 @@ try {
                                     file = $relativePath
                                     type = ".NET appSettings"
                                     source = "$relativePath`:appSettings/$($setting.key)"
+                                    required = Test-IsRequiredConfig -Key $setting.key -Value $setting.value -Type ".NET appSettings"
                                 }
                             }
                         }
@@ -110,14 +159,25 @@ try {
                     if ($xml.configuration.connectionStrings) {
                         foreach ($conn in $xml.configuration.connectionStrings.add) {
                             if ($conn.name) {
-                                # Mask sensitive parts of connection string
-                                $maskedValue = $conn.connectionString -replace '(Password|PWD)=[^;]+', '$1=***'
+                                # Mask sensitive parts of connection string - improved to handle more variations
+                                $maskedValue = $conn.connectionString `
+                                    -replace '(Password|PWD|Pwd|password|pwd)=[^;]+', '$1=***' `
+                                    -replace '(User ID|UID|Uid|user id|uid)=[^;]+', '$1=***' `
+                                    -replace '(API[_\s]?Key|ApiKey|api[_\s]?key)=[^;]+', '$1=***' `
+                                    -replace '(Secret|secret|SECRET)=[^;]+', '$1=***' `
+                                    -replace '(Token|token|TOKEN)=[^;]+', '$1=***'
+                                
+                                # Determine if this is likely a required connection (heuristic based on name)
+                                $isRequired = $conn.name -match '(Default|Main|Primary|Production|Prod|Database|DB)' -or `
+                                              $conn.connectionString -match 'Initial Catalog|Database='
+                                
                                 $configs += @{
                                     key = $conn.name
                                     value = $maskedValue
                                     file = $relativePath
                                     type = ".NET Connection String"
                                     source = "$relativePath`:connectionStrings/$($conn.name)"
+                                    required = $isRequired
                                 }
                             }
                         }

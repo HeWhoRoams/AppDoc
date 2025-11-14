@@ -39,9 +39,139 @@ if (-not $initialized) {
 Write-Progress -Activity "Generating Build Cookbook" -Status "Scanning build files..." -PercentComplete 0
 
 $commands = @()
+$prerequisites = @()
+$cicdInfo = @()
 
 try {
+    # Extract prerequisites from .csproj files
+    Write-Progress -Activity "Generating Build Cookbook" -Status "Extracting prerequisites..." -PercentComplete 5
+    
+    $csprojFiles = Get-ChildItem -Path $RootPath -Recurse -Filter "*.csproj" -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -notmatch '(\\node_modules\\|\\bin\\|\\obj\\|\\packages\\)' } |
+        Select-Object -First 1  # Check first project for framework version
+    
+    if ($csprojFiles.Count -gt 0) {
+        try {
+            [xml]$projXml = Get-Content $csprojFiles[0].FullName -ErrorAction Stop
+            
+            # Extract TargetFramework or TargetFrameworkVersion
+            $targetFramework = $projXml.SelectSingleNode("//TargetFramework")
+            $targetFrameworkVersion = $projXml.SelectSingleNode("//TargetFrameworkVersion")
+            
+            if ($targetFramework) {
+                $fwValue = $targetFramework.InnerText
+                if ($fwValue -match 'net(\d+\.\d+)') {
+                    $prerequisites += ".NET $($Matches[1]) SDK or later"
+                } elseif ($fwValue -match 'netcoreapp(\d+\.\d+)') {
+                    $prerequisites += ".NET Core $($Matches[1]) SDK or later"
+                } elseif ($fwValue -match 'net(\d+)') {
+                    $dotnetVersion = $Matches[1]
+                    $prerequisites += ".NET $dotnetVersion SDK or later"
+                }
+            }
+            
+            if ($targetFrameworkVersion) {
+                $fwValue = $targetFrameworkVersion.InnerText
+                if ($fwValue -match 'v(\d+\.\d+)') {
+                    $version = $Matches[1]
+                    $prerequisites += ".NET Framework $version Developer Pack"
+                    if ([double]$version -ge 4.8) {
+                        $prerequisites += "Visual Studio 2019 or later / MSBuild 16.0+"
+                    } elseif ([double]$version -ge 4.5) {
+                        $prerequisites += "Visual Studio 2013 or later / MSBuild 12.0+"
+                    }
+                }
+            }
+            
+            # Check for specific package references that indicate prerequisites
+            $packageRefs = $projXml.SelectNodes("//PackageReference")
+            foreach ($pkg in $packageRefs) {
+                $pkgName = $pkg.GetAttribute("Include")
+                if ($pkgName -match 'EntityFramework' -and $prerequisites -notcontains 'SQL Server or compatible database') {
+                    $prerequisites += "SQL Server or compatible database"
+                }
+                if ($pkgName -match 'NHibernate' -and $prerequisites -notcontains 'Database (SQL Server/PostgreSQL/MySQL)') {
+                    $prerequisites += "Database (SQL Server/PostgreSQL/MySQL)"
+                }
+            }
+        } catch {
+            Write-Warning "Failed to parse .csproj for prerequisites: $_"
+        }
+    }
+    
+    # Check for package.json for Node.js prerequisites
+    $packageJson = Join-Path $RootPath "package.json"
+    if (Test-Path $packageJson) {
+        try {
+            $pkg = Get-Content $packageJson | ConvertFrom-Json
+            if ($pkg.engines.node) {
+                $prerequisites += "Node.js $($pkg.engines.node)"
+            } else {
+                $prerequisites += "Node.js (version not specified)"
+            }
+            if ($pkg.engines.npm) {
+                $prerequisites += "npm $($pkg.engines.npm)"
+            }
+        } catch {
+            $prerequisites += "Node.js and npm"
+        }
+    }
+    
+    # Scan for CI/CD configuration files
+    Write-Progress -Activity "Generating Build Cookbook" -Status "Detecting CI/CD..." -PercentComplete 10
+    
+    # GitHub Actions
+    $ghActionsPath = Join-Path $RootPath ".github\workflows"
+    if (Test-Path $ghActionsPath) {
+        $workflowFiles = Get-ChildItem -Path $ghActionsPath -Filter "*.yml" -ErrorAction SilentlyContinue
+        foreach ($wf in $workflowFiles) {
+            try {
+                $content = Get-Content $wf.FullName -Raw
+                $cicdInfo += @{
+                    platform = "GitHub Actions"
+                    file = $wf.Name
+                    path = ".github\workflows\$($wf.Name)"
+                    details = "Workflow: $($wf.BaseName)"
+                }
+            } catch { }
+        }
+    }
+    
+    # GitLab CI
+    $gitlabCi = Join-Path $RootPath ".gitlab-ci.yml"
+    if (Test-Path $gitlabCi) {
+        $cicdInfo += @{
+            platform = "GitLab CI/CD"
+            file = ".gitlab-ci.yml"
+            path = ".gitlab-ci.yml"
+            details = "GitLab pipeline configuration"
+        }
+    }
+    
+    # Azure Pipelines
+    $azurePipelines = Join-Path $RootPath "azure-pipelines.yml"
+    if (Test-Path $azurePipelines) {
+        $cicdInfo += @{
+            platform = "Azure Pipelines"
+            file = "azure-pipelines.yml"
+            path = "azure-pipelines.yml"
+            details = "Azure DevOps pipeline"
+        }
+    }
+    
+    # Jenkins
+    $jenkinsfile = Join-Path $RootPath "Jenkinsfile"
+    if (Test-Path $jenkinsfile) {
+        $cicdInfo += @{
+            platform = "Jenkins"
+            file = "Jenkinsfile"
+            path = "Jenkinsfile"
+            details = "Jenkins pipeline configuration"
+        }
+    }
+    
     # Check package.json (Node.js/npm)
+    Write-Progress -Activity "Generating Build Cookbook" -Status "Scanning package.json..." -PercentComplete 15
     $packageJson = Join-Path $RootPath "package.json"
     if (Test-Path $packageJson) {
         $pkg = Get-Content $packageJson | ConvertFrom-Json
@@ -192,15 +322,37 @@ $buildStepsContent = if ($commands.Count -gt 0) {
 
 # Update template
 $content = Get-Content -Path $outputPath -Raw
+
+# Prerequisites section
+$prereqPlaceholder = "_No prerequisites detected. Consult project README or documentation._"
+if ($prerequisites.Count -gt 0) {
+    $prereqContent = ($prerequisites | ForEach-Object { "- $_" }) -join "`r`n"
+    $content = $content -replace [regex]::Escape($prereqPlaceholder), $prereqContent
+}
+
+# CI/CD section
+$cicdPlaceholder = "_No CI/CD configuration detected. Check for .github/workflows, .gitlab-ci.yml, azure-pipelines.yml, or Jenkinsfile._"
+if ($cicdInfo.Count -gt 0) {
+    $cicdContent = "**Detected CI/CD Platforms:**`r`n`r`n"
+    foreach ($ci in $cicdInfo) {
+        $cicdContent += "- **$($ci.platform)**: ``$($ci.path)`` - $($ci.details)`r`n"
+    }
+    $content = $content -replace [regex]::Escape($cicdPlaceholder), $cicdContent
+}
+
+# Build steps
 if ($buildStepsContent) {
     # Replace with Windows line endings
     $oldText = "| Step | Command | Description | Estimated Time |`r`n|------|---------|-------------|----------------|`r`n`r`n_No build steps detected. Check for package.json scripts, Makefile, or build configuration files._"
     $newText = "| Step | Command | Description | Estimated Time |`r`n|------|---------|-------------|----------------|`r`n" + $buildStepsContent
     $content = Update-TemplateSection -Content $content -PlaceholderText $oldText -NewContent $newText
 }
+
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 Write-Progress -Activity "Generating Build Cookbook" -Status "Complete" -PercentComplete 100
 Write-Host "✅ Build cookbook generated: $outputPath" -ForegroundColor Green
 Write-Host "   Commands found: $($commands.Count)" -ForegroundColor Gray
+Write-Host "   Prerequisites detected: $($prerequisites.Count)" -ForegroundColor Gray
+Write-Host "   CI/CD platforms detected: $($cicdInfo.Count)" -ForegroundColor Gray

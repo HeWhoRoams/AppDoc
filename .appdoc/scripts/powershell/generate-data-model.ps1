@@ -111,7 +111,7 @@ try {
                     $braceCount = 0
                     $inClass = $false
                     
-                    for ($j = $i; $j -lt [Math]::Min($i + 500, $lines.Count); $j++) {
+                    for ($j = $i; $j -lt [Math]::Min($i + 2000, $lines.Count); $j++) {
                         $currentLine = $lines[$j]
                         
                         # Track brace depth
@@ -123,16 +123,28 @@ try {
                         
                         # Only extract properties when we're inside the class body
                         if ($inClass -and $braceCount -eq 1) {
-                            # Match C# auto-properties: public Type PropertyName { get; set; }
-                            if ($currentLine -match '^\s*public\s+([\w<>\[\]?]+)\s+(\w+)\s*\{\s*get') {
-                                $propType = $Matches[1]
-                                $propName = $Matches[2]
-                                $properties += "${propName}: ${propType}"
+                            # Match C# auto-properties: public/protected/internal Type PropertyName { get; set; }
+                            if ($currentLine -match '^\s*(public|protected|internal|private)\s+(virtual\s+)?([\w<>\[\]?]+)\s+(\w+)\s*\{\s*get') {
+                                $propType = $Matches[3]
+                                $propName = $Matches[4]
+                                
+                                # Extract validation attributes from previous lines
+                                $validations = @()
+                                if ($j -gt 0 -and $lines[$j-1] -match '\[Required\]') { $validations += 'Required' }
+                                if ($j -gt 0 -and $lines[$j-1] -match '\[StringLength\((\d+)') { $validations += "MaxLength:$($Matches[1])" }
+                                if ($j -gt 0 -and $lines[$j-1] -match '\[Range\(([^)]+)\)') { $validations += "Range:$($Matches[1])" }
+                                if ($j -gt 0 -and $lines[$j-1] -match '\[ForeignKey\(["']([^"']+)["']\)') { $validations += "FK:$($Matches[1])" }
+                                
+                                $propInfo = "${propName}: ${propType}"
+                                if ($validations.Count -gt 0) {
+                                    $propInfo += " [" + ($validations -join ', ') + "]"
+                                }
+                                $properties += $propInfo
                             }
-                            # Match C# fields: public Type FieldName;
-                            elseif ($currentLine -match '^\s*public\s+([\w<>\[\]?]+)\s+(\w+)\s*;') {
-                                $propType = $Matches[1]
-                                $propName = $Matches[2]
+                            # Match C# fields: public/protected/internal Type FieldName;
+                            elseif ($currentLine -match '^\s*(public|protected|internal)\s+([\w<>\[\]?]+)\s+(\w+)\s*;') {
+                                $propType = $Matches[2]
+                                $propName = $Matches[3]
                                 $properties += "${propName}: ${propType}"
                             }
                         }
@@ -208,6 +220,118 @@ try {
             }
         }
     }
+    
+    # Scan NHibernate/FluentNHibernate mapping files
+    Write-Progress -Activity "Generating Data Model" -Status "Scanning NHibernate mappings..." -PercentComplete 30
+    
+    # Look for .hbm.xml files (classical NHibernate)
+    $hbmFiles = Get-ChildItem -Path $RootPath -Recurse -Filter "*.hbm.xml" -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -notmatch '(\\bin\\|\\obj\\|\\packages\\)' }
+    
+    foreach ($file in $hbmFiles) {
+        try {
+            [xml]$xmlContent = Get-Content $file.FullName -Raw -ErrorAction Stop
+            $ns = @{hbm='urn:nhibernate-mapping-2.2'}
+            
+            $classes = Select-Xml -Xml $xmlContent -XPath "//hbm:class" -Namespace $ns
+            foreach ($class in $classes) {
+                $className = $class.Node.name
+                $tableName = $class.Node.table
+                $relativePath = $file.FullName.Replace($RootPath, "").TrimStart('\\', '/')
+                
+                # Extract properties
+                $properties = @()
+                $propNodes = Select-Xml -Xml $class.Node -XPath ".//hbm:property" -Namespace $ns
+                foreach ($prop in $propNodes) {
+                    $propName = $prop.Node.name
+                    $propType = $prop.Node.type
+                    if (-not $propType) { $propType = 'string' }
+                    $properties += "${propName}: ${propType}"
+                }
+                
+                # Extract many-to-one relationships
+                $manyToOneNodes = Select-Xml -Xml $class.Node -XPath ".//hbm:many-to-one" -Namespace $ns
+                foreach ($rel in $manyToOneNodes) {
+                    $relName = $rel.Node.name
+                    $relClass = $rel.Node.class
+                    $properties += "${relName}: ${relClass} [FK]"
+                }
+                
+                $models += @{
+                    type = 'entity'
+                    name = $className
+                    file = $file.Name
+                    filePath = $relativePath
+                    lineNumber = 1
+                    properties = $properties
+                    example = "Table: $tableName"
+                }
+            }
+        } catch {
+            Write-Warning "Failed to parse NHibernate mapping $($file.Name): $_"
+        }
+    }
+    
+    # Look for FluentNHibernate mapping files (*Map.cs)
+    $mapFiles = Get-ChildItem -Path $RootPath -Recurse -Filter "*Map.cs" -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -notmatch '(\\bin\\|\\obj\\|\\packages\\|\\node_modules\\)' }
+    
+    foreach ($file in $mapFiles) {
+        try {
+            $content = Get-Content $file.FullName -Raw -ErrorAction Stop
+            $relativePath = $file.FullName.Replace($RootPath, "").TrimStart([char[]]@(92, 47))
+            
+            # Match FluentNHibernate mapping: ClassMap<EntityName> or EntityMap<EntityName>
+            if ($content -match 'class\s+(\w*Map)\s*:\s*(?:ClassMap|EntityMap)<(\w+)>') {
+                $mapClass = $Matches[1]
+                $entityName = $Matches[2]
+                
+                # Find the constructor or mapping method
+                $mappingContext = $content
+                
+                # Extract property mappings: Map(x => x.PropertyName)
+                $properties = @()
+                $propMappings = [regex]::Matches($mappingContext, 'Map\(\w+\s*=>\s*\w+\.(\w+)\)')
+                foreach ($prop in $propMappings) {
+                    $propName = $prop.Groups[1].Value
+                    $properties += "${propName}: string"
+                }
+                
+                # Extract reference mappings: References(x => x.RelatedEntity)
+                $refMappings = [regex]::Matches($mappingContext, 'References\(\w+\s*=>\s*\w+\.(\w+)\)')
+                foreach ($ref in $refMappings) {
+                    $refName = $ref.Groups[1].Value
+                    $properties += "${refName}: Reference [FK]"
+                }
+                
+                # Extract collection mappings: HasMany(x => x.Collection)
+                $collMappings = [regex]::Matches($mappingContext, 'HasMany\(\w+\s*=>\s*\w+\.(\w+)\)')
+                foreach ($coll in $collMappings) {
+                    $collName = $coll.Groups[1].Value
+                    $properties += "${collName}: Collection [1:N]"
+                }
+                
+                # Extract table name: Table("TableName")
+                $tableName = $null
+                if ($mappingContext -match 'Table\(["\']([^"\' ]+)["\']\)') {
+                    $tableName = $Matches[1]
+                }
+                
+                $models += @{
+                    type = 'entity'
+                    name = $entityName
+                    file = $file.Name
+                    filePath = $relativePath
+                    lineNumber = 1
+                    properties = $properties
+                    example = if ($tableName) { "Table: $tableName (FluentNHibernate)" } else { "FluentNHibernate entity" }
+                }
+            }
+        } catch {
+            Write-Warning "Failed to parse FluentNHibernate mapping $($file.Name): $_"
+        }
+    }
+    
 } catch {
     Write-Warning "Error scanning model files: $_"
 }
