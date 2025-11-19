@@ -75,7 +75,7 @@ Use this checklist to guide your `grep_search` and `read_file` analysis:
 **BEFORE (Script-Generated):**
 ```plantuml
 @startuml C4_Context
-!include [https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml](https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml)
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 title System Context diagram for InventoryManager
 
 System(inventory_manager, "InventoryManager", "Software system: InventoryManager")
