@@ -1,0 +1,481 @@
+{
+  "generatedAt": "2026-02-17T14:11:56-05:00",
+  "summary": {
+    "total": 21,
+    "byCategory": {
+      "ENVIRONMENT_ERROR": 1,
+      "NOT_FOUND": 10,
+      "DETECTION_PATTERN_MISMATCH": 10
+    },
+    "bySeverity": {
+      "Warning": 20,
+      "Info": 1
+    },
+    "hasErrors": false,
+    "hasWarnings": true
+  },
+  "events": [
+    {
+      "timestamp": "2026-02-17T14:11:55-05:00",
+      "category": "ENVIRONMENT_ERROR",
+      "severity": "Info",
+      "component": "orchestrator",
+      "message": "Diagnostics initialized",
+      "filePath": "",
+      "details": {
+        "rootPath": "tests/powershell/fixtures/sample-dotnet-app",
+        "outputPath": "tests\\powershell\\fixtures\\sample-dotnet-app\\docs"
+      }
+    },
+    {
+      "timestamp": "2026-02-17T14:11:55-05:00",
+      "category": "NOT_FOUND",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Evidence missing: start-here",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\tests\\powershell\\fixtures\\sample-dotnet-app\\docs\\evidence\\start-here.evidence.json",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:55-05:00",
+      "category": "NOT_FOUND",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Evidence missing: overview",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\tests\\powershell\\fixtures\\sample-dotnet-app\\docs\\evidence\\overview.evidence.json",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:55-05:00",
+      "category": "NOT_FOUND",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Evidence missing: api-inventory",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\tests\\powershell\\fixtures\\sample-dotnet-app\\docs\\evidence\\api-inventory.evidence.json",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:55-05:00",
+      "category": "NOT_FOUND",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Evidence missing: data-model",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\tests\\powershell\\fixtures\\sample-dotnet-app\\docs\\evidence\\data-model.evidence.json",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:55-05:00",
+      "category": "NOT_FOUND",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Evidence missing: config-catalog",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\tests\\powershell\\fixtures\\sample-dotnet-app\\docs\\evidence\\config-catalog.evidence.json",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:55-05:00",
+      "category": "NOT_FOUND",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Evidence missing: build-cookbook",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\tests\\powershell\\fixtures\\sample-dotnet-app\\docs\\evidence\\build-cookbook.evidence.json",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:55-05:00",
+      "category": "NOT_FOUND",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Evidence missing: test-catalog",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\tests\\powershell\\fixtures\\sample-dotnet-app\\docs\\evidence\\test-catalog.evidence.json",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:55-05:00",
+      "category": "NOT_FOUND",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Evidence missing: task-guides",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\tests\\powershell\\fixtures\\sample-dotnet-app\\docs\\evidence\\task-guides.evidence.json",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:55-05:00",
+      "category": "NOT_FOUND",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Evidence missing: debt-register",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\tests\\powershell\\fixtures\\sample-dotnet-app\\docs\\evidence\\debt-register.evidence.json",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:55-05:00",
+      "category": "NOT_FOUND",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Evidence missing: dependencies-catalog",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\tests\\powershell\\fixtures\\sample-dotnet-app\\docs\\evidence\\dependencies-catalog.evidence.json",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:56-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Required section missing (overview): Executive Summary",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\docs\\overview.md",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:56-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Required section missing (overview): System Purpose",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\docs\\overview.md",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:56-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Required section missing (overview): Technology Stack",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\docs\\overview.md",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:56-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Cross-artifact contradiction detected: start-here-model-signal-mismatch:8/0",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:56-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: template-residue:api-inventory.md:6",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:56-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: template-residue:data-model.md:5",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:56-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: template-residue:config-catalog.md:6",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:56-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: template-residue:build-cookbook.md:3",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:56-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: api-endpoints-table-empty",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-17T14:11:56-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate warning: environment-variables-table-empty",
+      "filePath": "tests\\powershell\\fixtures\\sample-dotnet-app\\docs",
+      "details": {}
+    }
+  ],
+  "metadata": {
+    "validation": {
+      "timestamp": "2026-02-17T14:11:56-05:00",
+      "strict": false,
+      "threshold": 80,
+      "overallScore": 69.3,
+      "metrics": {
+        "validatorPassRate": 100.0,
+        "artifactPresence": 100.0,
+        "evidencePresence": 0.0,
+        "semanticContractScore": 94.0,
+        "evidenceContractScore": 0.0,
+        "apiCoverage": 100,
+        "configCoverage": 100,
+        "dataModelCoverage": 0.0,
+        "redactionSafetyScore": 100,
+        "humanUsabilityScore": 72.5,
+        "claimGroundingScore": 100.0,
+        "documentationFreshnessScore": 80.0,
+        "contradictionConsistencyScore": 80.0,
+        "taskGuideActionabilityScore": 91.7,
+        "taskGuideEvidenceCoverageScore": 60.0,
+        "taskGuideTimeToCompleteMinutes": 12.0,
+        "taskGuideTimeScore": 100.0,
+        "policyGateScore": 0.0
+      },
+      "missingArtifacts": [],
+      "missingEvidenceArtifacts": [
+        "start-here",
+        "overview",
+        "api-inventory",
+        "data-model",
+        "config-catalog",
+        "build-cookbook",
+        "test-catalog",
+        "task-guides",
+        "debt-register",
+        "dependencies-catalog"
+      ],
+      "validators": [
+        {
+          "message": "OK",
+          "script": "validate-start-here.ps1",
+          "passed": true
+        },
+        {
+          "message": "OK",
+          "script": "validate-overview.ps1",
+          "passed": true
+        },
+        {
+          "message": "OK",
+          "script": "validate-api-inventory.ps1",
+          "passed": true
+        },
+        {
+          "message": "OK",
+          "script": "validate-data-model.ps1",
+          "passed": true
+        },
+        {
+          "message": "OK",
+          "script": "validate-config-catalog.ps1",
+          "passed": true
+        },
+        {
+          "message": "OK",
+          "script": "validate-build-cookbook.ps1",
+          "passed": true
+        },
+        {
+          "message": "OK",
+          "script": "validate-test-catalog.ps1",
+          "passed": true
+        },
+        {
+          "message": "OK",
+          "script": "validate-task-guides.ps1",
+          "passed": true
+        },
+        {
+          "message": "OK",
+          "script": "validate-debt-register.ps1",
+          "passed": true
+        }
+      ],
+      "contractValidation": [
+        {
+          "artifact": "start-here",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "overview",
+          "passed": false,
+          "score": 40,
+          "missingSections": [
+            "Executive Summary",
+            "System Purpose",
+            "Technology Stack"
+          ],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "api-inventory",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "data-model",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "config-catalog",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "build-cookbook",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "test-catalog",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "task-guides",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "debt-register",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "dependencies-catalog",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        }
+      ],
+      "evidenceContractValidation": [
+        {
+          "artifact": "start-here",
+          "passed": false,
+          "score": 0,
+          "issues": [
+            "evidence-not-found"
+          ]
+        },
+        {
+          "artifact": "overview",
+          "passed": false,
+          "score": 0,
+          "issues": [
+            "evidence-not-found"
+          ]
+        },
+        {
+          "artifact": "api-inventory",
+          "passed": false,
+          "score": 0,
+          "issues": [
+            "evidence-not-found"
+          ]
+        },
+        {
+          "artifact": "data-model",
+          "passed": false,
+          "score": 0,
+          "issues": [
+            "evidence-not-found"
+          ]
+        },
+        {
+          "artifact": "config-catalog",
+          "passed": false,
+          "score": 0,
+          "issues": [
+            "evidence-not-found"
+          ]
+        },
+        {
+          "artifact": "build-cookbook",
+          "passed": false,
+          "score": 0,
+          "issues": [
+            "evidence-not-found"
+          ]
+        },
+        {
+          "artifact": "test-catalog",
+          "passed": false,
+          "score": 0,
+          "issues": [
+            "evidence-not-found"
+          ]
+        },
+        {
+          "artifact": "task-guides",
+          "passed": false,
+          "score": 0,
+          "issues": [
+            "evidence-not-found"
+          ]
+        },
+        {
+          "artifact": "debt-register",
+          "passed": false,
+          "score": 0,
+          "issues": [
+            "evidence-not-found"
+          ]
+        },
+        {
+          "artifact": "dependencies-catalog",
+          "passed": false,
+          "score": 0,
+          "issues": [
+            "evidence-not-found"
+          ]
+        }
+      ],
+      "contradictions": [
+        "start-here-model-signal-mismatch:8/0"
+      ],
+      "taskGuideOutcomes": {
+        "actionabilityScore": 91.7,
+        "evidenceCoverageScore": 60.0,
+        "estimatedCompletionMinutes": 12.0,
+        "taskCompletionTimeScore": 100.0,
+        "issues": []
+      },
+      "policyGates": {
+        "score": 0.0,
+        "passed": false,
+        "blockingIssues": [
+          "template-residue:api-inventory.md:6",
+          "template-residue:data-model.md:5",
+          "template-residue:config-catalog.md:6",
+          "template-residue:build-cookbook.md:3",
+          "api-endpoints-table-empty"
+        ],
+        "warnings": [
+          "environment-variables-table-empty"
+        ]
+      }
+    }
+  }
+}

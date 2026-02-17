@@ -97,6 +97,39 @@ if ($techStackContent) {
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
+$artifact = "overview"
+$contract = Get-AppDocArtifactContract -Artifact $artifact
+$evidenceRecords = @()
+
+if ($systemPurposeContent) {
+    $evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "repository" -Name "system-purpose" -Kind "summary" -Confidence 0.8 -Provider "generator" -ProviderType "deterministic" -Metadata @{
+        text = $systemPurposeContent
+        fileCount = $codeFiles.Count
+        languageCount = $languageCount.Keys.Count
+    }
+}
+
+foreach ($lang in $languageCount.Keys) {
+    $evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "repository" -Name $lang -Kind "technology" -Confidence 0.8 -Provider "generator" -ProviderType "deterministic" -Metadata @{
+        extension = $lang
+        count = $languageCount[$lang]
+    }
+}
+
+$evidenceMetadata = @{
+    generator = "generate-overview.ps1"
+}
+if ($contract) {
+    $evidenceMetadata.requiredEvidenceKeys = @($contract.requiredEvidenceKeys)
+    $evidenceMetadata.requiredSections = @($contract.requiredSections)
+}
+$evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $artifact -Records $evidenceRecords -Metadata $evidenceMetadata
+if ($evidencePath) {
+    [void](Update-AppDocEvidenceManifest -RootPath $RootPath -Artifact $artifact -EvidencePath $evidencePath -RecordCount $evidenceRecords.Count -Metadata @{
+        generator = "generate-overview.ps1"
+    })
+}
+
 Write-Progress -Activity "Generating System Overview" -Status "Complete" -PercentComplete 100
 Write-Host "✅ System overview generated: $outputPath" -ForegroundColor Green
 Write-Host "   Code files analyzed: $($codeFiles.Count)" -ForegroundColor Gray

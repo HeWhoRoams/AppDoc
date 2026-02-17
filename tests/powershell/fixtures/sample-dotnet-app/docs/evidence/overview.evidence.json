@@ -1,0 +1,19 @@
+{
+  "artifact": "overview",
+  "generatedAt": "2026-02-17T14:11:54-05:00",
+  "recordCount": 0,
+  "records": [],
+  "metadata": {
+    "requiredEvidenceKeys": [
+      "summary",
+      "technologies"
+    ],
+    "generator": "generate-overview.ps1",
+    "requiredSections": [
+      "Executive Summary",
+      "System Purpose",
+      "Architecture",
+      "Technology Stack"
+    ]
+  }
+}

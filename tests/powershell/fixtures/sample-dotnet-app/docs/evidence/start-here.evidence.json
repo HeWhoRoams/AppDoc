@@ -1,0 +1,55 @@
+{
+  "artifact": "start-here",
+  "generatedAt": "2026-02-17T14:11:55-05:00",
+  "recordCount": 3,
+  "records": [
+    {
+      "kind": "summary",
+      "name": "source-files",
+      "confidence": 0.95,
+      "metadata": {
+        "count": 0,
+        "languages": []
+      },
+      "source": "repository",
+      "providerType": "deterministic",
+      "provider": "generator"
+    },
+    {
+      "kind": "endpoint",
+      "name": "api-inventory",
+      "confidence": 0.9,
+      "metadata": {
+        "documentedEndpoints": 0
+      },
+      "source": "docs",
+      "providerType": "deterministic",
+      "provider": "generator"
+    },
+    {
+      "kind": "model",
+      "name": "data-model",
+      "confidence": 0.9,
+      "metadata": {
+        "documentedModels": 8
+      },
+      "source": "docs",
+      "providerType": "deterministic",
+      "provider": "generator"
+    }
+  ],
+  "metadata": {
+    "requiredEvidenceKeys": [
+      "summary",
+      "endpoints",
+      "models"
+    ],
+    "generator": "generate-start-here.ps1",
+    "requiredSections": [
+      "Who This Is For",
+      "15-Minute Orientation",
+      "Role-Based Paths",
+      "System Signals"
+    ]
+  }
+}

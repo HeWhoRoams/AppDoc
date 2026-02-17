@@ -1,0 +1,17 @@
+{
+  "artifact": "debt-register",
+  "generatedAt": "2026-02-17T14:11:55-05:00",
+  "recordCount": 0,
+  "records": [],
+  "metadata": {
+    "debtCount": 0,
+    "requiredEvidenceKeys": [
+      "debtItems"
+    ],
+    "generator": "generate-debt-register.ps1",
+    "requiredSections": [
+      "Executive Summary",
+      "Debt Items"
+    ]
+  }
+}

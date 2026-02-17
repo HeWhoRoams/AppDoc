@@ -1,0 +1,97 @@
+{
+  "artifact": "task-guides",
+  "generatedAt": "2026-02-17T14:11:55-05:00",
+  "recordCount": 5,
+  "records": [
+    {
+      "artifact": "task-guides",
+      "source": "docs",
+      "name": "change-endpoint-safely",
+      "kind": "task-guide",
+      "confidence": 1.0,
+      "metadata": {
+        "category": "implementation",
+        "endpointEvidence": 0
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "task-guides",
+      "source": "docs",
+      "name": "debug-build-failure",
+      "kind": "task-guide",
+      "confidence": 1.0,
+      "metadata": {
+        "category": "operations",
+        "buildEvidence": 12
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "task-guides",
+      "source": "docs",
+      "name": "triage-dependency-risk",
+      "kind": "task-guide",
+      "confidence": 1.0,
+      "metadata": {
+        "category": "risk",
+        "dependencyEvidence": 0
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "task-guides",
+      "source": "docs",
+      "name": "plan-debt-sprint",
+      "kind": "task-guide",
+      "confidence": 1.0,
+      "metadata": {
+        "category": "maintenance",
+        "debtEvidence": 0
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "task-guides",
+      "source": "docs",
+      "name": "task-guide-summary",
+      "kind": "summary",
+      "confidence": 1.0,
+      "metadata": {
+        "debtCount": 0,
+        "testCount": 0,
+        "endpointCount": 0,
+        "dependencyCount": 0,
+        "buildCommandCount": 12
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    }
+  ],
+  "metadata": {
+    "requiredEvidenceKeys": [
+      "tasks",
+      "summary"
+    ],
+    "generator": "generate-task-guides.ps1",
+    "requiredSections": [
+      "Executive Summary",
+      "Task Guides",
+      "Operational Checklist"
+    ]
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "artifact": "config-catalog",
+  "generatedAt": "2026-02-17T14:11:54-05:00",
+  "recordCount": 4,
+  "records": [
+    {
+      "artifact": "config-catalog",
+      "source": "SampleApp.Common\\SampleApp.Common.csproj:PropertyGroup/TargetFramework",
+      "name": "TargetFramework",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "net6.0",
+        "required": false,
+        "file": "SampleApp.Common\\SampleApp.Common.csproj",
+        "type": "MSBuild Configuration"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:54-05:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": "SampleApp.Service\\SampleApp.Service.csproj:PropertyGroup/TargetFramework",
+      "name": "TargetFramework",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "net6.0",
+        "required": false,
+        "file": "SampleApp.Service\\SampleApp.Service.csproj",
+        "type": "MSBuild Configuration"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:54-05:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": "SampleApp.Service\\SampleApp.Service.csproj:PropertyGroup/OutputType",
+      "name": "OutputType",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "WinExe",
+        "required": false,
+        "file": "SampleApp.Service\\SampleApp.Service.csproj",
+        "type": "MSBuild Configuration"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:54-05:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": "SampleApp.Web\\SampleApp.Web.csproj:PropertyGroup/TargetFramework",
+      "name": "TargetFramework",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "net6.0",
+        "required": false,
+        "file": "SampleApp.Web\\SampleApp.Web.csproj",
+        "type": "MSBuild Configuration"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:54-05:00"
+    }
+  ],
+  "metadata": {
+    "requiredEvidenceKeys": [
+      "configurations"
+    ],
+    "configCount": 4,
+    "generator": "generate-config-catalog.ps1",
+    "requiredSections": [
+      "Executive Summary",
+      "Configuration Options"
+    ]
+  }
+}

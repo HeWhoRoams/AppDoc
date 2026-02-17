@@ -35,7 +35,13 @@ function Validate-GeneratedDoc {
         [Parameter(Mandatory=$true)]
         [string]$FilePath,
         [Parameter(Mandatory=$true)]
+<<<<<<< Updated upstream
         [string]$DocType
+=======
+        [string]$DocType,
+        [Parameter(Mandatory=$false)]
+        [string]$RootPath
+>>>>>>> Stashed changes
     )
     
     if (-not (Test-Path $FilePath)) {

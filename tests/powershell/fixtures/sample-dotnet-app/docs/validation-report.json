@@ -1,0 +1,268 @@
+{
+  "timestamp": "2026-02-17T14:11:56-05:00",
+  "strict": false,
+  "threshold": 80,
+  "overallScore": 69.3,
+  "metrics": {
+    "validatorPassRate": 100.0,
+    "artifactPresence": 100.0,
+    "evidencePresence": 0.0,
+    "semanticContractScore": 94.0,
+    "evidenceContractScore": 0.0,
+    "apiCoverage": 100,
+    "configCoverage": 100,
+    "dataModelCoverage": 0.0,
+    "redactionSafetyScore": 100,
+    "humanUsabilityScore": 72.5,
+    "claimGroundingScore": 100.0,
+    "documentationFreshnessScore": 80.0,
+    "contradictionConsistencyScore": 80.0,
+    "taskGuideActionabilityScore": 91.7,
+    "taskGuideEvidenceCoverageScore": 60.0,
+    "taskGuideTimeToCompleteMinutes": 12.0,
+    "taskGuideTimeScore": 100.0,
+    "policyGateScore": 0.0
+  },
+  "missingArtifacts": [],
+  "missingEvidenceArtifacts": [
+    "start-here",
+    "overview",
+    "api-inventory",
+    "data-model",
+    "config-catalog",
+    "build-cookbook",
+    "test-catalog",
+    "task-guides",
+    "debt-register",
+    "dependencies-catalog"
+  ],
+  "validators": [
+    {
+      "message": "OK",
+      "script": "validate-start-here.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-overview.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-api-inventory.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-data-model.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-config-catalog.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-build-cookbook.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-test-catalog.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-task-guides.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-debt-register.ps1",
+      "passed": true
+    }
+  ],
+  "contractValidation": [
+    {
+      "artifact": "start-here",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "overview",
+      "passed": false,
+      "score": 40,
+      "missingSections": [
+        "Executive Summary",
+        "System Purpose",
+        "Technology Stack"
+      ],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "api-inventory",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "data-model",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "config-catalog",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "build-cookbook",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "test-catalog",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "task-guides",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "debt-register",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "dependencies-catalog",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    }
+  ],
+  "evidenceContractValidation": [
+    {
+      "artifact": "start-here",
+      "passed": false,
+      "score": 0,
+      "issues": [
+        "evidence-not-found"
+      ]
+    },
+    {
+      "artifact": "overview",
+      "passed": false,
+      "score": 0,
+      "issues": [
+        "evidence-not-found"
+      ]
+    },
+    {
+      "artifact": "api-inventory",
+      "passed": false,
+      "score": 0,
+      "issues": [
+        "evidence-not-found"
+      ]
+    },
+    {
+      "artifact": "data-model",
+      "passed": false,
+      "score": 0,
+      "issues": [
+        "evidence-not-found"
+      ]
+    },
+    {
+      "artifact": "config-catalog",
+      "passed": false,
+      "score": 0,
+      "issues": [
+        "evidence-not-found"
+      ]
+    },
+    {
+      "artifact": "build-cookbook",
+      "passed": false,
+      "score": 0,
+      "issues": [
+        "evidence-not-found"
+      ]
+    },
+    {
+      "artifact": "test-catalog",
+      "passed": false,
+      "score": 0,
+      "issues": [
+        "evidence-not-found"
+      ]
+    },
+    {
+      "artifact": "task-guides",
+      "passed": false,
+      "score": 0,
+      "issues": [
+        "evidence-not-found"
+      ]
+    },
+    {
+      "artifact": "debt-register",
+      "passed": false,
+      "score": 0,
+      "issues": [
+        "evidence-not-found"
+      ]
+    },
+    {
+      "artifact": "dependencies-catalog",
+      "passed": false,
+      "score": 0,
+      "issues": [
+        "evidence-not-found"
+      ]
+    }
+  ],
+  "contradictions": [
+    "start-here-model-signal-mismatch:8/0"
+  ],
+  "taskGuideOutcomes": {
+    "actionabilityScore": 91.7,
+    "evidenceCoverageScore": 60.0,
+    "estimatedCompletionMinutes": 12.0,
+    "taskCompletionTimeScore": 100.0,
+    "issues": []
+  },
+  "policyGates": {
+    "score": 0.0,
+    "passed": false,
+    "blockingIssues": [
+      "template-residue:api-inventory.md:6",
+      "template-residue:data-model.md:5",
+      "template-residue:config-catalog.md:6",
+      "template-residue:build-cookbook.md:3",
+      "api-endpoints-table-empty"
+    ],
+    "warnings": [
+      "environment-variables-table-empty"
+    ]
+  }
+}
