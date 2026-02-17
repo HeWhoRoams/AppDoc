@@ -174,6 +174,7 @@ function Test-AppDocValidationGate {
         strict = $Strict.IsPresent
         qualityThreshold = $QualityThreshold
         evaluatedDocuments = $scored.Count
-    }    'Export-AppDocDiagnostics',
-    'Test-AppDocValidationGate'
-)
+    }
+}
+
+Export-ModuleMember -Function 'Export-AppDocDiagnostics','Test-AppDocValidationGate'
