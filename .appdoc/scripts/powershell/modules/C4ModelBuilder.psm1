@@ -375,7 +375,7 @@ function Find-ExternalSystems {
 
 .DESCRIPTION
     Combines system information and external systems into a complete
-    C4 Level 1 model ready for PlantUML generation.
+    C4 Level 1 model ready for diagram generation.
 
 .PARAMETER SolutionPath
     Path to the solution file.

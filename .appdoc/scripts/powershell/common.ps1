@@ -159,7 +159,7 @@ function Test-AppDocConfig {
         [switch]$Json
     )
 
-    $configPath = Join-Path $RootPath ".AppDoc.json"
+    $configPath = Join-Path $RootPath ".appdoc.json"
     $exists = Test-Path $configPath
 
     $result = @{

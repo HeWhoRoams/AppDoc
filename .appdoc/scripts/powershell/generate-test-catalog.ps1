@@ -19,6 +19,21 @@ if (Test-Path $helpersPath) {
     . $helpersPath
 }
 
+$scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
+if (Test-Path $scopeModule) {
+    Import-Module $scopeModule -Force -ErrorAction Stop
+}
+
+$contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
+if (Test-Path $contractsModule) {
+    Import-Module $contractsModule -Force -ErrorAction Stop
+}
+
+$evidenceModule = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
+if (Test-Path $evidenceModule) {
+    Import-Module $evidenceModule -Force -ErrorAction Stop
+}
+
 Write-Host "🧪 Generating Test Catalog..." -ForegroundColor Cyan
 
 # Validate root path
@@ -171,8 +186,32 @@ if ($testCasesContent) {
     $newText = "| Case Name | Suite | Input | Expected Output | Description | Priority |`r`n|-----------|-------|------|----------------|-------------|----------|`r`n" + $testCasesContent
     $content = Update-TemplateSection -Content $content -PlaceholderText $oldText -NewContent $newText
 }
+$content = Normalize-AppDocTemplateInstructionText -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
+
+$artifact = "test-catalog"
+$contract = Get-AppDocArtifactContract -Artifact $artifact
+$evidenceRecords = @(
+    $tests | ForEach-Object {
+        New-AppDocExtractionRecord -Artifact $artifact -Source ([string]$_.source) -Name ([string]$_.name) -Kind "test-case" -Confidence 0.85 -Provider "generator" -ProviderType "deterministic" -Metadata @{
+            type = [string]$_.type
+            file = [string]$_.file
+            framework = [string]$_.framework
+        }
+    }
+)
+$evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $artifact -Records $evidenceRecords -Metadata @{
+    requiredEvidenceKeys = @($contract.requiredEvidenceKeys)
+    requiredSections = @($contract.requiredSections)
+    testCount = $tests.Count
+    generator = "generate-test-catalog.ps1"
+}
+if ($evidencePath) {
+    [void](Update-AppDocEvidenceManifest -RootPath $RootPath -Artifact $artifact -EvidencePath $evidencePath -RecordCount $evidenceRecords.Count -Metadata @{
+        generator = "generate-test-catalog.ps1"
+    })
+}
 
 Write-Progress -Activity "Generating Test Catalog" -Status "Complete" -PercentComplete 100
 Write-Host "✅ Test catalog generated: $outputPath" -ForegroundColor Green

@@ -19,6 +19,21 @@ if (Test-Path $helpersPath) {
     . $helpersPath
 }
 
+$scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
+if (Test-Path $scopeModule) {
+    Import-Module $scopeModule -Force -ErrorAction Stop
+}
+
+$contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
+if (Test-Path $contractsModule) {
+    Import-Module $contractsModule -Force -ErrorAction Stop
+}
+
+$evidenceModule = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
+if (Test-Path $evidenceModule) {
+    Import-Module $evidenceModule -Force -ErrorAction Stop
+}
+
 Write-Host "📦 Generating Dependencies Catalog..." -ForegroundColor Cyan
 
 # Validate root path
@@ -43,14 +58,13 @@ $projects = @()
 
 try {
     # Find all .csproj files
-    $csprojFiles = Get-ChildItem -Path $RootPath -Recurse -Filter "*.csproj" -ErrorAction SilentlyContinue |
-        Where-Object { $_.FullName -notmatch '(\\node_modules\\|\\bin\\|\\obj\\|\\packages\\)' }
+    $csprojFiles = Get-AppDocSourceFiles -RootPath $RootPath -Include @("*.csproj")
     
     foreach ($proj in $csprojFiles) {
         $content = Get-Content $proj.FullName -Raw -ErrorAction SilentlyContinue
         if (-not $content) { continue }
         
-        $relativePath = $proj.FullName.Replace($RootPath, "").TrimStart('\', '/')
+        $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $proj.FullName
         $projectName = $proj.BaseName
         
         try {
@@ -120,14 +134,13 @@ try {
     }
     
     # Check for packages.config files (older NuGet format)
-    $packagesConfigs = Get-ChildItem -Path $RootPath -Recurse -Filter "packages.config" -ErrorAction SilentlyContinue |
-        Where-Object { $_.FullName -notmatch '(\\node_modules\\|\\bin\\|\\obj\\)' }
+    $packagesConfigs = Get-AppDocSourceFiles -RootPath $RootPath -Include @("packages.config")
     
     foreach ($pkgConfig in $packagesConfigs) {
         $content = Get-Content $pkgConfig.FullName -Raw -ErrorAction SilentlyContinue
         if (-not $content) { continue }
         
-        $relativePath = $pkgConfig.FullName.Replace($RootPath, "").TrimStart('\', '/')
+        $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $pkgConfig.FullName
         $projectName = $pkgConfig.Directory.Name
         
         try {
@@ -250,6 +263,30 @@ $content = Update-TemplateSection -Content $content -PlaceholderText $projectRef
 $content = Update-TemplateSection -Content $content -PlaceholderText $versionConflictsPlaceholder -NewContent $versionConflictsContent
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
+
+$artifact = "dependencies-catalog"
+$contract = Get-AppDocArtifactContract -Artifact $artifact
+$evidenceRecords = @(
+    $dependencies | ForEach-Object {
+        New-AppDocExtractionRecord -Artifact $artifact -Source ([string]$_.source) -Name ([string]$_.name) -Kind "dependency" -Confidence 0.85 -Provider "generator" -ProviderType "deterministic" -Metadata @{
+            version = [string]$_.version
+            type = [string]$_.type
+            project = [string]$_.project
+        }
+    }
+)
+$evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $artifact -Records $evidenceRecords -Metadata @{
+    requiredEvidenceKeys = @($contract.requiredEvidenceKeys)
+    requiredSections = @($contract.requiredSections)
+    projectCount = $projects.Count
+    dependencyCount = $dependencies.Count
+    generator = "generate-dependencies-catalog.ps1"
+}
+if ($evidencePath) {
+    [void](Update-AppDocEvidenceManifest -RootPath $RootPath -Artifact $artifact -EvidencePath $evidencePath -RecordCount $evidenceRecords.Count -Metadata @{
+        generator = "generate-dependencies-catalog.ps1"
+    })
+}
 
 Write-Progress -Activity "Generating Dependencies Catalog" -Status "Complete" -PercentComplete 100
 Write-Host "✅ Dependencies catalog generated: $outputPath" -ForegroundColor Green

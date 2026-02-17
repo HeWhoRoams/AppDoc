@@ -19,6 +19,21 @@ if (Test-Path $helpersPath) {
     . $helpersPath
 }
 
+$scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
+if (Test-Path $scopeModule) {
+    Import-Module $scopeModule -Force -ErrorAction Stop
+}
+
+$contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
+if (Test-Path $contractsModule) {
+    Import-Module $contractsModule -Force -ErrorAction Stop
+}
+
+$evidenceModule = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
+if (Test-Path $evidenceModule) {
+    Import-Module $evidenceModule -Force -ErrorAction Stop
+}
+
 Write-Host "📋 Generating Technical Debt Register..." -ForegroundColor Cyan
 
 # Validate root path
@@ -43,7 +58,10 @@ $debts = @()
 # Scan for code files
 try {
     $codeFiles = Get-ChildItem -Path $RootPath -Recurse -Include "*.js","*.ts","*.cs","*.py","*.java" -ErrorAction Stop |
-        Where-Object { $_.FullName -notmatch '(\\node_modules\\|\\bin\\|\\obj\\|\\__pycache__|\\dist\\)' }
+        Where-Object {
+            $_.FullName -notmatch '(\\node_modules\\|\\bin\\|\\obj\\|\\__pycache__|\\dist\\|\\packages\\|\\Scripts\\lib\\|\\wwwroot\\lib\\|\\vendor\\|\\third_party\\)' -and
+            $_.Name -notmatch '\.min\.'
+        }
 
     Write-Host "  Scanning $($codeFiles.Count) code files..." -ForegroundColor Gray
 
@@ -254,8 +272,34 @@ $debtItemsContent = if ($debts.Count -gt 0) {
 # Update template
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-TemplateSection -Content $content -PlaceholderText $debtTablePlaceholder -NewContent $debtItemsContent
+$content = Normalize-AppDocTemplateInstructionText -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
+
+$artifact = "debt-register"
+$contract = Get-AppDocArtifactContract -Artifact $artifact
+$evidenceRecords = @(
+    $debts | ForEach-Object {
+        $sourcePath = if ($_.filePath) { [string]$_.filePath } else { [string]$_.file }
+        New-AppDocExtractionRecord -Artifact $artifact -Source $sourcePath -Name ([string]$_.type) -Kind "technical-debt" -Confidence 0.8 -Provider "generator" -ProviderType "deterministic" -Metadata @{
+            description = [string]$_.description
+            file = [string]$_.file
+            line = [int]$_.line
+            priority = [string]$_.priority
+        }
+    }
+)
+$evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $artifact -Records $evidenceRecords -Metadata @{
+    requiredEvidenceKeys = @($contract.requiredEvidenceKeys)
+    requiredSections = @($contract.requiredSections)
+    debtCount = $debts.Count
+    generator = "generate-debt-register.ps1"
+}
+if ($evidencePath) {
+    [void](Update-AppDocEvidenceManifest -RootPath $RootPath -Artifact $artifact -EvidencePath $evidencePath -RecordCount $evidenceRecords.Count -Metadata @{
+        generator = "generate-debt-register.ps1"
+    })
+}
 
 Write-Progress -Activity "Generating Technical Debt Register" -Status "Complete" -PercentComplete 100
 Write-Host "✅ Technical debt register generated: $outputPath" -ForegroundColor Green

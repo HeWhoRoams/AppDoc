@@ -20,6 +20,21 @@ if (Test-Path $helpersPath) {
     . $helpersPath
 }
 
+$scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
+if (Test-Path $scopeModule) {
+    Import-Module $scopeModule -Force -ErrorAction Stop
+}
+
+$contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
+if (Test-Path $contractsModule) {
+    Import-Module $contractsModule -Force -ErrorAction Stop
+}
+
+$evidenceModule = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
+if (Test-Path $evidenceModule) {
+    Import-Module $evidenceModule -Force -ErrorAction Stop
+}
+
 Write-Host "🗂️  Generating Data Model..." -ForegroundColor Cyan
 
 # Validate root path
@@ -41,11 +56,100 @@ Write-Progress -Activity "Generating Data Model" -Status "Scanning for models...
 
 $models = @()
 
+function Invoke-AstParserScript {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$ScriptName,
+        [Parameter(Mandatory=$true)]
+        [string]$RootPath
+    )
+
+    $scriptPath = Join-Path $PSScriptRoot $ScriptName
+    if (-not (Test-Path $scriptPath)) {
+        return $null
+    }
+
+    try {
+        & $scriptPath -RootPath $RootPath -Json | Out-Null
+    }
+    catch {
+        Write-Verbose "AST parser execution failed ($ScriptName): $($_.Exception.Message)"
+        return $null
+    }
+
+    $cacheFile = if ($ScriptName -eq "parse-csharp-ast.ps1") { "ast-csharp-cache.json" } else { "ast-typescript-cache.json" }
+    $cachePath = Join-Path $RootPath (Join-Path "docs" $cacheFile)
+    if (-not (Test-Path $cachePath)) {
+        return $null
+    }
+
+    try {
+        return (Get-Content $cachePath -Raw | ConvertFrom-Json)
+    }
+    catch {
+        Write-Verbose "Unable to parse AST cache ($cacheFile): $($_.Exception.Message)"
+        return $null
+    }
+}
+
+function Add-AstModels {
+    param(
+        [object]$AstPayload,
+        [Parameter(Mandatory=$true)]
+        [ref]$Models
+    )
+
+    if (-not $AstPayload -or -not $AstPayload.records) {
+        return 0
+    }
+
+    $added = 0
+    foreach ($record in $AstPayload.records) {
+        if ($record.kind -ne "model") { continue }
+
+        $filePath = [string]$record.file
+        $fileName = if ($filePath) { [System.IO.Path]::GetFileName($filePath) } else { "unknown" }
+        $modelType = if ($record.metadata -and $record.metadata.modelType) { [string]$record.metadata.modelType } else { "class" }
+
+        $properties = @()
+        if ($record.metadata -and $record.metadata.properties) {
+            if ($record.metadata.properties -is [System.Array]) {
+                $properties = @($record.metadata.properties | ForEach-Object { [string]$_ })
+            }
+            else {
+                $properties = @([string]$record.metadata.properties)
+            }
+        }
+
+        $Models.Value += @{
+            type = $modelType
+            name = [string]$record.name
+            file = $fileName
+            filePath = $filePath
+            lineNumber = if ($record.lineNumber) { [int]$record.lineNumber } else { 1 }
+            properties = $properties
+            example = $null
+        }
+        $added++
+    }
+
+    return $added
+}
+
 # Scan for model files
 try {
-    $modelFiles = Get-ChildItem -Path $RootPath -Recurse -Include "*.ts","*.js","*.cs","*.py" -ErrorAction Stop | 
-        Where-Object { $_.FullName -notmatch '(\\node_modules\\|\\bin\\|\\obj\\|\\__pycache__)' -and 
-                       ($_.Name -match "model|entity|schema|type") }
+    $astCSharp = Invoke-AstParserScript -ScriptName "parse-csharp-ast.ps1" -RootPath $RootPath
+    $astTs = Invoke-AstParserScript -ScriptName "parse-typescript-ast.ps1" -RootPath $RootPath
+
+    $astModelCount = 0
+    $astModelCount += Add-AstModels -AstPayload $astCSharp -Models ([ref]$models)
+    $astModelCount += Add-AstModels -AstPayload $astTs -Models ([ref]$models)
+    if ($astModelCount -gt 0) {
+        Write-Host "  Added $astModelCount AST model records" -ForegroundColor Gray
+    }
+
+    $modelFiles = Get-AppDocSourceFiles -RootPath $RootPath -Include @("*.ts","*.js","*.cs","*.py") |
+        Where-Object { $_.Name -match "model|entity|schema|type" }
 
     Write-Host "  Found $($modelFiles.Count) potential model files" -ForegroundColor Gray
 
@@ -62,7 +166,7 @@ try {
                 
                 # Calculate line number from match index
                 $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
-                $relativePath = $file.FullName.Replace($RootPath, "").TrimStart('\', '/')
+                $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
                 
                 # Extract properties with types
                 $properties = @()
@@ -95,7 +199,7 @@ try {
         # C# class parsing with properties - improved to handle large classes and nested braces
         if ($file.Extension -eq ".cs") {
             $lines = $content -split "`n"
-            $relativePath = $file.FullName.Replace($RootPath, "").TrimStart([char[]]@(92, 47))
+            $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
             
             for ($i = 0; $i -lt $lines.Count; $i++) {
                 $line = $lines[$i]
@@ -133,7 +237,7 @@ try {
                                 if ($j -gt 0 -and $lines[$j-1] -match '\[Required\]') { $validations += 'Required' }
                                 if ($j -gt 0 -and $lines[$j-1] -match '\[StringLength\((\d+)') { $validations += "MaxLength:$($Matches[1])" }
                                 if ($j -gt 0 -and $lines[$j-1] -match '\[Range\(([^)]+)\)') { $validations += "Range:$($Matches[1])" }
-                                if ($j -gt 0 -and $lines[$j-1] -match '\[ForeignKey\(["']([^"']+)["']\)') { $validations += "FK:$($Matches[1])" }
+                                if ($j -gt 0 -and $lines[$j-1] -match '\[ForeignKey\([\''"]([^\''"]+)[\''"]\)') { $validations += "FK:$($Matches[1])" }
                                 
                                 $propInfo = "${propName}: ${propType}"
                                 if ($validations.Count -gt 0) {
@@ -189,7 +293,7 @@ try {
                 
                 # Calculate line number from match index
                 $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
-                $relativePath = $file.FullName.Replace($RootPath, "").TrimStart('\', '/')
+                $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
                 
                 # Extract properties with type hints
                 $properties = @()
@@ -237,7 +341,7 @@ try {
             foreach ($class in $classes) {
                 $className = $class.Node.name
                 $tableName = $class.Node.table
-                $relativePath = $file.FullName.Replace($RootPath, "").TrimStart('\\', '/')
+                $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
                 
                 # Extract properties
                 $properties = @()
@@ -313,7 +417,7 @@ try {
                 
                 # Extract table name: Table("TableName")
                 $tableName = $null
-                if ($mappingContext -match 'Table\(["\']([^"\' ]+)["\']\)') {
+                if ($mappingContext -match 'Table\([\''"]([^\''" ]+)[\''"]\)') {
                     $tableName = $Matches[1]
                 }
                 
@@ -370,8 +474,43 @@ _No data models detected. This codebase may use dynamic structures or patterns n
 
 # Build model table content
 if ($models.Count -gt 0) {
+    $domainRows = @($models | ForEach-Object {
+        $path = if ($_.filePath) { [string]$_.filePath } else { "unknown" }
+        $domain = "general"
+        if ($path -match '^([^/\\]+)/') {
+            $domain = $Matches[1]
+        }
+        [pscustomobject]@{
+            domain = $domain
+            type = [string]$_.type
+            fieldCount = @($_.properties).Count
+        }
+    })
+
+    $domainSummary = @($domainRows | Group-Object -Property domain | Sort-Object Count -Descending)
+    $domainSummaryTable = @(
+        "| Domain | Models | Avg Fields | Dominant Type |"
+        "|--------|--------|------------|---------------|"
+    )
+    foreach ($group in $domainSummary | Select-Object -First 25) {
+        $avgFields = [Math]::Round((($group.Group | Measure-Object -Property fieldCount -Average).Average), 1)
+        $dominantType = ($group.Group | Group-Object -Property type | Sort-Object Count -Descending | Select-Object -First 1).Name
+        $domainSummaryTable += "| $($group.Name) | $($group.Count) | $avgFields | $dominantType |"
+    }
+
+    $topModels = @($models | Sort-Object { @($_.properties).Count } -Descending | Select-Object -First 30)
+    $topModelTable = @(
+        "| Model | Fields | Type | Source |"
+        "|-------|--------|------|--------|"
+    )
+    foreach ($model in $topModels) {
+        $source = "{0}:{1}" -f [string]$model.filePath, [int]$model.lineNumber
+        $topModelTable += "| ``$([string]$model.name)`` | $(@($model.properties).Count) | $([string]$model.type) | $source |"
+    }
+
     $modelRows = @()
-    foreach ($model in $models) {
+    $detailedModels = @($models | Select-Object -First 200)
+    foreach ($model in $detailedModels) {
         $fieldsCount = $model.properties.Count
         $typesSummary = if ($fieldsCount -gt 0) {
             ($model.properties[0..([Math]::Min(2, $fieldsCount - 1))] | ForEach-Object { 
@@ -390,9 +529,21 @@ if ($models.Count -gt 0) {
     }
     
     $modelContent = @"
+### Domain Summary
+
+$($domainSummaryTable -join "`n")
+
+### Top Entities by Field Count
+
+$($topModelTable -join "`n")
+
+### Detailed Inventory
+
 | Model Name | Fields | Types | Description | Constraints | Indexes |
 |------------|--------|-------|-------------|-------------|---------|
 $($modelRows -join "`n")
+
+_Detailed inventory is capped to first $($detailedModels.Count) models for readability. Full model evidence is preserved in_ ``docs/evidence/data-model.evidence.json``.
 
 **Statistics:**
 - Total Models: $($models.Count)
@@ -409,8 +560,32 @@ $( ($models | Group-Object type | ForEach-Object { "- $($_.Name): $($_.Count)" }
 # Update template sections
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-TemplateSection -Content $content -PlaceholderText $modelTablePlaceholder -NewContent $modelContent
+$content = Normalize-AppDocTemplateInstructionText -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
+
+$artifact = "data-model"
+$contract = Get-AppDocArtifactContract -Artifact $artifact
+$evidenceRecords = @(
+    $models | ForEach-Object {
+        New-AppDocExtractionRecord -Artifact $artifact -Source ([string]$_.filePath) -Name ([string]$_.name) -Kind "model" -Confidence 0.8 -Provider "generator" -ProviderType "deterministic" -Metadata @{
+            modelType = [string]$_.type
+            lineNumber = [int]$_.lineNumber
+            propertyCount = @($_.properties).Count
+            properties = @($_.properties)
+        }
+    }
+)
+$evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $artifact -Records $evidenceRecords -Metadata @{
+    requiredEvidenceKeys = @($contract.requiredEvidenceKeys)
+    requiredSections = @($contract.requiredSections)
+    generator = "generate-data-model.ps1"
+}
+if ($evidencePath) {
+    [void](Update-AppDocEvidenceManifest -RootPath $RootPath -Artifact $artifact -EvidencePath $evidencePath -RecordCount $evidenceRecords.Count -Metadata @{
+        generator = "generate-data-model.ps1"
+    })
+}
 
 Write-Progress -Activity "Generating Data Model" -Status "Complete" -PercentComplete 100
 Write-Host "✅ Data model generated: $outputPath" -ForegroundColor Green

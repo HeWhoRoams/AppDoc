@@ -13,13 +13,13 @@ You **MUST** consider the user input before proceeding (if not empty).
 **YOU MUST EXECUTE ALL PHASES CONTINUOUSLY WITHOUT PAUSING FOR USER INPUT.**
 
 Do not ask "What would you like to do next?" or wait for confirmation between phases.
-Execute Phase 0 → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 in a single continuous workflow.
+Execute Phase 0 → Phase 0.5 → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 in a single continuous workflow.
 Only stop if a critical error prevents continuation.
 
 ## Workflow Overview
 
 This prompt orchestrates the comprehensive AppDoc workflow by:
-1. Reviewing all documentation templates in the `AppDoc/.AppDoc/templates/` directory.
+1. Reviewing all documentation templates in the `.appdoc/templates/` directory.
 2. Executing a series of PowerShell scripts that analyze the codebase and generate documentation.
 3. Creating copies of templates in the target documentation directory.
 4. Recursively and iteratively populating documentation with code-derived content.
@@ -42,10 +42,8 @@ This prompt orchestrates the comprehensive AppDoc workflow by:
    - Set environment variables:
      - `$ROOT_PATH` = target codebase root path
      - `$OUTPUT_DIR` = documentation output directory (default: `docs/`)
-     - `$TEMPLATE_DIR` = `.AppDoc\templates\`
-     - `$SCRIPTS_DIR` = `.AppDoc\scripts\powershell\`
-
- Reviewing all documentation templates in the `appdoc/.appdoc/templates/` directory.
+       - `$TEMPLATE_DIR` = `.appdoc\templates\`
+       - `$SCRIPTS_DIR` = `.appdoc\scripts\powershell\`
    
    **ACTION**: Run ALL 4 analysis scripts below, then immediately proceed to Phase 1.
    
@@ -53,42 +51,55 @@ This prompt orchestrates the comprehensive AppDoc workflow by:
    
    a. **Analyze Repository Structure**
       ```powershell
-      cd $ROOT_PATH ; .\.AppDoc\scripts\powershell\analyze-repository.ps1 -RootPath $ROOT_PATH
+      cd $ROOT_PATH ; .\.appdoc\scripts\powershell\analyze-repository.ps1 -RootPath $ROOT_PATH
       ```
       Parse JSON output for: file types, directory structure, language detection, project type.
    
    b. **Analyze Codebase Metrics**
       ```powershell
-      cd $ROOT_PATH ; .\.AppDoc\scripts\powershell\analyze-codebase.ps1 -RootPath $ROOT_PATH -Json
+      cd $ROOT_PATH ; .\.appdoc\scripts\powershell\analyze-codebase.ps1 -RootPath $ROOT_PATH -Json
       ```
       Parse JSON output for: code metrics, complexity, architecture patterns.
    
    c. **Extract Configuration**
       ```powershell
-      cd $ROOT_PATH ; .\.AppDoc\scripts\powershell\extract-config.ps1 -RootPath $ROOT_PATH
+      cd $ROOT_PATH ; .\.appdoc\scripts\powershell\extract-config.ps1 -RootPath $ROOT_PATH
       ```
       Parse JSON output for: config files, environment variables, settings.
    
    d. **Generate Dependency Graph**
       ```powershell
-      cd $ROOT_PATH ; .\.AppDoc\scripts\powershell\generate-dependency-graph.ps1 -RootPath $ROOT_PATH
+      cd $ROOT_PATH ; .\.appdoc\scripts\powershell\generate-dependency-graph.ps1 -RootPath $ROOT_PATH
       ```
       Parse JSON output for: dependencies, relationships, module structure.
    
    **CRITICAL**: For single quotes in args like "I'm Groot", use escape syntax: e.g `'I'\''m Groot'` (or double-quote if possible: `"I'm Groot"`).
+
+2.5 **Phase 0.5: Environment & Framework Diagnostics**
+
+   **ACTION**: Run environment diagnostics before generation and continue automatically.
+
+   ```powershell
+   cd $ROOT_PATH ; .\.appdoc\scripts\powershell\appdoc.diagnose.ps1 -RootPath $ROOT_PATH -Fix
+   ```
+
+   Parse output for:
+   - environment readiness (PowerShell version, output writability)
+   - missing templates/scripts
+   - detected framework support level
 
 3. **Phase 1: SKIPPED - Template Initialization Automated**
    
    **ACTION**: Proceed directly to Phase 2. Each generator script automatically copies its template on first run.
    
    Note: All generators now use `template-helpers.ps1` module which calls `Initialize-TemplateFile` to copy templates
-   from `.AppDoc/templates/` to `docs/` if they don't already exist. This ensures consistent document structure
+   from `.appdoc/templates/` to `docs/` if they don't already exist. This ensures consistent document structure
    while allowing generators to populate placeholders with extracted data.
 
 4. **Phase 2: Documentation Generation (Template Population)**
    
    **CRITICAL**: You MUST run ALL 8 generator scripts below. DO NOT SKIP ANY. Each script:
-   1. Copies its template from `.AppDoc/templates/` (if output doesn't exist)
+   1. Copies its template from `.appdoc/templates/` (if output doesn't exist)
    2. Extracts data from the codebase
    3. Replaces template placeholders with extracted content
    4. Writes the populated documentation file
@@ -99,42 +110,42 @@ This prompt orchestrates the comprehensive AppDoc workflow by:
    
    a. **Generate Overview** (REQUIRED)
       ```powershell
-      .\.AppDoc\scripts\powershell\generate-overview.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\generate-overview.ps1 -RootPath .
       ```
    
    b. **Generate API Inventory** (REQUIRED)
       ```powershell
-      .\.AppDoc\scripts\powershell\generate-api-inventory.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\generate-api-inventory.ps1 -RootPath .
       ```
    
    c. **Generate Data Model** (REQUIRED)
       ```powershell
-      .\.AppDoc\scripts\powershell\generate-data-model.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\generate-data-model.ps1 -RootPath .
       ```
    
    d. **Generate Config Catalog** (REQUIRED)
       ```powershell
-      .\.AppDoc\scripts\powershell\generate-config-catalog.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\generate-config-catalog.ps1 -RootPath .
       ```
    
    e. **Generate Build Cookbook** (REQUIRED)
       ```powershell
-      .\.AppDoc\scripts\powershell\generate-build-cookbook.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\generate-build-cookbook.ps1 -RootPath .
       ```
    
    f. **Generate Test Catalog** (REQUIRED)
       ```powershell
-      .\.AppDoc\scripts\powershell\generate-test-catalog.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\generate-test-catalog.ps1 -RootPath .
       ```
    
    g. **Generate Debt Register** (REQUIRED)
       ```powershell
-      .\.AppDoc\scripts\powershell\generate-debt-register.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\generate-debt-register.ps1 -RootPath .
       ```
    
    h. **Generate Dependencies Catalog** (REQUIRED)
       ```powershell
-      .\.AppDoc\scripts\powershell\generate-dependencies-catalog.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\generate-dependencies-catalog.ps1 -RootPath .
       ```
    
    **VERIFICATION**: After running all generators, verify each file has content (not just a header):
@@ -158,46 +169,56 @@ This prompt orchestrates the comprehensive AppDoc workflow by:
    
    a. **Validate Overview**
       ```powershell
-      .\.AppDoc\scripts\powershell\validate-overview.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\validate-overview.ps1 -RootPath .
       ```
    
    b. **Validate API Inventory**
       ```powershell
-      .\.AppDoc\scripts\powershell\validate-api-inventory.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\validate-api-inventory.ps1 -RootPath .
       ```
    
    c. **Validate Data Model**
       ```powershell
-      .\.AppDoc\scripts\powershell\validate-data-model.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\validate-data-model.ps1 -RootPath .
       ```
    
    d. **Validate Config Catalog**
       ```powershell
-      .\.AppDoc\scripts\powershell\validate-config-catalog.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\validate-config-catalog.ps1 -RootPath .
       ```
    
    e. **Validate Build Cookbook**
       ```powershell
-      .\.AppDoc\scripts\powershell\validate-build-cookbook.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\validate-build-cookbook.ps1 -RootPath .
       ```
    
    f. **Validate Test Catalog**
       ```powershell
-      .\.AppDoc\scripts\powershell\validate-test-catalog.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\validate-test-catalog.ps1 -RootPath .
       ```
    
    g. **Validate Debt Register**
       ```powershell
-      .\.AppDoc\scripts\powershell\validate-debt-register.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\validate-debt-register.ps1 -RootPath .
       ```
    
    **Note**: Validation failures are informational - they help identify quality issues but don't block workflow completion.
+
+   **Structured validation pass (REQUIRED):**
+   ```powershell
+   .\.appdoc\scripts\powershell\validate-documentation.ps1 -RootPath .
+   ```
+
+   **Strict/CI validation (optional):**
+   ```powershell
+   .\.appdoc\scripts\powershell\validate-documentation.ps1 -RootPath . -Strict -Threshold 80
+   ```
 
 6. **Phase 4: Assessment & Reporting**
    
    b. **Synthesize Assessment Report**
       ```powershell
-      .\.AppDoc\scripts\powershell\synthesize-assessment-report.ps1 -RootPath .
+      .\.appdoc\scripts\powershell\synthesize-assessment-report.ps1 -RootPath .
       ```
    
    c. **List Generated Documentation Files:**
@@ -225,6 +246,16 @@ This prompt orchestrates the comprehensive AppDoc workflow by:
 3. **Error handling**: If a script fails, document the error and continue with next phase where possible
 4. **Script parameters**: All generator scripts accept `-RootPath` parameter pointing to target codebase
 5. **Output directory**: Generators write to `docs/` (relative to RootPath) by default
+
+## No-AI Deterministic Mode
+
+If the user requests deterministic, no-enhancement output, run:
+
+```powershell
+.\.appdoc\scripts\powershell\run-all-generators.ps1 -RootPath $ROOT_PATH -NoAI
+```
+
+In this mode, skip `/appdoc.enhance` and report deterministic outputs from `docs/quality-report.json`, `docs/validation-report.json`, and `docs/diagnostics-report.json`.
 
 ## Prompt Delegation Model
 

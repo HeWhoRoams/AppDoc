@@ -28,7 +28,9 @@ List all build dependencies and tools required.
 | Dependency | Version | Purpose | Installation |
 |------------|---------|---------|--------------|  
 
-_No build dependencies detected. Refer to package.json, requirements.txt, or dependency manifests._## CI/CD Integration
+_No build dependencies detected. Refer to package.json, requirements.txt, or dependency manifests._
+
+## CI/CD Integration
 
 Describe how the build process integrates with continuous integration and deployment.
 
