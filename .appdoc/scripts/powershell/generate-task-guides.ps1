@@ -61,7 +61,8 @@ function Get-EvidenceRecords {
     }
     catch {
         return @()
-    }}
+    }
+}
 
 $apiRecords = Get-EvidenceRecords -EvidenceRoot $evidenceRoot -Artifact "api-inventory"
 $buildRecords = Get-EvidenceRecords -EvidenceRoot $evidenceRoot -Artifact "build-cookbook"
