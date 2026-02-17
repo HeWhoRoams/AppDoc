@@ -13,7 +13,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 **YOU MUST EXECUTE ALL PHASES CONTINUOUSLY WITHOUT PAUSING FOR USER INPUT.**
 
 Do not ask "What would you like to do next?" or wait for confirmation between phases.
-Execute Phase 0 → Phase 0.5 → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 in a single continuous workflow.
+Execute Phase 0 → Phase 0.5 → Phase 1 → Phase 2 → Phase 3 → Phase 4 in a single continuous workflow.
 Only stop if a critical error prevents continuation.
 
 ## Workflow Overview
@@ -75,7 +75,7 @@ This prompt orchestrates the comprehensive AppDoc workflow by:
    
    **CRITICAL**: For single quotes in args like "I'm Groot", use escape syntax: e.g `'I'\''m Groot'` (or double-quote if possible: `"I'm Groot"`).
 
-2.5 **Phase 0.5: Environment & Framework Diagnostics**
+2. **Phase 0.5: Environment & Framework Diagnostics**
 
    **ACTION**: Run environment diagnostics before generation and continue automatically.
 
@@ -204,7 +204,7 @@ This prompt orchestrates the comprehensive AppDoc workflow by:
    
    **Note**: Validation failures are informational - they help identify quality issues but don't block workflow completion.
 
-   **Structured validation pass (REQUIRED):**
+   **Structured validation pass (RECOMMENDED):**
    ```powershell
    .\.appdoc\scripts\powershell\validate-documentation.ps1 -RootPath .
    ```

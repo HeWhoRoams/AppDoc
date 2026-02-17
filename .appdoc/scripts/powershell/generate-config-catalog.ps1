@@ -21,19 +21,25 @@ if (Test-Path $helpersPath) {
 }
 
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
-if (Test-Path $scopeModule) {
-    Import-Module $scopeModule -Force -ErrorAction Stop
+if (-not (Test-Path $scopeModule)) {
+    Write-Error "Required module not found: $scopeModule. Cannot proceed without AppDoc.Scope module (provides Get-AppDocArtifactContract)."
+    exit 1
 }
+Import-Module $scopeModule -Force -ErrorAction Stop
 
 $contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
-if (Test-Path $contractsModule) {
-    Import-Module $contractsModule -Force -ErrorAction Stop
+if (-not (Test-Path $contractsModule)) {
+    Write-Error "Required module not found: $contractsModule. Cannot proceed without AppDoc.Contracts module."
+    exit 1
 }
+Import-Module $contractsModule -Force -ErrorAction Stop
 
 $evidenceModule = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
-if (Test-Path $evidenceModule) {
-    Import-Module $evidenceModule -Force -ErrorAction Stop
+if (-not (Test-Path $evidenceModule)) {
+    Write-Error "Required module not found: $evidenceModule. Cannot proceed without AppDoc.Evidence module (provides New-AppDocExtractionRecord, Write-AppDocEvidenceArtifact, Update-AppDocEvidenceManifest)."
+    exit 1
 }
+Import-Module $evidenceModule -Force -ErrorAction Stop
 
 Write-Host "⚙️  Generating Config Catalog..." -ForegroundColor Cyan
 
@@ -265,6 +271,10 @@ function Get-AppDocTemplateContent {
         }
     }
 
+    # Validate fallback path before attempting to read
+    if (-not (Test-Path $FallbackPath)) {
+        Throw "Template fallback path does not exist: $FallbackPath. Template '$TemplateName' could not be found in any candidate directory."
+    }
     return (Get-Content -Path $FallbackPath -Raw)
 }
 
@@ -457,6 +467,23 @@ try {
             }
             # Parse YAML/YML files
             elseif ($file.Name -match "\.ya?ml$") {
+                # Check if ConvertFrom-Yaml is available
+                $yamlCmd = Get-Command ConvertFrom-Yaml -ErrorAction SilentlyContinue
+                if (-not $yamlCmd) {
+                    # Try to load the powershell-yaml module
+                    try {
+                        Import-Module powershell-yaml -ErrorAction Stop
+                        $yamlCmd = Get-Command ConvertFrom-Yaml -ErrorAction SilentlyContinue
+                    } catch {
+                        Write-Warning "YAML parsing unavailable: 'ConvertFrom-Yaml' cmdlet not found. Install powershell-yaml module (Install-Module -Name powershell-yaml) to parse YAML configuration files."
+                    }
+                }
+                
+                if (-not $yamlCmd) {
+                    Write-Verbose "Skipping YAML file $($file.Name) due to unavailable YAML parser"
+                    continue
+                }
+                
                 try {
                     $yamlDocuments = ConvertFrom-Yaml -Yaml $content -ErrorAction Stop
                     if ($null -eq $yamlDocuments) { continue }
@@ -614,7 +641,7 @@ $envVarsContent = if ($envVars.Count -gt 0) {
         $envKey = Sanitize-MarkdownCell -Value $_.key -MaxLength 120
         $displayValue = Sanitize-MarkdownCell -Value $_.value -MaxLength 80
         $description = if ($_.description) { Sanitize-MarkdownCell -Value $_.description -MaxLength 120 } else { "Environment variable" }
-        $sensitive = if ($envKey -match "password|secret|key|token") { "Yes" } else { "No" }
+        $sensitive = if ($envKey -imatch "password|secret|key|token") { "Yes" } else { "No" }
         $required = if ($_.required) { "Yes" } else { "No" }
         "| $envKey | $displayValue | $description | $sensitive | $required |"
     }
@@ -624,7 +651,11 @@ $envVarsContent = if ($envVars.Count -gt 0) {
 }
 
 # Update template sections (always begin from fresh template content)
-$content = Get-AppDocTemplateContent -RootPath $RootPath -TemplateName "config-catalog-template.md" -FallbackPath $outputPath
+# Use a dedicated template fallback path instead of $outputPath to avoid re-using the generated file as a template
+$scriptRoot = Split-Path $PSScriptRoot -Parent
+$appDocRoot = if ($scriptRoot) { Split-Path $scriptRoot -Parent } else { $null }
+$templateFallbackPath = if ($appDocRoot) { Join-Path $appDocRoot "templates\config-catalog-template.md" } else { $outputPath }
+$content = Get-AppDocTemplateContent -RootPath $RootPath -TemplateName "config-catalog-template.md" -FallbackPath $templateFallbackPath
 
 $content = Update-LiteralTemplateSection -Content $content -PlaceholderText "_No configuration sources detected. System may use hardcoded values or external configuration service._" -NewContent $configSourcesContent
 $content = Update-LiteralTemplateSection -Content $content -PlaceholderText $configTablePlaceholder -NewContent $configOptionsContent

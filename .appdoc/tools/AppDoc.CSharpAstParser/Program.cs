@@ -94,9 +94,9 @@ foreach (var filePath in csFiles)
         var httpAttr = attrs.FirstOrDefault(attribute =>
         {
             var name = attribute.Name.ToString();
-            return name is "HttpGet" or "HttpPost" or "HttpPut" or "HttpDelete" or "HttpPatch";
+            return name is "HttpGet" or "HttpPost" or "HttpPut" or "HttpDelete" or "HttpPatch"
+                or "HttpGetAttribute" or "HttpPostAttribute" or "HttpPutAttribute" or "HttpDeleteAttribute" or "HttpPatchAttribute";
         });
-
         if (httpAttr is null)
         {
             continue;

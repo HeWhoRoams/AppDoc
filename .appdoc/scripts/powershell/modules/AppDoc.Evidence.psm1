@@ -22,8 +22,39 @@ function Get-AppDocEvidenceFilePath {
         [string]$Artifact
     )
 
+    # Validate that Artifact is not null or empty
+    if ([string]::IsNullOrWhiteSpace($Artifact)) {
+        throw "Artifact parameter cannot be null or empty."
+    }
+
+    # Get invalid characters for filenames
+    $invalidChars = [System.IO.Path]::GetInvalidFileNameChars()
+    
+    # Check for path traversal attempts (parent directory references)
+    if ($Artifact -match '\.\.' -or $Artifact -match '[/\\]\.\.') {
+        throw "Artifact parameter contains invalid path traversal sequence: $Artifact"
+    }
+
+    # Check for directory separators in the artifact name
+    if ($Artifact -match '[/\\]') {
+        throw "Artifact parameter contains directory separators: $Artifact"
+    }
+
+    # Check for invalid characters and normalize if needed
+    $normalizedArtifact = $Artifact
+    foreach ($char in $invalidChars) {
+        if ($normalizedArtifact.Contains($char)) {
+            $normalizedArtifact = $normalizedArtifact.Replace([string]$char, '_')
+        }
+    }
+
+    # Ensure we don't have an empty artifact after normalization
+    if ([string]::IsNullOrWhiteSpace($normalizedArtifact)) {
+        throw "Artifact parameter resulted in invalid filename after sanitization: $Artifact"
+    }
+
     $evidenceDir = Get-AppDocEvidenceDirectory -RootPath $RootPath
-    return (Join-Path $evidenceDir ("{0}.evidence.json" -f $Artifact))
+    return (Join-Path $evidenceDir ("{0}.evidence.json" -f $normalizedArtifact))
 }
 
 function Write-AppDocEvidenceArtifact {

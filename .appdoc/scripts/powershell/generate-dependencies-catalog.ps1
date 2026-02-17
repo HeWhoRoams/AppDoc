@@ -20,19 +20,25 @@ if (Test-Path $helpersPath) {
 }
 
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
-if (Test-Path $scopeModule) {
-    Import-Module $scopeModule -Force -ErrorAction Stop
+if (-not (Test-Path $scopeModule)) {
+    Write-Error "Required module not found: $scopeModule"
+    exit 1
 }
+Import-Module $scopeModule -Force -ErrorAction Stop
 
 $contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
-if (Test-Path $contractsModule) {
-    Import-Module $contractsModule -Force -ErrorAction Stop
+if (-not (Test-Path $contractsModule)) {
+    Write-Error "Required module not found: $contractsModule"
+    exit 1
 }
+Import-Module $contractsModule -Force -ErrorAction Stop
 
 $evidenceModule = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
-if (Test-Path $evidenceModule) {
-    Import-Module $evidenceModule -Force -ErrorAction Stop
+if (-not (Test-Path $evidenceModule)) {
+    Write-Error "Required module not found: $evidenceModule"
+    exit 1
 }
+Import-Module $evidenceModule -Force -ErrorAction Stop
 
 Write-Host "📦 Generating Dependencies Catalog..." -ForegroundColor Cyan
 
@@ -266,6 +272,13 @@ $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 $artifact = "dependencies-catalog"
 $contract = Get-AppDocArtifactContract -Artifact $artifact
+if ($null -eq $contract) {
+    Write-Warning "Could not retrieve artifact contract for '$artifact'. Using default values."
+    $contract = @{
+        requiredEvidenceKeys = @()
+        requiredSections = @()
+    }
+}
 $evidenceRecords = @(
     $dependencies | ForEach-Object {
         New-AppDocExtractionRecord -Artifact $artifact -Source ([string]$_.source) -Name ([string]$_.name) -Kind "dependency" -Confidence 0.85 -Provider "generator" -ProviderType "deterministic" -Metadata @{
@@ -275,9 +288,11 @@ $evidenceRecords = @(
         }
     }
 )
+$requiredEvidenceKeys = @($contract.requiredEvidenceKeys)
+$requiredSections = @($contract.requiredSections)
 $evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $artifact -Records $evidenceRecords -Metadata @{
-    requiredEvidenceKeys = @($contract.requiredEvidenceKeys)
-    requiredSections = @($contract.requiredSections)
+    requiredEvidenceKeys = $requiredEvidenceKeys
+    requiredSections = $requiredSections
     projectCount = $projects.Count
     dependencyCount = $dependencies.Count
     generator = "generate-dependencies-catalog.ps1"

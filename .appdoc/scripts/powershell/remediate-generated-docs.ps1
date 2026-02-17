@@ -170,9 +170,9 @@ foreach ($file in $docFiles) {
     $content = [regex]::Replace($content, '(?is)\r?\n##\s+Population Guide\s*\r?\n.*?(?=\r?\n---\s*\r?\n|\z)', "`r`n")
 
     $content = [regex]::Replace($content, '(?im)^.*Describe the purpose and scope.*$', 'This section summarizes the generated findings for this artifact based on deterministic codebase analysis.')
-    $content = [regex]::Replace($content, '(?im)^.*\bDescribe\b.*$', 'This section summarizes generated findings based on deterministic extraction evidence.')
-    $content = [regex]::Replace($content, '(?im)^.*\bList and describe\b.*$', 'Deterministic extraction evidence for this section is summarized below.')
-    $content = [regex]::Replace($content, '(?im)^.*\bDocument\b.*$', 'Deterministic extraction evidence for this section is documented below when available.')
+    $content = [regex]::Replace($content, '(?im)^.*_Describe the purpose and scope_.*$', 'This section summarizes generated findings based on deterministic extraction evidence.')
+    $content = [regex]::Replace($content, '(?im)^.*_List and describe_.*$', 'Deterministic extraction evidence for this section is summarized below.')
+    $content = [regex]::Replace($content, '(?im)^.*_Document_.*$', 'Deterministic extraction evidence for this section is documented below when available.')
     $content = [regex]::Replace($content, '(?im)^.*Provide quick start instructions.*$', 'Quick-start guidance is derived from deterministic build and run evidence when available.')
     $content = [regex]::Replace($content, '(?im)^.*Provide example.*$', 'Examples are included below when deterministic evidence is available.')
     $content = [regex]::Replace($content, '(?im)^.*Refer to .* documentation\.?$', 'See project documentation artifacts for additional context.')

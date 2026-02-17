@@ -66,7 +66,7 @@ Useful flags:
 
 Mermaid C4 diagrams can be generated directly with:
 
-`pwsh ./.appdoc/scripts/powershell/generate-c4-mermaid-diagrams.ps1 -CodebasePath <codebase-path> -OutputPath <codebase-path>/docs -DiagramLevels All`
+`pwsh ./.appdoc/scripts/powershell/generate-c4-mermaid-diagrams.ps1 -RootPath <codebase-path> -OutputPath <codebase-path>/docs -DiagramLevels All`
 
 To AI-enhance generated Mermaid diagrams in place, run `/appdoc.diagrams` in Copilot Chat.
 

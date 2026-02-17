@@ -150,13 +150,14 @@ function Normalize-AppDocTemplateInstructionText {
     )
 
     $updated = $Content
-    $updated = [regex]::Replace($updated, '(?im)^.*Describe the purpose and scope.*$', 'This section summarizes the generated findings for this artifact based on deterministic codebase analysis.')
-    $updated = [regex]::Replace($updated, '(?im)^.*\bDescribe\b.*$', 'This section summarizes generated findings based on deterministic extraction evidence.')
-    $updated = [regex]::Replace($updated, '(?im)^.*\bList and describe\b.*$', 'Deterministic extraction evidence for this section is summarized below.')
-    $updated = [regex]::Replace($updated, '(?im)^.*\bDocument\b.*$', 'Deterministic extraction evidence for this section is documented below when available.')
-    $updated = [regex]::Replace($updated, '(?im)^.*Provide example.*$', 'Examples are included below when deterministic evidence is available.')
-    $updated = [regex]::Replace($updated, '(?im)^.*Provide quick start instructions.*$', 'Quick-start guidance is derived from deterministic build and run evidence when available.')
-    $updated = [regex]::Replace($updated, '(?im)^.*Refer to .* documentation\.?$', 'See project documentation artifacts for additional context.')
+    # Narrowed patterns to only match template instruction lines (italicized with underscores)
+    $updated = [regex]::Replace($updated, '(?im)^.*_Describe the purpose and scope_.*$', 'This section summarizes the generated findings for this artifact based on deterministic codebase analysis.')
+    $updated = [regex]::Replace($updated, '(?im)^.*_Describe_\b.*$', 'This section summarizes generated findings based on deterministic extraction evidence.')
+    $updated = [regex]::Replace($updated, '(?im)^.*_List and describe_\b.*$', 'Deterministic extraction evidence for this section is summarized below.')
+    $updated = [regex]::Replace($updated, '(?im)^.*_Document_\b.*$', 'Deterministic extraction evidence for this section is documented below when available.')
+    $updated = [regex]::Replace($updated, '(?im)^.*_Provide example.*$', 'Examples are included below when deterministic evidence is available.')
+    $updated = [regex]::Replace($updated, '(?im)^.*_Provide quick start instructions_\b.*$', 'Quick-start guidance is derived from deterministic build and run evidence when available.')
+    $updated = [regex]::Replace($updated, '(?im)^.*_Refer to_\b.* documentation\.?$', 'See project documentation artifacts for additional context.')
 
     return $updated
 }

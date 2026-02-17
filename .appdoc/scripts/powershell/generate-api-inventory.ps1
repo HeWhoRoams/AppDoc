@@ -491,7 +491,7 @@ try {
             $xmlDocLines = @()
             $lines = ($lookBehind -split "`n")
             for ($idx = $lines.Count - 1; $idx -ge 0; $idx--) {
-                if ($lines[$idx] -match '^\\s*///') {
+                if ($lines[$idx] -match '^\s*///') {
                     $xmlDocLines = @($lines[$idx]) + $xmlDocLines
                 } elseif ($lines[$idx] -match '^\s*\[' -or $lines[$idx] -match '^\s*$') {
                     # Skip attribute lines and blank lines
@@ -933,7 +933,7 @@ try {
             $authInfo.details += "JWT Bearer authentication configured in $($file.Name)"
             
             # Extract authority/issuer if present
-            if ($content -match 'Authority\\s*=\\s*[\''"]([^\''"]+)[\''"]') {
+            if ($content -match 'Authority\s*=\s*[\''"]([^\''"]+)[\''"]') {
                 $authInfo.details += "JWT Authority: $($Matches[1])"
             }
         }

@@ -64,7 +64,7 @@ function Get-AppDocSourceFiles {
         [switch]$IncludeFixtures
     )
 
-    $files = Get-ChildItem -Path $RootPath -Recurse -File -Include $Include -ErrorAction SilentlyContinue
+    $files = Get-ChildItem -Path "$RootPath\*" -Recurse -File -Include $Include -ErrorAction SilentlyContinue
 
     return @(
         $files | Where-Object {

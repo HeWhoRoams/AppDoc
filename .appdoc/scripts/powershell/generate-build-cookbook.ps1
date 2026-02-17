@@ -369,6 +369,10 @@ $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 $artifact = "build-cookbook"
 $contract = Get-AppDocArtifactContract -Artifact $artifact
+if (-not $contract) {
+    Write-Warning "No contract found for artifact '$artifact'; using empty requirements."
+    $contract = @{ requiredEvidenceKeys = @(); requiredSections = @() }
+}
 $evidenceRecords = @()
 
 $evidenceRecords += @(
@@ -403,8 +407,7 @@ $evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $arti
     prerequisiteCount = $prerequisites.Count
     cicdCount = $cicdInfo.Count
     generator = "generate-build-cookbook.ps1"
-}
-if ($evidencePath) {
+}if ($evidencePath) {
     [void](Update-AppDocEvidenceManifest -RootPath $RootPath -Artifact $artifact -EvidencePath $evidencePath -RecordCount $evidenceRecords.Count -Metadata @{
         generator = "generate-build-cookbook.ps1"
     })

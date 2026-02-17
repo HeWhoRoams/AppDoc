@@ -30,13 +30,16 @@ if (-not (Test-Path $RootPath)) {
     exit 1
 }
 
+if (-not (Get-Command Initialize-TemplateFile -ErrorAction SilentlyContinue)) {
+    Write-Error "Required function Initialize-TemplateFile not found. Ensure template-helpers.ps1 is available."
+    exit 1
+}
 $outputPath = Join-Path $RootPath "docs\task-guides.md"
 $initialized = Initialize-TemplateFile -TemplateName "task-guides-template.md" -OutputPath $outputPath -RootPath $RootPath
 if (-not $initialized) {
     Write-Error "Failed to initialize task-guides template"
     exit 1
 }
-
 $docsPath = Join-Path $RootPath "docs"
 $evidenceRoot = Join-Path $docsPath "evidence"
 
@@ -53,12 +56,12 @@ function Get-EvidenceRecords {
 
     try {
         $payload = Get-Content $path -Raw | ConvertFrom-Json
+        if ($null -eq $payload.records) { return @() }
         return @($payload.records)
     }
     catch {
         return @()
-    }
-}
+    }}
 
 $apiRecords = Get-EvidenceRecords -EvidenceRoot $evidenceRoot -Artifact "api-inventory"
 $buildRecords = Get-EvidenceRecords -EvidenceRoot $evidenceRoot -Artifact "build-cookbook"

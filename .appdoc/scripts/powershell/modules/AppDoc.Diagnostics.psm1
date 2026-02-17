@@ -17,17 +17,10 @@ function Initialize-AppDocDiagnostics {
     }
 
     if ($RootPath) {
-        [void]$script:AppDocDiagnosticEvents.Add([ordered]@{
-            timestamp = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
-            category = "ENVIRONMENT_ERROR"
-            severity = "Info"
-            component = "orchestrator"
-            message = "Diagnostics initialized"
-            filePath = ""
-            details = @{ rootPath = $RootPath; outputPath = $OutputPath }
-        })
-    }
-}
+        Write-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" `
+            -Message "Diagnostics initialized" -Component "orchestrator" `
+            -Details @{ rootPath = $RootPath; outputPath = $OutputPath }
+    }}
 
 function Write-AppDocDiagnostic {
     [CmdletBinding()]
@@ -166,6 +159,13 @@ function Test-AppDocValidationGate {
         $true
     }
 
+    $passes = if ($Strict) {
+        ($below -eq 0)
+    }
+    else {
+        ($average -ge $QualityThreshold)
+    }
+
     return [ordered]@{
         passed = $passes
         reason = if ($passes) { "Validation gate passed" } else { "Strict validation gate failed" }
@@ -174,14 +174,6 @@ function Test-AppDocValidationGate {
         strict = $Strict.IsPresent
         qualityThreshold = $QualityThreshold
         evaluatedDocuments = $scored.Count
-    }
-}
-
-Export-ModuleMember -Function @(
-    'Initialize-AppDocDiagnostics',
-    'Write-AppDocDiagnostic',
-    'Get-AppDocDiagnostics',
-    'Get-AppDocDiagnosticsSummary',
-    'Export-AppDocDiagnostics',
+    }    'Export-AppDocDiagnostics',
     'Test-AppDocValidationGate'
 )

@@ -48,14 +48,41 @@ function Get-AppDocDetectedFrameworks {
 
     $hasCsproj = @(Get-ChildItem -Path $RootPath -Recurse -Filter "*.csproj" -File -ErrorAction SilentlyContinue).Count -gt 0
     $hasSln = @(Get-ChildItem -Path $RootPath -Recurse -Filter "*.sln" -File -ErrorAction SilentlyContinue).Count -gt 0
-    $csFiles = @(Get-ChildItem -Path $RootPath -Recurse -Filter "*.cs" -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '(\\bin\\|\\obj\\)' })
-    $tsJsFiles = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.ts","*.js" -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '(\\node_modules\\|\\dist\\|\\build\\)' })
-    $pyFiles = @(Get-ChildItem -Path $RootPath -Recurse -Filter "*.py" -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '(\\.venv\\|\\__pycache__\\)' })
-    $javaFiles = @(Get-ChildItem -Path $RootPath -Recurse -Filter "*.java" -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '(\\target\\|\\build\\)' })
+    $csFiles = @(Get-ChildItem -Path $RootPath -Recurse -Filter "*.cs" -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '([\\/]bin[\\/]|[\\/]obj[\\/])' })
+    $tsJsFiles = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.ts","*.js" -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '([\\/]node_modules[\\/]|[\\/]dist[\\/]|[\\/]build[\\/])' })
+    $pyFiles = @(Get-ChildItem -Path $RootPath -Recurse -Filter "*.py" -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '([\\/]\.venv[\\/]|[\\/]__pycache__[\\/])' })
+    $javaFiles = @(Get-ChildItem -Path $RootPath -Recurse -Filter "*.java" -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '([\\/]target[\\/]|[\\/]build[\\/])' })
 
     if ($hasCsproj -or $hasSln -or $csFiles.Count -gt 0) {
         $isCore = $false
         $isMvc5 = $false
+        $hasWebSdk = $false
+
+        # Check .csproj files for web SDK or ASP.NET Core packages
+        $csprojFiles = Get-ChildItem -Path $RootPath -Recurse -Filter "*.csproj" -File -ErrorAction SilentlyContinue
+        foreach ($csproj in $csprojFiles) {
+            try {
+                [xml]$csprojContent = Get-Content $csproj.FullName -Raw -ErrorAction SilentlyContinue
+                if ($csprojContent -and $csprojContent.Project) {
+                    $sdk = $csprojContent.Project.Sdk
+                    if ($sdk -and $sdk -match 'Microsoft\.NET\.Sdk\.Web') {
+                        $hasWebSdk = $true
+                    }
+                    # Check for PackageReference entries like Microsoft.AspNetCore.*
+                    if ($csprojContent.Project.ItemGroup -and $csprojContent.Project.ItemGroup.PackageReference) {
+                        foreach ($pkg in $csprojContent.Project.ItemGroup.PackageReference) {
+                            if ($pkg.Include -and $pkg.Include -match '^Microsoft\.AspNetCore\.') {
+                                $hasWebSdk = $true
+                            }
+                        }
+                    }
+                    # Check for AspNetCoreHostingModel
+                    if ($csprojContent.Project.PropertyGroup -and $csprojContent.Project.PropertyGroup.AspNetCoreHostingModel) {
+                        $hasWebSdk = $true
+                    }
+                }
+            } catch { }
+        }
 
         foreach ($file in ($csFiles | Select-Object -First 40)) {
             $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
@@ -63,7 +90,7 @@ function Get-AppDocDetectedFrameworks {
             if ($content -match 'System\.Web\.Mvc|Controller\s*:\s*Controller') { $isMvc5 = $true }
         }
 
-        if ($isCore -or $hasCsproj) {
+        if ($isCore -or $hasWebSdk) {
             $record = $matrix | Where-Object { $_.framework -eq "ASP.NET Core" } | Select-Object -First 1
             [void]$detections.Add($record)
         }
@@ -94,7 +121,9 @@ function Get-AppDocDetectedFrameworks {
             $record = $matrix | Where-Object { $_.framework -eq "FastAPI" } | Select-Object -First 1
             [void]$detections.Add($record)
         }
-        if ($reqText -match '(?im)^\s*django' -or (Test-Path (Join-Path $RootPath "urls.py"))) {
+        # Check for Django: recursively search for urls.py or check requirements
+        $hasDjangoUrls = $null -ne (Get-ChildItem -Path $RootPath -Recurse -Filter "urls.py" -File -ErrorAction SilentlyContinue | Select-Object -First 1)
+        if ($reqText -match '(?im)^\s*django' -or $hasDjangoUrls) {
             $record = $matrix | Where-Object { $_.framework -eq "Django" } | Select-Object -First 1
             [void]$detections.Add($record)
         }

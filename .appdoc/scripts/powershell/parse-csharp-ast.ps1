@@ -80,7 +80,21 @@ function Get-LineNumber {
         [int]$Index
     )
 
-    if ($Index -lt 0) { return 1 }
+    # Handle null or empty content
+    if ([string]::IsNullOrEmpty($Content)) {
+        return 1
+    }
+
+    # Handle negative index
+    if ($Index -lt 0) {
+        return 1
+    }
+
+    # Clamp index to valid range (0 to Content.Length)
+    if ($Index -gt $Content.Length) {
+        $Index = $Content.Length
+    }
+
     return ($Content.Substring(0, $Index) -split "`n").Count
 }
 
@@ -128,8 +142,7 @@ foreach ($file in $csFiles) {
             lineNumber = $lineNumber
             metadata = @{ properties = $properties; language = "C#" }
             provider = $provider
-            confidence = if ($provider -eq "roslyn-bridge-pending") { 0.8 } else { 0.5 }
-        }
+            confidence = 0.5        }
 
         $records += [ordered]@{
             file = $relativePath
@@ -203,8 +216,11 @@ $payload = [ordered]@{
     note = if ($dotnetExists) { "Roslyn provider unavailable at runtime; using regex fallback." } else { "dotnet SDK not available; using regex fallback." }
 }
 
+$cacheDir = Split-Path $cachePath -Parent
+if (-not (Test-Path $cacheDir)) {
+    New-Item -ItemType Directory -Path $cacheDir -Force | Out-Null
+}
 $payload | ConvertTo-Json -Depth 20 | Out-File -FilePath $cachePath -Encoding UTF8
-
 if ($Json) {
     $payload | ConvertTo-Json -Depth 20
 }

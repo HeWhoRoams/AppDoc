@@ -84,9 +84,8 @@ function New-ContainerMermaid {
 
     foreach ($container in @($ContainerModel.Containers)) {
         $containerId = ConvertTo-MermaidNodeId -Text $container.Id
-        $lines += "    $containerId[`"$($container.Name)`n$($container.Technology)`"]"
+        $lines += "    $containerId[`"$($container.Name)<br/>$($container.Technology)`"]"
     }
-
     foreach ($rel in @($ContainerModel.Relationships)) {
         $sourceId = ConvertTo-MermaidNodeId -Text $rel.Source
         $targetId = ConvertTo-MermaidNodeId -Text $rel.Target

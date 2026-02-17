@@ -20,19 +20,25 @@ if (Test-Path $helpersPath) {
 }
 
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
-if (Test-Path $scopeModule) {
-    Import-Module $scopeModule -Force -ErrorAction Stop
+if (-not (Test-Path $scopeModule)) {
+    Write-Error "Required module not found: $scopeModule"
+    exit 1
 }
+Import-Module $scopeModule -Force -ErrorAction Stop
 
 $contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
-if (Test-Path $contractsModule) {
-    Import-Module $contractsModule -Force -ErrorAction Stop
+if (-not (Test-Path $contractsModule)) {
+    Write-Error "Required module not found: $contractsModule"
+    exit 1
 }
+Import-Module $contractsModule -Force -ErrorAction Stop
 
 $evidenceModule = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
-if (Test-Path $evidenceModule) {
-    Import-Module $evidenceModule -Force -ErrorAction Stop
+if (-not (Test-Path $evidenceModule)) {
+    Write-Error "Required module not found: $evidenceModule"
+    exit 1
 }
+Import-Module $evidenceModule -Force -ErrorAction Stop
 
 Write-Host "📋 Generating Technical Debt Register..." -ForegroundColor Cyan
 
@@ -59,10 +65,9 @@ $debts = @()
 try {
     $codeFiles = Get-ChildItem -Path $RootPath -Recurse -Include "*.js","*.ts","*.cs","*.py","*.java" -ErrorAction Stop |
         Where-Object {
-            $_.FullName -notmatch '(\\node_modules\\|\\bin\\|\\obj\\|\\__pycache__|\\dist\\|\\packages\\|\\Scripts\\lib\\|\\wwwroot\\lib\\|\\vendor\\|\\third_party\\)' -and
+            $_.FullName -notmatch '([/\\]node_modules[/\\]|[/\\]bin[/\\]|[/\\]obj[/\\]|[/\\]__pycache__[/\\]|[/\\]dist[/\\]|[/\\]packages[/\\]|[/\\]Scripts[/\\]lib[/\\]|[/\\]wwwroot[/\\]lib[/\\]|[/\\]vendor[/\\]|[/\\]third_party[/\\])' -and
             $_.Name -notmatch '\.min\.'
         }
-
     Write-Host "  Scanning $($codeFiles.Count) code files..." -ForegroundColor Gray
 
     foreach ($file in $codeFiles) {

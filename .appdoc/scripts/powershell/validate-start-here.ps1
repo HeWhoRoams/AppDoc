@@ -5,14 +5,13 @@ param(
 
 Write-Progress -Activity "Validating Start Here" -Status "Checking start-here guide..." -PercentComplete 0
 
-$path = Join-Path $RootPath "docs\start-here.md"
-if (-not (Test-Path $path)) {
+$path = Join-Path $RootPath "docs" "start-here.md"if (-not (Test-Path $path)) {
     Write-Error "Start Here file not found at $path"
     exit 1
 }
 
 $content = Get-Content $path -Raw
-if ($content -notmatch "# Start Here") {
+if ($content -notmatch "(?m)^# Start Here") {
     Write-Error "Invalid Start Here format"
     exit 1
 }

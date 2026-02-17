@@ -14,7 +14,7 @@ AppDoc uses a Mermaid-first workflow for C4 architecture diagrams. The workflow 
 
 **Command**:
 ```powershell
-.\\.appdoc\scripts\powershell\generate-c4-mermaid-diagrams.ps1 `
+.\appdoc\scripts\powershell\generate-c4-mermaid-diagrams.ps1 `
   -CodebasePath ".\MySolution.sln" `
   -OutputPath ".\docs" `
   -DiagramLevels All
@@ -39,7 +39,7 @@ Mermaid diagrams are embedded in markdown and viewable directly in Markdown rend
 ```powershell
 cd C:\Projects\MyApplication
 
-.\\.appdoc\scripts\powershell\generate-c4-mermaid-diagrams.ps1 `
+.\appdoc\scripts\powershell\generate-c4-mermaid-diagrams.ps1 `
   -CodebasePath ".\MyApplication.sln" `
   -OutputPath ".\docs" `
   -DiagramLevels All `

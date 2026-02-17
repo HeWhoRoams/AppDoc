@@ -11,8 +11,12 @@ function Get-AppDocProfile {
         [string]$Profile = "default"
     )
 
-    $profileDir = Join-Path $RootPath ".appdoc\profiles"
-    $profilePath = if (Test-Path $Profile) { $Profile } else { Join-Path $profileDir ("{0}.json" -f $Profile) }
+    $profileDir = Join-Path (Join-Path $RootPath ".appdoc") "profiles"
+    $profilePath = if ([System.IO.Path]::IsPathRooted($Profile)) { 
+        $Profile 
+    } else { 
+        Join-Path $profileDir ("{0}.json" -f $Profile) 
+    }
 
     if (Test-Path $profilePath) {
         try {
@@ -40,16 +44,16 @@ function Get-AppDocPlugins {
         [string]$RootPath
     )
 
-    $pluginDir = Join-Path $RootPath ".appdoc\plugins"
+    $pluginDir = Join-Path (Join-Path $RootPath ".appdoc") "plugins"
     if (-not (Test-Path $pluginDir)) {
         return @()
     }
 
-    $pluginFiles = Get-ChildItem -Path $pluginDir -File -Include "*.ps1", "*.psm1" -ErrorAction SilentlyContinue
+    $pluginFiles = Get-ChildItem -Path (Join-Path $pluginDir '*') -File -ErrorAction SilentlyContinue | Where-Object { $_.Extension -in '.ps1', '.psm1' }
     return @($pluginFiles | Select-Object -ExpandProperty FullName)
 }
 
-function Invoke-AppDocPluginHook {
+function Invoke-PluginHook {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
@@ -69,8 +73,10 @@ function Invoke-AppDocPluginHook {
                 . $plugin
             }
 
-            if (Get-Command "Invoke-AppDocPluginHook" -ErrorAction SilentlyContinue) {
-                Invoke-AppDocPluginHook -Hook $Hook -Context $Context | Out-Null
+            # Check for plugin-specific hook function (distinct from this module's function)
+            $hookFunction = "Invoke-AppDocPlugin"
+            if (Get-Command $hookFunction -ErrorAction SilentlyContinue) {
+                & $hookFunction -Hook $Hook -Context $Context | Out-Null
             }
         }
         catch {
@@ -79,8 +85,11 @@ function Invoke-AppDocPluginHook {
     }
 }
 
+# Alias for backward compatibility
+New-Alias -Name "Invoke-AppDocPluginHook" -Value "Invoke-PluginHook" -Scope Script
+
 Export-ModuleMember -Function @(
     'Get-AppDocProfile',
     'Get-AppDocPlugins',
-    'Invoke-AppDocPluginHook'
+    'Invoke-PluginHook'
 )

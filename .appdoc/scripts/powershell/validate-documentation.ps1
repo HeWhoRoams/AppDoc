@@ -10,9 +10,25 @@ param(
 $diagnosticsModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagnostics.psm1"
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
 $contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
-if (Test-Path $diagnosticsModule) { Import-Module $diagnosticsModule -Force -ErrorAction Stop }
-if (Test-Path $scopeModule) { Import-Module $scopeModule -Force -ErrorAction Stop }
-if (Test-Path $contractsModule) { Import-Module $contractsModule -Force -ErrorAction Stop }
+
+# Required modules - fail fast if any are missing
+if (-not (Test-Path $diagnosticsModule)) {
+    Write-Error "Required module not found: $diagnosticsModule"
+    exit 1
+}
+Import-Module $diagnosticsModule -Force -ErrorAction Stop
+
+if (-not (Test-Path $scopeModule)) {
+    Write-Error "Required module not found: $scopeModule"
+    exit 1
+}
+Import-Module $scopeModule -Force -ErrorAction Stop
+
+if (-not (Test-Path $contractsModule)) {
+    Write-Error "Required module not found: $contractsModule"
+    exit 1
+}
+Import-Module $contractsModule -Force -ErrorAction Stop
 
 $docsPath = Join-Path $RootPath "docs"
 if (-not (Test-Path $docsPath)) {
@@ -112,7 +128,9 @@ $validatorScripts = @(
     @{ script = "validate-build-cookbook.ps1"; artifact = "build-cookbook.md" },
     @{ script = "validate-test-catalog.ps1"; artifact = "test-catalog.md" },
     @{ script = "validate-task-guides.ps1"; artifact = "task-guides.md" },
-    @{ script = "validate-debt-register.ps1"; artifact = "debt-register.md" }
+    @{ script = "validate-debt-register.ps1"; artifact = "debt-register.md" },
+    # dependencies-catalog is validated via generic contract validation rather than a dedicated script
+    @{ script = "validate-dependencies-catalog.ps1"; artifact = "dependencies-catalog.md" }
 )
 
 $artifactMap = @{
@@ -700,19 +718,21 @@ function Get-TaskGuideOutcomeMetrics {
         $issues += "task-guide-evidence-snapshot-low:$([Math]::Round($avgSnapshots,1))"
     }
 
-    $evidenceCoverageScore = 0
+            $evidenceCoverageScore = 0
     $taskGuidesEvidencePath = Join-Path $EvidenceRoot "task-guides.evidence.json"
     if (Test-Path $taskGuidesEvidencePath) {
         try {
             $evidence = Get-Content $taskGuidesEvidencePath -Raw | ConvertFrom-Json
             $taskGuideRecords = @($evidence.records | Where-Object { [string]$_.kind -eq 'task-guide' })
-            $summaryRecord = @($evidence.records | Where-Object { [string]$_.kind -eq 'summary' } | Select-Object -First 1)
+            # Get single summary record (Select-Object -First 1 returns a single object or $null)
+            $summaryRecord = $evidence.records | Where-Object { [string]$_.kind -eq 'summary' } | Select-Object -First 1
 
             $taskRecordScore = [Math]::Round(([Math]::Min($taskGuideRecords.Count, 4) / 4) * 100, 1)
 
             $evidenceKeysSatisfied = 0
-            if ($summaryRecord.Count -gt 0 -and $summaryRecord[0].metadata) {
-                $meta = $summaryRecord[0].metadata
+            # Treat $summaryRecord as a single object, not an array
+            if ($summaryRecord -and $summaryRecord.metadata) {
+                $meta = $summaryRecord.metadata
                 foreach ($key in @('endpointCount', 'buildCommandCount', 'dependencyCount', 'debtCount', 'testCount')) {
                     if ($meta.$key -and [int]$meta.$key -gt 0) {
                         $evidenceKeysSatisfied++

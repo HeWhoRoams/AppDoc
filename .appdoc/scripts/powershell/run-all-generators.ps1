@@ -253,9 +253,7 @@ function Test-GeneratedDoc {
     param(
         [Parameter(Mandatory=$true)]
         [string]$FilePath,
-        [Parameter(Mandatory=$true)]
-        [string]$DocType,
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$false)]
         [string]$RootPath
     )
     

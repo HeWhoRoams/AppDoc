@@ -12,6 +12,30 @@ if (Test-Path $diagnosticsModule) { Import-Module $diagnosticsModule -Force -Err
 if (Test-Path $frameworkModule) { Import-Module $frameworkModule -Force -ErrorAction Stop }
 if (Test-Path $scopeModule) { Import-Module $scopeModule -Force -ErrorAction Stop }
 
+# Fallback for Write-AppDocDiagnostic if module wasn't loaded
+if (-not (Get-Command Write-AppDocDiagnostic -ErrorAction SilentlyContinue)) {
+    function Write-AppDocDiagnostic {
+        param(
+            [Parameter(Mandatory=$false)]
+            [string]$Category,
+            [Parameter(Mandatory=$false)]
+            [string]$Severity,
+            [Parameter(Mandatory=$true)]
+            [string]$Message,
+            [Parameter(Mandatory=$false)]
+            [string]$Component,
+            [Parameter(Mandatory=$false)]
+            [string]$FilePath,
+            [Parameter(Mandatory=$false)]
+            [hashtable]$Details
+        )
+        # Lightweight fallback - write to verbose
+        $verboseMsg = "[$Category] $Message"
+        if ($FilePath) { $verboseMsg += " (File: $FilePath)" }
+        Write-Verbose $verboseMsg
+    }
+}
+
 if (-not (Test-Path $RootPath)) {
     Write-Error "Root path does not exist: $RootPath"
     exit 1
@@ -19,7 +43,16 @@ if (-not (Test-Path $RootPath)) {
 
 $docsPath = Join-Path $RootPath "docs"
 if ($Fix -and -not (Test-Path $docsPath)) {
-    New-Item -Path $docsPath -ItemType Directory -Force | Out-Null
+    try {
+        New-Item -Path $docsPath -ItemType Directory -Force -ErrorAction Stop | Out-Null
+        if (-not (Test-Path $docsPath)) {
+            throw "Directory was not created: $docsPath"
+        }
+    }
+    catch {
+        Write-Error "Failed to create docs directory: $docsPath. Exception: $($_.Exception.Message)"
+        exit 1
+    }
 }
 
 if (Get-Command Initialize-AppDocDiagnostics -ErrorAction SilentlyContinue) {
@@ -83,15 +116,28 @@ if (-not (Test-Path $docsPath)) {
 else {
     try {
         $testWrite = Join-Path $docsPath ".appdoc-write-test.tmp"
-        "ok" | Out-File -FilePath $testWrite -Encoding UTF8
-        Remove-Item $testWrite -Force -ErrorAction SilentlyContinue
+        "ok" | Out-File -FilePath $testWrite -Encoding UTF8 -ErrorAction Stop
+        try {
+            Remove-Item $testWrite -Force -ErrorAction Stop
+        }
+        catch {
+            Write-Warning "Failed to remove temp file: $testWrite. Exception: $($_.Exception.Message)"
+            # Attempt forced cleanup
+            Remove-Item $testWrite -Force -ErrorAction SilentlyContinue
+        }
     }
     catch {
         Write-AppDocDiagnostic -Category "IO_ERROR" -Severity "Error" -Message "Output docs directory is not writable" -Component "diagnose" -FilePath $docsPath -Details @{ exception = $_.Exception.Message } | Out-Null
     }
 }
 
-$sourceFiles = @(Get-AppDocSourceFiles -RootPath $RootPath -Include @("*.cs","*.js","*.ts","*.py","*.java"))
+$sourceFiles = @()
+if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
+    $sourceFiles = @(Get-AppDocSourceFiles -RootPath $RootPath -Include @("*.cs","*.js","*.ts","*.py","*.java"))
+}
+else {
+    Write-AppDocDiagnostic -Category "NOT_FOUND" -Severity "Warning" -Message "Get-AppDocSourceFiles command not available - AppDoc.Scope module may not be loaded" -Component "diagnose" | Out-Null
+}
 if ($sourceFiles.Count -eq 0) {
     Write-AppDocDiagnostic -Category "NOT_FOUND" -Severity "Warning" -Message "No supported source files detected" -Component "diagnose" | Out-Null
 }
@@ -104,7 +150,15 @@ if (Get-Command Get-AppDocDetectedFrameworks -ErrorAction SilentlyContinue) {
     }
 }
 
-$summary = Get-AppDocDiagnosticsSummary
+$summary = $null
+if (Get-Command Get-AppDocDiagnosticsSummary -ErrorAction SilentlyContinue) {
+    $summary = Get-AppDocDiagnosticsSummary
+}
+else {
+    Write-AppDocDiagnostic -Category "NOT_FOUND" -Severity "Warning" -Message "Get-AppDocDiagnosticsSummary command not available - diagnostics module may not be loaded" -Component "diagnose" | Out-Null
+    # Set safe default
+    $summary = @{ total = 0; hasErrors = $false; hasWarnings = $false }
+}
 $reportPath = Join-Path $docsPath "diagnostics-report.json"
 if (Get-Command Export-AppDocDiagnostics -ErrorAction SilentlyContinue) {
     Export-AppDocDiagnostics -Path $reportPath -AdditionalData @{ frameworks = $frameworks; sourceFileCount = $sourceFiles.Count; fixed = $Fix.IsPresent } | Out-Null
