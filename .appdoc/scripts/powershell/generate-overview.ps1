@@ -143,7 +143,8 @@ if ($contract) {
     $evidenceMetadata.requiredEvidenceKeys = @($contract.requiredEvidenceKeys)
     $evidenceMetadata.requiredSections = @($contract.requiredSections)
 }
-$evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $artifact -Records $evidenceRecords -Metadata $evidenceMetadataif ($evidencePath) {
+$evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $artifact -Records $evidenceRecords -Metadata $evidenceMetadata
+if ($evidencePath) {
     [void](Update-AppDocEvidenceManifest -RootPath $RootPath -Artifact $artifact -EvidencePath $evidencePath -RecordCount $evidenceRecords.Count -Metadata @{
         generator = "generate-overview.ps1"
     })
