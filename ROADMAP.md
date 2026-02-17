@@ -1,6 +1,6 @@
 # AppDoc Framework Development Roadmap
 
-**Last Updated:** November 14, 2025  
+**Last Updated:** February 17, 2026  
 **Current Version:** 1.0.0  
 **Target Audience:** Developers enhancing the AppDoc framework
 
@@ -12,6 +12,14 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 
 **Current Framework Effectiveness: 6.5/10** for legacy .NET codebases  
 **Target Framework Effectiveness: 9.0/10** for all major legacy frameworks
+
+## Current Status Snapshot (as of 2026-02-17)
+
+- Deterministic orchestration pipeline with strict validation is implemented and in active use (`run-all-generators.ps1`).
+- Preflight diagnostics are implemented via `appdoc.diagnose.ps1` and wired into `/appdoc.begin` as Phase 0.5.
+- Structured diagnostics/contracts/evidence modules are implemented (`AppDoc.Diagnostics`, `AppDoc.Contracts`, `AppDoc.Evidence`, `AppDoc.Scope`).
+- Mermaid C4 generation replaced the prior PlantUML pipeline (`generate-c4-mermaid-diagrams.ps1`).
+- Framework support matrix is now maintained in `README.md` (not a standalone `FRAMEWORK_SUPPORT.md` file).
 
 ---
 
@@ -45,8 +53,10 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 
 **Summary:** Create a diagnostic script that tests AppDoc framework health on target codebase before running generators.
 
+**Status:** Mostly implemented (script + workflow integration complete; dedicated unit tests still pending).
+
 **Implementation Details:**
-1. Create `test-appdoc-environment.ps1` script that validates:
+1. Create `appdoc.diagnose.ps1` script that validates:
    - PowerShell version (>= 7.0)
    - Template files exist in `.appdoc/templates/`
    - All generator scripts are present and parseable
@@ -61,11 +71,11 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 4. Include `--fix` flag to auto-remediate common issues (create missing dirs, etc.)
 
 **Definition of Done:**
-- [ ] `test-appdoc-environment.ps1` script created and added to `scripts/powershell/`
-- [ ] Script validates all environment prerequisites
-- [ ] Script produces color-coded report (Green/Yellow/Red)
-- [ ] `--fix` flag implemented for auto-remediation
-- [ ] Integrated into `appdoc.begin.prompt.md` workflow
+- [x] `appdoc.diagnose.ps1` script created and added to `scripts/powershell/`
+- [x] Script validates environment prerequisites
+- [x] Script produces actionable diagnostics output
+- [x] `-Fix` flag implemented for auto-remediation
+- [x] Integrated into `appdoc.begin.prompt.md` workflow
 - [ ] Unit tests validate diagnostic checks work correctly
 
 **Complexity/Effort:** Medium
@@ -112,10 +122,12 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 
 ### HP-4: Add Framework Detection Matrix
 
-**Summary:** Create a support matrix document showing which frameworks/patterns AppDoc can detect.
+**Summary:** Maintain a support matrix showing which frameworks/patterns AppDoc can detect.
+
+**Status:** Implemented in `README.md` (migrated from standalone file model).
 
 **Implementation Details:**
-1. Create `FRAMEWORK_SUPPORT.md` documenting:
+1. Maintain `README.md` "Framework Support Matrix" section documenting:
    - ✅ Fully Supported (with version ranges)
    - ⚠️ Partially Supported (with limitations)
    - ❌ Not Supported (with planned date if applicable)
@@ -131,15 +143,15 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
    - Java (Spring Boot, JAX-RS)
    - Ruby (Rails, Sinatra)
    - Go (Gin, Echo)
-4. Link from README.md and all prompt files
+4. Link from prompts/workflow docs to README framework matrix section when needed
 5. Include "Request Framework Support" section with contribution guide
 
 **Definition of Done:**
-- [ ] `FRAMEWORK_SUPPORT.md` created with current support status
+- [x] Framework support matrix is present with current support status
 - [ ] Support matrix covers 20+ major frameworks
-- [ ] Each framework entry includes detection patterns and examples
-- [ ] Document linked from README.md and prompt files
-- [ ] Contribution guide included for adding framework support
+- [x] Framework entries include detection patterns and examples
+- [x] Matrix is in README (single-source location)
+- [x] Contribution/request guidance is included
 - [ ] Automated test validates support matrix accuracy
 
 **Complexity/Effort:** Low
@@ -230,7 +242,7 @@ The following practical improvements were observed during the LmsConnect run and
 - [ ] Django URL pattern and view extraction implemented (Python 3.7+)
 - [ ] Flask route detection implemented (Python 3.7+)
 - [ ] All three frameworks validated against real-world projects
-- [ ] `FRAMEWORK_SUPPORT.md` updated with new framework support
+- [ ] README framework matrix updated with new framework support
 - [ ] API inventory template includes framework-specific sections
 - [ ] Test suite includes sample projects for each framework
 

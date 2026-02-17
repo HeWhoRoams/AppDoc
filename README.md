@@ -11,20 +11,25 @@ AppDoc provides automated documentation extraction, quality assessment, and impr
 
 - **PowerShell 7+** (required for all scripts)
 - **Windows OS** (tested)
-- **VsCode** (future support for CLI AI coming soon)
-- **Current documentation output** in `docs/`
+- **VS Code + GitHub Copilot Chat** (for `/appdoc.begin`, `/appdoc.enhance`, `/appdoc.diagrams` commands)
+- **Target codebase path** where `docs/` output can be written
 
-## Required Files
+## Core Scripts
 
-To run the full documentation extraction and assessment workflow, ensure the following files exist:
+Primary deterministic workflow:
 
-- `.appdoc/scripts/powershell/analyze-capability-gaps.ps1` — Analyze documentation quality and identify gaps
-- `.appdoc/scripts/powershell/generate-improvements.ps1` — Generate improvement suggestions
-- `.appdoc/scripts/powershell/calculate-quality-metrics.ps1` — Compute quality metrics
-- `.appdoc/scripts/powershell/synthesize-assessment-report.ps1` — Generate final assessment report
-- `.appdoc/scripts/powershell/run-all-generators.ps1` — Run all documentation generators and assessment scripts
-- `.appdoc/scripts/powershell/quality-framework.psm1` — Quality scoring functions
-- `.appdoc/scripts/powershell/gap-analysis.psm1` — Gap analysis data structures
+- `.appdoc/scripts/powershell/run-all-generators.ps1` — end-to-end deterministic pipeline
+- `.appdoc/scripts/powershell/appdoc.diagnose.ps1` — environment/readiness diagnostics
+- `.appdoc/scripts/powershell/validate-documentation.ps1` — structured validation + scoring
+- `.appdoc/scripts/powershell/remediate-generated-docs.ps1` — post-generation cleanup + evidence traceability
+
+Key generators in current workflow include:
+
+- `generate-overview.ps1`, `generate-start-here.ps1`, `generate-docs-index.ps1`
+- `generate-api-inventory.ps1`, `generate-data-model.ps1`, `generate-config-catalog.ps1`
+- `generate-build-cookbook.ps1`, `generate-test-catalog.ps1`, `generate-task-guides.ps1`
+- `generate-debt-register.ps1`, `generate-dependencies-catalog.ps1`
+- `generate-c4-mermaid-diagrams.ps1`
 
 ## Quick Start
 
@@ -36,15 +41,100 @@ To run the full documentation extraction and assessment workflow, ensure the fol
 
 That's it — AppDoc will perform environment checks and walk you through analysis and generation.
 
+## Architecture Diagrams
+
+AppDoc now generates **Mermaid C4 diagrams** in Markdown format under `docs/diagrams/`.
+
+- `docs/diagrams/c4-context.md`
+- `docs/diagrams/c4-container.md`
+
+Use `/appdoc.diagrams` to AI-enhance those Mermaid diagrams in place.
+
+## Script Execution Modes
+
+You can run deterministic generation directly with:
+
+`pwsh ./.appdoc/scripts/powershell/run-all-generators.ps1 -RootPath <codebase-path>`
+
+Useful flags:
+
+- `-DryRun` — previews which scripts and phases would run without generating artifacts.
+- `-StrictValidation` — fails the run when generated artifacts score below threshold.
+- `-QualityThreshold <1-100>` — sets strict validation cutoff (default: `80`).
+- `-SkipDiagrams` — skips C4 diagram generation.
+- `-NoAI` — runs deterministic extraction + validation only.
+
+Mermaid C4 diagrams can be generated directly with:
+
+`pwsh ./.appdoc/scripts/powershell/generate-c4-mermaid-diagrams.ps1 -RootPath <codebase-path> -OutputPath <codebase-path>/docs -DiagramLevels All`
+
+To AI-enhance generated Mermaid diagrams in place, run `/appdoc.diagrams` in Copilot Chat.
+
+Diagnostics and validation commands:
+
+- `pwsh ./.appdoc/scripts/powershell/appdoc.diagnose.ps1 -RootPath <codebase-path> -Fix`
+- `pwsh ./.appdoc/scripts/powershell/validate-documentation.ps1 -RootPath <codebase-path>`
+- `pwsh ./.appdoc/scripts/powershell/validate-documentation.ps1 -RootPath <codebase-path> -Strict -Threshold 80`
+
+## Framework Support Matrix
+
+Last updated: 2026-02-17
+
+### Supported Frameworks
+
+| Status | Language | Framework | Version Range | Coverage | Notes |
+|---|---|---|---|---:|---|
+| ✅ Full | C# | ASP.NET Core | 2.1+ | 90% | Controller/route detection, config extraction, model heuristics |
+| ⚠️ Partial | C# | ASP.NET MVC 5 | 5.x | 75% | Action detection supported; some attribute edge cases remain |
+| ⚠️ Partial | JS/TS | Express.js | 4.x | 60% | Basic `app.METHOD` and router patterns; middleware chains limited |
+| ⚠️ Partial | Python | Flask | 2.x+ | 65% | `@app.route` and common blueprint patterns supported |
+| ⚠️ Partial | Python | FastAPI | 0.9+ | 70% | Decorator and response model heuristics supported |
+| ⚠️ Partial | Python | Django | 3.x+ | 55% | URL pattern extraction supported; deep viewset inference limited |
+| ⚠️ Partial | Java | Spring Boot | 2.x+ | 60% | `@*Mapping` and `@RequestMapping` scanning supported |
+
+### Unsupported or Planned
+
+| Status | Framework | Planned |
+|---|---|---|
+| ❌ Not supported | Ruby on Rails | Planned (TBD) |
+| ❌ Not supported | Go (Gin/Echo) | Planned (TBD) |
+| ❌ Not supported | PHP (Laravel) | Planned (TBD) |
+
+### Detection Signals
+
+- C#: `*.csproj`, `*.sln`, `[ApiController]`, `[HttpGet]`, `MapControllers`
+- JS/TS: `package.json` dependencies (`express`) and `app.get` / `router.get` patterns
+- Python: `requirements.txt` / `pyproject.toml` deps (`flask`, `fastapi`, `django`), route decorators, `urls.py`
+- Java: `pom.xml` Spring dependencies, `@RestController`, `@RequestMapping`
+
+### Requesting New Framework Support
+
+Open an issue with:
+
+1. Framework name and target version
+2. Minimal sample project or repo
+3. Expected artifacts (API inventory, data model, config catalog, etc.)
+4. Known route/config/model patterns used in your codebase
+
 
 ## Output Files
-- **[API Inventory](api-inventory.md)** - HTTP endpoints and API contracts
-- **[Data Model](data-model.md)** - Data structures and entities
-- **[Configuration Catalog](config-catalog.md)** - Configuration options and environment variables
-- **[Build Cookbook](build-cookbook.md)** - Build and deployment commands
-- **[Test Catalog](test-catalog.md)** - Test suites and coverage
-- **[Tech Debt Register](debt-register.md)** - Known issues and improvement opportunities
-- **[Dependencies Catalog](dependencies-catalog.md)** - External packages and libraries
+- **[Start Here](docs/start-here.md)** - Role-based onboarding and quick orientation
+- **[Overview](docs/overview.md)** - High-level system summary and documentation index
+- **[API Inventory](docs/api-inventory.md)** - HTTP endpoints and API contracts
+- **[Data Model](docs/data-model.md)** - Data structures and entities
+- **[Configuration Catalog](docs/config-catalog.md)** - Configuration options and environment variables
+- **[Build Cookbook](docs/build-cookbook.md)** - Build and deployment commands
+- **[Test Catalog](docs/test-catalog.md)** - Test suites and coverage
+- **[Task Guides](docs/task-guides.md)** - Task-centric implementation and operations playbooks
+- **[Tech Debt Register](docs/debt-register.md)** - Known issues and improvement opportunities
+- **[Dependencies Catalog](docs/dependencies-catalog.md)** - External packages and libraries
+- **[Documentation Index](docs/index.md)** - Landing page linking all generated artifacts
+- **[C4 Context Diagram](docs/diagrams/c4-context.md)** - Mermaid C4 system context
+- **[C4 Container Diagram](docs/diagrams/c4-container.md)** - Mermaid C4 container view
+- **[Quality Report](docs/quality-report.json)** - Generator quality scoring output
+- **[Validation Report](docs/validation-report.json)** - Deterministic validation metrics
+- **[Diagnostics Report](docs/diagnostics-report.json)** - Environment/runtime diagnostics
+- **[Evidence Manifest](docs/evidence/manifest.json)** - Traceability index for artifact evidence records
 
 ## Troubleshooting
 
@@ -52,6 +142,7 @@ That's it — AppDoc will perform environment checks and walk you through analys
 - Use PowerShell 7+ for compatibility
 - Check file paths for documentation output
 - Review error messages for missing files or permissions
+- Run `pwsh ./.appdoc/scripts/powershell/appdoc.diagnose.ps1 -RootPath <codebase-path> -Fix` to validate environment and script readiness
 
 ## Contributing
 
@@ -64,7 +155,7 @@ Contributions are welcome! Please:
 
 ## License
 
-This project is licensed under the MIT License or something.
+License file is not currently included in this repository. Add a `LICENSE` file before external distribution.
 
 ## Support
 

@@ -19,6 +19,27 @@ if (Test-Path $helpersPath) {
     . $helpersPath
 }
 
+$scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
+if (-not (Test-Path $scopeModule)) {
+    Write-Error "Required module not found: $scopeModule"
+    exit 1
+}
+Import-Module $scopeModule -Force -ErrorAction Stop
+
+$contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
+if (-not (Test-Path $contractsModule)) {
+    Write-Error "Required module not found: $contractsModule"
+    exit 1
+}
+Import-Module $contractsModule -Force -ErrorAction Stop
+
+$evidenceModule = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
+if (-not (Test-Path $evidenceModule)) {
+    Write-Error "Required module not found: $evidenceModule"
+    exit 1
+}
+Import-Module $evidenceModule -Force -ErrorAction Stop
+
 Write-Host "📊 Generating System Overview..." -ForegroundColor Cyan
 
 # Validate root path
@@ -41,8 +62,7 @@ Write-Progress -Activity "Generating System Overview" -Status "Analyzing reposit
 $docsPath = Join-Path $RootPath "docs"
 
 # Quick file/language analysis instead of calling separate scripts
-$codeFiles = Get-ChildItem -Path $RootPath -Recurse -Include "*.cs","*.js","*.ts","*.py" -ErrorAction SilentlyContinue |
-    Where-Object { $_.FullName -notmatch '(\\node_modules\\|\\bin\\|\\obj\\|\\packages\\)' }
+$codeFiles = Get-AppDocSourceFiles -RootPath $RootPath -Include @("*.cs","*.js","*.ts","*.py")
 
 $languageCount = @{}
 $codeFiles | ForEach-Object {
@@ -96,6 +116,39 @@ if ($techStackContent) {
 }
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
+
+$artifact = "overview"
+$contract = Get-AppDocArtifactContract -Artifact $artifact
+$evidenceRecords = @()
+
+if ($systemPurposeContent) {
+    $evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "repository" -Name "system-purpose" -Kind "summary" -Confidence 0.8 -Provider "generator" -ProviderType "deterministic" -Metadata @{
+        text = $systemPurposeContent
+        fileCount = $codeFiles.Count
+        languageCount = $languageCount.Keys.Count
+    }
+}
+
+foreach ($lang in $languageCount.Keys) {
+    $evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "repository" -Name $lang -Kind "technology" -Confidence 0.8 -Provider "generator" -ProviderType "deterministic" -Metadata @{
+        extension = $lang
+        count = $languageCount[$lang]
+    }
+}
+
+$evidenceMetadata = @{
+    generator = "generate-overview.ps1"
+}
+if ($contract) {
+    $evidenceMetadata.requiredEvidenceKeys = @($contract.requiredEvidenceKeys)
+    $evidenceMetadata.requiredSections = @($contract.requiredSections)
+}
+$evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $artifact -Records $evidenceRecords -Metadata $evidenceMetadata
+if ($evidencePath) {
+    [void](Update-AppDocEvidenceManifest -RootPath $RootPath -Artifact $artifact -EvidencePath $evidencePath -RecordCount $evidenceRecords.Count -Metadata @{
+        generator = "generate-overview.ps1"
+    })
+}
 
 Write-Progress -Activity "Generating System Overview" -Status "Complete" -PercentComplete 100
 Write-Host "✅ System overview generated: $outputPath" -ForegroundColor Green
