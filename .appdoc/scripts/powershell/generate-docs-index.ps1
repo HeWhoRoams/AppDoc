@@ -26,13 +26,16 @@ Write-Progress -Activity "Generating Documentation Index" -Status "Reviewing art
 
 $docsPath = Join-Path $RootPath "docs"
 $artifacts = @(
+    @{ File = "start-here.md"; Title = "Start Here"; Description = "Role-based onboarding and broad-to-deep reading paths" },
     @{ File = "overview.md"; Title = "System Overview"; Description = "High-level codebase summary" },
     @{ File = "api-inventory.md"; Title = "API Inventory"; Description = "All API endpoints and contracts" },
     @{ File = "data-model.md"; Title = "Data Model"; Description = "Data structures and relationships" },
     @{ File = "config-catalog.md"; Title = "Configuration Catalog"; Description = "All configuration options" },
     @{ File = "build-cookbook.md"; Title = "Build Cookbook"; Description = "Build and deployment commands" },
     @{ File = "test-catalog.md"; Title = "Test Catalog"; Description = "Test suites and cases" },
-    @{ File = "debt-register.md"; Title = "Technical Debt Register"; Description = "Known technical debt items" }
+    @{ File = "task-guides.md"; Title = "Task Guides"; Description = "Task-centric implementation and operations playbooks" },
+    @{ File = "debt-register.md"; Title = "Technical Debt Register"; Description = "Known technical debt items" },
+    @{ File = "dependencies-catalog.md"; Title = "Dependencies Catalog"; Description = "External and internal dependencies with version risks" }
 )
 
 $markdown = "# Documentation Index`n`n"

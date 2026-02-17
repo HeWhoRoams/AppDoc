@@ -20,8 +20,7 @@ function Initialize-AppDocDiagnostics {
         Write-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" `
             -Message "Diagnostics initialized" -Component "orchestrator" `
             -Details @{ rootPath = $RootPath; outputPath = $OutputPath }
-    }
-}
+    }}
 
 function Write-AppDocDiagnostic {
     [CmdletBinding()]
@@ -157,6 +156,13 @@ function Test-AppDocValidationGate {
         ($below -eq 0)
     }
     else {
+        $true
+    }
+
+    $passes = if ($Strict) {
+        ($below -eq 0)
+    }
+    else {
         ($average -ge $QualityThreshold)
     }
 
@@ -171,11 +177,4 @@ function Test-AppDocValidationGate {
     }
 }
 
-Export-ModuleMember -Function @(
-    'Initialize-AppDocDiagnostics',
-    'Write-AppDocDiagnostic',
-    'Get-AppDocDiagnostics',
-    'Get-AppDocDiagnosticsSummary',
-    'Export-AppDocDiagnostics',
-    'Test-AppDocValidationGate'
-)
+Export-ModuleMember -Function 'Export-AppDocDiagnostics','Test-AppDocValidationGate'

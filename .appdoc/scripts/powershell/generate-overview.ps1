@@ -19,6 +19,27 @@ if (Test-Path $helpersPath) {
     . $helpersPath
 }
 
+$scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
+if (-not (Test-Path $scopeModule)) {
+    Write-Error "Required module not found: $scopeModule"
+    exit 1
+}
+Import-Module $scopeModule -Force -ErrorAction Stop
+
+$contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
+if (-not (Test-Path $contractsModule)) {
+    Write-Error "Required module not found: $contractsModule"
+    exit 1
+}
+Import-Module $contractsModule -Force -ErrorAction Stop
+
+$evidenceModule = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
+if (-not (Test-Path $evidenceModule)) {
+    Write-Error "Required module not found: $evidenceModule"
+    exit 1
+}
+Import-Module $evidenceModule -Force -ErrorAction Stop
+
 Write-Host "📊 Generating System Overview..." -ForegroundColor Cyan
 
 # Validate root path
@@ -41,8 +62,7 @@ Write-Progress -Activity "Generating System Overview" -Status "Analyzing reposit
 $docsPath = Join-Path $RootPath "docs"
 
 # Quick file/language analysis instead of calling separate scripts
-$codeFiles = Get-ChildItem -Path $RootPath -Recurse -Include "*.cs","*.js","*.ts","*.py" -ErrorAction SilentlyContinue |
-    Where-Object { $_.FullName -notmatch '(\\node_modules\\|\\bin\\|\\obj\\|\\packages\\)' }
+$codeFiles = Get-AppDocSourceFiles -RootPath $RootPath -Include @("*.cs","*.js","*.ts","*.py")
 
 $languageCount = @{}
 $codeFiles | ForEach-Object {

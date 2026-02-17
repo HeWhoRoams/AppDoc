@@ -19,6 +19,21 @@ if (Test-Path $helpersPath) {
     . $helpersPath
 }
 
+$scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
+if (Test-Path $scopeModule) {
+    Import-Module $scopeModule -Force -ErrorAction Stop
+}
+
+$contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
+if (Test-Path $contractsModule) {
+    Import-Module $contractsModule -Force -ErrorAction Stop
+}
+
+$evidenceModule = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
+if (Test-Path $evidenceModule) {
+    Import-Module $evidenceModule -Force -ErrorAction Stop
+}
+
 Write-Host "🔨 Generating Build Cookbook..." -ForegroundColor Cyan
 
 # Validate root path
@@ -348,8 +363,56 @@ if ($buildStepsContent) {
     $content = Update-TemplateSection -Content $content -PlaceholderText $oldText -NewContent $newText
 }
 
+$content = Normalize-AppDocTemplateInstructionText -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
+
+$artifact = "build-cookbook"
+$contract = Get-AppDocArtifactContract -Artifact $artifact
+if (-not $contract) {
+    Write-Warning "No contract found for artifact '$artifact'; using empty requirements."
+    $contract = @{ requiredEvidenceKeys = @(); requiredSections = @() }
+}
+$evidenceRecords = @()
+
+$evidenceRecords += @(
+    $commands | ForEach-Object {
+        New-AppDocExtractionRecord -Artifact $artifact -Source ([string]$_.source) -Name ([string]$_.name) -Kind "build-command" -Confidence 0.85 -Provider "generator" -ProviderType "deterministic" -Metadata @{
+            command = [string]$_.command
+            type = [string]$_.type
+            invocation = [string]$_.invocation
+        }
+    }
+)
+
+$evidenceRecords += @(
+    $prerequisites | ForEach-Object {
+        New-AppDocExtractionRecord -Artifact $artifact -Source "repository" -Name ([string]$_) -Kind "prerequisite" -Confidence 0.8 -Provider "generator" -ProviderType "deterministic" -Metadata @{}
+    }
+)
+
+$evidenceRecords += @(
+    $cicdInfo | ForEach-Object {
+        New-AppDocExtractionRecord -Artifact $artifact -Source ([string]$_.path) -Name ([string]$_.platform) -Kind "cicd" -Confidence 0.8 -Provider "generator" -ProviderType "deterministic" -Metadata @{
+            file = [string]$_.file
+            details = [string]$_.details
+        }
+    }
+)
+
+$evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $artifact -Records $evidenceRecords -Metadata @{
+    requiredEvidenceKeys = @($contract.requiredEvidenceKeys)
+    requiredSections = @($contract.requiredSections)
+    commandCount = $commands.Count
+    prerequisiteCount = $prerequisites.Count
+    cicdCount = $cicdInfo.Count
+    generator = "generate-build-cookbook.ps1"
+}
+if ($evidencePath) {
+    [void](Update-AppDocEvidenceManifest -RootPath $RootPath -Artifact $artifact -EvidencePath $evidencePath -RecordCount $evidenceRecords.Count -Metadata @{
+        generator = "generate-build-cookbook.ps1"
+    })
+}
 
 Write-Progress -Activity "Generating Build Cookbook" -Status "Complete" -PercentComplete 100
 Write-Host "✅ Build cookbook generated: $outputPath" -ForegroundColor Green

@@ -128,7 +128,9 @@ $validatorScripts = @(
     @{ script = "validate-build-cookbook.ps1"; artifact = "build-cookbook.md" },
     @{ script = "validate-test-catalog.ps1"; artifact = "test-catalog.md" },
     @{ script = "validate-task-guides.ps1"; artifact = "task-guides.md" },
-    @{ script = "validate-debt-register.ps1"; artifact = "debt-register.md" }
+    @{ script = "validate-debt-register.ps1"; artifact = "debt-register.md" },
+    # dependencies-catalog is validated via generic contract validation rather than a dedicated script
+    @{ script = "validate-dependencies-catalog.ps1"; artifact = "dependencies-catalog.md" }
 )
 
 $artifactMap = @{

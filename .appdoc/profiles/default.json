@@ -1,0 +1,23 @@
+{
+  "profile": "default",
+  "sections": [
+    "overview",
+    "api-inventory",
+    "data-model",
+    "config-catalog",
+    "build-cookbook",
+    "test-catalog",
+    "debt-register",
+    "dependencies-catalog"
+  ],
+  "api_grouping": "by-controller",
+  "include_examples": true,
+  "diagram_types": [
+    "architecture"
+  ],
+  "enhancement_mode": "optional",
+  "validation": {
+    "strict_default": false,
+    "threshold": 80
+  }
+}
