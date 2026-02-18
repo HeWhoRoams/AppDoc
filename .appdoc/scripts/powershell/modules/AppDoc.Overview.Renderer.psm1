@@ -39,17 +39,18 @@ function Get-AppDocOverviewMarkdown {
         @()
     }
 
+    $nl = [Environment]::NewLine
     $techStackContent = if ($techStackRows.Count -gt 0) {
-        "| Category | Technology | Version | Purpose |`n|----------|-----------|---------|---------|`n" + ($techStackRows -join "`n")
+        "| Category | Technology | Version | Purpose |$nl|----------|-----------|---------|---------|$nl" + ($techStackRows -join $nl)
     } else {
-        "| Category | Technology | Version | Purpose |`n|----------|-----------|---------|---------|`n`n_Technology stack not yet identified. Analyze package files and code._"
+        "| Category | Technology | Version | Purpose |$nl|----------|-----------|---------|---------|$nl$nl_Technology stack not yet identified. Analyze package files and code._"
     }
 
     return [ordered]@{
         systemPurposeContent = $systemPurposeContent
         techStackContent = $techStackContent
         systemPurposePlaceholder = "_System purpose not yet documented. Analyze README and code structure to determine._"
-        techStackPlaceholder = "| Category | Technology | Version | Purpose |`r`n|----------|-----------|---------|---------|`r`n`r`n_Technology stack not yet identified. Analyze package files and code._"
+        techStackPlaceholder = "| Category | Technology | Version | Purpose |$nl|----------|-----------|---------|---------|$nl$nl_Technology stack not yet identified. Analyze package files and code._"
     }
 }
 
@@ -67,31 +68,60 @@ function Update-AppDocOverviewContent {
     $sections = Get-AppDocOverviewMarkdown -CodeFileCount $CodeFileCount -LanguageCount $LanguageCount
     $updated = $Content
 
+
+    $placeholdersFound = $false
     if (Get-Command Update-TemplateSection -ErrorAction SilentlyContinue) {
+        $before = $updated
         $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.systemPurposePlaceholder -NewContent $sections.systemPurposeContent
+        if ($before -ne $updated) { $placeholdersFound = $true }
+        $before = $updated
         $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.techStackPlaceholder -NewContent $sections.techStackContent
+        if ($before -ne $updated) { $placeholdersFound = $true }
     } else {
+        $before = $updated
         $updated = $updated.Replace($sections.systemPurposePlaceholder, $sections.systemPurposeContent)
+        if ($before -ne $updated) { $placeholdersFound = $true }
+        $before = $updated
         $updated = $updated.Replace($sections.techStackPlaceholder, $sections.techStackContent)
+        if ($before -ne $updated) { $placeholdersFound = $true }
     }
 
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+System Purpose\s*\r?\n\r?\n).*?(?=\r?\n##\s+Architecture\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $sections.systemPurposeContent + "`r`n")
+    # Only run regex-based section replacement if placeholders were not found/applied
+    if (-not $placeholdersFound) {
+        # System Purpose section replacement or append (regex fallback)
+        $sysPurposeHeaderPattern = '##\s+System Purpose\s*\r?\n\r?\n'
+        $sysPurposeReplacePattern = '(?s)(##\s+System Purpose\s*\r?\n\r?\n).*?(?=(\r?\n##\s+Architecture\b|$))'
+        if ($updated -match $sysPurposeHeaderPattern) {
+            $updated = [regex]::Replace(
+                $updated,
+                $sysPurposeReplacePattern,
+                [System.Text.RegularExpressions.MatchEvaluator]{
+                    param($m)
+                    return ($m.Groups[1].Value + $sections.systemPurposeContent + "`r`n")
+                }
+            )
+        } else {
+            Write-Warning "System Purpose section header not found. Appending section to end of document."
+            $updated += "`r`n## System Purpose`r`n`r`n" + $sections.systemPurposeContent + "`r`n"
         }
-    )
 
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Technology Stack\s*\r?\n\r?\n).*?(?=\r?\n##\s+Configuration\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $sections.techStackContent + "`r`n")
+        # Technology Stack section replacement or append (regex fallback)
+        $techStackHeaderPattern = '##\s+Technology Stack\s*\r?\n\r?\n'
+        $techStackReplacePattern = '(?s)(##\s+Technology Stack\s*\r?\n\r?\n).*?(?=(\r?\n##\s+Configuration\b|$))'
+        if ($updated -match $techStackHeaderPattern) {
+            $updated = [regex]::Replace(
+                $updated,
+                $techStackReplacePattern,
+                [System.Text.RegularExpressions.MatchEvaluator]{
+                    param($m)
+                    return ($m.Groups[1].Value + $sections.techStackContent + "`r`n")
+                }
+            )
+        } else {
+            Write-Warning "Technology Stack section header not found. Appending section to end of document."
+            $updated += "`r`n## Technology Stack`r`n`r`n" + $sections.techStackContent + "`r`n"
         }
-    )
+    }
 
     return $updated
 }

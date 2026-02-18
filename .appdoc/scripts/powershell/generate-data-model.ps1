@@ -7,7 +7,8 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [string]$RootPath
+    [string]$RootPath,
+    [int]$MaxDetailedModels = 120
 )
 
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
@@ -56,7 +57,7 @@ $models = @($modelData.models)
 if ($modelData.astModelCount -gt 0) {
     Write-Host "  Added $($modelData.astModelCount) AST model records" -ForegroundColor Gray
 }
-if ($modelData.potentialModelFileCount -ge 0) {
+if ($modelData.potentialModelFileCount -gt 0) {
     Write-Host "  Found $($modelData.potentialModelFileCount) potential model files" -ForegroundColor Gray
 }
 
@@ -66,7 +67,7 @@ if ($models.Count -eq 0) {
 }
 
 Write-Progress -Activity "Generating Data Model" -Status "Populating template..." -PercentComplete 80
-$modelContent = Get-AppDocDataModelMarkdown -Models $models -MaxDetailedModels 120
+$modelContent = Get-AppDocDataModelMarkdown -Models $models -MaxDetailedModels $MaxDetailedModels
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocDataModelContent -Content $content -ModelContent $modelContent
 $content = Normalize-AppDocTemplateInstructionText -Content $content
@@ -77,9 +78,17 @@ $artifact = "data-model"
 $contract = Get-AppDocArtifactContract -Artifact $artifact
 $evidenceRecords = @(
     $models | ForEach-Object {
+        $safeLineNumber = $null
+        $lineStr = $_.lineNumber
+        if ($lineStr -ne $null) {
+            $parsed = 0
+            if ([int]::TryParse($lineStr.ToString(), [ref]$parsed)) {
+                $safeLineNumber = $parsed
+            }
+        }
         New-AppDocExtractionRecord -Artifact $artifact -Source ([string]$_.filePath) -Name ([string]$_.name) -Kind "model" -Confidence 0.8 -Provider "generator" -ProviderType "deterministic" -Metadata @{
             modelType = [string]$_.type
-            lineNumber = [int]$_.lineNumber
+            lineNumber = $safeLineNumber
             propertyCount = @($_.properties).Count
             properties = @($_.properties)
         }

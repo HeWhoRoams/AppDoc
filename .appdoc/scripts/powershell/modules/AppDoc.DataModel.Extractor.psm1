@@ -22,7 +22,19 @@ function Invoke-AppDocDataModelAstParserScript {
         return $null
     }
 
-    $cacheFile = if ($ScriptName -eq "parse-csharp-ast.ps1") { "ast-csharp-cache.json" } else { "ast-typescript-cache.json" }
+
+    # Deterministic mapping from script name to cache filename
+    $cacheFileMap = @{
+        'parse-csharp-ast.ps1'    = 'ast-csharp-cache.json'
+        'parse-typescript-ast.ps1' = 'ast-typescript-cache.json'
+        # Add new parsers here as needed
+    }
+    if ($cacheFileMap.ContainsKey($ScriptName)) {
+        $cacheFile = $cacheFileMap[$ScriptName]
+    } else {
+        Write-Verbose "Unknown AST parser script: $ScriptName. No cache file mapping found."
+        return $null
+    }
     $cachePath = Join-Path $RootPath (Join-Path "docs" $cacheFile)
     if (-not (Test-Path $cachePath)) {
         return $null
@@ -96,7 +108,7 @@ function Get-AppDocDataModelSourceFiles {
         return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "data-model" -Include $Include)
     }
 
-    return @(Get-ChildItem -Path "$RootPath\*" -Recurse -File -Include $Include -ErrorAction SilentlyContinue)
+    return @(Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $Include -ErrorAction SilentlyContinue)
 }
 
 function Get-AppDocDataModelRelativePath {
@@ -227,19 +239,34 @@ function Get-AppDocDataModelData {
             if (-not $content) { continue }
 
             if ($file.Extension -in @('.ts', '.js')) {
-                $tsClasses = [regex]::Matches($content, "(?:export\s+)?(?:class|interface)\s+(\w+)(?:\s+extends\s+\w+)?(?:\s+implements\s+[\w,\s]+)?\s*\{([^}]+)\}")
-                foreach ($match in $tsClasses) {
-                    $classBody = $match.Groups[2].Value
+                $headerPattern = "(?:export\s+)?(?:class|interface)\s+(\w+)(?:\s+extends\s+\w+)?(?:\s+implements\s+[\w,\s]+)?\s*\{";
+                $headerMatches = [regex]::Matches($content, $headerPattern)
+                foreach ($match in $headerMatches) {
+                    $name = $match.Groups[1].Value
+                    $startIdx = $content.IndexOf('{', $match.Index)
+                    if ($startIdx -lt 0) { continue }
+                    $depth = 0
+                    $endIdx = -1
+                    for ($i = $startIdx; $i -lt $content.Length; $i++) {
+                        if ($content[$i] -eq '{') { $depth++ }
+                        elseif ($content[$i] -eq '}') { $depth-- }
+                        if ($depth -eq 0) { $endIdx = $i; break }
+                    }
+                    if ($endIdx -le $startIdx) { continue }
+                    $classBody = $content.Substring($startIdx + 1, $endIdx - $startIdx - 1)
                     $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
                     $relativePath = Get-AppDocDataModelRelativePath -RootPath $RootPath -Path $file.FullName
                     $properties = @()
-                    $propMatches = [regex]::Matches($classBody, "(\w+)\s*[?:]\s*([\w<>\[\]|]+)")
+                    $propMatches = [regex]::Matches($classBody, "(\w+)\s*(\?)?\s*:\s*([^;\n]+)")
                     foreach ($prop in $propMatches) {
-                        $properties += "$($prop.Groups[1].Value): $($prop.Groups[2].Value)"
+                        $propName = $prop.Groups[1].Value
+                        if ($prop.Groups[2].Success) { $propName += '?' }
+                        $propType = $prop.Groups[3].Value.Trim()
+                        $properties += "$propName: $propType"
                     }
                     $workingModels += @{
                         type = if ($match.Value -match 'interface') { 'interface' } else { 'class' }
-                        name = $match.Groups[1].Value
+                        name = $name
                         file = $file.Name
                         filePath = $relativePath
                         lineNumber = $lineNumber
@@ -357,8 +384,29 @@ function Get-AppDocDataModelData {
                     $entityName = $Matches[2]
                     $relativePath = Get-AppDocDataModelRelativePath -RootPath $RootPath -Path $file.FullName
                     $properties = @()
-                    $propMappings = [regex]::Matches($content, 'Map\(\w+\s*=>\s*\w+\.(\w+)\)')
-                    foreach ($prop in $propMappings) { $properties += "$($prop.Groups[1].Value): string" }
+                    # Enhanced regex: capture property name and look for .CustomType<YourType>() or .CustomType(typeof(YourType)) after Map(...)
+                    $propMappings = [regex]::Matches($content, 'Map\(\w+\s*=>\s*\w+\.(\w+)\)(?:[^;]*?\.CustomType(?:<([\w\.]+)>|\(typeof\(([^\)]+)\)\)))?')
+                    foreach ($prop in $propMappings) {
+                        $propName = $prop.Groups[1].Value
+                        $typeHint = $null
+                        if ($prop.Groups[2].Success) {
+                            $typeHint = $prop.Groups[2].Value
+                        } elseif ($prop.Groups[3].Success) {
+                            $typeHint = $prop.Groups[3].Value
+                        }
+                        if (-not $typeHint) {
+                            # Fallback: scan for property declaration in class source
+                            $declMatch = [regex]::Match($content, "public\\s+virtual\\s+([\\w<>\[\]?]+)\\s+${propName}\\s*{[^{]*get;[^{]*set;[^{]*}")
+                            if ($declMatch.Success) {
+                                $typeHint = $declMatch.Groups[1].Value
+                            }
+                        }
+                        if (-not $typeHint) {
+                            $typeHint = 'string' # Fallback if no type found
+                        }
+                        # Document fallback: type is inferred from CustomType, property declaration, or defaults to string
+                        $properties += "$propName: $typeHint"
+                    }
                     $workingModels += @{
                         type = 'entity'
                         name = $entityName

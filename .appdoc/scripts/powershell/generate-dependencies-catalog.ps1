@@ -48,8 +48,19 @@ if (-not $initialized) {
     exit 1
 }
 
+
 Write-Progress -Activity "Generating Dependencies Catalog" -Status "Scanning project files..." -PercentComplete 10
-$depData = Get-AppDocDependenciesCatalogData -RootPath $RootPath
+try {
+    $depData = Get-AppDocDependenciesCatalogData -RootPath $RootPath
+} catch {
+    Write-Error "[DependenciesCatalog] Exception during dependencies catalog extraction: $($_.Exception.Message)"
+    $depData = $null
+}
+
+if ($null -eq $depData -or -not ($depData.PSObject.Properties.Name -contains 'dependencies') -or -not ($depData.PSObject.Properties.Name -contains 'projects')) {
+    Write-Error "[DependenciesCatalog] Failed to extract dependencies catalog data. Extraction returned null or missing required properties."
+    exit 1
+}
 $dependencies = @($depData.dependencies)
 $projects = @($depData.projects)
 
@@ -70,10 +81,19 @@ if ($null -eq $contract) {
 
 $evidenceRecords = @(
     $dependencies | ForEach-Object {
-        New-AppDocExtractionRecord -Artifact $artifact -Source ([string]$_.source) -Name ([string]$_.name) -Kind "dependency" -Confidence 0.85 -Provider "generator" -ProviderType "deterministic" -Metadata @{
-            version = [string]$_.version
-            type = [string]$_.type
-            project = [string]$_.project
+        $src = if ($_.source -ne $null) { $_.source } else { $null }
+        $name = if ($_.name -ne $null) { $_.name } else { $null }
+        $ver = if ($_.version -ne $null) { $_.version } else { $null }
+        $typ = if ($_.type -ne $null) { $_.type } else { $null }
+        $proj = if ($_.project -ne $null) { $_.project } else { $null }
+        if ($src -eq $null -or $name -eq $null) {
+            Write-Warning "[DependenciesCatalog] Skipping dependency record with missing source or name: $($_ | ConvertTo-Json -Compress)"
+            return
+        }
+        New-AppDocExtractionRecord -Artifact $artifact -Source $src -Name $name -Kind "dependency" -Confidence 0.85 -Provider "generator" -ProviderType "deterministic" -Metadata @{
+            version = $ver
+            type = $typ
+            project = $proj
         }
     }
 )

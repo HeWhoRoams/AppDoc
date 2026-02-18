@@ -5,7 +5,11 @@ $script:AppDocEvidenceVersion = "1.0.0"
 
 $determinismModulePath = Join-Path $PSScriptRoot "AppDoc.Determinism.psm1"
 if (Test-Path $determinismModulePath) {
-    Import-Module $determinismModulePath -Force -ErrorAction SilentlyContinue | Out-Null
+    try {
+        Import-Module $determinismModulePath -Force -ErrorAction Stop | Out-Null
+    } catch {
+        Write-Warning "Failed to import AppDoc.Determinism.psm1 ($determinismModulePath): $_"
+    }
 }
 
 function Get-AppDocEvidenceDirectory {
@@ -93,11 +97,13 @@ function Write-AppDocEvidenceArtifact {
         metadata = $Metadata
     }
 
+
     if (Get-Command Get-AppDocDeterministicHash -ErrorAction SilentlyContinue) {
+        $excludeKeys = @("generatedAt", "updatedAt", "timestamp")
         $payload.determinism = [ordered]@{
             hashAlgorithm = "SHA256"
-            excludeKeys = @("generatedAt", "updatedAt", "timestamp")
-            contentHash = Get-AppDocDeterministicHash -InputObject $payload -ExcludeKeys @("generatedAt", "updatedAt", "timestamp")
+            excludeKeys = $excludeKeys
+            contentHash = Get-AppDocDeterministicHash -InputObject $payload -ExcludeKeys $excludeKeys
         }
     }
 
@@ -157,13 +163,36 @@ function Update-AppDocEvidenceManifest {
     $manifest.artifacts = @($filtered + $entry | Sort-Object { [string]$_.artifact })
     $manifest.generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
 
+
     if (Get-Command Get-AppDocDeterministicHash -ErrorAction SilentlyContinue) {
-        $manifest | Add-Member -NotePropertyName determinism -NotePropertyValue ([ordered]@{
+        $excludeKeys = @("generatedAt", "updatedAt", "timestamp")
+        # Remove excludeKeys from manifest before hashing
+        $manifestForHash = $manifest.PSObject.Copy()
+        foreach ($key in $excludeKeys) { $null = $manifestForHash.PSObject.Properties.Remove($key) }
+        $deterministicHash = Get-AppDocDeterministicHash -InputObject $manifestForHash -ExcludeKeys $excludeKeys
+        $manifest['determinism'] = [ordered]@{
             hashAlgorithm = "SHA256"
-            excludeKeys = @("generatedAt", "updatedAt", "timestamp")
-            contentHash = Get-AppDocDeterministicHash -InputObject $manifest -ExcludeKeys @("generatedAt", "updatedAt", "timestamp")
-        }) -Force
+            excludeKeys = $excludeKeys
+            contentHash = $deterministicHash
+        }
     }
+
+function Validate-ManifestDeterminism {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$ManifestPath
+    )
+    $manifest = Get-Content $ManifestPath -Raw | ConvertFrom-Json
+    if ($manifest.determinism -and $manifest.determinism.contentHash) {
+        $excludeKeys = $manifest.determinism.excludeKeys
+        $manifestForHash = $manifest.PSObject.Copy()
+        foreach ($key in $excludeKeys) { $null = $manifestForHash.PSObject.Properties.Remove($key) }
+        $actualHash = Get-AppDocDeterministicHash -InputObject $manifestForHash -ExcludeKeys $excludeKeys
+        if ($actualHash -ne $manifest.determinism.contentHash) {
+            throw "Manifest contentHash validation failed: expected $($manifest.determinism.contentHash), got $actualHash."
+        }
+    }
+}
 
     $manifest | ConvertTo-Json -Depth 20 | Out-File -FilePath $manifestPath -Encoding UTF8
     return $manifestPath

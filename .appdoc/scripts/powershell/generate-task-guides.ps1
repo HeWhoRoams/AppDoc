@@ -50,7 +50,13 @@ if (-not $initialized) {
     exit 1
 }
 
+
 $taskData = Get-AppDocTaskGuidesData -RootPath $RootPath
+# Defensive null/structure check for $taskData
+if ($null -eq $taskData -or -not ($taskData.PSObject.Properties.Name -contains 'endpointRows')) {
+    Write-Error "Get-AppDocTaskGuidesData returned null or missing required properties. Cannot continue generating task guides."
+    exit 1
+}
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocTaskGuidesContent -Content $content -TaskData $taskData
 $content = Normalize-AppDocTemplateInstructionText -Content $content
@@ -63,12 +69,46 @@ if (Get-Command Get-AppDocArtifactContract -ErrorAction SilentlyContinue) {
     $contract = Get-AppDocArtifactContract -Artifact $artifact
 }
 
+
+# Defensive logging for missing sources
+$logPrefix = "[TaskGuidesEvidence]"
+if ((($taskData.endpointRows ?? @()).Count -eq 0) -and (($taskData.buildCommandRows ?? @()).Count -eq 0) -and (($taskData.dependencyRows ?? @()).Count -eq 0) -and (($taskData.debtRows ?? @()).Count -eq 0) -and (($taskData.testRows ?? @()).Count -eq 0)) {
+    Write-Warning "$logPrefix No task guide evidence sources found. All summary counts will be zero."
+}
+
 $evidenceRecords = @()
-$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "change-endpoint-safely" -Kind "task-guide" -Confidence 0.95 -Provider "generator" -ProviderType "deterministic" -Metadata @{ category = "implementation"; endpointEvidence = @($taskData.endpointRows).Count }
-$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "debug-build-failure" -Kind "task-guide" -Confidence 0.95 -Provider "generator" -ProviderType "deterministic" -Metadata @{ category = "operations"; buildEvidence = @($taskData.buildCommandRows).Count }
-$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "triage-dependency-risk" -Kind "task-guide" -Confidence 0.95 -Provider "generator" -ProviderType "deterministic" -Metadata @{ category = "risk"; dependencyEvidence = @($taskData.dependencyRows).Count }
-$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "plan-debt-sprint" -Kind "task-guide" -Confidence 0.95 -Provider "generator" -ProviderType "deterministic" -Metadata @{ category = "maintenance"; debtEvidence = @($taskData.debtRows).Count }
-$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "task-guide-summary" -Kind "summary" -Confidence 0.9 -Provider "generator" -ProviderType "deterministic" -Metadata @{ endpointCount = @($taskData.endpointRows).Count; buildCommandCount = @($taskData.buildCommandRows).Count; dependencyCount = @($taskData.dependencyRows).Count; debtCount = @($taskData.debtRows).Count; testCount = @($taskData.testRows).Count }
+
+# Helper to set confidence/status based on evidence presence
+function Get-ConfidenceAndStatus {
+    param([int]$count)
+    if ($count -gt 0) {
+        return @{ Confidence = 1.0; Status = 'Detected' }
+    } else {
+        return @{ Confidence = 0.5; Status = 'NotDetected' }
+    }
+}
+
+$endpointCount = ($taskData.endpointRows ?? @()).Count
+$buildCommandCount = ($taskData.buildCommandRows ?? @()).Count
+$dependencyCount = ($taskData.dependencyRows ?? @()).Count
+$debtCount = ($taskData.debtRows ?? @()).Count
+$testCount = ($taskData.testRows ?? @()).Count
+
+$metaList = @(
+    @{ Name = 'change-endpoint-safely'; Category = 'implementation'; Count = $endpointCount; EvidenceKey = 'endpointEvidence' }
+    @{ Name = 'debug-build-failure'; Category = 'operations'; Count = $buildCommandCount; EvidenceKey = 'buildEvidence' }
+    @{ Name = 'triage-dependency-risk'; Category = 'risk'; Count = $dependencyCount; EvidenceKey = 'dependencyEvidence' }
+    @{ Name = 'plan-debt-sprint'; Category = 'maintenance'; Count = $debtCount; EvidenceKey = 'debtEvidence' }
+)
+
+foreach ($meta in $metaList) {
+    $cs = Get-ConfidenceAndStatus -count $meta.Count
+    $evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name $meta.Name -Kind "task-guide" -Confidence $cs.Confidence -Provider "generator" -ProviderType "deterministic" -Status $cs.Status -Metadata @{ category = $meta.Category; ($meta.EvidenceKey) = $meta.Count }
+}
+
+# Summary record
+$summaryCS = Get-ConfidenceAndStatus -count ($endpointCount + $buildCommandCount + $dependencyCount + $debtCount + $testCount)
+$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "task-guide-summary" -Kind "summary" -Confidence $summaryCS.Confidence -Provider "generator" -ProviderType "deterministic" -Status $summaryCS.Status -Metadata @{ endpointCount = $endpointCount; buildCommandCount = $buildCommandCount; dependencyCount = $dependencyCount; debtCount = $debtCount; testCount = $testCount }
 
 $evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $artifact -Records $evidenceRecords -Metadata @{
     requiredEvidenceKeys = if ($contract) { @($contract.requiredEvidenceKeys) } else { @("tasks", "summary") }
@@ -80,4 +120,4 @@ if ($evidencePath) {
 }
 
 Write-Host "✅ Task guides generated: $outputPath" -ForegroundColor Green
-Write-Host "   Guides generated: 4" -ForegroundColor Gray
+Write-Host "   Guides generated: $($metaList.Count)" -ForegroundColor Gray

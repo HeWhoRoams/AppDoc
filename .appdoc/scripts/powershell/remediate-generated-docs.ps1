@@ -177,7 +177,7 @@ foreach ($file in $docFiles) {
         $content = Normalize-AppDocTemplateInstructionText -Content $content
     }
 
-    $content = [regex]::Replace($content, '(?im)^\s*_No\s+[^_]+(?:detected|available|documented)\.[^_]*_\s*$', 'No deterministic evidence found in this section for the current scan.')
+    $content = [regex]::Replace($content, '(?im)^\s*_No\s+.*?(?:detected|available|documented)\.[^_]*_\s*$', 'No deterministic evidence found in this section for the current scan.')
     $content = [regex]::Replace($content, '(?im)(No deterministic evidence found in this section for the current scan\.)(##\s+)', "$1`r`n`r`n$2")
 
     if ($fileName -ieq 'config-catalog.md') {

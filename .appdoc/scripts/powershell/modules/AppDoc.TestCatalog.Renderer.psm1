@@ -79,31 +79,56 @@ function Update-AppDocTestCatalogContent {
     $sections = Get-AppDocTestCatalogMarkdown -Tests $Tests -MaxTestCases $MaxTestCases
     $updated = $Content
 
-    if (Get-Command Update-TemplateSection -ErrorAction SilentlyContinue) {
-        $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.testSuitesPlaceholder -NewContent $sections.testSuitesContent
-        $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.testCasesPlaceholder -NewContent $sections.testCasesContent
-    } else {
-        $updated = $updated.Replace($sections.testSuitesPlaceholder, $sections.testSuitesContent)
-        $updated = $updated.Replace($sections.testCasesPlaceholder, $sections.testCasesContent)
+
+    # Only perform placeholder replacement if the section headers are missing
+    $hasTestSuitesHeader = $updated -match '##\s+Test Suites'
+    $hasTestCasesHeader = $updated -match '##\s+Test Cases'
+
+    if (-not $hasTestSuitesHeader) {
+        if (Get-Command Update-TemplateSection -ErrorAction SilentlyContinue) {
+            $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.testSuitesPlaceholder -NewContent $sections.testSuitesContent
+        } else {
+            $updated = $updated.Replace($sections.testSuitesPlaceholder, $sections.testSuitesContent)
+        }
+    }
+    if (-not $hasTestCasesHeader) {
+        if (Get-Command Update-TemplateSection -ErrorAction SilentlyContinue) {
+            $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.testCasesPlaceholder -NewContent $sections.testCasesContent
+        } else {
+            $updated = $updated.Replace($sections.testCasesPlaceholder, $sections.testCasesContent)
+        }
     }
 
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Test Suites\s*\r?\n\r?\n).*?(?=\r?\n##\s+Test Coverage Metrics\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $sections.testSuitesContent + "`r`n")
-        }
-    )
 
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Test Cases\s*\r?\n\r?\n).*?(?=\r?\n##\s+Test Maintenance\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $sections.testCasesContent + "`r`n")
-        }
-    )
+    $testSuitesPattern = '(?s)(##\s+Test Suites\s*\r?\n\r?\n).*?(?=\r?\n##\s+Test Coverage Metrics\b)'
+    if ([regex]::IsMatch($updated, $testSuitesPattern)) {
+        $updated = [regex]::Replace(
+            $updated,
+            $testSuitesPattern,
+            [System.Text.RegularExpressions.MatchEvaluator]{
+                param($m)
+                return ($m.Groups[1].Value + $sections.testSuitesContent + "`r`n")
+            }
+        )
+    } else {
+        Write-Verbose "Test Suites header or lookahead not found; appending test suites content to end."
+        $updated += "`r`n`r`n" + $sections.testSuitesContent + "`r`n"
+    }
+
+    $testCasesPattern = '(?s)(##\s+Test Cases\s*\r?\n\r?\n).*?(?=\r?\n##\s+Test Maintenance\b)'
+    if ([regex]::IsMatch($updated, $testCasesPattern)) {
+        $updated = [regex]::Replace(
+            $updated,
+            $testCasesPattern,
+            [System.Text.RegularExpressions.MatchEvaluator]{
+                param($m)
+                return ($m.Groups[1].Value + $sections.testCasesContent + "`r`n")
+            }
+        )
+    } else {
+        Write-Verbose "Test Cases header or lookahead not found; appending test cases content to end."
+        $updated += "`r`n`r`n" + $sections.testCasesContent + "`r`n"
+    }
 
     return $updated
 }

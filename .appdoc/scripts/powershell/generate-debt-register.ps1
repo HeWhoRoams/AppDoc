@@ -65,8 +65,13 @@ if (-not $initialized) {
 }
 
 Write-Progress -Activity "Generating Technical Debt Register" -Status "Scanning code..." -PercentComplete 10
+
 $debtData = Get-AppDocDebtRegisterData -RootPath $RootPath
-$debts = @($debtData.debts)
+if ($debtData -and $debtData.debts) {
+    $debts = @($debtData.debts) | Where-Object { $_ -ne $null }
+} else {
+    $debts = @()
+}
 
 Write-Progress -Activity "Generating Technical Debt Register" -Status "Populating template..." -PercentComplete 60
 $content = Get-Content -Path $outputPath -Raw

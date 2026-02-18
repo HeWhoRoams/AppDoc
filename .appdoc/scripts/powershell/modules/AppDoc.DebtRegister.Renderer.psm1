@@ -56,14 +56,25 @@ function Update-AppDocDebtRegisterContent {
         $updated = $updated.Replace($sections.debtTablePlaceholder, $sections.debtItemsContent)
     }
 
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Debt Items\s*\r?\n\r?\n).*?(?=\r?\n##\s+Impact Assessment\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $sections.debtItemsContent + "`r`n")
-        }
-    )
+
+    $debtItemsPattern = '(?s)(##\s+Debt Items\s*\r?\n+).*?(?=\r?\n##\s+Impact Assessment\b|\z)'
+    $match = [regex]::Match($updated, $debtItemsPattern)
+    if ($match.Success) {
+        $updated = [regex]::Replace(
+            $updated,
+            $debtItemsPattern,
+            [System.Text.RegularExpressions.MatchEvaluator]{
+                param($m)
+                # Detect newline style from matched text or fallback to Environment.NewLine
+                $matchText = $m.Value
+                $newline = if ($matchText -match "\r\n") { "`r`n" } elseif ($matchText -match "\n") { "`n" } else { [Environment]::NewLine }
+                return ($m.Groups[1].Value + $sections.debtItemsContent + $newline)
+            }
+        )
+    } else {
+        Write-Warning "Debt Items section not found or pattern did not match. Appending debt items content to end of document."
+        $updated += "`r`n`r`n" + $sections.debtItemsContent + "`r`n"
+    }
 
     return $updated
 }

@@ -28,7 +28,9 @@ if (Test-Path $evidencePath) {
         $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json
         $endpointCount = @($evidence.records | Where-Object { [string]$_.kind -eq "endpoint" }).Count
     }
-    catch { }
+    catch {
+        Write-Warning "[validate-api-inventory] Failed to parse evidence at $evidencePath: $($_.Exception.Message)"
+    }
 }
 
 if ($endpointCount -le 0) {

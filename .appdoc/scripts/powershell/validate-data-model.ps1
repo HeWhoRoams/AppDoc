@@ -28,7 +28,9 @@ if (Test-Path $evidencePath) {
         $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json
         $modelCount = @($evidence.records | Where-Object { [string]$_.kind -eq "model" }).Count
     }
-    catch { }
+    catch {
+        Write-Warning ("Failed to load or parse evidence file: {0}. Error: {1}" -f $evidencePath, $_)
+    }
 }
 
 if ($modelCount -le 0) {

@@ -15,40 +15,26 @@ if (Test-Path $helpersPath) {
     . $helpersPath
 }
 
-$scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
-if (-not (Test-Path $scopeModule)) {
-    Write-Error "Required module not found: $scopeModule"
-    exit 1
-}
-Import-Module $scopeModule -Force -ErrorAction Stop
+function Load-RequiredModule {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$RelativePath
+    )
 
-$contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
-if (-not (Test-Path $contractsModule)) {
-    Write-Error "Required module not found: $contractsModule"
-    exit 1
-}
-Import-Module $contractsModule -Force -ErrorAction Stop
+    $modulePath = Join-Path $PSScriptRoot $RelativePath
+    if (-not (Test-Path $modulePath)) {
+        Write-Error "Required module not found: $modulePath"
+        exit 1
+    }
 
-$evidenceModule = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
-if (-not (Test-Path $evidenceModule)) {
-    Write-Error "Required module not found: $evidenceModule"
-    exit 1
+    Import-Module $modulePath -Force -ErrorAction Stop
 }
-Import-Module $evidenceModule -Force -ErrorAction Stop
 
-$configExtractorModule = Join-Path $PSScriptRoot "modules\AppDoc.ConfigCatalog.Extractor.psm1"
-if (-not (Test-Path $configExtractorModule)) {
-    Write-Error "Required module not found: $configExtractorModule"
-    exit 1
-}
-Import-Module $configExtractorModule -Force -ErrorAction Stop
-
-$configRendererModule = Join-Path $PSScriptRoot "modules\AppDoc.ConfigCatalog.Renderer.psm1"
-if (-not (Test-Path $configRendererModule)) {
-    Write-Error "Required module not found: $configRendererModule"
-    exit 1
-}
-Import-Module $configRendererModule -Force -ErrorAction Stop
+Load-RequiredModule -RelativePath "modules\AppDoc.Scope.psm1"
+Load-RequiredModule -RelativePath "modules\AppDoc.Contracts.psm1"
+Load-RequiredModule -RelativePath "modules\AppDoc.Evidence.psm1"
+Load-RequiredModule -RelativePath "modules\AppDoc.ConfigCatalog.Extractor.psm1"
+Load-RequiredModule -RelativePath "modules\AppDoc.ConfigCatalog.Renderer.psm1"
 
 Write-Host "⚙️  Generating Config Catalog..." -ForegroundColor Cyan
 
@@ -64,16 +50,31 @@ if (-not $initialized) {
     exit 1
 }
 
+
 Write-Progress -Activity "Generating Config Catalog" -Status "Scanning configs..." -PercentComplete 10
-$configData = Get-AppDocConfigCatalogData -RootPath $RootPath
-$configs = @($configData.configs)
-$discoveredConfigFiles = @($configData.discoveredConfigFiles)
-$envVars = @($configData.envVars)
+try {
+    $configData = Get-AppDocConfigCatalogData -RootPath $RootPath
+} catch {
+    Write-Error "[ConfigCatalog] Exception during config catalog extraction: $($_.Exception.Message)"
+    $configData = $null
+}
+
+if ($null -eq $configData -or -not ($configData.PSObject.Properties.Name -contains 'configs')) {
+    Write-Error "[ConfigCatalog] Failed to extract config catalog data. Extraction returned null or missing required properties."
+    $configs = @()
+    $discoveredConfigFiles = @()
+    $envVars = @()
+    exit 1
+} else {
+    $configs = @($configData.configs)
+    $discoveredConfigFiles = @($configData.discoveredConfigFiles)
+    $envVars = @($configData.envVars)
+}
 
 Write-Progress -Activity "Generating Config Catalog" -Status "Populating template..." -PercentComplete 60
 $scriptRoot = Split-Path $PSScriptRoot -Parent
 $appDocRoot = if ($scriptRoot) { Split-Path $scriptRoot -Parent } else { $null }
-$templateFallbackPath = if ($appDocRoot) { Join-Path $appDocRoot "templates\config-catalog-template.md" } else { $outputPath }
+$templateFallbackPath = if ($appDocRoot) { Join-Path $appDocRoot "templates\config-catalog-template.md" } else { $null }
 $content = Get-AppDocConfigCatalogTemplateContent -RootPath $RootPath -TemplateName "config-catalog-template.md" -FallbackPath $templateFallbackPath
 $content = Update-AppDocConfigCatalogContent -Content $content -Configs $configs -DiscoveredConfigFiles $discoveredConfigFiles -EnvVars $envVars
 $content = Normalize-AppDocTemplateInstructionText -Content $content

@@ -45,14 +45,25 @@ function Get-AppDocBuildCookbookData {
 
             if ($targetFramework) {
                 $fwValue = $targetFramework.InnerText
-                if ($fwValue -match 'net(\d+\.\d+)') {
-                    $prerequisites += ".NET $($Matches[1]) SDK or later"
-                }
-                elseif ($fwValue -match 'netcoreapp(\d+\.\d+)') {
+                if ($fwValue -match 'netcoreapp(\d+\.\d+)') {
                     $prerequisites += ".NET Core $($Matches[1]) SDK or later"
                 }
-                elseif ($fwValue -match 'net(\d+)') {
+                elseif ($fwValue -match 'net(\d+\.\d+)') {
                     $prerequisites += ".NET $($Matches[1]) SDK or later"
+                }
+                elseif ($fwValue -match 'net(\d{2,3})$') {
+                    # Legacy .NET Framework TFM: net48, net472, etc.
+                    $digits = $Matches[1]
+                    $fwVer = if ($digits.Length -eq 2) {
+                        # e.g. 48 -> 4.8
+                        "{0}.{1}" -f $digits.Substring(0,1), $digits.Substring(1,1)
+                    } elseif ($digits.Length -eq 3) {
+                        # e.g. 472 -> 4.7.2
+                        "{0}.{1}.{2}" -f $digits.Substring(0,1), $digits.Substring(1,1), $digits.Substring(2,1)
+                    } else {
+                        $digits
+                    }
+                    $prerequisites += ".NET Framework $fwVer or later"
                 }
             }
 
@@ -87,12 +98,13 @@ function Get-AppDocBuildCookbookData {
     }
 
     $packageJsonPath = Join-Path $RootPath "package.json"
+    $cachedPackageJson = $null
     if (Test-Path $packageJsonPath) {
         try {
-            $pkg = Get-Content $packageJsonPath | ConvertFrom-Json
-            if ($pkg.engines.node) { $prerequisites += "Node.js $($pkg.engines.node)" }
+            $cachedPackageJson = Get-Content $packageJsonPath | ConvertFrom-Json
+            if ($cachedPackageJson.engines.node) { $prerequisites += "Node.js $($cachedPackageJson.engines.node)" }
             else { $prerequisites += "Node.js (version not specified)" }
-            if ($pkg.engines.npm) { $prerequisites += "npm $($pkg.engines.npm)" }
+            if ($cachedPackageJson.engines.npm) { $prerequisites += "npm $($cachedPackageJson.engines.npm)" }
         }
         catch {
             $prerequisites += "Node.js and npm"
@@ -101,7 +113,7 @@ function Get-AppDocBuildCookbookData {
 
     $ghActionsPath = Join-Path $RootPath ".github\workflows"
     if (Test-Path $ghActionsPath) {
-        $workflowFiles = @(Get-ChildItem -Path $ghActionsPath -Filter "*.yml" -ErrorAction SilentlyContinue)
+        $workflowFiles = @(Get-ChildItem -Path $ghActionsPath -Include "*.yml","*.yaml" -ErrorAction SilentlyContinue)
         foreach ($wf in $workflowFiles) {
             $cicdInfo += @{
                 platform = "GitHub Actions"
@@ -128,11 +140,10 @@ function Get-AppDocBuildCookbookData {
         }
     }
 
-    if (Test-Path $packageJsonPath) {
+    if ($cachedPackageJson) {
         try {
-            $pkg = Get-Content $packageJsonPath | ConvertFrom-Json
-            if ($pkg.scripts) {
-                foreach ($script in $pkg.scripts.PSObject.Properties) {
+            if ($cachedPackageJson.scripts) {
+                foreach ($script in $cachedPackageJson.scripts.PSObject.Properties) {
                     $commands += @{
                         name = $script.Name
                         command = [string]$script.Value

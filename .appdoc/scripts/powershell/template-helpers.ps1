@@ -165,7 +165,7 @@ function Normalize-AppDocTemplateInstructionText {
     }
 
     # Normalize placeholder/no-evidence wording to a single deterministic sentence.
-    $updated = [regex]::Replace($updated, '(?im)^\s*_No\s+[^_]+(?:detected|available|documented)\.[^_]*_\s*$', 'No deterministic evidence found in this section for the current scan.')
+    $updated = [regex]::Replace($updated, '(?im)^\s*_No\s+.+?(?:detected|available|documented)\.[^_]*_\s*$', 'No deterministic evidence found in this section for the current scan.')
     $updated = [regex]::Replace($updated, '(?im)^\s*Current scan found 0 items for this section\.?\s*$', 'No deterministic evidence found in this section for the current scan.')
 
     # Ensure overview is never empty after instruction cleanup.
@@ -183,3 +183,4 @@ function Normalize-AppDocTemplateInstructionText {
 
     return $updated
 }
+

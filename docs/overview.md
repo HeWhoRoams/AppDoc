@@ -27,7 +27,7 @@ _Technology stack not yet identified. Analyze package files and code._
 
 ## Configuration
 
-_Configuration approach not yet documented. See [Config Catalog](config-catalog.md) for details._
+_Configuration approach not yet documented. See [Configuration Catalog](config-catalog.md) for details._
 
 ## Documentation Navigation
 
@@ -35,7 +35,7 @@ This documentation set includes the following artifacts:
 
 - **[API Inventory](api-inventory.md)** - HTTP endpoints and API contracts
 - **[Data Model](data-model.md)** - Data structures and entities
-- **[Configuration Catalog](config-catalog.md)** - Configuration options and environment variables
+-- **[Configuration Catalog](config-catalog.md)** - Configuration options and environment variables
 - **[Build Cookbook](build-cookbook.md)** - Build and deployment commands
 - **[Test Catalog](test-catalog.md)** - Test suites and coverage
 - **[Tech Debt Register](debt-register.md)** - Known issues and improvement opportunities

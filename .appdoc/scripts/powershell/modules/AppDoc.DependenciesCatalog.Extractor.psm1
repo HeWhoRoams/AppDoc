@@ -27,7 +27,15 @@ function Get-AppDocDependenciesRelativePath {
         return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
     }
 
-    return $Path.Replace($RootPath, "").TrimStart([char[]]@(92, 47))
+    # Normalize and remove any trailing path separator from $RootPath
+    $rootNorm = $RootPath.TrimEnd('\', '/')
+    $pathNorm = $Path
+    # Perform a case-insensitive prefix check
+    if ($pathNorm.StartsWith($rootNorm, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $relative = $pathNorm.Substring($rootNorm.Length)
+        return $relative.TrimStart('\', '/')
+    }
+    return $Path
 }
 
 function Get-AppDocDependenciesCatalogData {
@@ -51,7 +59,7 @@ function Get-AppDocDependenciesCatalogData {
         try {
             [xml]$xml = $content
 
-            $packageRefs = @($xml.Project.ItemGroup.PackageReference)
+            $packageRefs = @($xml.Project.ItemGroup.PackageReference) | Where-Object { $_ }
             foreach ($pkg in $packageRefs) {
                 if ($pkg.Include) {
                     $dependencies += @{
@@ -64,7 +72,7 @@ function Get-AppDocDependenciesCatalogData {
                 }
             }
 
-            $references = @($xml.Project.ItemGroup.Reference)
+            $references = @($xml.Project.ItemGroup.Reference) | Where-Object { $_ }
             foreach ($ref in $references) {
                 if ($ref.Include -and $ref.Include -notmatch '^(System|Microsoft\.CSharp|mscorlib)') {
                     $refName = ([string]$ref.Include) -replace ',.*$', ''
@@ -79,7 +87,7 @@ function Get-AppDocDependenciesCatalogData {
                 }
             }
 
-            $projectRefs = @($xml.Project.ItemGroup.ProjectReference)
+            $projectRefs = @($xml.Project.ItemGroup.ProjectReference) | Where-Object { $_ }
             foreach ($projRef in $projectRefs) {
                 if ($projRef.Include) {
                     $refName = [System.IO.Path]::GetFileNameWithoutExtension([string]$projRef.Include)
@@ -122,9 +130,11 @@ function Get-AppDocDependenciesCatalogData {
             [xml]$xml = $content
             foreach ($pkg in $xml.packages.package) {
                 if ($pkg.id) {
+                    $version = [string]$pkg.version
+                    if ([string]::IsNullOrWhiteSpace($version)) { $version = "Latest" }
                     $dependencies += @{
                         name = [string]$pkg.id
-                        version = [string]$pkg.version
+                        version = $version
                         type = "NuGet Package"
                         project = $projectName
                         source = $relativePath

@@ -9,7 +9,8 @@ function Get-AppDocOverviewSourceFiles {
         return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "overview" -Include @("*.cs","*.js","*.ts","*.py","*.java"))
     }
 
-    return @(Get-ChildItem -Path "$RootPath\*" -Recurse -File -Include @("*.cs","*.js","*.ts","*.py","*.java") -ErrorAction SilentlyContinue)
+    $searchPath = Join-Path -Path $RootPath -ChildPath '*'
+    return @(Get-ChildItem -Path $searchPath -Recurse -File -Include @("*.cs","*.js","*.ts","*.py","*.java") -ErrorAction SilentlyContinue)
 }
 
 function Get-AppDocOverviewData {

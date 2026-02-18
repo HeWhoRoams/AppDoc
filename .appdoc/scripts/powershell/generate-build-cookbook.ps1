@@ -26,15 +26,20 @@ if (-not (Test-Path $scopeModule)) {
 }
 Import-Module $scopeModule -Force -ErrorAction Stop
 
+
 $contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
-if (Test-Path $contractsModule) {
-    Import-Module $contractsModule -Force -ErrorAction Stop
+if (-not (Test-Path $contractsModule)) {
+    Write-Error "Required module not found: $contractsModule"
+    exit 1
 }
+Import-Module $contractsModule -Force -ErrorAction Stop
 
 $evidenceModule = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
-if (Test-Path $evidenceModule) {
-    Import-Module $evidenceModule -Force -ErrorAction Stop
+if (-not (Test-Path $evidenceModule)) {
+    Write-Error "Required module not found: $evidenceModule"
+    exit 1
 }
+Import-Module $evidenceModule -Force -ErrorAction Stop
 
 $buildExtractorModule = Join-Path $PSScriptRoot "modules\AppDoc.BuildCookbook.Extractor.psm1"
 if (-not (Test-Path $buildExtractorModule)) {
@@ -59,7 +64,7 @@ if (-not (Test-Path $RootPath)) {
 }
 
 # Initialize template
-$outputPath = Join-Path $RootPath "docs\build-cookbook.md"
+$outputPath = Join-Path (Join-Path $RootPath 'docs') 'build-cookbook.md'
 $initialized = Initialize-TemplateFile -TemplateName "build-cookbook-template.md" -OutputPath $outputPath -RootPath $RootPath
 
 if (-not $initialized) {
@@ -76,9 +81,9 @@ $cicdInfo = @()
 try {
     Write-Progress -Activity "Generating Build Cookbook" -Status "Extracting commands and build metadata..." -PercentComplete 10
     $buildData = Get-AppDocBuildCookbookData -RootPath $RootPath
-    $commands = @($buildData.commands)
-    $prerequisites = @($buildData.prerequisites)
-    $cicdInfo = @($buildData.cicdInfo)
+    $commands = if ($buildData.commands) { @($buildData.commands) } else { @() }
+    $prerequisites = if ($buildData.prerequisites) { @($buildData.prerequisites) } else { @() }
+    $cicdInfo = if ($buildData.cicdInfo) { @($buildData.cicdInfo) } else { @() }
 } catch {
     Write-Warning "Error scanning build files: $_"
 }

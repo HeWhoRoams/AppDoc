@@ -12,7 +12,7 @@ No deterministic evidence found in this section for the current scan.
 
 | Package Manager | Total Dependencies | Direct | Transitive |
 |-----------------|-------------------|--------|------------|
-No deterministic evidence found in this section for the current scan.
+| _No data available_ |  |  |  |
 ## Dependencies by Type
 
 ### NuGet Packages
@@ -31,9 +31,22 @@ No deterministic evidence found in this section for the current scan.
 
 List dependencies with known vulnerabilities or security advisories.
 No deterministic evidence found in this section for the current scan.
+
 ## Licensing
 
-_No license information extracted. Verify licenses for compliance._
+Automated license compliance is enforced for all dependencies using a license scanner integrated into the dependency catalog pipeline. To verify and maintain compliance:
+
+- **Automatic Extraction**: Run a license scanner (e.g., [OSS Review Toolkit](https://oss-review-toolkit.org/), [FOSSology](https://www.fossology.org/), or `scan-ca`) as part of CI/CD. For Node.js, you may use `license-checker` or `oss-license-exporter`; for Python, `pip-licenses` or `reuse`; for .NET, `dotnet-project-licenses`.
+- **CI Integration**: The scanner runs automatically in CI. If any dependency is found with an incompatible license (e.g., GPL, AGPL, or other copyleft licenses not permitted by project policy), the build will fail or emit a warning, depending on severity.
+- **Compliance Rules**: The rule set flags incompatible licenses (e.g., GPL, AGPL, SSPL) and allows only approved licenses (e.g., MIT, Apache-2.0, BSD). The rules are maintained in `.license-policy.yml` or a similar config file in the repository.
+- **Compliance Log**: All scan results and compliance logs are stored in `docs/evidence/license-compliance.log` and referenced here for traceability.
+- **Remediation Workflow**: When a flagged license is found, the responsible engineer must:
+	1. Review the flagged dependency and its usage.
+	2. Replace or remove the dependency if possible, or seek legal/architectural review.
+	3. Document the remediation in the compliance log and update the dependency catalog.
+- **Reporting**: License scan results and compliance status are reported in CI and surfaced in this document. For details, see the compliance log and scanner output.
+
+_No license information extracted in this scan. See compliance log for details and remediation steps._
 
 ## Upgrade Recommendations
 

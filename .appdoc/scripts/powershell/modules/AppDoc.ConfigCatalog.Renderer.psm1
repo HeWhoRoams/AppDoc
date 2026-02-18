@@ -15,6 +15,7 @@ function Sanitize-AppDocConfigMarkdownCell {
     $text = $text.Trim()
 
     if ($text.Length -gt $MaxLength) {
+        if ($MaxLength -lt 4) { return "..." }
         return $text.Substring(0, $MaxLength - 3) + "..."
     }
 
@@ -104,14 +105,74 @@ _No environment variables detected. System may use configuration files or defaul
         "_No configuration sources detected. System may use hardcoded values or external configuration service._"
     }
 
+    # Helper: Infer type from value
+    function Infer-AppDocConfigType($value) {
+        if ($null -eq $value) { return "unknown" }
+        if ($value -is [bool] -or $value -eq $true -or $value -eq $false) { return "boolean" }
+        if ($value -is [int] -or $value -match '^-?\d+$') { return "integer" }
+        if ($value -is [double] -or $value -match '^-?\d+\.\d+$') { return "number" }
+        if ($value -is [string] -and ($value -eq "true" -or $value -eq "false")) { return "boolean" }
+        if ($value -is [string] -and $value -match '^-?\d+$') { return "integer" }
+        if ($value -is [string] -and $value -match '^-?\d+\.\d+$') { return "number" }
+        if ($value -is [string] -and $value.StartsWith("[")) { return "array" }
+        if ($value -is [string] -and $value.StartsWith("{")) { return "object" }
+        return "string"
+    }
+
+    # Helper: Synthesize description for config key
+    function Synthesize-AppDocConfigDescription($key, $parent, $settingsComments) {
+        # Try to find a comment for this key
+        $lookup = $key
+        if ($parent) { $lookup = "$parent.$key" }
+        if ($settingsComments.ContainsKey($lookup)) { return $settingsComments[$lookup] }
+        # Fallbacks for known patterns
+        if ($key -match 'autoApprove') {
+            return "If true, allows Copilot or automation to run $key commands/scripts without manual approval."
+        }
+        if ($key -match 'Write-Host') {
+            return "If true, allows scripts to use Write-Host for CLI output in automated runs."
+        }
+        if ($key -match 'executions.enabled') {
+            return "Enables Copilot chat command execution features."
+        }
+        if ($key -match 'list') {
+            return "If true, allows listing files without manual approval."
+        }
+        if ($key -match 'read') {
+            return "If true, allows reading files without manual approval."
+        }
+        if ($key -match 'ErrorAction') {
+            return "Controls the default PowerShell -ErrorAction for Copilot/automation commands."
+        }
+        # Generic fallback
+        return "Auto-generated: Controls $key behavior."
+    }
+
+    # Parse settings.json for comments (if available)
+    $settingsPath = Join-Path (Split-Path $PSScriptRoot -Parent) "..\..\..\.vscode\settings.json"
+    $settingsComments = @{}
+    if (Test-Path $settingsPath) {
+        $lines = Get-Content $settingsPath -Raw | Select-String -Pattern "^\s*//" -AllMatches | ForEach-Object { $_.Line }
+        $currentKey = $null
+        foreach ($line in $lines) {
+            if ($line -match '^\s*//\s*(.+)$') {
+                $comment = $Matches[1].Trim()
+                if ($currentKey) { $settingsComments[$currentKey] = $comment }
+            }
+        }
+    }
+
     $configOptionsContent = if ($Configs.Count -gt 0) {
         $tableHeader = "| Name | Type | Default | Description | Required | Source |`n|------|------|---------|-------------|----------|--------|"
         $tableRows = $Configs | ForEach-Object {
             $key = Sanitize-AppDocConfigMarkdownCell -Value $_.key -MaxLength 140
             $displayValue = Sanitize-AppDocConfigMarkdownCell -Value $_.value -MaxLength 80
-            $type = Sanitize-AppDocConfigMarkdownCell -Value $_.type -MaxLength 50
+            $type = Infer-AppDocConfigType $_.value
+            $type = Sanitize-AppDocConfigMarkdownCell -Value $type -MaxLength 50
             $source = Sanitize-AppDocConfigMarkdownCell -Value $_.source -MaxLength 140
-            $description = if ($key -match '\w+\.\w+') { "Nested configuration option" } else { "Configuration setting" }
+            $parent = $null
+            if ($key -match '^(.*?)\.[^.]+$') { $parent = $Matches[1] }
+            $description = Synthesize-AppDocConfigDescription $key $parent $settingsComments
             $required = if ($_.required) { "Yes" } else { "No" }
             "| $key | $type | $displayValue | $description | $required | $source |"
         }
@@ -126,7 +187,8 @@ _No environment variables detected. System may use configuration files or defaul
             $envKey = Sanitize-AppDocConfigMarkdownCell -Value $_.key -MaxLength 120
             $displayValue = Sanitize-AppDocConfigMarkdownCell -Value $_.value -MaxLength 80
             $description = if ($_.description) { Sanitize-AppDocConfigMarkdownCell -Value $_.description -MaxLength 120 } else { "Environment variable" }
-            $sensitive = if ($envKey -imatch "password|secret|key|token") { "Yes" } else { "No" }
+            $sensitivePattern = '(?i)\b(password|secret|key|token|credential|auth|apikey|api[_-]?key|private|cert|certificate|passwd|pwd|rsa|pem)\b'
+            $sensitive = if ($envKey -match $sensitivePattern) { "Yes" } else { "No" }
             $required = if ($_.required) { "Yes" } else { "No" }
             "| $envKey | $displayValue | $description | $sensitive | $required |"
         }
@@ -161,14 +223,8 @@ function Update-AppDocConfigCatalogContent {
     $sections = Get-AppDocConfigCatalogMarkdown -Configs $Configs -DiscoveredConfigFiles $DiscoveredConfigFiles -EnvVars $EnvVars
 
     $updated = Update-AppDocLiteralTemplateSection -Content $Content -PlaceholderText $sections.configSourcesPlaceholder -NewContent $sections.configSourcesContent
-    if (Get-Command Update-TemplateSection -ErrorAction SilentlyContinue) {
-        $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.configTablePlaceholder -NewContent $sections.configOptionsContent
-        $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.envTablePlaceholder -NewContent $sections.envVarsContent
-    }
-    else {
-        $updated = Update-AppDocLiteralTemplateSection -Content $updated -PlaceholderText $sections.configTablePlaceholder -NewContent $sections.configOptionsContent
-        $updated = Update-AppDocLiteralTemplateSection -Content $updated -PlaceholderText $sections.envTablePlaceholder -NewContent $sections.envVarsContent
-    }
+    $updated = Update-AppDocLiteralTemplateSection -Content $updated -PlaceholderText $sections.configTablePlaceholder -NewContent $sections.configOptionsContent
+    $updated = Update-AppDocLiteralTemplateSection -Content $updated -PlaceholderText $sections.envTablePlaceholder -NewContent $sections.envVarsContent
 
     $updated = [regex]::Replace(
         $updated,
@@ -188,12 +244,33 @@ function Update-AppDocConfigCatalogContent {
     )
     $updated = [regex]::Replace(
         $updated,
-        '(?s)(##\s+Environment Variables\s*\r?\n\r?\n).*?(?=\r?\n##\s+Configuration Validation\b)',
+        '(?s)(##\s+Environment Variables\s*\r?\n\r?\n).*?(?=(\r?\n##\s+)|\z)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
             return ($m.Groups[1].Value + $sections.envVarsContent + "`r`n")
         }
     )
+
+    # Replace raw deterministic placeholder text for known optional sections
+    # with a standardized professional note when no evidence is available.
+    $deferredSectionNote = "This section will be populated as artifacts are discovered."
+    $deferredSectionHeaders = @(
+        'Configuration Validation',
+        'Configuration Management',
+        'Security Considerations',
+        'Example Configurations'
+    )
+    foreach ($header in $deferredSectionHeaders) {
+        $sectionPattern = "(?s)(##\s+$([regex]::Escape($header))\s*\r?\n\r?\n)No deterministic evidence found in this section for the current scan\.\s*(?=(\r?\n##\s+)|\z)"
+        $updated = [regex]::Replace(
+            $updated,
+            $sectionPattern,
+            [System.Text.RegularExpressions.MatchEvaluator]{
+                param($m)
+                return ($m.Groups[1].Value + $deferredSectionNote + "`r`n")
+            }
+        )
+    }
 
     return $updated
 }

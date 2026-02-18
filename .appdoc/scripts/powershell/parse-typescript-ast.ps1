@@ -13,11 +13,15 @@ function Get-AppDocSourceFiles {
         [string[]]$Include = @("*.*")
     )
     
-    $files = Get-ChildItem -Path $RootPath -Recurse -Include $Include -File -ErrorAction SilentlyContinue
+    # Exclude test, fixture, mock, and example files by default. Override $ExcludePattern to customize exclusions.
+    $ExcludePattern = $script:ExcludePattern
+    if (-not $ExcludePattern) {
+        $ExcludePattern = '(?i)(\\node_modules\\|\\bin\\|\\obj\\|\\dist\\|\\build\\|\\docs\\|\\\.git\\|\\test\\|\\tests\\|\\spec\\|\\specs\\|\\__tests__\\|\\fixture\\|\\fixtures\\|\\mock\\|\\mocks\\|\\sample\\|\\samples\\|\\example\\|\\examples\\)'
+    }
     return @(
         $files | Where-Object {
             $normalized = $_.FullName -replace '/', '\'
-            $normalized -notmatch '(?i)(\\node_modules\\|\\bin\\|\\obj\\|\\dist\\|\\build\\|\\docs\\|\\\.git\\|\\test\\|\\tests\\|\\spec\\|\\specs\\|\\__tests__\\|\\fixture\\|\\fixtures\\|\\mock\\|\\mocks\\|\\sample\\|\\samples\\|\\example\\|\\examples\\)'
+            $normalized -notmatch $ExcludePattern
         }
     )
 }
@@ -56,8 +60,12 @@ if (-not $NoCache -and (Test-Path $cachePath)) {
     exit 0
 }
 
+
+# Always report the current provider as 'regex-fallback'.
 $nodeExists = $null -ne (Get-Command node -ErrorAction SilentlyContinue)
-$provider = if ($nodeExists) { "typescript-compiler-bridge-pending" } else { "regex-fallback" }
+$provider = "regex-fallback"
+# If Node.js is available, indicate a pending provider for future use.
+$pendingProvider = if ($nodeExists) { "typescript-compiler-bridge-pending" } else { $null }
 
 $records = @()
 $tsFiles = Get-AppDocSourceFiles -RootPath $RootPath -Include @("*.ts","*.tsx","*.js","*.jsx")
@@ -177,18 +185,26 @@ foreach ($file in $tsFiles) {
                 description = "AST extracted endpoint"
             }
             provider = $provider
-            confidence = if ($provider -eq "typescript-compiler-bridge-pending") { 0.84 } else { 0.62 }
+            confidence = if ($pendingProvider) { 0.84 } else { 0.62 }
         }
     }
 }
 
+
+# NOTE: The brace-balancing loop (using $searchStart, $braceCounter, $braceStart, $classBodyContent) does NOT skip braces inside string literals or comments. This can cause mis-parsing of class/interface bodies if braces appear inside quoted strings or comments. This is a known limitation of the lightweight regex fallback parser.
 $payload = [ordered]@{
     generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
     provider = $provider
     providerReady = $nodeExists
     records = $records
-    note = if ($nodeExists) { "TypeScript Compiler API integration pending. Current output uses fallback parser contract." } else { "Node.js not available; using regex fallback." }
+    note = if ($nodeExists) {
+        "TypeScript Compiler API integration pending. Current output uses fallback parser contract. Known limitation: brace-balancing loop does not skip braces inside strings/comments."
+    } else {
+        "Node.js not available; using regex fallback. Known limitation: brace-balancing loop does not skip braces inside strings/comments."
+    }
 }
+# Add pendingProvider field if Node.js is available
+if ($pendingProvider) { $payload["pendingProvider"] = $pendingProvider }
 
 # Ensure the cache directory exists before writing
 $cacheDir = Split-Path -Parent $cachePath

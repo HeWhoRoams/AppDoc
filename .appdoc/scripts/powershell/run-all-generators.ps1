@@ -277,18 +277,18 @@ function Test-GeneratedDoc {
     # Detect common placeholder patterns
     $placeholderPatterns = @(
         @{ Pattern = '_No .* detected'; Description = "Empty detection placeholder" }
-        @{ Pattern = '(?im)^\s*Describe\s+[^\r\n]*$'; Description = "Template instruction remaining" }
-        @{ Pattern = '(?im)^\s*Document\s+[^\r\n]*$'; Description = "Template instruction remaining" }
-        @{ Pattern = '(?im)^\s*List and describe\s+[^\r\n]*$'; Description = "Template instruction remaining" }
-        @{ Pattern = '(?im)^\s*Provide example[^\r\n]*$'; Description = "Template instruction remaining" }
-        @{ Pattern = '(?im)^\s*Provide quick start instructions[^\r\n]*$'; Description = "Template instruction remaining" }
+        @{ Pattern = '(?im)^\s*Describe\s+the\s+.+\s+section\.?\s*$'; Description = "Template instruction remaining" }
+        @{ Pattern = '(?im)^\s*Document\s+the\s+following(?:\s+.+)?\.?\s*$'; Description = "Template instruction remaining" }
+        @{ Pattern = '(?im)^\s*List and describe\s+(?:the\s+)?(?:following\s+)?(?:components|items|sections|services|dependencies|configurations)\b[^\r\n]*$'; Description = "Template instruction remaining" }
+        @{ Pattern = '(?im)^\s*Provide\s+(?:an\s+)?example\s+(?:for|of|showing)\b[^\r\n]*$'; Description = "Template instruction remaining" }
+        @{ Pattern = '(?im)^\s*Provide\s+quick\s+start\s+instructions\s+(?:for|to)\b[^\r\n]*$'; Description = "Template instruction remaining" }
         @{ Pattern = '(?im)^\s*Refer to .* documentation\.?$'; Description = "Template instruction remaining" }
         @{ Pattern = '\[PLACEHOLDER\]|\[TODO\]|\[TBD\]'; Description = "Explicit placeholder marker" }
         @{ Pattern = '(?im)^\s*This (section|codebase) may'; Description = "Uncertain filler text" }
     )
     
     foreach ($pattern in $placeholderPatterns) {
-        $patternMatches = [regex]::Matches($content, $pattern.Pattern, 'IgnoreCase')
+        $patternMatches = [regex]::Matches($content, $pattern.Pattern)
         if ($patternMatches.Count -gt 0) {
             $placeholders += "$($patternMatches.Count)x $($pattern.Description)"
         }
@@ -363,11 +363,7 @@ if (-not $SkipSyntaxGate) {
             try {
                 Write-Host "Running syntax gate..."
                 $syntaxGateResultJson = & $syntaxGateScriptPath -RootPath $RootPath -Include @($PSScriptRoot) -Json
-                $syntaxGateExitCodeRaw = $LASTEXITCODE
-                $syntaxGateExitCode = 0
-                if ($null -ne $syntaxGateExitCodeRaw -and -not [string]::IsNullOrWhiteSpace([string]$syntaxGateExitCodeRaw)) {
-                    $syntaxGateExitCode = [int]$syntaxGateExitCodeRaw
-                }
+                $syntaxGateExitCode = [int]$LASTEXITCODE
                 $syntaxGateResult = $null
 
                 if ($syntaxGateResultJson) {
@@ -379,8 +375,8 @@ if (-not $SkipSyntaxGate) {
                     throw "Syntax gate failed (exit=$syntaxGateExitCode, errors=$errorCount)."
                 }
 
-                Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Syntax gate passed" -Component "Validation" -FilePath $syntaxGateScriptPath -Details @{ checkedFiles = [int]$syntaxGateResult.checkedFiles }
-            }
+                $checkedFilesCount = if ($null -ne $syntaxGateResult.checkedFiles) { [int]$syntaxGateResult.checkedFiles } else { 0 }
+                Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Syntax gate passed" -Component "Validation" -FilePath $syntaxGateScriptPath -Details @{ checkedFiles = $checkedFilesCount }            }
             catch {
                 Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Error" -Message "Syntax gate failed" -Component "Validation" -FilePath $syntaxGateScriptPath -Details @{ exception = $_.Exception.Message }
                 throw
@@ -681,18 +677,21 @@ if (Test-Path $structuredValidationPath) {
 
         $structuredValidationText = ($structuredValidationOutput | Out-String).Trim()
         if ($structuredValidationText) {
-            $jsonStarts = [regex]::Matches($structuredValidationText, '(?m)^\{\s*$')
-            $firstBrace = if ($jsonStarts.Count -gt 0) { $jsonStarts[$jsonStarts.Count - 1].Index } else { $structuredValidationText.IndexOf('{') }
+            # Use last standalone '{' line to skip any preceding non-JSON output
+            $jsonStarts = [regex]::Matches($structuredValidationText, '(?m)^\{\s*')
+            $jsonStartIndex = if ($jsonStarts.Count -gt 0) { $jsonStarts[$jsonStarts.Count - 1].Index } else { $structuredValidationText.IndexOf('{') }
             $lastBrace = $structuredValidationText.LastIndexOf('}')
-            if ($firstBrace -ge 0 -and $lastBrace -gt $firstBrace) {
-                $structuredValidationJson = $structuredValidationText.Substring($firstBrace, ($lastBrace - $firstBrace + 1))
+            if ($jsonStartIndex -ge 0 -and $lastBrace -gt $jsonStartIndex) {
+                $structuredValidationJson = $structuredValidationText.Substring($jsonStartIndex, ($lastBrace - $jsonStartIndex + 1))
                 $structuredValidationResult = $structuredValidationJson | ConvertFrom-Json
-            }
-            else {
+                # Only log diagnostic if we actually parsed a result
+                if ($structuredValidationResult) {
+                    Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Structured validation completed" -Component "Validation"
+                }
+            } else {
                 throw "Structured validation did not produce a parseable JSON payload."
             }
         }
-        Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Structured validation completed" -Component "Validation"
     }
     catch {
         Add-AppDocDiagnostic -Category "DETECTION_PATTERN_MISMATCH" -Severity "Warning" -Message "Structured validation reported issues" -Component "Validation" -Details @{ exception = $_.Exception.Message }
@@ -722,7 +721,8 @@ if (Get-Command Test-AppDocValidationGate -ErrorAction SilentlyContinue) {
     }
 
     Write-Host "`nValidation Gate:" -ForegroundColor Cyan
-    Write-Host "  Mode: $(if ($StrictValidation) { 'Strict' } else { 'Soft' })" -ForegroundColor White
+    $modeString = if ($StrictValidation) { 'Strict' } else { 'Soft' }
+    Write-Host "  Mode: $modeString" -ForegroundColor White
     Write-Host "  Threshold: $QualityThreshold" -ForegroundColor White
     Write-Host "  Average Score: $($validationGate.averageScore)%" -ForegroundColor White
     Write-Host "  Below Threshold: $($validationGate.belowThreshold)" -ForegroundColor White

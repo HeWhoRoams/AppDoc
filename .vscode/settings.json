@@ -2,18 +2,20 @@
     "chat.tools.terminal.autoApprove": {
         // General PowerShell commands
         "pwsh": true,
-        "Set-ExecutionPolicy": true,
+        "Set-ExecutionPolicy": false, // Not auto-approved: can change system security policy
         "Get-ChildItem": true,
         "Get-Content": true,
         "Copy-Item": true,
-        "Remove-Item": true,
+        "Remove-Item": false, // Not auto-approved: destructive file operation
         "Test-Path": true,
         "Write-Host": true,
-        
+
         // Git commands
-        "git": true,
+        // Only allow safe subcommands, not all git operations
+        "git": false, // Not auto-approved: broad command, use explicit subcommands
         "git fetch": true,
         "git status": true,
+        // Destructive or broad commands are not auto-approved for safety. Only explicit, safe subcommands are allowed.
         
         // Phase 0: Analysis scripts (allow any path variation)
         "**/analyze-repository.ps1": true,

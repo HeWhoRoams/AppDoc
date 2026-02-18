@@ -52,7 +52,7 @@ if (-not $initialized) {
 Write-Progress -Activity "Generating API Inventory" -Status "Scanning for APIs..." -PercentComplete 10
 $apiData = Get-AppDocApiInventoryData -ScriptsRoot $PSScriptRoot -RootPath $RootPath
 $inventory = $apiData.inventory
-$endpoints = @($inventory.endpoints)
+$endpoints = @(if ($inventory -and $inventory.endpoints) { $inventory.endpoints } else { @() })
 
 if ($apiData.astEndpointCount -gt 0) {
     Write-Host "  Added $($apiData.astEndpointCount) AST endpoint records" -ForegroundColor Gray

@@ -1,3 +1,11 @@
+## Module-scoped placeholder for data model table
+$script:DataModelPlaceholder = @"
+| Model Name | Fields | Types | Description | Constraints | Indexes |
+|------------|--------|-------|-------------|-------------|---------|
+
+_No data models detected. This codebase may use dynamic structures or patterns not yet recognized by the scanner._
+"@
+
 function Get-AppDocDataModelMarkdown {
     [CmdletBinding()]
     param(
@@ -7,15 +15,8 @@ function Get-AppDocDataModelMarkdown {
         [int]$MaxDetailedModels = 120
     )
 
-    $modelTablePlaceholder = @"
-| Model Name | Fields | Types | Description | Constraints | Indexes |
-|------------|--------|-------|-------------|-------------|---------|
-
-_No data models detected. This codebase may use dynamic structures or patterns not yet recognized by the scanner._
-"@
-
     if (-not $Models -or $Models.Count -eq 0) {
-        return $modelTablePlaceholder
+        return $script:DataModelPlaceholder
     }
 
     $domainRows = @($Models | ForEach-Object {
@@ -56,9 +57,26 @@ _No data models detected. This codebase may use dynamic structures or patterns n
     $modelRows = @()
     foreach ($model in $detailedModels) {
         $fieldsCount = @($model.properties).Count
+
         $typesSummary = if ($fieldsCount -gt 0) {
             ($model.properties[0..([Math]::Min(2, $fieldsCount - 1))] | ForEach-Object {
-                if ($_ -match ':') { $_.Split(':')[1].Trim() } else { 'unknown' }
+                $entry = $_
+                if ($null -eq $entry) {
+                    'unknown'
+                } elseif ($entry -is [string]) {
+                    if ($entry -match ':') {
+                        $parts = $entry.Split(':', 2)
+                        if ($parts.Count -ge 2 -and $parts[1].Trim()) { $parts[1].Trim() } else { 'unknown' }
+                    } else {
+                        'unknown'
+                    }
+                } elseif ($entry.PSObject.Properties['type']) {
+                    $entry.type
+                } elseif ($entry.PSObject.Properties['Type']) {
+                    $entry.Type
+                } else {
+                    'unknown'
+                }
             }) -join ', '
         } else {
             'N/A'
@@ -70,8 +88,10 @@ _No data models detected. This codebase may use dynamic structures or patterns n
         $modelRows += "| ``$([string]$model.name)`` | $fieldsCount | $typesSummary | $description | $constraints | N/A |"
     }
 
-    $totalProperties = ($Models | ForEach-Object { @($_.properties).Count } | Measure-Object -Sum).Sum
-    $averageProperties = [Math]::Round((($Models | ForEach-Object { @($_.properties).Count } | Measure-Object -Average).Average), 1)
+    $propertyCounts = $Models | ForEach-Object { @($_.properties).Count }
+    $propertyStats = $propertyCounts | Measure-Object -Sum -Average
+    $totalProperties = $propertyStats.Sum
+    $averageProperties = [Math]::Round(($propertyStats.Average), 1)
     $typeDistribution = ($Models | Group-Object type | ForEach-Object { "- $($_.Name): $($_.Count)" }) -join "`n"
 
     return @"
@@ -110,27 +130,25 @@ function Update-AppDocDataModelContent {
         [string]$ModelContent
     )
 
-    $placeholder = @"
-| Model Name | Fields | Types | Description | Constraints | Indexes |
-|------------|--------|-------|-------------|-------------|---------|
 
-_No data models detected. This codebase may use dynamic structures or patterns not yet recognized by the scanner._
-"@
+    $placeholder = $script:DataModelPlaceholder
 
     $updated = $Content
     if (Get-Command Update-TemplateSection -ErrorAction SilentlyContinue) {
-        $updated = Update-TemplateSection -Content $updated -PlaceholderText $placeholder -NewContent $ModelContent
+        # Use Update-TemplateSection if available and skip regex fallback
+        return Update-TemplateSection -Content $updated -PlaceholderText $placeholder -NewContent $ModelContent
+    } else {
+        # Fallback: regex-based section replacement
+        $pattern = '(?s)(##\s+Data Models\s*\r?\n\r?\n)(.*?)(?=(\r?\n##\s+|$))'
+        return [regex]::Replace(
+            $updated,
+            $pattern,
+            [System.Text.RegularExpressions.MatchEvaluator]{
+                param($m)
+                return ($m.Groups[1].Value + $ModelContent + "`r`n")
+            }
+        )
     }
-
-    $pattern = '(?s)(##\s+Data Models\s*\r?\n\r?\n).*'
-    return [regex]::Replace(
-        $updated,
-        $pattern,
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $ModelContent + "`r`n")
-        }
-    )
 }
 
 Export-ModuleMember -Function @(

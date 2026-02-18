@@ -329,15 +329,24 @@ function Get-DocRouteCount {
     param([string]$ApiDocPath)
     if (-not (Test-Path $ApiDocPath)) { return 0 }
 
-    $root = Split-Path (Split-Path $ApiDocPath -Parent) -Parent
-    $evidencePath = Join-Path $root "docs\evidence\api-inventory.evidence.json"
-    if (Test-Path $evidencePath) {
+
+    # Compute evidence path by walking up from $ApiDocPath
+    $parent = Split-Path $ApiDocPath -Parent
+    $evidencePath = $null
+    while ($parent -and -not $evidencePath) {
+        $candidate = Join-Path $parent "docs\evidence\api-inventory.evidence.json"
+        if (Test-Path $candidate) { $evidencePath = $candidate; break }
+        $parent = Split-Path $parent -Parent
+    }
+    if ($evidencePath) {
         try {
             $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json
             $fromEvidence = @($evidence.records | Where-Object { [string]$_.kind -eq "endpoint" }).Count
             if ($fromEvidence -gt 0) { return $fromEvidence }
         }
-        catch { }
+        catch {
+            Write-Warning "[validate-documentation] Failed to parse evidence at $evidencePath: $($_.Exception.Message)"
+        }
     }
 
     $content = Get-Content $ApiDocPath -Raw

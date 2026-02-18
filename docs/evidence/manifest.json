@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-02-18T13:44:50-05:00",
+  "generatedAt": "2026-02-18T15:19:44-05:00",
   "artifacts": [
     {
       "artifact": "api-inventory",
-      "path": ".\\docs\\evidence\\api-inventory.evidence.json",
+      "path": "./docs/evidence/api-inventory.evidence.json",
       "recordCount": 0,
       "updatedAt": "2026-02-18T13:44:43-05:00",
       "metadata": {
@@ -12,7 +12,7 @@
     },
     {
       "artifact": "build-cookbook",
-      "path": ".\\docs\\evidence\\build-cookbook.evidence.json",
+      "path": "./docs/evidence/build-cookbook.evidence.json",
       "recordCount": 1,
       "updatedAt": "2026-02-18T13:44:48-05:00",
       "metadata": {
@@ -21,7 +21,7 @@
     },
     {
       "artifact": "config-catalog",
-      "path": ".\\docs\\evidence\\config-catalog.evidence.json",
+      "path": "./docs/evidence/config-catalog.evidence.json",
       "recordCount": 46,
       "updatedAt": "2026-02-18T13:44:47-05:00",
       "metadata": {
@@ -30,7 +30,7 @@
     },
     {
       "artifact": "data-model",
-      "path": ".\\docs\\evidence\\data-model.evidence.json",
+      "path": "./docs/evidence/data-model.evidence.json",
       "recordCount": 0,
       "updatedAt": "2026-02-18T13:44:44-05:00",
       "metadata": {
@@ -39,7 +39,7 @@
     },
     {
       "artifact": "debt-register",
-      "path": ".\\docs\\evidence\\debt-register.evidence.json",
+      "path": "./docs/evidence/debt-register.evidence.json",
       "recordCount": 0,
       "updatedAt": "2026-02-18T13:44:49-05:00",
       "metadata": {
@@ -48,7 +48,7 @@
     },
     {
       "artifact": "dependencies-catalog",
-      "path": ".\\docs\\evidence\\dependencies-catalog.evidence.json",
+      "path": "./docs/evidence/dependencies-catalog.evidence.json",
       "recordCount": 0,
       "updatedAt": "2026-02-18T13:44:49-05:00",
       "metadata": {
@@ -57,7 +57,7 @@
     },
     {
       "artifact": "overview",
-      "path": ".\\docs\\evidence\\overview.evidence.json",
+      "path": "./docs/evidence/overview.evidence.json",
       "recordCount": 1,
       "updatedAt": "2026-02-18T13:44:42-05:00",
       "metadata": {
@@ -66,7 +66,7 @@
     },
     {
       "artifact": "start-here",
-      "path": ".\\docs\\evidence\\start-here.evidence.json",
+      "path": "./docs/evidence/start-here.evidence.json",
       "recordCount": 3,
       "updatedAt": "2026-02-18T13:44:50-05:00",
       "metadata": {
@@ -75,16 +75,16 @@
     },
     {
       "artifact": "task-guides",
-      "path": ".\\docs\\evidence\\task-guides.evidence.json",
+      "path": "./docs/evidence/task-guides.evidence.json",
       "recordCount": 5,
-      "updatedAt": "2026-02-18T13:44:50-05:00",
+      "updatedAt": "2026-02-18T15:19:44-05:00",
       "metadata": {
         "generator": "generate-task-guides.ps1"
       }
     },
     {
       "artifact": "test-catalog",
-      "path": ".\\docs\\evidence\\test-catalog.evidence.json",
+      "path": "./docs/evidence/test-catalog.evidence.json",
       "recordCount": 0,
       "updatedAt": "2026-02-18T13:44:48-05:00",
       "metadata": {

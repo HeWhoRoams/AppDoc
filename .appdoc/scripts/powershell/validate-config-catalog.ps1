@@ -26,6 +26,11 @@ $configCount = ([regex]::Matches(
     '(?im)^\|\s*[^|`\r\n]+\s*\|\s*[^|]+\|\s*[^|]+\|\s*[^|]+\|\s*(Yes|No)\s*\|\s*[^|]+\|'
 )).Count
 
-Write-Progress -Activity "Validating Config Catalog" -Status "Validated $configCount configs" -PercentComplete 100
 
+if ($configCount -eq 0) {
+    Write-Error "No config entries found in config-catalog.md — table may be missing or format changed. Validation failed."
+    exit 1
+}
+
+Write-Progress -Activity "Validating Config Catalog" -Status "Validated $configCount configs" -PercentComplete 100
 Write-Host "Config catalog validated: $configCount configs found"

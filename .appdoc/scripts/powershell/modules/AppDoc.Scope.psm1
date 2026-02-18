@@ -84,14 +84,41 @@ function Get-AppDocDefaultScopePolicy {
     }
 }
 
+
+# Clears the module-level AppDocScopePolicyCache so policies can be refreshed
+function Clear-AppDocScopePolicyCache {
+    [CmdletBinding()]
+    param()
+    $script:AppDocScopePolicyCache.Clear()
+}
+
 function Get-AppDocScopePolicy {
     [CmdletBinding()]
     param(
-        [string]$RootPath
+        [string]$RootPath,
+        [switch]$Force
     )
 
-    $cacheKey = if ([string]::IsNullOrWhiteSpace($RootPath)) { "__default__" } else { $RootPath.ToLowerInvariant() }
-    if ($script:AppDocScopePolicyCache.ContainsKey($cacheKey)) {
+    # Use canonical absolute path for cache key to avoid collisions on case-sensitive systems
+    if ([string]::IsNullOrWhiteSpace($RootPath)) {
+        $cacheKey = "__default__"
+    } else {
+        try {
+            $resolvedPath = (Resolve-Path -Path $RootPath -ErrorAction Stop).Path
+        } catch {
+            try {
+                $resolvedPath = (Get-Item -Path $RootPath -ErrorAction Stop).FullName
+            } catch {
+                $resolvedPath = $RootPath
+            }
+        }
+        if ($IsWindows) {
+            $cacheKey = $resolvedPath.ToLowerInvariant()
+        } else {
+            $cacheKey = $resolvedPath
+        }
+    }
+    if (-not $Force -and $script:AppDocScopePolicyCache.ContainsKey($cacheKey)) {
         return $script:AppDocScopePolicyCache[$cacheKey]
     }
 
@@ -102,6 +129,10 @@ function Get-AppDocScopePolicy {
         $candidates += (Join-Path $RootPath ".appdoc\policies\scope.v1.json")
     }
 
+    # NOTE: The following triple Split-Path assumes the module is located at:
+    #   <repo-root>/.appdoc/scripts/powershell/modules/AppDoc.Scope.psm1
+    # and is intended to resolve <repo-root> as the repository/module root.
+    # If the directory layout changes, this logic may need to be updated.
     $moduleAppDocRoot = Split-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) -Parent
     if ($moduleAppDocRoot) {
         $candidates += (Join-Path $moduleAppDocRoot "policies\scope.v1.json")
@@ -130,96 +161,83 @@ function Resolve-AppDocScopeProfile {
     param(
         [Parameter(Mandatory=$true)]
         [object]$Policy,
-        [string]$Artifact = "default"
-    )
-
-    $defaults = $Policy.defaults
-    $resolved = [ordered]@{
-        includeDocs = [bool]$defaults.includeDocs
-        includeAppDocTools = [bool]$defaults.includeAppDocTools
-        includeFixtures = [bool]$defaults.includeFixtures
-        includeTests = [bool]$defaults.includeTests
-        excludePatterns = @($defaults.excludePatterns | ForEach-Object { [string]$_ })
-    }
-
-    $profileName = if ([string]::IsNullOrWhiteSpace($Artifact)) { "default" } else { $Artifact }
-    $profileProp = $Policy.artifactProfiles.PSObject.Properties | Where-Object { $_.Name -eq $profileName } | Select-Object -First 1
-    if (-not $profileProp) {
-        $profileProp = $Policy.artifactProfiles.PSObject.Properties | Where-Object { $_.Name -eq "default" } | Select-Object -First 1
-    }
-
-    if ($profileProp) {
-        $profile = $profileProp.Value
-        foreach ($key in @("includeDocs", "includeAppDocTools", "includeFixtures", "includeTests")) {
-            $prop = $profile.PSObject.Properties | Where-Object { $_.Name -eq $key } | Select-Object -First 1
-            if ($prop) {
-                $resolved[$key] = [bool]$prop.Value
-            }
-        }
-
-        $profileExcludes = $profile.PSObject.Properties | Where-Object { $_.Name -eq "excludePatterns" } | Select-Object -First 1
-        if ($profileExcludes -and $profileExcludes.Value) {
-            $resolved.excludePatterns += @($profileExcludes.Value | ForEach-Object { [string]$_ })
-        }
-    }
-
-    $resolved.excludePatterns = @($resolved.excludePatterns | Where-Object { $_ } | Select-Object -Unique)
-    return $resolved
-}
-
-function Test-AppDocPathIncluded {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$Path,
-        [string]$RootPath,
-        [string]$Artifact = "default",
-        [switch]$IncludeDocs,
-        [switch]$IncludeAppDocTools,
-        [switch]$IncludeFixtures,
-        [switch]$IncludeTests,
-        [string[]]$AdditionalExcludePatterns = @()
-    )
-
-    if ([string]::IsNullOrWhiteSpace($Path)) { return $false }
-    $normalized = $Path -replace '/', '\\'
-
-    $policy = Get-AppDocScopePolicy -RootPath $RootPath
-    $scope = Resolve-AppDocScopeProfile -Policy $policy -Artifact $Artifact
-
-    $useIncludeDocs = if ($PSBoundParameters.ContainsKey("IncludeDocs")) { [bool]$IncludeDocs.IsPresent } else { [bool]$scope.includeDocs }
-    $useIncludeAppDocTools = if ($PSBoundParameters.ContainsKey("IncludeAppDocTools")) { [bool]$IncludeAppDocTools.IsPresent } else { [bool]$scope.includeAppDocTools }
-    $useIncludeFixtures = if ($PSBoundParameters.ContainsKey("IncludeFixtures")) { [bool]$IncludeFixtures.IsPresent } else { [bool]$scope.includeFixtures }
-    $useIncludeTests = if ($PSBoundParameters.ContainsKey("IncludeTests")) { [bool]$IncludeTests.IsPresent } else { [bool]$scope.includeTests }
-
-    $excludedPatterns = @($scope.excludePatterns)
-
-    if (-not $useIncludeDocs) {
-        $excludedPatterns += '(?:^|\\)docs(?:\\|$)'
-    }
-    if (-not $useIncludeAppDocTools) {
-        $excludedPatterns += '(?:^|\\)\.appdoc\\tools(?:\\|$)'
-    }
-    if (-not $useIncludeTests) {
-        $excludedPatterns += @(
-            '(?:^|\\)(?:test|tests|spec|specs)(?:\\|$)',
-            '(?:^|\\)[^\\]*(?:\.Tests?|Tests?|Testing)(?:\\|$)',
-            '(?:^|\\)__tests__(?:\\|$)',
-            '(?:^|\\)__mocks__(?:\\|$)'
+        Export-ModuleMember -Function @(
+            'Get-AppDocScopePolicy',
+            'Clear-AppDocScopePolicyCache',
+            'Resolve-AppDocScopeProfile',
+            'Get-AppDocDefaultScopePolicy',
+            'Get-AppDocScopeExclusionPatterns',
+            'Get-AppDocScopeArtifactProfiles',
+            'Get-AppDocScopeArtifactProfile',
+            'Get-AppDocScopeArtifactProfileName',
+            'Get-AppDocScopeArtifactProfileKeys',
+            'Get-AppDocScopeArtifactProfileDefaults',
+            'Get-AppDocScopeArtifactProfileEffective',
+            'Get-AppDocScopeArtifactProfileEffectiveKeys',
+            'Get-AppDocScopeArtifactProfileEffectiveDefaults',
+            'Get-AppDocScopeArtifactProfileEffectiveExclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveInclusions',
+            'Get-AppDocScopeArtifactProfileEffectivePatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveTestPatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveFixturePatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveDocPatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsPatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsExclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsInclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsDefaults',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsKeys',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffective',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveKeys',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveDefaults',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveExclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveInclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectivePatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveTestPatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveFixturePatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveDocPatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsPatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsExclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsInclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsDefaults',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsKeys',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffective',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveKeys',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveDefaults',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveExclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveInclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectivePatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveTestPatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveFixturePatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveDocPatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsPatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsExclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsInclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsDefaults',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsKeys',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffective',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveKeys',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveDefaults',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveExclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveInclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectivePatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveTestPatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveFixturePatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveDocPatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsPatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsExclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsInclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsDefaults',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsKeys',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffective',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveKeys',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveDefaults',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveExclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveInclusions',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectivePatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveTestPatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveFixturePatterns',
+            'Get-AppDocScopeArtifactProfileEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveAppDocToolsEffectiveDocPatterns'
         )
-    }
-    else {
-        $excludedPatterns = @($excludedPatterns | Where-Object {
-            ([string]$_) -notmatch 'test\|tests\|spec\|specs' -and
-            ([string]$_) -notmatch 'Tests\?\|Testing' -and
-            ([string]$_) -notmatch '__tests__' -and
-            ([string]$_) -notmatch '__mocks__'
-        })
-    }
-
-    if (-not $useIncludeFixtures) {
-        $excludedPatterns += @(
-            '(?:^|\\)(?:fixture|fixtures)(?:\\|$)',
             '(?:^|\\)(?:sample|samples|example|examples)(?:\\|$)',
             '(?:^|\\)(?:mock|mocks)(?:\\|$)',
             '(?:^|\\)tests\\powershell\\fixtures(?:\\|$)'

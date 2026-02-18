@@ -1,6 +1,6 @@
 {
   "artifact": "task-guides",
-  "generatedAt": "2026-02-18T13:44:50-05:00",
+  "generatedAt": "2026-02-18T15:19:44-05:00",
   "recordCount": 5,
   "records": [
     {
@@ -8,81 +8,82 @@
       "source": "docs",
       "name": "task-guide-summary",
       "kind": "summary",
-      "confidence": 1.0,
+      "confidence": 0.0,
       "metadata": {
-        "endpointCount": 0,
+        "debtCount": 0,
         "testCount": 0,
         "buildCommandCount": 0,
         "dependencyCount": 0,
-        "debtCount": 0
+        "endpointCount": 0
       },
       "provider": "generator",
       "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-02-18T13:44:50-05:00"
+      "status": "NotDetected",
+      "timestamp": "2026-02-18T15:19:44-05:00"
     },
     {
       "artifact": "task-guides",
       "source": "docs",
       "name": "change-endpoint-safely",
       "kind": "task-guide",
-      "confidence": 1.0,
+      "confidence": 0.0,
       "metadata": {
-        "endpointEvidence": 0,
-        "category": "implementation"
+        "category": "implementation",
+        "endpointCount": 0
       },
       "provider": "generator",
       "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-02-18T13:44:50-05:00"
+      "status": "NotDetected",
+      "timestamp": "2026-02-18T15:19:44-05:00"
     },
     {
       "artifact": "task-guides",
       "source": "docs",
       "name": "debug-build-failure",
       "kind": "task-guide",
-      "confidence": 1.0,
+      "confidence": 0.0,
       "metadata": {
-        "buildEvidence": 0,
-        "category": "operations"
+        "category": "operations",
+        "buildCount": 0
       },
       "provider": "generator",
       "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-02-18T13:44:50-05:00"
+      "status": "NotDetected",
+      "timestamp": "2026-02-18T15:19:44-05:00"
     },
     {
       "artifact": "task-guides",
       "source": "docs",
       "name": "plan-debt-sprint",
       "kind": "task-guide",
-      "confidence": 1.0,
+      "confidence": 0.0,
       "metadata": {
-        "debtEvidence": 0,
-        "category": "maintenance"
+        "category": "maintenance",
+        "debtCount": 0
       },
       "provider": "generator",
       "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-02-18T13:44:50-05:00"
+      "status": "NotDetected",
+      "timestamp": "2026-02-18T15:19:44-05:00"
     },
     {
       "artifact": "task-guides",
       "source": "docs",
       "name": "triage-dependency-risk",
       "kind": "task-guide",
-      "confidence": 1.0,
+      "confidence": 0.0,
       "metadata": {
-        "dependencyEvidence": 0,
-        "category": "risk"
+        "category": "risk",
+        "dependencyCount": 0
       },
       "provider": "generator",
       "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-02-18T13:44:50-05:00"
+      "status": "NotDetected",
+      "timestamp": "2026-02-18T15:19:44-05:00"
     }
   ],
   "metadata": {
+    "generator": "generate-task-guides.ps1",
     "requiredEvidenceKeys": [
       "tasks",
       "summary"
@@ -91,8 +92,7 @@
       "Executive Summary",
       "Task Guides",
       "Operational Checklist"
-    ],
-    "generator": "generate-task-guides.ps1"
+    ]
   },
   "determinism": {
     "hashAlgorithm": "SHA256",
@@ -101,6 +101,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "ebeddc2e9d02dd07da51a1e434cad001bef8a5579b4ecc5b99d335aaa6cac55e"
+    "contentHash": "2da05f463987dfb21d27f7aa3da6d17f153d7bd3a479c9615fbabc45c7c291f7"
   }
 }

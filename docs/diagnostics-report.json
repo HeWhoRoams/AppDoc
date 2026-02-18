@@ -67,14 +67,13 @@
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "Validation",
-      "message": "Validation is below threshold in soft mode",
+      "message": "1 document below threshold in soft mode (average score passing)",
       "filePath": "",
       "details": {
         "averageScore": 92.4,
         "threshold": 80,
         "belowThreshold": 1
-      }
-    }
+      }    }
   ],
   "metadata": {
     "noAI": false,

@@ -126,7 +126,8 @@ function Test-AppDocValidationGate {
         [Parameter(Mandatory=$true)]
         [array]$ValidationResults,
         [int]$QualityThreshold = 80,
-        [switch]$Strict
+        [switch]$Strict,
+        [bool]$PolicyGatePassed = $true
     )
 
     if (-not $ValidationResults -or $ValidationResults.Count -eq 0) {
@@ -153,16 +154,15 @@ function Test-AppDocValidationGate {
     $average = [Math]::Round((($scored | Measure-Object -Property score -Average).Average), 1)
     $below = @($scored | Where-Object { $_.score -lt $QualityThreshold }).Count
 
-    $passes = if ($Strict) {
-        ($below -eq 0)
-    }
-    else {
-        ($average -ge $QualityThreshold)
+    if ($Strict) {
+        $passes = ($below -eq 0 -and $average -ge $QualityThreshold -and $PolicyGatePassed)
+    } else {
+        $passes = ($average -ge $QualityThreshold -and $PolicyGatePassed)
     }
 
     return [ordered]@{
         passed = $passes
-        reason = if ($passes) { "Validation gate passed" } else { "Strict validation gate failed" }
+        reason = if ($passes) { "Validation gate passed" } else { "Validation gate failed" }
         averageScore = $average
         belowThreshold = $below
         strict = $Strict.IsPresent

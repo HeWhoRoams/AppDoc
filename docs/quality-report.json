@@ -129,8 +129,7 @@
     "lowQuality": 0,
     "totalDocs": 10,
     "highQuality": 9,
-    "mediumQuality": 9,
+    "mediumQuality": 1,
     "missingDocs": 0,
     "averageScore": 92.0
-  }
-}
+  }}

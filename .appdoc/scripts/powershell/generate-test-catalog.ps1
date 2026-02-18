@@ -4,9 +4,11 @@
 # Purpose: Scans the target codebase for tests and populates the test-catalog template.
 #
 
+
 param(
     [Parameter(Mandatory=$true)]
-    [string]$RootPath
+    [string]$RootPath,
+    [int]$MaxTestCases = 50
 )
 
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
@@ -48,14 +50,19 @@ if (-not $initialized) {
     exit 1
 }
 
+
 Write-Progress -Activity "Generating Test Catalog" -Status "Scanning tests..." -PercentComplete 10
 $testData = Get-AppDocTestCatalogData -RootPath $RootPath
+if ($null -eq $testData) {
+    Write-Error "Get-AppDocTestCatalogData returned null. Cannot continue generating test catalog."
+    exit 1
+}
 $tests = @($testData.tests)
 Write-Host "  Found $($testData.testFileCount) test files" -ForegroundColor Gray
 
 Write-Progress -Activity "Generating Test Catalog" -Status "Populating template..." -PercentComplete 60
 $content = Get-Content -Path $outputPath -Raw
-$content = Update-AppDocTestCatalogContent -Content $content -Tests $tests -MaxTestCases 50
+$content = Update-AppDocTestCatalogContent -Content $content -Tests $tests -MaxTestCases $MaxTestCases
 $content = Normalize-AppDocTemplateInstructionText -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline

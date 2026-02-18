@@ -86,6 +86,9 @@ function Update-AppDocTaskGuidesContent {
     $sections = Get-AppDocTaskGuidesMarkdown -TaskData $TaskData
     $updated = $Content
 
+
+    # Change an Endpoint Safely
+    $before = $updated
     $updated = [regex]::Replace(
         $updated,
         '(?s)(###\s+Change an Endpoint Safely\s*\r?\n\r?\n).*?(?=\r?\n###\s+Debug a Build Failure\b)',
@@ -94,6 +97,10 @@ function Update-AppDocTaskGuidesContent {
             return ($m.Groups[1].Value + $sections.changeEndpointGuide + "`r`n")
         }
     )
+    if ($before -eq $updated) { Write-Verbose "[TaskGuides.Renderer] Pattern not matched: Change an Endpoint Safely" }
+
+    # Debug a Build Failure
+    $before = $updated
     $updated = [regex]::Replace(
         $updated,
         '(?s)(###\s+Debug a Build Failure\s*\r?\n\r?\n).*?(?=\r?\n###\s+Triage Dependency Risk\b)',
@@ -102,6 +109,10 @@ function Update-AppDocTaskGuidesContent {
             return ($m.Groups[1].Value + $sections.debugBuildGuide + "`r`n")
         }
     )
+    if ($before -eq $updated) { Write-Verbose "[TaskGuides.Renderer] Pattern not matched: Debug a Build Failure" }
+
+    # Triage Dependency Risk
+    $before = $updated
     $updated = [regex]::Replace(
         $updated,
         '(?s)(###\s+Triage Dependency Risk\s*\r?\n\r?\n).*?(?=\r?\n###\s+Plan a Debt Sprint\b)',
@@ -110,6 +121,10 @@ function Update-AppDocTaskGuidesContent {
             return ($m.Groups[1].Value + $sections.dependencyRiskGuide + "`r`n")
         }
     )
+    if ($before -eq $updated) { Write-Verbose "[TaskGuides.Renderer] Pattern not matched: Triage Dependency Risk" }
+
+    # Plan a Debt Sprint
+    $before = $updated
     $updated = [regex]::Replace(
         $updated,
         '(?s)(###\s+Plan a Debt Sprint\s*\r?\n\r?\n).*?(?=\r?\n##\s+Operational Checklist\b)',
@@ -118,6 +133,10 @@ function Update-AppDocTaskGuidesContent {
             return ($m.Groups[1].Value + $sections.debtSprintGuide + "`r`n")
         }
     )
+    if ($before -eq $updated) { Write-Verbose "[TaskGuides.Renderer] Pattern not matched: Plan a Debt Sprint" }
+
+    # Operational Checklist
+    $before = $updated
     $updated = [regex]::Replace(
         $updated,
         '(?s)(##\s+Operational Checklist\s*\r?\n\r?\n).*?(?=\r?\n---\s*\r?\n)',
@@ -126,12 +145,14 @@ function Update-AppDocTaskGuidesContent {
             return ($m.Groups[1].Value + $sections.checklist + "`r`n")
         }
     )
+    if ($before -eq $updated) { Write-Verbose "[TaskGuides.Renderer] Pattern not matched: Operational Checklist" }
 
     if ($updated -notmatch '(?im)^##\s+Evidence Traceability\b') {
         $updated = [regex]::Replace(
             $updated,
             '(?s)\r?\n---\s*\r?\n',
-            "`r`n## Evidence Traceability`r`n`r`n$($sections.evidenceTraceability)`r`n`r`n---`r`n"
+            "`r`n## Evidence Traceability`r`n`r`n$($sections.evidenceTraceability)`r`n`r`n---`r`n",
+            1
         )
     } else {
         $updated = [regex]::Replace(

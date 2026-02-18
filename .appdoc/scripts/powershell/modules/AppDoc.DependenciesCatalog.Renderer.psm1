@@ -42,7 +42,12 @@ _No dependencies detected. System may be self-contained or use alternative depen
     $nugetContent = if ($nugetPackages.Count -gt 0) {
         $rows = $nugetPackages | Group-Object -Property name | Sort-Object Name | ForEach-Object {
             $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
-            $usedBy = ($_.Group.project | Sort-Object -Unique | Select-Object -First 3) -join ', '
+            $uniqueProjects = @($_.Group.project | Sort-Object -Unique)
+            $projCount = $uniqueProjects.Count
+            $usedBy = ($uniqueProjects | Select-Object -First 3) -join ', '
+            if ($projCount -gt 3) {
+                $usedBy += " +$($projCount - 3) more"
+            }
             "| ``$($_.Name)`` | $versions | $usedBy | NuGet package |"
         }
 @"
@@ -74,8 +79,8 @@ $($rows -join "`n")
     }
 
     $versionConflicts = @(
-        $Dependencies | Group-Object -Property name |
-            Where-Object { ($_.Group.version | Sort-Object -Unique).Count -gt 1 -and $_.Group[0].type -eq 'NuGet Package' }
+        $Dependencies | Where-Object { $_.type -eq 'NuGet Package' } | Group-Object -Property name |
+            Where-Object { ($_.Group.version | Sort-Object -Unique).Count -gt 1 }
     )
     $versionConflictsContent = if ($versionConflicts.Count -gt 0) {
         $conflicts = $versionConflicts | ForEach-Object {
@@ -128,40 +133,30 @@ function Update-AppDocDependenciesCatalogContent {
         $updated = $updated.Replace($sections.nugetPlaceholder, $sections.nugetContent)
         $updated = $updated.Replace($sections.projectRefsPlaceholder, $sections.projectRefsContent)
         $updated = $updated.Replace($sections.versionConflictsPlaceholder, $sections.versionConflictsContent)
-    }
 
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Dependency Summary\s*\r?\n\r?\n).*?(?=\r?\n##\s+Dependencies by Type\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $sections.summaryContent + "`r`n")
+        # Regex replacements only if Update-TemplateSection is not available
+        $patterns = @(
+            @{ Pattern = '(?s)(##\s+Dependency Summary\s*\r?\n\r?\n)(.*?)(\r?\n)(?=##\s+Dependencies by Type\b)'; Header = '##\s+Dependency Summary' ; Content = $sections.summaryContent },
+            @{ Pattern = '(?s)(###\s+NuGet Packages\s*\r?\n\r?\n)(.*?)(\r?\n)(?=###\s+NPM Packages\b)'; Header = '###\s+NuGet Packages' ; Content = $sections.nugetContent },
+            @{ Pattern = '(?s)(##\s+Project References\s*\r?\n\r?\n)(.*?)(\r?\n)(?=##\s+Version Conflicts\b)'; Header = '##\s+Project References' ; Content = $sections.projectRefsContent },
+            @{ Pattern = '(?s)(##\s+Version Conflicts\s*\r?\n\r?\n)(.*?)(\r?\n)(?=##\s+Security Considerations\b)'; Header = '##\s+Version Conflicts' ; Content = $sections.versionConflictsContent }
+        )
+        foreach ($pat in $patterns) {
+            if ([regex]::IsMatch($updated, $pat.Header)) {
+                $updated = [regex]::Replace(
+                    $updated,
+                    $pat.Pattern,
+                    [System.Text.RegularExpressions.MatchEvaluator]{
+                        param($m)
+                        # $m.Groups[1] = section header, $m.Groups[3] = original trailing newline
+                        return ($m.Groups[1].Value + $pat.Content + $m.Groups[3].Value)
+                    }
+                )
+            } else {
+                Write-Warning ("Section header not found for pattern: {0}" -f $pat.Header)
+            }
         }
-    )
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(###\s+NuGet Packages\s*\r?\n\r?\n).*?(?=\r?\n###\s+NPM Packages\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $sections.nugetContent + "`r`n")
-        }
-    )
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Project References\s*\r?\n\r?\n).*?(?=\r?\n##\s+Version Conflicts\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $sections.projectRefsContent + "`r`n")
-        }
-    )
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Version Conflicts\s*\r?\n\r?\n).*?(?=\r?\n##\s+Security Considerations\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $sections.versionConflictsContent + "`r`n")
-        }
-    )
+    }
 
     return $updated
 }

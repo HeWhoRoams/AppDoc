@@ -18,10 +18,14 @@ function Test-AppDocRequiredConfig {
     )
 
     foreach ($keyword in $requiredKeywords) {
-        if ($Key -match $keyword) { return $true }
+        $escaped = [regex]::Escape($keyword)
+        $pattern = "\b$escaped\b"
+        if ($Key -match $pattern) { return $true }
     }
     foreach ($keyword in $optionalKeywords) {
-        if ($Key -match $keyword) { return $false }
+        $escaped = [regex]::Escape($keyword)
+        $pattern = "\b$escaped\b"
+        if ($Key -match $pattern) { return $false }
     }
     if ($Type -match 'Connection String') { return $true }
     return $false
@@ -186,29 +190,32 @@ function Get-AppDocDerivedEnvironmentVariables {
     )
 
     $derived = @()
-    $seen = @{}
-    $candidatePattern = '(?i)(connection|string|database|db|server|host|port|url|endpoint|api|token|secret|password|key|username|user|environment|mode|timeout|cache|redis|queue|smtp|proxy)'
-
-    foreach ($config in $Configs) {
-        if (-not $config.key) { continue }
-        if (-not ($config.key -match $candidatePattern)) { continue }
-
-        $envName = Convert-AppDocConfigKeyToEnvVarName -Key ([string]$config.key)
-        if (-not $envName) { continue }
-        if ($seen.ContainsKey($envName)) { continue }
-
-        $seen[$envName] = $true
-        $baseValue = if ($config.value) { [string]$config.value } else { "" }
-        $derived += @{
-            key = $envName
-            value = Protect-AppDocConfigValue -Key $envName -Value $baseValue -Type "Derived Environment Variable"
-            required = [bool]$config.required
-            description = "Derived from config key '$([string]$config.key)'"
-            type = "Derived Environment Variable"
-        }
-
-        if ($derived.Count -ge $MaxCount) { break }
+    $pairs = [System.Collections.Generic.List[object]]::new()
+    if ($null -eq $Data) {
+        $pairs.Add(@{ Key = $Prefix; Value = $null })
+        return $pairs.ToArray()
     }
+
+    if ($Data -is [System.Collections.IDictionary]) {
+        foreach ($key in $Data.Keys) {
+            $childPrefix = if ($Prefix) { "$Prefix.$key" } else { $key }
+            $childPairs = ConvertTo-AppDocFlattenedPairs -Data $Data[$key] -Prefix $childPrefix
+            $pairs.AddRange($childPairs)
+        }
+    }
+    elseif ($Data -is [System.Collections.IEnumerable] -and -not ($Data -is [string])) {
+        $index = 0
+        foreach ($item in $Data) {
+            $childPrefix = if ($Prefix) { "$Prefix[$index]" } else { "[$index]" }
+            $childPairs = ConvertTo-AppDocFlattenedPairs -Data $item -Prefix $childPrefix
+            $pairs.AddRange($childPairs)
+            $index++
+        }
+    }
+    else {
+        $pairs.Add(@{ Key = $Prefix; Value = $Data })
+    }
+    return $pairs.ToArray()
 
     return $derived
 }
@@ -226,7 +233,7 @@ function Get-AppDocConfigSourceFiles {
         return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "config-catalog" -Include $Include)
     }
 
-    return @(Get-ChildItem -Path "$RootPath\*" -Recurse -File -Include $Include -ErrorAction SilentlyContinue)
+    return @(Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $Include -ErrorAction SilentlyContinue)
 }
 
 function Add-AppDocJsonConfigProperties {
@@ -252,12 +259,15 @@ function Add-AppDocJsonConfigProperties {
         }
 
         $value = if ($prop.Value -is [string]) { $prop.Value } else { ($prop.Value | ConvertTo-Json -Compress -Depth 3) }
+        $normPath = ($RelativePath -replace '\\+', '/') -replace '/+', '/'
+        $normFull = ("$normPath:$fullPath" -replace '\\+', '/') -replace '/+', '/'
         $results += @{
             key = Sanitize-AppDocConfigKey -Key $fullPath
             value = Protect-AppDocConfigValue -Key $fullPath -Value $value -Type $FileType
-            file = $RelativePath
+            file = $normPath
             type = $FileType
-            source = "$RelativePath`:$fullPath"
+            source = $normFull
+            name = $normFull
             required = Test-AppDocRequiredConfig -Key $fullPath -Value ([string]$value) -Type $FileType
         }
     }
@@ -311,7 +321,7 @@ function Get-AppDocConfigCatalogData {
                 $lineNum = 0
                 foreach ($line in $lines) {
                     $lineNum++
-                    if ($line -match "^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$") {
+                    if ($line -match "^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$") {
                         $key = Sanitize-AppDocConfigKey -Key $Matches[1].Trim()
                         $rawValue = $Matches[2].Trim()
                         $configs += @{

@@ -11,6 +11,10 @@ function Get-AppDocDebtRelativePath {
         return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
     }
 
+    $normalizedRoot = $RootPath.TrimEnd([char[]]@(92, 47)) + [IO.Path]::DirectorySeparatorChar
+    if ($Path.StartsWith($normalizedRoot, [StringComparison]::OrdinalIgnoreCase)) {
+        return $Path.Substring($normalizedRoot.Length)
+    }
     return $Path.Replace($RootPath, "").TrimStart([char[]]@(92, 47))
 }
 
@@ -25,7 +29,7 @@ function Get-AppDocDebtSourceFiles {
         return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "debt-register" -Include @("*.js","*.ts","*.cs","*.py","*.java"))
     }
 
-    return @(Get-ChildItem -Path "$RootPath\*" -Recurse -File -Include @("*.js","*.ts","*.cs","*.py","*.java") -ErrorAction SilentlyContinue)
+    return @(Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include @("*.js","*.ts","*.cs","*.py","*.java") -ErrorAction SilentlyContinue)
 }
 
 function Get-AppDocDebtPriority {
@@ -49,10 +53,10 @@ function Add-AppDocDebtMarkers {
     )
 
     $results = @()
-    $lines = $Content -split "`n"
+    $lines = $Content -split "`r?`n"
     $markers = [regex]::Matches($Content, "(?://|#|/\*)\s*(TODO|FIXME|HACK|XXX|DEPRECATED|BUG|REFACTOR)[:;\s]*([^\r\n]{0,150})")
     foreach ($match in $markers) {
-        $lineNum = ($Content.Substring(0, $match.Index) -split "`n").Count
+        $lineNum = ($Content.Substring(0, $match.Index) -split "`r?`n").Count
         $description = $match.Groups[2].Value.Trim() -replace '\*/', '' -replace '\s+', ' '
 
         if ([string]::IsNullOrWhiteSpace($description) -or $description.Length -lt 5) {
@@ -109,7 +113,7 @@ function Add-AppDocCSharpDebtSignals {
             file = $FileName
             filePath = $RelativePath
             line = $lineNum
-            priority = "Medium"
+    $magicNumbers = [regex]::Matches($Content, '(?<![.\w])\d{2,}(?!\w)')
         }
     }
 
@@ -179,50 +183,85 @@ function Add-AppDocLongFunctionDebtSignals {
     )
 
     $results = @()
+
     $functionPatterns = @(
+        # JS/TS: function declarations
         "function\s+(\w+)\s*\(",
-        "const\s+(\w+)\s*=\s*\(",
-        "def\s+(\w+)\s*\(",
-        "public\s+\w+\s+(\w+)\s*\("
+        # JS/TS: const/let/var <name> = (...) => or = function
+        "(?:const|let|var)\s+(\w+)\s*=\s*(?:\([^)]*\)\s*=>|function)",
+        # C#/TS: method with modifiers (public/private/protected/internal/static/async)
+        "\b(?:public|private|protected|internal|static|async)\b\s+\w+\s+(\w+)\s*\(",
+        # Python: def <name>(
+        "def\s+(\w+)\s*\("
     )
 
     foreach ($pattern in $functionPatterns) {
         $functions = [regex]::Matches($Content, $pattern)
         foreach ($func in $functions) {
             $start = $func.Index
-            $afterFunc = $Content.Substring($start)
-            $braceCount = 0
-            $inFunc = $false
+            $funcName = $func.Groups[1].Value
             $funcEnd = $start
 
-            for ($i = 0; $i -lt $afterFunc.Length; $i++) {
-                if ($afterFunc[$i] -eq '{') {
-                    $braceCount++
-                    $inFunc = $true
-                }
-                elseif ($afterFunc[$i] -eq '}') {
-                    $braceCount--
-                    if ($inFunc -and $braceCount -eq 0) {
-                        $funcEnd = $start + $i
+            # Determine file extension for language-specific handling
+            $ext = [System.IO.Path]::GetExtension($FileName).ToLowerInvariant()
+
+            if ($ext -eq ".py") {
+                # Python: use indentation-based end detection
+                $lines = $Content -split "`n"
+                $startLine = ($Content.Substring(0, $start) -split "`n").Count
+                $defLine = $lines[$startLine - 1]
+                $defIndent = ($defLine -match "^(\s*)" | Out-Null; $Matches[1].Length)
+                $funcEndLine = $startLine
+                for ($i = $startLine; $i -lt $lines.Count; $i++) {
+                    $line = $lines[$i]
+                    if ($line.Trim() -eq "") { continue }
+                    $currIndent = ($line -match "^(\s*)" | Out-Null; $Matches[1].Length)
+                    if ($currIndent -le $defIndent -and $line.Trim() -notmatch "^#") {
                         break
                     }
+                    $funcEndLine = $i + 1
                 }
-            }
-
-            if ($funcEnd -le $start) { continue }
-            $funcContent = $Content.Substring($start, $funcEnd - $start)
-            $funcLines = ($funcContent -split "`n").Count
-            if ($funcLines -le 50) { continue }
-
-            $lineNum = ($Content.Substring(0, $start) -split "`n").Count
-            $funcName = $func.Groups[1].Value
-            $results += @{
-                type = "Long Function"
-                description = "Function '$funcName' has $funcLines lines (>50 line threshold)"
-                file = $FileName
-                filePath = $RelativePath
-                line = $lineNum
-                priority = "Low"
+                $funcLines = $funcEndLine - $startLine + 1
+                if ($funcLines -le 50) { continue }
+                $results += @{
+                    type = "Long Function"
+                    description = "Function '$funcName' has $funcLines lines (>50 line threshold)"
+                    file = $FileName
+                    filePath = $RelativePath
+                    line = $startLine
+                    priority = "Low"
+                }
+            } else {
+                # Brace-based: JS/TS/C#/Java
+                $afterFunc = $Content.Substring($start)
+                $braceCount = 0
+                $inFunc = $false
+                for ($i = 0; $i -lt $afterFunc.Length; $i++) {
+                    if ($afterFunc[$i] -eq '{') {
+                        $braceCount++
+                        $inFunc = $true
+                    }
+                    elseif ($afterFunc[$i] -eq '}') {
+                        $braceCount--
+                        if ($inFunc -and $braceCount -eq 0) {
+                            $funcEnd = $start + $i
+                            break
+                        }
+                    }
+                }
+                if ($funcEnd -le $start) { continue }
+                $funcContent = $Content.Substring($start, $funcEnd - $start)
+                $funcLines = ($funcContent -split "`n").Count
+                if ($funcLines -le 50) { continue }
+                $lineNum = ($Content.Substring(0, $start) -split "`n").Count
+                $results += @{
+                    type = "Long Function"
+                    description = "Function '$funcName' has $funcLines lines (>50 line threshold)"
+                    file = $FileName
+                    filePath = $RelativePath
+                    line = $lineNum
+                    priority = "Low"
+                }
             }
         }
     }

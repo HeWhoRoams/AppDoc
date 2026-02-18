@@ -5,12 +5,12 @@ function Get-AppDocTestCatalogSourceFiles {
         [string]$RootPath
     )
 
-    $patterns = @("*.test.js", "*.test.ts", "*.spec.js", "*.spec.ts", "*Test.cs", "*Tests.cs", "test_*.py")
+    $patterns = @("*.test.js", "*.test.ts", "*.spec.js", "*.spec.ts", "*Test.cs", "*Tests.cs", "test_*.py", "*_test.py")
     if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
         return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Include $patterns)
     }
 
-    return @(Get-ChildItem -Path "$RootPath\*" -Recurse -File -Include $patterns -ErrorAction SilentlyContinue)
+    return @(Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $patterns -ErrorAction SilentlyContinue)
 }
 
 function Get-AppDocTestCatalogRelativePath {
@@ -26,7 +26,17 @@ function Get-AppDocTestCatalogRelativePath {
         return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
     }
 
-    return $Path.Replace($RootPath, "").TrimStart([char[]]@(92, 47))
+    # Normalize trailing slashes
+    $rootNorm = $RootPath.TrimEnd('\', '/')
+    $pathNorm = $Path
+    if ($pathNorm.StartsWith($rootNorm, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $relative = $pathNorm.Substring($rootNorm.Length)
+        return $relative.TrimStart('\', '/')
+    }
+    # Fallback: case-insensitive replace using regex
+    $pattern = "^" + [regex]::Escape($rootNorm)
+    $relative = [regex]::Replace($pathNorm, $pattern, '', 'IgnoreCase')
+    return $relative.TrimStart('\', '/')
 }
 
 function Get-AppDocTestCatalogData {
@@ -45,13 +55,17 @@ function Get-AppDocTestCatalogData {
 
         $relativePath = Get-AppDocTestCatalogRelativePath -RootPath $RootPath -Path $file.FullName
 
-        $jsPattern = '(it|test|describe)\([' + "'" + '"' + ']([^' + "'" + '"' + ']+)[' + "'" + '"' + ']'
+        # Regex: (it|test|describe)\((['"])((?:\\.|(?!\2).)*)\2
+        $jsPattern = "(it|test|describe)\\((['\"])((?:\\\\.|(?!\\2).)*?)\\2"
         $jsCases = [regex]::Matches($content, $jsPattern)
         foreach ($match in $jsCases) {
             $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
+            $kind = $match.Groups[1].Value
+            $testName = $match.Groups[3].Value
+            $type = if ($kind -eq 'describe') { 'suite' } else { $kind }
             $tests += @{
-                type = $match.Groups[1].Value
-                name = $match.Groups[2].Value
+                type = $type
+                name = $testName
                 file = $file.Name
                 framework = "JavaScript"
                 source = "${relativePath}:$lineNumber"
@@ -68,8 +82,8 @@ function Get-AppDocTestCatalogData {
             )
 
             foreach ($attr in $testAttributes) {
-                $matches = [regex]::Matches($content, $attr.Pattern)
-                foreach ($match in $matches) {
+                $attrMatches = [regex]::Matches($content, $attr.Pattern)
+                foreach ($match in $attrMatches) {
                     $afterAttr = $content.Substring($match.Index)
                     if ($afterAttr -match 'public\s+(?:async\s+)?(?:Task<?\w*>?\s+)?(?:void\s+)?(\w+)\s*\(') {
                         $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count

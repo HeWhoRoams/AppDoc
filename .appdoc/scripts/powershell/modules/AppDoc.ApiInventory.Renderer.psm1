@@ -206,7 +206,14 @@ _No API endpoints detected. This codebase may not expose HTTP APIs, or uses patt
             Sort-Object @{Expression = { $_.domain }}, @{Expression = { $_.path }}, @{Expression = { $_.method }} |
             Select-Object -First 30 |
             ForEach-Object {
-                $name = Sanitize-AppDocMarkdownCell -Value ("{0}.{1}" -f $_.controller, $_.method) -MaxLength 100
+                $actionId = if ($_.PSObject.Properties["actionName"] -and $_.actionName) {
+                    $_.actionName
+                } elseif ($_.PSObject.Properties["methodName"] -and $_.methodName) {
+                    $_.methodName
+                } else {
+                    $_.method
+                }
+                $name = Sanitize-AppDocMarkdownCell -Value ("{0}.{1}" -f $_.controller, $actionId) -MaxLength 100
                 $path = Sanitize-AppDocMarkdownCell -Value $_.path -MaxLength 120
                 $auth = Sanitize-AppDocMarkdownCell -Value $_.auth -MaxLength 80
                 $source = if ($_.filePath) { "{0}:{1}" -f [string]$_.filePath, [int]$_.lineNumber } else { "unknown" }
@@ -289,15 +296,20 @@ function Update-AppDocApiInventoryContent {
         $updated = $updated.Replace($sections.endpointTablePlaceholder, $sections.endpointContent)
     }
 
-    $apiSectionPattern = '(?s)(##\s+API Endpoints\s*\r?\n\r?\n).*?(?=\r?\n##\s+Data Models\b)'
-    return [regex]::Replace(
+    $apiSectionPattern = '(?s)(##\s+API Endpoints\s*\r?\n\r?\n).*?(?=(\r?\n##\s+|$))'
+    $before = $updated
+    $after = [regex]::Replace(
         $updated,
         $apiSectionPattern,
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + $sections.endpointContent + "`r`n")
+            return ($m.Groups[1].Value + $sections.endpointContent + "`n")
         }
     )
+    if ($before -eq $after) {
+        Write-Warning "API Endpoints section not found or could not be updated (no matching heading or delimiter)."
+    }
+    return $after
 }
 
 Export-ModuleMember -Function @(

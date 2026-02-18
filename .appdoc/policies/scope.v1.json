@@ -9,66 +9,39 @@
       "(?:^|\\\\)\\.git(?:\\\\|$)",
       "(?:^|\\\\)node_modules(?:\\\\|$)",
       "(?:^|\\\\)bower_components(?:\\\\|$)",
-      "(?:^|\\\\)bin(?:\\\\|$)",
-      "(?:^|\\\\)obj(?:\\\\|$)",
-      "(?:^|\\\\)target(?:\\\\|$)",
-      "(?:^|\\\\)build(?:\\\\|$)",
-      "(?:^|\\\\)dist(?:\\\\|$)",
-      "(?:^|\\\\)__pycache__(?:\\\\|$)",
-      "(?:^|\\\\)\\.venv(?:\\\\|$)",
-      "(?:^|\\\\)\\.tox(?:\\\\|$)",
-      "(?:^|\\\\)docuwriter(?:\\\\|$)",
-      "(?:^|\\\\)generated-doc(?:\\\\|$)",
-      "(?:^|\\\\)(?:test|tests|spec|specs)(?:\\\\|$)",
-      "(?:^|\\\\)[^\\\\]*(?:\\.Tests?|Tests?|Testing)(?:\\\\|$)",
-      "(?:^|\\\\)__tests__(?:\\\\|$)",
-      "(?:^|\\\\)__mocks__(?:\\\\|$)",
-      "(?:^|\\\\)(?:fixture|fixtures)(?:\\\\|$)",
-      "(?:^|\\\\)(?:mock|mocks)(?:\\\\|$)",
-      "(?:^|\\\\)(?:sample|samples|example|examples)(?:\\\\|$)"
-    ]
-  },
-  "artifactProfiles": {
+      "(?:^|[\\/])\.git(?:[\\/]|$)",
+      "(?:^|[\\/])node_modules(?:[\\/]|$)",
+      "(?:^|[\\/])bower_components(?:[\\/]|$)",
+      "(?:^|[\\/])bin(?:[\\/]|$)",
+      "(?:^|[\\/])obj(?:[\\/]|$)",
+      "(?:^|[\\/])target(?:[\\/]|$)",
+      "(?:^|[\\/])build(?:[\\/]|$)",
+      "(?:^|[\\/])dist(?:[\\/]|$)",
+      "(?:^|[\\/])__pycache__(?:[\\/]|$)",
+      "(?:^|[\\/])\.venv(?:[\\/]|$)",
+      "(?:^|[\\/])\.tox(?:[\\/]|$)",
+      "(?:^|[\\/])docuwriter(?:[\\/]|$)",
+      "(?:^|[\\/])generated-doc(?:[\\/]|$)",
+      "(?:^|[\\/])(?:test|tests|spec|specs)(?:[\\/]|$)",
+      "(?:^|[\\/])[^\\/]*(?:\.Tests?|Tests?|Testing)(?:[\\/]|$)",
+      "(?:^|[\\/])__tests__(?:[\\/]|$)",
+      "(?:^|[\\/])__mocks__(?:[\\/]|$)",
+      "(?:^|[\\/])(?:fixture|fixtures)(?:[\\/]|$)",
+      "(?:^|[\\/])(?:mock|mocks)(?:[\\/]|$)",
+      "(?:^|[\\/])(?:sample|samples|example|examples)(?:[\\/]|$)"
     "default": {},
-    "overview": {
-      "includeTests": false,
-      "includeFixtures": false
-    },
-    "start-here": {
-      "includeTests": false,
-      "includeFixtures": false
-    },
-    "api-inventory": {
-      "includeTests": false,
-      "includeFixtures": false
-    },
-    "data-model": {
-      "includeTests": false,
-      "includeFixtures": false
-    },
-    "config-catalog": {
-      "includeTests": false,
-      "includeFixtures": false
-    },
+    "overview": {},
+    "start-here": {},
+    "api-inventory": {},
+    "data-model": {},
+    "config-catalog": {},
     "test-catalog": {
       "includeTests": true,
       "includeFixtures": false
     },
-    "build-cookbook": {
-      "includeTests": false,
-      "includeFixtures": false
-    },
-    "dependencies-catalog": {
-      "includeTests": false,
-      "includeFixtures": false
-    },
-    "debt-register": {
-      "includeTests": false,
-      "includeFixtures": false
-    },
-    "dependency-graph": {
-      "includeTests": false,
-      "includeFixtures": false
-    }
+    "build-cookbook": {},
+    "dependencies-catalog": {},
+    "debt-register": {},
+    "dependency-graph": {}
   }
 }

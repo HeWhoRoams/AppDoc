@@ -20,7 +20,9 @@ _No build steps detected. Check for package.json scripts, Makefile, or build con
     $index = 1
     foreach ($command in $Commands) {
         $desc = if ($command.command -and $command.command -ne "No description") { [string]$command.command } else { "{0} command" -f [string]$command.type }
-        $rows += "| $index | ``$([string]$command.invocation)`` | $desc | N/A |"
+        $invocationEscaped = ([string]$command.invocation) -replace '\|', '&#124;'
+        $descEscaped = $desc -replace '\|', '&#124;'
+        $rows += "| $index | ``$invocationEscaped`` | $descEscaped | N/A |"
         $index++
     }
 
@@ -81,7 +83,7 @@ function Update-AppDocBuildCookbookContent {
         }
     )
 
-    $buildSectionPattern = '(?s)(##\s+Build Steps\s*\r?\n\r?\n).*?(?=##\s+Dependencies\b)'
+    $buildSectionPattern = '(?s)(##\s+Build Steps\s*\r?\n\r?\n).*?(?=\r?\n##\s+Dependencies\b)'
     $updated = [regex]::Replace(
         $updated,
         $buildSectionPattern,

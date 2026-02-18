@@ -14,7 +14,9 @@ This section summarizes generated findings from deterministic codebase analysis.
 
 | Model Name | Fields | Types | Description | Constraints | Indexes |
 |------------|--------|-------|-------------|-------------|---------|
-No deterministic evidence found in this section for the current scan.
+
+_No deterministic evidence found in this section for the current scan._
+
 ## Evidence Traceability
 
 | Field | Value |

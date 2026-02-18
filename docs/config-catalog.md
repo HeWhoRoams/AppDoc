@@ -34,7 +34,7 @@ This section summarizes generated findings from deterministic codebase analysis.
 | chat.tools.terminal.autoApprove.**/catalog-samples.ps1 | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:chat.tools.terminal.autoApprove.**/catalog-samples.ps1 |
 | chat.tools.terminal.autoApprove.**/extract-config.ps1 | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:chat.tools.terminal.autoApprove.**/extract-config.ps1 |
 | chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1 | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1 |
-| chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1 | JSON Configuration | true | Nested configuration option | Yes | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1 |
+| chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1 | JSON Configuration | true | Required for unattended startup-hook report generation; see [Required configuration criteria](#required-configuration-criteria). | Yes | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1 |
 | chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1 | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1 |
 | chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1 | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1 |
 | chat.tools.terminal.autoApprove.**/generate-data-model.ps1 | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-data-model.ps1 |
@@ -45,7 +45,7 @@ This section summarizes generated findings from deterministic codebase analysis.
 | chat.tools.terminal.autoApprove.**/generate-overview.ps1 | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-overview.ps1 |
 | chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1 | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1 |
 | chat.tools.terminal.autoApprove.**/run-all-generators.ps1 | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:chat.tools.terminal.autoApprove.**/run-all-generators.ps1 |
-| chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1 | JSON Configuration | true | Nested configuration option | Yes | .vscode/settings.json:chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1 |
+| chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1 | JSON Configuration | true | Required for unattended startup-hook report synthesis; see [Required configuration criteria](#required-configuration-criteria). | Yes | .vscode/settings.json:chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1 |
 | chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1 | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1 |
 | chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1 | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1 |
 | chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1 | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1 |
@@ -63,8 +63,32 @@ This section summarizes generated findings from deterministic codebase analysis.
 | chat.tools.terminal.autoApprove.Remove-Item | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:chat.tools.terminal.autoApprove.Remove-Item |
 | chat.tools.terminal.autoApprove.Set-ExecutionPolicy | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:chat.tools.terminal.autoApprove.Set-ExecutionPolicy |
 | chat.tools.terminal.autoApprove.Test-Path | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:chat.tools.terminal.autoApprove.Test-Path |
-| chat.tools.terminal.autoApprove.Write-Host | JSON Configuration | true | Nested configuration option | Yes | .vscode/settings.json:chat.tools.terminal.autoApprove.Write-Host |
+| chat.tools.terminal.autoApprove.Write-Host | JSON Configuration | true | Required for startup-hook CLI status/output commands; see [Required configuration criteria](#required-configuration-criteria). | Yes | .vscode/settings.json:chat.tools.terminal.autoApprove.Write-Host |
 | github.copilot.chat.executions.enabled | JSON Configuration | true | Nested configuration option | No | .vscode/settings.json:github.copilot.chat.executions.enabled |
+
+## Required configuration criteria
+
+The following keys are marked **Required** because AppDoc startup hooks rely on unattended Copilot terminal execution for assessment output:
+
+- `chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1`
+- `chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1`
+- `chat.tools.terminal.autoApprove.Write-Host`
+
+### Why they are required
+
+- The two assessment script approvals enable automatic creation and synthesis of report artifacts during startup automation.
+- The `Write-Host` approval enables non-interactive CLI status/output commands used by startup hooks for progress and diagnostics visibility.
+
+### Consequences if missing
+
+- **Automation disabled/degraded (runtime dependency for startup hooks):** hooks pause for manual approval or skip blocked commands, so unattended execution is no longer reliable.
+- **Startup/validation failures (operational outcome):** when report generation/synthesis is blocked, expected assessment outputs may be missing, which can cause downstream validation or quality checks to fail.
+- **Runtime errors/interruptions (execution path dependent):** if a required startup-hook command is denied or cannot execute in non-interactive mode, the orchestration path can terminate early or continue with incomplete results.
+
+### Validation classification
+
+- **Deployment-time validation policy:** CI/deployment should fail when these keys are missing in environments that require unattended startup hooks.
+- **Runtime dependency scope:** this requirement applies to Copilot startup-hook automation behavior (not to standalone manual script execution where a user can approve/compensate interactively).
 
 ## Environment Variables
 
@@ -79,13 +103,13 @@ This section summarizes generated findings from deterministic codebase analysis.
 | CHAT__TOOLS__TERMINAL__AUTOAPPROVE__WRITE_HOST | true | Derived from config key 'chat.tools.terminal.autoApprove.Write-Host' | No | Yes |
 
 ## Configuration Validation
-No deterministic evidence found in this section for the current scan.
+This section will be populated as artifacts are discovered.
 ## Configuration Management
-No deterministic evidence found in this section for the current scan.
+This section will be populated as artifacts are discovered.
 ## Security Considerations
-No deterministic evidence found in this section for the current scan.
+This section will be populated as artifacts are discovered.
 ## Example Configurations
-No deterministic evidence found in this section for the current scan.
+This section will be populated as artifacts are discovered.
 
 ## Evidence Traceability
 

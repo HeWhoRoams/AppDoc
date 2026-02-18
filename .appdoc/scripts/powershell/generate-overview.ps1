@@ -49,8 +49,12 @@ if (-not $initialized) {
 }
 
 Write-Progress -Activity "Generating System Overview" -Status "Analyzing repository..." -PercentComplete 10
+
 $overviewData = Get-AppDocOverviewData -RootPath $RootPath
-$codeFiles = @($overviewData.codeFiles)
+if (-not $overviewData) {
+    Write-Error "Get-AppDocOverviewData returned null. Cannot continue overview generation."
+    exit 1
+}
 $languageCount = $overviewData.languageCount
 
 Write-Progress -Activity "Generating System Overview" -Status "Populating template..." -PercentComplete 60

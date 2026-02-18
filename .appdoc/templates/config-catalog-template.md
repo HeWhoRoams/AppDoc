@@ -54,6 +54,30 @@ Provide example configuration files or objects.
 
 _No example configurations available. Refer to default configuration files in the repository._
 
+## Required configuration criteria
+
+Document why specific keys are marked as required and where operations teams should look for behaviors and remediation steps.
+
+- `chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1`
+- `chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1`
+- `chat.tools.terminal.autoApprove.Write-Host`
+
+### Why they are required
+
+- The two assessment approvals enable automated report generation and synthesis during startup automation.
+- The `Write-Host` approval allows CLI output that startup hooks rely on for progress and diagnostics.
+
+### Consequences if missing
+
+- **Automation disabled/degraded (runtime dependency for startup hooks):** commands pause for manual approval or skip blocked behaviors, so unattended startup runs break.
+- **Startup/validation failures (operational outcome):** blocked report generation/synthesis may cause downstream validation stages to fail or emit incomplete artifacts.
+- **Runtime errors/interruptions (execution path dependent):** if required startup-hook commands can’t execute, the orchestration path may terminate early or produce partial outputs.
+
+### Validation classification
+
+- **Deployment-time validation policy:** CI/deployment should fail when these keys are missing for environments requiring unattended startup hooks.
+- **Runtime dependency scope:** this requirement targets Copilot startup-hook automation; manual script execution can compensate with interactive approvals.
+
 ## Population Guide
 
 **Intent**: This template documents all configuration options and environment variables to help developers understand how to configure and deploy the system correctly.

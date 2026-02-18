@@ -4,7 +4,7 @@
   "recordCount": 3,
   "records": [
     {
-      "artifact": "",
+      "artifact": "start-here",
       "source": "docs",
       "name": "api-inventory",
       "kind": "endpoint",
@@ -15,10 +15,10 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": ""
+      "timestamp": "2026-02-18T13:44:50-05:00"
     },
     {
-      "artifact": "",
+      "artifact": "start-here",
       "source": "docs",
       "name": "data-model",
       "kind": "model",
@@ -29,10 +29,10 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": ""
+      "timestamp": "2026-02-18T13:44:50-05:00"
     },
     {
-      "artifact": "",
+      "artifact": "start-here",
       "source": "repository",
       "name": "source-files",
       "kind": "summary",
@@ -44,7 +44,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": ""
+      "timestamp": "2026-02-18T13:44:50-05:00"
     }
   ],
   "metadata": {

@@ -29,7 +29,10 @@ function ConvertTo-AppDocDeterministicValue {
         return $ordered
     }
 
-    if ($Value -is [psobject] -and $Value.PSObject.Properties.Count -gt 0) {
+    if ($Value -is [psobject]) {
+        if ($Value.PSObject.Properties.Count -eq 0) {
+            return [ordered]@{}
+        }
         $ordered = [ordered]@{}
         foreach ($prop in @($Value.PSObject.Properties | Sort-Object Name)) {
             if ($ExcludeKeys -contains [string]$prop.Name) { continue }
@@ -39,11 +42,12 @@ function ConvertTo-AppDocDeterministicValue {
     }
 
     if ($Value -is [System.Collections.IEnumerable] -and -not ($Value -is [string])) {
-        $items = @()
+        $arrayList = [System.Collections.ArrayList]::new()
         foreach ($item in $Value) {
-            $items += @(ConvertTo-AppDocDeterministicValue -Value $item -ExcludeKeys $ExcludeKeys)
+            $result = ConvertTo-AppDocDeterministicValue -Value $item -ExcludeKeys $ExcludeKeys
+            [void]$arrayList.Add($result)
         }
-        return @($items)
+        return $arrayList.ToArray()
     }
 
     return [string]$Value

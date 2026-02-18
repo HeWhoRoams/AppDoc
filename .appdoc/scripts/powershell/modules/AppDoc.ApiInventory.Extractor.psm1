@@ -226,7 +226,8 @@ function Get-AppDocApiEndpointStatusHintLocal {
     [CmdletBinding()]
     param([string]$Method)
 
-    switch (($Method ?? "").ToUpperInvariant()) {
+    $methodNormalized = if ([string]::IsNullOrEmpty($Method)) { "" } else { $Method }
+    switch ($methodNormalized.ToUpperInvariant()) {
         "GET" { return "200, 404, 500" }
         "POST" { return "201, 400, 401, 500" }
         "PUT" { return "200, 400, 404, 500" }
@@ -267,7 +268,8 @@ function Get-AppDocApiEndpointDescriptionLocal {
         return $candidate
     }
 
-    return ("{0} {1} endpoint" -f (($Method ?? "ANY").ToUpperInvariant()), $Path)
+    $methodNormalized = if ($Method) { $Method } else { "ANY" }
+    return ("{0} {1} endpoint" -f ($methodNormalized.ToUpperInvariant()), $Path)
 }
 
 function Add-AppDocRegexEndpointsToInventory {
@@ -307,8 +309,8 @@ function Add-AppDocRegexEndpointsToInventory {
             $pathParams = [regex]::Matches($path, ':([^\s/]+)')
             $allParams = @()
             foreach ($p in $pathParams) { $allParams += "$($p.Groups[1].Value): string (path)" }
-            foreach ($p in $queryParams | Select-Object -First 5 -Unique) { $allParams += "$($p.Groups[1].Value): string (query)" }
-            foreach ($p in $bodyParams | Select-Object -First 5 -Unique) { $allParams += "$($p.Groups[1].Value): object (body)" }
+            foreach ($p in $queryParams | Select-Object -Unique -First 5) { $allParams += "$($p.Groups[1].Value): string (query)" }
+            foreach ($p in $bodyParams | Select-Object -Unique -First 5) { $allParams += "$($p.Groups[1].Value): object (body)" }
             $allParams = @($allParams | Select-Object -Unique)
 
             $returnType = if ($methodContext -match 'res\.json\s*\(') { "application/json" } elseif ($methodContext -match 'res\.send\s*\(') { "text/plain" } else { "void" }
@@ -525,7 +527,7 @@ function Add-AppDocRegexEndpointsToInventory {
                     auth = "Spring Security"
                     description = "Spring endpoint"
                     example = $null
-                    controller = (Split-Path $file.Name -LeafBase)
+                    controller = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
                     schema = "N/A"
                     sourceType = "regex"
                 }
@@ -559,7 +561,7 @@ function Add-AppDocRegexEndpointsToInventory {
                     auth = "Spring Security"
                     description = "@RequestMapping endpoint"
                     example = $null
-                    controller = (Split-Path $file.Name -LeafBase)
+                    controller = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
                     schema = "N/A"
                     sourceType = "regex"
                 }

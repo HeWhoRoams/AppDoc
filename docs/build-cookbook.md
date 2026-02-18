@@ -16,26 +16,21 @@ No deterministic evidence found in this section for the current scan.
 
 ## Build Steps
 
-| Step | Command | Description | Estimated Time |
-|------|---------|-------------|----------------|
 No deterministic evidence found in this section for the current scan.
+## Dependencies
+
 ## Dependencies
 
 List all build dependencies and tools required.
 
-| Dependency | Version | Purpose | Installation |
-|------------|---------|---------|--------------|  
 No deterministic evidence found in this section for the current scan.
-## CI/CD Integration
-
 **Detected CI/CD Platforms:**
 
 - **GitHub Actions**: `.github\workflows\appdoc-ci.yml` - Workflow: appdoc-ci
 
 ## Troubleshooting
 
-Common build issues and their solutions.
-No deterministic evidence found in this section for the current scan.
+- **GitHub Actions**: `.github/workflows/appdoc-ci.yml` - Workflow: appdoc-ciNo deterministic evidence found in this section for the current scan.
 ## Example Build Scripts
 No deterministic evidence found in this section for the current scan.
 

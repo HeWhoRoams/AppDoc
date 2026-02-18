@@ -16,6 +16,7 @@ function Get-AppDocTaskGuideEvidenceRecords {
         return @($payload.records)
     }
     catch {
+        Write-Verbose ("Failed to load or parse evidence file: {0}. Error: {1}" -f $path, $_)
         return @()
     }
 }
@@ -66,6 +67,13 @@ function Get-AppDocTaskGuidesData {
     })
     if ($sampleDebt.Count -eq 0) { $sampleDebt = @("- No debt evidence available") }
 
+    $sampleTests = @($testRows | Select-Object -First 5 | ForEach-Object {
+        $name = if ($_.name) { [string]$_.name } else { "test" }
+        $type = if ($_.kind) { [string]$_.kind } else { "test-case" }
+        "- ``$type`` ``$name``"
+    })
+    if ($sampleTests.Count -eq 0) { $sampleTests = @("- No test evidence available") }
+
     return [ordered]@{
         endpointRows = $endpointRows
         buildCommandRows = $buildCommandRows
@@ -76,6 +84,7 @@ function Get-AppDocTaskGuidesData {
         sampleBuildCommands = $sampleBuildCommands
         sampleDependencies = $sampleDependencies
         sampleDebt = $sampleDebt
+        sampleTests = $sampleTests
     }
 }
 
