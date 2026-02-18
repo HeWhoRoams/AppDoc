@@ -3,6 +3,11 @@ param(
     [string]$RootPath
 )
 
+$scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
+if (Test-Path $scopeModule) {
+    Import-Module $scopeModule -Force -ErrorAction Stop
+}
+
 # Generate dependency graph
 Write-Progress -Activity "Generating Dependency Graph" -Status "Parsing manifests..." -PercentComplete 0
 
@@ -37,7 +42,11 @@ if (Test-Path $packageJsonPath) {
 }
 
 # Parse imports from code files (simple regex)
-$codeFiles = Get-ChildItem -Path $RootPath -Recurse -Include "*.js","*.ts","*.jsx","*.tsx" | Where-Object { $_.FullName -notmatch '\\node_modules\\' }
+$codeFiles = if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
+    @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "dependency-graph" -Include @("*.js","*.ts","*.jsx","*.tsx"))
+} else {
+    @(Get-ChildItem -Path $RootPath -Recurse -Include "*.js","*.ts","*.jsx","*.tsx" | Where-Object { $_.FullName -notmatch '\\node_modules\\' })
+}
 foreach ($file in $codeFiles) {
     $content = Get-Content $file.FullName -Raw
     $imports = [regex]::Matches($content, "import\s+.*?\s+from\s+['""]([^'""]+)['""]") | ForEach-Object { $_.Groups[1].Value }

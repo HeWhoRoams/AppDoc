@@ -160,6 +160,146 @@ function Get-AppDocSemanticEndpointFamily {
     return "/$root/$second"
 }
 
+function Get-AppDocApiInventoryMarkdown {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [AllowEmptyCollection()]
+        [array]$Endpoints,
+        [int]$MaxDetailedRows = 120
+    )
+
+    $endpointTablePlaceholder = @"
+| Name | Path | Method | Description | Parameters | Return Type | Status Codes | Auth Required |
+|------|------|--------|-------------|------------|------------|--------------|---------------|
+
+_No API endpoints detected. This codebase may not expose HTTP APIs, or uses patterns not yet recognized by the scanner._
+"@
+
+    if (-not $Endpoints -or $Endpoints.Count -eq 0) {
+        return [ordered]@{
+            endpointContent = $endpointTablePlaceholder
+            endpointTablePlaceholder = $endpointTablePlaceholder
+        }
+    }
+
+    $domainSummaryRows = @($Endpoints | Group-Object -Property domain | Sort-Object Count -Descending)
+    $domainSummaryTableHeader = "| Domain | Endpoints | Unique Paths | Methods |`n|--------|-----------|--------------|---------|"
+    $domainSummaryTableRows = @($domainSummaryRows | ForEach-Object {
+        $uniquePaths = @($_.Group | Select-Object -ExpandProperty path -Unique).Count
+        $methods = @($_.Group | Select-Object -ExpandProperty method -Unique | Sort-Object)
+        "| $($_.Name) | $($_.Count) | $uniquePaths | $($methods -join ', ') |"
+    })
+
+    $methodDistributionHeader = "| Method | Endpoints |`n|--------|-----------|"
+    $methodDistributionRows = @(
+        $Endpoints |
+            Group-Object -Property method |
+            Sort-Object Count -Descending |
+            ForEach-Object { "| $($_.Name) | $($_.Count) |" }
+    )
+
+    $authSensitiveHeader = "| Name | Path | Method | Auth | Source |`n|------|------|--------|------|--------|"
+    $authSensitiveRows = @(
+        $Endpoints |
+            Where-Object { $_.auth -and $_.auth -ne "None" } |
+            Sort-Object @{Expression = { $_.domain }}, @{Expression = { $_.path }}, @{Expression = { $_.method }} |
+            Select-Object -First 30 |
+            ForEach-Object {
+                $name = Sanitize-AppDocMarkdownCell -Value ("{0}.{1}" -f $_.controller, $_.method) -MaxLength 100
+                $path = Sanitize-AppDocMarkdownCell -Value $_.path -MaxLength 120
+                $auth = Sanitize-AppDocMarkdownCell -Value $_.auth -MaxLength 80
+                $source = if ($_.filePath) { "{0}:{1}" -f [string]$_.filePath, [int]$_.lineNumber } else { "unknown" }
+                $source = Sanitize-AppDocMarkdownCell -Value $source -MaxLength 120
+                "| ``$name`` | ``$path`` | $($_.method) | $auth | ``$source`` |"
+            }
+    )
+    $authSensitiveContent = if ($authSensitiveRows.Count -gt 0) {
+        "$authSensitiveHeader`n$($authSensitiveRows -join "`n")"
+    } else {
+        "No endpoints with explicit authentication markers were detected."
+    }
+
+    $methodPriority = @{
+        "POST" = 1
+        "PUT" = 2
+        "PATCH" = 3
+        "DELETE" = 4
+        "GET" = 5
+        "ANY" = 6
+    }
+
+    $detailedEndpoints = @(
+        $Endpoints |
+            Sort-Object `
+                @{ Expression = { if ($_.auth -and $_.auth -ne "None") { 0 } else { 1 } } }, `
+                @{ Expression = { if ($methodPriority.ContainsKey([string]$_.method)) { $methodPriority[[string]$_.method] } else { 99 } } }, `
+                @{ Expression = { [string]$_.domain } }, `
+                @{ Expression = { [string]$_.path } } |
+            Select-Object -First $MaxDetailedRows
+    )
+
+    $tableHeader = "| Name | Path | Method | Description | Parameters | Return Type | Status Codes | Auth Required |`n|------|------|--------|-------------|------------|------------|--------------|---------------|"
+    $tableRows = @($detailedEndpoints | ForEach-Object {
+        $name = Sanitize-AppDocMarkdownCell -Value ("{0}.{1}" -f $_.controller, $_.method) -MaxLength 100
+        $path = Sanitize-AppDocMarkdownCell -Value $_.path -MaxLength 140
+        $desc = Sanitize-AppDocMarkdownCell -Value $_.description -MaxLength 180
+        if ($desc -match '^(GET|POST|PUT|PATCH|DELETE|ANY)\s+/.+\s+endpoint$' -or $desc -eq 'AST extracted endpoint') {
+            $descSource = if ($_.filePath) { "{0}:{1}" -f [string]$_.filePath, [int]$_.lineNumber } else { "unknown source" }
+            $desc = "Source: $descSource"
+        }
+        $params = if ($_.parameters -and $_.parameters -ne "None") { Sanitize-AppDocMarkdownCell -Value $_.parameters -MaxLength 160 } else { "None" }
+        $returnType = Sanitize-AppDocMarkdownCell -Value $_.returnType -MaxLength 80
+        $statusCodes = Sanitize-AppDocMarkdownCell -Value $_.statusCodes -MaxLength 80
+        $auth = Sanitize-AppDocMarkdownCell -Value $_.auth -MaxLength 80
+        "| ``$name`` | ``$path`` | $($_.method) | $desc | ``$params`` | ``$returnType`` | $statusCodes | $auth |"
+    })
+
+    $endpointContent = @(
+        "### Coverage Snapshot`n`n- Total endpoints detected: **$($Endpoints.Count)**`n- Domains detected: **$($domainSummaryRows.Count)**`n- Endpoints with explicit auth markers: **$(@($Endpoints | Where-Object { $_.auth -and $_.auth -ne 'None' }).Count)**"
+        "### Domain Summary`n`n$domainSummaryTableHeader`n$($domainSummaryTableRows -join "`n")"
+        "### Method Distribution`n`n$methodDistributionHeader`n$($methodDistributionRows -join "`n")"
+        "### Auth-Sensitive Endpoints`n`n$authSensitiveContent"
+        "### Endpoint Catalog`n`n$tableHeader`n$($tableRows -join "`n")`n`n_Detailed catalog is capped to first $($detailedEndpoints.Count) endpoints for readability. Full endpoint evidence is preserved in_ ``docs/evidence/api-inventory.evidence.json``."
+    ) -join "`n`n"
+
+    return [ordered]@{
+        endpointContent = $endpointContent
+        endpointTablePlaceholder = $endpointTablePlaceholder
+    }
+}
+
+function Update-AppDocApiInventoryContent {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Content,
+        [Parameter(Mandatory=$true)]
+        [AllowEmptyCollection()]
+        [array]$Endpoints
+    )
+
+    $sections = Get-AppDocApiInventoryMarkdown -Endpoints $Endpoints
+    $updated = $Content
+
+    if (Get-Command Update-TemplateSection -ErrorAction SilentlyContinue) {
+        $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.endpointTablePlaceholder -NewContent $sections.endpointContent
+    }
+    else {
+        $updated = $updated.Replace($sections.endpointTablePlaceholder, $sections.endpointContent)
+    }
+
+    $apiSectionPattern = '(?s)(##\s+API Endpoints\s*\r?\n\r?\n).*?(?=\r?\n##\s+Data Models\b)'
+    return [regex]::Replace(
+        $updated,
+        $apiSectionPattern,
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + $sections.endpointContent + "`r`n")
+        }
+    )
+}
+
 Export-ModuleMember -Function @(
     'Sanitize-AppDocMarkdownCell',
     'Get-AppDocNormalizedEndpointPath',
@@ -167,5 +307,7 @@ Export-ModuleMember -Function @(
     'Get-AppDocEndpointDomain',
     'Get-AppDocEndpointDescription',
     'Get-AppDocEndpointFamilyPath',
-    'Get-AppDocSemanticEndpointFamily'
+    'Get-AppDocSemanticEndpointFamily',
+    'Get-AppDocApiInventoryMarkdown',
+    'Update-AppDocApiInventoryContent'
 )

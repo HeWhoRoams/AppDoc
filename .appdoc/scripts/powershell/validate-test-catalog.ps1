@@ -20,8 +20,23 @@ if ($content -notmatch "# Test Catalog") {
     exit 1
 }
 
-# Count tests
-$testCount = ($content | Select-String -Pattern "^## " | Measure-Object).Count
+# Count tests from evidence first, fallback to rendered test-case rows
+$testCount = 0
+$evidencePath = Join-Path $RootPath "docs\evidence\test-catalog.evidence.json"
+if (Test-Path $evidencePath) {
+    try {
+        $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json
+        $testCount = @($evidence.records | Where-Object { [string]$_.kind -in @("test-case", "test-suite") }).Count
+    }
+    catch { }
+}
+
+if ($testCount -le 0) {
+    $testCount = ([regex]::Matches(
+        $content,
+        '(?im)^\|\s*`[^|`]+`\s*\|\s*`[^|`]+`\s*\|\s*N/A\s*\|\s*N/A\s*\|'
+    )).Count
+}
 
 Write-Progress -Activity "Validating Test Catalog" -Status "Validated $testCount tests" -PercentComplete 100
 

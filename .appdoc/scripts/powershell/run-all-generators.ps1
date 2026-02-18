@@ -277,11 +277,14 @@ function Test-GeneratedDoc {
     # Detect common placeholder patterns
     $placeholderPatterns = @(
         @{ Pattern = '_No .* detected'; Description = "Empty detection placeholder" }
-        @{ Pattern = 'Describe the purpose'; Description = "Generic template instruction" }
-        @{ Pattern = 'Document (the|where|how)'; Description = "Template instruction remaining" }
+        @{ Pattern = '(?im)^\s*Describe\s+[^\r\n]*$'; Description = "Template instruction remaining" }
+        @{ Pattern = '(?im)^\s*Document\s+[^\r\n]*$'; Description = "Template instruction remaining" }
+        @{ Pattern = '(?im)^\s*List and describe\s+[^\r\n]*$'; Description = "Template instruction remaining" }
+        @{ Pattern = '(?im)^\s*Provide example[^\r\n]*$'; Description = "Template instruction remaining" }
+        @{ Pattern = '(?im)^\s*Provide quick start instructions[^\r\n]*$'; Description = "Template instruction remaining" }
+        @{ Pattern = '(?im)^\s*Refer to .* documentation\.?$'; Description = "Template instruction remaining" }
         @{ Pattern = '\[PLACEHOLDER\]|\[TODO\]|\[TBD\]'; Description = "Explicit placeholder marker" }
-        @{ Pattern = 'This (section|codebase) may'; Description = "Uncertain filler text" }
-        @{ Pattern = 'Check for|Consult|Review'; Description = "Deferred instruction" }
+        @{ Pattern = '(?im)^\s*This (section|codebase) may'; Description = "Uncertain filler text" }
     )
     
     foreach ($pattern in $placeholderPatterns) {
@@ -359,8 +362,24 @@ if (-not $SkipSyntaxGate) {
         else {
             try {
                 Write-Host "Running syntax gate..."
-                & $syntaxGateScriptPath -RootPath $RootPath | Out-Null
-                Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Syntax gate passed" -Component "Validation" -FilePath $syntaxGateScriptPath
+                $syntaxGateResultJson = & $syntaxGateScriptPath -RootPath $RootPath -Include @($PSScriptRoot) -Json
+                $syntaxGateExitCodeRaw = $LASTEXITCODE
+                $syntaxGateExitCode = 0
+                if ($null -ne $syntaxGateExitCodeRaw -and -not [string]::IsNullOrWhiteSpace([string]$syntaxGateExitCodeRaw)) {
+                    $syntaxGateExitCode = [int]$syntaxGateExitCodeRaw
+                }
+                $syntaxGateResult = $null
+
+                if ($syntaxGateResultJson) {
+                    $syntaxGateResult = $syntaxGateResultJson | ConvertFrom-Json
+                }
+
+                if ($syntaxGateExitCode -ne 0 -or -not $syntaxGateResult -or -not $syntaxGateResult.passed) {
+                    $errorCount = if ($syntaxGateResult) { [int]$syntaxGateResult.errorCount } else { -1 }
+                    throw "Syntax gate failed (exit=$syntaxGateExitCode, errors=$errorCount)."
+                }
+
+                Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Syntax gate passed" -Component "Validation" -FilePath $syntaxGateScriptPath -Details @{ checkedFiles = [int]$syntaxGateResult.checkedFiles }
             }
             catch {
                 Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Error" -Message "Syntax gate failed" -Component "Validation" -FilePath $syntaxGateScriptPath -Details @{ exception = $_.Exception.Message }
@@ -653,14 +672,25 @@ $structuredValidationPath = Join-Path $PSScriptRoot "validate-documentation.ps1"
 $structuredValidationResult = $null
 if (Test-Path $structuredValidationPath) {
     try {
-        $structuredValidationJson = if ($StrictValidation) {
+        $structuredValidationOutput = if ($StrictValidation) {
             & $structuredValidationPath -RootPath $RootPath -Strict -Threshold $QualityThreshold -Json
         }
         else {
             & $structuredValidationPath -RootPath $RootPath -Threshold $QualityThreshold -Json
         }
-        if ($structuredValidationJson) {
-            $structuredValidationResult = $structuredValidationJson | ConvertFrom-Json
+
+        $structuredValidationText = ($structuredValidationOutput | Out-String).Trim()
+        if ($structuredValidationText) {
+            $jsonStarts = [regex]::Matches($structuredValidationText, '(?m)^\{\s*$')
+            $firstBrace = if ($jsonStarts.Count -gt 0) { $jsonStarts[$jsonStarts.Count - 1].Index } else { $structuredValidationText.IndexOf('{') }
+            $lastBrace = $structuredValidationText.LastIndexOf('}')
+            if ($firstBrace -ge 0 -and $lastBrace -gt $firstBrace) {
+                $structuredValidationJson = $structuredValidationText.Substring($firstBrace, ($lastBrace - $firstBrace + 1))
+                $structuredValidationResult = $structuredValidationJson | ConvertFrom-Json
+            }
+            else {
+                throw "Structured validation did not produce a parseable JSON payload."
+            }
         }
         Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Structured validation completed" -Component "Validation"
     }

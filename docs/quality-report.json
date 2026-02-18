@@ -1,0 +1,136 @@
+{
+  "documents": [
+    {
+      "codeBlocks": 0,
+      "score": 100,
+      "docType": "Start Here",
+      "listItems": 18,
+      "quality": "HIGH",
+      "exists": true,
+      "placeholders": [],
+      "issues": [],
+      "tableRows": 13
+    },
+    {
+      "codeBlocks": 0,
+      "score": 100,
+      "docType": "Overview",
+      "listItems": 7,
+      "quality": "HIGH",
+      "exists": true,
+      "placeholders": [],
+      "issues": [],
+      "tableRows": 9
+    },
+    {
+      "codeBlocks": 0,
+      "score": 90,
+      "docType": "API Inventory",
+      "listItems": 0,
+      "quality": "HIGH",
+      "exists": true,
+      "placeholders": [],
+      "issues": [
+        "API Endpoints table has no populated rows"
+      ],
+      "tableRows": 9
+    },
+    {
+      "codeBlocks": 0,
+      "score": 90,
+      "docType": "Data Model",
+      "listItems": 0,
+      "quality": "HIGH",
+      "exists": true,
+      "placeholders": [],
+      "issues": [
+        "Data Models table has no populated rows"
+      ],
+      "tableRows": 9
+    },
+    {
+      "codeBlocks": 0,
+      "score": 100,
+      "docType": "Config Catalog",
+      "listItems": 2,
+      "quality": "HIGH",
+      "exists": true,
+      "placeholders": [],
+      "issues": [],
+      "tableRows": 64
+    },
+    {
+      "codeBlocks": 0,
+      "score": 90,
+      "docType": "Build Cookbook",
+      "listItems": 1,
+      "quality": "HIGH",
+      "exists": true,
+      "placeholders": [],
+      "issues": [
+        "Build Steps table has no populated rows"
+      ],
+      "tableRows": 11
+    },
+    {
+      "codeBlocks": 0,
+      "score": 70,
+      "docType": "Test Catalog",
+      "listItems": 0,
+      "quality": "MEDIUM",
+      "exists": true,
+      "placeholders": [],
+      "issues": [
+        "Test Suites table has no populated rows",
+        "Test Cases table has no populated rows"
+      ],
+      "tableRows": 11
+    },
+    {
+      "codeBlocks": 0,
+      "score": 90,
+      "docType": "Debt Register",
+      "listItems": 0,
+      "quality": "HIGH",
+      "exists": true,
+      "placeholders": [],
+      "issues": [
+        "Debt Items table has no populated rows"
+      ],
+      "tableRows": 9
+    },
+    {
+      "codeBlocks": 0,
+      "score": 90,
+      "docType": "Dependencies Catalog",
+      "listItems": 0,
+      "quality": "HIGH",
+      "exists": true,
+      "placeholders": [],
+      "issues": [
+        "Dependency summary table has no populated rows"
+      ],
+      "tableRows": 9
+    },
+    {
+      "codeBlocks": 0,
+      "score": 100,
+      "docType": "Task Guides",
+      "listItems": 9,
+      "quality": "HIGH",
+      "exists": true,
+      "placeholders": [],
+      "issues": [],
+      "tableRows": 7
+    }
+  ],
+  "timestamp": "2026-02-18 13:44:50",
+  "overall": {
+    "lowQuality": 0,
+    "totalDocs": 10,
+    "highQuality": 9,
+    "mediumQuality": 9,
+    "missingDocs": 0,
+    "averageScore": 92.0
+  }
+}

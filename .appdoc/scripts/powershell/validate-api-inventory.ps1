@@ -20,8 +20,23 @@ if ($content -notmatch "# API Inventory") {
     exit 1
 }
 
-# Count endpoints
-$endpointCount = ($content | Select-String -Pattern "^## " | Measure-Object).Count
+# Count endpoints from evidence first, fallback to rendered table rows.
+$endpointCount = 0
+$evidencePath = Join-Path $RootPath "docs\evidence\api-inventory.evidence.json"
+if (Test-Path $evidencePath) {
+    try {
+        $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json
+        $endpointCount = @($evidence.records | Where-Object { [string]$_.kind -eq "endpoint" }).Count
+    }
+    catch { }
+}
+
+if ($endpointCount -le 0) {
+    $endpointCount = ([regex]::Matches(
+        $content,
+        '(?im)^\|\s*`[^|]+`\s*\|\s*`/[^|]+`\s*\|\s*(GET|POST|PUT|DELETE|PATCH|ANY)\s*\|'
+    )).Count
+}
 
 Write-Progress -Activity "Validating API Inventory" -Status "Validated $endpointCount endpoints" -PercentComplete 100
 

@@ -1,0 +1,27 @@
+{
+  "artifact": "dependencies-catalog",
+  "generatedAt": "2026-02-18T13:44:49-05:00",
+  "recordCount": 0,
+  "records": [],
+  "metadata": {
+    "requiredEvidenceKeys": [
+      "dependencies"
+    ],
+    "requiredSections": [
+      "Executive Summary",
+      "Dependency Summary"
+    ],
+    "dependencyCount": 0,
+    "projectCount": 0,
+    "generator": "generate-dependencies-catalog.ps1"
+  },
+  "determinism": {
+    "hashAlgorithm": "SHA256",
+    "excludeKeys": [
+      "generatedAt",
+      "updatedAt",
+      "timestamp"
+    ],
+    "contentHash": "3956c4ec72c2a0ed4c96cc80aec469d193f11f1f5b3475120e3b323db7cc584d"
+  }
+}

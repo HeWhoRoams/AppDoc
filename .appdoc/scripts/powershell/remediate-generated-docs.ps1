@@ -3,6 +3,11 @@ param(
     [string]$RootPath
 )
 
+$helpersPath = Join-Path $PSScriptRoot "template-helpers.ps1"
+if (Test-Path $helpersPath) {
+    . $helpersPath
+}
+
 $docsPath = Join-Path $RootPath "docs"
 if (-not (Test-Path $docsPath)) {
     Write-Error "docs directory not found: $docsPath"
@@ -168,24 +173,12 @@ foreach ($file in $docFiles) {
     $fileName = [System.IO.Path]::GetFileName($file)
 
     $content = [regex]::Replace($content, '(?is)\r?\n##\s+Population Guide\s*\r?\n.*?(?=\r?\n---\s*\r?\n|\z)', "`r`n")
-
-    $content = [regex]::Replace($content, '(?im)^.*Describe the purpose and scope.*$', 'This section summarizes the generated findings for this artifact based on deterministic codebase analysis.')
-    $content = [regex]::Replace($content, '(?im)^.*_Describe the purpose and scope_.*$', 'This section summarizes generated findings based on deterministic extraction evidence.')
-    $content = [regex]::Replace($content, '(?im)^.*_List and describe_.*$', 'Deterministic extraction evidence for this section is summarized below.')
-    $content = [regex]::Replace($content, '(?im)^.*_Document_.*$', 'Deterministic extraction evidence for this section is documented below when available.')
-    $content = [regex]::Replace($content, '(?im)^.*Provide quick start instructions.*$', 'Quick-start guidance is derived from deterministic build and run evidence when available.')
-    $content = [regex]::Replace($content, '(?im)^.*Provide example.*$', 'Examples are included below when deterministic evidence is available.')
-    $content = [regex]::Replace($content, '(?im)^.*Refer to .* documentation\.?$', 'See project documentation artifacts for additional context.')
-
-    $content = [regex]::Replace($content, '(?im)_No\s+[^_]+\s+detected\.[^_]*_', 'No deterministic evidence found in this section for the current scan.')
-    $content = [regex]::Replace($content, '(?im)^\s*Current scan found 0 items for this section\.?\s*$', 'No deterministic evidence found in this section for the current scan.')
-    $content = [regex]::Replace($content, '(?i)Current scan found 0 items for this section\.', 'No deterministic evidence found in this section for the current scan.')
-    $content = [regex]::Replace($content, '(?im)(No deterministic evidence found in this section for the current scan\.)(##\s+)', "$1`r`n`r`n$2")
-
-    if ($fileName -ieq 'config-catalog.md') {
-        $content = $content.Replace('Describe the purpose and scope of the configuration catalog for this codebase.', 'This section summarizes the generated findings for this artifact based on deterministic codebase analysis.')
-        $content = $content.Replace('Provide example configuration files or objects.', 'Examples are included below when deterministic evidence is available.')
+    if (Get-Command Normalize-AppDocTemplateInstructionText -ErrorAction SilentlyContinue) {
+        $content = Normalize-AppDocTemplateInstructionText -Content $content
     }
+
+    $content = [regex]::Replace($content, '(?im)^\s*_No\s+[^_]+(?:detected|available|documented)\.[^_]*_\s*$', 'No deterministic evidence found in this section for the current scan.')
+    $content = [regex]::Replace($content, '(?im)(No deterministic evidence found in this section for the current scan\.)(##\s+)', "$1`r`n`r`n$2")
 
     if ($fileName -ieq 'config-catalog.md') {
         $content = Protect-AppDocSensitiveMarkdown -Markdown $content

@@ -150,14 +150,36 @@ function Normalize-AppDocTemplateInstructionText {
     )
 
     $updated = $Content
-    # Narrowed patterns to only match template instruction lines (italicized with underscores)
-    $updated = [regex]::Replace($updated, '(?im)^.*_Describe the purpose and scope_.*$', 'This section summarizes the generated findings for this artifact based on deterministic codebase analysis.')
-    $updated = [regex]::Replace($updated, '(?im)^.*_Describe_\b.*$', 'This section summarizes generated findings based on deterministic extraction evidence.')
-    $updated = [regex]::Replace($updated, '(?im)^.*_List and describe_\b.*$', 'Deterministic extraction evidence for this section is summarized below.')
-    $updated = [regex]::Replace($updated, '(?im)^.*_Document_\b.*$', 'Deterministic extraction evidence for this section is documented below when available.')
-    $updated = [regex]::Replace($updated, '(?im)^.*_Provide example.*$', 'Examples are included below when deterministic evidence is available.')
-    $updated = [regex]::Replace($updated, '(?im)^.*_Provide quick start instructions_\b.*$', 'Quick-start guidance is derived from deterministic build and run evidence when available.')
-    $updated = [regex]::Replace($updated, '(?im)^.*_Refer to_\b.* documentation\.?$', 'See project documentation artifacts for additional context.')
+
+    # Remove imperative template instructions that were not populated.
+    $instructionPatterns = @(
+        '(?im)^\s*_?\s*Describe\s+[^\r\n]*\s*_?\s*$',
+        '(?im)^\s*_?\s*Document\s+[^\r\n]*\s*_?\s*$',
+        '(?im)^\s*_?\s*List and describe\s+[^\r\n]*\s*_?\s*$',
+        '(?im)^\s*_?\s*Provide example[^\r\n]*\s*_?\s*$',
+        '(?im)^\s*_?\s*Provide quick start instructions[^\r\n]*\s*_?\s*$',
+        '(?im)^\s*_?\s*Refer to\s+[^\r\n]*documentation\.?\s*_?\s*$'
+    )
+    foreach ($pattern in $instructionPatterns) {
+        $updated = [regex]::Replace($updated, $pattern, '')
+    }
+
+    # Normalize placeholder/no-evidence wording to a single deterministic sentence.
+    $updated = [regex]::Replace($updated, '(?im)^\s*_No\s+[^_]+(?:detected|available|documented)\.[^_]*_\s*$', 'No deterministic evidence found in this section for the current scan.')
+    $updated = [regex]::Replace($updated, '(?im)^\s*Current scan found 0 items for this section\.?\s*$', 'No deterministic evidence found in this section for the current scan.')
+
+    # Ensure overview is never empty after instruction cleanup.
+    $updated = [regex]::Replace(
+        $updated,
+        '(?ms)(^##\s+Overview\s*\r?\n)\s*(?=##\s+)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "`r`nThis section summarizes generated findings from deterministic codebase analysis.`r`n`r`n")
+        }
+    )
+
+    # Collapse excessive blank lines produced by removals.
+    $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`r`n`r`n")
 
     return $updated
 }

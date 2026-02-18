@@ -23,6 +23,14 @@ if (Test-Path $evidenceModule) {
     Import-Module $evidenceModule -Force -ErrorAction Stop
 }
 
+$taskExtractorModule = Join-Path $PSScriptRoot "modules\AppDoc.TaskGuides.Extractor.psm1"
+if (-not (Test-Path $taskExtractorModule)) { Write-Error "Required module not found: $taskExtractorModule"; exit 1 }
+Import-Module $taskExtractorModule -Force -ErrorAction Stop
+
+$taskRendererModule = Join-Path $PSScriptRoot "modules\AppDoc.TaskGuides.Renderer.psm1"
+if (-not (Test-Path $taskRendererModule)) { Write-Error "Required module not found: $taskRendererModule"; exit 1 }
+Import-Module $taskRendererModule -Force -ErrorAction Stop
+
 Write-Host "🧭 Generating Task Guides..." -ForegroundColor Cyan
 
 if (-not (Test-Path $RootPath)) {
@@ -34,156 +42,19 @@ if (-not (Get-Command Initialize-TemplateFile -ErrorAction SilentlyContinue)) {
     Write-Error "Required function Initialize-TemplateFile not found. Ensure template-helpers.ps1 is available."
     exit 1
 }
+
 $outputPath = Join-Path $RootPath "docs\task-guides.md"
 $initialized = Initialize-TemplateFile -TemplateName "task-guides-template.md" -OutputPath $outputPath -RootPath $RootPath
 if (-not $initialized) {
     Write-Error "Failed to initialize task-guides template"
     exit 1
 }
-$docsPath = Join-Path $RootPath "docs"
-$evidenceRoot = Join-Path $docsPath "evidence"
 
-function Get-EvidenceRecords {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$EvidenceRoot,
-        [Parameter(Mandatory=$true)]
-        [string]$Artifact
-    )
-
-    $path = Join-Path $EvidenceRoot ("{0}.evidence.json" -f $Artifact)
-    if (-not (Test-Path $path)) { return @() }
-
-    try {
-        $payload = Get-Content $path -Raw | ConvertFrom-Json
-        if ($null -eq $payload.records) { return @() }
-        return @($payload.records)
-    }
-    catch {
-        return @()
-    }
-}
-
-$apiRecords = Get-EvidenceRecords -EvidenceRoot $evidenceRoot -Artifact "api-inventory"
-$buildRecords = Get-EvidenceRecords -EvidenceRoot $evidenceRoot -Artifact "build-cookbook"
-$dependencyRecords = Get-EvidenceRecords -EvidenceRoot $evidenceRoot -Artifact "dependencies-catalog"
-$debtRecords = Get-EvidenceRecords -EvidenceRoot $evidenceRoot -Artifact "debt-register"
-$testRecords = Get-EvidenceRecords -EvidenceRoot $evidenceRoot -Artifact "test-catalog"
-
-$endpointRows = @($apiRecords | Where-Object { [string]$_.kind -eq "endpoint" })
-$buildCommandRows = @($buildRecords | Where-Object { [string]$_.kind -in @("build-command", "command") })
-$dependencyRows = @($dependencyRecords | Where-Object { [string]$_.kind -eq "dependency" })
-$debtRows = @($debtRecords | Where-Object { [string]$_.kind -in @("technical-debt", "debt-item") })
-$testRows = @($testRecords | Where-Object { [string]$_.kind -in @("test-case", "test-suite") })
-
-$sampleEndpoints = @($endpointRows | Select-Object -First 5 | ForEach-Object {
-    $method = if ($_.metadata -and $_.metadata.method) { [string]$_.metadata.method } else { "ANY" }
-    $name = if ($_.name) { [string]$_.name } else { "endpoint" }
-    "- ``$method`` ``$name``"
-})
-if ($sampleEndpoints.Count -eq 0) { $sampleEndpoints = @("- No endpoint evidence available") }
-
-$sampleBuildCommands = @($buildCommandRows | Select-Object -First 5 | ForEach-Object {
-    $cmd = if ($_.metadata -and $_.metadata.invocation) { [string]$_.metadata.invocation } else { [string]$_.name }
-    "- ``$cmd``"
-})
-if ($sampleBuildCommands.Count -eq 0) { $sampleBuildCommands = @("- No build command evidence available") }
-
-$sampleDependencies = @($dependencyRows | Group-Object -Property name | Sort-Object Count -Descending | Select-Object -First 5 | ForEach-Object {
-    "- ``$($_.Name)`` used in $($_.Count) location(s)"
-})
-if ($sampleDependencies.Count -eq 0) { $sampleDependencies = @("- No dependency evidence available") }
-
-$sampleDebt = @($debtRows | Select-Object -First 5 | ForEach-Object {
-    $desc = if ($_.metadata -and $_.metadata.description) { [string]$_.metadata.description } else { [string]$_.name }
-    "- $desc"
-})
-if ($sampleDebt.Count -eq 0) { $sampleDebt = @("- No debt evidence available") }
-
-$changeEndpointGuide = @"
-1. Open [API Inventory](api-inventory.md) and identify the target endpoint plus adjacent related endpoints.
-2. Trace impacted types in [Data Model](data-model.md) and verify associated configuration in [Configuration Catalog](config-catalog.md).
-3. Implement changes and run the minimal build/test loop from [Build Cookbook](build-cookbook.md) and [Test Catalog](test-catalog.md).
-4. Re-run AppDoc generation with strict validation and review contradiction/grounding metrics.
-
-**Evidence snapshot**:
-$($sampleEndpoints -join "`n")
-"@
-
-$debugBuildGuide = @"
-1. Start with command parity from [Build Cookbook](build-cookbook.md) and execute the shortest failing command first.
-2. Validate environmental assumptions using [Configuration Catalog](config-catalog.md).
-3. Compare local output with pipeline behavior and check dependency/version drift in [Dependencies Catalog](dependencies-catalog.md).
-4. Confirm recovery by running targeted tests from [Test Catalog](test-catalog.md).
-
-**Evidence snapshot**:
-$($sampleBuildCommands -join "`n")
-"@
-
-$dependencyRiskGuide = @"
-1. Review [Dependencies Catalog](dependencies-catalog.md) for version conflicts and widely used packages.
-2. Prioritize risk by usage breadth, version divergence, and critical-path runtime involvement.
-3. Validate likely blast radius using [API Inventory](api-inventory.md), [Data Model](data-model.md), and [Build Cookbook](build-cookbook.md).
-4. Stage upgrades incrementally and re-run strict documentation validation.
-
-**Evidence snapshot**:
-$($sampleDependencies -join "`n")
-"@
-
-$debtSprintGuide = @"
-1. Group [Technical Debt Register](debt-register.md) findings by impact and ownership domain.
-2. Select high-leverage items that reduce recurring defects or shorten release lead time.
-3. Attach measurable exit criteria (tests added, complexity reduced, obsolete code removed).
-4. Document outcomes and regenerate docs to refresh evidence and trend metrics.
-
-**Evidence snapshot**:
-$($sampleDebt -join "`n")
-"@
-
-$checklist = @"
-- Confirm docs validation score remains above threshold in strict mode.
-- Confirm contradictionConsistencyScore and claimGroundingScore remain stable.
-- Confirm no sensitive values leak into generated markdown output.
-- Confirm changed workflows reference concrete commands and tests.
-- Confirm task guidance links to current artifacts, not stale assumptions.
-"@
-
-$content = @"
-# Task Guides
-
-**Generated**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
-
-## Executive Summary
-
-This document provides task-centric implementation and maintenance playbooks derived from deterministic evidence. It helps engineers complete common workflows safely while preserving architecture and operational quality.
-
-## Task Guides
-
-### Change an Endpoint Safely
-
-$changeEndpointGuide
-
-### Debug a Build Failure
-
-$debugBuildGuide
-
-### Triage Dependency Risk
-
-$dependencyRiskGuide
-
-### Plan a Debt Sprint
-
-$debtSprintGuide
-
-## Operational Checklist
-
-$checklist
-
----
-
-**Generated by AppDoc Framework**
-"@
-
+$taskData = Get-AppDocTaskGuidesData -RootPath $RootPath
+$content = Get-Content -Path $outputPath -Raw
+$content = Update-AppDocTaskGuidesContent -Content $content -TaskData $taskData
+$content = Normalize-AppDocTemplateInstructionText -Content $content
+$content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 $artifact = "task-guides"
@@ -193,11 +64,11 @@ if (Get-Command Get-AppDocArtifactContract -ErrorAction SilentlyContinue) {
 }
 
 $evidenceRecords = @()
-$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "change-endpoint-safely" -Kind "task-guide" -Confidence 0.95 -Provider "generator" -ProviderType "deterministic" -Metadata @{ category = "implementation"; endpointEvidence = $endpointRows.Count }
-$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "debug-build-failure" -Kind "task-guide" -Confidence 0.95 -Provider "generator" -ProviderType "deterministic" -Metadata @{ category = "operations"; buildEvidence = $buildCommandRows.Count }
-$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "triage-dependency-risk" -Kind "task-guide" -Confidence 0.95 -Provider "generator" -ProviderType "deterministic" -Metadata @{ category = "risk"; dependencyEvidence = $dependencyRows.Count }
-$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "plan-debt-sprint" -Kind "task-guide" -Confidence 0.95 -Provider "generator" -ProviderType "deterministic" -Metadata @{ category = "maintenance"; debtEvidence = $debtRows.Count }
-$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "task-guide-summary" -Kind "summary" -Confidence 0.9 -Provider "generator" -ProviderType "deterministic" -Metadata @{ endpointCount = $endpointRows.Count; buildCommandCount = $buildCommandRows.Count; dependencyCount = $dependencyRows.Count; debtCount = $debtRows.Count; testCount = $testRows.Count }
+$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "change-endpoint-safely" -Kind "task-guide" -Confidence 0.95 -Provider "generator" -ProviderType "deterministic" -Metadata @{ category = "implementation"; endpointEvidence = @($taskData.endpointRows).Count }
+$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "debug-build-failure" -Kind "task-guide" -Confidence 0.95 -Provider "generator" -ProviderType "deterministic" -Metadata @{ category = "operations"; buildEvidence = @($taskData.buildCommandRows).Count }
+$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "triage-dependency-risk" -Kind "task-guide" -Confidence 0.95 -Provider "generator" -ProviderType "deterministic" -Metadata @{ category = "risk"; dependencyEvidence = @($taskData.dependencyRows).Count }
+$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "plan-debt-sprint" -Kind "task-guide" -Confidence 0.95 -Provider "generator" -ProviderType "deterministic" -Metadata @{ category = "maintenance"; debtEvidence = @($taskData.debtRows).Count }
+$evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "task-guide-summary" -Kind "summary" -Confidence 0.9 -Provider "generator" -ProviderType "deterministic" -Metadata @{ endpointCount = @($taskData.endpointRows).Count; buildCommandCount = @($taskData.buildCommandRows).Count; dependencyCount = @($taskData.dependencyRows).Count; debtCount = @($taskData.debtRows).Count; testCount = @($taskData.testRows).Count }
 
 $evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $artifact -Records $evidenceRecords -Metadata @{
     requiredEvidenceKeys = if ($contract) { @($contract.requiredEvidenceKeys) } else { @("tasks", "summary") }

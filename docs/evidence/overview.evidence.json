@@ -1,0 +1,45 @@
+{
+  "artifact": "overview",
+  "generatedAt": "2026-02-18T13:44:42-05:00",
+  "recordCount": 1,
+  "records": [
+    {
+      "artifact": "overview",
+      "source": "repository",
+      "name": "system-purpose",
+      "kind": "summary",
+      "confidence": 1.0,
+      "metadata": {
+        "text": "This codebase contains 0 code files across 0 language(s). Full analysis available in linked documentation.",
+        "languageCount": 0,
+        "fileCount": 0
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-18T13:44:42-05:00"
+    }
+  ],
+  "metadata": {
+    "generator": "generate-overview.ps1",
+    "requiredEvidenceKeys": [
+      "summary",
+      "technologies"
+    ],
+    "requiredSections": [
+      "Executive Summary",
+      "System Purpose",
+      "Architecture",
+      "Technology Stack"
+    ]
+  },
+  "determinism": {
+    "hashAlgorithm": "SHA256",
+    "excludeKeys": [
+      "generatedAt",
+      "updatedAt",
+      "timestamp"
+    ],
+    "contentHash": "cac5d4e9d1c9cc8b4e7b8b8bb99e547b8e4d22e46a43f8b4e3ed0249cdafb3b5"
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "generatedAt": "2026-02-18T13:44:52-05:00",
+  "summary": {
+    "total": 6,
+    "byCategory": {
+      "DETECTION_PATTERN_MISMATCH": 4,
+      "ENVIRONMENT_ERROR": 2
+    },
+    "bySeverity": {
+      "Info": 2,
+      "Warning": 4
+    },
+    "hasErrors": false,
+    "hasWarnings": true
+  },
+  "events": [
+    {
+      "timestamp": "2026-02-18T13:44:50-05:00",
+      "category": "ENVIRONMENT_ERROR",
+      "severity": "Info",
+      "component": "orchestrator",
+      "message": "Diagnostics initialized",
+      "filePath": "",
+      "details": {
+        "rootPath": ".",
+        "outputPath": ".\\docs"
+      }
+    },
+    {
+      "timestamp": "2026-02-18T13:44:52-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Cross-artifact contradiction detected: start-here-model-signal-mismatch:3/0",
+      "filePath": ".\\docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-18T13:44:52-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Task outcome issue detected: task-guide-evidence-snapshot-low:1",
+      "filePath": ".\\docs\\task-guides.md",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-18T13:44:52-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: api-endpoints-table-empty",
+      "filePath": ".\\docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-18T13:44:52-05:00",
+      "category": "ENVIRONMENT_ERROR",
+      "severity": "Info",
+      "component": "Validation",
+      "message": "Structured validation completed",
+      "filePath": "",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-18T13:44:52-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "Validation",
+      "message": "Validation is below threshold in soft mode",
+      "filePath": "",
+      "details": {
+        "averageScore": 92.4,
+        "threshold": 80,
+        "belowThreshold": 1
+      }
+    }
+  ],
+  "metadata": {
+    "noAI": false,
+    "validationGate": {
+      "passed": false,
+      "reason": "Structured validation gate failed (score and/or policy gates)",
+      "averageScore": 92.4,
+      "belowThreshold": 1,
+      "strict": false,
+      "qualityThreshold": 80,
+      "evaluatedDocuments": 9
+    },
+    "profile": "default",
+    "frameworks": [
+      "ASP.NET Core"
+    ],
+    "qualityThreshold": 80,
+    "strictValidation": false
+  }
+}

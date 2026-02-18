@@ -1,0 +1,7 @@
+{
+  "generatedAt": "2026-02-18T13:07:16-05:00",
+  "provider": "typescript-compiler-bridge-pending",
+  "providerReady": true,
+  "records": [],
+  "note": "TypeScript Compiler API integration pending. Current output uses fallback parser contract."
+}

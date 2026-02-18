@@ -1,0 +1,292 @@
+{
+  "generatedAt": "2026-02-18T13:44:52-05:00",
+  "summary": {
+    "total": 4,
+    "byCategory": {
+      "DETECTION_PATTERN_MISMATCH": 3,
+      "ENVIRONMENT_ERROR": 1
+    },
+    "bySeverity": {
+      "Info": 1,
+      "Warning": 3
+    },
+    "hasErrors": false,
+    "hasWarnings": true
+  },
+  "events": [
+    {
+      "timestamp": "2026-02-18T13:44:50-05:00",
+      "category": "ENVIRONMENT_ERROR",
+      "severity": "Info",
+      "component": "orchestrator",
+      "message": "Diagnostics initialized",
+      "filePath": "",
+      "details": {
+        "rootPath": ".",
+        "outputPath": ".\\docs"
+      }
+    },
+    {
+      "timestamp": "2026-02-18T13:44:52-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Cross-artifact contradiction detected: start-here-model-signal-mismatch:3/0",
+      "filePath": ".\\docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-18T13:44:52-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Task outcome issue detected: task-guide-evidence-snapshot-low:1",
+      "filePath": ".\\docs\\task-guides.md",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-18T13:44:52-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: api-endpoints-table-empty",
+      "filePath": ".\\docs",
+      "details": {}
+    }
+  ],
+  "metadata": {
+    "validation": {
+      "timestamp": "2026-02-18T13:44:52-05:00",
+      "strict": false,
+      "threshold": 80,
+      "overallScore": 92.4,
+      "metrics": {
+        "validatorPassRate": 100.0,
+        "artifactPresence": 100.0,
+        "evidencePresence": 100.0,
+        "semanticContractScore": 100.0,
+        "evidenceContractScore": 97.0,
+        "apiCoverage": 100,
+        "configCoverage": 100,
+        "dataModelCoverage": 100,
+        "redactionSafetyScore": 100,
+        "humanUsabilityScore": 100.0,
+        "claimGroundingScore": 100.0,
+        "documentationFreshnessScore": 80.0,
+        "contradictionConsistencyScore": 80.0,
+        "taskGuideActionabilityScore": 83.3,
+        "taskGuideEvidenceCoverageScore": 50.0,
+        "taskGuideTimeToCompleteMinutes": 12.0,
+        "taskGuideTimeScore": 100.0,
+        "policyGateScore": 80.0
+      },
+      "missingArtifacts": [],
+      "missingEvidenceArtifacts": [],
+      "validators": [
+        {
+          "script": "validate-start-here.ps1",
+          "message": "OK",
+          "passed": true
+        },
+        {
+          "script": "validate-overview.ps1",
+          "message": "OK",
+          "passed": true
+        },
+        {
+          "script": "validate-api-inventory.ps1",
+          "message": "OK",
+          "passed": true
+        },
+        {
+          "script": "validate-data-model.ps1",
+          "message": "OK",
+          "passed": true
+        },
+        {
+          "script": "validate-config-catalog.ps1",
+          "message": "OK",
+          "passed": true
+        },
+        {
+          "script": "validate-build-cookbook.ps1",
+          "message": "OK",
+          "passed": true
+        },
+        {
+          "script": "validate-test-catalog.ps1",
+          "message": "OK",
+          "passed": true
+        },
+        {
+          "script": "validate-task-guides.ps1",
+          "message": "OK",
+          "passed": true
+        },
+        {
+          "script": "validate-debt-register.ps1",
+          "message": "OK",
+          "passed": true
+        }
+      ],
+      "contractValidation": [
+        {
+          "artifact": "start-here",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "overview",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "api-inventory",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "data-model",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "config-catalog",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "build-cookbook",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "test-catalog",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "task-guides",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "debt-register",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        },
+        {
+          "artifact": "dependencies-catalog",
+          "passed": true,
+          "score": 100,
+          "missingSections": [],
+          "bannedPatterns": []
+        }
+      ],
+      "evidenceContractValidation": [
+        {
+          "artifact": "start-here",
+          "passed": true,
+          "score": 100,
+          "issues": []
+        },
+        {
+          "artifact": "overview",
+          "passed": false,
+          "score": 85,
+          "issues": [
+            "missing-record-kind-for-key:technologies"
+          ]
+        },
+        {
+          "artifact": "api-inventory",
+          "passed": true,
+          "score": 100,
+          "issues": []
+        },
+        {
+          "artifact": "data-model",
+          "passed": true,
+          "score": 100,
+          "issues": []
+        },
+        {
+          "artifact": "config-catalog",
+          "passed": true,
+          "score": 100,
+          "issues": []
+        },
+        {
+          "artifact": "build-cookbook",
+          "passed": false,
+          "score": 85,
+          "issues": [
+            "missing-record-kind-for-key:commands"
+          ]
+        },
+        {
+          "artifact": "test-catalog",
+          "passed": true,
+          "score": 100,
+          "issues": []
+        },
+        {
+          "artifact": "task-guides",
+          "passed": true,
+          "score": 100,
+          "issues": []
+        },
+        {
+          "artifact": "debt-register",
+          "passed": true,
+          "score": 100,
+          "issues": []
+        },
+        {
+          "artifact": "dependencies-catalog",
+          "passed": true,
+          "score": 100,
+          "issues": []
+        }
+      ],
+      "contradictions": [
+        "start-here-model-signal-mismatch:3/0"
+      ],
+      "taskGuideOutcomes": {
+        "actionabilityScore": 83.3,
+        "evidenceCoverageScore": 50.0,
+        "estimatedCompletionMinutes": 12.0,
+        "taskCompletionTimeScore": 100.0,
+        "issues": [
+          "task-guide-evidence-snapshot-low:1"
+        ]
+      },
+      "policyGates": {
+        "score": 80.0,
+        "passed": false,
+        "blockingIssues": [
+          "api-endpoints-table-empty"
+        ],
+        "warnings": []
+      }
+    }
+  }
+}

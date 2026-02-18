@@ -20,8 +20,23 @@ if ($content -notmatch "# Data Model") {
     exit 1
 }
 
-# Count models
-$modelCount = ($content | Select-String -Pattern "^## " | Measure-Object).Count
+# Count models from evidence first, fallback to rendered table rows.
+$modelCount = 0
+$evidencePath = Join-Path $RootPath "docs\evidence\data-model.evidence.json"
+if (Test-Path $evidencePath) {
+    try {
+        $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json
+        $modelCount = @($evidence.records | Where-Object { [string]$_.kind -eq "model" }).Count
+    }
+    catch { }
+}
+
+if ($modelCount -le 0) {
+    $modelCount = ([regex]::Matches(
+        $content,
+        '(?im)^\|\s*`[^|]+`\s*\|\s*\d+\s*\|'
+    )).Count
+}
 
 Write-Progress -Activity "Validating Data Model" -Status "Validated $modelCount models" -PercentComplete 100
 

@@ -3,6 +3,11 @@
 
 $script:AppDocEvidenceVersion = "1.0.0"
 
+$determinismModulePath = Join-Path $PSScriptRoot "AppDoc.Determinism.psm1"
+if (Test-Path $determinismModulePath) {
+    Import-Module $determinismModulePath -Force -ErrorAction SilentlyContinue | Out-Null
+}
+
 function Get-AppDocEvidenceDirectory {
     [CmdletBinding()]
     param(
@@ -76,6 +81,9 @@ function Write-AppDocEvidenceArtifact {
 
     $path = Get-AppDocEvidenceFilePath -RootPath $RootPath -Artifact $Artifact
     $normalizedRecords = @($Records)
+    if (Get-Command Sort-AppDocExtractionRecords -ErrorAction SilentlyContinue) {
+        $normalizedRecords = @(Sort-AppDocExtractionRecords -Records $normalizedRecords)
+    }
 
     $payload = [ordered]@{
         artifact = $Artifact
@@ -83,6 +91,14 @@ function Write-AppDocEvidenceArtifact {
         recordCount = $normalizedRecords.Count
         records = $normalizedRecords
         metadata = $Metadata
+    }
+
+    if (Get-Command Get-AppDocDeterministicHash -ErrorAction SilentlyContinue) {
+        $payload.determinism = [ordered]@{
+            hashAlgorithm = "SHA256"
+            excludeKeys = @("generatedAt", "updatedAt", "timestamp")
+            contentHash = Get-AppDocDeterministicHash -InputObject $payload -ExcludeKeys @("generatedAt", "updatedAt", "timestamp")
+        }
     }
 
     $payload | ConvertTo-Json -Depth 30 | Out-File -FilePath $path -Encoding UTF8
@@ -138,8 +154,16 @@ function Update-AppDocEvidenceManifest {
     }
 
     $filtered = @($manifest.artifacts | Where-Object { $_.artifact -ne $Artifact })
-    $manifest.artifacts = @($filtered + $entry)
+    $manifest.artifacts = @($filtered + $entry | Sort-Object { [string]$_.artifact })
     $manifest.generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
+
+    if (Get-Command Get-AppDocDeterministicHash -ErrorAction SilentlyContinue) {
+        $manifest | Add-Member -NotePropertyName determinism -NotePropertyValue ([ordered]@{
+            hashAlgorithm = "SHA256"
+            excludeKeys = @("generatedAt", "updatedAt", "timestamp")
+            contentHash = Get-AppDocDeterministicHash -InputObject $manifest -ExcludeKeys @("generatedAt", "updatedAt", "timestamp")
+        }) -Force
+    }
 
     $manifest | ConvertTo-Json -Depth 20 | Out-File -FilePath $manifestPath -Encoding UTF8
     return $manifestPath

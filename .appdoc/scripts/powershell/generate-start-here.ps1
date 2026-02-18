@@ -38,7 +38,7 @@ $evidenceRoot = Join-Path $docsPath "evidence"
 
 $outputPath = Join-Path $docsPath "start-here.md"
 
-$codeFiles = @(Get-AppDocSourceFiles -RootPath $RootPath -Include @("*.cs","*.js","*.ts","*.py","*.java"))
+$codeFiles = @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "start-here" -Include @("*.cs","*.js","*.ts","*.py","*.java"))
 $languageCount = @{}
 foreach ($file in $codeFiles) {
     $ext = [string]$file.Extension

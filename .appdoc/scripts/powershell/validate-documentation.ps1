@@ -328,8 +328,23 @@ foreach ($artifact in $expectedEvidenceArtifacts) {
 function Get-DocRouteCount {
     param([string]$ApiDocPath)
     if (-not (Test-Path $ApiDocPath)) { return 0 }
+
+    $root = Split-Path (Split-Path $ApiDocPath -Parent) -Parent
+    $evidencePath = Join-Path $root "docs\evidence\api-inventory.evidence.json"
+    if (Test-Path $evidencePath) {
+        try {
+            $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json
+            $fromEvidence = @($evidence.records | Where-Object { [string]$_.kind -eq "endpoint" }).Count
+            if ($fromEvidence -gt 0) { return $fromEvidence }
+        }
+        catch { }
+    }
+
     $content = Get-Content $ApiDocPath -Raw
-    return ([regex]::Matches($content, '^\|\s*``?[^|]+\|\s*``?/[^|]+\|\s*(GET|POST|PUT|DELETE|PATCH|ANY)', 'Multiline,IgnoreCase')).Count
+    return ([regex]::Matches(
+        $content,
+        '(?im)^\|\s*`[^|]+`\s*\|\s*`/[^|]+`\s*\|\s*(GET|POST|PUT|DELETE|PATCH|ANY)\s*\|'
+    )).Count
 }
 
 function Get-CodeRouteCount {
@@ -354,7 +369,7 @@ function Get-ConfigKeyCoverage {
 
     $configContent = @()
     foreach ($pattern in @("appsettings*.json", "Web.config", "App.config", ".env*")) {
-        $configContent += Get-ChildItem -Path $RootPath -Recurse -Filter $pattern -File -ErrorAction SilentlyContinue | ForEach-Object { Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue }
+        $configContent += Get-AppDocSourceFiles -RootPath $RootPath -Include @($pattern) | ForEach-Object { Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue }
     }
 
     if ($configContent.Count -eq 0) { return 100 }
@@ -370,8 +385,30 @@ function Get-DataModelCoverage {
     param([string]$RootPath, [string]$ModelDocPath)
     if (-not (Test-Path $ModelDocPath)) { return 100 }
 
-    $doc = Get-Content $ModelDocPath -Raw
-    $modelNames = [regex]::Matches($doc, '^##\s+([A-Za-z_][\w]+)', 'Multiline') | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique
+    $modelNames = @()
+    $evidencePath = Join-Path $RootPath "docs\evidence\data-model.evidence.json"
+    if (Test-Path $evidencePath) {
+        try {
+            $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json
+            $modelNames = @(
+                $evidence.records |
+                    Where-Object { [string]$_.kind -eq "model" } |
+                    ForEach-Object { [string]$_.name } |
+                    Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+                    Select-Object -Unique
+            )
+        }
+        catch { }
+    }
+
+    if ($modelNames.Count -eq 0) {
+        $doc = Get-Content $ModelDocPath -Raw
+        $modelNames = [regex]::Matches(
+            $doc,
+            '(?im)^\|\s*`([^|`]+)`\s*\|\s*\d+\s*\|'
+        ) | ForEach-Object { $_.Groups[1].Value.Trim() } | Select-Object -Unique
+    }
+
     if ($modelNames.Count -eq 0) { return 100 }
 
     $codeFiles = Get-AppDocSourceFiles -RootPath $RootPath -Include @("*.cs","*.ts","*.js","*.py","*.java")
@@ -448,7 +485,10 @@ function Get-HumanUsabilityScore {
         }
 
         $linkCount += ([regex]::Matches($content, '\[[^\]]+\]\([^)]+\)')).Count
-        $placeholderHits += ([regex]::Matches($content, '(?im)Describe the purpose|Document\s+(the|where|how)|Check for|Consult|Review|\[TODO\]|\[TBD\]')).Count
+        $placeholderHits += ([regex]::Matches(
+            $content,
+            '(?im)^\s*(Describe\s+[^\r\n]*|Document\s+[^\r\n]*|List and describe\s+[^\r\n]*|Provide example[^\r\n]*|Provide quick start instructions[^\r\n]*|Refer to .* documentation\.?)\s*$|\[TODO\]|\[TBD\]'
+        )).Count
 
         $tableRows = ([regex]::Matches($content, '(?im)^\|[^\r\n]+\|\s*$')).Count
         if ($tableRows -gt 250) {

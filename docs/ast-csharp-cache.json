@@ -1,0 +1,7 @@
+{
+  "generatedAt": "2026-02-18T13:07:15.6174026-05:00",
+  "provider": "roslyn",
+  "providerReady": true,
+  "records": [],
+  "note": "Extracted using Microsoft.CodeAnalysis (Roslyn)."
+}

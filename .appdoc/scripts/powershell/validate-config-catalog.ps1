@@ -20,8 +20,11 @@ if ($content -notmatch "# Config(?:uration)? Catalog") {
     exit 1
 }
 
-# Count configs
-$configCount = ($content | Select-String -Pattern "^## " | Measure-Object).Count
+# Count configuration option rows
+$configCount = ([regex]::Matches(
+    $content,
+    '(?im)^\|\s*[^|`\r\n]+\s*\|\s*[^|]+\|\s*[^|]+\|\s*[^|]+\|\s*(Yes|No)\s*\|\s*[^|]+\|'
+)).Count
 
 Write-Progress -Activity "Validating Config Catalog" -Status "Validated $configCount configs" -PercentComplete 100
 

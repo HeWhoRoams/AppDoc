@@ -20,8 +20,23 @@ if ($content -notmatch "# Technical Debt Register") {
     exit 1
 }
 
-# Count debts
-$debtCount = ($content | Select-String -Pattern "^## " | Measure-Object).Count
+# Count debts from evidence first, fallback to debt item table rows
+$debtCount = 0
+$evidencePath = Join-Path $RootPath "docs\evidence\debt-register.evidence.json"
+if (Test-Path $evidencePath) {
+    try {
+        $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json
+        $debtCount = @($evidence.records | Where-Object { [string]$_.kind -in @("technical-debt", "debt-item") }).Count
+    }
+    catch { }
+}
+
+if ($debtCount -le 0) {
+    $debtCount = ([regex]::Matches(
+        $content,
+        '(?im)^\|\s*[^|]+\s*\|\s*`[^|`]+:\d+`\s*\|\s*[^|]+\s*\|\s*[^|]+\s*\|\s*[^|]+\s*\|'
+    )).Count
+}
 
 Write-Progress -Activity "Validating Technical Debt Register" -Status "Validated $debtCount debts" -PercentComplete 100
 
