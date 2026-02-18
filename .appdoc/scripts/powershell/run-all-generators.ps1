@@ -17,7 +17,9 @@ param(
     [Parameter(Mandatory=$false)]
     [string]$Profile = "default",
     [Parameter(Mandatory=$false)]
-    [switch]$NoAI
+    [switch]$NoAI,
+    [Parameter(Mandatory=$false)]
+    [switch]$SkipSyntaxGate
 )
 
 <#
@@ -347,6 +349,30 @@ if (Get-Command Initialize-AppDocDiagnostics -ErrorAction SilentlyContinue) {
     Initialize-AppDocDiagnostics -RootPath $RootPath -OutputPath $docsPath -Reset
 }
 
+$syntaxGateScriptPath = Join-Path $PSScriptRoot "ci-syntax-gate.ps1"
+if (-not $SkipSyntaxGate) {
+    if (Test-Path $syntaxGateScriptPath) {
+        if ($DryRun) {
+            Write-Host "[DryRun] Would execute ci-syntax-gate.ps1" -ForegroundColor Gray
+            Add-AppDocDiagnostic -Category "NOT_FOUND" -Severity "Info" -Message "Dry run skipped syntax gate" -Component "Validation" -FilePath $syntaxGateScriptPath
+        }
+        else {
+            try {
+                Write-Host "Running syntax gate..."
+                & $syntaxGateScriptPath -RootPath $RootPath | Out-Null
+                Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Syntax gate passed" -Component "Validation" -FilePath $syntaxGateScriptPath
+            }
+            catch {
+                Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Error" -Message "Syntax gate failed" -Component "Validation" -FilePath $syntaxGateScriptPath -Details @{ exception = $_.Exception.Message }
+                throw
+            }
+        }
+    }
+    else {
+        Add-AppDocDiagnostic -Category "IO_ERROR" -Severity "Warning" -Message "Syntax gate script not found" -Component "Validation" -FilePath $syntaxGateScriptPath
+    }
+}
+
 $activeProfile = $null
 if (Get-Command Get-AppDocProfile -ErrorAction SilentlyContinue) {
     $activeProfile = Get-AppDocProfile -RootPath $RootPath -Profile $Profile
@@ -547,7 +573,7 @@ $documents = @(
 
 foreach ($doc in $documents) {
     $filePath = Join-Path $docsPath $doc.File
-    $result = Test-GeneratedDoc -FilePath $filePath -DocType $doc.Type -RootPath $RootPath
+    $result = Test-GeneratedDoc -FilePath $filePath -DocType $doc.Type
     $validationResults += $result
 }
 

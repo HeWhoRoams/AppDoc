@@ -71,6 +71,8 @@ if ($null -ne $roslynPayload -and $null -ne $roslynPayload.records) {
     exit 0
 }
 
+# Roslyn output was unavailable, so this run is regex fallback.
+$provider = "regex-fallback"
 $records = @()
 $csFiles = Get-AppDocSourceFiles -RootPath $RootPath -Include @("*.cs")
 
@@ -151,7 +153,7 @@ foreach ($file in $csFiles) {
             lineNumber = $lineNumber
             metadata = @{ modelType = $match.Groups[1].Value; properties = $properties; language = "C#" }
             provider = $provider
-            confidence = if ($provider -eq "roslyn-bridge-pending") { 0.82 } else { 0.56 }
+            confidence = if ($provider -eq "roslyn") { 0.82 } else { 0.56 }
         }
     }
 
@@ -166,7 +168,7 @@ foreach ($file in $csFiles) {
             lineNumber = $lineNumber
             metadata = @{ parameters = $match.Groups[3].Value; language = "C#" }
             provider = $provider
-            confidence = if ($provider -eq "roslyn-bridge-pending") { 0.75 } else { 0.45 }
+            confidence = if ($provider -eq "roslyn") { 0.75 } else { 0.45 }
         }
     }
 
@@ -203,14 +205,14 @@ foreach ($file in $csFiles) {
                 description = "AST extracted endpoint"
             }
             provider = $provider
-            confidence = if ($provider -eq "roslyn-bridge-pending") { 0.86 } else { 0.6 }
+            confidence = if ($provider -eq "roslyn") { 0.86 } else { 0.6 }
         }
     }
 }
 
 $payload = [ordered]@{
     generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
-    provider = "regex-fallback"
+    provider = $provider
     providerReady = $dotnetExists
     records = $records
     note = if ($dotnetExists) { "Roslyn provider unavailable at runtime; using regex fallback." } else { "dotnet SDK not available; using regex fallback." }

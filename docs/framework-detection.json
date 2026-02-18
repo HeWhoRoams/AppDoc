@@ -1,0 +1,12 @@
+{
+  "supportLevel": "full",
+  "coveragePercent": 90,
+  "detectionSignals": [
+    "*.csproj",
+    "[ApiController]",
+    "MapControllers"
+  ],
+  "versionRange": "2.1+",
+  "framework": "ASP.NET Core",
+  "language": "C#"
+}

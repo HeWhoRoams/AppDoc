@@ -21,18 +21,64 @@ if (Test-Path $helpersPath) {
 }
 
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
-if (Test-Path $scopeModule) {
-    Import-Module $scopeModule -Force -ErrorAction Stop
+if (-not (Test-Path $scopeModule)) {
+    Write-Error "Required module not found: $scopeModule"
+    exit 1
 }
+Import-Module $scopeModule -Force -ErrorAction Stop
 
 $contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
-if (Test-Path $contractsModule) {
-    Import-Module $contractsModule -Force -ErrorAction Stop
+if (-not (Test-Path $contractsModule)) {
+    Write-Error "Required module not found: $contractsModule"
+    exit 1
 }
+Import-Module $contractsModule -Force -ErrorAction Stop
 
 $evidenceModule = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
-if (Test-Path $evidenceModule) {
-    Import-Module $evidenceModule -Force -ErrorAction Stop
+if (-not (Test-Path $evidenceModule)) {
+    Write-Error "Required module not found: $evidenceModule"
+    exit 1
+}
+Import-Module $evidenceModule -Force -ErrorAction Stop
+
+$apiExtractorModule = Join-Path $PSScriptRoot "modules\AppDoc.ApiInventory.Extractor.psm1"
+if (-not (Test-Path $apiExtractorModule)) {
+    Write-Error "Required module not found: $apiExtractorModule"
+    exit 1
+}
+Import-Module $apiExtractorModule -Force -ErrorAction Stop
+
+$apiRendererModule = Join-Path $PSScriptRoot "modules\AppDoc.ApiInventory.Renderer.psm1"
+if (-not (Test-Path $apiRendererModule)) {
+    Write-Error "Required module not found: $apiRendererModule"
+    exit 1
+}
+Import-Module $apiRendererModule -Force -ErrorAction Stop -WarningAction SilentlyContinue
+
+if (-not (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue)) {
+    function Get-AppDocSourceFiles {
+        param(
+            [Parameter(Mandatory=$true)]
+            [string]$RootPath,
+            [Parameter(Mandatory=$true)]
+            [string[]]$Include
+        )
+
+        Get-ChildItem -Path $RootPath -Recurse -Include $Include -File -ErrorAction SilentlyContinue
+    }
+}
+
+if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) {
+    function Get-AppDocRelativePath {
+        param(
+            [Parameter(Mandatory=$true)]
+            [string]$RootPath,
+            [Parameter(Mandatory=$true)]
+            [string]$Path
+        )
+
+        return $Path.Replace($RootPath, "").TrimStart([char[]]@(92, 47))
+    }
 }
 
 Write-Host "📡 Generating API Inventory..." -ForegroundColor Cyan
@@ -308,24 +354,25 @@ function Get-SemanticEndpointFamily {
 
 # Scan for API files (Express.js, ASP.NET, Flask, FastAPI, Django, Spring, etc.)
 try {
-    $astCSharp = Invoke-AstParserScript -ScriptName "parse-csharp-ast.ps1" -RootPath $RootPath
-    $astTs = Invoke-AstParserScript -ScriptName "parse-typescript-ast.ps1" -RootPath $RootPath
+    $astCSharp = Invoke-AppDocApiAstParserScript -ScriptsRoot $PSScriptRoot -ScriptName "parse-csharp-ast.ps1" -RootPath $RootPath
+    $astTs = Invoke-AppDocApiAstParserScript -ScriptsRoot $PSScriptRoot -ScriptName "parse-typescript-ast.ps1" -RootPath $RootPath
 
     $astEndpointCount = 0
-    $astEndpointCount += Add-AstEndpointsToInventory -AstPayload $astCSharp -Inventory $inventory
-    $astEndpointCount += Add-AstEndpointsToInventory -AstPayload $astTs -Inventory $inventory
+    $astEndpointCount += Add-AppDocAstEndpointsToInventory -AstPayload $astCSharp -Inventory $inventory
+    $astEndpointCount += Add-AppDocAstEndpointsToInventory -AstPayload $astTs -Inventory $inventory
     if ($astEndpointCount -gt 0) {
         Write-Host "  Added $astEndpointCount AST endpoint records" -ForegroundColor Gray
     }
 
-    $apiFiles = Get-AppDocSourceFiles -RootPath $RootPath -Include @("*.js","*.ts","*.cs","*.py","*.java")
+    $apiFiles = Get-ChildItem -Path $RootPath -Recurse -File -Include @("*.js","*.ts","*.cs","*.py","*.java") -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -notmatch '(\\bin\\|\\obj\\|\\node_modules\\|\\docs\\|\\tests\\powershell\\fixtures\\)' }
 
     Write-Host "  Found $($apiFiles.Count) potential API files" -ForegroundColor Gray
 
     foreach ($file in $apiFiles) {
         $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
         if (-not $content) { continue }
-        $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
+        $relativePath = $file.FullName.Replace($RootPath, "").TrimStart([char[]]@(92, 47))
         
         # Detect Express.js/Router routes with parameter extraction
         # Pattern: handler.METHOD('/path', (req, res) => { ... })
@@ -823,7 +870,8 @@ try {
     Write-Progress -Activity "Generating API Inventory" -Status "Scanning for external API calls..." -PercentComplete 35
     
     $externalApis = @()
-    $serviceFiles = Get-AppDocSourceFiles -RootPath $RootPath -Include @("*.cs","*.ts","*.js") |
+    $serviceFiles = Get-ChildItem -Path $RootPath -Recurse -File -Include @("*.cs","*.ts","*.js") -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -notmatch '(\\bin\\|\\obj\\|\\node_modules\\|\\docs\\|\\tests\\powershell\\fixtures\\)' } |
         Where-Object { $_.Name -match "Service|Client|Api|Provider" }
     
     foreach ($file in $serviceFiles) {
@@ -973,14 +1021,14 @@ $normalizedEndpoints = @()
 foreach ($endpoint in $inventory.endpoints) {
     $method = if ($endpoint.method) { ([string]$endpoint.method).ToUpperInvariant() } else { "ANY" }
     $controller = if ($endpoint.controller) { [string]$endpoint.controller } else { "Other" }
-    $path = Get-NormalizedEndpointPath -Path ([string]$endpoint.path) -Controller $controller -Method $method
+    $path = Get-AppDocNormalizedEndpointPath -Path ([string]$endpoint.path) -Controller $controller -Method $method
 
     if (-not $path -or $path -eq "/") {
         continue
     }
 
-    $description = Get-EndpointDescription -Description ([string]$endpoint.description) -Method $method -Path $path
-    $statusCodes = Get-EndpointStatusHint -Method $method
+    $description = Get-AppDocEndpointDescription -Description ([string]$endpoint.description) -Method $method -Path $path
+    $statusCodes = Get-AppDocEndpointStatusHint -Method $method
 
     $normalizedEndpoints += @{
         method = $method
@@ -996,7 +1044,7 @@ foreach ($endpoint in $inventory.endpoints) {
         controller = $controller
         schema = if ($endpoint.schema) { [string]$endpoint.schema } else { "N/A" }
         statusCodes = $statusCodes
-        domain = Get-EndpointDomain -Path $path -Controller $controller
+        domain = Get-AppDocEndpointDomain -Path $path -Controller $controller
     }
 }
 
@@ -1040,7 +1088,7 @@ _No API endpoints detected. This codebase may not expose HTTP APIs, or uses patt
 $endpointContent = if ($inventory.endpoints.Count -gt 0) {
     $routeFamilyRows = @($inventory.endpoints | ForEach-Object {
         [pscustomobject]@{
-            family = Get-EndpointFamilyPath -Path ([string]$_.path)
+            family = Get-AppDocEndpointFamilyPath -Path ([string]$_.path)
             method = [string]$_.method
             domain = [string]$_.domain
         }
@@ -1051,7 +1099,7 @@ $endpointContent = if ($inventory.endpoints.Count -gt 0) {
     $routeFamilyTableRows = @($routeFamilySummary | Select-Object -First 40 | ForEach-Object {
         $methods = @($_.Group | Select-Object -ExpandProperty method -Unique | Sort-Object)
         $domain = ($_.Group | Group-Object -Property domain | Sort-Object Count -Descending | Select-Object -First 1).Name
-        $family = Sanitize-MarkdownCell -Value $_.Name -MaxLength 120
+        $family = Sanitize-AppDocMarkdownCell -Value $_.Name -MaxLength 120
         "| ``$family`` | $($_.Count) | $($methods -join ', ') | $domain |"
     })
 
@@ -1065,7 +1113,7 @@ $endpointContent = if ($inventory.endpoints.Count -gt 0) {
 
     $semanticFamilyRows = @($inventory.endpoints | ForEach-Object {
         [pscustomobject]@{
-            semanticFamily = Get-SemanticEndpointFamily -Path ([string]$_.path)
+            semanticFamily = Get-AppDocSemanticEndpointFamily -Path ([string]$_.path)
             path = [string]$_.path
             method = [string]$_.method
             domain = [string]$_.domain
@@ -1080,8 +1128,8 @@ $endpointContent = if ($inventory.endpoints.Count -gt 0) {
         $domains = @($groupRows | Group-Object -Property domain | Sort-Object Count -Descending)
         $primaryDomain = if ($domains.Count -gt 0) { [string]$domains[0].Name } else { "general" }
         $uniquePathValues = @($groupRows | Select-Object -ExpandProperty path -Unique)
-        $examples = @($uniquePathValues | Select-Object -First 3 | ForEach-Object { Sanitize-MarkdownCell -Value $_ -MaxLength 80 })
-        $semanticFamily = Sanitize-MarkdownCell -Value $_.Name -MaxLength 80
+        $examples = @($uniquePathValues | Select-Object -First 3 | ForEach-Object { Sanitize-AppDocMarkdownCell -Value $_ -MaxLength 80 })
+        $semanticFamily = Sanitize-AppDocMarkdownCell -Value $_.Name -MaxLength 80
         "| ``$semanticFamily`` | $($groupRows.Count) | $($uniquePathValues.Count) | $($methods -join ', ') | $primaryDomain | $($examples -join '; ') |"
     })
 
@@ -1091,13 +1139,13 @@ $endpointContent = if ($inventory.endpoints.Count -gt 0) {
     foreach ($group in $groups) {
         $groupName = if ([string]::IsNullOrWhiteSpace([string]$group.Name)) { "general" } else { [string]$group.Name }
         $rows = @($group.Group | ForEach-Object {
-            $name = Sanitize-MarkdownCell -Value ("{0}.{1}" -f $_.controller, $_.method) -MaxLength 100
-            $path = Sanitize-MarkdownCell -Value $_.path -MaxLength 140
-            $desc = Sanitize-MarkdownCell -Value $_.description -MaxLength 180
-            $params = if ($_.parameters -and $_.parameters -ne "None") { Sanitize-MarkdownCell -Value $_.parameters -MaxLength 160 } else { "None" }
-            $returnType = Sanitize-MarkdownCell -Value $_.returnType -MaxLength 80
-            $statusCodes = Sanitize-MarkdownCell -Value $_.statusCodes -MaxLength 80
-            $auth = Sanitize-MarkdownCell -Value $_.auth -MaxLength 80
+            $name = Sanitize-AppDocMarkdownCell -Value ("{0}.{1}" -f $_.controller, $_.method) -MaxLength 100
+            $path = Sanitize-AppDocMarkdownCell -Value $_.path -MaxLength 140
+            $desc = Sanitize-AppDocMarkdownCell -Value $_.description -MaxLength 180
+            $params = if ($_.parameters -and $_.parameters -ne "None") { Sanitize-AppDocMarkdownCell -Value $_.parameters -MaxLength 160 } else { "None" }
+            $returnType = Sanitize-AppDocMarkdownCell -Value $_.returnType -MaxLength 80
+            $statusCodes = Sanitize-AppDocMarkdownCell -Value $_.statusCodes -MaxLength 80
+            $auth = Sanitize-AppDocMarkdownCell -Value $_.auth -MaxLength 80
             "| ``$name`` | ``$path`` | $($_.method) | $desc | ``$params`` | ``$returnType`` | $statusCodes | $auth |"
         })
 

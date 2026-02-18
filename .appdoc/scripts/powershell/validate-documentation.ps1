@@ -10,6 +10,7 @@ param(
 $diagnosticsModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagnostics.psm1"
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
 $contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
+$validationCoreModule = Join-Path $PSScriptRoot "modules\AppDoc.Validation.Core.psm1"
 
 # Required modules - fail fast if any are missing
 if (-not (Test-Path $diagnosticsModule)) {
@@ -30,6 +31,12 @@ if (-not (Test-Path $contractsModule)) {
 }
 Import-Module $contractsModule -Force -ErrorAction Stop
 
+if (-not (Test-Path $validationCoreModule)) {
+    Write-Error "Required module not found: $validationCoreModule"
+    exit 1
+}
+Import-Module $validationCoreModule -Force -ErrorAction Stop
+
 $docsPath = Join-Path $RootPath "docs"
 if (-not (Test-Path $docsPath)) {
     Write-Error "docs directory not found: $docsPath"
@@ -40,18 +47,7 @@ if (Get-Command Initialize-AppDocDiagnostics -ErrorAction SilentlyContinue) {
     Initialize-AppDocDiagnostics -RootPath $RootPath -OutputPath $docsPath -Reset
 }
 
-$artifactFiles = @(
-    "start-here.md",
-    "overview.md",
-    "api-inventory.md",
-    "data-model.md",
-    "config-catalog.md",
-    "build-cookbook.md",
-    "test-catalog.md",
-    "task-guides.md",
-    "debt-register.md",
-    "dependencies-catalog.md"
-)
+$artifactFiles = @(Get-AppDocValidationArtifacts)
 
 $missing = @()
 foreach ($artifact in $artifactFiles) {
@@ -62,18 +58,7 @@ foreach ($artifact in $artifactFiles) {
     }
 }
 
-$expectedEvidenceArtifacts = @(
-    "start-here",
-    "overview",
-    "api-inventory",
-    "data-model",
-    "config-catalog",
-    "build-cookbook",
-    "test-catalog",
-    "task-guides",
-    "debt-register",
-    "dependencies-catalog"
-)
+$expectedEvidenceArtifacts = @(Get-AppDocValidationEvidenceArtifacts)
 
 $evidenceRoot = Join-Path $docsPath "evidence"
 $manifestPath = Join-Path $evidenceRoot "manifest.json"
@@ -119,19 +104,7 @@ foreach ($artifact in $expectedEvidenceArtifacts) {
     }
 }
 
-$validatorScripts = @(
-    @{ script = "validate-start-here.ps1"; artifact = "start-here.md" },
-    @{ script = "validate-overview.ps1"; artifact = "overview.md" },
-    @{ script = "validate-api-inventory.ps1"; artifact = "api-inventory.md" },
-    @{ script = "validate-data-model.ps1"; artifact = "data-model.md" },
-    @{ script = "validate-config-catalog.ps1"; artifact = "config-catalog.md" },
-    @{ script = "validate-build-cookbook.ps1"; artifact = "build-cookbook.md" },
-    @{ script = "validate-test-catalog.ps1"; artifact = "test-catalog.md" },
-    @{ script = "validate-task-guides.ps1"; artifact = "task-guides.md" },
-    @{ script = "validate-debt-register.ps1"; artifact = "debt-register.md" },
-    # dependencies-catalog is validated via generic contract validation rather than a dedicated script
-    @{ script = "validate-dependencies-catalog.ps1"; artifact = "dependencies-catalog.md" }
-)
+$validatorScripts = @(Get-AppDocValidatorScripts)
 
 $artifactMap = @{
     "start-here" = "start-here.md"
