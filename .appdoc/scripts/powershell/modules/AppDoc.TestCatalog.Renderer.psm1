@@ -84,12 +84,15 @@ function Update-AppDocTestCatalogContent {
     $hasTestSuitesHeader = $updated -match '##\s+Test Suites'
     $hasTestCasesHeader = $updated -match '##\s+Test Cases'
 
+    $testSuitesInserted = $false
+    $testCasesInserted = $false
     if (-not $hasTestSuitesHeader) {
         if (Get-Command Update-TemplateSection -ErrorAction SilentlyContinue) {
             $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.testSuitesPlaceholder -NewContent $sections.testSuitesContent
         } else {
             $updated = $updated.Replace($sections.testSuitesPlaceholder, $sections.testSuitesContent)
         }
+        $testSuitesInserted = $true
     }
     if (-not $hasTestCasesHeader) {
         if (Get-Command Update-TemplateSection -ErrorAction SilentlyContinue) {
@@ -97,37 +100,42 @@ function Update-AppDocTestCatalogContent {
         } else {
             $updated = $updated.Replace($sections.testCasesPlaceholder, $sections.testCasesContent)
         }
+        $testCasesInserted = $true
     }
 
 
     $testSuitesPattern = '(?s)(##\s+Test Suites\s*\r?\n\r?\n).*?(?=\r?\n##\s+Test Coverage Metrics\b)'
-    if ([regex]::IsMatch($updated, $testSuitesPattern)) {
-        $updated = [regex]::Replace(
-            $updated,
-            $testSuitesPattern,
-            [System.Text.RegularExpressions.MatchEvaluator]{
-                param($m)
-                return ($m.Groups[1].Value + $sections.testSuitesContent + "`r`n")
-            }
-        )
-    } else {
-        Write-Verbose "Test Suites header or lookahead not found; appending test suites content to end."
-        $updated += "`r`n`r`n" + $sections.testSuitesContent + "`r`n"
+    if ($hasTestSuitesHeader -and -not $testSuitesInserted) {
+        if ([regex]::IsMatch($updated, $testSuitesPattern)) {
+            $updated = [regex]::Replace(
+                $updated,
+                $testSuitesPattern,
+                [System.Text.RegularExpressions.MatchEvaluator]{
+                    param($m)
+                    return ($m.Groups[1].Value + $sections.testSuitesContent + "`r`n")
+                }
+            )
+        } else {
+            Write-Verbose "Test Suites header or lookahead not found; appending test suites content to end."
+            $updated += "`r`n`r`n" + $sections.testSuitesContent + "`r`n"
+        }
     }
 
     $testCasesPattern = '(?s)(##\s+Test Cases\s*\r?\n\r?\n).*?(?=\r?\n##\s+Test Maintenance\b)'
-    if ([regex]::IsMatch($updated, $testCasesPattern)) {
-        $updated = [regex]::Replace(
-            $updated,
-            $testCasesPattern,
-            [System.Text.RegularExpressions.MatchEvaluator]{
-                param($m)
-                return ($m.Groups[1].Value + $sections.testCasesContent + "`r`n")
-            }
-        )
-    } else {
-        Write-Verbose "Test Cases header or lookahead not found; appending test cases content to end."
-        $updated += "`r`n`r`n" + $sections.testCasesContent + "`r`n"
+    if ($hasTestCasesHeader -and -not $testCasesInserted) {
+        if ([regex]::IsMatch($updated, $testCasesPattern)) {
+            $updated = [regex]::Replace(
+                $updated,
+                $testCasesPattern,
+                [System.Text.RegularExpressions.MatchEvaluator]{
+                    param($m)
+                    return ($m.Groups[1].Value + $sections.testCasesContent + "`r`n")
+                }
+            )
+        } else {
+            Write-Verbose "Test Cases header or lookahead not found; appending test cases content to end."
+            $updated += "`r`n`r`n" + $sections.testCasesContent + "`r`n"
+        }
     }
 
     return $updated

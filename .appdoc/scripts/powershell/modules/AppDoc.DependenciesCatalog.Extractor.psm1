@@ -27,15 +27,17 @@ function Get-AppDocDependenciesRelativePath {
         return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
     }
 
-    # Normalize and remove any trailing path separator from $RootPath
-    $rootNorm = $RootPath.TrimEnd('\', '/')
-    $pathNorm = $Path
+    # Normalize path separators to '\' and trim trailing separators
+    $rootNorm = $RootPath -replace '/', '\'
+    $rootNorm = $rootNorm.TrimEnd('\')
+    $pathToCheck = $Path -replace '/', '\'
+    $pathToCheck = $pathToCheck.TrimEnd('\')
     # Perform a case-insensitive prefix check
-    if ($pathNorm.StartsWith($rootNorm, [System.StringComparison]::OrdinalIgnoreCase)) {
-        $relative = $pathNorm.Substring($rootNorm.Length)
-        return $relative.TrimStart('\', '/')
+    if ($pathToCheck.StartsWith($rootNorm, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $relative = $pathToCheck.Substring($rootNorm.Length)
+        return $relative.TrimStart('\')
     }
-    return $Path
+    return $pathToCheck
 }
 
 function Get-AppDocDependenciesCatalogData {

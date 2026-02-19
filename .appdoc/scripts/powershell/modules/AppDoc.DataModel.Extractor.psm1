@@ -395,10 +395,14 @@ function Get-AppDocDataModelData {
                             $typeHint = $prop.Groups[3].Value
                         }
                         if (-not $typeHint) {
-                            # Fallback: scan for property declaration in class source
-                            $declMatch = [regex]::Match($content, "public\\s+virtual\\s+([\\w<>\[\]?]+)\\s+${propName}\\s*{[^{]*get;[^{]*set;[^{]*}")
-                            if ($declMatch.Success) {
-                                $typeHint = $declMatch.Groups[1].Value
+                            # Fallback: scan for property declaration in entity class source
+                            $entityClassFile = Get-AppDocDataModelSourceFiles -RootPath $RootPath -Include @("$entityName.cs") | Select-Object -First 1
+                            $classContent = if ($entityClassFile) { Get-Content $entityClassFile.FullName -Raw -ErrorAction SilentlyContinue } else { $null }
+                            if ($classContent) {
+                                $declMatch = [regex]::Match($classContent, "public\\s+virtual\\s+([\\w<>\[\]?]+)\\s+${propName}\\s*{[^{]*get;[^{]*set;[^{]*}")
+                                if ($declMatch.Success) {
+                                    $typeHint = $declMatch.Groups[1].Value
+                                }
                             }
                         }
                         if (-not $typeHint) {

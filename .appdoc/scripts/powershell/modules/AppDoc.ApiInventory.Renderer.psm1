@@ -248,7 +248,14 @@ _No API endpoints detected. This codebase may not expose HTTP APIs, or uses patt
 
     $tableHeader = "| Name | Path | Method | Description | Parameters | Return Type | Status Codes | Auth Required |`n|------|------|--------|-------------|------------|------------|--------------|---------------|"
     $tableRows = @($detailedEndpoints | ForEach-Object {
-        $name = Sanitize-AppDocMarkdownCell -Value ("{0}.{1}" -f $_.controller, $_.method) -MaxLength 100
+        $actionId = if ($_.PSObject.Properties["actionName"] -and $_.actionName) {
+            $_.actionName
+        } elseif ($_.PSObject.Properties["methodName"] -and $_.methodName) {
+            $_.methodName
+        } else {
+            $_.method
+        }
+        $name = Sanitize-AppDocMarkdownCell -Value ("{0}.{1}" -f $_.controller, $actionId) -MaxLength 100
         $path = Sanitize-AppDocMarkdownCell -Value $_.path -MaxLength 140
         $desc = Sanitize-AppDocMarkdownCell -Value $_.description -MaxLength 180
         if ($desc -match '^(GET|POST|PUT|PATCH|DELETE|ANY)\s+/.+\s+endpoint$' -or $desc -eq 'AST extracted endpoint') {

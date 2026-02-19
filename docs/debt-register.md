@@ -20,9 +20,7 @@ _No debt categories established. Common categories: Code Quality, Architecture, 
 
 | Item | Location | Category | Impact | Priority | Effort | Description |
 |------|----------|----------|--------|----------|--------|-------------|
-
-No deterministic evidence found in this section for the current scan.
-## Impact Assessment
+| - | - | - | - | - | - | No deterministic evidence found in this section for the current scan. |## Impact Assessment
 
 Assess the overall impact of technical debt on development velocity and system stability.
 

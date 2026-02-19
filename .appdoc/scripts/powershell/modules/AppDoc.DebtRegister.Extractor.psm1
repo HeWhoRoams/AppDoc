@@ -105,7 +105,7 @@ function Add-AppDocCSharpDebtSignals {
 
     $obsolete = [regex]::Matches($Content, '\[Obsolete(?:\("([^"]+)"\))?\]')
     foreach ($match in $obsolete) {
-        $lineNum = ($Content.Substring(0, $match.Index) -split "`n").Count
+        $lineNum = ($Content.Substring(0, $match.Index) -split "`r?`n").Count
         $message = if ($match.Groups[1].Success) { $match.Groups[1].Value } else { "No migration path specified" }
         $results += @{
             type = "Obsolete Code"
@@ -141,10 +141,10 @@ function Add-AppDocCSharpDebtSignals {
 
         if ($classEnd -le $start) { continue }
         $classContent = $Content.Substring($start, $classEnd - $start)
-        $classLines = ($classContent -split "`n").Count
+        $classLines = ($classContent -split "`r?`n").Count
         if ($classLines -le 500) { continue }
 
-        $lineNum = ($Content.Substring(0, $start) -split "`n").Count
+        $lineNum = ($Content.Substring(0, $start) -split "`r?`n").Count
         $className = $classMatch.Groups[1].Value
         $results += @{
             type = "Large Class"
@@ -207,8 +207,8 @@ function Add-AppDocLongFunctionDebtSignals {
 
             if ($ext -eq ".py") {
                 # Python: use indentation-based end detection
-                $lines = $Content -split "`n"
-                $startLine = ($Content.Substring(0, $start) -split "`n").Count
+                $lines = $Content -split "`r?`n"
+                $startLine = ($Content.Substring(0, $start) -split "`r?`n").Count
                 $defLine = $lines[$startLine - 1]
                 $defIndent = ($defLine -match "^(\s*)" | Out-Null; $Matches[1].Length)
                 $funcEndLine = $startLine
@@ -251,9 +251,9 @@ function Add-AppDocLongFunctionDebtSignals {
                 }
                 if ($funcEnd -le $start) { continue }
                 $funcContent = $Content.Substring($start, $funcEnd - $start)
-                $funcLines = ($funcContent -split "`n").Count
+                $funcLines = ($funcContent -split "`r?`n").Count
                 if ($funcLines -le 50) { continue }
-                $lineNum = ($Content.Substring(0, $start) -split "`n").Count
+                $lineNum = ($Content.Substring(0, $start) -split "`r?`n").Count
                 $results += @{
                     type = "Long Function"
                     description = "Function '$funcName' has $funcLines lines (>50 line threshold)"

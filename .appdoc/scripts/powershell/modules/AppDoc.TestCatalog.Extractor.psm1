@@ -28,15 +28,12 @@ function Get-AppDocTestCatalogRelativePath {
 
     # Normalize trailing slashes
     $rootNorm = $RootPath.TrimEnd('\', '/')
-    $pathNorm = $Path
+    $pathNorm = $Path.TrimEnd('\', '/')
     if ($pathNorm.StartsWith($rootNorm, [System.StringComparison]::OrdinalIgnoreCase)) {
         $relative = $pathNorm.Substring($rootNorm.Length)
         return $relative.TrimStart('\', '/')
     }
-    # Fallback: case-insensitive replace using regex
-    $pattern = "^" + [regex]::Escape($rootNorm)
-    $relative = [regex]::Replace($pathNorm, $pattern, '', 'IgnoreCase')
-    return $relative.TrimStart('\', '/')
+    return $pathNorm
 }
 
 function Get-AppDocTestCatalogData {

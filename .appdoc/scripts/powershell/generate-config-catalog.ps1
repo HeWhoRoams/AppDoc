@@ -15,7 +15,7 @@ if (Test-Path $helpersPath) {
     . $helpersPath
 }
 
-function Load-RequiredModule {
+function Import-RequiredModule {
     param(
         [Parameter(Mandatory=$true)]
         [string]$RelativePath
@@ -30,11 +30,11 @@ function Load-RequiredModule {
     Import-Module $modulePath -Force -ErrorAction Stop
 }
 
-Load-RequiredModule -RelativePath "modules\AppDoc.Scope.psm1"
-Load-RequiredModule -RelativePath "modules\AppDoc.Contracts.psm1"
-Load-RequiredModule -RelativePath "modules\AppDoc.Evidence.psm1"
-Load-RequiredModule -RelativePath "modules\AppDoc.ConfigCatalog.Extractor.psm1"
-Load-RequiredModule -RelativePath "modules\AppDoc.ConfigCatalog.Renderer.psm1"
+Import-RequiredModule -RelativePath "modules\AppDoc.Scope.psm1"
+Import-RequiredModule -RelativePath "modules\AppDoc.Contracts.psm1"
+Import-RequiredModule -RelativePath "modules\AppDoc.Evidence.psm1"
+Import-RequiredModule -RelativePath "modules\AppDoc.ConfigCatalog.Extractor.psm1"
+Import-RequiredModule -RelativePath "modules\AppDoc.ConfigCatalog.Renderer.psm1"
 
 Write-Host "⚙️  Generating Config Catalog..." -ForegroundColor Cyan
 
@@ -61,9 +61,6 @@ try {
 
 if ($null -eq $configData -or -not ($configData.PSObject.Properties.Name -contains 'configs')) {
     Write-Error "[ConfigCatalog] Failed to extract config catalog data. Extraction returned null or missing required properties."
-    $configs = @()
-    $discoveredConfigFiles = @()
-    $envVars = @()
     exit 1
 } else {
     $configs = @($configData.configs)

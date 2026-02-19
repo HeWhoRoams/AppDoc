@@ -6,10 +6,7 @@
     "includeFixtures": false,
     "includeTests": false,
     "excludePatterns": [
-      "(?:^|\\\\)\\.git(?:\\\\|$)",
-      "(?:^|\\\\)node_modules(?:\\\\|$)",
-      "(?:^|\\\\)bower_components(?:\\\\|$)",
-      "(?:^|[\\/])\.git(?:[\\/]|$)",
+      "(?:^|[\\/])\\.git(?:[\\/]|$)",
       "(?:^|[\\/])node_modules(?:[\\/]|$)",
       "(?:^|[\\/])bower_components(?:[\\/]|$)",
       "(?:^|[\\/])bin(?:[\\/]|$)",
@@ -18,8 +15,8 @@
       "(?:^|[\\/])build(?:[\\/]|$)",
       "(?:^|[\\/])dist(?:[\\/]|$)",
       "(?:^|[\\/])__pycache__(?:[\\/]|$)",
-      "(?:^|[\\/])\.venv(?:[\\/]|$)",
-      "(?:^|[\\/])\.tox(?:[\\/]|$)",
+      "(?:^|[\\/])\\.venv(?:[\\/]|$)",
+      "(?:^|[\\/])\\.tox(?:[\\/]|$)",
       "(?:^|[\\/])docuwriter(?:[\\/]|$)",
       "(?:^|[\\/])generated-doc(?:[\\/]|$)",
       "(?:^|[\\/])(?:test|tests|spec|specs)(?:[\\/]|$)",
@@ -28,20 +25,23 @@
       "(?:^|[\\/])__mocks__(?:[\\/]|$)",
       "(?:^|[\\/])(?:fixture|fixtures)(?:[\\/]|$)",
       "(?:^|[\\/])(?:mock|mocks)(?:[\\/]|$)",
-      "(?:^|[\\/])(?:sample|samples|example|examples)(?:[\\/]|$)"
-    "default": {},
-    "overview": {},
-    "start-here": {},
-    "api-inventory": {},
-    "data-model": {},
-    "config-catalog": {},
-    "test-catalog": {
-      "includeTests": true,
-      "includeFixtures": false
-    },
-    "build-cookbook": {},
-    "dependencies-catalog": {},
-    "debt-register": {},
-    "dependency-graph": {}
+      "(?:^|[\/])(?:sample|samples|example|examples)(?:[\/]|$)"
+    ],
+    "artifactProfiles": {
+      "default": {},
+      "overview": {},
+      "start-here": {},
+      "api-inventory": {},
+      "data-model": {},
+      "config-catalog": {},
+      "test-catalog": {
+        "includeTests": true,
+        "includeFixtures": false
+      },
+      "build-cookbook": {},
+      "dependencies-catalog": {},
+      "debt-register": {},
+      "dependency-graph": {}
+    }
   }
 }

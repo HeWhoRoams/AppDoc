@@ -190,33 +190,13 @@ function Get-AppDocDerivedEnvironmentVariables {
     )
 
     $derived = @()
-    $pairs = [System.Collections.Generic.List[object]]::new()
-    if ($null -eq $Data) {
-        $pairs.Add(@{ Key = $Prefix; Value = $null })
-        return $pairs.ToArray()
-    }
-
-    if ($Data -is [System.Collections.IDictionary]) {
-        foreach ($key in $Data.Keys) {
-            $childPrefix = if ($Prefix) { "$Prefix.$key" } else { $key }
-            $childPairs = ConvertTo-AppDocFlattenedPairs -Data $Data[$key] -Prefix $childPrefix
-            $pairs.AddRange($childPairs)
+    foreach ($config in $Configs) {
+        $pairs = ConvertTo-AppDocFlattenedPairs -Data $config -Prefix $null
+        foreach ($pair in $pairs) {
+            if ($derived.Count -ge $MaxCount) { return $derived }
+            $derived += $pair
         }
     }
-    elseif ($Data -is [System.Collections.IEnumerable] -and -not ($Data -is [string])) {
-        $index = 0
-        foreach ($item in $Data) {
-            $childPrefix = if ($Prefix) { "$Prefix[$index]" } else { "[$index]" }
-            $childPairs = ConvertTo-AppDocFlattenedPairs -Data $item -Prefix $childPrefix
-            $pairs.AddRange($childPairs)
-            $index++
-        }
-    }
-    else {
-        $pairs.Add(@{ Key = $Prefix; Value = $Data })
-    }
-    return $pairs.ToArray()
-
     return $derived
 }
 

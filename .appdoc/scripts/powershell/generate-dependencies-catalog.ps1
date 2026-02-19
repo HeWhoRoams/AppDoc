@@ -81,11 +81,11 @@ if ($null -eq $contract) {
 
 $evidenceRecords = @(
     $dependencies | ForEach-Object {
-        $src = if ($_.source -ne $null) { $_.source } else { $null }
-        $name = if ($_.name -ne $null) { $_.name } else { $null }
-        $ver = if ($_.version -ne $null) { $_.version } else { $null }
-        $typ = if ($_.type -ne $null) { $_.type } else { $null }
-        $proj = if ($_.project -ne $null) { $_.project } else { $null }
+        $src = $_.source
+        $name = $_.name
+        $ver = $_.version
+        $typ = $_.type
+        $proj = $_.project
         if ($src -eq $null -or $name -eq $null) {
             Write-Warning "[DependenciesCatalog] Skipping dependency record with missing source or name: $($_ | ConvertTo-Json -Compress)"
             return

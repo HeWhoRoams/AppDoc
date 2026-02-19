@@ -3,5 +3,4 @@
   "provider": "typescript-compiler-bridge",
   "providerReady": true,
   "records": [],
-  "note": "TypeScript Compiler API integration pending. Current output uses fallback parser contract."
-}
+  "note": "TypeScript Compiler Bridge active."}

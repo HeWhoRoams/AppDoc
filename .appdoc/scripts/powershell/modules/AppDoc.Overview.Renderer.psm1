@@ -43,14 +43,14 @@ function Get-AppDocOverviewMarkdown {
     $techStackContent = if ($techStackRows.Count -gt 0) {
         "| Category | Technology | Version | Purpose |$nl|----------|-----------|---------|---------|$nl" + ($techStackRows -join $nl)
     } else {
-        "| Category | Technology | Version | Purpose |$nl|----------|-----------|---------|---------|$nl$nl_Technology stack not yet identified. Analyze package files and code._"
+        "| Category | Technology | Version | Purpose |${nl}|----------|-----------|---------|---------|${nl}${nl}_Technology stack not yet identified. Analyze package files and code._"
     }
 
     return [ordered]@{
         systemPurposeContent = $systemPurposeContent
         techStackContent = $techStackContent
         systemPurposePlaceholder = "_System purpose not yet documented. Analyze README and code structure to determine._"
-        techStackPlaceholder = "| Category | Technology | Version | Purpose |$nl|----------|-----------|---------|---------|$nl$nl_Technology stack not yet identified. Analyze package files and code._"
+        techStackPlaceholder = "| Category | Technology | Version | Purpose |${nl}|----------|-----------|---------|---------|${nl}${nl}_Technology stack not yet identified. Analyze package files and code._"
     }
 }
 
@@ -87,7 +87,9 @@ function Update-AppDocOverviewContent {
     }
 
     # Only run regex-based section replacement if placeholders were not found/applied
+
     if (-not $placeholdersFound) {
+        $nl = [Environment]::NewLine
         # System Purpose section replacement or append (regex fallback)
         $sysPurposeHeaderPattern = '##\s+System Purpose\s*\r?\n\r?\n'
         $sysPurposeReplacePattern = '(?s)(##\s+System Purpose\s*\r?\n\r?\n).*?(?=(\r?\n##\s+Architecture\b|$))'
@@ -97,12 +99,13 @@ function Update-AppDocOverviewContent {
                 $sysPurposeReplacePattern,
                 [System.Text.RegularExpressions.MatchEvaluator]{
                     param($m)
-                    return ($m.Groups[1].Value + $sections.systemPurposeContent + "`r`n")
+                    $nl = [Environment]::NewLine
+                    return ($m.Groups[1].Value + $sections.systemPurposeContent + $nl)
                 }
             )
         } else {
             Write-Warning "System Purpose section header not found. Appending section to end of document."
-            $updated += "`r`n## System Purpose`r`n`r`n" + $sections.systemPurposeContent + "`r`n"
+            $updated += $nl + "## System Purpose" + $nl + $nl + $sections.systemPurposeContent + $nl
         }
 
         # Technology Stack section replacement or append (regex fallback)
@@ -114,12 +117,13 @@ function Update-AppDocOverviewContent {
                 $techStackReplacePattern,
                 [System.Text.RegularExpressions.MatchEvaluator]{
                     param($m)
-                    return ($m.Groups[1].Value + $sections.techStackContent + "`r`n")
+                    $nl = [Environment]::NewLine
+                    return ($m.Groups[1].Value + $sections.techStackContent + $nl)
                 }
             )
         } else {
             Write-Warning "Technology Stack section header not found. Appending section to end of document."
-            $updated += "`r`n## Technology Stack`r`n`r`n" + $sections.techStackContent + "`r`n"
+            $updated += $nl + "## Technology Stack" + $nl + $nl + $sections.techStackContent + $nl
         }
     }
 

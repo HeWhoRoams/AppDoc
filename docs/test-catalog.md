@@ -16,18 +16,14 @@ No deterministic evidence found in this section for the current scan.
 
 | Suite Name | Type | Purpose | Coverage Target | Key Scenarios | Execution Time |
 |------------|------|--------|----------------|--------------|----------------|
-
-No deterministic evidence found in this section for the current scan.
-## Test Coverage Metrics
+No deterministic evidence found in this section for the current scan.## Test Coverage Metrics
 No deterministic evidence found in this section for the current scan.
 ## Test Cases
 | Case Name | Suite | Input | Expected Output | Description | Priority |
 |-----------|-------|------|----------------|-------------|----------|
-
-No deterministic evidence found in this section for the current scan.No deterministic evidence found in this section for the current scan.
-## Test Maintenance
-No deterministic evidence found in this section for the current scan.
-## Example Test Runs
+| Case Name | Suite | Input | Expected Output | Description | Priority |
+|-----------|-------|------|----------------|-------------|----------|
+No deterministic evidence found in this section for the current scan.## Example Test Runs
 No deterministic evidence found in this section for the current scan.
 
 ## Evidence Traceability

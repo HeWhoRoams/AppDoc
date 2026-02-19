@@ -70,9 +70,15 @@ if (Get-Command Get-AppDocArtifactContract -ErrorAction SilentlyContinue) {
 }
 
 
+
 # Defensive logging for missing sources
 $logPrefix = "[TaskGuidesEvidence]"
-if ((($taskData.endpointRows ?? @()).Count -eq 0) -and (($taskData.buildCommandRows ?? @()).Count -eq 0) -and (($taskData.dependencyRows ?? @()).Count -eq 0) -and (($taskData.debtRows ?? @()).Count -eq 0) -and (($taskData.testRows ?? @()).Count -eq 0)) {
+$endpointCount = ($taskData.endpointRows ?? @()).Count
+$buildCommandCount = ($taskData.buildCommandRows ?? @()).Count
+$dependencyCount = ($taskData.dependencyRows ?? @()).Count
+$debtCount = ($taskData.debtRows ?? @()).Count
+$testCount = ($taskData.testRows ?? @()).Count
+if ($endpointCount -eq 0 -and $buildCommandCount -eq 0 -and $dependencyCount -eq 0 -and $debtCount -eq 0 -and $testCount -eq 0) {
     Write-Warning "$logPrefix No task guide evidence sources found. All summary counts will be zero."
 }
 
@@ -120,4 +126,4 @@ if ($evidencePath) {
 }
 
 Write-Host "✅ Task guides generated: $outputPath" -ForegroundColor Green
-Write-Host "   Guides generated: $($metaList.Count)" -ForegroundColor Gray
+Write-Host "   Evidence categories: $($metaList.Count)" -ForegroundColor Gray

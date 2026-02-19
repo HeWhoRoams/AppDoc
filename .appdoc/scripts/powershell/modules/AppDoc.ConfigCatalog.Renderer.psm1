@@ -124,6 +124,7 @@ _No environment variables detected. System may use configuration files or defaul
         # Try to find a comment for this key
         $lookup = $key
         if ($parent) { $lookup = "$parent.$key" }
+        $lookup = ($lookup -replace '\s+', '').ToLowerInvariant()
         if ($settingsComments.ContainsKey($lookup)) { return $settingsComments[$lookup] }
         # Fallbacks for known patterns
         if ($key -match 'autoApprove') {
@@ -155,9 +156,12 @@ _No environment variables detected. System may use configuration files or defaul
         $lines = Get-Content $settingsPath -Raw | Select-String -Pattern "^\s*//" -AllMatches | ForEach-Object { $_.Line }
         $currentKey = $null
         foreach ($line in $lines) {
-            if ($line -match '^\s*//\s*(.+)$') {
-                $comment = $Matches[1].Trim()
-                if ($currentKey) { $settingsComments[$currentKey] = $comment }
+            # Example: // key: comment
+            if ($line -match '^\s*//\s*([^:]+):\s*(.+)$') {
+                $rawKey = $Matches[1]
+                $comment = $Matches[2].Trim()
+                $normKey = ($rawKey -replace '\s+', '').ToLowerInvariant()
+                $settingsComments[$normKey] = $comment
             }
         }
     }

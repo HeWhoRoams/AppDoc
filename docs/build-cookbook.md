@@ -1,5 +1,4 @@
-# Build Cookbook
-
+# Build Cookbook- **GitHub Actions**: `.github/workflows/appdoc-ci.yml` - Workflow: appdoc-ci
 **Generated**: 2026-02-18 13:44:48
 
 ## Executive Summary
@@ -18,9 +17,6 @@ No deterministic evidence found in this section for the current scan.
 
 No deterministic evidence found in this section for the current scan.
 ## Dependencies
-
-## Dependencies
-
 List all build dependencies and tools required.
 
 No deterministic evidence found in this section for the current scan.
@@ -34,8 +30,9 @@ No deterministic evidence found in this section for the current scan.
 ## Example Build Scripts
 No deterministic evidence found in this section for the current scan.
 
-## Evidence Traceability
+- **GitHub Actions**: `.github/workflows/appdoc-ci.yml` - Workflow: appdoc-ci
 
+No deterministic evidence found in this section for the current scan.
 | Field | Value |
 |------|-------|
 | Evidence Artifact | evidence/build-cookbook.evidence.json |

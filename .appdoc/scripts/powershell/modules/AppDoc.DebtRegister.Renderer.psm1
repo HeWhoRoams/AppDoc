@@ -73,7 +73,9 @@ function Update-AppDocDebtRegisterContent {
         )
     } else {
         Write-Warning "Debt Items section not found or pattern did not match. Appending debt items content to end of document."
-        $updated += "`r`n`r`n" + $sections.debtItemsContent + "`r`n"
+        # Detect newline style from existing content or fallback to Environment.NewLine
+        $newline = if ($updated -match "\r\n") { "`r`n" } elseif ($updated -match "\n") { "`n" } else { [Environment]::NewLine }
+        $updated += $newline + $newline + $sections.debtItemsContent + $newline
     }
 
     return $updated

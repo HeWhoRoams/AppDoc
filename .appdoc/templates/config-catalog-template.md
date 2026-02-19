@@ -69,9 +69,9 @@ Document why specific keys are marked as required and where operations teams sho
 
 ### Consequences if missing
 
-- **Automation disabled/degraded (runtime dependency for startup hooks):** commands pause for manual approval or skip blocked behaviors, so unattended startup runs break.
-- **Startup/validation failures (operational outcome):** blocked report generation/synthesis may cause downstream validation stages to fail or emit incomplete artifacts.
-- **Runtime errors/interruptions (execution path dependent):** if required startup-hook commands can’t execute, the orchestration path may terminate early or produce partial outputs.
+- **Automation disabled/degraded — runtime dependency for startup hooks.** Commands will pause for manual approval or skip blocked behaviors, causing unattended startup runs to fail.
+- **Startup/validation failures — operational outcome.** Blocked report generation or synthesis may cause downstream validation stages to fail or emit incomplete artifacts.
+- **Runtime errors/interruptions — execution path dependent.** If required startup-hook commands can’t execute, the orchestration path may terminate early or produce partial outputs.
 
 ### Validation classification
 

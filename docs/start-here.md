@@ -23,8 +23,7 @@
 | New Engineer | [System Overview](overview.md) | [Build Cookbook](build-cookbook.md) → [Test Catalog](test-catalog.md) | Make a safe first change |
 | Backend Developer | [API Inventory](api-inventory.md) | [Data Model](data-model.md) → [Configuration Catalog](config-catalog.md) | Implement or modify behavior |
 | Architect | [System Overview](overview.md) | [C4 Diagrams](diagrams/c4-context.md) → [Debt Register](debt-register.md) | Assess structure and modernization priorities |
-| Operations / Support | [Build Cookbook](build-cookbook.md) | [Configuration Catalog](config-catalog.md) → [Dependencies Catalog](dependencies-catalog.md) | Run, diagnose, and secure the system || Operations / Support | [Build Cookbook](build-cookbook.md) | [Config Catalog](config-catalog.md) → [Dependencies Catalog](dependencies-catalog.md) | Run, diagnose, and secure the system |
-
+| Operations / Support | [Build Cookbook](build-cookbook.md) | [Configuration Catalog](config-catalog.md) → [Dependencies Catalog](dependencies-catalog.md) | Run, diagnose, and secure the system |
 ## System Signals
 
 > **Placeholder:** No source files, languages, or API endpoints detected yet. This section will be updated as the project evolves.
@@ -43,9 +42,9 @@
 - [Build Cookbook](build-cookbook.md) *(Coming Soon)*
 - [Test Catalog](test-catalog.md) *(Coming Soon)*
 - [Build Cookbook](build-cookbook.md)
-- [Test Catalog](test-catalog.md)
-- [Task Guides](task-guides.md)
-- [Technical Debt Register](debt-register.md)
+- [Build Cookbook](build-cookbook.md) *(Coming Soon)*
+- [Test Catalog](test-catalog.md) *(Coming Soon)*
+- [Task Guides](task-guides.md)- [Technical Debt Register](debt-register.md)
 - [Dependencies Catalog](dependencies-catalog.md)
 - [Documentation Index](index.md)
 - [Evidence Manifest](evidence/manifest.json)

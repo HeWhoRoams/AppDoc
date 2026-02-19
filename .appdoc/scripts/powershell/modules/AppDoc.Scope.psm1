@@ -1,3 +1,16 @@
+# Cross-version Windows OS detection
+if ($null -eq $script:IsWindowsOS) {
+    $script:IsWindowsOS = $false
+    if ($PSVersionTable -and $PSVersionTable.PSEdition -eq 'Desktop') {
+        $script:IsWindowsOS = $true
+    } elseif ($PSVersionTable -and $PSVersionTable.Platform -eq 'Win32NT') {
+        $script:IsWindowsOS = $true
+    } elseif ($env:OS -match 'Windows_NT') {
+        $script:IsWindowsOS = $true
+    } elseif ($IsWindows) {
+        $script:IsWindowsOS = $IsWindows
+    }
+}
 # AppDoc.Scope Module
 # Purpose: Centralized source scoping and exclusion policy for deterministic extraction.
 
@@ -112,7 +125,7 @@ function Get-AppDocScopePolicy {
                 $resolvedPath = $RootPath
             }
         }
-        if ($IsWindows) {
+        if ($script:IsWindowsOS) {
             $cacheKey = $resolvedPath.ToLowerInvariant()
         } else {
             $cacheKey = $resolvedPath

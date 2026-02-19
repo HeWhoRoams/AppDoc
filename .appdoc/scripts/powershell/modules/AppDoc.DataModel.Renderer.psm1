@@ -133,21 +133,16 @@ function Update-AppDocDataModelContent {
 
     $placeholder = $script:DataModelPlaceholder
 
-    $updated = $Content
     if (Get-Command Update-TemplateSection -ErrorAction SilentlyContinue) {
         # Use Update-TemplateSection if available and skip regex fallback
-        return Update-TemplateSection -Content $updated -PlaceholderText $placeholder -NewContent $ModelContent
+        return Update-TemplateSection -Content $Content -PlaceholderText $placeholder -NewContent $ModelContent
     } else {
-        # Fallback: regex-based section replacement
-        $pattern = '(?s)(##\s+Data Models\s*\r?\n\r?\n)(.*?)(?=(\r?\n##\s+|$))'
-        return [regex]::Replace(
-            $updated,
-            $pattern,
-            [System.Text.RegularExpressions.MatchEvaluator]{
-                param($m)
-                return ($m.Groups[1].Value + $ModelContent + "`r`n")
-            }
-        )
+        # Fallback: simple placeholder replacement
+        if ($Content -and $placeholder -and $Content.Contains($placeholder)) {
+            return $Content.Replace($placeholder, $ModelContent)
+        } else {
+            return $Content
+        }
     }
 }
 

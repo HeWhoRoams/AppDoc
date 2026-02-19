@@ -148,9 +148,9 @@ function Update-AppDocTaskGuidesContent {
     if ($before -eq $updated) { Write-Verbose "[TaskGuides.Renderer] Pattern not matched: Operational Checklist" }
 
     if ($updated -notmatch '(?im)^##\s+Evidence Traceability\b') {
-        $updated = [regex]::Replace(
+        $regex = [regex]::new('(?s)\r?\n---\s*\r?\n')
+        $updated = $regex.Replace(
             $updated,
-            '(?s)\r?\n---\s*\r?\n',
             "`r`n## Evidence Traceability`r`n`r`n$($sections.evidenceTraceability)`r`n`r`n---`r`n",
             1
         )

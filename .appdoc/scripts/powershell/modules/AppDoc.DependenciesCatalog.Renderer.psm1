@@ -143,13 +143,14 @@ function Update-AppDocDependenciesCatalogContent {
         )
         foreach ($pat in $patterns) {
             if ([regex]::IsMatch($updated, $pat.Header)) {
+                $content = $pat.Content
                 $updated = [regex]::Replace(
                     $updated,
                     $pat.Pattern,
                     [System.Text.RegularExpressions.MatchEvaluator]{
                         param($m)
                         # $m.Groups[1] = section header, $m.Groups[3] = original trailing newline
-                        return ($m.Groups[1].Value + $pat.Content + $m.Groups[3].Value)
+                        return ($m.Groups[1].Value + $content + $m.Groups[3].Value)
                     }
                 )
             } else {

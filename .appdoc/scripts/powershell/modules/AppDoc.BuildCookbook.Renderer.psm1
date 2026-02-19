@@ -1,3 +1,16 @@
+function Escape-Markdown {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Text
+    )
+    # Escape backticks (for code), and Markdown special chars: *, _, `, ~, |
+    $escaped = $Text -replace '`', '&#96;'
+    $escaped = $escaped -replace '\*', '\*'
+    $escaped = $escaped -replace '_', '\_'
+    $escaped = $escaped -replace '~', '\~'
+    $escaped = $escaped -replace '\|', '&#124;'
+    return $escaped
+}
 function Get-AppDocBuildStepsMarkdown {
     [CmdletBinding()]
     param(
@@ -71,7 +84,9 @@ function Update-AppDocBuildCookbookContent {
     if ($CicdInfo -and $CicdInfo.Count -gt 0) {
         $cicdContent = "**Detected CI/CD Platforms:**`r`n`r`n"
         foreach ($ci in $CicdInfo) {
-            $cicdContent += "- **$([string]$ci.platform)**: ``$([string]$ci.path)`` - $([string]$ci.details)`r`n"
+            $pathEscaped = Escape-Markdown -Text ([string]$ci.path)
+            $detailsEscaped = Escape-Markdown -Text ([string]$ci.details)
+            $cicdContent += "- **$([string]$ci.platform)**: ``$pathEscaped`` - $detailsEscaped`r`n"
         }
     }
     $updated = [regex]::Replace(

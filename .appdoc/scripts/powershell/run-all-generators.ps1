@@ -679,7 +679,8 @@ if (Test-Path $structuredValidationPath) {
         if ($structuredValidationText) {
             # Use last standalone '{' line to skip any preceding non-JSON output
             $jsonStarts = [regex]::Matches($structuredValidationText, '(?m)^\{\s*')
-            $jsonStartIndex = if ($jsonStarts.Count -gt 0) { $jsonStarts[$jsonStarts.Count - 1].Index } else { $structuredValidationText.IndexOf('{') }
+            # Fallback: use last opening brace if no regex match (to match intended 'last brace' behavior)
+            $jsonStartIndex = if ($jsonStarts.Count -gt 0) { $jsonStarts[$jsonStarts.Count - 1].Index } else { $structuredValidationText.LastIndexOf('{') }
             $lastBrace = $structuredValidationText.LastIndexOf('}')
             if ($jsonStartIndex -ge 0 -and $lastBrace -gt $jsonStartIndex) {
                 $structuredValidationJson = $structuredValidationText.Substring($jsonStartIndex, ($lastBrace - $jsonStartIndex + 1))

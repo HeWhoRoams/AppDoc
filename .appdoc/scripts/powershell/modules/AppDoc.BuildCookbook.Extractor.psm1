@@ -113,7 +113,7 @@ function Get-AppDocBuildCookbookData {
 
     $ghActionsPath = Join-Path $RootPath ".github\workflows"
     if (Test-Path $ghActionsPath) {
-        $workflowFiles = @(Get-ChildItem -Path $ghActionsPath -Include "*.yml","*.yaml" -ErrorAction SilentlyContinue)
+        $workflowFiles = @(Get-ChildItem -Path (Join-Path $ghActionsPath '*') -Include "*.yml","*.yaml" -File -ErrorAction SilentlyContinue)
         foreach ($wf in $workflowFiles) {
             $cicdInfo += @{
                 platform = "GitHub Actions"

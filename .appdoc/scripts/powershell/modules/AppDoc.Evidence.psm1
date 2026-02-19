@@ -166,9 +166,7 @@ function Update-AppDocEvidenceManifest {
 
     if (Get-Command Get-AppDocDeterministicHash -ErrorAction SilentlyContinue) {
         $excludeKeys = @("generatedAt", "updatedAt", "timestamp")
-        # Remove excludeKeys from manifest before hashing
-        $manifestForHash = $manifest.PSObject.Copy()
-        foreach ($key in $excludeKeys) { $null = $manifestForHash.PSObject.Properties.Remove($key) }
+        $manifestForHash = $manifest.Clone()
         $deterministicHash = Get-AppDocDeterministicHash -InputObject $manifestForHash -ExcludeKeys $excludeKeys
         $manifest['determinism'] = [ordered]@{
             hashAlgorithm = "SHA256"
