@@ -39,15 +39,13 @@
 - [API Inventory](api-inventory.md) *(Coming Soon)*
 - [Data Model](data-model.md)
 - [Configuration Catalog](config-catalog.md)
-- [Build Cookbook](build-cookbook.md) *(Coming Soon)*
-- [Test Catalog](test-catalog.md) *(Coming Soon)*
-- [Build Cookbook](build-cookbook.md)
-- [Build Cookbook](build-cookbook.md) *(Coming Soon)*
-- [Test Catalog](test-catalog.md) *(Coming Soon)*
-- [Task Guides](task-guides.md)- [Technical Debt Register](debt-register.md)
-- [Dependencies Catalog](dependencies-catalog.md)
-- [Documentation Index](index.md)
-- [Evidence Manifest](evidence/manifest.json)
+	- [Build Cookbook](build-cookbook.md) *(Coming Soon)*
+	- [Test Catalog](test-catalog.md) *(Coming Soon)*
+	- [Task Guides](task-guides.md)
+	- [Technical Debt Register](debt-register.md)
+	- [Dependencies Catalog](dependencies-catalog.md)
+	- [Documentation Index](index.md)
+	- [Evidence Manifest](evidence/manifest.json)
 
 ## Evidence Traceability
 

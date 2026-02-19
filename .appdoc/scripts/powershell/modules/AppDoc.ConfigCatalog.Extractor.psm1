@@ -191,10 +191,10 @@ function Get-AppDocDerivedEnvironmentVariables {
 
     $derived = @()
     foreach ($config in $Configs) {
-        $pairs = ConvertTo-AppDocFlattenedPairs -Data $config -Prefix $null
-        foreach ($pair in $pairs) {
-            if ($derived.Count -ge $MaxCount) { return $derived }
-            $derived += $pair
+        if ($derived.Count -ge $MaxCount) { return $derived }
+        if ($null -ne $config.key) {
+            $envVar = Convert-AppDocConfigKeyToEnvVarName $config.key
+            $derived += $envVar
         }
     }
     return $derived

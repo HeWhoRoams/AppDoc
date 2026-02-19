@@ -25,7 +25,7 @@
       "(?:^|[\\/])__mocks__(?:[\\/]|$)",
       "(?:^|[\\/])(?:fixture|fixtures)(?:[\\/]|$)",
       "(?:^|[\\/])(?:mock|mocks)(?:[\\/]|$)",
-      "(?:^|[\/])(?:sample|samples|example|examples)(?:[\/]|$)"
+      "(?:^|[\\/])(?:sample|samples|example|examples)(?:[\\/]|$)"
     ],
     "artifactProfiles": {
       "default": {},

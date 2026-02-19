@@ -33,9 +33,12 @@ function Get-AppDocDependenciesRelativePath {
     $pathToCheck = $Path -replace '/', '\'
     $pathToCheck = $pathToCheck.TrimEnd('\')
     # Perform a case-insensitive prefix check
-    if ($pathToCheck.StartsWith($rootNorm, [System.StringComparison]::OrdinalIgnoreCase)) {
-        $relative = $pathToCheck.Substring($rootNorm.Length)
-        return $relative.TrimStart('\')
+    if ($pathToCheck -eq $rootNorm) {
+        return ''
+    }
+    $rootWithSep = $rootNorm + '\'
+    if ($pathToCheck.StartsWith($rootWithSep, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $pathToCheck.Substring($rootWithSep.Length)
     }
     return $pathToCheck
 }

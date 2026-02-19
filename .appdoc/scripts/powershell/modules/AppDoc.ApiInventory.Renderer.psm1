@@ -160,6 +160,22 @@ function Get-AppDocSemanticEndpointFamily {
     return "/$root/$second"
 }
 
+function Get-AppDocEndpointActionId {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [PSObject]$Endpoint
+    )
+
+    if ($Endpoint.PSObject.Properties["actionName"] -and $Endpoint.actionName) {
+        return $Endpoint.actionName
+    }
+    if ($Endpoint.PSObject.Properties["methodName"] -and $Endpoint.methodName) {
+        return $Endpoint.methodName
+    }
+    return $Endpoint.method
+}
+
 function Get-AppDocApiInventoryMarkdown {
     [CmdletBinding()]
     param(
@@ -206,13 +222,7 @@ _No API endpoints detected. This codebase may not expose HTTP APIs, or uses patt
             Sort-Object @{Expression = { $_.domain }}, @{Expression = { $_.path }}, @{Expression = { $_.method }} |
             Select-Object -First 30 |
             ForEach-Object {
-                $actionId = if ($_.PSObject.Properties["actionName"] -and $_.actionName) {
-                    $_.actionName
-                } elseif ($_.PSObject.Properties["methodName"] -and $_.methodName) {
-                    $_.methodName
-                } else {
-                    $_.method
-                }
+                $actionId = Get-AppDocEndpointActionId -Endpoint $_
                 $name = Sanitize-AppDocMarkdownCell -Value ("{0}.{1}" -f $_.controller, $actionId) -MaxLength 100
                 $path = Sanitize-AppDocMarkdownCell -Value $_.path -MaxLength 120
                 $auth = Sanitize-AppDocMarkdownCell -Value $_.auth -MaxLength 80
@@ -248,13 +258,7 @@ _No API endpoints detected. This codebase may not expose HTTP APIs, or uses patt
 
     $tableHeader = "| Name | Path | Method | Description | Parameters | Return Type | Status Codes | Auth Required |`n|------|------|--------|-------------|------------|------------|--------------|---------------|"
     $tableRows = @($detailedEndpoints | ForEach-Object {
-        $actionId = if ($_.PSObject.Properties["actionName"] -and $_.actionName) {
-            $_.actionName
-        } elseif ($_.PSObject.Properties["methodName"] -and $_.methodName) {
-            $_.methodName
-        } else {
-            $_.method
-        }
+        $actionId = Get-AppDocEndpointActionId -Endpoint $_
         $name = Sanitize-AppDocMarkdownCell -Value ("{0}.{1}" -f $_.controller, $actionId) -MaxLength 100
         $path = Sanitize-AppDocMarkdownCell -Value $_.path -MaxLength 140
         $desc = Sanitize-AppDocMarkdownCell -Value $_.description -MaxLength 180

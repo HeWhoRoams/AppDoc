@@ -385,7 +385,10 @@ function Get-AppDocDataModelData {
                     $relativePath = Get-AppDocDataModelRelativePath -RootPath $RootPath -Path $file.FullName
                     $properties = @()
                     # Enhanced regex: capture property name and look for .CustomType<YourType>() or .CustomType(typeof(YourType)) after Map(...)
-                    $propMappings = [regex]::Matches($content, 'Map\(\w+\s*=>\s*\w+\.(\w+)\)(?:[^;]*?\.CustomType(?:<([\w\.]+)>|\(typeof\(([^\)]+)\)\)))?')
+                    $propMappings = [regex]::Matches($content, 'Map\(\w+\s*=>\s*\w+\.(\w+)\)(?:[^;]*?\.CustomType(?:<([\w\.]+)>|\(typeof\(([^")]+)\)\)))?')
+                    # Hoist entity class file and content lookup
+                    $entityClassFile = Get-AppDocDataModelSourceFiles -RootPath $RootPath -Include @("$entityName.cs") | Select-Object -First 1
+                    $classContent = if ($entityClassFile) { Get-Content $entityClassFile.FullName -Raw -ErrorAction SilentlyContinue } else { $null }
                     foreach ($prop in $propMappings) {
                         $propName = $prop.Groups[1].Value
                         $typeHint = $null
@@ -394,15 +397,11 @@ function Get-AppDocDataModelData {
                         } elseif ($prop.Groups[3].Success) {
                             $typeHint = $prop.Groups[3].Value
                         }
-                        if (-not $typeHint) {
-                            # Fallback: scan for property declaration in entity class source
-                            $entityClassFile = Get-AppDocDataModelSourceFiles -RootPath $RootPath -Include @("$entityName.cs") | Select-Object -First 1
-                            $classContent = if ($entityClassFile) { Get-Content $entityClassFile.FullName -Raw -ErrorAction SilentlyContinue } else { $null }
-                            if ($classContent) {
-                                $declMatch = [regex]::Match($classContent, "public\\s+virtual\\s+([\\w<>\[\]?]+)\\s+${propName}\\s*{[^{]*get;[^{]*set;[^{]*}")
-                                if ($declMatch.Success) {
-                                    $typeHint = $declMatch.Groups[1].Value
-                                }
+                        if (-not $typeHint -and $classContent) {
+                            # Fallback: scan for property declaration in entity class source (virtual optional)
+                            $declMatch = [regex]::Match($classContent, "public\\s+(?:virtual\\s+)?([\\w<>\[\]?]+)\\s+${propName}\\s*{[^{]*get;[^{]*set;[^{]*}")
+                            if ($declMatch.Success) {
+                                $typeHint = $declMatch.Groups[1].Value
                             }
                         }
                         if (-not $typeHint) {

@@ -8,7 +8,7 @@ if ($null -eq $script:IsWindowsOS) {
     } elseif ($env:OS -match 'Windows_NT') {
         $script:IsWindowsOS = $true
     } elseif ($IsWindows) {
-        $script:IsWindowsOS = $IsWindows
+        $script:IsWindowsOS = $true
     }
 }
 # AppDoc.Scope Module

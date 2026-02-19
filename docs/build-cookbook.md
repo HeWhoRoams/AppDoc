@@ -1,5 +1,6 @@
-# Build Cookbook- **GitHub Actions**: `.github/workflows/appdoc-ci.yml` - Workflow: appdoc-ci
-**Generated**: 2026-02-18 13:44:48
+# Build Cookbook
+
+**GitHub Actions**: `.github/workflows/appdoc-ci.yml` - Workflow: appdoc-ci**Generated**: 2026-02-18 13:44:48
 
 ## Executive Summary
 

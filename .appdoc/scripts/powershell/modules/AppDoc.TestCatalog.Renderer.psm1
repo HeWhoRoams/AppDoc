@@ -112,12 +112,17 @@ function Update-AppDocTestCatalogContent {
                 $testSuitesPattern,
                 [System.Text.RegularExpressions.MatchEvaluator]{
                     param($m)
-                    return ($m.Groups[1].Value + $sections.testSuitesContent + "`r`n")
+                    $source = $m.Value
+                    $lineEnding = ($source -match "\r\n") ? "`r`n" : "`n"
+                    return ($m.Groups[1].Value + $sections.testSuitesContent + $lineEnding)
                 }
             )
         } else {
-            Write-Verbose "Test Suites header or lookahead not found; appending test suites content to end."
-            $updated += "`r`n`r`n" + $sections.testSuitesContent + "`r`n"
+            Write-Verbose "Test Coverage Metrics section not found after Test Suites header; content not updated to avoid duplication."
+        }
+            } else {
+                Write-Verbose "Test Suites content or '## Test Maintenance' section already present; skipping fallback append."
+            }
         }
     }
 
@@ -133,8 +138,12 @@ function Update-AppDocTestCatalogContent {
                 }
             )
         } else {
-            Write-Verbose "Test Cases header or lookahead not found; appending test cases content to end."
-            $updated += "`r`n`r`n" + $sections.testCasesContent + "`r`n"
+            if ((-not ($updated -match '##\s+Test Maintenance')) -and (-not [string]::IsNullOrEmpty($sections.testCasesContent)) -and (-not ($updated -match [regex]::Escape($sections.testCasesContent)))) {
+                Write-Verbose "Test Cases header or lookahead not found; appending test cases content before '## Test Maintenance' section."
+                $updated += "`r`n`r`n" + $sections.testCasesContent + "`r`n"
+            } else {
+                Write-Verbose "Test Cases content or '## Test Maintenance' section already present; skipping fallback append."
+            }
         }
     }
 

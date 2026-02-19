@@ -1,3 +1,12 @@
+function Get-DetectedNewline {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Text
+    )
+    if ($Text -match "\r\n") { return "`r`n" }
+    if ($Text -match "\n") { return "`n" }
+    return [Environment]::NewLine
+}
 function Get-AppDocDebtRegisterMarkdown {
     [CmdletBinding()]
     param(
@@ -67,14 +76,14 @@ function Update-AppDocDebtRegisterContent {
                 param($m)
                 # Detect newline style from matched text or fallback to Environment.NewLine
                 $matchText = $m.Value
-                $newline = if ($matchText -match "\r\n") { "`r`n" } elseif ($matchText -match "\n") { "`n" } else { [Environment]::NewLine }
+                $newline = Get-DetectedNewline -Text $matchText
                 return ($m.Groups[1].Value + $sections.debtItemsContent + $newline)
             }
         )
     } else {
         Write-Warning "Debt Items section not found or pattern did not match. Appending debt items content to end of document."
         # Detect newline style from existing content or fallback to Environment.NewLine
-        $newline = if ($updated -match "\r\n") { "`r`n" } elseif ($updated -match "\n") { "`n" } else { [Environment]::NewLine }
+        $newline = Get-DetectedNewline -Text $updated
         $updated += $newline + $newline + $sections.debtItemsContent + $newline
     }
 

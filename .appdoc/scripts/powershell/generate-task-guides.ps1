@@ -73,11 +73,7 @@ if (Get-Command Get-AppDocArtifactContract -ErrorAction SilentlyContinue) {
 
 # Defensive logging for missing sources
 $logPrefix = "[TaskGuidesEvidence]"
-$endpointCount = ($taskData.endpointRows ?? @()).Count
-$buildCommandCount = ($taskData.buildCommandRows ?? @()).Count
-$dependencyCount = ($taskData.dependencyRows ?? @()).Count
-$debtCount = ($taskData.debtRows ?? @()).Count
-$testCount = ($taskData.testRows ?? @()).Count
+
 if ($endpointCount -eq 0 -and $buildCommandCount -eq 0 -and $dependencyCount -eq 0 -and $debtCount -eq 0 -and $testCount -eq 0) {
     Write-Warning "$logPrefix No task guide evidence sources found. All summary counts will be zero."
 }

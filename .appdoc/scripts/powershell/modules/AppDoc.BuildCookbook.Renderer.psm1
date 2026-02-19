@@ -33,8 +33,8 @@ _No build steps detected. Check for package.json scripts, Makefile, or build con
     $index = 1
     foreach ($command in $Commands) {
         $desc = if ($command.command -and $command.command -ne "No description") { [string]$command.command } else { "{0} command" -f [string]$command.type }
-        $invocationEscaped = ([string]$command.invocation) -replace '\|', '&#124;'
-        $descEscaped = $desc -replace '\|', '&#124;'
+        $invocationEscaped = Escape-Markdown -Text ([string]$command.invocation)
+        $descEscaped = Escape-Markdown -Text $desc
         $rows += "| $index | ``$invocationEscaped`` | $descEscaped | N/A |"
         $index++
     }
@@ -66,47 +66,75 @@ function Update-AppDocBuildCookbookContent {
     $updated = $Content
     $buildStepsContent = Get-AppDocBuildStepsMarkdown -Commands $Commands
 
-    $prereqContent = if ($Prerequisites -and $Prerequisites.Count -gt 0) {
-        ($Prerequisites | ForEach-Object { "- $_" }) -join "`r`n"
+    # Prerequisites section
+    $prereqContent = $null
+    if ($Prerequisites -and $Prerequisites.Count -gt 0) {
+        $prereqContent = ($Prerequisites | ForEach-Object { "- $_" }) -join "`r`n"
     } else {
-        "No deterministic evidence found in this section for the current scan."
+        $prereqContent = "_Add any required tools, packages, or environment setup steps here. Remove this section if not needed._"
     }
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Prerequisites\s*\r?\n\r?\n).*?(?=\r?\n##\s+Build Steps\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $prereqContent + "`r`n")
-        }
-    )
+    if ($prereqContent -and $prereqContent -notmatch 'No deterministic evidence found') {
+        $updated = [regex]::Replace(
+            $updated,
+            '(?s)(##\s+Prerequisites\s*\r?\n\r?\n).*?(?=\r?\n##\s+Build Steps\b)',
+            [System.Text.RegularExpressions.MatchEvaluator]{
+                param($m)
+                return ($m.Groups[1].Value + $prereqContent + "`r`n")
+            }
+        )
+    } else {
+        $updated = $updated -replace '(?s)##\s+Prerequisites\s*\r?\n\r?\n.*?(?=\r?\n##\s+Build Steps\b)', ''
+    }
 
-    $cicdContent = "No deterministic evidence found in this section for the current scan."
+    # CI/CD section
+    $cicdContent = $null
     if ($CicdInfo -and $CicdInfo.Count -gt 0) {
         $cicdContent = "**Detected CI/CD Platforms:**`r`n`r`n"
         foreach ($ci in $CicdInfo) {
             $pathEscaped = Escape-Markdown -Text ([string]$ci.path)
             $detailsEscaped = Escape-Markdown -Text ([string]$ci.details)
-            $cicdContent += "- **$([string]$ci.platform)**: ``$pathEscaped`` - $detailsEscaped`r`n"
+            $platformEscaped = Escape-Markdown -Text ([string]$ci.platform)
+            $cicdContent += "- **$platformEscaped**: ``$pathEscaped`` - $detailsEscaped`r`n"
         }
+    } else {
+        $cicdContent = "_Add CI/CD configuration details or workflow file references here. Remove this section if not needed._"
     }
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+CI/CD Integration\s*\r?\n\r?\n).*?(?=\r?\n##\s+Troubleshooting\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $cicdContent + "`r`n")
-        }
-    )
+    if ($cicdContent -and $cicdContent -notmatch 'No deterministic evidence found') {
+        $updated = [regex]::Replace(
+            $updated,
+            '(?s)(##\s+CI/CD Integration\s*\r?\n\r?\n).*?(?=\r?\n##\s+Troubleshooting\b)',
+            [System.Text.RegularExpressions.MatchEvaluator]{
+                param($m)
+                return ($m.Groups[1].Value + $cicdContent + "`r`n")
+            }
+        )
+    } else {
+        $updated = $updated -replace '(?s)##\s+CI/CD Integration\s*\r?\n\r?\n.*?(?=\r?\n##\s+Troubleshooting\b)', ''
+    }
 
-    $buildSectionPattern = '(?s)(##\s+Build Steps\s*\r?\n\r?\n).*?(?=\r?\n##\s+Dependencies\b)'
-    $updated = [regex]::Replace(
-        $updated,
-        $buildSectionPattern,
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $buildStepsContent + "`r`n")
-        }
-    )
+    # Build Steps section
+    $buildStepsContent = Get-AppDocBuildStepsMarkdown -Commands $Commands
+    if ($buildStepsContent -and $buildStepsContent -notmatch 'No build steps detected') {
+        $buildSectionPattern = '(?s)(##\s+Build Steps\s*\r?\n\r?\n).*?(?=\r?\n##\s+Dependencies\b)'
+        $updated = [regex]::Replace(
+            $updated,
+            $buildSectionPattern,
+            [System.Text.RegularExpressions.MatchEvaluator]{
+                param($m)
+                return ($m.Groups[1].Value + $buildStepsContent + "`r`n")
+            }
+        )
+    } else {
+        $manualBuildSteps = "_Add step-by-step build instructions or reference build scripts here. Remove this section if not needed._"
+        $updated = [regex]::Replace(
+            $updated,
+            '(?s)(##\s+Build Steps\s*\r?\n\r?\n).*?(?=\r?\n##\s+Dependencies\b)',
+            [System.Text.RegularExpressions.MatchEvaluator]{
+                param($m)
+                return ($m.Groups[1].Value + $manualBuildSteps + "`r`n")
+            }
+        )
+    }
 
     return $updated
 }

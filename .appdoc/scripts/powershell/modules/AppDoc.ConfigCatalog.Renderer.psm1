@@ -154,7 +154,6 @@ _No environment variables detected. System may use configuration files or defaul
     $settingsComments = @{}
     if (Test-Path $settingsPath) {
         $lines = Get-Content $settingsPath -Raw | Select-String -Pattern "^\s*//" -AllMatches | ForEach-Object { $_.Line }
-        $currentKey = $null
         foreach ($line in $lines) {
             # Example: // key: comment
             if ($line -match '^\s*//\s*([^:]+):\s*(.+)$') {

@@ -183,6 +183,7 @@ function Validate-ManifestDeterminism {
     $manifest = Get-Content $ManifestPath -Raw | ConvertFrom-Json
     if ($manifest.determinism -and $manifest.determinism.contentHash) {
         $excludeKeys = $manifest.determinism.excludeKeys
+        # Use PSObject.Copy() here because $manifest is a deserialized PSObject, not an ordered hashtable
         $manifestForHash = $manifest.PSObject.Copy()
         foreach ($key in $excludeKeys) { $null = $manifestForHash.PSObject.Properties.Remove($key) }
         $actualHash = Get-AppDocDeterministicHash -InputObject $manifestForHash -ExcludeKeys $excludeKeys

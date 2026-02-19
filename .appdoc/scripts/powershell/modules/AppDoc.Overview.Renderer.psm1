@@ -89,7 +89,9 @@ function Update-AppDocOverviewContent {
     # Only run regex-based section replacement if placeholders were not found/applied
 
     if (-not $placeholdersFound) {
-        $nl = [Environment]::NewLine
+        # Detect line ending style from $updated
+        $nl = ($updated -match "\r\n") ? "`r`n" : (( $updated -match "\n" ) ? "`n" : [Environment]::NewLine)
+
         # System Purpose section replacement or append (regex fallback)
         $sysPurposeHeaderPattern = '##\s+System Purpose\s*\r?\n\r?\n'
         $sysPurposeReplacePattern = '(?s)(##\s+System Purpose\s*\r?\n\r?\n).*?(?=(\r?\n##\s+Architecture\b|$))'
@@ -99,7 +101,7 @@ function Update-AppDocOverviewContent {
                 $sysPurposeReplacePattern,
                 [System.Text.RegularExpressions.MatchEvaluator]{
                     param($m)
-                    $nl = [Environment]::NewLine
+                    $nl = ($m.Input -match "\r\n") ? "`r`n" : (( $m.Input -match "\n" ) ? "`n" : [Environment]::NewLine)
                     return ($m.Groups[1].Value + $sections.systemPurposeContent + $nl)
                 }
             )
@@ -117,7 +119,7 @@ function Update-AppDocOverviewContent {
                 $techStackReplacePattern,
                 [System.Text.RegularExpressions.MatchEvaluator]{
                     param($m)
-                    $nl = [Environment]::NewLine
+                    $nl = ($m.Input -match "\r\n") ? "`r`n" : (( $m.Input -match "\n" ) ? "`n" : [Environment]::NewLine)
                     return ($m.Groups[1].Value + $sections.techStackContent + $nl)
                 }
             )
