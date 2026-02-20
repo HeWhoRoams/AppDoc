@@ -47,6 +47,11 @@ AppDoc now generates **Mermaid C4 diagrams** in Markdown format under `docs/diag
 
 - `docs/diagrams/c4-context.md`
 - `docs/diagrams/c4-container.md`
+- `docs/diagrams/internal-flow.md`
+- `docs/diagrams/data-flow.md`
+- `docs/diagrams/critical-sequences.md`
+- `docs/diagrams/data-lineage-core.md` (plus partition files when needed)
+- `docs/diagrams/index.md`
 
 Use `/appdoc.diagrams` to AI-enhance those Mermaid diagrams in place.
 
@@ -134,6 +139,11 @@ Open an issue with:
 - **[Documentation Index](docs/index.md)** - Landing page linking all generated artifacts
 - **[C4 Context Diagram](docs/diagrams/c4-context.md)** - Mermaid C4 system context
 - **[C4 Container Diagram](docs/diagrams/c4-container.md)** - Mermaid C4 container view
+- **[Internal Flow Diagram](docs/diagrams/internal-flow.md)** - Request-to-processing runtime flow
+- **[Data Flow Diagram](docs/diagrams/data-flow.md)** - Input/transform/output data movement
+- **[Critical Sequences](docs/diagrams/critical-sequences.md)** - High-signal end-to-end request journeys
+- **[Data Lineage Core](docs/diagrams/data-lineage-core.md)** - Partitioned lineage view for readability
+- **[Diagram Index](docs/diagrams/index.md)** - Guided architecture reading order
 - **[Quality Report](docs/quality-report.json)** - Generator quality scoring output
 - **[Validation Report](docs/validation-report.json)** - Deterministic validation metrics
 - **[Diagnostics Report](docs/diagnostics-report.json)** - Environment/runtime diagnostics

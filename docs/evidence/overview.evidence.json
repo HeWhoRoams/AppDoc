@@ -1,6 +1,6 @@
 {
   "artifact": "overview",
-  "generatedAt": "2026-02-20T12:10:01-05:00",
+  "generatedAt": "2026-02-20T14:53:11-05:00",
   "recordCount": 9,
   "records": [
     {
@@ -17,7 +17,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T12:10:01-05:00"
+      "timestamp": "2026-02-20T14:53:11-05:00"
     },
     {
       "artifact": "overview",
@@ -32,7 +32,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T12:10:01-05:00"
+      "timestamp": "2026-02-20T14:53:11-05:00"
     },
     {
       "artifact": "overview",
@@ -41,7 +41,6 @@
       "kind": "welcome-summary",
       "confidence": 1.0,
       "metadata": {
-        "text": "Evidence coverage includes 0 endpoint records, 0 model records, 60 configuration records, and 10 dependency records.",
         "section": "confidence_notes",
         "evidenceRefs": [
           "ev-0001",
@@ -49,12 +48,13 @@
           "ev-0003",
           "ev-0004"
         ],
-        "usedAI": false
+        "usedAI": false,
+        "text": "Evidence coverage includes 0 endpoint records, 0 model records, 60 configuration records, and 10 dependency records."
       },
       "provider": "deterministic",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T12:10:01-05:00"
+      "timestamp": "2026-02-20T14:53:11-05:00"
     },
     {
       "artifact": "overview",
@@ -63,17 +63,17 @@
       "kind": "welcome-summary",
       "confidence": 1.0,
       "metadata": {
-        "text": "Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.",
         "section": "confidence_notes",
         "evidenceRefs": [
-          "ev-0086"
+          "ev-0071"
         ],
-        "usedAI": false
+        "usedAI": false,
+        "text": "Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55."
       },
       "provider": "deterministic",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T12:10:01-05:00"
+      "timestamp": "2026-02-20T14:53:11-05:00"
     },
     {
       "artifact": "overview",
@@ -82,20 +82,20 @@
       "kind": "welcome-summary",
       "confidence": 1.0,
       "metadata": {
-        "text": "The runtime and build surface rely on key libraries including SampleApp.Common, EntityFramework, Microsoft.AspNetCore.Mvc, Microsoft.CodeAnalysis.CSharp, and Microsoft.Extensions.Hosting.WindowsServices.",
         "section": "external_systems",
         "evidenceRefs": [
-          "ev-0076",
-          "ev-0077",
-          "ev-0078",
-          "ev-0079"
+          "ev-0061",
+          "ev-0062",
+          "ev-0063",
+          "ev-0064"
         ],
-        "usedAI": false
+        "usedAI": false,
+        "text": "The runtime and build surface rely on key libraries including SampleApp.Common, EntityFramework, Microsoft.AspNetCore.Mvc, Microsoft.CodeAnalysis.CSharp, and Microsoft.Extensions.Hosting.WindowsServices."
       },
       "provider": "deterministic",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T12:10:01-05:00"
+      "timestamp": "2026-02-20T14:53:11-05:00"
     },
     {
       "artifact": "overview",
@@ -104,19 +104,19 @@
       "kind": "welcome-summary",
       "confidence": 1.0,
       "metadata": {
-        "text": "Runtime behavior is also influenced by environment and application configuration values loaded at startup.",
         "section": "inputs",
         "evidenceRefs": [
-          "ev-0016",
-          "ev-0017",
-          "ev-0018"
+          "ev-0001",
+          "ev-0002",
+          "ev-0003"
         ],
-        "usedAI": false
+        "usedAI": false,
+        "text": "Runtime behavior is also influenced by environment and application configuration values loaded at startup."
       },
       "provider": "deterministic",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T12:10:01-05:00"
+      "timestamp": "2026-02-20T14:53:11-05:00"
     },
     {
       "artifact": "overview",
@@ -125,17 +125,17 @@
       "kind": "welcome-summary",
       "confidence": 1.0,
       "metadata": {
-        "text": "Output contracts are not strongly represented in current deterministic evidence.",
         "section": "outputs",
         "evidenceRefs": [
-          "ev-0086"
+          "ev-0071"
         ],
-        "usedAI": false
+        "usedAI": false,
+        "text": "Output contracts are not strongly represented in current deterministic evidence."
       },
       "provider": "deterministic",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T12:10:01-05:00"
+      "timestamp": "2026-02-20T14:53:11-05:00"
     },
     {
       "artifact": "overview",
@@ -144,17 +144,17 @@
       "kind": "welcome-summary",
       "confidence": 1.0,
       "metadata": {
-        "text": "Processing flow could not be inferred beyond repository-level summaries in this scan.",
         "section": "processing_steps",
         "evidenceRefs": [
-          "ev-0086"
+          "ev-0071"
         ],
-        "usedAI": false
+        "usedAI": false,
+        "text": "Processing flow could not be inferred beyond repository-level summaries in this scan."
       },
       "provider": "deterministic",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T12:10:01-05:00"
+      "timestamp": "2026-02-20T14:53:11-05:00"
     },
     {
       "artifact": "overview",
@@ -163,31 +163,26 @@
       "kind": "welcome-summary",
       "confidence": 1.0,
       "metadata": {
-        "text": "The repository contains implementation code, but current deterministic evidence is not strong enough to confidently describe business behavior yet (files scanned: 8).",
         "section": "what_it_does",
         "evidenceRefs": [
-          "ev-0086"
+          "ev-0071"
         ],
-        "usedAI": false
+        "usedAI": false,
+        "text": "The repository contains implementation code, but current deterministic evidence is not strong enough to confidently describe business behavior yet (files scanned: 8)."
       },
       "provider": "deterministic",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T12:10:01-05:00"
+      "timestamp": "2026-02-20T14:53:11-05:00"
     }
   ],
   "metadata": {
-    "welcomeNarrativeIssues": [],
-    "welcomeNarrativeProvider": "deterministic",
-    "narrativeReviewRequired": true,
-    "welcomeNarrativeAIModeRequested": "Auto",
-    "narrativeArtifacts": {
-      "pass1": ".\\docs\\evidence\\narrative\\purpose_model.json",
-      "pass2": ".\\docs\\evidence\\narrative\\narrative_draft.md",
-      "pass3": ".\\docs\\evidence\\narrative\\review_notes.json",
-      "final": ".\\docs\\evidence\\narrative\\narrative_final.json",
-      "runReport": ".\\docs\\evidence\\narrative-run-report.json"
-    },
+    "welcomeNarrativeVerified": true,
+    "welcomeStyleGateIssues": [
+      "style-business-verb-coverage-low:1",
+      "style-what-it-does-purpose-verb-low:0"
+    ],
+    "welcomeNarrativeUsedAI": false,
     "welcomeStyleGateMetrics": {
       "textItemCount": 7,
       "inventoryLeadCount": 0,
@@ -197,6 +192,17 @@
       "whatItDoesPurposeVerbHits": 0,
       "numericDensity": 0.0612
     },
+    "welcomeStyleGatePassed": false,
+    "requiredEvidenceKeys": [
+      "summary",
+      "technologies"
+    ],
+    "welcomeNarrativeProvider": "deterministic",
+    "welcomeSectionCoverageIssues": [],
+    "welcomeNarrativeAIModeRequested": "Deterministic",
+    "welcomeSectionCoveragePassed": true,
+    "generator": "generate-overview.ps1",
+    "welcomeNarrativeAIModeResolved": "Deterministic",
     "requiredSections": [
       "Welcome",
       "Executive Summary",
@@ -204,42 +210,24 @@
       "Architecture",
       "Technology Stack"
     ],
-    "contextPackPath": ".\\docs\\evidence\\narrative-context-pack.json",
-    "welcomeNarrativePassSources": {
-      "pass1": "deterministic",
-      "pass2": "deterministic",
-      "pass3": "deterministic"
-    },
-    "welcomeSectionCoveragePassed": true,
-    "generator": "generate-overview.ps1",
-    "welcomeStyleGateIssues": [
-      "style-business-verb-coverage-low:1",
-      "style-what-it-does-purpose-verb-low:0"
-    ],
-    "welcomeNarrativeVerified": true,
-    "welcomeSectionCoverageIssues": [],
-    "welcomeNarrativeAIProvider": "deterministic",
-    "truthPackPath": ".\\docs\\evidence\\overview-truth-pack.json",
-    "requiredEvidenceKeys": [
-      "summary",
-      "technologies"
-    ],
-    "welcomeNarrativeAIModeResolved": "Deterministic",
+    "truthPackPath": "C:\\Github\\Appdoc\\docs\\evidence\\overview-truth-pack.json",
+    "contextPackPath": "C:\\Github\\Appdoc\\docs\\evidence\\narrative-context-pack.json",
+    "narrativeReviewRequired": true,
     "narrativeRunReport": {
       "pipelineVersion": "1.1.0",
-      "startedAt": "2026-02-20T12:10:01-05:00",
-      "endedAt": "2026-02-20T12:10:01-05:00",
-      "durationMs": 88.0,
-      "model": "gpt-4o-mini",
-      "aiModeRequested": "Auto",
+      "startedAt": "2026-02-20T14:53:11-05:00",
+      "endedAt": "2026-02-20T14:53:11-05:00",
+      "durationMs": 75.0,
+      "model": "local-deterministic",
+      "aiModeRequested": "Deterministic",
       "aiModeResolved": "Deterministic",
       "aiProvider": "deterministic",
-      "aiResolutionReason": "Auto mode defaults to local deterministic execution. Use explicit Agent or ApiKey mode to run provider-backed AI passes.",
+      "aiResolutionReason": "Provider-backed AI modes are disabled; deterministic local pipeline is enforced.",
       "aiAttempted": false,
       "aiProvidersObserved": [],
       "aiPassFailures": [],
       "requireAI": false,
-      "noAI": false,
+      "noAI": true,
       "audience": "new_dev",
       "styleProfile": "standard",
       "passSources": {
@@ -276,8 +264,20 @@
       "narrativeReviewRequired": true,
       "autoPassWithoutHumanEdits": false
     },
-    "welcomeStyleGatePassed": false,
-    "welcomeNarrativeUsedAI": false
+    "welcomeNarrativePassSources": {
+      "pass1": "deterministic",
+      "pass2": "deterministic",
+      "pass3": "deterministic"
+    },
+    "welcomeNarrativeAIProvider": "deterministic",
+    "narrativeArtifacts": {
+      "pass1": "C:\\Github\\Appdoc\\docs\\evidence\\narrative\\purpose_model.json",
+      "pass2": "C:\\Github\\Appdoc\\docs\\evidence\\narrative\\narrative_draft.md",
+      "pass3": "C:\\Github\\Appdoc\\docs\\evidence\\narrative\\review_notes.json",
+      "final": "C:\\Github\\Appdoc\\docs\\evidence\\narrative\\narrative_final.json",
+      "runReport": "C:\\Github\\Appdoc\\docs\\evidence\\narrative-run-report.json"
+    },
+    "welcomeNarrativeIssues": []
   },
   "determinism": {
     "hashAlgorithm": "SHA256",
@@ -286,6 +286,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "92016bb1949e715b1134d7aa35be98732aa4a5e60c08fbabacbff5c308cf4f4d"
+    "contentHash": "36f87221ea9b37b93ccfd6cec2b814d0ae7d75f23de60bcc55ed8d221354202b"
   }
 }

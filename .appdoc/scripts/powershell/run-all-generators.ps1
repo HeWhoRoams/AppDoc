@@ -610,6 +610,60 @@ if (-not $SkipDiagrams) {
     Write-Host "Skipping Mermaid C4 diagram generation (SkipDiagrams flag set)" -ForegroundColor Gray
 }
 
+# Generate deterministic internal/data-flow Mermaid diagrams (unless skipped)
+if (-not $SkipDiagrams) {
+    Write-Host "Generating deterministic internal/data-flow Mermaid diagrams..."
+    $diagramSuiteScript = Join-Path $PSScriptRoot "generate-mermaid-architecture-suite.ps1"
+    if (Test-Path $diagramSuiteScript) {
+        if ($DryRun) {
+            Write-Host "[DryRun] Would execute generate-mermaid-architecture-suite.ps1" -ForegroundColor Gray
+            Add-AppDocDiagnostic -Category "NOT_FOUND" -Severity "Info" -Message "Dry run skipped deterministic architecture diagram suite generation" -Component "Generation" -FilePath $diagramSuiteScript
+        }
+        else {
+            try {
+                & $diagramSuiteScript -RootPath $RootPath
+                Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Deterministic architecture diagram suite generated" -Component "Generation" -FilePath $diagramSuiteScript
+            }
+            catch {
+                Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to generate deterministic architecture diagram suite" -Component "Generation" -FilePath $diagramSuiteScript -Details @{ exception = $_.Exception.Message }
+                Write-Warning "Failed to generate deterministic architecture diagram suite: $_"
+            }
+        }
+    }
+    else {
+        Add-AppDocDiagnostic -Category "IO_ERROR" -Severity "Info" -Message "Deterministic architecture diagram suite generator not found (optional feature)" -Component "Generation" -FilePath $diagramSuiteScript
+        Write-Verbose "Deterministic architecture diagram suite generator not found (optional feature)"
+    }
+}
+
+# Validate diagrams after generation (unless skipped)
+if (-not $SkipDiagrams) {
+    $diagramValidationScript = Join-Path $PSScriptRoot "validate-diagrams.ps1"
+    if (Test-Path $diagramValidationScript) {
+        if ($DryRun) {
+            Write-Host "[DryRun] Would execute validate-diagrams.ps1" -ForegroundColor Gray
+            Add-AppDocDiagnostic -Category "NOT_FOUND" -Severity "Info" -Message "Dry run skipped diagram validation" -Component "Validation" -FilePath $diagramValidationScript
+        }
+        else {
+            try {
+                $diagramValidationJson = & $diagramValidationScript -RootPath $RootPath -Json
+                $diagramValidation = if ($diagramValidationJson) { $diagramValidationJson | ConvertFrom-Json } else { $null }
+                if ($diagramValidation -and -not $diagramValidation.passed) {
+                    Add-AppDocDiagnostic -Category "DETECTION_PATTERN_MISMATCH" -Severity "Warning" -Message "Diagram validation reported issues" -Component "Validation" -FilePath $diagramValidationScript -Details @{ issues = @($diagramValidation.issues) }
+                    Write-Warning ("Diagram validation reported issues: {0}" -f (@($diagramValidation.issues) -join ", "))
+                }
+                else {
+                    Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Diagram validation passed" -Component "Validation" -FilePath $diagramValidationScript
+                }
+            }
+            catch {
+                Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to run diagram validation" -Component "Validation" -FilePath $diagramValidationScript -Details @{ exception = $_.Exception.Message }
+                Write-Warning "Failed to run diagram validation: $_"
+            }
+        }
+    }
+}
+
 # Run assessment if requested
 if ($IncludeAssessment) {
     if ($NoAI) {

@@ -1,108 +1,108 @@
 {
-  "generatedAt": "2026-02-20T12:10:11-05:00",
+  "generatedAt": "2026-02-20T14:53:21-05:00",
   "summary": {
     "total": 8,
     "byCategory": {
-      "ENVIRONMENT_ERROR": 1,
-      "DETECTION_PATTERN_MISMATCH": 7
+      "DETECTION_PATTERN_MISMATCH": 7,
+      "ENVIRONMENT_ERROR": 1
     },
     "bySeverity": {
-      "Warning": 7,
-      "Info": 1
+      "Info": 1,
+      "Warning": 7
     },
     "hasErrors": false,
     "hasWarnings": true
   },
   "events": [
     {
-      "timestamp": "2026-02-20T12:10:09-05:00",
+      "timestamp": "2026-02-20T14:53:20-05:00",
       "category": "ENVIRONMENT_ERROR",
       "severity": "Info",
       "component": "orchestrator",
       "message": "Diagnostics initialized",
       "filePath": "",
       "details": {
-        "outputPath": ".\\docs",
-        "rootPath": "."
+        "rootPath": "C:\\Github\\Appdoc",
+        "outputPath": "C:\\Github\\Appdoc\\docs"
       }
     },
     {
-      "timestamp": "2026-02-20T12:10:10-05:00",
+      "timestamp": "2026-02-20T14:53:20-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
       "message": "Banned placeholder pattern found (api-inventory)",
-      "filePath": ".\\docs\\api-inventory.md",
+      "filePath": "C:\\Github\\Appdoc\\docs\\api-inventory.md",
       "details": {
         "pattern": "(?im)_No [^_]+ detected\\."
       }
     },
     {
-      "timestamp": "2026-02-20T12:10:10-05:00",
+      "timestamp": "2026-02-20T14:53:20-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
       "message": "Banned placeholder pattern found (data-model)",
-      "filePath": ".\\docs\\data-model.md",
+      "filePath": "C:\\Github\\Appdoc\\docs\\data-model.md",
       "details": {
         "pattern": "(?im)_No [^_]+ detected\\."
       }
     },
     {
-      "timestamp": "2026-02-20T12:10:10-05:00",
+      "timestamp": "2026-02-20T14:53:20-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
       "message": "Banned placeholder pattern found (test-catalog)",
-      "filePath": ".\\docs\\test-catalog.md",
+      "filePath": "C:\\Github\\Appdoc\\docs\\test-catalog.md",
       "details": {
         "pattern": "(?im)_No [^_]+ detected\\."
       }
     },
     {
-      "timestamp": "2026-02-20T12:10:10-05:00",
+      "timestamp": "2026-02-20T14:53:20-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
       "message": "Banned placeholder pattern found (debt-register)",
-      "filePath": ".\\docs\\debt-register.md",
+      "filePath": "C:\\Github\\Appdoc\\docs\\debt-register.md",
       "details": {
         "pattern": "(?im)_No [^_]+ detected\\."
       }
     },
     {
-      "timestamp": "2026-02-20T12:10:10-05:00",
+      "timestamp": "2026-02-20T14:53:20-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
       "message": "Banned placeholder pattern found (dependencies-catalog)",
-      "filePath": ".\\docs\\dependencies-catalog.md",
+      "filePath": "C:\\Github\\Appdoc\\docs\\dependencies-catalog.md",
       "details": {
         "pattern": "(?im)_No [^_]+ detected\\."
       }
     },
     {
-      "timestamp": "2026-02-20T12:10:11-05:00",
+      "timestamp": "2026-02-20T14:53:21-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
       "message": "Cross-artifact contradiction detected: start-here-model-signal-mismatch:9/0",
-      "filePath": ".\\docs",
+      "filePath": "C:\\Github\\Appdoc\\docs",
       "details": {}
     },
     {
-      "timestamp": "2026-02-20T12:10:11-05:00",
+      "timestamp": "2026-02-20T14:53:21-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
       "message": "Policy gate warning: api-endpoints-table-empty-nonblocking:no-api-surface",
-      "filePath": ".\\docs",
+      "filePath": "C:\\Github\\Appdoc\\docs",
       "details": {}
     }
   ],
   "metadata": {
     "validation": {
-      "timestamp": "2026-02-20T12:10:11-05:00",
+      "timestamp": "2026-02-20T14:53:21-05:00",
       "strict": false,
       "threshold": 80,
       "overallScore": 88.8,

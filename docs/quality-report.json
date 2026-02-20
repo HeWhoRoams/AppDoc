@@ -1,142 +1,142 @@
 {
+  "overall": {
+    "mediumQuality": 4,
+    "averageScore": 87.5,
+    "lowQuality": 0,
+    "totalDocs": 10,
+    "missingDocs": 0,
+    "highQuality": 6
+  },
+  "timestamp": "2026-02-20 14:53:20",
   "documents": [
     {
-      "codeBlocks": 0,
-      "listItems": 18,
-      "placeholders": [],
+      "exists": true,
       "tableRows": 13,
-      "quality": "HIGH",
-      "exists": true,
       "issues": [],
+      "quality": "HIGH",
+      "score": 100,
+      "codeBlocks": 0,
       "docType": "Start Here",
-      "score": 100
-    },
-    {
-      "codeBlocks": 0,
-      "listItems": 16,
       "placeholders": [],
-      "tableRows": 24,
-      "quality": "HIGH",
-      "exists": true,
-      "issues": [],
-      "docType": "Overview",
-      "score": 100
+      "listItems": 18
     },
     {
-      "codeBlocks": 0,
-      "listItems": 0,
-      "placeholders": [
-        "1x Empty detection placeholder"
-      ],
-      "tableRows": 9,
-      "quality": "MEDIUM",
       "exists": true,
+      "tableRows": 21,
+      "issues": [],
+      "quality": "HIGH",
+      "score": 100,
+      "codeBlocks": 0,
+      "docType": "Overview",
+      "placeholders": [],
+      "listItems": 16
+    },
+    {
+      "exists": true,
+      "tableRows": 9,
       "issues": [
         "API Endpoints section still contains placeholder text"
       ],
-      "docType": "API Inventory",
-      "score": 75
-    },
-    {
+      "quality": "MEDIUM",
+      "score": 75,
       "codeBlocks": 0,
-      "listItems": 0,
+      "docType": "API Inventory",
       "placeholders": [
         "1x Empty detection placeholder"
       ],
-      "tableRows": 9,
-      "quality": "MEDIUM",
+      "listItems": 0
+    },
+    {
       "exists": true,
+      "tableRows": 9,
       "issues": [
         "Data Models section still contains placeholder text"
       ],
-      "docType": "Data Model",
-      "score": 75
-    },
-    {
-      "codeBlocks": 0,
-      "listItems": 5,
-      "placeholders": [],
-      "tableRows": 72,
-      "quality": "HIGH",
-      "exists": true,
-      "issues": [],
-      "docType": "Config Catalog",
-      "score": 100
-    },
-    {
-      "codeBlocks": 0,
-      "listItems": 2,
-      "placeholders": [],
-      "tableRows": 27,
-      "quality": "HIGH",
-      "exists": true,
-      "issues": [],
-      "docType": "Build Cookbook",
-      "score": 100
-    },
-    {
-      "codeBlocks": 0,
-      "listItems": 0,
-      "placeholders": [
-        "2x Empty detection placeholder"
-      ],
-      "tableRows": 11,
       "quality": "MEDIUM",
+      "score": 75,
+      "codeBlocks": 0,
+      "docType": "Data Model",
+      "placeholders": [
+        "1x Empty detection placeholder"
+      ],
+      "listItems": 0
+    },
+    {
       "exists": true,
+      "tableRows": 72,
+      "issues": [],
+      "quality": "HIGH",
+      "score": 100,
+      "codeBlocks": 0,
+      "docType": "Config Catalog",
+      "placeholders": [],
+      "listItems": 5
+    },
+    {
+      "exists": true,
+      "tableRows": 27,
+      "issues": [],
+      "quality": "HIGH",
+      "score": 100,
+      "codeBlocks": 0,
+      "docType": "Build Cookbook",
+      "placeholders": [],
+      "listItems": 2
+    },
+    {
+      "exists": true,
+      "tableRows": 11,
       "issues": [
         "Test Suites section missing or empty",
         "Test Cases placeholder text remains"
       ],
+      "quality": "MEDIUM",
+      "score": 55,
+      "codeBlocks": 0,
       "docType": "Test Catalog",
-      "score": 55
+      "placeholders": [
+        "2x Empty detection placeholder"
+      ],
+      "listItems": 0
     },
     {
-      "codeBlocks": 0,
-      "listItems": 0,
-      "placeholders": [
-        "1x Empty detection placeholder"
-      ],
-      "tableRows": 9,
-      "quality": "MEDIUM",
       "exists": true,
+      "tableRows": 9,
       "issues": [
         "Debt Items section missing actionable entries"
       ],
-      "docType": "Debt Register",
-      "score": 75
-    },
-    {
+      "quality": "MEDIUM",
+      "score": 75,
       "codeBlocks": 0,
-      "listItems": 1,
+      "docType": "Debt Register",
       "placeholders": [
         "1x Empty detection placeholder"
       ],
-      "tableRows": 22,
-      "quality": "HIGH",
-      "exists": true,
-      "issues": [],
-      "docType": "Dependencies Catalog",
-      "score": 95
+      "listItems": 0
     },
     {
-      "codeBlocks": 0,
-      "listItems": 17,
-      "placeholders": [],
-      "tableRows": 7,
-      "quality": "HIGH",
       "exists": true,
+      "tableRows": 22,
       "issues": [],
+      "quality": "HIGH",
+      "score": 95,
+      "codeBlocks": 0,
+      "docType": "Dependencies Catalog",
+      "placeholders": [
+        "1x Empty detection placeholder"
+      ],
+      "listItems": 1
+    },
+    {
+      "exists": true,
+      "tableRows": 7,
+      "issues": [],
+      "quality": "HIGH",
+      "score": 100,
+      "codeBlocks": 0,
       "docType": "Task Guides",
-      "score": 100
+      "placeholders": [],
+      "listItems": 17
     }
-  ],
-  "timestamp": "2026-02-20 12:10:09",
-  "overall": {
-    "totalDocs": 10,
-    "missingDocs": 0,
-    "averageScore": 87.5,
-    "mediumQuality": 4,
-    "lowQuality": 0,
-    "highQuality": 6
-  }
+  ]
 }

@@ -1,6 +1,6 @@
 # System Overview
 
-**Generated**: 2026-02-20 12:10:01
+**Generated**: 2026-02-20 14:53:11
 
 ## Plain Language Summary
 
@@ -9,39 +9,36 @@ This page explains, in plain language, what the application appears to do, how r
 ## Welcome
 
 ### what_it_does
-- The repository contains implementation code, but current deterministic evidence is not strong enough to confidently describe business behavior yet (files scanned: 8). (evidence: ev-0086)
+- The repository contains implementation code, but current deterministic evidence is not strong enough to confidently describe business behavior yet (files scanned: 8). (evidence: ev-0071)
 
 ### inputs
-- Runtime behavior is also influenced by environment and application configuration values loaded at startup. (evidence: ev-0016, ev-0017, ev-0018)
+- Runtime behavior is also influenced by environment and application configuration values loaded at startup. (evidence: ev-0001, ev-0002, ev-0003)
 
 ### processing_steps
-- Processing flow could not be inferred beyond repository-level summaries in this scan. (evidence: ev-0086)
+- Processing flow could not be inferred beyond repository-level summaries in this scan. (evidence: ev-0071)
 
 ### outputs
-- Output contracts are not strongly represented in current deterministic evidence. (evidence: ev-0086)
+- Output contracts are not strongly represented in current deterministic evidence. (evidence: ev-0071)
 
 ### external_systems
-- The runtime and build surface rely on key libraries including SampleApp.Common, EntityFramework, Microsoft.AspNetCore.Mvc, Microsoft.CodeAnalysis.CSharp, and Microsoft.Extensions.Hosting.WindowsServices. (evidence: ev-0076, ev-0077, ev-0078, ev-0079)
+- The runtime and build surface rely on key libraries including SampleApp.Common, EntityFramework, Microsoft.AspNetCore.Mvc, Microsoft.CodeAnalysis.CSharp, and Microsoft.Extensions.Hosting.WindowsServices. (evidence: ev-0061, ev-0062, ev-0063, ev-0064)
 
 ### confidence_notes
 - Evidence coverage includes 0 endpoint records, 0 model records, 60 configuration records, and 10 dependency records. (evidence: ev-0001, ev-0002, ev-0003, ev-0004)
-- Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55. (evidence: ev-0086)
+- Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55. (evidence: ev-0071)
 
 ### evidence_refs
 | ID | Artifact | Kind | Name | Source |
 |---|---|---|---|---|
-| ev-0001 | build-cookbook | build-command | Build (MSBuild) | SampleApp.sln |
-| ev-0002 | build-cookbook | build-command | Build AppDoc.CSharpAstParser | .appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj |
-| ev-0003 | build-cookbook | build-command | Build SampleApp.Common | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj |
-| ev-0004 | build-cookbook | build-command | Build SampleApp.Service | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj |
-| ev-0016 | config-catalog | configuration | chat.tools.fileOperations.autoApprove.list | .vscode/settings.json:chat.tools.fileOperations.autoApprove.list |
-| ev-0017 | config-catalog | configuration | chat.tools.fileOperations.autoApprove.read | .vscode/settings.json:chat.tools.fileOperations.autoApprove.read |
-| ev-0018 | config-catalog | configuration | chat.tools.terminal.autoApprove.-ErrorAction | .vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction |
-| ev-0076 | dependencies-catalog | dependency | EntityFramework | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj |
-| ev-0077 | dependencies-catalog | dependency | Microsoft.AspNetCore.Mvc | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj |
-| ev-0078 | dependencies-catalog | dependency | Microsoft.CodeAnalysis.CSharp | .appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj |
-| ev-0079 | dependencies-catalog | dependency | Microsoft.Extensions.Hosting.WindowsServices | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj |
-| ev-0086 | overview | summary | system-purpose | repository |
+| ev-0001 | config-catalog | configuration | chat.tools.fileOperations.autoApprove.list | .vscode/settings.json:chat.tools.fileOperations.autoApprove.list |
+| ev-0002 | config-catalog | configuration | chat.tools.fileOperations.autoApprove.read | .vscode/settings.json:chat.tools.fileOperations.autoApprove.read |
+| ev-0003 | config-catalog | configuration | chat.tools.terminal.autoApprove.-ErrorAction | .vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction |
+| ev-0004 | config-catalog | configuration | chat.tools.terminal.autoApprove.-Json | .vscode/settings.json:chat.tools.terminal.autoApprove.-Json |
+| ev-0061 | dependencies-catalog | dependency | EntityFramework | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj |
+| ev-0062 | dependencies-catalog | dependency | Microsoft.AspNetCore.Mvc | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj |
+| ev-0063 | dependencies-catalog | dependency | Microsoft.CodeAnalysis.CSharp | .appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj |
+| ev-0064 | dependencies-catalog | dependency | Microsoft.Extensions.Hosting.WindowsServices | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj |
+| ev-0071 | overview | summary | system-purpose | repository |
 
 ## Executive Summary
 
@@ -53,9 +50,10 @@ The repository contains 8 code files across 1 languages and reflects the impleme
 
 ## Architecture
 
-- Primary architectural style appears to be no-api-surface. (evidence: ev-0086, ev-0087)
-- Detected framework signals: ASP.NET Core. (evidence: ev-0086, ev-0087)
+Generated C4 Mermaid diagrams:
 
+- [C4 Context](diagrams/c4-context.md)
+- [C4 Container](diagrams/c4-container.md)
 ## Key Components
 
 _Components not yet cataloged. Scan codebase for module structure._

@@ -1,106 +1,106 @@
 {
-  "generatedAt": "2026-02-20T12:10:11-05:00",
+  "generatedAt": "2026-02-20T14:53:21-05:00",
   "summary": {
     "total": 10,
     "byCategory": {
-      "ENVIRONMENT_ERROR": 2,
-      "DETECTION_PATTERN_MISMATCH": 8
+      "DETECTION_PATTERN_MISMATCH": 8,
+      "ENVIRONMENT_ERROR": 2
     },
     "bySeverity": {
-      "Warning": 8,
-      "Info": 2
+      "Info": 2,
+      "Warning": 8
     },
     "hasErrors": false,
     "hasWarnings": true
   },
   "events": [
     {
-      "timestamp": "2026-02-20T12:10:09-05:00",
+      "timestamp": "2026-02-20T14:53:20-05:00",
       "category": "ENVIRONMENT_ERROR",
       "severity": "Info",
       "component": "orchestrator",
       "message": "Diagnostics initialized",
       "filePath": "",
       "details": {
-        "outputPath": ".\\docs",
-        "rootPath": "."
+        "rootPath": "C:\\Github\\Appdoc",
+        "outputPath": "C:\\Github\\Appdoc\\docs"
       }
     },
     {
-      "timestamp": "2026-02-20T12:10:10-05:00",
+      "timestamp": "2026-02-20T14:53:20-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
       "message": "Banned placeholder pattern found (api-inventory)",
-      "filePath": ".\\docs\\api-inventory.md",
+      "filePath": "C:\\Github\\Appdoc\\docs\\api-inventory.md",
       "details": {
         "pattern": "(?im)_No [^_]+ detected\\."
       }
     },
     {
-      "timestamp": "2026-02-20T12:10:10-05:00",
+      "timestamp": "2026-02-20T14:53:20-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
       "message": "Banned placeholder pattern found (data-model)",
-      "filePath": ".\\docs\\data-model.md",
+      "filePath": "C:\\Github\\Appdoc\\docs\\data-model.md",
       "details": {
         "pattern": "(?im)_No [^_]+ detected\\."
       }
     },
     {
-      "timestamp": "2026-02-20T12:10:10-05:00",
+      "timestamp": "2026-02-20T14:53:20-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
       "message": "Banned placeholder pattern found (test-catalog)",
-      "filePath": ".\\docs\\test-catalog.md",
+      "filePath": "C:\\Github\\Appdoc\\docs\\test-catalog.md",
       "details": {
         "pattern": "(?im)_No [^_]+ detected\\."
       }
     },
     {
-      "timestamp": "2026-02-20T12:10:10-05:00",
+      "timestamp": "2026-02-20T14:53:20-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
       "message": "Banned placeholder pattern found (debt-register)",
-      "filePath": ".\\docs\\debt-register.md",
+      "filePath": "C:\\Github\\Appdoc\\docs\\debt-register.md",
       "details": {
         "pattern": "(?im)_No [^_]+ detected\\."
       }
     },
     {
-      "timestamp": "2026-02-20T12:10:10-05:00",
+      "timestamp": "2026-02-20T14:53:20-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
       "message": "Banned placeholder pattern found (dependencies-catalog)",
-      "filePath": ".\\docs\\dependencies-catalog.md",
+      "filePath": "C:\\Github\\Appdoc\\docs\\dependencies-catalog.md",
       "details": {
         "pattern": "(?im)_No [^_]+ detected\\."
       }
     },
     {
-      "timestamp": "2026-02-20T12:10:11-05:00",
+      "timestamp": "2026-02-20T14:53:21-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
       "message": "Cross-artifact contradiction detected: start-here-model-signal-mismatch:9/0",
-      "filePath": ".\\docs",
+      "filePath": "C:\\Github\\Appdoc\\docs",
       "details": {}
     },
     {
-      "timestamp": "2026-02-20T12:10:11-05:00",
+      "timestamp": "2026-02-20T14:53:21-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
       "message": "Policy gate warning: api-endpoints-table-empty-nonblocking:no-api-surface",
-      "filePath": ".\\docs",
+      "filePath": "C:\\Github\\Appdoc\\docs",
       "details": {}
     },
     {
-      "timestamp": "2026-02-20T12:10:11-05:00",
+      "timestamp": "2026-02-20T14:53:21-05:00",
       "category": "ENVIRONMENT_ERROR",
       "severity": "Info",
       "component": "Validation",
@@ -109,12 +109,12 @@
       "details": {}
     },
     {
-      "timestamp": "2026-02-20T12:10:11-05:00",
+      "timestamp": "2026-02-20T14:53:21-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "Narrative",
       "message": "Narrative review required by overview pipeline gates",
-      "filePath": ".\\docs\\evidence\\narrative-run-report.json",
+      "filePath": "C:\\Github\\Appdoc\\docs\\evidence\\narrative-run-report.json",
       "details": {
         "reasons": [
           "style-business-verb-coverage-low:1",
@@ -124,11 +124,15 @@
     }
   ],
   "metadata": {
-    "aiMode": "Auto",
-    "strictValidation": false,
+    "narrativeReviewReasons": [
+      "style-business-verb-coverage-low:1",
+      "style-what-it-does-purpose-verb-low:0"
+    ],
+    "narrativeReviewRequired": true,
+    "scriptFailures": [],
     "architecture": {
       "version": "1.0.0",
-      "generatedAt": "2026-02-20T12:09:59-05:00",
+      "generatedAt": "2026-02-20T14:53:09-05:00",
       "primaryStyle": "no-api-surface",
       "styles": [
         "no-api-surface"
@@ -152,8 +156,12 @@
         "sampledCodeFileCount": 1
       }
     },
+    "narrativeRunReportPath": "C:\\Github\\Appdoc\\docs\\evidence\\narrative-run-report.json",
+    "frameworks": [],
     "qualityThreshold": 80,
-    "requireAI": false,
+    "noAI": false,
+    "profile": "default",
+    "strictValidation": false,
     "validationGate": {
       "passed": true,
       "reason": "Structured validation gate passed",
@@ -163,15 +171,7 @@
       "qualityThreshold": 80,
       "evaluatedDocuments": 9
     },
-    "narrativeRunReportPath": ".\\docs\\evidence\\narrative-run-report.json",
-    "scriptFailures": [],
-    "frameworks": [],
-    "narrativeReviewReasons": [
-      "style-business-verb-coverage-low:1",
-      "style-what-it-does-purpose-verb-low:0"
-    ],
-    "profile": "default",
-    "noAI": false,
-    "narrativeReviewRequired": true
+    "localOnly": true,
+    "aiMode": "Deterministic"
   }
 }
