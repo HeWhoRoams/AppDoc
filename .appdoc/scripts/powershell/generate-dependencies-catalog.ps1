@@ -57,8 +57,26 @@ try {
     $depData = $null
 }
 
+
 if ($null -eq $depData) {
-    Write-Error "[DependenciesCatalog] Failed to extract dependencies catalog data. Extraction returned null or missing required properties."
+    Write-Error "[DependenciesCatalog] Extraction returned null."
+    exit 1
+}
+
+# Check for required properties
+$requiredProps = @('dependencies', 'projects')
+$missingProps = @()
+if ($depData -is [hashtable] -or $depData -is [System.Collections.Specialized.OrderedDictionary]) {
+    foreach ($prop in $requiredProps) {
+        if (-not $depData.Contains($prop)) {
+            $missingProps += $prop
+        }
+    }
+} else {
+    $missingProps = $requiredProps
+}
+if ($missingProps.Count -gt 0) {
+    Write-Error ("[DependenciesCatalog] Missing required properties: " + ($missingProps -join ', '))
     exit 1
 }
 

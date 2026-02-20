@@ -97,6 +97,19 @@ function Write-AppDocEvidenceArtifact {
         $normalizedRecords = @(Sort-AppDocExtractionRecords -Records $normalizedRecords)
     }
 
+    $normalizedRecords = @(
+        $normalizedRecords | ForEach-Object {
+            $record = $_
+            if ($record) {
+                $recordArtifact = if ($record.artifact) { [string]$record.artifact } else { "" }
+                if ([string]::IsNullOrWhiteSpace($recordArtifact)) {
+                    $record.artifact = $Artifact
+                }
+            }
+            $record
+        }
+    )
+
     $payload = [ordered]@{
         artifact = $Artifact
         generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
@@ -182,24 +195,6 @@ function Update-AppDocEvidenceManifest {
             contentHash = $deterministicHash
         }
     }
-
-function Validate-ManifestDeterminism {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$ManifestPath
-    )
-    $manifest = Get-Content $ManifestPath -Raw | ConvertFrom-Json
-    if ($manifest.determinism -and $manifest.determinism.contentHash) {
-        $excludeKeys = $manifest.determinism.excludeKeys
-        # Use PSObject.Copy() here because $manifest is a deserialized PSObject, not an ordered hashtable
-        $manifestForHash = $manifest.PSObject.Copy()
-        foreach ($key in $excludeKeys) { $null = $manifestForHash.PSObject.Properties.Remove($key) }
-        $actualHash = Get-AppDocDeterministicHash -InputObject $manifestForHash -ExcludeKeys $excludeKeys
-        if ($actualHash -ne $manifest.determinism.contentHash) {
-            throw "Manifest contentHash validation failed: expected $($manifest.determinism.contentHash), got $actualHash."
-        }
-    }
-}
 
     $manifest | ConvertTo-Json -Depth 20 | Out-File -FilePath $manifestPath -Encoding UTF8
     return $manifestPath

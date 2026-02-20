@@ -335,19 +335,19 @@ function Test-AppDocPathIncluded {
         return $false
     }
 
-    $normalized = $Path -replace '/', '\\'
+    $normalized = $Path -replace '/', '\'
     if ($RootPath) {
         try {
             $resolvedRoot = (Resolve-Path -Path $RootPath -ErrorAction Stop).Path
             $resolvedPath = (Resolve-Path -Path $Path -ErrorAction Stop).Path
             $relative = [System.IO.Path]::GetRelativePath($resolvedRoot, $resolvedPath)
-            $normalized = $relative -replace '/', '\\'
+            $normalized = $relative -replace '/', '\'
         }
         catch {
             $rootNorm = $RootPath.TrimEnd([char[]]@(92, 47))
             $pathNorm = $Path.TrimEnd([char[]]@(92, 47))
             if ($pathNorm.StartsWith($rootNorm, [System.StringComparison]::OrdinalIgnoreCase)) {
-                $normalized = $pathNorm.Substring($rootNorm.Length).TrimStart([char[]]@(92, 47)) -replace '/', '\\'
+                $normalized = $pathNorm.Substring($rootNorm.Length).TrimStart([char[]]@(92, 47)) -replace '/', '\'
             }
         }
     }
@@ -413,7 +413,7 @@ function Get-AppDocRelativePath {
     try {
         $rootFull = (Resolve-Path $RootPath).Path
         $pathFull = (Resolve-Path $Path).Path
-        return [System.IO.Path]::GetRelativePath($rootFull, $pathFull).Replace('\\', '/')
+        return [System.IO.Path]::GetRelativePath($rootFull, $pathFull).Replace('\', '/')
     }
     catch {
         return $Path.Replace($RootPath, '').TrimStart([char[]]@(92, 47))

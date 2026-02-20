@@ -140,7 +140,7 @@ $($rows -join "`n")
             "- **``$($_.Name)``**:`n$($versions -join "`n")"
         }
 @"
-⚠️ **$($versionConflicts.Count) package(s) with version conflicts detected:**
+⚠️ **$($versionConflicts.Count) packages with version conflicts detected:**
 
 $($conflicts -join "`n`n")
 "@
@@ -232,33 +232,6 @@ function Update-AppDocDependenciesCatalogContent {
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
             return ($m.Groups[1].Value + "This catalog aggregates dependencies discovered from package manifests, project references, and assembly references. Use it to identify version drift, runtime coupling, and upgrade planning priorities." + "`r`n")
-        }
-    )
-
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(###\s+NPM Packages\s*\r?\n\r?\n).*?(?=\r?\n###\s+Python Packages\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $sections.npmContent + "`r`n")
-        }
-    )
-
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(###\s+Python Packages\s*\r?\n\r?\n).*?(?=\r?\n###\s+Maven/Gradle Dependencies\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $sections.pythonContent + "`r`n")
-        }
-    )
-
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(###\s+Maven/Gradle Dependencies\s*\r?\n\r?\n).*?(?=\r?\n##\s+Project References\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $sections.mavenContent + "`r`n")
         }
     )
 

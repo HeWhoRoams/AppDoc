@@ -156,106 +156,6 @@ function Get-AppDocOverviewDeterministicWelcomeNarrative {
     return $narrative
 }
 
-function Invoke-AppDocOverviewOpenAINarrative {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [object]$TruthPack,
-        [string]$ApiKey = "",
-        [string]$Model = ""
-    )
-
-    if ([string]::IsNullOrWhiteSpace($ApiKey)) {
-        $ApiKey = if ($env:APPDOC_OPENAI_API_KEY) { $env:APPDOC_OPENAI_API_KEY } else { $env:OPENAI_API_KEY }
-    }
-    if ([string]::IsNullOrWhiteSpace($ApiKey)) {
-        return $null
-    }
-
-    if ([string]::IsNullOrWhiteSpace($Model)) {
-        $Model = if ($env:APPDOC_OPENAI_MODEL) { $env:APPDOC_OPENAI_MODEL } else { "gpt-4o-mini" }
-    }
-
-    $requiredKeys = Get-AppDocOverviewRequiredNarrativeKeys
-    $facts = Get-AppDocOverviewNarrativeValue -Object $TruthPack -Name "facts" -Default @{}
-    $evidenceRefs = @(Get-AppDocOverviewNarrativeValue -Object $TruthPack -Name "evidence_refs" -Default @())
-
-    $promptPayload = [ordered]@{
-        projectName = (Get-AppDocOverviewNarrativeValue -Object $TruthPack -Name "projectName" -Default "")
-        architecture = (Get-AppDocOverviewNarrativeValue -Object $TruthPack -Name "architecture" -Default @{})
-        counts = (Get-AppDocOverviewNarrativeValue -Object $TruthPack -Name "counts" -Default @{})
-        facts = $facts
-        evidence_refs = @(
-            $evidenceRefs |
-                Select-Object -First 300 |
-                ForEach-Object {
-                    [ordered]@{
-                        id = [string](Get-AppDocOverviewNarrativeValue -Object $_ -Name "id" -Default "")
-                        artifact = [string](Get-AppDocOverviewNarrativeValue -Object $_ -Name "artifact" -Default "")
-                        kind = [string](Get-AppDocOverviewNarrativeValue -Object $_ -Name "kind" -Default "")
-                        name = [string](Get-AppDocOverviewNarrativeValue -Object $_ -Name "name" -Default "")
-                        source = [string](Get-AppDocOverviewNarrativeValue -Object $_ -Name "source" -Default "")
-                    }
-                }
-        )
-    }
-
-    $schemaHelp = @"
-Return a strict JSON object only. Required top-level keys:
-- what_it_does
-- inputs
-- processing_steps
-- outputs
-- external_systems
-- confidence_notes
-- evidence_refs
-
-For keys except evidence_refs: value must be an array of objects:
-{ "text": "<plain-English sentence>", "evidence_refs": ["ev-0001","ev-0002"] }
-
-For evidence_refs: value must be an array of objects selected from input evidence_refs:
-{ "id":"ev-0001", "artifact":"...", "kind":"...", "name":"...", "source":"..." }
-
-Rules:
-- Do not invent facts.
-- Every sentence must include at least one valid evidence ref.
-- Keep language plain and concise.
-- Keep each section to 1-4 bullets.
-"@
-
-    $systemPrompt = "You produce grounded software documentation narrative from deterministic evidence."
-    $userPrompt = @"
-$schemaHelp
-
-Input truth data:
-$(($promptPayload | ConvertTo-Json -Depth 50))
-"@
-
-    $body = [ordered]@{
-        model = $Model
-        temperature = 0.1
-        response_format = @{ type = "json_object" }
-        messages = @(
-            @{ role = "system"; content = $systemPrompt },
-            @{ role = "user"; content = $userPrompt }
-        )
-    }
-
-    try {
-        $response = Invoke-RestMethod -Method Post -Uri "https://api.openai.com/v1/chat/completions" -Headers @{
-            "Authorization" = "Bearer $ApiKey"
-            "Content-Type" = "application/json"
-        } -Body ($body | ConvertTo-Json -Depth 50)
-
-        $content = [string](Get-AppDocOverviewNarrativeValue -Object (@($response.choices)[0].message) -Name "content" -Default "")
-        return (ConvertFrom-AppDocOverviewJson -RawText $content)
-    }
-    catch {
-        Write-Verbose "OpenAI narrative generation failed: $($_.Exception.Message)"
-        return $null
-    }
-}
-
 function Test-AppDocOverviewNarrativeGrounding {
     [CmdletBinding()]
     param(
@@ -359,31 +259,6 @@ function Get-AppDocOverviewWelcomeNarrative {
         aiAttempted = $false
         verification = $deterministicVerification
     }
-
-    if ($NoAI) {
-        return $result
-    }
-
-    $apiKey = if ($env:APPDOC_OPENAI_API_KEY) { $env:APPDOC_OPENAI_API_KEY } else { $env:OPENAI_API_KEY }
-    if ([string]::IsNullOrWhiteSpace($apiKey)) {
-        return $result
-    }
-
-    $result.aiAttempted = $true
-    $aiNarrative = Invoke-AppDocOverviewOpenAINarrative -TruthPack $TruthPack -ApiKey $apiKey
-    if (-not $aiNarrative) {
-        return $result
-    }
-
-    $aiVerification = Test-AppDocOverviewNarrativeGrounding -Narrative $aiNarrative -TruthPack $TruthPack
-    if (-not $aiVerification.passed) {
-        return $result
-    }
-
-    $result.narrative = $aiNarrative
-    $result.provider = "openai"
-    $result.usedAI = $true
-    $result.verification = $aiVerification
     return $result
 }
 

@@ -163,27 +163,27 @@ function Get-AppDocOverviewContextPackData {
         $integrationUrl = [string](Get-AppDocOverviewContextPackValue -Object $metadata -Name "integrationUrl" -Default "")
         if ([string]::IsNullOrWhiteSpace($integrationUrl)) { continue }
 
-        $host = ""
+        $hostName = ""
         try {
             $uri = [Uri]$integrationUrl
             if ($uri -and $uri.Host) {
-                $host = [string]$uri.Host
+                $hostName = [string]$uri.Host
             }
         }
         catch {
-            $host = ""
+            $hostName = ""
         }
 
-        if ([string]::IsNullOrWhiteSpace($host)) { continue }
+        if ([string]::IsNullOrWhiteSpace($hostName)) { continue }
 
-        $targetKey = "signal|{0}|integration-host" -f $host
+        $targetKey = "signal|{0}|integration-host" -f $hostName
         if (-not $entityIndex.ContainsKey($targetKey)) {
             $entityId = "ent-{0}" -f $entityCounter.ToString("0000")
             $entityCounter++
             $hostEntity = [ordered]@{
                 id = $entityId
                 type = "signal"
-                name = $host
+                name = $hostName
                 source = "integration-host"
                 evidence_ids = @()
             }
@@ -282,7 +282,7 @@ function Write-AppDocOverviewContextPack {
         [hashtable]$ContextPack
     )
 
-    $evidenceDir = Join-Path $RootPath "docs\evidence"
+    $evidenceDir = Join-Path $RootPath "docs" "evidence"
     if (-not (Test-Path $evidenceDir)) {
         New-Item -Path $evidenceDir -ItemType Directory -Force | Out-Null
     }
@@ -310,4 +310,3 @@ Export-ModuleMember -Function @(
     'Get-AppDocOverviewContextPackData',
     'Write-AppDocOverviewContextPack'
 )
-

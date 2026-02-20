@@ -19,7 +19,6 @@ AppDoc provides automated documentation extraction, quality assessment, and impr
 Primary deterministic workflow:
 
 - `.appdoc/scripts/powershell/run-all-generators.ps1` — end-to-end deterministic pipeline
-- `.appdoc/scripts/powershell/agent-bridge-responder.ps1` — local responder for IDE-driven Agent mode (no API key)
 - `.appdoc/scripts/powershell/appdoc.diagnose.ps1` — environment/readiness diagnostics
 - `.appdoc/scripts/powershell/validate-documentation.ps1` — structured validation + scoring
 - `.appdoc/scripts/powershell/remediate-generated-docs.ps1` — post-generation cleanup + evidence traceability
@@ -36,7 +35,7 @@ Key generators in current workflow include:
 
 1. Download or clone the `AppDoc` repo into the root of the codebase you want documented.
 2. Open that repository in Visual Studio Code.
-3. Recommended: Generate Agent Instructions or run an INIT command to have your AI investigate your codebase.
+3. Recommended: Generate workspace instructions or run an INIT command to have your AI investigate your codebase.
 4. Open the GitHub Copilot Chat and run `/appdoc.begin` to start the guided AppDoc workflow.
 5. Chat should prompt you to run `/appdoc.enhance` once that completes, otherwise run it.
 
@@ -63,25 +62,10 @@ Useful flags:
 - `-StrictValidation` — fails the run when generated artifacts score below threshold.
 - `-QualityThreshold <1-100>` — sets strict validation cutoff (default: `80`).
 - `-SkipDiagrams` — skips C4 diagram generation.
-- `-AIMode <Auto|Agent|ApiKey|Deterministic>` — `Auto` prefers IDE/agent bridge, then API key fallback.
-- `-RequireAI` — fails fast if AI mode is requested but unavailable.
-- `-NoAI` — runs deterministic extraction + validation only.
+- `-AIMode <Auto|Deterministic>` — both values run local deterministic mode.
+- `-NoAI` — compatibility flag; deterministic local mode is already default.
 
-AI mode environment controls:
-
-- `APPDOC_AI_AGENT=1` or `APPDOC_AGENT_BRIDGE_ENABLED=1` enables agent-bridge mode.
-- `APPDOC_AGENT_BRIDGE_DIR=<path>` overrides bridge folder (default: `docs/evidence/narrative/agent-bridge`).
-- `APPDOC_OPENAI_API_KEY` (or `OPENAI_API_KEY`) enables API-key fallback mode.
-- `APPDOC_OPENAI_MODEL` overrides default model (`gpt-4o-mini`).
-- `APPDOC_AI_TIMEOUT_SECONDS` overrides AI pass timeout (default: `180`).
-
-Agent mode without API keys (IDE bridge):
-
-1. Terminal A (responder loop):
-`$env:APPDOC_AI_AGENT='1'; pwsh ./.appdoc/scripts/powershell/agent-bridge-responder.ps1 -RootPath <codebase-path> -CopyPromptToClipboard`
-2. Terminal B (AppDoc workflow):
-`$env:APPDOC_AI_AGENT='1'; pwsh ./.appdoc/scripts/powershell/run-all-generators.ps1 -RootPath <codebase-path> -AIMode Agent -RequireAI`
-3. When prompts appear, send the prompt text to your IDE AI, then paste JSON output into Terminal A and finish with `END_JSON`.
+AppDoc does not call external AI providers at runtime. Use your IDE/chat AI session as the orchestration layer around deterministic script output.
 
 Mermaid C4 diagrams can be generated directly with:
 

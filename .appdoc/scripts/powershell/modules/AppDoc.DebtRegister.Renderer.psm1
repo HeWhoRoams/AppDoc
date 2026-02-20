@@ -1,3 +1,26 @@
+function Update-MarkdownSection {
+    param(
+        [string]$Content,
+        [string]$SectionName,
+        [string]$NextSectionPattern,
+        [string]$NewContent,
+        [string]$Newline
+    )
+    $sectionPattern = "(?s)(##\s+$([regex]::Escape($SectionName))\s*\r?\n$Newline).*?(?=$NextSectionPattern)"
+    $match = [regex]::Match($Content, $sectionPattern)
+    if (-not $match.Success) {
+        Write-Warning "Section '$SectionName' not found for update."
+        return $Content
+    }
+    return [regex]::Replace(
+        $Content,
+        $sectionPattern,
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + $NewContent + $Newline)
+        }
+    )
+}
 function Get-DetectedNewline {
     param(
         [Parameter(Mandatory=$true)]
@@ -106,7 +129,7 @@ function Update-AppDocDebtRegisterContent {
     $categoriesContent = if ($categoryGroups.Count -gt 0) {
         $lines = @("Most extracted debt in this run is concentrated in the following categories:")
         foreach ($group in $categoryGroups) {
-            $lines += "- **$($group.Name)**: $($group.Count) item(s)"
+            $lines += "- **$($group.Name)**: $($group.Count) items"
         }
         ($lines -join [Environment]::NewLine)
     }
@@ -116,48 +139,14 @@ function Update-AppDocDebtRegisterContent {
 
     $debtCount = @($Debts).Count
     $impactLevel = if ($debtCount -ge 200) { "high" } elseif ($debtCount -ge 75) { "moderate" } else { "localized" }
-    $impactContent = "The current register contains $debtCount item(s), indicating $impactLevel remediation pressure on delivery speed and change safety. Prioritize hotspots in high-churn files to reduce regression risk fastest."
+    $impactContent = "The current register contains $debtCount items, indicating $impactLevel remediation pressure on delivery speed and change safety. Prioritize hotspots in high-churn files to reduce regression risk fastest."
 
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Overview\s*\r?\n\r?\n).*?(?=\r?\n##\s+Debt Categories\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + "This register is built from extracted code-smell and maintainability signals and is intended to support prioritized remediation planning." + "`r`n")
-        }
-    )
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Debt Categories\s*\r?\n\r?\n).*?(?=\r?\n##\s+Debt Items\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $categoriesContent + "`r`n")
-        }
-    )
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Impact Assessment\s*\r?\n\r?\n).*?(?=\r?\n##\s+Remediation Plan\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $impactContent + "`r`n")
-        }
-    )
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Remediation Plan\s*\r?\n\r?\n).*?(?=\r?\n##\s+Monitoring and Tracking\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + "Use a phased plan: isolate highest-risk files first, split oversized classes/methods in small slices, and add regression coverage around each refactor before broad cleanup." + "`r`n")
-        }
-    )
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Monitoring and Tracking\s*\r?\n\r?\n).*?(?=(\r?\n##\s+)|\z)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + "Track debt trendlines with recurring static-analysis runs and include debt deltas in release-readiness reviews to prevent re-accumulation." + "`r`n")
-        }
-    )
+    $newline = Get-DetectedNewline -Text $updated
+    $updated = Update-MarkdownSection $updated "Overview" "\r?\n##\s+Debt Categories\b" "This register is built from extracted code-smell and maintainability signals and is intended to support prioritized remediation planning." $newline
+    $updated = Update-MarkdownSection $updated "Debt Categories" "\r?\n##\s+Debt Items\b" $categoriesContent $newline
+    $updated = Update-MarkdownSection $updated "Impact Assessment" "\r?\n##\s+Remediation Plan\b" $impactContent $newline
+    $updated = Update-MarkdownSection $updated "Remediation Plan" "\r?\n##\s+Monitoring and Tracking\b" "Use a phased plan: isolate highest-risk files first, split oversized classes/methods in small slices, and add regression coverage around each refactor before broad cleanup." $newline
+    $updated = Update-MarkdownSection $updated "Monitoring and Tracking" "(\r?\n##\s+|\z)" "Track debt trendlines with recurring static-analysis runs and include debt deltas in release-readiness reviews to prevent re-accumulation." $newline
 
     return $updated
 }

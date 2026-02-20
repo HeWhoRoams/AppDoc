@@ -1,10 +1,9 @@
 {
   "artifact": "test-catalog",
-  "generatedAt": "2026-02-19T16:14:21-05:00",
+  "generatedAt": "2026-02-20T12:10:08-05:00",
   "recordCount": 0,
   "records": [],
   "metadata": {
-    "testCount": 0,
     "requiredSections": [
       "Executive Summary",
       "Test Suites"
@@ -12,7 +11,8 @@
     "generator": "generate-test-catalog.ps1",
     "requiredEvidenceKeys": [
       "testSuites"
-    ]
+    ],
+    "testCount": 0
   },
   "determinism": {
     "hashAlgorithm": "SHA256",

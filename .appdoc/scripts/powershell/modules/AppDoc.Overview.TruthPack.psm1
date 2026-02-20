@@ -56,12 +56,12 @@ function Get-AppDocOverviewEvidenceRecords {
     param(
         [Parameter(Mandatory=$true)]
         [string]$RootPath,
-        [string[]]$Artifacts = @("overview", "api-inventory", "data-model", "config-catalog", "dependencies-catalog", "build-cookbook", "test-catalog", "debt-register")
+        [string[]]$Artifacts = @("overview", "api-inventory", "data-model", "config-catalog", "dependencies-catalog", "build-cookbook")
     )
 
     $records = @()
     foreach ($artifact in @($Artifacts | Where-Object { $_ })) {
-        $evidencePath = Join-Path $RootPath (Join-Path "docs\evidence" ("{0}.evidence.json" -f [string]$artifact))
+        $evidencePath = Join-Path $RootPath (Join-Path "docs" (Join-Path "evidence" ("{0}.evidence.json" -f [string]$artifact)))
         $payload = Read-AppDocOverviewJsonFile -Path $evidencePath
         if (-not $payload -or -not $payload.records) { continue }
 
@@ -115,6 +115,73 @@ function Get-AppDocOverviewDistinctValues {
             Select-Object -First $Limit |
             ForEach-Object { [string]$_.Name }
     )
+}
+
+function ConvertTo-AppDocOverviewStringArray {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [object]$Value
+    )
+
+    if ($null -eq $Value) { return @() }
+    if ($Value -is [string]) {
+        if ([string]::IsNullOrWhiteSpace($Value)) { return @() }
+        return @([string]$Value)
+    }
+
+    $values = @()
+    if ($Value -is [System.Collections.IEnumerable]) {
+        foreach ($entry in $Value) {
+            if ($null -eq $entry) { continue }
+            $text = [string]$entry
+            if ([string]::IsNullOrWhiteSpace($text)) { continue }
+            $values += $text.Trim()
+        }
+        return @($values)
+    }
+
+    $textValue = [string]$Value
+    if ([string]::IsNullOrWhiteSpace($textValue)) { return @() }
+    return @($textValue.Trim())
+}
+
+function Get-AppDocOverviewCompactMetadata {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [object]$Metadata,
+        [string]$Kind = ""
+    )
+
+    $meta = if ($null -eq $Metadata) { @{} } else { $Metadata }
+    $result = [ordered]@{}
+
+    $allowKeys = switch ($Kind) {
+        "endpoint" { @("method","path","controller","domain","direction","sourceType","integrationUrl","returnType","parameters","authRequired") }
+        "model" { @("type","namespace","description","fieldCount") }
+        "configuration" { @("required","source","defaultValue","classification","sourceFile") }
+        "dependency" { @("version","type","license","project") }
+        "summary" { @("text","count","category","primaryStyle") }
+        default { @("source","description","count") }
+    }
+
+    foreach ($key in $allowKeys) {
+        $value = Get-AppDocOverviewObjectValue -Object $meta -Name $key -Default $null
+        if ($null -eq $value) { continue }
+
+        if ($value -is [bool] -or $value -is [int] -or $value -is [long] -or $value -is [double]) {
+            $result[$key] = $value
+            continue
+        }
+
+        $text = [string]$value
+        if ([string]::IsNullOrWhiteSpace($text)) { continue }
+        if ($text.Length -gt 240) { $text = $text.Substring(0,240) + "..." }
+        $result[$key] = $text.Trim()
+    }
+
+    return $result
 }
 
 function Get-AppDocOverviewParameterNames {
@@ -291,6 +358,11 @@ function Get-AppDocOverviewTruthPackData {
     $architecture = Read-AppDocOverviewJsonFile -Path $architectureFingerprintPath
 
     $baseRecords = @(Get-AppDocOverviewEvidenceRecords -RootPath $RootPath)
+    $baseRecords = @(
+        $baseRecords |
+            Where-Object { @("summary","endpoint","model","configuration","dependency") -contains ([string]$_.kind) } |
+            Select-Object -First 2500
+    )
     $indexedRecords = @()
     $counter = 1
     foreach ($record in $baseRecords) {
@@ -300,7 +372,7 @@ function Get-AppDocOverviewTruthPackData {
             kind = [string]$record.kind
             name = [string]$record.name
             source = [string]$record.source
-            metadata = (Get-AppDocOverviewObjectValue -Object $record -Name "metadata" -Default @{})
+            metadata = (Get-AppDocOverviewCompactMetadata -Metadata (Get-AppDocOverviewObjectValue -Object $record -Name "metadata" -Default @{}) -Kind ([string]$record.kind))
         }
         $counter++
     }
@@ -454,7 +526,7 @@ function Get-AppDocOverviewTruthPackData {
         $externalSystems += New-AppDocOverviewFact -Text "No clear external system integration evidence was detected." -EvidenceRefs $defaultRefIds
     }
 
-    $confidenceNotes += New-AppDocOverviewFact -Text ("Evidence coverage includes {0} endpoint record(s), {1} model record(s), {2} configuration record(s), and {3} dependency record(s)." -f $endpointRecords.Count, $modelRecords.Count, $configRecords.Count, $dependencyRecords.Count) -EvidenceRefs @($indexedRecords | Select-Object -First 4 | ForEach-Object { [string]$_.id })
+    $confidenceNotes += New-AppDocOverviewFact -Text ("Evidence coverage includes {0} endpoint records, {1} model records, {2} configuration records, and {3} dependency records." -f $endpointRecords.Count, $modelRecords.Count, $configRecords.Count, $dependencyRecords.Count) -EvidenceRefs @($indexedRecords | Select-Object -First 4 | ForEach-Object { [string]$_.id })
     if ($outboundEndpoints.Count -gt 0) {
         $confidenceNotes += New-AppDocOverviewFact -Text ("Outbound endpoint URL mapping coverage is {0}/{1}." -f $mappedOutbound.Count, $outboundEndpoints.Count) -EvidenceRefs @($outboundEndpoints | Select-Object -First 4 | ForEach-Object { [string]$_.id })
     }
@@ -473,6 +545,22 @@ function Get-AppDocOverviewTruthPackData {
     }
     $frameworkList = @(Get-AppDocOverviewDistinctValues -Values $frameworkList -Limit 10)
 
+    $architectureStyles = @()
+    if ($architecture) {
+        $architectureStyles = @(
+            ConvertTo-AppDocOverviewStringArray -Value (Get-AppDocOverviewObjectValue -Object $architecture -Name "styles" -Default @()) |
+                ForEach-Object { [string]$_ } |
+                Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+                Select-Object -Unique
+        )
+        if ($architectureStyles.Count -eq 0) {
+            $fallbackStyle = [string](Get-AppDocOverviewObjectValue -Object $architecture -Name "primaryStyle" -Default "")
+            if (-not [string]::IsNullOrWhiteSpace($fallbackStyle)) {
+                $architectureStyles = @($fallbackStyle)
+            }
+        }
+    }
+
     $truthPack = [ordered]@{
         version = $script:AppDocOverviewTruthPackVersion
         generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
@@ -480,7 +568,7 @@ function Get-AppDocOverviewTruthPackData {
         rootPath = $RootPath
         architecture = [ordered]@{
             primaryStyle = if ($architecture) { [string](Get-AppDocOverviewObjectValue -Object $architecture -Name "primaryStyle" -Default "unknown") } else { "unknown" }
-            styles = if ($architecture) { @((Get-AppDocOverviewObjectValue -Object $architecture -Name "styles" -Default @())) } else { @() }
+            styles = [string[]]$architectureStyles
             frameworks = @($frameworkList)
         }
         counts = [ordered]@{
@@ -517,7 +605,7 @@ function Write-AppDocOverviewTruthPack {
         [hashtable]$TruthPack
     )
 
-    $evidenceDir = Join-Path $RootPath "docs\evidence"
+    $evidenceDir = Join-Path $RootPath (Join-Path "docs" "evidence")
     if (-not (Test-Path $evidenceDir)) {
         New-Item -Path $evidenceDir -ItemType Directory -Force | Out-Null
     }

@@ -1,6 +1,10 @@
 # Start Here
 
-**Generated**: 2026-02-19 16:14:22
+**Generated**: 2026-02-20 12:10:09
+
+## Plain Language Summary
+
+This guide gives a fast orientation path through the generated documentation so new maintainers can get productive quickly and safely.
 
 ## Who This Is For
 
@@ -21,16 +25,16 @@
 | Role | Start Here | Then Go To | Goal |
 |------|------------|------------|------|
 | New Engineer | [System Overview](overview.md) | [Build Cookbook](build-cookbook.md) → [Test Catalog](test-catalog.md) | Make a safe first change |
-| Backend Developer | [API Inventory](api-inventory.md) | [Data Model](data-model.md) → [Config Catalog](config-catalog.md) | Implement or modify behavior |
+| Backend Developer | [API Inventory](api-inventory.md) | [Data Model](data-model.md) → [Configuration Catalog](config-catalog.md) | Implement or modify behavior |
 | Architect | [System Overview](overview.md) | [C4 Diagrams](diagrams/c4-context.md) → [Debt Register](debt-register.md) | Assess structure and modernization priorities |
-| Operations / Support | [Build Cookbook](build-cookbook.md) | [Config Catalog](config-catalog.md) → [Dependencies Catalog](dependencies-catalog.md) | Run, diagnose, and secure the system |
+| Operations / Support | [Build Cookbook](build-cookbook.md) | [Configuration Catalog](config-catalog.md) → [Dependencies Catalog](dependencies-catalog.md) | Run, diagnose, and secure the system |
 
 ## System Signals
 
 - Source files detected: **8**
 - Languages detected: **1** (.cs (8))
 - API endpoints documented: **0**
-- Data model headings detected: **4**
+- Data model headings detected: **9**
 
 ## Documentation Map
 

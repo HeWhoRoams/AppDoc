@@ -26,8 +26,8 @@ function Get-AppDocArchitectureFingerprint {
 
     $serviceReferenceFiles = @(
         $csFiles | Where-Object {
-            $_.FullName -match '(?i)(^|[\\/])(Service References|Connected Services)([\\/]|$)' -or
-            $_.Name -eq "Reference.cs"
+            $_.FullName -match '(?i)([\\/])(Service References|Connected Services)([\\/])' -or
+            ($_.Name -eq "Reference.cs" -and $_.FullName -match '(?i)([\\/])(Service References|Connected Services)([\\/])')
         }
     )
 

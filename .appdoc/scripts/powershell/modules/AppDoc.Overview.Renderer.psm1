@@ -199,11 +199,11 @@ function Get-AppDocOverviewArchitectureContent {
     }
 
     if (($inboundCount + $outboundCount) -gt 0) {
-        $bullets += "- API flow includes $inboundCount inbound endpoint(s) and $outboundCount outbound integration endpoint(s).$(ConvertTo-AppDocOverviewInlineRefList -EvidenceRefs $endpointRefs)"
+        $bullets += "- API flow includes $inboundCount inbound endpoints and $outboundCount outbound integration endpoints.$(ConvertTo-AppDocOverviewInlineRefList -EvidenceRefs $endpointRefs)"
     }
 
     if ($outboundCount -gt 0) {
-        $bullets += "- Outbound URL mapping coverage is $mappedOutboundCount/$outboundCount endpoint(s).$(ConvertTo-AppDocOverviewInlineRefList -EvidenceRefs $endpointRefs)"
+        $bullets += "- Outbound URL mapping coverage is $mappedOutboundCount/$outboundCount endpoints.$(ConvertTo-AppDocOverviewInlineRefList -EvidenceRefs $endpointRefs)"
     }
 
     if ($frameworks.Count -gt 0) {
@@ -314,7 +314,7 @@ function Get-AppDocOverviewKeyComponentsContent {
     foreach ($row in $rows) {
         $component = ConvertTo-AppDocOverviewEscapedCell -Value $row.component
         $category = ConvertTo-AppDocOverviewEscapedCell -Value $row.category
-        $responsibility = "Observed in $([int]$row.count) record(s)"
+        $responsibility = "Observed in $([int]$row.count) records"
         $evidence = @($row.refs | Select-Object -First 3) -join ", "
         $lines += "| $component | $category | $responsibility | $evidence |"
     }
@@ -339,6 +339,7 @@ function Get-AppDocOverviewWelcomeMarkdown {
     )
 
     $lines = @("## Welcome")
+    $allSectionRefIds = New-Object System.Collections.Generic.List[string]
     foreach ($sectionName in $sectionOrder) {
         $lines += ""
         $lines += "### $sectionName"
@@ -357,7 +358,17 @@ function Get-AppDocOverviewWelcomeMarkdown {
             if (-not $item) { continue }
             $text = [string]$item.text
             if ([string]::IsNullOrWhiteSpace($text)) { continue }
-            $refs = @($item.evidence_refs)
+            $refs = @(
+                @($item.evidence_refs) |
+                    ForEach-Object { [string]$_ } |
+                    Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+                    Select-Object -Unique
+            )
+            foreach ($ref in $refs) {
+                if (-not $allSectionRefIds.Contains($ref)) {
+                    $allSectionRefIds.Add($ref) | Out-Null
+                }
+            }
             $lines += "- $($text.Trim())$(ConvertTo-AppDocOverviewInlineRefList -EvidenceRefs $refs)"
         }
     }
@@ -367,8 +378,28 @@ function Get-AppDocOverviewWelcomeMarkdown {
     $lines += "| ID | Artifact | Kind | Name | Source |"
     $lines += "|---|---|---|---|---|"
 
-    $evidenceRows = @()
     $evidenceRows = @(Get-AppDocOverviewRendererValue -Object $WelcomeNarrative -Name "evidence_refs" -Default @())
+    $evidenceIndex = @{}
+    foreach ($row in $evidenceRows) {
+        if (-not $row) { continue }
+        $id = [string]$row.id
+        if ([string]::IsNullOrWhiteSpace($id)) { continue }
+        if (-not $evidenceIndex.ContainsKey($id)) {
+            $evidenceIndex[$id] = $row
+        }
+    }
+    foreach ($refId in @($allSectionRefIds)) {
+        if (-not $evidenceIndex.ContainsKey($refId)) {
+            $evidenceIndex[$refId] = [ordered]@{
+                id = $refId
+                artifact = "overview"
+                kind = "reference"
+                name = "referenced-in-welcome"
+                source = "inferred"
+            }
+        }
+    }
+    $evidenceRows = @($evidenceIndex.Values | Sort-Object @{ Expression = { [string]$_.id } })
 
     if ($evidenceRows.Count -eq 0) {
         $lines += "| ev-0000 | overview | summary | none | none |"
@@ -389,7 +420,7 @@ function Get-AppDocOverviewWelcomeMarkdown {
         }
     }
 
-    return (($lines -join [Environment]::NewLine) + [Environment]::NewLine)
+    return (($lines -join [Environment]::NewLine) + [Environment]::NewLine + [Environment]::NewLine)
 }
 
 function Get-AppDocOverviewMarkdown {
@@ -404,7 +435,7 @@ function Get-AppDocOverviewMarkdown {
     )
 
     $systemPurposeContent = if ($CodeFileCount -gt 0) {
-        "The repository contains $CodeFileCount code files across $($LanguageCount.Keys.Count) language(s) and reflects the implementation surface analyzed in this documentation set. Use this overview for orientation, then move to API, data model, config, build, and dependency artifacts for implementation detail."
+        "The repository contains $CodeFileCount code files across $($LanguageCount.Keys.Count) languages and reflects the implementation surface analyzed in this documentation set. Use this overview for orientation, then move to API, data model, config, build, and dependency artifacts for implementation detail."
     } else {
         "Source inventory was not detected in this scan. Verify repository scope and rerun generation."
     }

@@ -158,15 +158,16 @@ function ConvertFrom-AppDocYamlFallback {
                 continue
             }
 
-            $normalizedValue = $value.Trim() -replace "^['""](.+)['""]$", '$1'
+            $normalizedValue = $value.Trim() -replace "^(['""])(.+)\1$", '$2'
             $flattened[$fullKey] = $normalizedValue
             continue
         }
 
-        if ($trimmed -match '^-+\s*(.+)$' -and $parentPrefix) {
+        if ($trimmed -match '^\-\s+(.+)$' -and $parentPrefix) {
             $index = 0
             while ($flattened.ContainsKey("${parentPrefix}[$index]")) { $index++ }
-            $flattened["${parentPrefix}[$index]"] = $Matches[1].Trim()
+            $normalizedListValue = $Matches[1].Trim() -replace "^(['""])(.+)\1$", '$2'
+            $flattened["${parentPrefix}[$index]"] = $normalizedListValue
         }
     }
 

@@ -1,13 +1,13 @@
 {
-  "pipelineVersion": "1.0.0",
-  "startedAt": "2026-02-19T16:14:15-05:00",
-  "endedAt": "2026-02-19T16:14:15-05:00",
-  "durationMs": 74.0,
+  "pipelineVersion": "1.1.0",
+  "startedAt": "2026-02-20T12:10:01-05:00",
+  "endedAt": "2026-02-20T12:10:01-05:00",
+  "durationMs": 88.0,
   "model": "gpt-4o-mini",
   "aiModeRequested": "Auto",
   "aiModeResolved": "Deterministic",
   "aiProvider": "deterministic",
-  "aiResolutionReason": "Auto mode found no AI provider.",
+  "aiResolutionReason": "Auto mode defaults to local deterministic execution. Use explicit Agent or ApiKey mode to run provider-backed AI passes.",
   "aiAttempted": false,
   "aiProvidersObserved": [],
   "aiPassFailures": [],
@@ -34,14 +34,16 @@
     "passed": false,
     "issues": [
       "style-business-verb-coverage-low:1",
-      "style-numeric-density-high:0.0959"
+      "style-what-it-does-purpose-verb-low:0"
     ],
     "metrics": {
       "textItemCount": 7,
       "inventoryLeadCount": 0,
-      "countOnlySentenceCount": 1,
+      "countOnlySentenceCount": 0,
       "businessVerbHits": 1,
-      "numericDensity": 0.0959
+      "whatItDoesMetricLeadCount": 0,
+      "whatItDoesPurposeVerbHits": 0,
+      "numericDensity": 0.0612
     }
   },
   "narrativeReviewRequired": true,

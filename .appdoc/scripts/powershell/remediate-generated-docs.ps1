@@ -89,8 +89,9 @@ function Set-AppDocPlainLanguageSummarySection {
     $updated = [regex]::Replace($Markdown, '(?is)\r?\n##\s+Plain Language Summary\s*\r?\n.*?(?=\r?\n##\s+|\z)', "")
 
     $generatedPattern = '(?im)^\*\*Generated\*\*:[^\r\n]*\r?\n'
-    if ([regex]::IsMatch($updated, $generatedPattern)) {
-        return [regex]::Replace($updated, $generatedPattern, [System.Text.RegularExpressions.MatchEvaluator]{
+    $generatedRegex = [regex]::new($generatedPattern)
+    if ($generatedRegex.IsMatch($updated)) {
+        return $generatedRegex.Replace($updated, [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
             return ($m.Value + "`r`n" + $section + "`r`n")
         }, 1)
@@ -230,10 +231,6 @@ foreach ($file in $docFiles) {
     if (Get-Command Normalize-AppDocTemplateInstructionText -ErrorAction SilentlyContinue) {
         $content = Normalize-AppDocTemplateInstructionText -Content $content
     }
-
-    $content = [regex]::Replace($content, '(?im)^\s*_No\s+.*?(?:detected|available|documented)\.[^_]*_\s*$', 'Evidence for this section was not detected in this scan.')
-    $content = [regex]::Replace($content, '(?im)No deterministic evidence found in this section for the current scan\.', 'Evidence for this section was not detected in this scan.')
-    $content = [regex]::Replace($content, '(?im)(Evidence for this section was not detected in this scan\.)(##\s+)', "$1`r`n`r`n$2")
 
     if ($fileName -ieq 'config-catalog.md') {
         $content = Protect-AppDocSensitiveMarkdown -Markdown $content

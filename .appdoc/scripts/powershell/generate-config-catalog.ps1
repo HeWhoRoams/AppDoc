@@ -76,9 +76,9 @@ if (-not $hasConfigs) {
     exit 1
 }
 
-$configs = @($configData.configs)
-$discoveredConfigFiles = @($configData.discoveredConfigFiles)
-$envVars = @($configData.envVars)
+$configs = @($configData.configs | Where-Object { $_ -ne $null })
+$discoveredConfigFiles = @($configData.discoveredConfigFiles | Where-Object { $_ -ne $null })
+$envVars = @($configData.envVars | Where-Object { $_ -ne $null })
 
 Write-Progress -Activity "Generating Config Catalog" -Status "Populating template..." -PercentComplete 60
 $scriptRoot = Split-Path $PSScriptRoot -Parent

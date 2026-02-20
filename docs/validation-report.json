@@ -1,13 +1,13 @@
 {
-  "timestamp": "2026-02-19T16:14:23-05:00",
+  "timestamp": "2026-02-20T12:10:11-05:00",
   "strict": false,
   "threshold": 80,
-  "overallScore": 87.9,
+  "overallScore": 88.8,
   "metrics": {
     "validatorPassRate": 100.0,
     "artifactPresence": 100.0,
     "evidencePresence": 100.0,
-    "semanticContractScore": 100.0,
+    "semanticContractScore": 95.0,
     "evidenceContractScore": 100.0,
     "apiCoverage": 0.0,
     "configCoverage": 100,
@@ -16,7 +16,7 @@
     "humanUsabilityScore": 100.0,
     "claimGroundingScore": 100.0,
     "documentationFreshnessScore": 70.0,
-    "contradictionConsistencyScore": 60.0,
+    "contradictionConsistencyScore": 80.0,
     "taskGuideActionabilityScore": 100.0,
     "taskGuideEvidenceCoverageScore": 70.0,
     "taskGuideTimeToCompleteMinutes": 12.0,
@@ -27,49 +27,49 @@
   "missingEvidenceArtifacts": [],
   "validators": [
     {
-      "message": "OK",
       "passed": true,
-      "script": "validate-start-here.ps1"
+      "script": "validate-start-here.ps1",
+      "message": "OK"
     },
     {
-      "message": "OK",
       "passed": true,
-      "script": "validate-overview.ps1"
+      "script": "validate-overview.ps1",
+      "message": "OK"
     },
     {
-      "message": "OK",
       "passed": true,
-      "script": "validate-api-inventory.ps1"
+      "script": "validate-api-inventory.ps1",
+      "message": "OK"
     },
     {
-      "message": "OK",
       "passed": true,
-      "script": "validate-data-model.ps1"
+      "script": "validate-data-model.ps1",
+      "message": "OK"
     },
     {
-      "message": "OK",
       "passed": true,
-      "script": "validate-config-catalog.ps1"
+      "script": "validate-config-catalog.ps1",
+      "message": "OK"
     },
     {
-      "message": "OK",
       "passed": true,
-      "script": "validate-build-cookbook.ps1"
+      "script": "validate-build-cookbook.ps1",
+      "message": "OK"
     },
     {
-      "message": "OK",
       "passed": true,
-      "script": "validate-test-catalog.ps1"
+      "script": "validate-test-catalog.ps1",
+      "message": "OK"
     },
     {
-      "message": "OK",
       "passed": true,
-      "script": "validate-task-guides.ps1"
+      "script": "validate-task-guides.ps1",
+      "message": "OK"
     },
     {
-      "message": "OK",
       "passed": true,
-      "script": "validate-debt-register.ps1"
+      "script": "validate-debt-register.ps1",
+      "message": "OK"
     }
   ],
   "contractValidation": [
@@ -89,17 +89,21 @@
     },
     {
       "artifact": "api-inventory",
-      "passed": true,
-      "score": 100,
+      "passed": false,
+      "score": 90,
       "missingSections": [],
-      "bannedPatterns": []
+      "bannedPatterns": [
+        "(?im)_No [^_]+ detected\\."
+      ]
     },
     {
       "artifact": "data-model",
-      "passed": true,
-      "score": 100,
+      "passed": false,
+      "score": 90,
       "missingSections": [],
-      "bannedPatterns": []
+      "bannedPatterns": [
+        "(?im)_No [^_]+ detected\\."
+      ]
     },
     {
       "artifact": "config-catalog",
@@ -117,10 +121,12 @@
     },
     {
       "artifact": "test-catalog",
-      "passed": true,
-      "score": 100,
+      "passed": false,
+      "score": 90,
       "missingSections": [],
-      "bannedPatterns": []
+      "bannedPatterns": [
+        "(?im)_No [^_]+ detected\\."
+      ]
     },
     {
       "artifact": "task-guides",
@@ -131,17 +137,21 @@
     },
     {
       "artifact": "debt-register",
-      "passed": true,
-      "score": 100,
+      "passed": false,
+      "score": 90,
       "missingSections": [],
-      "bannedPatterns": []
+      "bannedPatterns": [
+        "(?im)_No [^_]+ detected\\."
+      ]
     },
     {
       "artifact": "dependencies-catalog",
-      "passed": true,
-      "score": 100,
+      "passed": false,
+      "score": 90,
       "missingSections": [],
-      "bannedPatterns": []
+      "bannedPatterns": [
+        "(?im)_No [^_]+ detected\\."
+      ]
     }
   ],
   "evidenceContractValidation": [
@@ -207,8 +217,7 @@
     }
   ],
   "contradictions": [
-    "traceability-record-count-mismatch:build-cookbook:1/15",
-    "start-here-model-signal-mismatch:4/0"
+    "start-here-model-signal-mismatch:9/0"
   ],
   "taskGuideOutcomes": {
     "actionabilityScore": 100.0,

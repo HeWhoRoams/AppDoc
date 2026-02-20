@@ -92,7 +92,7 @@ function Update-AppDocBuildCookbookContent {
             }
         )
     } else {
-        $updated = $updated -replace '(?s)##\s+Prerequisites\s*\r?\n\r?\n.*?(?=\r?\n##\s+Build Steps\b)', ''
+        $updated = $updated -replace '(?s)##\s+Prerequisites\s*\r?\n(?:\r?\n)?.*?(?=\r?\n##\s+Build Steps\b)', ''
     }
 
     # CI/CD section
@@ -111,7 +111,7 @@ function Update-AppDocBuildCookbookContent {
     if ($cicdContent -and $cicdContent -notmatch 'No deterministic evidence found' -and $cicdContent -notmatch 'No evidence found for this section') {
         $updated = [regex]::Replace(
             $updated,
-            '(?s)(##\s+CI/CD Integration\s*\r?\n(?:\r?\n)?).*?(?=\r?\n##\s+Troubleshooting\b)',
+            '(?s)(##\s+CI/CD Integration\s*\r?\n\r?\n).*?(?=\r?\n##\s+Troubleshooting\b)',
             [System.Text.RegularExpressions.MatchEvaluator]{
                 param($m)
                 return ($m.Groups[1].Value + $cicdContent + "`r`n")
@@ -124,7 +124,7 @@ function Update-AppDocBuildCookbookContent {
     # Build Steps section
     $buildStepsContent = Get-AppDocBuildStepsMarkdown -Commands $Commands
     if ($buildStepsContent -and $buildStepsContent -notmatch 'No build steps detected') {
-        $buildSectionPattern = '(?s)(##\s+Build Steps\s*\r?\n(?:\r?\n)?).*?(?=\r?\n##\s+Dependencies\b)'
+        $buildSectionPattern = '(?s)(##\s+Build Steps\s*\r?\n\r?\n).*?(?=\r?\n##\s+Dependencies\b)'
         $updated = [regex]::Replace(
             $updated,
             $buildSectionPattern,

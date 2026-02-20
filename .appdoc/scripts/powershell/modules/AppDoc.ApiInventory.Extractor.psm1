@@ -805,7 +805,9 @@ function Add-AppDocRegexEndpointsToInventory {
                     foreach ($operation in $operationMatches) {
                         $operationName = [string]$operation.Groups[1].Value
                         $paramSignature = if ($operation.Groups[2].Value) { ([string]$operation.Groups[2].Value -replace '\s+', ' ').Trim() } else { "None" }
-                        $lineOffset = [Math]::Max(0, $serviceInterface.Index + $operation.Index)
+                        # Find the actual position of the body within the interface match
+                        $bodyStartInInterface = $serviceInterface.Value.IndexOf($interfaceBody)
+                        $lineOffset = [Math]::Max(0, $serviceInterface.Index + $bodyStartInInterface + $operation.Index)
                         $lineNumber = ($content.Substring(0, $lineOffset) -split "`n").Count
                         $path = "/soap-client/$serviceName/$operationName"
 

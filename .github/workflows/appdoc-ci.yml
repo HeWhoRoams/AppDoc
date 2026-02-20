@@ -16,3 +16,7 @@ jobs:
         shell: pwsh
         run: |
           ./.appdoc/scripts/powershell/ci-syntax-gate.ps1 -RootPath .
+      - name: Run documentation integrity gate
+        shell: pwsh
+        run: |
+          ./.appdoc/scripts/powershell/ci-doc-integrity-gate.ps1 -RootPath .

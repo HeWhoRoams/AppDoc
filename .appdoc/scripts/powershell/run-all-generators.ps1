@@ -19,10 +19,8 @@ param(
     [Parameter(Mandatory=$false)]
     [switch]$NoAI,
     [Parameter(Mandatory=$false)]
-    [ValidateSet("Auto","Agent","ApiKey","Deterministic")]
+    [ValidateSet("Auto","Deterministic")]
     [string]$AIMode = "Auto",
-    [Parameter(Mandatory=$false)]
-    [switch]$RequireAI,
     [Parameter(Mandatory=$false)]
     [switch]$SkipSyntaxGate
 )
@@ -60,19 +58,16 @@ param(
     Documentation profile name or path used to configure generation behavior.
 
 .PARAMETER NoAI
-    Runs deterministic extraction/validation only and skips AI-oriented phases.
+    Retained for compatibility. AppDoc runs in deterministic local mode.
 
 .PARAMETER AIMode
-    AI execution strategy. Auto prefers agent bridge, then API key, then deterministic fallback.
-
-.PARAMETER RequireAI
-    Fail fast if AI execution is required but no AI provider is available.
+    Retained for compatibility. Values resolve to deterministic local mode.
 
 .EXAMPLE
     .\run-all-generators.ps1 -RootPath "c:\myproject"
     .\run-all-generators.ps1 -RootPath "c:\myproject" -IncludeAssessment -SampleDir "AppDoc.ai_samples"
     .\run-all-generators.ps1 -RootPath "c:\myproject" -SkipDiagrams
-    .\run-all-generators.ps1 -RootPath "c:\myproject" -AIMode Agent -RequireAI
+    .\run-all-generators.ps1 -RootPath "c:\myproject" -AIMode Deterministic
 #>
 
 $diagnosticsModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagnostics.psm1"
@@ -387,24 +382,71 @@ function Test-GeneratedDoc {
 
 Write-Host "Running all documentation generators..."
 
-if ($NoAI -and $RequireAI) {
-    Write-Error "Invalid options: -NoAI and -RequireAI cannot be combined."
-    exit 1
+function Get-AppDocFrameworkNames {
+    param(
+        [AllowEmptyCollection()]
+        [array]$DetectedFrameworks = @()
+    )
+
+    return @(
+        $DetectedFrameworks |
+            ForEach-Object {
+                $entry = $_
+                if ($null -eq $entry) {
+                    ""
+                }
+                elseif ($entry -is [System.Collections.IDictionary]) {
+                    if ($entry.Contains("framework")) { [string]$entry["framework"] } else { "" }
+                }
+                elseif ($entry -is [psobject]) {
+                    $frameworkProp = @($entry.PSObject.Properties | Where-Object { $_.Name -eq "framework" } | Select-Object -First 1)
+                    if ($frameworkProp.Count -gt 0 -and $frameworkProp[0].Value) { [string]$frameworkProp[0].Value } else { "" }
+                }
+                else {
+                    ""
+                }
+            } |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+            Select-Object -Unique
+    )
 }
-$effectiveAIMode = if ($NoAI) { "Deterministic" } else { $AIMode }
-Write-Host "AI mode selection: $effectiveAIMode" -ForegroundColor Gray
-if ($RequireAI) {
-    Write-Host "AI mode strictness: require provider" -ForegroundColor Gray
-}
+$effectiveAIMode = "Deterministic"
+Write-Host "AI mode selection: $effectiveAIMode (local-only)" -ForegroundColor Gray
 
 $docsPath = Join-Path $RootPath "docs"
 if (-not (Test-Path $docsPath)) {
     New-Item -Path $docsPath -ItemType Directory -Force | Out-Null
 }
 
+$runLockPath = Join-Path $docsPath ".appdoc-run.lock.json"
+if (-not $DryRun) {
+    if (Test-Path $runLockPath) {
+        $activePid = 0
+        try {
+            $lockPayload = Get-Content -Path $runLockPath -Raw | ConvertFrom-Json -Depth 8
+            $activePid = [int]$lockPayload.pid
+        }
+        catch {
+            $activePid = 0
+        }
+
+        if ($activePid -gt 0 -and (Get-Process -Id $activePid -ErrorAction SilentlyContinue)) {
+            Write-Error "Another AppDoc run is already active for this output path (PID $activePid). Stop that run first."
+            exit 1
+        }
+    }
+
+    [ordered]@{
+        pid = $PID
+        startedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
+        rootPath = $RootPath
+        docsPath = $docsPath
+    } | ConvertTo-Json -Depth 6 | Out-File -FilePath $runLockPath -Encoding UTF8
+}
+
 if (Get-Command Initialize-AppDocDiagnostics -ErrorAction SilentlyContinue) {
     Initialize-AppDocDiagnostics -RootPath $RootPath -OutputPath $docsPath -Reset
-    Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "AI mode configured" -Component "orchestrator" -Details @{ requested = $AIMode; effective = $effectiveAIMode; noAI = $NoAI.IsPresent; requireAI = $RequireAI.IsPresent }
+    Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "AI mode configured (local-only deterministic)" -Component "orchestrator" -Details @{ requested = $AIMode; effective = $effectiveAIMode; noAI = $NoAI.IsPresent }
 }
 
 $syntaxGateScriptPath = Join-Path $PSScriptRoot "ci-syntax-gate.ps1"
@@ -463,11 +505,12 @@ if (Get-Command Get-AppDocArchitectureFingerprint -ErrorAction SilentlyContinue)
 }
 if (Get-Command Get-AppDocDetectedFrameworks -ErrorAction SilentlyContinue) {
     $detectedFrameworks = Get-AppDocDetectedFrameworks -RootPath $RootPath
+    $frameworkNames = @(Get-AppDocFrameworkNames -DetectedFrameworks $detectedFrameworks)
     if ($detectedFrameworks.Count -eq 0) {
         Add-AppDocDiagnostic -Category "UNSUPPORTED_FRAMEWORK" -Severity "Warning" -Message "No supported framework signatures detected" -Component "analysis"
     }
     else {
-        Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Frameworks detected" -Component "analysis" -Details @{ frameworks = @($detectedFrameworks.framework) }
+        Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Frameworks detected" -Component "analysis" -Details @{ frameworks = $frameworkNames }
         $frameworkReportPath = Join-Path $docsPath "framework-detection.json"
         $detectedFrameworks | ConvertTo-Json -Depth 10 | Out-File -FilePath $frameworkReportPath -Encoding UTF8
     }
@@ -524,7 +567,7 @@ foreach ($phase in $pipelinePhases) {
         Write-Host "Running $script..."
         try {
             if ($script -eq "generate-overview.ps1") {
-                & $scriptPath -RootPath $RootPath -AIMode $AIMode -RequireAI:$RequireAI -NoAI:$NoAI
+                & $scriptPath -RootPath $RootPath -AIMode "Deterministic" -NoAI
             }
             else {
                 & $scriptPath -RootPath $RootPath
@@ -538,9 +581,6 @@ foreach ($phase in $pipelinePhases) {
             }
             Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to run script: $script" -Component $phase.Name -FilePath $scriptPath -Details @{ exception = $_.Exception.Message }
             Write-Warning "Failed to run $script`: $_"
-            if ($RequireAI -and $script -eq "generate-overview.ps1") {
-                throw "Overview generation failed in -RequireAI mode: $($_.Exception.Message)"
-            }
         }
     }
 }
@@ -646,6 +686,28 @@ if (Test-Path $remediationScriptPath) {
 }
 else {
     Add-AppDocDiagnostic -Category "IO_ERROR" -Severity "Info" -Message "Remediation script not found; skipping post-generation cleanup" -Component "Remediation" -FilePath $remediationScriptPath
+}
+
+$integrityGateScriptPath = Join-Path $PSScriptRoot "ci-doc-integrity-gate.ps1"
+if (Test-Path $integrityGateScriptPath) {
+    Write-Host "`n[Integrity Gate]" -ForegroundColor Cyan
+    Write-Host "Running ci-doc-integrity-gate.ps1..."
+    & $integrityGateScriptPath -RootPath $RootPath
+    $integrityExitCode = $LASTEXITCODE
+    if ($integrityExitCode -ne 0) {
+        $severity = if ($StrictValidation) { "Error" } else { "Warning" }
+        Add-AppDocDiagnostic -Category "DETECTION_PATTERN_MISMATCH" -Severity $severity -Message "Documentation integrity gate failed" -Component "Validation" -FilePath $integrityGateScriptPath -Details @{ exitCode = $integrityExitCode }
+        if ($StrictValidation) {
+            throw "Documentation integrity gate failed with exit code $integrityExitCode."
+        }
+        Write-Warning "Documentation integrity gate failed (soft mode)."
+    }
+    else {
+        Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Documentation integrity gate passed" -Component "Validation" -FilePath $integrityGateScriptPath
+    }
+}
+else {
+    Add-AppDocDiagnostic -Category "IO_ERROR" -Severity "Info" -Message "Documentation integrity gate script not found; skipping integrity gate" -Component "Validation" -FilePath $integrityGateScriptPath
 }
 
 Write-Host "`n=== Documentation Quality Report ===" -ForegroundColor Cyan
@@ -849,15 +911,16 @@ if (Get-Command Test-AppDocValidationGate -ErrorAction SilentlyContinue) {
 
 if (Get-Command Export-AppDocDiagnostics -ErrorAction SilentlyContinue) {
     $diagnosticsPath = Join-Path $docsPath "diagnostics-report.json"
+    $frameworkNames = @(Get-AppDocFrameworkNames -DetectedFrameworks $detectedFrameworks)
     $metadata = @{
         strictValidation = $StrictValidation.IsPresent
         qualityThreshold = $QualityThreshold
         validationGate = $validationGate
         profile = if ($activeProfile) { $activeProfile.profile } else { $Profile }
         noAI = $NoAI.IsPresent
-        aiMode = $AIMode
-        requireAI = $RequireAI.IsPresent
-        frameworks = @($detectedFrameworks.framework)
+        aiMode = "Deterministic"
+        localOnly = $true
+        frameworks = $frameworkNames
         architecture = if ($architectureFingerprint) { $architectureFingerprint } else { $null }
         scriptFailures = @($scriptFailures)
         narrativeReviewRequired = $narrativeReviewRequired
@@ -882,6 +945,10 @@ if ($scriptFailures.Count -gt 0) {
 }
 
 Write-Host "`nAll generators completed." -ForegroundColor Green
+
+if (-not $DryRun -and (Test-Path $runLockPath)) {
+    Remove-Item -Path $runLockPath -Force -ErrorAction SilentlyContinue
+}
 
 if ($StrictValidation -and $validationGate -and -not $validationGate.passed) {
     exit 1

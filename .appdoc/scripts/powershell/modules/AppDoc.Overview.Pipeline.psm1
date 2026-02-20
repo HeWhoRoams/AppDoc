@@ -3,9 +3,10 @@
 
 $script:AppDocOverviewPipelineVersion = "1.1.0"
 
-$script:AppDocOverviewAIProviderModule = Join-Path $PSScriptRoot "AppDoc.AI.Provider.psm1"
-if (Test-Path $script:AppDocOverviewAIProviderModule) {
-    Import-Module $script:AppDocOverviewAIProviderModule -Force -ErrorAction Stop
+# Ensure AppDoc.Overview.Narrative.psm1 is loaded for deterministic narrative helpers.
+$script:AppDocOverviewNarrativeModule = Join-Path $PSScriptRoot "AppDoc.Overview.Narrative.psm1"
+if (Test-Path $script:AppDocOverviewNarrativeModule) {
+    Import-Module $script:AppDocOverviewNarrativeModule -Force -ErrorAction Stop
 }
 
 function Get-AppDocOverviewPipelineValue {
@@ -306,7 +307,7 @@ function Write-AppDocOverviewNarrativeArtifacts {
         [object]$RunReport
     )
 
-    $artifactDir = Join-Path $RootPath "docs\evidence\narrative"
+    $artifactDir = Join-Path $RootPath (Join-Path "docs" (Join-Path "evidence" "narrative"))
     if (-not (Test-Path $artifactDir)) {
         New-Item -Path $artifactDir -ItemType Directory -Force | Out-Null
     }
@@ -315,13 +316,98 @@ function Write-AppDocOverviewNarrativeArtifacts {
     $pass2Path = Join-Path $artifactDir "narrative_draft.md"
     $pass3Path = Join-Path $artifactDir "review_notes.json"
     $finalPath = Join-Path $artifactDir "narrative_final.json"
-    $runReportPath = Join-Path $RootPath "docs\evidence\narrative-run-report.json"
+    $runReportPath = Join-Path $RootPath (Join-Path "docs" (Join-Path "evidence" "narrative-run-report.json"))
 
-    $Pass1Result | ConvertTo-Json -Depth 40 | Out-File -FilePath $pass1Path -Encoding UTF8
-    (ConvertTo-AppDocOverviewNarrativeMarkdown -Narrative $Pass2Narrative) | Out-File -FilePath $pass2Path -Encoding UTF8
-    $Pass3ReviewNotes | ConvertTo-Json -Depth 40 | Out-File -FilePath $pass3Path -Encoding UTF8
-    $FinalNarrative | ConvertTo-Json -Depth 40 | Out-File -FilePath $finalPath -Encoding UTF8
-    $RunReport | ConvertTo-Json -Depth 40 | Out-File -FilePath $runReportPath -Encoding UTF8
+    $compactPass1 = [ordered]@{
+        outline = (Get-AppDocOverviewPipelineValue -Object $Pass1Result -Name "outline" -Default @{})
+        section_evidence_map = [ordered]@{}
+        missing_evidence = @(
+            Get-AppDocOverviewPipelineValue -Object $Pass1Result -Name "missing_evidence" -Default @() |
+                ForEach-Object { [string]$_ } |
+                Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+                Select-Object -Unique
+        )
+        provider = [string](Get-AppDocOverviewPipelineValue -Object $Pass1Result -Name "provider" -Default "deterministic")
+    }
+    $sectionEvidenceMap = Get-AppDocOverviewPipelineValue -Object $Pass1Result -Name "section_evidence_map" -Default @{}
+    foreach ($section in @("what_it_does","inputs","processing_steps","outputs","external_systems","confidence_notes")) {
+        $refs = @(
+            Get-AppDocOverviewPipelineValue -Object $sectionEvidenceMap -Name $section -Default @() |
+                ForEach-Object { [string]$_ } |
+                Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+                Select-Object -Unique |
+                Select-Object -First 20
+        )
+        $compactPass1.section_evidence_map[$section] = $refs
+    }
+
+    function New-AppDocOverviewCompactNarrative {
+        param(
+            [Parameter(Mandatory=$true)]
+            [object]$Narrative
+        )
+
+        $maxItemsPerSection = 4
+        $maxRefsPerItem = 8
+        $maxEvidenceRefs = 120
+
+        $compact = [ordered]@{}
+        $usedRefs = New-Object System.Collections.Generic.HashSet[string]
+
+        foreach ($section in @("what_it_does","inputs","processing_steps","outputs","external_systems","confidence_notes")) {
+            $items = @(Get-AppDocOverviewPipelineValue -Object $Narrative -Name $section -Default @())
+            $normalized = @()
+            foreach ($item in ($items | Select-Object -First $maxItemsPerSection)) {
+                $text = [string](Get-AppDocOverviewPipelineValue -Object $item -Name "text" -Default "")
+                if ([string]::IsNullOrWhiteSpace($text)) { continue }
+                $refs = @(
+                    Get-AppDocOverviewPipelineValue -Object $item -Name "evidence_refs" -Default @() |
+                        ForEach-Object { [string]$_ } |
+                        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+                        Select-Object -Unique |
+                        Select-Object -First $maxRefsPerItem
+                )
+                foreach ($refId in $refs) { [void]$usedRefs.Add($refId) }
+                $normalized += [ordered]@{
+                    text = $text.Trim()
+                    evidence_refs = $refs
+                }
+            }
+            $compact[$section] = @($normalized)
+        }
+
+        $refMap = @{}
+        foreach ($ref in @(Get-AppDocOverviewPipelineValue -Object $Narrative -Name "evidence_refs" -Default @())) {
+            $id = [string](Get-AppDocOverviewPipelineValue -Object $ref -Name "id" -Default "")
+            if ([string]::IsNullOrWhiteSpace($id)) { continue }
+            if (-not $refMap.ContainsKey($id)) { $refMap[$id] = $ref }
+        }
+
+        $compactRefs = @()
+        foreach ($id in @($usedRefs | Select-Object -First $maxEvidenceRefs)) {
+            if ($refMap.ContainsKey($id)) {
+                $ref = $refMap[$id]
+                $compactRefs += [ordered]@{
+                    id = [string](Get-AppDocOverviewPipelineValue -Object $ref -Name "id" -Default "")
+                    artifact = [string](Get-AppDocOverviewPipelineValue -Object $ref -Name "artifact" -Default "")
+                    kind = [string](Get-AppDocOverviewPipelineValue -Object $ref -Name "kind" -Default "")
+                    name = [string](Get-AppDocOverviewPipelineValue -Object $ref -Name "name" -Default "")
+                    source = [string](Get-AppDocOverviewPipelineValue -Object $ref -Name "source" -Default "")
+                }
+            }
+        }
+        $compact["evidence_refs"] = $compactRefs
+        return $compact
+    }
+
+    $compactPass2 = New-AppDocOverviewCompactNarrative -Narrative $Pass2Narrative
+    $compactFinal = New-AppDocOverviewCompactNarrative -Narrative $FinalNarrative
+
+    $compactPass1 | ConvertTo-Json -Depth 12 | Out-File -FilePath $pass1Path -Encoding UTF8
+    (ConvertTo-AppDocOverviewNarrativeMarkdown -Narrative $compactPass2) | Out-File -FilePath $pass2Path -Encoding UTF8
+    $Pass3ReviewNotes | ConvertTo-Json -Depth 12 | Out-File -FilePath $pass3Path -Encoding UTF8
+    $compactFinal | ConvertTo-Json -Depth 12 | Out-File -FilePath $finalPath -Encoding UTF8
+    $RunReport | ConvertTo-Json -Depth 20 | Out-File -FilePath $runReportPath -Encoding UTF8
 
     return [ordered]@{
         pass1 = $pass1Path
@@ -345,131 +431,20 @@ function Get-AppDocOverviewWelcomeNarrativeFromPipeline {
         [string]$Audience = "new_dev",
         [ValidateSet("concise","standard","pedagogical")]
         [string]$StyleProfile = "standard",
-        [ValidateSet("Auto","Agent","ApiKey","Deterministic")]
+        [ValidateSet("Auto","Deterministic")]
         [string]$AIMode = "Auto",
-        [switch]$RequireAI,
         [switch]$NoAI
     )
 
-    if ($NoAI -and $RequireAI) {
-        throw "Invalid AI options: -NoAI and -RequireAI cannot be used together."
-    }
-
     $startedAt = Get-Date
-    $model = if ($env:APPDOC_OPENAI_MODEL) { $env:APPDOC_OPENAI_MODEL } else { "gpt-4o-mini" }
-    $requestedAIMode = if ($NoAI) { "Deterministic" } else { $AIMode }
-    $aiPassTimeoutSeconds = 180
-    $parsedTimeout = 0
-    if ([int]::TryParse(([string]$env:APPDOC_AI_TIMEOUT_SECONDS), [ref]$parsedTimeout) -and $parsedTimeout -gt 0) {
-        $aiPassTimeoutSeconds = $parsedTimeout
-    }
-
-    $aiResolution = [ordered]@{
-        requestedMode = $requestedAIMode
-        resolvedMode = "Deterministic"
-        provider = "deterministic"
-        reason = "AI provider module unavailable."
-        apiKeyAvailable = $false
-        agentEnabled = $false
-    }
-    if (Get-Command Resolve-AppDocAIMode -ErrorAction SilentlyContinue) {
-        try {
-            $aiResolution = Resolve-AppDocAIMode -RequestedMode $requestedAIMode -RequireAI:$RequireAI
-        }
-        catch {
-            if ($RequireAI) { throw }
-            $aiResolution = [ordered]@{
-                requestedMode = $requestedAIMode
-                resolvedMode = "Deterministic"
-                provider = "deterministic"
-                reason = "AI resolution failed: $($_.Exception.Message)"
-                apiKeyAvailable = $false
-                agentEnabled = $false
-            }
-        }
-    }
-
-    $resolvedAIMode = [string](Get-AppDocOverviewPipelineValue -Object $aiResolution -Name "resolvedMode" -Default "Deterministic")
-    $aiEnabled = ($resolvedAIMode -ne "Deterministic")
-    if ($aiEnabled -and -not (Get-Command Invoke-AppDocAIJsonPass -ErrorAction SilentlyContinue)) {
-        if ($RequireAI) {
-            throw "AI mode '$resolvedAIMode' was selected, but Invoke-AppDocAIJsonPass is unavailable."
-        }
-        $aiEnabled = $false
-        $resolvedAIMode = "Deterministic"
-        $aiResolution = [ordered]@{
-            requestedMode = $requestedAIMode
-            resolvedMode = "Deterministic"
-            provider = "deterministic"
-            reason = "AI invoker unavailable; deterministic fallback applied."
-            apiKeyAvailable = $false
-            agentEnabled = $false
-        }
-    }
-    $aiProvidersObserved = @()
-    $aiPassFailures = @()
-
-    $promptSet = Get-AppDocOverviewPromptSet -ContextPack $ContextPack -Audience $Audience -StyleProfile $StyleProfile
+    $model = "local-deterministic"
+    $requestedAIMode = "Deterministic"
 
     $pass1Source = "deterministic"
     $pass1Result = Get-AppDocOverviewDeterministicPass1 -ContextPack $ContextPack
-    if ($aiEnabled) {
-        $pass1Call = Invoke-AppDocAIJsonPass -RootPath $RootPath -PassName "overview-pass1" -SystemPrompt ([string]$promptSet.pass1.system) -UserPrompt ([string]$promptSet.pass1.user) -AIMode $requestedAIMode -Model $model -TimeoutSeconds $aiPassTimeoutSeconds -RequireAI:$RequireAI
-        if ($pass1Call -and $pass1Call.provider) {
-            $aiProvidersObserved += [string]$pass1Call.provider
-        }
-        if ($pass1Call -and $pass1Call.success) {
-            $pass1Ai = Get-AppDocOverviewPipelineValue -Object $pass1Call -Name "result" -Default $null
-            if (Test-AppDocOverviewPass1Shape -Pass1Result $pass1Ai) {
-                $pass1Result = $pass1Ai
-                $pass1Source = "ai:$([string]$pass1Call.provider)"
-            }
-            else {
-                $aiPassFailures += "overview-pass1:invalid-shape"
-                if ($RequireAI) {
-                    throw "AI pass 'overview-pass1' returned an invalid result shape."
-                }
-            }
-        }
-        elseif ($pass1Call) {
-            $aiPassFailures += "overview-pass1:$([string](Get-AppDocOverviewPipelineValue -Object $pass1Call -Name "error" -Default "ai-pass-failed"))"
-            if ($RequireAI) {
-                throw "AI pass 'overview-pass1' failed: $([string](Get-AppDocOverviewPipelineValue -Object $pass1Call -Name "error" -Default "unknown error"))"
-            }
-        }
-    }
-
     $deterministicNarrative = Get-AppDocOverviewDeterministicWelcomeNarrative -TruthPack $TruthPack
     $pass2Source = "deterministic"
     $pass2Narrative = $deterministicNarrative
-    if ($aiEnabled) {
-        $pass2Prompt = ([string]$promptSet.pass2.user) + [Environment]::NewLine + [Environment]::NewLine + "Pass 1 result:" + [Environment]::NewLine + ($pass1Result | ConvertTo-Json -Depth 40)
-        $pass2Call = Invoke-AppDocAIJsonPass -RootPath $RootPath -PassName "overview-pass2" -SystemPrompt ([string]$promptSet.pass2.system) -UserPrompt $pass2Prompt -AIMode $requestedAIMode -Model $model -TimeoutSeconds $aiPassTimeoutSeconds -RequireAI:$RequireAI
-        if ($pass2Call -and $pass2Call.provider) {
-            $aiProvidersObserved += [string]$pass2Call.provider
-        }
-
-        if ($pass2Call -and $pass2Call.success) {
-            $pass2Ai = Get-AppDocOverviewPipelineValue -Object $pass2Call -Name "result" -Default $null
-            $pass2Verify = Test-AppDocOverviewNarrativeGrounding -Narrative $pass2Ai -TruthPack $TruthPack
-            if ($pass2Verify.passed) {
-                $pass2Narrative = $pass2Ai
-                $pass2Source = "ai:$([string]$pass2Call.provider)"
-            }
-            else {
-                $aiPassFailures += "overview-pass2:grounding-failed"
-                if ($RequireAI) {
-                    throw "AI pass 'overview-pass2' failed grounding checks: $($pass2Verify.issues -join ", ")"
-                }
-            }
-        }
-        elseif ($pass2Call) {
-            $aiPassFailures += "overview-pass2:$([string](Get-AppDocOverviewPipelineValue -Object $pass2Call -Name "error" -Default "ai-pass-failed"))"
-            if ($RequireAI) {
-                throw "AI pass 'overview-pass2' failed: $([string](Get-AppDocOverviewPipelineValue -Object $pass2Call -Name "error" -Default "unknown error"))"
-            }
-        }
-    }
 
     $pass3Source = "deterministic"
     $reviewNotes = [ordered]@{
@@ -483,107 +458,11 @@ function Get-AppDocOverviewWelcomeNarrativeFromPipeline {
     $finalNarrative = $pass2Narrative
     $retryCount = 0
     $styleRetryUsed = $false
-    if ($aiEnabled) {
-        $pass3Prompt = ([string]$promptSet.pass3.user) + [Environment]::NewLine + [Environment]::NewLine + "Pass 2 narrative:" + [Environment]::NewLine + ($pass2Narrative | ConvertTo-Json -Depth 40)
-        $pass3Call = Invoke-AppDocAIJsonPass -RootPath $RootPath -PassName "overview-pass3" -SystemPrompt ([string]$promptSet.pass3.system) -UserPrompt $pass3Prompt -AIMode $requestedAIMode -Model $model -TimeoutSeconds $aiPassTimeoutSeconds -RequireAI:$RequireAI
-        if ($pass3Call -and $pass3Call.provider) {
-            $aiProvidersObserved += [string]$pass3Call.provider
-        }
-
-        if ($pass3Call -and $pass3Call.success) {
-            $pass3Ai = Get-AppDocOverviewPipelineValue -Object $pass3Call -Name "result" -Default $null
-            $candidateNarrative = Get-AppDocOverviewPipelineValue -Object $pass3Ai -Name "narrative" -Default $null
-            $candidateNotes = Get-AppDocOverviewPipelineValue -Object $pass3Ai -Name "review_notes" -Default @()
-            if ($candidateNarrative) {
-                $pass3Verify = Test-AppDocOverviewNarrativeGrounding -Narrative $candidateNarrative -TruthPack $TruthPack
-                if ($pass3Verify.passed) {
-                    $finalNarrative = $candidateNarrative
-                    $pass3Source = "ai:$([string]$pass3Call.provider)"
-                    $reviewNotes = [ordered]@{
-                        notes = @($candidateNotes)
-                    }
-                }
-                else {
-                    $aiPassFailures += "overview-pass3:grounding-failed"
-                    if ($RequireAI) {
-                        throw "AI pass 'overview-pass3' failed grounding checks: $($pass3Verify.issues -join ", ")"
-                    }
-                }
-            }
-            elseif ($RequireAI) {
-                throw "AI pass 'overview-pass3' did not return a narrative payload."
-            }
-        }
-        elseif ($pass3Call) {
-            $aiPassFailures += "overview-pass3:$([string](Get-AppDocOverviewPipelineValue -Object $pass3Call -Name "error" -Default "ai-pass-failed"))"
-            if ($RequireAI) {
-                throw "AI pass 'overview-pass3' failed: $([string](Get-AppDocOverviewPipelineValue -Object $pass3Call -Name "error" -Default "unknown error"))"
-            }
-        }
-    }
 
     $groundingVerification = Test-AppDocOverviewNarrativeGrounding -Narrative $finalNarrative -TruthPack $TruthPack
     $sectionEvidenceMap = Get-AppDocOverviewPipelineValue -Object $pass1Result -Name "section_evidence_map" -Default @{}
     $sectionCoverage = Test-AppDocOverviewSectionEvidenceCoverage -Narrative $finalNarrative -SectionEvidenceMap $sectionEvidenceMap
     $styleGate = Test-AppDocOverviewNarrativeStyleQuality -Narrative $finalNarrative
-
-    if ($aiEnabled -and (-not $styleGate.passed) -and $groundingVerification.passed -and $sectionCoverage.passed) {
-        $retryCount = 1
-        $styleRetryUsed = $true
-        $styleIssuesText = if ($styleGate.issues.Count -gt 0) { ($styleGate.issues -join ", ") } else { "style-quality-unknown" }
-        $styleRewritePrompt = @"
-$([string]$promptSet.pass3.user)
-
-Style rewrite requirements:
-- Reduce inventory/count-heavy phrasing.
-- Improve business-purpose clarity and readable developer orientation.
-- Keep grounding intact; do not invent facts.
-- Preserve section structure and evidence references.
-
-Known style issues from gate:
-$styleIssuesText
-
-Current narrative:
-$($finalNarrative | ConvertTo-Json -Depth 40)
-
-Section evidence map:
-$($sectionEvidenceMap | ConvertTo-Json -Depth 20)
-"@
-        $styleRetryCall = Invoke-AppDocAIJsonPass -RootPath $RootPath -PassName "overview-style-retry" -SystemPrompt ([string]$promptSet.pass3.system) -UserPrompt $styleRewritePrompt -AIMode $requestedAIMode -Model $model -TimeoutSeconds $aiPassTimeoutSeconds -RequireAI:$false
-        if ($styleRetryCall -and $styleRetryCall.provider) {
-            $aiProvidersObserved += [string]$styleRetryCall.provider
-        }
-
-        $styleRetryResult = $null
-        if ($styleRetryCall -and $styleRetryCall.success) {
-            $styleRetryResult = Get-AppDocOverviewPipelineValue -Object $styleRetryCall -Name "result" -Default $null
-        }
-        elseif ($styleRetryCall) {
-            $aiPassFailures += "overview-style-retry:$([string](Get-AppDocOverviewPipelineValue -Object $styleRetryCall -Name "error" -Default "ai-pass-failed"))"
-        }
-
-        $styleRetryNarrative = $null
-        if ($styleRetryResult) {
-            $styleRetryNarrative = Get-AppDocOverviewPipelineValue -Object $styleRetryResult -Name "narrative" -Default $styleRetryResult
-        }
-
-        if ($styleRetryNarrative) {
-            $retryGrounding = Test-AppDocOverviewNarrativeGrounding -Narrative $styleRetryNarrative -TruthPack $TruthPack
-            $retryCoverage = Test-AppDocOverviewSectionEvidenceCoverage -Narrative $styleRetryNarrative -SectionEvidenceMap $sectionEvidenceMap
-            $retryStyle = Test-AppDocOverviewNarrativeStyleQuality -Narrative $styleRetryNarrative
-            if ($retryGrounding.passed -and $retryCoverage.passed -and $retryStyle.passed) {
-                $finalNarrative = $styleRetryNarrative
-                $groundingVerification = $retryGrounding
-                $sectionCoverage = $retryCoverage
-                $styleGate = $retryStyle
-                $pass3Source = "ai:$([string](Get-AppDocOverviewPipelineValue -Object $styleRetryCall -Name "provider" -Default "unknown"))/style-retry"
-                $retryNotes = Get-AppDocOverviewPipelineValue -Object $styleRetryResult -Name "review_notes" -Default @()
-                $reviewNotes = [ordered]@{
-                    notes = @($retryNotes)
-                }
-            }
-        }
-    }
 
     $narrativeReviewRequired = (-not $groundingVerification.passed) -or (-not $sectionCoverage.passed) -or (-not $styleGate.passed)
 
@@ -595,14 +474,14 @@ $($sectionEvidenceMap | ConvertTo-Json -Depth 20)
         durationMs = [Math]::Round(($endedAt - $startedAt).TotalMilliseconds, 0)
         model = $model
         aiModeRequested = $requestedAIMode
-        aiModeResolved = $resolvedAIMode
-        aiProvider = [string](Get-AppDocOverviewPipelineValue -Object $aiResolution -Name "provider" -Default "deterministic")
-        aiResolutionReason = [string](Get-AppDocOverviewPipelineValue -Object $aiResolution -Name "reason" -Default "")
-        aiAttempted = $aiEnabled
-        aiProvidersObserved = @($aiProvidersObserved | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
-        aiPassFailures = @($aiPassFailures | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
-        requireAI = $RequireAI.IsPresent
-        noAI = $NoAI.IsPresent
+        aiModeResolved = "Deterministic"
+        aiProvider = "deterministic"
+        aiResolutionReason = "Provider-backed AI modes are disabled; deterministic local pipeline is enforced."
+        aiAttempted = $false
+        aiProvidersObserved = @()
+        aiPassFailures = @()
+        requireAI = $false
+        noAI = $true
         audience = $Audience
         styleProfile = $StyleProfile
         passSources = [ordered]@{
@@ -621,14 +500,14 @@ $($sectionEvidenceMap | ConvertTo-Json -Depth 20)
 
     $artifactPaths = Write-AppDocOverviewNarrativeArtifacts -RootPath $RootPath -Pass1Result $pass1Result -Pass2Narrative $pass2Narrative -Pass3ReviewNotes $reviewNotes -FinalNarrative $finalNarrative -RunReport $runReport
 
-    $usedAI = ($pass2Source -like "ai:*" -or $pass3Source -like "ai:*")
-    $provider = if ($usedAI) { "ai-multipass" } else { "deterministic" }
+    $usedAI = $false
+    $provider = "deterministic"
 
     return [ordered]@{
         narrative = $finalNarrative
         provider = $provider
         usedAI = $usedAI
-        aiAttempted = $aiEnabled
+        aiAttempted = $false
         verification = $groundingVerification
         sectionCoverage = $sectionCoverage
         styleGate = $styleGate

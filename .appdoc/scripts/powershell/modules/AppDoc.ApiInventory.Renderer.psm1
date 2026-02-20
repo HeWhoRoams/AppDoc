@@ -222,8 +222,14 @@ _No API endpoints detected. This codebase may not expose HTTP APIs, or uses patt
         }
 
         if (-not $direction) {
-            $sourceType = if ($endpoint.sourceType) { [string]$endpoint.sourceType } else { "" }
-            $path = if ($endpoint.path) { [string]$endpoint.path } else { "" }
+            if ($endpoint -is [System.Collections.IDictionary]) {
+                $sourceType = if ($endpoint.Contains("sourceType") -and $endpoint["sourceType"]) { [string]$endpoint["sourceType"] } else { "" }
+                $path = if ($endpoint.Contains("path") -and $endpoint["path"]) { [string]$endpoint["path"] } else { "" }
+            }
+            else {
+                $sourceType = if ($endpoint.PSObject.Properties["sourceType"] -and $endpoint.sourceType) { [string]$endpoint.sourceType } else { "" }
+                $path = if ($endpoint.PSObject.Properties["path"] -and $endpoint.path) { [string]$endpoint.path } else { "" }
+            }
             if ($sourceType -eq "soap-client" -or $path -match '^/soap-client/') {
                 $direction = "outbound"
             }
@@ -439,14 +445,20 @@ function Update-AppDocApiInventoryContent {
         'Dependencies' = 'No outbound API dependency contract was extracted from route evidence in this run. Review [Dependencies Catalog](dependencies-catalog.md) and configuration URL entries when tracing integration behavior.'
     }
     foreach ($header in $sectionFallbacks.Keys) {
-        $sectionPattern = "(?s)(##\s+$([regex]::Escape($header))\s*\r?\n\r?\n).*?(?=(\r?\n##\s+)|\z)"
+        $sectionPattern = "(?s)(##\s+$([regex]::Escape($header))\s*\r?\n\r?\n)(.*?)(?=(\r?\n##\s+)|\z)"
         $sectionBody = [string]$sectionFallbacks[$header]
         $after = [regex]::Replace(
             $after,
             $sectionPattern,
             [System.Text.RegularExpressions.MatchEvaluator]{
                 param($m)
-                return ($m.Groups[1].Value + $sectionBody + "`r`n")
+                $existingBody = $m.Groups[3].Value.Trim()
+                $isPlaceholder = ($existingBody -eq "" -or $existingBody -eq $sectionBody)
+                if ($isPlaceholder) {
+                    return ($m.Groups[1].Value + $sectionBody + "`r`n")
+                } else {
+                    return $m.Value
+                }
             }
         )
     }

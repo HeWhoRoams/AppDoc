@@ -1,6 +1,10 @@
 # Configuration Catalog
 
-**Generated**: 2026-02-19 16:14:20
+**Generated**: 2026-02-20 12:10:07
+
+## Plain Language Summary
+
+This artifact lists configuration inputs that can change runtime behavior, with sensitive values redacted and evidence references preserved.
 
 ## Executive Summary
 
@@ -8,27 +12,28 @@ This document inventories all configuration options, environment variables, and 
 
 ## Overview
 
-Deterministic scan summary for this artifact.
+This catalog is assembled from Web.config/App.config, project files, and pipeline YAML to show where runtime and deployment behavior are controlled.
 
 ## Configuration Sources
 
-- **JSON Configuration**: 1 file(s)
-- **MSBuild Project Configuration**: 4 file(s)
-- **YAML Configuration**: 1 file(s)
+- **JSON Configuration**: 1 files
+- **MSBuild Project Configuration**: 4 files
+- **YAML Configuration**: 1 files
 
 ## Configuration Options
 
 | Name | Type | Default | Description | Required | Source |
 |------|------|---------|-------------|----------|--------|
-| OutputType | string | Exe | Auto-generated: Controls OutputType behavior. | No | .appdoc\tools\AppDoc.CSharpAstParser\AppDoc.CSharpAstParser.csproj:PropertyGroup/OutputType |
-| TargetFramework | string | net8.0 | Auto-generated: Controls TargetFramework behavior. | No | .appdoc\tools\AppDoc.CSharpAstParser\AppDoc.CSharpAstParser.csproj:PropertyGroup/TargetFramework |
-| jobs.syntax-gate.runs-on | string | windows-latest | Auto-generated: Controls jobs.syntax-gate.runs-on behavior. | No | .github\workflows\appdoc-ci.yml:yaml/jobs.syntax-gate.runs-on |
-| jobs.syntax-gate.steps.shell | string | pwsh | Auto-generated: Controls jobs.syntax-gate.steps.shell behavior. | No | .github\workflows\appdoc-ci.yml:yaml/jobs.syntax-gate.steps.shell |
-| jobs.syntax-gate.steps[0] | string | uses: actions/checkout@v4 | Auto-generated: Controls jobs.syntax-gate.steps[0] behavior. | No | .github\workflows\appdoc-ci.yml:yaml/jobs.syntax-gate.steps[0] |
-| jobs.syntax-gate.steps[1] | string | name: Run PowerShell syntax gate | Auto-generated: Controls jobs.syntax-gate.steps[1] behavior. | No | .github\workflows\appdoc-ci.yml:yaml/jobs.syntax-gate.steps[1] |
-| name | string | appdoc-ci | Auto-generated: Controls name behavior. | No | .github\workflows\appdoc-ci.yml:yaml/name |
-| on.push.branches[0] | string | main | Auto-generated: Controls on.push.branches[0] behavior. | No | .github\workflows\appdoc-ci.yml:yaml/on.push.branches[0] |
-| on.push.branches[1] | string | master | Auto-generated: Controls on.push.branches[1] behavior. | No | .github\workflows\appdoc-ci.yml:yaml/on.push.branches[1] |
+| OutputType | string | Exe | Auto-generated: Controls OutputType behavior. | No | .appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/OutputType |
+| TargetFramework | string | net8.0 | Auto-generated: Controls TargetFramework behavior. | No | .appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/TargetFramework |
+| jobs.syntax-gate.runs-on | string | windows-latest | Auto-generated: Controls jobs.syntax-gate.runs-on behavior. | No | .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.runs-on |
+| jobs.syntax-gate.steps.shell | string | pwsh | Auto-generated: Controls jobs.syntax-gate.steps.shell behavior. | No | .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps.shell |
+| jobs.syntax-gate.steps[0] | string | uses: actions/checkout@v4 | Auto-generated: Controls jobs.syntax-gate.steps[0] behavior. | No | .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[0] |
+| jobs.syntax-gate.steps[1] | string | name: Run PowerShell syntax gate | Auto-generated: Controls jobs.syntax-gate.steps[1] behavior. | No | .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[1] |
+| jobs.syntax-gate.steps[2] | string | name: Run documentation integrity gate | Auto-generated: Controls jobs.syntax-gate.steps[2] behavior. | No | .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[2] |
+| name | string | appdoc-ci | Auto-generated: Controls name behavior. | No | .github/workflows/appdoc-ci.yml:yaml/name |
+| on.push.branches[0] | string | main | Auto-generated: Controls on.push.branches[0] behavior. | No | .github/workflows/appdoc-ci.yml:yaml/on.push.branches[0] |
+| on.push.branches[1] | string | master | Auto-generated: Controls on.push.branches[1] behavior. | No | .github/workflows/appdoc-ci.yml:yaml/on.push.branches[1] |
 | chat.tools.fileOperations.autoApprove.list | boolean | true | If true, allows Copilot or automation to run chat.tools.fileOperations.autoApprove.list commands/scripts without manual approval. | No | .vscode/settings.json:chat.tools.fileOperations.autoApprove.list |
 | chat.tools.fileOperations.autoApprove.read | boolean | true | If true, allows Copilot or automation to run chat.tools.fileOperations.autoApprove.read commands/scripts without manual approval. | No | .vscode/settings.json:chat.tools.fileOperations.autoApprove.read |
 | chat.tools.terminal.autoApprove.-ErrorAction | boolean | true | If true, allows Copilot or automation to run chat.tools.terminal.autoApprove.-ErrorAction commands/scripts without manual approval. | No | .vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction |
@@ -75,10 +80,10 @@ Deterministic scan summary for this artifact.
 | chat.tools.terminal.autoApprove.Test-Path | boolean | true | If true, allows Copilot or automation to run chat.tools.terminal.autoApprove.Test-Path commands/scripts without manual approval. | No | .vscode/settings.json:chat.tools.terminal.autoApprove.Test-Path |
 | chat.tools.terminal.autoApprove.Write-Host | boolean | true | If true, allows Copilot or automation to run chat.tools.terminal.autoApprove.Write-Host commands/scripts without manual approval. | Yes | .vscode/settings.json:chat.tools.terminal.autoApprove.Write-Host |
 | github.copilot.chat.executions.enabled | boolean | true | Enables Copilot chat command execution features. | No | .vscode/settings.json:github.copilot.chat.executions.enabled |
-| TargetFramework | string | net6.0 | Auto-generated: Controls TargetFramework behavior. | No | tests\powershell\fixtures\sample-dotnet-app\SampleApp.Common\SampleApp.Common.csproj:PropertyGroup/TargetFramework |
-| OutputType | string | WinExe | Auto-generated: Controls OutputType behavior. | No | tests\powershell\fixtures\sample-dotnet-app\SampleApp.Service\SampleApp.Service.csproj:PropertyGroup/OutputType |
-| TargetFramework | string | net6.0 | Auto-generated: Controls TargetFramework behavior. | No | tests\powershell\fixtures\sample-dotnet-app\SampleApp.Service\SampleApp.Service.csproj:PropertyGroup/TargetFramework |
-| TargetFramework | string | net6.0 | Auto-generated: Controls TargetFramework behavior. | No | tests\powershell\fixtures\sample-dotnet-app\SampleApp.Web\SampleApp.Web.csproj:PropertyGroup/TargetFramework |
+| TargetFramework | string | net6.0 | Auto-generated: Controls TargetFramework behavior. | No | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj:PropertyGroup/TargetFramework |
+| OutputType | string | WinExe | Auto-generated: Controls OutputType behavior. | No | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/OutputType |
+| TargetFramework | string | net6.0 | Auto-generated: Controls TargetFramework behavior. | No | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/TargetFramework |
+| TargetFramework | string | net6.0 | Auto-generated: Controls TargetFramework behavior. | No | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj:PropertyGroup/TargetFramework |
 
 ## Environment Variables
 
@@ -87,43 +92,37 @@ Deterministic scan summary for this artifact.
 |  |  | Environment variable | No | No |
 
 ## Configuration Validation
-No evidence found for this section in the current scan.
+
+This run extracted configuration keys and sources but not a full validation matrix. Treat required-key checks, value-shape checks, and environment overrides as mandatory pre-release validation tasks.
+
 ## Configuration Management
-No evidence found for this section in the current scan.
+
+Configuration is distributed across application config files, transforms, project metadata, and pipeline settings. Manage changes with environment-specific promotion controls and explicit review for sensitive settings.
+
 ## Security Considerations
-No evidence found for this section in the current scan.
+
+Trust model: auto-approve entries execute with local user privileges and should only target trusted scripts under validated repository paths. This workflow enforces repository scope filtering but does not provide cryptographic file-integrity attestation; protect repos and runners accordingly. Restrict auto-approve patterns to least privilege, avoid broad wildcards, and keep display-only commands such as Write-Host non-required from a security perspective.
+
 ## Example Configurations
-No evidence found for this section in the current scan.
+
+Environment-specific examples are not emitted automatically to avoid accidental secret leakage. Build examples from non-sensitive templates and validate with the required configuration criteria below.
+
 ## Required configuration criteria
 
-- `chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1`
-- `chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1`
-- `chat.tools.terminal.autoApprove.Write-Host`
+Use least-privilege auto-approve rules for trusted automation paths only:
 
-### Why they are required
+- chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1
+- chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1
 
-- The two assessment approvals enable automated report generation and synthesis during startup automation.
-- The `Write-Host` approval allows CLI output that startup hooks rely on for progress and diagnostics.
-
-### Consequences if missing
-
-- **Automation disabled/degraded — runtime dependency for startup hooks.** Commands will pause for manual approval or skip blocked behaviors, causing unattended startup runs to fail.
-- **Startup/validation failures — operational outcome.** Blocked report generation or synthesis may cause downstream validation stages to fail or emit incomplete artifacts.
-- **Runtime errors/interruptions — execution path dependent.** If required startup-hook commands can’t execute, the orchestration path may terminate early or produce partial outputs.
-
-### Validation classification
-
-- **Deployment-time validation policy:** CI/deployment should fail when these keys are missing for environments requiring unattended startup hooks.
-- **Runtime dependency scope:** this requirement targets Copilot startup-hook automation; manual script execution can compensate with interactive approvals.
-
+Do not treat chat.tools.terminal.autoApprove.Write-Host as a required security control. Write-Host is a display/UI command and should remain optional.
 ## Evidence Traceability
 
 | Field | Value |
 |------|-------|
 | Evidence Artifact | evidence/config-catalog.evidence.json |
-| Record Count | 59 |
+| Record Count | 60 |
 | Generator | generate-config-catalog.ps1 |
 | Required Evidence Keys | configurations |
 | Grounding Mode | Deterministic extraction records |
+
 ---
-**Generated by AppDoc Framework**

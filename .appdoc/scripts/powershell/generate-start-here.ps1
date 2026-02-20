@@ -112,9 +112,9 @@ $markdown = @"
 | Role | Start Here | Then Go To | Goal |
 |------|------------|------------|------|
 | New Engineer | [System Overview](overview.md) | [Build Cookbook](build-cookbook.md) → [Test Catalog](test-catalog.md) | Make a safe first change |
-| Backend Developer | [API Inventory](api-inventory.md) | [Data Model](data-model.md) → [Config Catalog](config-catalog.md) | Implement or modify behavior |
+| Backend Developer | [API Inventory](api-inventory.md) | [Data Model](data-model.md) → [Configuration Catalog](config-catalog.md) | Implement or modify behavior |
 | Architect | [System Overview](overview.md) | [C4 Diagrams](diagrams/c4-context.md) → [Debt Register](debt-register.md) | Assess structure and modernization priorities |
-| Operations / Support | [Build Cookbook](build-cookbook.md) | [Config Catalog](config-catalog.md) → [Dependencies Catalog](dependencies-catalog.md) | Run, diagnose, and secure the system |
+| Operations / Support | [Build Cookbook](build-cookbook.md) | [Configuration Catalog](config-catalog.md) → [Dependencies Catalog](dependencies-catalog.md) | Run, diagnose, and secure the system |
 
 ## System Signals
 
@@ -143,11 +143,23 @@ $markdown = @"
 
 $markdown | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
-$evidenceRecords = @(
-    @{ source = "repository"; name = "source-files"; kind = "summary"; confidence = 0.95; provider = "generator"; providerType = "deterministic"; metadata = @{ count = $codeFiles.Count; languages = @($languageCount.Keys) } },
-    @{ source = "docs"; name = "api-inventory"; kind = "endpoint"; confidence = 0.9; provider = "generator"; providerType = "deterministic"; metadata = @{ documentedEndpoints = $apiEndpointCount } },
-    @{ source = "docs"; name = "data-model"; kind = "model"; confidence = 0.9; provider = "generator"; providerType = "deterministic"; metadata = @{ documentedModels = $modelCount } }
-)
+$artifact = "start-here"
+$evidenceRecords = @()
+
+if (Get-Command New-AppDocExtractionRecord -ErrorAction SilentlyContinue) {
+    $evidenceRecords = @(
+        New-AppDocExtractionRecord -Artifact $artifact -Source "repository" -Name "source-files" -Kind "summary" -Confidence 0.95 -Provider "generator" -ProviderType "deterministic" -Metadata @{ count = $codeFiles.Count; languages = @($languageCount.Keys) }
+        New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "api-inventory" -Kind "endpoint" -Confidence 0.9 -Provider "generator" -ProviderType "deterministic" -Metadata @{ documentedEndpoints = $apiEndpointCount }
+        New-AppDocExtractionRecord -Artifact $artifact -Source "docs" -Name "data-model" -Kind "model" -Confidence 0.9 -Provider "generator" -ProviderType "deterministic" -Metadata @{ documentedModels = $modelCount }
+    )
+}
+else {
+    $evidenceRecords = @(
+        @{ artifact = $artifact; source = "repository"; name = "source-files"; kind = "summary"; confidence = 0.95; provider = "generator"; providerType = "deterministic"; metadata = @{ count = $codeFiles.Count; languages = @($languageCount.Keys) } },
+        @{ artifact = $artifact; source = "docs"; name = "api-inventory"; kind = "endpoint"; confidence = 0.9; provider = "generator"; providerType = "deterministic"; metadata = @{ documentedEndpoints = $apiEndpointCount } },
+        @{ artifact = $artifact; source = "docs"; name = "data-model"; kind = "model"; confidence = 0.9; provider = "generator"; providerType = "deterministic"; metadata = @{ documentedModels = $modelCount } }
+    )
+}
 
 if (Get-Command Write-AppDocEvidenceArtifact -ErrorAction SilentlyContinue) {
     $contract = $null
@@ -155,13 +167,13 @@ if (Get-Command Write-AppDocEvidenceArtifact -ErrorAction SilentlyContinue) {
         $contract = Get-AppDocArtifactContract -Artifact "start-here"
     }
 
-    $evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact "start-here" -Records $evidenceRecords -Metadata @{
+    $evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $artifact -Records $evidenceRecords -Metadata @{
         requiredEvidenceKeys = if ($contract) { @($contract.requiredEvidenceKeys) } else { @("summary", "endpoints", "models") }
         requiredSections = if ($contract) { @($contract.requiredSections) } else { @("Who This Is For", "15-Minute Orientation", "Role-Based Paths", "System Signals") }
         generator = "generate-start-here.ps1"
     }
     if ($evidencePath -and (Get-Command Update-AppDocEvidenceManifest -ErrorAction SilentlyContinue)) {
-        [void](Update-AppDocEvidenceManifest -RootPath $RootPath -Artifact "start-here" -EvidencePath $evidencePath -RecordCount $evidenceRecords.Count -Metadata @{ generator = "generate-start-here.ps1" })
+        [void](Update-AppDocEvidenceManifest -RootPath $RootPath -Artifact $artifact -EvidencePath $evidencePath -RecordCount $evidenceRecords.Count -Metadata @{ generator = "generate-start-here.ps1" })
     }
 }
 

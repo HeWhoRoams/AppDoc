@@ -1,42 +1,42 @@
 {
   "artifact": "start-here",
-  "generatedAt": "2026-02-19T16:14:22-05:00",
+  "generatedAt": "2026-02-20T12:10:09-05:00",
   "recordCount": 3,
   "records": [
     {
-      "artifact": "",
+      "artifact": "start-here",
       "source": "docs",
       "name": "api-inventory",
       "kind": "endpoint",
-      "confidence": 0.9,
+      "confidence": 1.0,
       "metadata": {
         "documentedEndpoints": 0
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": ""
+      "timestamp": "2026-02-20T12:10:09-05:00"
     },
     {
-      "artifact": "",
+      "artifact": "start-here",
       "source": "docs",
       "name": "data-model",
       "kind": "model",
-      "confidence": 0.9,
+      "confidence": 1.0,
       "metadata": {
-        "documentedModels": 4
+        "documentedModels": 9
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": ""
+      "timestamp": "2026-02-20T12:10:09-05:00"
     },
     {
-      "artifact": "",
+      "artifact": "start-here",
       "source": "repository",
       "name": "source-files",
       "kind": "summary",
-      "confidence": 0.95,
+      "confidence": 1.0,
       "metadata": {
         "languages": [
           ".cs"
@@ -46,7 +46,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": ""
+      "timestamp": "2026-02-20T12:10:09-05:00"
     }
   ],
   "metadata": {
@@ -70,6 +70,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "a0df2bcaccb8a10b181a6094bb9395a3f64c2595d381bf14d0ab971bdfed24b7"
+    "contentHash": "172465a648322e8b34818231d85ec30c8a5ebc2376e93552c197feb1b56274cc"
   }
 }

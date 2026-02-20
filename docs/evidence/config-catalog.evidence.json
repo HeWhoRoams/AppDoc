@@ -1,7 +1,7 @@
 {
   "artifact": "config-catalog",
-  "generatedAt": "2026-02-19T16:14:20-05:00",
-  "recordCount": 59,
+  "generatedAt": "2026-02-20T12:10:07-05:00",
+  "recordCount": 60,
   "records": [
     {
       "artifact": "config-catalog",
@@ -10,15 +10,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -27,15 +27,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -44,15 +44,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -61,15 +61,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -78,15 +78,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -95,15 +95,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -112,15 +112,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -129,15 +129,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -146,15 +146,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -163,15 +163,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -180,15 +180,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -197,15 +197,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -214,15 +214,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -231,15 +231,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -248,15 +248,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -265,15 +265,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -282,15 +282,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -299,15 +299,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -316,15 +316,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -333,15 +333,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -350,15 +350,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -367,15 +367,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -384,15 +384,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -401,15 +401,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -418,15 +418,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -435,15 +435,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -452,15 +452,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -469,15 +469,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -486,15 +486,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -503,15 +503,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -520,15 +520,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -537,15 +537,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -554,15 +554,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -571,15 +571,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -588,15 +588,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -605,15 +605,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -622,15 +622,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -639,15 +639,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "false",
         "required": false,
-        "value": "false"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -656,15 +656,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -673,15 +673,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -690,15 +690,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -707,15 +707,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "false",
         "required": false,
-        "value": "false"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -724,15 +724,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "false",
         "required": false,
-        "value": "false"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -741,15 +741,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -758,15 +758,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": true,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -775,15 +775,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
+        "value": "true",
         "required": false,
-        "value": "true"
+        "type": "JSON Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -792,15 +792,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "YAML Configuration",
-        "file": ".github\\workflows\\appdoc-ci.yml",
+        "file": ".github/workflows/appdoc-ci.yml",
+        "value": "windows-latest",
         "required": false,
-        "value": "windows-latest"
+        "type": "YAML Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -809,15 +809,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "YAML Configuration",
-        "file": ".github\\workflows\\appdoc-ci.yml",
+        "file": ".github/workflows/appdoc-ci.yml",
+        "value": "pwsh",
         "required": false,
-        "value": "pwsh"
+        "type": "YAML Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -826,15 +826,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "YAML Configuration",
-        "file": ".github\\workflows\\appdoc-ci.yml",
+        "file": ".github/workflows/appdoc-ci.yml",
+        "value": "uses: actions/checkout@v4",
         "required": false,
-        "value": "uses: actions/checkout@v4"
+        "type": "YAML Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -843,15 +843,32 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "YAML Configuration",
-        "file": ".github\\workflows\\appdoc-ci.yml",
+        "file": ".github/workflows/appdoc-ci.yml",
+        "value": "name: Run PowerShell syntax gate",
         "required": false,
-        "value": "name: Run PowerShell syntax gate"
+        "type": "YAML Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[2]",
+      "name": "jobs.syntax-gate.steps[2]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
+        "value": "name: Run documentation integrity gate",
+        "required": false,
+        "type": "YAML Configuration"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -860,15 +877,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "YAML Configuration",
-        "file": ".github\\workflows\\appdoc-ci.yml",
+        "file": ".github/workflows/appdoc-ci.yml",
+        "value": "appdoc-ci",
         "required": false,
-        "value": "appdoc-ci"
+        "type": "YAML Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -877,15 +894,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "YAML Configuration",
-        "file": ".github\\workflows\\appdoc-ci.yml",
+        "file": ".github/workflows/appdoc-ci.yml",
+        "value": "main",
         "required": false,
-        "value": "main"
+        "type": "YAML Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -894,15 +911,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "YAML Configuration",
-        "file": ".github\\workflows\\appdoc-ci.yml",
+        "file": ".github/workflows/appdoc-ci.yml",
+        "value": "master",
         "required": false,
-        "value": "master"
+        "type": "YAML Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -911,15 +928,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "MSBuild Configuration",
-        "file": ".appdoc\\tools\\AppDoc.CSharpAstParser\\AppDoc.CSharpAstParser.csproj",
+        "file": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj",
+        "value": "Exe",
         "required": false,
-        "value": "Exe"
+        "type": "MSBuild Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -928,15 +945,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "MSBuild Configuration",
-        "file": "tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Service\\SampleApp.Service.csproj",
+        "file": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
+        "value": "WinExe",
         "required": false,
-        "value": "WinExe"
+        "type": "MSBuild Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -945,15 +962,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "MSBuild Configuration",
-        "file": ".appdoc\\tools\\AppDoc.CSharpAstParser\\AppDoc.CSharpAstParser.csproj",
+        "file": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj",
+        "value": "net8.0",
         "required": false,
-        "value": "net8.0"
+        "type": "MSBuild Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -962,15 +979,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "MSBuild Configuration",
-        "file": "tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Common\\SampleApp.Common.csproj",
+        "file": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
+        "value": "net6.0",
         "required": false,
-        "value": "net6.0"
+        "type": "MSBuild Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -979,15 +996,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "MSBuild Configuration",
-        "file": "tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Service\\SampleApp.Service.csproj",
+        "file": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
+        "value": "net6.0",
         "required": false,
-        "value": "net6.0"
+        "type": "MSBuild Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -996,15 +1013,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "MSBuild Configuration",
-        "file": "tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Web\\SampleApp.Web.csproj",
+        "file": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+        "value": "net6.0",
         "required": false,
-        "value": "net6.0"
+        "type": "MSBuild Configuration"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:20-05:00"
+      "timestamp": "2026-02-20T12:10:07-05:00"
     }
   ],
   "metadata": {
@@ -1016,7 +1033,7 @@
     "requiredEvidenceKeys": [
       "configurations"
     ],
-    "configCount": 59
+    "configCount": 60
   },
   "determinism": {
     "hashAlgorithm": "SHA256",
@@ -1025,6 +1042,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "0211dfb91c15b9e3f03688700fc49159d00fc2413fb2cae2c1ee37a40575d4ed"
+    "contentHash": "f6508feb7c31ac67f03569f2b21dc55110645ffd4659547a6a242eec39e11aa5"
   }
 }

@@ -1,12 +1,18 @@
 # Task Guides
 
+**Generated**: 2026-02-20 12:10:09
+
+## Plain Language Summary
+
+This artifact provides practical maintenance playbooks that connect common engineering tasks to the generated technical evidence.
+
 ## Executive Summary
 
 This document provides task-centric implementation and maintenance playbooks derived from deterministic evidence. It helps engineers complete common workflows safely while preserving architecture and operational quality.
 
 ## Task Guides
 
-**Generated**: 2026-02-19 16:14:22
+**Generated**: 2026-02-20 12:10:09
 
 ### Change an Endpoint Safely
 
@@ -27,10 +33,10 @@ This document provides task-centric implementation and maintenance playbooks der
 
 **Evidence snapshot**:
 - `msbuild SampleApp.sln /p:Configuration=Release`
-- `dotnet build ".appdoc\tools\AppDoc.CSharpAstParser\AppDoc.CSharpAstParser.csproj"`
-- `dotnet build "tests\powershell\fixtures\sample-dotnet-app\SampleApp.Common\SampleApp.Common.csproj"`
-- `dotnet build "tests\powershell\fixtures\sample-dotnet-app\SampleApp.Service\SampleApp.Service.csproj"`
-- `dotnet build "tests\powershell\fixtures\sample-dotnet-app\SampleApp.Web\SampleApp.Web.csproj"`
+- `dotnet build ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj"`
+- `dotnet build "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj"`
+- `dotnet build "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj"`
+- `dotnet build "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj"`
 
 ### Triage Dependency Risk
 
@@ -40,11 +46,11 @@ This document provides task-centric implementation and maintenance playbooks der
 4. Stage upgrades incrementally and re-run strict documentation validation.
 
 **Evidence snapshot**:
-- `SampleApp.Common` used in 2 location(s)
-- `EntityFramework` used in 1 location(s)
-- `Microsoft.AspNetCore.Mvc` used in 1 location(s)
-- `Microsoft.CodeAnalysis.CSharp` used in 1 location(s)
-- `Microsoft.Extensions.Hosting.WindowsServices` used in 1 location(s)
+- `SampleApp.Common` used in 2 locations
+- `EntityFramework` used in 1 locations
+- `Microsoft.AspNetCore.Mvc` used in 1 locations
+- `Microsoft.CodeAnalysis.CSharp` used in 1 locations
+- `Microsoft.Extensions.Hosting.WindowsServices` used in 1 locations
 
 ### Plan a Debt Sprint
 

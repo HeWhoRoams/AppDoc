@@ -117,8 +117,6 @@ function Add-AppDocCSharpDebtSignals {
         }
     }
 
-    $magicNumbers = [regex]::Matches($Content, '(?<![.\w])\d{2,}(?!\w)')
-
     $classMatches = [regex]::Matches($Content, 'class\s+(\w+)')
     foreach ($classMatch in $classMatches) {
         $start = $classMatch.Index

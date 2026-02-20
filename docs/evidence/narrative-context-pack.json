@@ -1,17 +1,18 @@
 {
+  "run_id": "38570b25-a783-48dc-8803-7f52212f9d6c",
   "intent_candidates": [
     {
       "id": "intent-0001",
       "type": "business_purpose",
-      "text": "The repository currently contains 8 code file(s) with limited behavioral evidence.",
+      "text": "The repository contains implementation code, but current deterministic evidence is not strong enough to confidently describe business behavior yet (files scanned: 8).",
       "evidence_ids": [
-        "ev-0085"
+        "ev-0086"
       ]
     },
     {
       "id": "intent-0002",
       "type": "data_contract",
-      "text": "Configuration behavior is influenced by 59 discovered key(s).",
+      "text": "Runtime behavior is also influenced by environment and application configuration values loaded at startup.",
       "evidence_ids": [
         "ev-0016",
         "ev-0017",
@@ -21,9 +22,9 @@
     {
       "id": "intent-0003",
       "type": "workflow",
-      "text": "Processing steps could not be inferred beyond repository-level summaries.",
+      "text": "Processing flow could not be inferred beyond repository-level summaries in this scan.",
       "evidence_ids": [
-        "ev-0085"
+        "ev-0086"
       ]
     },
     {
@@ -31,24 +32,24 @@
       "type": "data_contract",
       "text": "Output contracts are not strongly represented in current deterministic evidence.",
       "evidence_ids": [
-        "ev-0085"
+        "ev-0086"
       ]
     },
     {
       "id": "intent-0005",
       "type": "workflow",
-      "text": "Notable dependencies include: SampleApp.Common, EntityFramework, Microsoft.AspNetCore.Mvc, Microsoft.CodeAnalysis.CSharp, Microsoft.Extensions.Hosting.WindowsServices, Newtonsoft.Json, RabbitMQ.Client, System.Data.SqlClient.",
+      "text": "The runtime and build surface rely on key libraries including SampleApp.Common, EntityFramework, Microsoft.AspNetCore.Mvc, Microsoft.CodeAnalysis.CSharp, and Microsoft.Extensions.Hosting.WindowsServices.",
       "evidence_ids": [
-        "ev-0075",
         "ev-0076",
         "ev-0077",
-        "ev-0078"
+        "ev-0078",
+        "ev-0079"
       ]
     },
     {
       "id": "intent-0006",
       "type": "confidence_note",
-      "text": "Evidence coverage includes 0 endpoint record(s), 0 model record(s), 59 configuration record(s), and 10 dependency record(s).",
+      "text": "Evidence coverage includes 0 endpoint records, 0 model records, 60 configuration records, and 10 dependency records.",
       "evidence_ids": [
         "ev-0001",
         "ev-0002",
@@ -61,11 +62,45 @@
       "type": "confidence_note",
       "text": "Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.",
       "evidence_ids": [
-        "ev-0085"
+        "ev-0086"
       ]
     }
   ],
-  "generated_at": "2026-02-19T16:14:15-05:00",
+  "project": {
+    "name": "Appdoc",
+    "root_path": ".",
+    "audience": "new_dev",
+    "style_profile": "standard"
+  },
+  "section_evidence_defaults": {
+    "what_it_does": [
+      "ev-0086"
+    ],
+    "inputs": [
+      "ev-0016",
+      "ev-0017",
+      "ev-0018"
+    ],
+    "processing_steps": [
+      "ev-0086"
+    ],
+    "outputs": [
+      "ev-0086"
+    ],
+    "external_systems": [
+      "ev-0076",
+      "ev-0077",
+      "ev-0078",
+      "ev-0079"
+    ],
+    "confidence_notes": [
+      "ev-0001",
+      "ev-0002",
+      "ev-0003",
+      "ev-0004",
+      "ev-0086"
+    ]
+  },
   "facts": {
     "entities": [
       {
@@ -656,8 +691,8 @@
       {
         "id": "ent-0066",
         "type": "config",
-        "name": "name",
-        "source": ".github/workflows/appdoc-ci.yml:yaml/name",
+        "name": "jobs.syntax-gate.steps[2]",
+        "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[2]",
         "evidence_ids": [
           "ev-0066"
         ]
@@ -665,8 +700,8 @@
       {
         "id": "ent-0067",
         "type": "config",
-        "name": "on.push.branches[0]",
-        "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[0]",
+        "name": "name",
+        "source": ".github/workflows/appdoc-ci.yml:yaml/name",
         "evidence_ids": [
           "ev-0067"
         ]
@@ -674,8 +709,8 @@
       {
         "id": "ent-0068",
         "type": "config",
-        "name": "on.push.branches[1]",
-        "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[1]",
+        "name": "on.push.branches[0]",
+        "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[0]",
         "evidence_ids": [
           "ev-0068"
         ]
@@ -683,8 +718,8 @@
       {
         "id": "ent-0069",
         "type": "config",
-        "name": "OutputType",
-        "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/OutputType",
+        "name": "on.push.branches[1]",
+        "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[1]",
         "evidence_ids": [
           "ev-0069"
         ]
@@ -693,7 +728,7 @@
         "id": "ent-0070",
         "type": "config",
         "name": "OutputType",
-        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/OutputType",
+        "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/OutputType",
         "evidence_ids": [
           "ev-0070"
         ]
@@ -701,8 +736,8 @@
       {
         "id": "ent-0071",
         "type": "config",
-        "name": "TargetFramework",
-        "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/TargetFramework",
+        "name": "OutputType",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/OutputType",
         "evidence_ids": [
           "ev-0071"
         ]
@@ -711,7 +746,7 @@
         "id": "ent-0072",
         "type": "config",
         "name": "TargetFramework",
-        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj:PropertyGroup/TargetFramework",
+        "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/TargetFramework",
         "evidence_ids": [
           "ev-0072"
         ]
@@ -720,7 +755,7 @@
         "id": "ent-0073",
         "type": "config",
         "name": "TargetFramework",
-        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/TargetFramework",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj:PropertyGroup/TargetFramework",
         "evidence_ids": [
           "ev-0073"
         ]
@@ -729,16 +764,16 @@
         "id": "ent-0074",
         "type": "config",
         "name": "TargetFramework",
-        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj:PropertyGroup/TargetFramework",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/TargetFramework",
         "evidence_ids": [
           "ev-0074"
         ]
       },
       {
         "id": "ent-0075",
-        "type": "dep",
-        "name": "EntityFramework",
-        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
+        "type": "config",
+        "name": "TargetFramework",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj:PropertyGroup/TargetFramework",
         "evidence_ids": [
           "ev-0075"
         ]
@@ -746,8 +781,8 @@
       {
         "id": "ent-0076",
         "type": "dep",
-        "name": "Microsoft.AspNetCore.Mvc",
-        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+        "name": "EntityFramework",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
         "evidence_ids": [
           "ev-0076"
         ]
@@ -755,8 +790,8 @@
       {
         "id": "ent-0077",
         "type": "dep",
-        "name": "Microsoft.CodeAnalysis.CSharp",
-        "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj",
+        "name": "Microsoft.AspNetCore.Mvc",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
         "evidence_ids": [
           "ev-0077"
         ]
@@ -764,8 +799,8 @@
       {
         "id": "ent-0078",
         "type": "dep",
-        "name": "Microsoft.Extensions.Hosting.WindowsServices",
-        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
+        "name": "Microsoft.CodeAnalysis.CSharp",
+        "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj",
         "evidence_ids": [
           "ev-0078"
         ]
@@ -773,8 +808,8 @@
       {
         "id": "ent-0079",
         "type": "dep",
-        "name": "Newtonsoft.Json",
-        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+        "name": "Microsoft.Extensions.Hosting.WindowsServices",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
         "evidence_ids": [
           "ev-0079"
         ]
@@ -782,8 +817,8 @@
       {
         "id": "ent-0080",
         "type": "dep",
-        "name": "RabbitMQ.Client",
-        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
+        "name": "Newtonsoft.Json",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
         "evidence_ids": [
           "ev-0080"
         ]
@@ -791,7 +826,7 @@
       {
         "id": "ent-0081",
         "type": "dep",
-        "name": "SampleApp.Common",
+        "name": "RabbitMQ.Client",
         "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
         "evidence_ids": [
           "ev-0081"
@@ -801,7 +836,7 @@
         "id": "ent-0082",
         "type": "dep",
         "name": "SampleApp.Common",
-        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
         "evidence_ids": [
           "ev-0082"
         ]
@@ -809,8 +844,8 @@
       {
         "id": "ent-0083",
         "type": "dep",
-        "name": "System.Data.SqlClient",
-        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
+        "name": "SampleApp.Common",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
         "evidence_ids": [
           "ev-0083"
         ]
@@ -818,17 +853,17 @@
       {
         "id": "ent-0084",
         "type": "dep",
-        "name": "System.Net.Http",
-        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+        "name": "System.Data.SqlClient",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
         "evidence_ids": [
           "ev-0084"
         ]
       },
       {
         "id": "ent-0085",
-        "type": "signal",
-        "name": "system-purpose",
-        "source": "repository",
+        "type": "dep",
+        "name": "System.Net.Http",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
         "evidence_ids": [
           "ev-0085"
         ]
@@ -836,7 +871,7 @@
       {
         "id": "ent-0086",
         "type": "signal",
-        "name": ".cs",
+        "name": "system-purpose",
         "source": "repository",
         "evidence_ids": [
           "ev-0086"
@@ -845,8 +880,8 @@
       {
         "id": "ent-0087",
         "type": "signal",
-        "name": "confidence_notes-01",
-        "source": "overview-welcome",
+        "name": ".cs",
+        "source": "repository",
         "evidence_ids": [
           "ev-0087"
         ]
@@ -854,7 +889,7 @@
       {
         "id": "ent-0088",
         "type": "signal",
-        "name": "confidence_notes-02",
+        "name": "confidence_notes-01",
         "source": "overview-welcome",
         "evidence_ids": [
           "ev-0088"
@@ -863,7 +898,7 @@
       {
         "id": "ent-0089",
         "type": "signal",
-        "name": "external_systems-01",
+        "name": "confidence_notes-02",
         "source": "overview-welcome",
         "evidence_ids": [
           "ev-0089"
@@ -872,7 +907,7 @@
       {
         "id": "ent-0090",
         "type": "signal",
-        "name": "inputs-01",
+        "name": "external_systems-01",
         "source": "overview-welcome",
         "evidence_ids": [
           "ev-0090"
@@ -881,7 +916,7 @@
       {
         "id": "ent-0091",
         "type": "signal",
-        "name": "outputs-01",
+        "name": "inputs-01",
         "source": "overview-welcome",
         "evidence_ids": [
           "ev-0091"
@@ -890,7 +925,7 @@
       {
         "id": "ent-0092",
         "type": "signal",
-        "name": "processing_steps-01",
+        "name": "outputs-01",
         "source": "overview-welcome",
         "evidence_ids": [
           "ev-0092"
@@ -899,44 +934,31 @@
       {
         "id": "ent-0093",
         "type": "signal",
-        "name": "what_it_does-01",
+        "name": "processing_steps-01",
         "source": "overview-welcome",
         "evidence_ids": [
           "ev-0093"
+        ]
+      },
+      {
+        "id": "ent-0094",
+        "type": "signal",
+        "name": "what_it_does-01",
+        "source": "overview-welcome",
+        "evidence_ids": [
+          "ev-0094"
         ]
       }
     ],
     "relations": []
   },
-  "section_evidence_defaults": {
-    "what_it_does": [
-      "ev-0085"
-    ],
-    "inputs": [
-      "ev-0016",
-      "ev-0017",
-      "ev-0018"
-    ],
-    "processing_steps": [
-      "ev-0085"
-    ],
-    "outputs": [
-      "ev-0085"
-    ],
-    "external_systems": [
-      "ev-0075",
-      "ev-0076",
-      "ev-0077",
-      "ev-0078"
-    ],
-    "confidence_notes": [
-      "ev-0001",
-      "ev-0002",
-      "ev-0003",
-      "ev-0004",
-      "ev-0085"
-    ]
+  "constraints": {
+    "must_ground": true,
+    "no_invention": true,
+    "paragraph_level_evidence_preferred": true,
+    "section_level_evidence_allowed": true
   },
+  "generated_at": "2026-02-20T12:10:01-05:00",
   "evidence_refs": [
     {
       "id": "ev-0001",
@@ -1397,112 +1419,112 @@
       "id": "ev-0066",
       "artifact": "config-catalog",
       "kind": "configuration",
+      "name": "jobs.syntax-gate.steps[2]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[2]"
+    },
+    {
+      "id": "ev-0067",
+      "artifact": "config-catalog",
+      "kind": "configuration",
       "name": "name",
       "source": ".github/workflows/appdoc-ci.yml:yaml/name"
     },
     {
-      "id": "ev-0067",
+      "id": "ev-0068",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "on.push.branches[0]",
       "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[0]"
     },
     {
-      "id": "ev-0068",
+      "id": "ev-0069",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "on.push.branches[1]",
       "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[1]"
     },
     {
-      "id": "ev-0069",
+      "id": "ev-0070",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "OutputType",
       "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/OutputType"
     },
     {
-      "id": "ev-0070",
+      "id": "ev-0071",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "OutputType",
       "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/OutputType"
     },
     {
-      "id": "ev-0071",
+      "id": "ev-0072",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "TargetFramework",
       "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/TargetFramework"
     },
     {
-      "id": "ev-0072",
+      "id": "ev-0073",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "TargetFramework",
       "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj:PropertyGroup/TargetFramework"
     },
     {
-      "id": "ev-0073",
+      "id": "ev-0074",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "TargetFramework",
       "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/TargetFramework"
     },
     {
-      "id": "ev-0074",
+      "id": "ev-0075",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "TargetFramework",
       "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj:PropertyGroup/TargetFramework"
     },
     {
-      "id": "ev-0075",
+      "id": "ev-0076",
       "artifact": "dependencies-catalog",
       "kind": "dependency",
       "name": "EntityFramework",
       "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj"
     },
     {
-      "id": "ev-0076",
+      "id": "ev-0077",
       "artifact": "dependencies-catalog",
       "kind": "dependency",
       "name": "Microsoft.AspNetCore.Mvc",
       "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj"
     },
     {
-      "id": "ev-0077",
+      "id": "ev-0078",
       "artifact": "dependencies-catalog",
       "kind": "dependency",
       "name": "Microsoft.CodeAnalysis.CSharp",
       "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj"
     },
     {
-      "id": "ev-0078",
+      "id": "ev-0079",
       "artifact": "dependencies-catalog",
       "kind": "dependency",
       "name": "Microsoft.Extensions.Hosting.WindowsServices",
       "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj"
     },
     {
-      "id": "ev-0079",
+      "id": "ev-0080",
       "artifact": "dependencies-catalog",
       "kind": "dependency",
       "name": "Newtonsoft.Json",
       "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj"
     },
     {
-      "id": "ev-0080",
-      "artifact": "dependencies-catalog",
-      "kind": "dependency",
-      "name": "RabbitMQ.Client",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj"
-    },
-    {
       "id": "ev-0081",
       "artifact": "dependencies-catalog",
       "kind": "dependency",
-      "name": "SampleApp.Common",
+      "name": "RabbitMQ.Client",
       "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj"
     },
     {
@@ -1510,80 +1532,87 @@
       "artifact": "dependencies-catalog",
       "kind": "dependency",
       "name": "SampleApp.Common",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj"
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj"
     },
     {
       "id": "ev-0083",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "SampleApp.Common",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj"
+    },
+    {
+      "id": "ev-0084",
       "artifact": "dependencies-catalog",
       "kind": "dependency",
       "name": "System.Data.SqlClient",
       "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj"
     },
     {
-      "id": "ev-0084",
+      "id": "ev-0085",
       "artifact": "dependencies-catalog",
       "kind": "dependency",
       "name": "System.Net.Http",
       "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj"
     },
     {
-      "id": "ev-0085",
+      "id": "ev-0086",
       "artifact": "overview",
       "kind": "summary",
       "name": "system-purpose",
       "source": "repository"
     },
     {
-      "id": "ev-0086",
+      "id": "ev-0087",
       "artifact": "overview",
       "kind": "technology",
       "name": ".cs",
       "source": "repository"
     },
     {
-      "id": "ev-0087",
+      "id": "ev-0088",
       "artifact": "overview",
       "kind": "welcome-summary",
       "name": "confidence_notes-01",
       "source": "overview-welcome"
     },
     {
-      "id": "ev-0088",
+      "id": "ev-0089",
       "artifact": "overview",
       "kind": "welcome-summary",
       "name": "confidence_notes-02",
       "source": "overview-welcome"
     },
     {
-      "id": "ev-0089",
+      "id": "ev-0090",
       "artifact": "overview",
       "kind": "welcome-summary",
       "name": "external_systems-01",
       "source": "overview-welcome"
     },
     {
-      "id": "ev-0090",
+      "id": "ev-0091",
       "artifact": "overview",
       "kind": "welcome-summary",
       "name": "inputs-01",
       "source": "overview-welcome"
     },
     {
-      "id": "ev-0091",
+      "id": "ev-0092",
       "artifact": "overview",
       "kind": "welcome-summary",
       "name": "outputs-01",
       "source": "overview-welcome"
     },
     {
-      "id": "ev-0092",
+      "id": "ev-0093",
       "artifact": "overview",
       "kind": "welcome-summary",
       "name": "processing_steps-01",
       "source": "overview-welcome"
     },
     {
-      "id": "ev-0093",
+      "id": "ev-0094",
       "artifact": "overview",
       "kind": "welcome-summary",
       "name": "what_it_does-01",
@@ -1591,18 +1620,5 @@
     }
   ],
   "generator_version": "generate-overview.ps1",
-  "project": {
-    "name": "Appdoc",
-    "root_path": ".",
-    "audience": "new_dev",
-    "style_profile": "standard"
-  },
-  "run_id": "a9394f38-6178-4b2b-9df5-ee1e6a25d5bd",
-  "constraints": {
-    "must_ground": true,
-    "no_invention": true,
-    "paragraph_level_evidence_preferred": true,
-    "section_level_evidence_allowed": true
-  },
   "schema_version": "3.0.0"
 }

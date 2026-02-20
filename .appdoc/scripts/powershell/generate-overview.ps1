@@ -8,10 +8,8 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
     [Parameter(Mandatory=$false)]
-    [ValidateSet("Auto","Agent","ApiKey","Deterministic")]
+    [ValidateSet("Auto","Deterministic")]
     [string]$AIMode = "Auto",
-    [Parameter(Mandatory=$false)]
-    [switch]$RequireAI,
     [Parameter(Mandatory=$false)]
     [switch]$NoAI
 )
@@ -105,14 +103,30 @@ if (-not $overviewData) {
 }
 $languageCount = $overviewData.languageCount
 
+
 $truthPack = Get-AppDocOverviewTruthPackData -RootPath $RootPath -OverviewData $overviewData
-$truthPackPath = Write-AppDocOverviewTruthPack -RootPath $RootPath -TruthPack $truthPack
+if ($null -eq $truthPack) {
+    Write-Warning "Get-AppDocOverviewTruthPackData returned null. Using empty truth pack."
+    $truthPack = @{}
+} else {
+    $truthPackPath = Write-AppDocOverviewTruthPack -RootPath $RootPath -TruthPack $truthPack
+}
 
 $contextPack = Get-AppDocOverviewContextPackData -RootPath $RootPath -TruthPack $truthPack -Audience "new_dev" -StyleProfile "standard"
-$contextPackPath = Write-AppDocOverviewContextPack -RootPath $RootPath -ContextPack $contextPack
+if ($null -eq $contextPack) {
+    Write-Warning "Get-AppDocOverviewContextPackData returned null. Using empty context pack."
+    $contextPack = @{}
+} else {
+    $contextPackPath = Write-AppDocOverviewContextPack -RootPath $RootPath -ContextPack $contextPack
+}
 
-$welcomeNarrativeResult = Get-AppDocOverviewWelcomeNarrativeFromPipeline -RootPath $RootPath -TruthPack $truthPack -ContextPack $contextPack -Audience "new_dev" -StyleProfile "standard" -AIMode $AIMode -RequireAI:$RequireAI -NoAI:$NoAI
-$welcomeNarrative = $welcomeNarrativeResult.narrative
+$welcomeNarrativeResult = Get-AppDocOverviewWelcomeNarrativeFromPipeline -RootPath $RootPath -TruthPack $truthPack -ContextPack $contextPack -Audience "new_dev" -StyleProfile "standard" -AIMode "Deterministic" -NoAI
+if ($null -eq $welcomeNarrativeResult -or $null -eq $welcomeNarrativeResult.narrative) {
+    Write-Warning "Get-AppDocOverviewWelcomeNarrativeFromPipeline returned null or missing narrative. Using default welcome narrative."
+    $welcomeNarrative = "Welcome to the system overview. Narrative generation failed or returned no content."
+} else {
+    $welcomeNarrative = $welcomeNarrativeResult.narrative
+}
 
 Write-Progress -Activity "Generating System Overview" -Status "Populating template..." -PercentComplete 60
 $content = Get-Content -Path $outputPath -Raw
@@ -176,22 +190,22 @@ $evidenceMetadata = @{
     generator = "generate-overview.ps1"
     truthPackPath = $truthPackPath
     contextPackPath = $contextPackPath
-    welcomeNarrativeProvider = [string]$welcomeNarrativeResult.provider
-    welcomeNarrativeUsedAI = [bool]$welcomeNarrativeResult.usedAI
+    welcomeNarrativeProvider = [string](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult -Name "provider" -Default "")
+    welcomeNarrativeUsedAI = [bool](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult -Name "usedAI" -Default $false)
     welcomeNarrativeAIModeRequested = [string](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.runReport -Name "aiModeRequested" -Default "")
     welcomeNarrativeAIModeResolved = [string](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.runReport -Name "aiModeResolved" -Default "")
     welcomeNarrativeAIProvider = [string](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.runReport -Name "aiProvider" -Default "")
-    welcomeNarrativeVerified = [bool]$welcomeNarrativeResult.verification.passed
-    welcomeNarrativeIssues = @($welcomeNarrativeResult.verification.issues)
-    welcomeSectionCoveragePassed = [bool]$welcomeNarrativeResult.sectionCoverage.passed
-    welcomeSectionCoverageIssues = @($welcomeNarrativeResult.sectionCoverage.issues)
-    welcomeStyleGatePassed = [bool]$welcomeNarrativeResult.styleGate.passed
-    welcomeStyleGateIssues = @($welcomeNarrativeResult.styleGate.issues)
-    welcomeStyleGateMetrics = $welcomeNarrativeResult.styleGate.metrics
-    narrativeReviewRequired = [bool]$welcomeNarrativeResult.narrativeReviewRequired
-    welcomeNarrativePassSources = $welcomeNarrativeResult.passSources
-    narrativeArtifacts = $welcomeNarrativeResult.artifactPaths
-    narrativeRunReport = $welcomeNarrativeResult.runReport
+    welcomeNarrativeVerified = [bool](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.verification -Name "passed" -Default $false)
+    welcomeNarrativeIssues = @(Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.verification -Name "issues" -Default @())
+    welcomeSectionCoveragePassed = [bool](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.sectionCoverage -Name "passed" -Default $false)
+    welcomeSectionCoverageIssues = @(Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.sectionCoverage -Name "issues" -Default @())
+    welcomeStyleGatePassed = [bool](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.styleGate -Name "passed" -Default $false)
+    welcomeStyleGateIssues = @(Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.styleGate -Name "issues" -Default @())
+    welcomeStyleGateMetrics = (Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.styleGate -Name "metrics" -Default @{})
+    narrativeReviewRequired = [bool](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult -Name "narrativeReviewRequired" -Default $false)
+    welcomeNarrativePassSources = (Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult -Name "passSources" -Default @())
+    narrativeArtifacts = (Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult -Name "artifactPaths" -Default @())
+    narrativeRunReport = (Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult -Name "runReport" -Default @{})
 }
 if ($contract) {
     $evidenceMetadata.requiredEvidenceKeys = @($contract.requiredEvidenceKeys)

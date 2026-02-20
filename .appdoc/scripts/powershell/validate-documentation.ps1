@@ -895,7 +895,9 @@ function Get-PolicyGateAnalysis {
         }
     }
     else {
-        $blockingIssues += "overview-doc-missing"
+        if (-not ($blockingIssues -contains "critical-doc-missing:overview.md")) {
+            $blockingIssues += "overview-doc-missing"
+        }
     }
 
     $apiPath = Join-Path $DocsPath "api-inventory.md"

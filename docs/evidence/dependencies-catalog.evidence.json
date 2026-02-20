@@ -1,6 +1,6 @@
 {
   "artifact": "dependencies-catalog",
-  "generatedAt": "2026-02-19T16:14:22-05:00",
+  "generatedAt": "2026-02-20T12:10:09-05:00",
   "recordCount": 10,
   "records": [
     {
@@ -11,13 +11,13 @@
       "confidence": 1.0,
       "metadata": {
         "version": "6.4.4",
-        "type": "NuGet Package",
-        "project": "SampleApp.Common"
+        "project": "SampleApp.Common",
+        "type": "NuGet Package"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:22-05:00"
+      "timestamp": "2026-02-20T12:10:09-05:00"
     },
     {
       "artifact": "dependencies-catalog",
@@ -27,13 +27,13 @@
       "confidence": 1.0,
       "metadata": {
         "version": "2.2.0",
-        "type": "NuGet Package",
-        "project": "SampleApp.Web"
+        "project": "SampleApp.Web",
+        "type": "NuGet Package"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:22-05:00"
+      "timestamp": "2026-02-20T12:10:09-05:00"
     },
     {
       "artifact": "dependencies-catalog",
@@ -43,13 +43,13 @@
       "confidence": 1.0,
       "metadata": {
         "version": "4.12.0",
-        "type": "NuGet Package",
-        "project": "AppDoc.CSharpAstParser"
+        "project": "AppDoc.CSharpAstParser",
+        "type": "NuGet Package"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:22-05:00"
+      "timestamp": "2026-02-20T12:10:09-05:00"
     },
     {
       "artifact": "dependencies-catalog",
@@ -59,13 +59,13 @@
       "confidence": 1.0,
       "metadata": {
         "version": "6.0.0",
-        "type": "NuGet Package",
-        "project": "SampleApp.Service"
+        "project": "SampleApp.Service",
+        "type": "NuGet Package"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:22-05:00"
+      "timestamp": "2026-02-20T12:10:09-05:00"
     },
     {
       "artifact": "dependencies-catalog",
@@ -75,13 +75,13 @@
       "confidence": 1.0,
       "metadata": {
         "version": "13.0.1",
-        "type": "NuGet Package",
-        "project": "SampleApp.Web"
+        "project": "SampleApp.Web",
+        "type": "NuGet Package"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:22-05:00"
+      "timestamp": "2026-02-20T12:10:09-05:00"
     },
     {
       "artifact": "dependencies-catalog",
@@ -91,13 +91,13 @@
       "confidence": 1.0,
       "metadata": {
         "version": "6.4.0",
-        "type": "NuGet Package",
-        "project": "SampleApp.Service"
+        "project": "SampleApp.Service",
+        "type": "NuGet Package"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:22-05:00"
+      "timestamp": "2026-02-20T12:10:09-05:00"
     },
     {
       "artifact": "dependencies-catalog",
@@ -107,13 +107,13 @@
       "confidence": 1.0,
       "metadata": {
         "version": "Project",
-        "type": "Project Reference",
-        "project": "SampleApp.Service"
+        "project": "SampleApp.Service",
+        "type": "Project Reference"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:22-05:00"
+      "timestamp": "2026-02-20T12:10:09-05:00"
     },
     {
       "artifact": "dependencies-catalog",
@@ -123,13 +123,13 @@
       "confidence": 1.0,
       "metadata": {
         "version": "Project",
-        "type": "Project Reference",
-        "project": "SampleApp.Web"
+        "project": "SampleApp.Web",
+        "type": "Project Reference"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:22-05:00"
+      "timestamp": "2026-02-20T12:10:09-05:00"
     },
     {
       "artifact": "dependencies-catalog",
@@ -139,13 +139,13 @@
       "confidence": 1.0,
       "metadata": {
         "version": "4.8.5",
-        "type": "NuGet Package",
-        "project": "SampleApp.Common"
+        "project": "SampleApp.Common",
+        "type": "NuGet Package"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:22-05:00"
+      "timestamp": "2026-02-20T12:10:09-05:00"
     },
     {
       "artifact": "dependencies-catalog",
@@ -155,21 +155,21 @@
       "confidence": 1.0,
       "metadata": {
         "version": "4.3.4",
-        "type": "NuGet Package",
-        "project": "SampleApp.Web"
+        "project": "SampleApp.Web",
+        "type": "NuGet Package"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-19T16:14:22-05:00"
+      "timestamp": "2026-02-20T12:10:09-05:00"
     }
   ],
   "metadata": {
-    "dependencyCount": 10,
     "requiredSections": [
       "Executive Summary",
       "Dependency Summary"
     ],
+    "dependencyCount": 10,
     "projectCount": 4,
     "generator": "generate-dependencies-catalog.ps1",
     "requiredEvidenceKeys": [

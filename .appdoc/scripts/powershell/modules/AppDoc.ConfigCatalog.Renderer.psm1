@@ -99,7 +99,7 @@ _No environment variables detected. System may use configuration files or defaul
 
     $configSourcesContent = if ($DiscoveredConfigFiles.Count -gt 0) {
         ($DiscoveredConfigFiles | Group-Object -Property type | ForEach-Object {
-            "- **$($_.Name)**: $($_.Count) file(s)"
+            "- **$($_.Name)**: $($_.Count) files"
         }) -join "`n"
     } else {
         "No scoped configuration source files were detected in this scan. Verify repository scope and environment-specific config locations."
@@ -131,7 +131,7 @@ _No environment variables detected. System may use configuration files or defaul
             return "If true, allows Copilot or automation to run $key commands/scripts without manual approval."
         }
         if ($key -match 'Write-Host') {
-            return "If true, allows scripts to use Write-Host for CLI output in automated runs."
+            return "Display-only command allowlist entry; not required for security-critical automation."
         }
         if ($key -match 'executions.enabled') {
             return "Enables Copilot chat command execution features."
@@ -266,7 +266,7 @@ function Update-AppDocConfigCatalogContent {
     $sectionFallbacks = [ordered]@{
         'Configuration Validation' = 'This run extracted configuration keys and sources but not a full validation matrix. Treat required-key checks, value-shape checks, and environment overrides as mandatory pre-release validation tasks.'
         'Configuration Management' = 'Configuration is distributed across application config files, transforms, project metadata, and pipeline settings. Manage changes with environment-specific promotion controls and explicit review for sensitive settings.'
-        'Security Considerations' = 'No direct security classification was inferred for each key in this pass. Treat connection strings, credentials, tokens, and endpoint URLs as sensitive-by-default and validate redaction before publishing artifacts.'
+        'Security Considerations' = 'Trust model: auto-approve entries execute with local user privileges and should only target trusted scripts under validated repository paths. This workflow enforces repository scope filtering but does not provide cryptographic file-integrity attestation; protect repos and runners accordingly. Restrict auto-approve patterns to least privilege, avoid broad wildcards, and keep display-only commands such as Write-Host non-required from a security perspective.'
         'Example Configurations' = 'Environment-specific examples are not emitted automatically to avoid accidental secret leakage. Build examples from non-sensitive templates and validate with the required configuration criteria below.'
     }
     foreach ($header in $sectionFallbacks.Keys) {
@@ -280,6 +280,23 @@ function Update-AppDocConfigCatalogContent {
             }
         )
     }
+
+    $requiredCriteriaContent = @"
+Use least-privilege auto-approve rules for trusted automation paths only:
+
+- `chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1`
+- `chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1`
+
+Do not treat `chat.tools.terminal.autoApprove.Write-Host` as a required security control. `Write-Host` is a display/UI command and should remain optional.
+"@
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Required configuration criteria\s*\r?\n\r?\n).*?(?=(\r?\n##\s+)|\z)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + $requiredCriteriaContent + "`r`n")
+        }
+    )
 
     return $updated
 }

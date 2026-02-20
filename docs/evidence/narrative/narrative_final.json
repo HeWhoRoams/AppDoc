@@ -1,15 +1,15 @@
 {
   "what_it_does": [
     {
-      "text": "The repository currently contains 8 code file(s) with limited behavioral evidence.",
+      "text": "The repository contains implementation code, but current deterministic evidence is not strong enough to confidently describe business behavior yet (files scanned: 8).",
       "evidence_refs": [
-        "ev-0085"
+        "ev-0086"
       ]
     }
   ],
   "inputs": [
     {
-      "text": "Configuration behavior is influenced by 59 discovered key(s).",
+      "text": "Runtime behavior is also influenced by environment and application configuration values loaded at startup.",
       "evidence_refs": [
         "ev-0016",
         "ev-0017",
@@ -19,9 +19,9 @@
   ],
   "processing_steps": [
     {
-      "text": "Processing steps could not be inferred beyond repository-level summaries.",
+      "text": "Processing flow could not be inferred beyond repository-level summaries in this scan.",
       "evidence_refs": [
-        "ev-0085"
+        "ev-0086"
       ]
     }
   ],
@@ -29,24 +29,24 @@
     {
       "text": "Output contracts are not strongly represented in current deterministic evidence.",
       "evidence_refs": [
-        "ev-0085"
+        "ev-0086"
       ]
     }
   ],
   "external_systems": [
     {
-      "text": "Notable dependencies include: SampleApp.Common, EntityFramework, Microsoft.AspNetCore.Mvc, Microsoft.CodeAnalysis.CSharp, Microsoft.Extensions.Hosting.WindowsServices, Newtonsoft.Json, RabbitMQ.Client, System.Data.SqlClient.",
+      "text": "The runtime and build surface rely on key libraries including SampleApp.Common, EntityFramework, Microsoft.AspNetCore.Mvc, Microsoft.CodeAnalysis.CSharp, and Microsoft.Extensions.Hosting.WindowsServices.",
       "evidence_refs": [
-        "ev-0075",
         "ev-0076",
         "ev-0077",
-        "ev-0078"
+        "ev-0078",
+        "ev-0079"
       ]
     }
   ],
   "confidence_notes": [
     {
-      "text": "Evidence coverage includes 0 endpoint record(s), 0 model record(s), 59 configuration record(s), and 10 dependency record(s).",
+      "text": "Evidence coverage includes 0 endpoint records, 0 model records, 60 configuration records, and 10 dependency records.",
       "evidence_refs": [
         "ev-0001",
         "ev-0002",
@@ -57,7 +57,7 @@
     {
       "text": "Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.",
       "evidence_refs": [
-        "ev-0085"
+        "ev-0086"
       ]
     }
   ],
@@ -69,9 +69,9 @@
       "name": "Build (MSBuild)",
       "source": "SampleApp.sln",
       "metadata": {
+        "command": "Build solution using MSBuild",
         "invocation": "msbuild SampleApp.sln /p:Configuration=Release",
-        "type": "msbuild",
-        "command": "Build solution using MSBuild"
+        "type": "msbuild"
       }
     },
     {
@@ -81,9 +81,9 @@
       "name": "Build AppDoc.CSharpAstParser",
       "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj",
       "metadata": {
-        "invocation": "dotnet build \".appdoc\\tools\\AppDoc.CSharpAstParser\\AppDoc.CSharpAstParser.csproj\"",
-        "type": "dotnet-project",
-        "command": "Build individual project"
+        "command": "Build individual project",
+        "invocation": "dotnet build \".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj\"",
+        "type": "dotnet-project"
       }
     },
     {
@@ -93,9 +93,9 @@
       "name": "Build SampleApp.Common",
       "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
       "metadata": {
-        "invocation": "dotnet build \"tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Common\\SampleApp.Common.csproj\"",
-        "type": "dotnet-project",
-        "command": "Build individual project"
+        "command": "Build individual project",
+        "invocation": "dotnet build \"tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj\"",
+        "type": "dotnet-project"
       }
     },
     {
@@ -105,9 +105,9 @@
       "name": "Build SampleApp.Service",
       "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
       "metadata": {
-        "invocation": "dotnet build \"tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Service\\SampleApp.Service.csproj\"",
-        "type": "dotnet-project",
-        "command": "Build individual project"
+        "command": "Build individual project",
+        "invocation": "dotnet build \"tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj\"",
+        "type": "dotnet-project"
       }
     },
     {
@@ -117,10 +117,10 @@
       "name": "chat.tools.fileOperations.autoApprove.list",
       "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.list",
       "metadata": {
+        "type": "JSON Configuration",
         "required": false,
         "value": "true",
-        "file": ".vscode/settings.json",
-        "type": "JSON Configuration"
+        "file": ".vscode/settings.json"
       }
     },
     {
@@ -130,10 +130,10 @@
       "name": "chat.tools.fileOperations.autoApprove.read",
       "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.read",
       "metadata": {
+        "type": "JSON Configuration",
         "required": false,
         "value": "true",
-        "file": ".vscode/settings.json",
-        "type": "JSON Configuration"
+        "file": ".vscode/settings.json"
       }
     },
     {
@@ -143,62 +143,62 @@
       "name": "chat.tools.terminal.autoApprove.-ErrorAction",
       "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction",
       "metadata": {
+        "type": "JSON Configuration",
         "required": false,
         "value": "true",
-        "file": ".vscode/settings.json",
-        "type": "JSON Configuration"
-      }
-    },
-    {
-      "id": "ev-0075",
-      "artifact": "dependencies-catalog",
-      "kind": "dependency",
-      "name": "EntityFramework",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
-      "metadata": {
-        "version": "6.4.4",
-        "type": "NuGet Package",
-        "project": "SampleApp.Common"
+        "file": ".vscode/settings.json"
       }
     },
     {
       "id": "ev-0076",
       "artifact": "dependencies-catalog",
       "kind": "dependency",
-      "name": "Microsoft.AspNetCore.Mvc",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+      "name": "EntityFramework",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
       "metadata": {
-        "version": "2.2.0",
         "type": "NuGet Package",
-        "project": "SampleApp.Web"
+        "project": "SampleApp.Common",
+        "version": "6.4.4"
       }
     },
     {
       "id": "ev-0077",
       "artifact": "dependencies-catalog",
       "kind": "dependency",
-      "name": "Microsoft.CodeAnalysis.CSharp",
-      "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj",
+      "name": "Microsoft.AspNetCore.Mvc",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
       "metadata": {
-        "version": "4.12.0",
         "type": "NuGet Package",
-        "project": "AppDoc.CSharpAstParser"
+        "project": "SampleApp.Web",
+        "version": "2.2.0"
       }
     },
     {
       "id": "ev-0078",
       "artifact": "dependencies-catalog",
       "kind": "dependency",
-      "name": "Microsoft.Extensions.Hosting.WindowsServices",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
+      "name": "Microsoft.CodeAnalysis.CSharp",
+      "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj",
       "metadata": {
-        "version": "6.0.0",
         "type": "NuGet Package",
-        "project": "SampleApp.Service"
+        "project": "AppDoc.CSharpAstParser",
+        "version": "4.12.0"
       }
     },
     {
-      "id": "ev-0085",
+      "id": "ev-0079",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "Microsoft.Extensions.Hosting.WindowsServices",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
+      "metadata": {
+        "type": "NuGet Package",
+        "project": "SampleApp.Service",
+        "version": "6.0.0"
+      }
+    },
+    {
+      "id": "ev-0086",
       "artifact": "overview",
       "kind": "summary",
       "name": "system-purpose",

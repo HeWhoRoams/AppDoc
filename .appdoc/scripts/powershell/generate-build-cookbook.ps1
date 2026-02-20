@@ -136,7 +136,7 @@ $evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $arti
     requiredSections = @($contract.requiredSections)
     commandCount = $commands.Count
     prerequisiteCount = $prerequisites.Count
-    cicdCount = $cicdInfo.Count
+    cicdCount = @($evidenceRecords | Where-Object { [string]$_.kind -eq "cicd" }).Count
     generator = "generate-build-cookbook.ps1"
 }
 if ($evidencePath) {

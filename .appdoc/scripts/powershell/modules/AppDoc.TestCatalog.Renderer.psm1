@@ -78,8 +78,8 @@ function Update-AppDocTestCatalogContent {
 
     $sections = Get-AppDocTestCatalogMarkdown -Tests $Tests -MaxTestCases $MaxTestCases
     $updated = $Content
-    $suiteCount = @($Tests | Group-Object -Property file).Count
-    $testCount = @($Tests).Count
+    $testCount = if ($Tests) { @($Tests).Count } else { 0 }
+    $suiteCount = if ($testCount -gt 0) { @($Tests | Group-Object -Property file).Count } else { 0 }
 
 
     # Only perform placeholder replacement if the section headers are missing
@@ -146,14 +146,14 @@ function Update-AppDocTestCatalogContent {
     }
 
     $coverageSummary = if ($testCount -gt 0) {
-        "Detected $testCount test case(s) across $suiteCount suite(s) in this scan. Line/branch coverage percentages are not computed here; use CI coverage tooling for quantitative baselines."
+        "Detected $testCount test cases across $suiteCount suites in this scan. Line/branch coverage percentages are not computed here; use CI coverage tooling for quantitative baselines."
     } else {
         "No tests were detected in this scan. Validate test project scope and framework discovery settings."
     }
     $exampleRun = if ($testCount -gt 0) {
-        "Run `dotnet test` at solution scope for baseline verification, then rerun only impacted suites while iterating on failures. Capture failing test names and stack traces as part of remediation records."
+        'Run `dotnet test` at solution scope for baseline verification, then rerun only impacted suites while iterating on failures. Capture failing test names and stack traces as part of remediation records.'
     } else {
-        "No runnable test commands were inferred from discovered evidence. Verify test projects and build scripts before relying on this artifact."
+        'No runnable test commands were inferred from discovered evidence. Verify test projects and build scripts before relying on this artifact.'
     }
 
     $updated = [regex]::Replace(

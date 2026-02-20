@@ -66,7 +66,7 @@ if ($taskData -is [hashtable] -or $taskData -is [System.Collections.Specialized.
 }
 
 if (-not $hasEndpointRows) {
-    Write-Error "Get-AppDocTaskGuidesData returned null or missing required properties. Cannot continue generating task guides."
+    Write-Error "Get-AppDocTaskGuidesData returned data missing required property 'endpointRows'. Cannot continue generating task guides."
     exit 1
 }
 $content = Get-Content -Path $outputPath -Raw

@@ -495,5 +495,6 @@ Export-ModuleMember -Function @(
     'Test-AppDocDataModelCandidate',
     'Get-AppDocDataModelSignalScore',
     'Select-AppDocCanonicalDataModels',
-    'Get-AppDocDataModelData'
+    'Get-AppDocDataModelData',
+    'Get-AppDocDataModelAdditionalExcludePatterns'
 )

@@ -57,7 +57,7 @@ function Get-AppDocTaskGuidesData {
     if ($sampleBuildCommands.Count -eq 0) { $sampleBuildCommands = @("- No build command evidence available") }
 
     $sampleDependencies = @($dependencyRows | Group-Object -Property name | Sort-Object Count -Descending | Select-Object -First 5 | ForEach-Object {
-        "- ``$($_.Name)`` used in $($_.Count) location(s)"
+        "- ``$($_.Name)`` used in $($_.Count) locations"
     })
     if ($sampleDependencies.Count -eq 0) { $sampleDependencies = @("- No dependency evidence available") }
 

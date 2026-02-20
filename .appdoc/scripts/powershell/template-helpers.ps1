@@ -7,7 +7,7 @@
 function Initialize-TemplateFile {
     <#
     .SYNOPSIS
-    Copies a template file to the output location if it doesn't exist
+    Refreshes the output file from template (or preserves existing content when requested)
 
     .PARAMETER TemplateName
     Name of the template file (e.g., "api-inventory-template.md")
@@ -17,6 +17,9 @@ function Initialize-TemplateFile {
 
     .PARAMETER RootPath
     Root path of the target codebase
+
+    .PARAMETER PreserveExisting
+    Keep an existing output file as-is instead of refreshing from template.
     #>
     param(
         [Parameter(Mandatory=$true)]
@@ -27,6 +30,9 @@ function Initialize-TemplateFile {
 
         [Parameter(Mandatory=$true)]
         [string]$RootPath
+        ,
+        [Parameter(Mandatory=$false)]
+        [switch]$PreserveExisting
     )
 
     $outputDir = Split-Path $OutputPath -Parent
@@ -34,31 +40,33 @@ function Initialize-TemplateFile {
         New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
     }
 
-    if (-not (Test-Path $OutputPath)) {
-        $scriptRoot = Split-Path $PSScriptRoot -Parent
-        $appDocRoot = if ($scriptRoot) { Split-Path $scriptRoot -Parent } else { $null }
-        $candidateTemplateDirs = @(
-            (Join-Path $RootPath ".appdoc\templates"),
-            $(if ($appDocRoot) { Join-Path $appDocRoot "templates" })
-        ) | Where-Object { $_ -and (Test-Path $_) }
-
-        $templatePath = $null
-        foreach ($dir in $candidateTemplateDirs) {
-            $possiblePath = Join-Path $dir $TemplateName
-            if (Test-Path $possiblePath) {
-                $templatePath = $possiblePath
-                break
-            }
-        }
-
-        if (-not $templatePath) {
-            Write-Warning "Template not found in any known template directory. Checked: $($candidateTemplateDirs -join ', ')"
-            return $false
-        }
-
-        Copy-Item -Path $templatePath -Destination $OutputPath -Force
-        Write-Verbose "Copied template: $TemplateName -> $OutputPath"
+    if ((Test-Path $OutputPath) -and $PreserveExisting) {
+        return $true
     }
+
+    $scriptRoot = Split-Path $PSScriptRoot -Parent
+    $appDocRoot = if ($scriptRoot) { Split-Path $scriptRoot -Parent } else { $null }
+    $candidateTemplateDirs = @(
+        (Join-Path $RootPath ".appdoc\templates"),
+        $(if ($appDocRoot) { Join-Path $appDocRoot "templates" })
+    ) | Where-Object { $_ -and (Test-Path $_) }
+
+    $templatePath = $null
+    foreach ($dir in $candidateTemplateDirs) {
+        $possiblePath = Join-Path $dir $TemplateName
+        if (Test-Path $possiblePath) {
+            $templatePath = $possiblePath
+            break
+        }
+    }
+
+    if (-not $templatePath) {
+        Write-Warning "Template not found in any known template directory. Checked: $($candidateTemplateDirs -join ', ')"
+        return $false
+    }
+
+    Copy-Item -Path $templatePath -Destination $OutputPath -Force
+    Write-Verbose "Copied template: $TemplateName -> $OutputPath"
 
     return $true
 }
@@ -164,10 +172,7 @@ function Normalize-AppDocTemplateInstructionText {
         $updated = [regex]::Replace($updated, $pattern, '')
     }
 
-    # Normalize placeholder/no-evidence wording to concise narrative language.
-    $updated = [regex]::Replace($updated, '(?im)^\s*_No\s+.+?(?:detected|available|documented)\.[^_]*_\s*$', 'Evidence for this section was not detected in this scan.')
-    $updated = [regex]::Replace($updated, '(?im)^\s*Current scan found 0 items for this section\.?\s*$', 'Evidence for this section was not detected in this scan.')
-    $updated = [regex]::Replace($updated, '(?im)No deterministic evidence found in this section for the current scan\.', 'Evidence for this section was not detected in this scan.')
+    # Keep renderer-provided no-evidence phrasing intact; only normalize generic template residue.
     $updated = [regex]::Replace($updated, '(?im)This section summarizes generated findings from deterministic codebase analysis\.', 'This section summarizes extracted findings for this artifact.')
 
     # Ensure overview is never empty after instruction cleanup.
