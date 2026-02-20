@@ -19,6 +19,11 @@ param(
     [Parameter(Mandatory=$false)]
     [switch]$NoAI,
     [Parameter(Mandatory=$false)]
+    [ValidateSet("Auto","Agent","ApiKey","Deterministic")]
+    [string]$AIMode = "Auto",
+    [Parameter(Mandatory=$false)]
+    [switch]$RequireAI,
+    [Parameter(Mandatory=$false)]
     [switch]$SkipSyntaxGate
 )
 
@@ -57,20 +62,31 @@ param(
 .PARAMETER NoAI
     Runs deterministic extraction/validation only and skips AI-oriented phases.
 
+.PARAMETER AIMode
+    AI execution strategy. Auto prefers agent bridge, then API key, then deterministic fallback.
+
+.PARAMETER RequireAI
+    Fail fast if AI execution is required but no AI provider is available.
+
 .EXAMPLE
     .\run-all-generators.ps1 -RootPath "c:\myproject"
     .\run-all-generators.ps1 -RootPath "c:\myproject" -IncludeAssessment -SampleDir "AppDoc.ai_samples"
     .\run-all-generators.ps1 -RootPath "c:\myproject" -SkipDiagrams
+    .\run-all-generators.ps1 -RootPath "c:\myproject" -AIMode Agent -RequireAI
 #>
 
 $diagnosticsModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagnostics.psm1"
 $frameworkModule = Join-Path $PSScriptRoot "modules\AppDoc.FrameworkDetection.psm1"
+$architectureModule = Join-Path $PSScriptRoot "modules\AppDoc.ArchitectureFingerprint.psm1"
 $profilesModule = Join-Path $PSScriptRoot "modules\AppDoc.Profiles.psm1"
 if (Test-Path $diagnosticsModule) {
     Import-Module $diagnosticsModule -Force -ErrorAction Stop
 }
 if (Test-Path $frameworkModule) {
     Import-Module $frameworkModule -Force -ErrorAction Stop
+}
+if (Test-Path $architectureModule) {
+    Import-Module $architectureModule -Force -ErrorAction Stop
 }
 if (Test-Path $profilesModule) {
     Import-Module $profilesModule -Force -ErrorAction Stop
@@ -148,6 +164,34 @@ function Get-DocSpecificIssues {
     $issues = @()
 
     switch ($DocType) {
+        "Overview" {
+            $welcomeSection = Get-MarkdownSectionContent -Content $Content -Section "Welcome"
+            if (-not $welcomeSection) {
+                $issues += "Welcome section missing"
+            }
+            else {
+                $requiredWelcomeSubsections = @(
+                    "what_it_does",
+                    "inputs",
+                    "processing_steps",
+                    "outputs",
+                    "external_systems",
+                    "confidence_notes",
+                    "evidence_refs"
+                )
+
+                foreach ($subsection in $requiredWelcomeSubsections) {
+                    if (-not [regex]::IsMatch($welcomeSection, "(?im)^###\s+" + [regex]::Escape($subsection) + "\b")) {
+                        $issues += "Welcome subsection missing: $subsection"
+                    }
+                }
+
+                $evidenceRefHits = ([regex]::Matches($welcomeSection, '(?i)ev-\d{4}')).Count
+                if ($evidenceRefHits -eq 0) {
+                    $issues += "Welcome evidence references are missing"
+                }
+            }
+        }
         "API Inventory" {
             $section = Get-MarkdownSectionContent -Content $Content -Section "API Endpoints"
             if (-not $section) {
@@ -343,6 +387,16 @@ function Test-GeneratedDoc {
 
 Write-Host "Running all documentation generators..."
 
+if ($NoAI -and $RequireAI) {
+    Write-Error "Invalid options: -NoAI and -RequireAI cannot be combined."
+    exit 1
+}
+$effectiveAIMode = if ($NoAI) { "Deterministic" } else { $AIMode }
+Write-Host "AI mode selection: $effectiveAIMode" -ForegroundColor Gray
+if ($RequireAI) {
+    Write-Host "AI mode strictness: require provider" -ForegroundColor Gray
+}
+
 $docsPath = Join-Path $RootPath "docs"
 if (-not (Test-Path $docsPath)) {
     New-Item -Path $docsPath -ItemType Directory -Force | Out-Null
@@ -350,6 +404,7 @@ if (-not (Test-Path $docsPath)) {
 
 if (Get-Command Initialize-AppDocDiagnostics -ErrorAction SilentlyContinue) {
     Initialize-AppDocDiagnostics -RootPath $RootPath -OutputPath $docsPath -Reset
+    Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "AI mode configured" -Component "orchestrator" -Details @{ requested = $AIMode; effective = $effectiveAIMode; noAI = $NoAI.IsPresent; requireAI = $RequireAI.IsPresent }
 }
 
 $syntaxGateScriptPath = Join-Path $PSScriptRoot "ci-syntax-gate.ps1"
@@ -395,6 +450,17 @@ if (Get-Command Get-AppDocProfile -ErrorAction SilentlyContinue) {
 }
 
 $detectedFrameworks = @()
+$architectureFingerprint = $null
+if (Get-Command Get-AppDocArchitectureFingerprint -ErrorAction SilentlyContinue) {
+    $architectureFingerprint = Get-AppDocArchitectureFingerprint -RootPath $RootPath
+    $fingerprintReportPath = Join-Path $docsPath "architecture-fingerprint.json"
+    $architectureFingerprint | ConvertTo-Json -Depth 20 | Out-File -FilePath $fingerprintReportPath -Encoding UTF8
+    Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Architecture fingerprint computed" -Component "analysis" -Details @{
+        primaryStyle = [string]$architectureFingerprint.primaryStyle
+        apiSurfaceExpected = [bool]$architectureFingerprint.apiSurfaceExpected
+        confidence = [double]$architectureFingerprint.confidence
+    }
+}
 if (Get-Command Get-AppDocDetectedFrameworks -ErrorAction SilentlyContinue) {
     $detectedFrameworks = Get-AppDocDetectedFrameworks -RootPath $RootPath
     if ($detectedFrameworks.Count -eq 0) {
@@ -437,6 +503,7 @@ $pipelinePhases = @(
         )
     }
 )
+$scriptFailures = @()
 
 foreach ($phase in $pipelinePhases) {
     Write-Host "`n[$($phase.Name)]" -ForegroundColor Cyan
@@ -456,11 +523,24 @@ foreach ($phase in $pipelinePhases) {
 
         Write-Host "Running $script..."
         try {
-            & $scriptPath -RootPath $RootPath
+            if ($script -eq "generate-overview.ps1") {
+                & $scriptPath -RootPath $RootPath -AIMode $AIMode -RequireAI:$RequireAI -NoAI:$NoAI
+            }
+            else {
+                & $scriptPath -RootPath $RootPath
+            }
         }
         catch {
+            $scriptFailures += [ordered]@{
+                phase = $phase.Name
+                script = $script
+                error = $_.Exception.Message
+            }
             Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to run script: $script" -Component $phase.Name -FilePath $scriptPath -Details @{ exception = $_.Exception.Message }
             Write-Warning "Failed to run $script`: $_"
+            if ($RequireAI -and $script -eq "generate-overview.ps1") {
+                throw "Overview generation failed in -RequireAI mode: $($_.Exception.Message)"
+            }
         }
     }
 }
@@ -699,6 +779,37 @@ if (Test-Path $structuredValidationPath) {
     }
 }
 
+$narrativeReviewRequired = $false
+$narrativeReviewReasons = @()
+$narrativeRunReportPath = Join-Path $docsPath "evidence\narrative-run-report.json"
+if (Test-Path $narrativeRunReportPath) {
+    try {
+        $narrativeRunReport = Get-Content $narrativeRunReportPath -Raw | ConvertFrom-Json
+        if ($null -ne $narrativeRunReport.narrativeReviewRequired) {
+            $narrativeReviewRequired = [bool]$narrativeRunReport.narrativeReviewRequired
+        }
+
+        if ($null -ne $narrativeRunReport.grounding -and $narrativeRunReport.grounding.issues) {
+            $narrativeReviewReasons += @($narrativeRunReport.grounding.issues | ForEach-Object { [string]$_ })
+        }
+        if ($null -ne $narrativeRunReport.sectionCoverage -and $narrativeRunReport.sectionCoverage.issues) {
+            $narrativeReviewReasons += @($narrativeRunReport.sectionCoverage.issues | ForEach-Object { [string]$_ })
+        }
+        if ($null -ne $narrativeRunReport.styleGate -and $narrativeRunReport.styleGate.issues) {
+            $narrativeReviewReasons += @($narrativeRunReport.styleGate.issues | ForEach-Object { [string]$_ })
+        }
+        $narrativeReviewReasons = @($narrativeReviewReasons | Select-Object -Unique)
+
+        if ($narrativeReviewRequired) {
+            Add-AppDocDiagnostic -Category "DETECTION_PATTERN_MISMATCH" -Severity "Warning" -Message "Narrative review required by overview pipeline gates" -Component "Narrative" -FilePath $narrativeRunReportPath -Details @{ reasons = $narrativeReviewReasons }
+            Write-Host "⚠️ Narrative review required (overview narrative gates)." -ForegroundColor Yellow
+        }
+    }
+    catch {
+        Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to parse narrative run report" -Component "Narrative" -FilePath $narrativeRunReportPath -Details @{ exception = $_.Exception.Message }
+    }
+}
+
 $validationGate = $null
 if (Get-Command Test-AppDocValidationGate -ErrorAction SilentlyContinue) {
     $validationGate = Test-AppDocValidationGate -ValidationResults $validationResults -QualityThreshold $QualityThreshold -Strict:$StrictValidation
@@ -744,7 +855,14 @@ if (Get-Command Export-AppDocDiagnostics -ErrorAction SilentlyContinue) {
         validationGate = $validationGate
         profile = if ($activeProfile) { $activeProfile.profile } else { $Profile }
         noAI = $NoAI.IsPresent
+        aiMode = $AIMode
+        requireAI = $RequireAI.IsPresent
         frameworks = @($detectedFrameworks.framework)
+        architecture = if ($architectureFingerprint) { $architectureFingerprint } else { $null }
+        scriptFailures = @($scriptFailures)
+        narrativeReviewRequired = $narrativeReviewRequired
+        narrativeReviewReasons = @($narrativeReviewReasons)
+        narrativeRunReportPath = if (Test-Path $narrativeRunReportPath) { $narrativeRunReportPath } else { "" }
     }
     Export-AppDocDiagnostics -Path $diagnosticsPath -AdditionalData $metadata | Out-Null
     Write-Host "📄 Diagnostics report saved: $diagnosticsPath" -ForegroundColor Cyan
@@ -754,6 +872,13 @@ if (Get-Command Export-AppDocDiagnostics -ErrorAction SilentlyContinue) {
 if ($lowQuality -gt ($totalDocs / 2)) {
     Write-Host "`n⚠️  WARNING: More than 50% of documentation is LOW quality!" -ForegroundColor Red
     Write-Host "   Consider running AppDoc enhancement workflow or manual review." -ForegroundColor Yellow
+}
+
+if ($scriptFailures.Count -gt 0) {
+    Write-Host "`n⚠️  Script failures detected: $($scriptFailures.Count)" -ForegroundColor Yellow
+    foreach ($failure in $scriptFailures) {
+        Write-Host "   - [$($failure.phase)] $($failure.script): $($failure.error)" -ForegroundColor DarkYellow
+    }
 }
 
 Write-Host "`nAll generators completed." -ForegroundColor Green

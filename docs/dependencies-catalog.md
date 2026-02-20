@@ -1,37 +1,40 @@
 # Dependencies Catalog_No dependencies detected in this scan; therefore, no license information was extracted. The compliance system is operational and will automatically scan dependencies when present._
 
 ## Upgrade Recommendations
-**Generated**: 2026-02-18 13:44:49
+**Generated**: 2026-02-19 16:14:22
 
 ## Executive Summary
 
 This document inventories all external dependencies, libraries, packages, and frameworks used by the system. It helps developers understand third-party code being used, manage security vulnerabilities, plan upgrades, and track licensing requirements.
 
 ## Overview
-No deterministic evidence found in this section for the current scan.
+No evidence found for this section in the current scan.
 ## Dependency Summary
 
 | Package Manager | Total Dependencies | Direct | Transitive |
 |-----------------|-------------------|--------|------------|
-| _No data available_ | 0 | 0 | 0 |
+| NuGet | 8 | 8 | 0 |
+| Project References | 2 | 2 | 0 |
+| Assembly References | 0 | 0 | 0 |
 
+**Projects**: 4
 ## Dependencies by Type
 ### NuGet Packages
-No deterministic evidence found in this section for the current scan.
+No evidence found for this section in the current scan.
 ### NPM Packages
-No deterministic evidence found in this section for the current scan.
+No evidence found for this section in the current scan.
 ### Python Packages
-No deterministic evidence found in this section for the current scan.
+No evidence found for this section in the current scan.
 ### Maven/Gradle Dependencies
-No deterministic evidence found in this section for the current scan.
+No evidence found for this section in the current scan.
 ## Project References
-No deterministic evidence found in this section for the current scan.
+No evidence found for this section in the current scan.
 ## Version Conflicts
-No deterministic evidence found in this section for the current scan.
+No evidence found for this section in the current scan.
 ## Security Considerations
 
 List dependencies with known vulnerabilities or security advisories.
-No deterministic evidence found in this section for the current scan.
+No evidence found for this section in the current scan.
 
 ## Licensing
 Automated license compliance is enforced for all dependencies using a license scanner integrated into the dependency catalog pipeline.Automated license compliance is enforced for all dependencies using a license scanner integrated into the dependency catalog pipeline.
@@ -39,14 +42,14 @@ Automated license compliance is enforced for all dependencies using a license sc
 _No dependencies detected in this scan; therefore, no license information was extracted. The compliance system is operational and will automatically scan dependencies when present._## Upgrade Recommendations
 
 Suggest dependencies that should be upgraded or replaced.
-No deterministic evidence found in this section for the current scan.
+No evidence found for this section in the current scan.
 
 ## Evidence Traceability
 
 | Field | Value |
 |------|-------|
 | Evidence Artifact | evidence/dependencies-catalog.evidence.json |
-| Record Count | 0 |
+| Record Count | 10 |
 | Generator | generate-dependencies-catalog.ps1 |
 | Required Evidence Keys | dependencies |
 | Grounding Mode | Deterministic extraction records |

@@ -6,13 +6,11 @@ This document catalogs all test suites, test cases, and testing infrastructure f
 
 ## Overview
 
-Describe the testing strategy and coverage for this codebase.
+Test metadata is extracted from discovered test files and method signatures. Use this catalog to understand suite intent and identify where coverage is concentrated.
 
 ## Test Environment Setup
 
-Document how to set up the testing environment and required dependencies.
-
-_No test environment setup detected. Refer to testing framework documentation._
+No dedicated environment bootstrap script may be extracted. Use [Build Cookbook](build-cookbook.md) restore/build commands, then execute targeted suites from this catalog.
 
 ## Test Suites
 
@@ -23,9 +21,7 @@ _No test suites detected. Check for test files and testing framework configurati
 
 ## Test Coverage Metrics
 
-Document current test coverage metrics and targets.
-
-_No coverage metrics available. Run coverage tools to generate coverage reports._
+Line/branch coverage percentages are not always available from deterministic extraction. Use CI coverage tooling for quantitative metrics.
 
 ## Test Cases
 
@@ -36,15 +32,11 @@ _No test cases detected. Refer to test files for individual test implementations
 
 ## Test Maintenance
 
-Describe how tests are maintained, updated, and monitored for effectiveness.
-
-_No test maintenance process documented. Establish testing standards and review processes._
+Prioritize maintenance for suites tied to frequently changed business rules and high-churn components. Keep test names and intent aligned with current behavior.
 
 ## Example Test Runs
 
-Provide example test run outputs or logs.
-
-_No example test runs available. Execute tests and review output logs._
+Run tests at solution scope for baseline verification, then rerun only impacted suites while iterating on failures.
 
 ## Population Guide
 

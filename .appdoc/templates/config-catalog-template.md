@@ -6,13 +6,11 @@ This document inventories all configuration options, environment variables, and 
 
 ## Overview
 
-Describe the purpose and scope of the configuration catalog for this codebase.
+This catalog is assembled from Web.config/App.config, project files, and pipeline YAML to show where runtime and deployment behavior are controlled.
 
 ## Configuration Sources
 
-Document where configuration can be loaded from (files, environment, databases, etc.).
-
-_No configuration sources detected. System may use hardcoded values or external configuration service._
+Configuration sources are discovered from repository-scoped config files and build/pipeline metadata.
 
 ## Configuration Options
 
@@ -23,7 +21,7 @@ _No configuration options detected. Check for config files (.env, appsettings.js
 
 ## Environment Variables
 
-List and describe all environment variables used by the system.
+Environment variables are listed when discovered in scoped configuration manifests and script usage.
 
 | Variable | Default | Description | Sensitive | Required |
 |----------|---------|-------------|-----------|----------|
@@ -32,27 +30,19 @@ _No environment variables detected. System may use configuration files or defaul
 
 ## Configuration Validation
 
-Document validation rules and constraints for configuration values.
-
-_No configuration validation detected. Verify configuration values at runtime._
+This run extracts keys and sources but may not include a full validation matrix. Treat required-key checks, value-shape checks, and environment overrides as mandatory pre-release validation tasks.
 
 ## Configuration Management
 
-Describe how configurations are managed, updated, and deployed.
-
-_No configuration management process documented. Consult deployment documentation._
+Configuration is distributed across application config files, transforms, project metadata, and pipeline settings. Manage changes with environment-specific promotion controls and explicit review for sensitive settings.
 
 ## Security Considerations
 
-Describe handling of sensitive configuration and security best practices.
-
-_No security patterns detected. Ensure sensitive values are encrypted or stored securely._
+Treat connection strings, credentials, tokens, and endpoint URLs as sensitive-by-default and validate redaction before publishing artifacts.
 
 ## Example Configurations
 
-Provide example configuration files or objects.
-
-_No example configurations available. Refer to default configuration files in the repository._
+Environment-specific examples are intentionally curated to avoid accidental secret leakage. Build examples from non-sensitive templates and validate with required configuration criteria.
 
 ## Required configuration criteria
 

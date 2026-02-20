@@ -1,6 +1,6 @@
 # Build Cookbook
 
-**GitHub Actions**: `.github/workflows/appdoc-ci.yml` - Workflow: appdoc-ci**Generated**: 2026-02-18 13:44:48
+**GitHub Actions**: `.github/workflows/appdoc-ci.yml` - Workflow: appdoc-ci**Generated**: 2026-02-19 16:14:20
 
 ## Executive Summary
 
@@ -8,36 +8,61 @@ This document provides step-by-step instructions for building, testing, and depl
 
 ## Overview
 
-This section summarizes generated findings from deterministic codebase analysis.
+Deterministic scan summary for this artifact.
 
 ## Prerequisites
 
-No deterministic evidence found in this section for the current scan.
+- .NET 8.0 SDK or later
 
 ## Build Steps
 
-No deterministic evidence found in this section for the current scan.
+| Step | Command | Description | Estimated Time |
+|------|---------|-------------|----------------|
+| 1 | `dotnet build SampleApp.sln` | Build all projects in the solution | N/A |
+| 2 | `dotnet clean SampleApp.sln` | Clean build artifacts | N/A |
+| 3 | `dotnet publish SampleApp.sln -c Release` | Publish release build | N/A |
+| 4 | `dotnet restore SampleApp.sln` | Restore NuGet packages | N/A |
+| 5 | `dotnet test SampleApp.sln` | Run all tests in the solution | N/A |
+| 6 | `dotnet build ".appdoc\tools\AppDoc.CSharpAstParser\AppDoc.CSharpAstParser.csproj"` | Build individual project | N/A |
+| 7 | `dotnet build "tests\powershell\fixtures\sample-dotnet-app\SampleApp.Common\SampleApp.Common.csproj"` | Build individual project | N/A |
+| 8 | `dotnet build "tests\powershell\fixtures\sample-dotnet-app\SampleApp.Service\SampleApp.Service.csproj"` | Build individual project | N/A |
+| 9 | `dotnet build "tests\powershell\fixtures\sample-dotnet-app\SampleApp.Web\SampleApp.Web.csproj"` | Build individual project | N/A |
+| 10 | `msbuild SampleApp.sln /p:Configuration=Release` | Build solution using MSBuild | N/A |
+| 11 | `msbuild SampleApp.sln /t:Clean` | Clean using MSBuild | N/A |
+| 12 | `msbuild SampleApp.sln /t:Rebuild /p:Configuration=Release` | Clean and rebuild | N/A |
+| 13 | `nuget restore SampleApp.sln` | Restore NuGet packages | N/A |
+
 ## Dependencies
 List all build dependencies and tools required.
 
-No deterministic evidence found in this section for the current scan.
+No evidence found for this section in the current scan.
 **Detected CI/CD Platforms:**
 
 - **GitHub Actions**: `.github\workflows\appdoc-ci.yml` - Workflow: appdoc-ci
 
 ## Troubleshooting
 
-- **GitHub Actions**: `.github/workflows/appdoc-ci.yml` - Workflow: appdoc-ciNo deterministic evidence found in this section for the current scan.
+- **GitHub Actions**: `.github/workflows/appdoc-ci.yml` - Workflow: appdoc-ciNo evidence found for this section in the current scan.
 ## Example Build Scripts
-No deterministic evidence found in this section for the current scan.
+No evidence found for this section in the current scan.
 
 - **GitHub Actions**: `.github/workflows/appdoc-ci.yml` - Workflow: appdoc-ci
 
-No deterministic evidence found in this section for the current scan.
+No evidence found for this section in the current scan.
 | Field | Value |
 |------|-------|
 | Evidence Artifact | evidence/build-cookbook.evidence.json |
 | Record Count | 1 |
+| Generator | generate-build-cookbook.ps1 |
+| Required Evidence Keys | commands |
+| Grounding Mode | Deterministic extraction records |
+
+## Evidence Traceability
+
+| Field | Value |
+|------|-------|
+| Evidence Artifact | evidence/build-cookbook.evidence.json |
+| Record Count | 15 |
 | Generator | generate-build-cookbook.ps1 |
 | Required Evidence Keys | commands |
 | Grounding Mode | Deterministic extraction records |

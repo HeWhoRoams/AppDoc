@@ -113,9 +113,11 @@ function Add-AppDocCSharpDebtSignals {
             file = $FileName
             filePath = $RelativePath
             line = $lineNum
-    $magicNumbers = [regex]::Matches($Content, '(?<![.\w])\d{2,}(?!\w)')
+            priority = "Medium"
         }
     }
+
+    $magicNumbers = [regex]::Matches($Content, '(?<![.\w])\d{2,}(?!\w)')
 
     $classMatches = [regex]::Matches($Content, 'class\s+(\w+)')
     foreach ($classMatch in $classMatches) {
@@ -210,12 +212,14 @@ function Add-AppDocLongFunctionDebtSignals {
                 $lines = $Content -split "`r?`n"
                 $startLine = ($Content.Substring(0, $start) -split "`r?`n").Count
                 $defLine = $lines[$startLine - 1]
-                $defIndent = ($defLine -match "^(\s*)" | Out-Null; $Matches[1].Length)
+                $null = $defLine -match "^(\s*)"
+                $defIndent = $Matches[1].Length
                 $funcEndLine = $startLine
                 for ($i = $startLine; $i -lt $lines.Count; $i++) {
                     $line = $lines[$i]
                     if ($line.Trim() -eq "") { continue }
-                    $currIndent = ($line -match "^(\s*)" | Out-Null; $Matches[1].Length)
+                    $null = $line -match "^(\s*)"
+                    $currIndent = $Matches[1].Length
                     if ($currIndent -le $defIndent -and $line.Trim() -notmatch "^#") {
                         break
                     }

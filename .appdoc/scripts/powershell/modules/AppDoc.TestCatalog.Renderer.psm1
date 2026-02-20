@@ -78,6 +78,8 @@ function Update-AppDocTestCatalogContent {
 
     $sections = Get-AppDocTestCatalogMarkdown -Tests $Tests -MaxTestCases $MaxTestCases
     $updated = $Content
+    $suiteCount = @($Tests | Group-Object -Property file).Count
+    $testCount = @($Tests).Count
 
 
     # Only perform placeholder replacement if the section headers are missing
@@ -120,10 +122,6 @@ function Update-AppDocTestCatalogContent {
         } else {
             Write-Verbose "Test Coverage Metrics section not found after Test Suites header; content not updated to avoid duplication."
         }
-            } else {
-                Write-Verbose "Test Suites content or '## Test Maintenance' section already present; skipping fallback append."
-            }
-        }
     }
 
     $testCasesPattern = '(?s)(##\s+Test Cases\s*\r?\n\r?\n).*?(?=\r?\n##\s+Test Maintenance\b)'
@@ -146,6 +144,58 @@ function Update-AppDocTestCatalogContent {
             }
         }
     }
+
+    $coverageSummary = if ($testCount -gt 0) {
+        "Detected $testCount test case(s) across $suiteCount suite(s) in this scan. Line/branch coverage percentages are not computed here; use CI coverage tooling for quantitative baselines."
+    } else {
+        "No tests were detected in this scan. Validate test project scope and framework discovery settings."
+    }
+    $exampleRun = if ($testCount -gt 0) {
+        "Run `dotnet test` at solution scope for baseline verification, then rerun only impacted suites while iterating on failures. Capture failing test names and stack traces as part of remediation records."
+    } else {
+        "No runnable test commands were inferred from discovered evidence. Verify test projects and build scripts before relying on this artifact."
+    }
+
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Overview\s*\r?\n\r?\n).*?(?=\r?\n##\s+Test Environment Setup\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "Test metadata is extracted from discovered test files and method signatures. Use this catalog to understand suite intent and identify where coverage is concentrated." + "`r`n")
+        }
+    )
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Test Environment Setup\s*\r?\n\r?\n).*?(?=\r?\n##\s+Test Suites\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "No dedicated environment bootstrap script was extracted. Use the build and restore commands in [Build Cookbook](build-cookbook.md), then execute targeted suites from this catalog." + "`r`n")
+        }
+    )
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Test Coverage Metrics\s*\r?\n\r?\n).*?(?=\r?\n##\s+Test Cases\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + $coverageSummary + "`r`n")
+        }
+    )
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Test Maintenance\s*\r?\n\r?\n).*?(?=\r?\n##\s+Example Test Runs\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "Prioritize maintenance for suites tied to frequently changed business rules and high-churn components. Keep suite names and test intent aligned with current behavior to preserve debugging value." + "`r`n")
+        }
+    )
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Example Test Runs\s*\r?\n\r?\n).*?(?=(\r?\n##\s+)|\z)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + $exampleRun + "`r`n")
+        }
+    )
 
     return $updated
 }

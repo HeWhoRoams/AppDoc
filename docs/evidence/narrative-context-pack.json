@@ -1,0 +1,1608 @@
+{
+  "intent_candidates": [
+    {
+      "id": "intent-0001",
+      "type": "business_purpose",
+      "text": "The repository currently contains 8 code file(s) with limited behavioral evidence.",
+      "evidence_ids": [
+        "ev-0085"
+      ]
+    },
+    {
+      "id": "intent-0002",
+      "type": "data_contract",
+      "text": "Configuration behavior is influenced by 59 discovered key(s).",
+      "evidence_ids": [
+        "ev-0016",
+        "ev-0017",
+        "ev-0018"
+      ]
+    },
+    {
+      "id": "intent-0003",
+      "type": "workflow",
+      "text": "Processing steps could not be inferred beyond repository-level summaries.",
+      "evidence_ids": [
+        "ev-0085"
+      ]
+    },
+    {
+      "id": "intent-0004",
+      "type": "data_contract",
+      "text": "Output contracts are not strongly represented in current deterministic evidence.",
+      "evidence_ids": [
+        "ev-0085"
+      ]
+    },
+    {
+      "id": "intent-0005",
+      "type": "workflow",
+      "text": "Notable dependencies include: SampleApp.Common, EntityFramework, Microsoft.AspNetCore.Mvc, Microsoft.CodeAnalysis.CSharp, Microsoft.Extensions.Hosting.WindowsServices, Newtonsoft.Json, RabbitMQ.Client, System.Data.SqlClient.",
+      "evidence_ids": [
+        "ev-0075",
+        "ev-0076",
+        "ev-0077",
+        "ev-0078"
+      ]
+    },
+    {
+      "id": "intent-0006",
+      "type": "confidence_note",
+      "text": "Evidence coverage includes 0 endpoint record(s), 0 model record(s), 59 configuration record(s), and 10 dependency record(s).",
+      "evidence_ids": [
+        "ev-0001",
+        "ev-0002",
+        "ev-0003",
+        "ev-0004"
+      ]
+    },
+    {
+      "id": "intent-0007",
+      "type": "confidence_note",
+      "text": "Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.",
+      "evidence_ids": [
+        "ev-0085"
+      ]
+    }
+  ],
+  "generated_at": "2026-02-19T16:14:15-05:00",
+  "facts": {
+    "entities": [
+      {
+        "id": "ent-0001",
+        "type": "signal",
+        "name": "Build (MSBuild)",
+        "source": "SampleApp.sln",
+        "evidence_ids": [
+          "ev-0001"
+        ]
+      },
+      {
+        "id": "ent-0002",
+        "type": "signal",
+        "name": "Build AppDoc.CSharpAstParser",
+        "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj",
+        "evidence_ids": [
+          "ev-0002"
+        ]
+      },
+      {
+        "id": "ent-0003",
+        "type": "signal",
+        "name": "Build SampleApp.Common",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
+        "evidence_ids": [
+          "ev-0003"
+        ]
+      },
+      {
+        "id": "ent-0004",
+        "type": "signal",
+        "name": "Build SampleApp.Service",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
+        "evidence_ids": [
+          "ev-0004"
+        ]
+      },
+      {
+        "id": "ent-0005",
+        "type": "signal",
+        "name": "Build SampleApp.Web",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+        "evidence_ids": [
+          "ev-0005"
+        ]
+      },
+      {
+        "id": "ent-0006",
+        "type": "signal",
+        "name": "Build Solution",
+        "source": "SampleApp.sln",
+        "evidence_ids": [
+          "ev-0006"
+        ]
+      },
+      {
+        "id": "ent-0007",
+        "type": "signal",
+        "name": "Clean (MSBuild)",
+        "source": "SampleApp.sln",
+        "evidence_ids": [
+          "ev-0007"
+        ]
+      },
+      {
+        "id": "ent-0008",
+        "type": "signal",
+        "name": "Clean Solution",
+        "source": "SampleApp.sln",
+        "evidence_ids": [
+          "ev-0008"
+        ]
+      },
+      {
+        "id": "ent-0009",
+        "type": "signal",
+        "name": "Publish (Release)",
+        "source": "SampleApp.sln",
+        "evidence_ids": [
+          "ev-0009"
+        ]
+      },
+      {
+        "id": "ent-0010",
+        "type": "signal",
+        "name": "Rebuild (MSBuild)",
+        "source": "SampleApp.sln",
+        "evidence_ids": [
+          "ev-0010"
+        ]
+      },
+      {
+        "id": "ent-0011",
+        "type": "signal",
+        "name": "Restore NuGet",
+        "source": "SampleApp.sln",
+        "evidence_ids": [
+          "ev-0011"
+        ]
+      },
+      {
+        "id": "ent-0012",
+        "type": "signal",
+        "name": "Restore Packages",
+        "source": "SampleApp.sln",
+        "evidence_ids": [
+          "ev-0012"
+        ]
+      },
+      {
+        "id": "ent-0013",
+        "type": "signal",
+        "name": "Run Tests",
+        "source": "SampleApp.sln",
+        "evidence_ids": [
+          "ev-0013"
+        ]
+      },
+      {
+        "id": "ent-0014",
+        "type": "signal",
+        "name": "GitHub Actions",
+        "source": ".github/workflows/appdoc-ci.yml",
+        "evidence_ids": [
+          "ev-0014"
+        ]
+      },
+      {
+        "id": "ent-0015",
+        "type": "signal",
+        "name": ".NET 8.0 SDK or later",
+        "source": "repository",
+        "evidence_ids": [
+          "ev-0015"
+        ]
+      },
+      {
+        "id": "ent-0016",
+        "type": "config",
+        "name": "chat.tools.fileOperations.autoApprove.list",
+        "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.list",
+        "evidence_ids": [
+          "ev-0016"
+        ]
+      },
+      {
+        "id": "ent-0017",
+        "type": "config",
+        "name": "chat.tools.fileOperations.autoApprove.read",
+        "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.read",
+        "evidence_ids": [
+          "ev-0017"
+        ]
+      },
+      {
+        "id": "ent-0018",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.-ErrorAction",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction",
+        "evidence_ids": [
+          "ev-0018"
+        ]
+      },
+      {
+        "id": "ent-0019",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.-Json",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-Json",
+        "evidence_ids": [
+          "ev-0019"
+        ]
+      },
+      {
+        "id": "ent-0020",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.-RootPath",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-RootPath",
+        "evidence_ids": [
+          "ev-0020"
+        ]
+      },
+      {
+        "id": "ent-0021",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.-Verbose",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-Verbose",
+        "evidence_ids": [
+          "ev-0021"
+        ]
+      },
+      {
+        "id": "ent-0022",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove..\\.AppDoc\\\\scripts\\\\powershell\\\\*.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove../.AppDoc/scripts/powershell/*.ps1",
+        "evidence_ids": [
+          "ev-0022"
+        ]
+      },
+      {
+        "id": "ent-0023",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
+        "evidence_ids": [
+          "ev-0023"
+        ]
+      },
+      {
+        "id": "ent-0024",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1",
+        "evidence_ids": [
+          "ev-0024"
+        ]
+      },
+      {
+        "id": "ent-0025",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/analyze-codebase.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-codebase.ps1",
+        "evidence_ids": [
+          "ev-0025"
+        ]
+      },
+      {
+        "id": "ent-0026",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/analyze-repository.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-repository.ps1",
+        "evidence_ids": [
+          "ev-0026"
+        ]
+      },
+      {
+        "id": "ent-0027",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1",
+        "evidence_ids": [
+          "ev-0027"
+        ]
+      },
+      {
+        "id": "ent-0028",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/catalog-samples.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/catalog-samples.ps1",
+        "evidence_ids": [
+          "ev-0028"
+        ]
+      },
+      {
+        "id": "ent-0029",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/extract-config.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/extract-config.ps1",
+        "evidence_ids": [
+          "ev-0029"
+        ]
+      },
+      {
+        "id": "ent-0030",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1",
+        "evidence_ids": [
+          "ev-0030"
+        ]
+      },
+      {
+        "id": "ent-0031",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1",
+        "evidence_ids": [
+          "ev-0031"
+        ]
+      },
+      {
+        "id": "ent-0032",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1",
+        "evidence_ids": [
+          "ev-0032"
+        ]
+      },
+      {
+        "id": "ent-0033",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1",
+        "evidence_ids": [
+          "ev-0033"
+        ]
+      },
+      {
+        "id": "ent-0034",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/generate-data-model.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-data-model.ps1",
+        "evidence_ids": [
+          "ev-0034"
+        ]
+      },
+      {
+        "id": "ent-0035",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/generate-debt-register.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-debt-register.ps1",
+        "evidence_ids": [
+          "ev-0035"
+        ]
+      },
+      {
+        "id": "ent-0036",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1",
+        "evidence_ids": [
+          "ev-0036"
+        ]
+      },
+      {
+        "id": "ent-0037",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1",
+        "evidence_ids": [
+          "ev-0037"
+        ]
+      },
+      {
+        "id": "ent-0038",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/generate-improvements.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-improvements.ps1",
+        "evidence_ids": [
+          "ev-0038"
+        ]
+      },
+      {
+        "id": "ent-0039",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/generate-overview.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-overview.ps1",
+        "evidence_ids": [
+          "ev-0039"
+        ]
+      },
+      {
+        "id": "ent-0040",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1",
+        "evidence_ids": [
+          "ev-0040"
+        ]
+      },
+      {
+        "id": "ent-0041",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/run-all-generators.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/run-all-generators.ps1",
+        "evidence_ids": [
+          "ev-0041"
+        ]
+      },
+      {
+        "id": "ent-0042",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1",
+        "evidence_ids": [
+          "ev-0042"
+        ]
+      },
+      {
+        "id": "ent-0043",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1",
+        "evidence_ids": [
+          "ev-0043"
+        ]
+      },
+      {
+        "id": "ent-0044",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1",
+        "evidence_ids": [
+          "ev-0044"
+        ]
+      },
+      {
+        "id": "ent-0045",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1",
+        "evidence_ids": [
+          "ev-0045"
+        ]
+      },
+      {
+        "id": "ent-0046",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/validate-data-model.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-data-model.ps1",
+        "evidence_ids": [
+          "ev-0046"
+        ]
+      },
+      {
+        "id": "ent-0047",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/validate-debt-register.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-debt-register.ps1",
+        "evidence_ids": [
+          "ev-0047"
+        ]
+      },
+      {
+        "id": "ent-0048",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/validate-overview.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-overview.ps1",
+        "evidence_ids": [
+          "ev-0048"
+        ]
+      },
+      {
+        "id": "ent-0049",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1",
+        "evidence_ids": [
+          "ev-0049"
+        ]
+      },
+      {
+        "id": "ent-0050",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.Copy-Item",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Copy-Item",
+        "evidence_ids": [
+          "ev-0050"
+        ]
+      },
+      {
+        "id": "ent-0051",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.Get-ChildItem",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-ChildItem",
+        "evidence_ids": [
+          "ev-0051"
+        ]
+      },
+      {
+        "id": "ent-0052",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.Get-Content",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-Content",
+        "evidence_ids": [
+          "ev-0052"
+        ]
+      },
+      {
+        "id": "ent-0053",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.git",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git",
+        "evidence_ids": [
+          "ev-0053"
+        ]
+      },
+      {
+        "id": "ent-0054",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.git fetch",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git fetch",
+        "evidence_ids": [
+          "ev-0054"
+        ]
+      },
+      {
+        "id": "ent-0055",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.git status",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git status",
+        "evidence_ids": [
+          "ev-0055"
+        ]
+      },
+      {
+        "id": "ent-0056",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.pwsh",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.pwsh",
+        "evidence_ids": [
+          "ev-0056"
+        ]
+      },
+      {
+        "id": "ent-0057",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.Remove-Item",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Remove-Item",
+        "evidence_ids": [
+          "ev-0057"
+        ]
+      },
+      {
+        "id": "ent-0058",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.Set-ExecutionPolicy",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Set-ExecutionPolicy",
+        "evidence_ids": [
+          "ev-0058"
+        ]
+      },
+      {
+        "id": "ent-0059",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.Test-Path",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Test-Path",
+        "evidence_ids": [
+          "ev-0059"
+        ]
+      },
+      {
+        "id": "ent-0060",
+        "type": "config",
+        "name": "chat.tools.terminal.autoApprove.Write-Host",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Write-Host",
+        "evidence_ids": [
+          "ev-0060"
+        ]
+      },
+      {
+        "id": "ent-0061",
+        "type": "config",
+        "name": "github.copilot.chat.executions.enabled",
+        "source": ".vscode/settings.json:github.copilot.chat.executions.enabled",
+        "evidence_ids": [
+          "ev-0061"
+        ]
+      },
+      {
+        "id": "ent-0062",
+        "type": "config",
+        "name": "jobs.syntax-gate.runs-on",
+        "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.runs-on",
+        "evidence_ids": [
+          "ev-0062"
+        ]
+      },
+      {
+        "id": "ent-0063",
+        "type": "config",
+        "name": "jobs.syntax-gate.steps.shell",
+        "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps.shell",
+        "evidence_ids": [
+          "ev-0063"
+        ]
+      },
+      {
+        "id": "ent-0064",
+        "type": "config",
+        "name": "jobs.syntax-gate.steps[0]",
+        "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[0]",
+        "evidence_ids": [
+          "ev-0064"
+        ]
+      },
+      {
+        "id": "ent-0065",
+        "type": "config",
+        "name": "jobs.syntax-gate.steps[1]",
+        "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[1]",
+        "evidence_ids": [
+          "ev-0065"
+        ]
+      },
+      {
+        "id": "ent-0066",
+        "type": "config",
+        "name": "name",
+        "source": ".github/workflows/appdoc-ci.yml:yaml/name",
+        "evidence_ids": [
+          "ev-0066"
+        ]
+      },
+      {
+        "id": "ent-0067",
+        "type": "config",
+        "name": "on.push.branches[0]",
+        "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[0]",
+        "evidence_ids": [
+          "ev-0067"
+        ]
+      },
+      {
+        "id": "ent-0068",
+        "type": "config",
+        "name": "on.push.branches[1]",
+        "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[1]",
+        "evidence_ids": [
+          "ev-0068"
+        ]
+      },
+      {
+        "id": "ent-0069",
+        "type": "config",
+        "name": "OutputType",
+        "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/OutputType",
+        "evidence_ids": [
+          "ev-0069"
+        ]
+      },
+      {
+        "id": "ent-0070",
+        "type": "config",
+        "name": "OutputType",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/OutputType",
+        "evidence_ids": [
+          "ev-0070"
+        ]
+      },
+      {
+        "id": "ent-0071",
+        "type": "config",
+        "name": "TargetFramework",
+        "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/TargetFramework",
+        "evidence_ids": [
+          "ev-0071"
+        ]
+      },
+      {
+        "id": "ent-0072",
+        "type": "config",
+        "name": "TargetFramework",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj:PropertyGroup/TargetFramework",
+        "evidence_ids": [
+          "ev-0072"
+        ]
+      },
+      {
+        "id": "ent-0073",
+        "type": "config",
+        "name": "TargetFramework",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/TargetFramework",
+        "evidence_ids": [
+          "ev-0073"
+        ]
+      },
+      {
+        "id": "ent-0074",
+        "type": "config",
+        "name": "TargetFramework",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj:PropertyGroup/TargetFramework",
+        "evidence_ids": [
+          "ev-0074"
+        ]
+      },
+      {
+        "id": "ent-0075",
+        "type": "dep",
+        "name": "EntityFramework",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
+        "evidence_ids": [
+          "ev-0075"
+        ]
+      },
+      {
+        "id": "ent-0076",
+        "type": "dep",
+        "name": "Microsoft.AspNetCore.Mvc",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+        "evidence_ids": [
+          "ev-0076"
+        ]
+      },
+      {
+        "id": "ent-0077",
+        "type": "dep",
+        "name": "Microsoft.CodeAnalysis.CSharp",
+        "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj",
+        "evidence_ids": [
+          "ev-0077"
+        ]
+      },
+      {
+        "id": "ent-0078",
+        "type": "dep",
+        "name": "Microsoft.Extensions.Hosting.WindowsServices",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
+        "evidence_ids": [
+          "ev-0078"
+        ]
+      },
+      {
+        "id": "ent-0079",
+        "type": "dep",
+        "name": "Newtonsoft.Json",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+        "evidence_ids": [
+          "ev-0079"
+        ]
+      },
+      {
+        "id": "ent-0080",
+        "type": "dep",
+        "name": "RabbitMQ.Client",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
+        "evidence_ids": [
+          "ev-0080"
+        ]
+      },
+      {
+        "id": "ent-0081",
+        "type": "dep",
+        "name": "SampleApp.Common",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
+        "evidence_ids": [
+          "ev-0081"
+        ]
+      },
+      {
+        "id": "ent-0082",
+        "type": "dep",
+        "name": "SampleApp.Common",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+        "evidence_ids": [
+          "ev-0082"
+        ]
+      },
+      {
+        "id": "ent-0083",
+        "type": "dep",
+        "name": "System.Data.SqlClient",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
+        "evidence_ids": [
+          "ev-0083"
+        ]
+      },
+      {
+        "id": "ent-0084",
+        "type": "dep",
+        "name": "System.Net.Http",
+        "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+        "evidence_ids": [
+          "ev-0084"
+        ]
+      },
+      {
+        "id": "ent-0085",
+        "type": "signal",
+        "name": "system-purpose",
+        "source": "repository",
+        "evidence_ids": [
+          "ev-0085"
+        ]
+      },
+      {
+        "id": "ent-0086",
+        "type": "signal",
+        "name": ".cs",
+        "source": "repository",
+        "evidence_ids": [
+          "ev-0086"
+        ]
+      },
+      {
+        "id": "ent-0087",
+        "type": "signal",
+        "name": "confidence_notes-01",
+        "source": "overview-welcome",
+        "evidence_ids": [
+          "ev-0087"
+        ]
+      },
+      {
+        "id": "ent-0088",
+        "type": "signal",
+        "name": "confidence_notes-02",
+        "source": "overview-welcome",
+        "evidence_ids": [
+          "ev-0088"
+        ]
+      },
+      {
+        "id": "ent-0089",
+        "type": "signal",
+        "name": "external_systems-01",
+        "source": "overview-welcome",
+        "evidence_ids": [
+          "ev-0089"
+        ]
+      },
+      {
+        "id": "ent-0090",
+        "type": "signal",
+        "name": "inputs-01",
+        "source": "overview-welcome",
+        "evidence_ids": [
+          "ev-0090"
+        ]
+      },
+      {
+        "id": "ent-0091",
+        "type": "signal",
+        "name": "outputs-01",
+        "source": "overview-welcome",
+        "evidence_ids": [
+          "ev-0091"
+        ]
+      },
+      {
+        "id": "ent-0092",
+        "type": "signal",
+        "name": "processing_steps-01",
+        "source": "overview-welcome",
+        "evidence_ids": [
+          "ev-0092"
+        ]
+      },
+      {
+        "id": "ent-0093",
+        "type": "signal",
+        "name": "what_it_does-01",
+        "source": "overview-welcome",
+        "evidence_ids": [
+          "ev-0093"
+        ]
+      }
+    ],
+    "relations": []
+  },
+  "section_evidence_defaults": {
+    "what_it_does": [
+      "ev-0085"
+    ],
+    "inputs": [
+      "ev-0016",
+      "ev-0017",
+      "ev-0018"
+    ],
+    "processing_steps": [
+      "ev-0085"
+    ],
+    "outputs": [
+      "ev-0085"
+    ],
+    "external_systems": [
+      "ev-0075",
+      "ev-0076",
+      "ev-0077",
+      "ev-0078"
+    ],
+    "confidence_notes": [
+      "ev-0001",
+      "ev-0002",
+      "ev-0003",
+      "ev-0004",
+      "ev-0085"
+    ]
+  },
+  "evidence_refs": [
+    {
+      "id": "ev-0001",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Build (MSBuild)",
+      "source": "SampleApp.sln"
+    },
+    {
+      "id": "ev-0002",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Build AppDoc.CSharpAstParser",
+      "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj"
+    },
+    {
+      "id": "ev-0003",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Build SampleApp.Common",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj"
+    },
+    {
+      "id": "ev-0004",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Build SampleApp.Service",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj"
+    },
+    {
+      "id": "ev-0005",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Build SampleApp.Web",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj"
+    },
+    {
+      "id": "ev-0006",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Build Solution",
+      "source": "SampleApp.sln"
+    },
+    {
+      "id": "ev-0007",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Clean (MSBuild)",
+      "source": "SampleApp.sln"
+    },
+    {
+      "id": "ev-0008",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Clean Solution",
+      "source": "SampleApp.sln"
+    },
+    {
+      "id": "ev-0009",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Publish (Release)",
+      "source": "SampleApp.sln"
+    },
+    {
+      "id": "ev-0010",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Rebuild (MSBuild)",
+      "source": "SampleApp.sln"
+    },
+    {
+      "id": "ev-0011",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Restore NuGet",
+      "source": "SampleApp.sln"
+    },
+    {
+      "id": "ev-0012",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Restore Packages",
+      "source": "SampleApp.sln"
+    },
+    {
+      "id": "ev-0013",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Run Tests",
+      "source": "SampleApp.sln"
+    },
+    {
+      "id": "ev-0014",
+      "artifact": "build-cookbook",
+      "kind": "cicd",
+      "name": "GitHub Actions",
+      "source": ".github/workflows/appdoc-ci.yml"
+    },
+    {
+      "id": "ev-0015",
+      "artifact": "build-cookbook",
+      "kind": "prerequisite",
+      "name": ".NET 8.0 SDK or later",
+      "source": "repository"
+    },
+    {
+      "id": "ev-0016",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.fileOperations.autoApprove.list",
+      "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.list"
+    },
+    {
+      "id": "ev-0017",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.fileOperations.autoApprove.read",
+      "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.read"
+    },
+    {
+      "id": "ev-0018",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.-ErrorAction",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction"
+    },
+    {
+      "id": "ev-0019",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.-Json",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-Json"
+    },
+    {
+      "id": "ev-0020",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.-RootPath",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-RootPath"
+    },
+    {
+      "id": "ev-0021",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.-Verbose",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-Verbose"
+    },
+    {
+      "id": "ev-0022",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove..\\.AppDoc\\\\scripts\\\\powershell\\\\*.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove../.AppDoc/scripts/powershell/*.ps1"
+    },
+    {
+      "id": "ev-0023",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1"
+    },
+    {
+      "id": "ev-0024",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1"
+    },
+    {
+      "id": "ev-0025",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/analyze-codebase.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-codebase.ps1"
+    },
+    {
+      "id": "ev-0026",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/analyze-repository.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-repository.ps1"
+    },
+    {
+      "id": "ev-0027",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1"
+    },
+    {
+      "id": "ev-0028",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/catalog-samples.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/catalog-samples.ps1"
+    },
+    {
+      "id": "ev-0029",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/extract-config.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/extract-config.ps1"
+    },
+    {
+      "id": "ev-0030",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1"
+    },
+    {
+      "id": "ev-0031",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1"
+    },
+    {
+      "id": "ev-0032",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1"
+    },
+    {
+      "id": "ev-0033",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1"
+    },
+    {
+      "id": "ev-0034",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-data-model.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-data-model.ps1"
+    },
+    {
+      "id": "ev-0035",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-debt-register.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-debt-register.ps1"
+    },
+    {
+      "id": "ev-0036",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1"
+    },
+    {
+      "id": "ev-0037",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1"
+    },
+    {
+      "id": "ev-0038",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-improvements.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-improvements.ps1"
+    },
+    {
+      "id": "ev-0039",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-overview.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-overview.ps1"
+    },
+    {
+      "id": "ev-0040",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1"
+    },
+    {
+      "id": "ev-0041",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/run-all-generators.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/run-all-generators.ps1"
+    },
+    {
+      "id": "ev-0042",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1"
+    },
+    {
+      "id": "ev-0043",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1"
+    },
+    {
+      "id": "ev-0044",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1"
+    },
+    {
+      "id": "ev-0045",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1"
+    },
+    {
+      "id": "ev-0046",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/validate-data-model.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-data-model.ps1"
+    },
+    {
+      "id": "ev-0047",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/validate-debt-register.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-debt-register.ps1"
+    },
+    {
+      "id": "ev-0048",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/validate-overview.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-overview.ps1"
+    },
+    {
+      "id": "ev-0049",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1"
+    },
+    {
+      "id": "ev-0050",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.Copy-Item",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Copy-Item"
+    },
+    {
+      "id": "ev-0051",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.Get-ChildItem",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-ChildItem"
+    },
+    {
+      "id": "ev-0052",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.Get-Content",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-Content"
+    },
+    {
+      "id": "ev-0053",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.git",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git"
+    },
+    {
+      "id": "ev-0054",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.git fetch",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git fetch"
+    },
+    {
+      "id": "ev-0055",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.git status",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git status"
+    },
+    {
+      "id": "ev-0056",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.pwsh",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.pwsh"
+    },
+    {
+      "id": "ev-0057",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.Remove-Item",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Remove-Item"
+    },
+    {
+      "id": "ev-0058",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.Set-ExecutionPolicy",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Set-ExecutionPolicy"
+    },
+    {
+      "id": "ev-0059",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.Test-Path",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Test-Path"
+    },
+    {
+      "id": "ev-0060",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.Write-Host",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Write-Host"
+    },
+    {
+      "id": "ev-0061",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "github.copilot.chat.executions.enabled",
+      "source": ".vscode/settings.json:github.copilot.chat.executions.enabled"
+    },
+    {
+      "id": "ev-0062",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.syntax-gate.runs-on",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.runs-on"
+    },
+    {
+      "id": "ev-0063",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.syntax-gate.steps.shell",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps.shell"
+    },
+    {
+      "id": "ev-0064",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.syntax-gate.steps[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[0]"
+    },
+    {
+      "id": "ev-0065",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.syntax-gate.steps[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[1]"
+    },
+    {
+      "id": "ev-0066",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/name"
+    },
+    {
+      "id": "ev-0067",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "on.push.branches[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[0]"
+    },
+    {
+      "id": "ev-0068",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "on.push.branches[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[1]"
+    },
+    {
+      "id": "ev-0069",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "OutputType",
+      "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/OutputType"
+    },
+    {
+      "id": "ev-0070",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "OutputType",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/OutputType"
+    },
+    {
+      "id": "ev-0071",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "TargetFramework",
+      "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/TargetFramework"
+    },
+    {
+      "id": "ev-0072",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "TargetFramework",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj:PropertyGroup/TargetFramework"
+    },
+    {
+      "id": "ev-0073",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "TargetFramework",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/TargetFramework"
+    },
+    {
+      "id": "ev-0074",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "TargetFramework",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj:PropertyGroup/TargetFramework"
+    },
+    {
+      "id": "ev-0075",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "EntityFramework",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj"
+    },
+    {
+      "id": "ev-0076",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "Microsoft.AspNetCore.Mvc",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj"
+    },
+    {
+      "id": "ev-0077",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "Microsoft.CodeAnalysis.CSharp",
+      "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj"
+    },
+    {
+      "id": "ev-0078",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "Microsoft.Extensions.Hosting.WindowsServices",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj"
+    },
+    {
+      "id": "ev-0079",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "Newtonsoft.Json",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj"
+    },
+    {
+      "id": "ev-0080",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "RabbitMQ.Client",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj"
+    },
+    {
+      "id": "ev-0081",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "SampleApp.Common",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj"
+    },
+    {
+      "id": "ev-0082",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "SampleApp.Common",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj"
+    },
+    {
+      "id": "ev-0083",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "System.Data.SqlClient",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj"
+    },
+    {
+      "id": "ev-0084",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "System.Net.Http",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj"
+    },
+    {
+      "id": "ev-0085",
+      "artifact": "overview",
+      "kind": "summary",
+      "name": "system-purpose",
+      "source": "repository"
+    },
+    {
+      "id": "ev-0086",
+      "artifact": "overview",
+      "kind": "technology",
+      "name": ".cs",
+      "source": "repository"
+    },
+    {
+      "id": "ev-0087",
+      "artifact": "overview",
+      "kind": "welcome-summary",
+      "name": "confidence_notes-01",
+      "source": "overview-welcome"
+    },
+    {
+      "id": "ev-0088",
+      "artifact": "overview",
+      "kind": "welcome-summary",
+      "name": "confidence_notes-02",
+      "source": "overview-welcome"
+    },
+    {
+      "id": "ev-0089",
+      "artifact": "overview",
+      "kind": "welcome-summary",
+      "name": "external_systems-01",
+      "source": "overview-welcome"
+    },
+    {
+      "id": "ev-0090",
+      "artifact": "overview",
+      "kind": "welcome-summary",
+      "name": "inputs-01",
+      "source": "overview-welcome"
+    },
+    {
+      "id": "ev-0091",
+      "artifact": "overview",
+      "kind": "welcome-summary",
+      "name": "outputs-01",
+      "source": "overview-welcome"
+    },
+    {
+      "id": "ev-0092",
+      "artifact": "overview",
+      "kind": "welcome-summary",
+      "name": "processing_steps-01",
+      "source": "overview-welcome"
+    },
+    {
+      "id": "ev-0093",
+      "artifact": "overview",
+      "kind": "welcome-summary",
+      "name": "what_it_does-01",
+      "source": "overview-welcome"
+    }
+  ],
+  "generator_version": "generate-overview.ps1",
+  "project": {
+    "name": "Appdoc",
+    "root_path": ".",
+    "audience": "new_dev",
+    "style_profile": "standard"
+  },
+  "run_id": "a9394f38-6178-4b2b-9df5-ee1e6a25d5bd",
+  "constraints": {
+    "must_ground": true,
+    "no_invention": true,
+    "paragraph_level_evidence_preferred": true,
+    "section_level_evidence_allowed": true
+  },
+  "schema_version": "3.0.0"
+}

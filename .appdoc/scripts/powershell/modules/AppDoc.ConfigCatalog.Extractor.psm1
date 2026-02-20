@@ -126,6 +126,53 @@ function ConvertTo-AppDocFlattenedPairs {
     return $pairs
 }
 
+function ConvertFrom-AppDocYamlFallback {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$YamlText
+    )
+
+    $flattened = @{}
+    $stack = @(@{ indent = -1; prefix = "" })
+    $lines = $YamlText -split "`r?`n"
+
+    foreach ($line in $lines) {
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+        $trimmed = $line.Trim()
+        if ($trimmed -match '^(#|---|\.\.\.)') { continue }
+
+        $indent = $line.Length - $line.TrimStart().Length
+        while ($stack.Count -gt 1 -and $indent -le $stack[$stack.Count - 1].indent) {
+            $stack = @($stack[0..($stack.Count - 2)])
+        }
+        $parentPrefix = $stack[$stack.Count - 1].prefix
+
+        if ($trimmed -match '^([A-Za-z0-9_.-]+)\s*:\s*(.*)$') {
+            $key = $Matches[1]
+            $value = $Matches[2]
+            $fullKey = if ($parentPrefix) { "$parentPrefix.$key" } else { $key }
+
+            if ([string]::IsNullOrWhiteSpace($value) -or $value -in @("|", ">")) {
+                $stack += @{ indent = $indent; prefix = $fullKey }
+                continue
+            }
+
+            $normalizedValue = $value.Trim() -replace "^['""](.+)['""]$", '$1'
+            $flattened[$fullKey] = $normalizedValue
+            continue
+        }
+
+        if ($trimmed -match '^-+\s*(.+)$' -and $parentPrefix) {
+            $index = 0
+            while ($flattened.ContainsKey("${parentPrefix}[$index]")) { $index++ }
+            $flattened["${parentPrefix}[$index]"] = $Matches[1].Trim()
+        }
+    }
+
+    return $flattened
+}
+
 function Get-AppDocConfigRelativePath {
     [CmdletBinding()]
     param(
@@ -240,7 +287,7 @@ function Add-AppDocJsonConfigProperties {
 
         $value = if ($prop.Value -is [string]) { $prop.Value } else { ($prop.Value | ConvertTo-Json -Compress -Depth 3) }
         $normPath = ($RelativePath -replace '\\+', '/') -replace '/+', '/'
-        $normFull = ("$normPath:$fullPath" -replace '\\+', '/') -replace '/+', '/'
+        $normFull = ("${normPath}:$fullPath" -replace '\\+', '/') -replace '/+', '/'
         $results += @{
             key = Sanitize-AppDocConfigKey -Key $fullPath
             value = Protect-AppDocConfigValue -Key $fullPath -Value $value -Type $FileType
@@ -427,10 +474,24 @@ function Get-AppDocConfigCatalogData {
                         $yamlCmd = Get-Command ConvertFrom-Yaml -ErrorAction SilentlyContinue
                     }
                     catch {
-                        Write-Warning "YAML parsing unavailable: 'ConvertFrom-Yaml' cmdlet not found. Install powershell-yaml module."
+                        $yamlCmd = $null
                     }
                 }
-                if (-not $yamlCmd) { continue }
+                if (-not $yamlCmd) {
+                    $fallbackPairs = ConvertFrom-AppDocYamlFallback -YamlText $content
+                    foreach ($pairKey in $fallbackPairs.Keys) {
+                        $valueString = [string]$fallbackPairs[$pairKey]
+                        $configs += @{
+                            key = Sanitize-AppDocConfigKey -Key ([string]$pairKey)
+                            value = Protect-AppDocConfigValue -Key ([string]$pairKey) -Value $valueString -Type $fileType
+                            file = $relativePath
+                            type = $fileType
+                            source = "$relativePath`:yaml/$pairKey"
+                            required = Test-AppDocRequiredConfig -Key ([string]$pairKey) -Value ([string]$valueString) -Type $fileType
+                        }
+                    }
+                    continue
+                }
 
                 try {
                     $yamlDocuments = ConvertFrom-Yaml -Yaml $content -ErrorAction Stop

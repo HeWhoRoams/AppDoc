@@ -133,17 +133,80 @@ function Update-AppDocDataModelContent {
 
     $placeholder = $script:DataModelPlaceholder
 
+    $updated = $Content
+
     if (Get-Command Update-TemplateSection -ErrorAction SilentlyContinue) {
-        # Use Update-TemplateSection if available and skip regex fallback
-        return Update-TemplateSection -Content $Content -PlaceholderText $placeholder -NewContent $ModelContent
-    } else {
-        # Fallback: simple placeholder replacement
-        if ($Content -and $placeholder -and $Content.Contains($placeholder)) {
-            return $Content.Replace($placeholder, $ModelContent)
-        } else {
-            return $Content
-        }
+        $updated = Update-TemplateSection -Content $updated -PlaceholderText $placeholder -NewContent $ModelContent
+    } elseif ($updated -and $placeholder -and $updated.Contains($placeholder)) {
+        $updated = $updated.Replace($placeholder, $ModelContent)
     }
+
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Data Models\s*\r?\n\r?\n).*?(?=\r?\n##\s+[^\r\n]+|\z)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + $ModelContent + "`r`n")
+        }
+    )
+
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Overview\s*\r?\n\r?\n).*?(?=\r?\n##\s+Data Models\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "This catalog is extracted from model/type declarations and grouped by domain, model size, and structural shape to support impact analysis and refactoring." + "`r`n")
+        }
+    )
+
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Validation Rules\s*\r?\n\r?\n).*?(?=\r?\n##\s+Indexes and Performance\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "Validation rules are mostly implemented in business logic and model usage paths rather than centralized schema annotations. Use model call-sites and domain services to confirm runtime validation behavior." + "`r`n")
+        }
+    )
+
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Indexes and Performance\s*\r?\n\r?\n).*?(?=\r?\n##\s+Data Flow Patterns\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "Index and persistence-performance metadata are not directly available from type extraction alone. Pair this catalog with database artifacts and query traces when assessing performance risk." + "`r`n")
+        }
+    )
+
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Data Flow Patterns\s*\r?\n\r?\n).*?(?=\r?\n##\s+Schema Evolution\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "Model flow is inferred through controller/service usage rather than fully reconstructed as end-to-end pipelines in this artifact. Use API and component hotspots in [System Overview](overview.md) to map key data movement paths." + "`r`n")
+        }
+    )
+
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Schema Evolution\s*\r?\n\r?\n).*?(?=\r?\n##\s+Example Instances\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "Historical schema evolution evidence is out of scope for this deterministic scan. Use migration history, release notes, and git history to track breaking or structural model changes." + "`r`n")
+        }
+    )
+
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Example Instances\s*\r?\n\r?\n).*?(?=(\r?\n##\s+)|\z)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "Concrete example instances were not extracted automatically. Derive practical examples from representative controller actions and test fixtures that construct these models." + "`r`n")
+        }
+    )
+
+    # Ensure stale empty-detection placeholder text is fully removed after population.
+    $updated = $updated -replace '(?im)^_No data models detected\..*?_$', ''
+    return $updated
 }
 
 Export-ModuleMember -Function @(

@@ -62,7 +62,7 @@ Write-Host "  Scanned $($apiData.scannedApiFileCount) potential API files" -Fore
 if ($endpoints.Count -eq 0) {
     Write-Host "⚠️  No API endpoints detected!" -ForegroundColor Yellow
     Write-Host "   Searched in: $RootPath" -ForegroundColor Gray
-    Write-Host "   File extensions: *.js, *.ts, *.cs, *.py, *.java" -ForegroundColor Gray
+    Write-Host "   File extensions: *.js, *.ts, *.cs, *.py, *.java, *.svc, *.asmx" -ForegroundColor Gray
 }
 
 Write-Progress -Activity "Generating API Inventory" -Status "Populating template..." -PercentComplete 80
@@ -86,6 +86,10 @@ $evidenceRecords = @(
             parameters = [string]$_.parameters
             auth = [string]$_.auth
             description = [string]$_.description
+            direction = if ($_.direction) { [string]$_.direction } else { "inbound" }
+            sourceType = if ($_.sourceType) { [string]$_.sourceType } else { "regex" }
+            integrationUrl = if ($_.integrationUrl) { [string]$_.integrationUrl } else { "" }
+            integrationContract = if ($_.integrationContract) { [string]$_.integrationContract } elseif ($_.contractName) { [string]$_.contractName } else { "" }
         }
     }
 )

@@ -6,9 +6,7 @@ This document inventories all external dependencies, libraries, packages, and fr
 
 ## Overview
 
-Describe the dependency management approach and package sources for this codebase.
-
-_No dependency information detected. Check package management files (package.json, requirements.txt, pom.xml, etc.)._
+This catalog aggregates dependencies discovered from package manifests, project references, and assembly references. Use it to identify version drift, runtime coupling, and upgrade planning priorities.
 
 ## Dependency Summary
 
@@ -37,21 +35,19 @@ _No Java dependencies detected._
 
 ## Project References
 
-List internal project dependencies and their relationships.
+Internal project dependency relationships are listed when project-reference evidence is detected.
 
 _No project references detected._
 
 ## Version Conflicts
 
-Document any version conflicts or compatibility issues between dependencies.
+Version divergence across projects is highlighted to support upgrade planning and compatibility review.
 
 _No version conflicts detected._
 
 ## Security Considerations
 
-List dependencies with known vulnerabilities or security advisories.
-
-_No security advisories detected. Run security audit tools to verify._
+This artifact does not currently include automated CVE/advisory enrichment. Use dependency scanning tools in CI and prioritize packages with version divergence or broad usage footprint.
 
 ## Licensing
 
@@ -61,9 +57,7 @@ _No license information extracted. Verify licenses for compliance._
 
 ## Upgrade Recommendations
 
-Suggest dependencies that should be upgraded or replaced.
-
-_No outdated dependencies detected. Check for latest versions._
+Focus upgrades on packages used across many projects, packages with version conflicts, and dependencies on critical runtime paths.
 
 ---
 

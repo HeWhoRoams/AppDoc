@@ -1,135 +1,134 @@
 {
+  "timestamp": "2026-02-19 16:14:22",
   "documents": [
     {
-      "codeBlocks": 0,
-      "score": 100,
+      "issues": [],
       "docType": "Start Here",
       "listItems": 18,
-      "quality": "HIGH",
-      "exists": true,
-      "placeholders": [],
-      "issues": [],
-      "tableRows": 13
-    },
-    {
       "codeBlocks": 0,
       "score": 100,
-      "docType": "Overview",
-      "listItems": 7,
       "quality": "HIGH",
-      "exists": true,
       "placeholders": [],
-      "issues": [],
-      "tableRows": 9
+      "tableRows": 13,
+      "exists": true
     },
     {
+      "issues": [],
+      "docType": "Overview",
+      "listItems": 15,
       "codeBlocks": 0,
-      "score": 90,
-      "docType": "API Inventory",
-      "listItems": 0,
+      "score": 100,
       "quality": "HIGH",
-      "exists": true,
       "placeholders": [],
+      "tableRows": 24,
+      "exists": true
+    },
+    {
       "issues": [
         "API Endpoints table has no populated rows"
       ],
-      "tableRows": 9
-    },
-    {
+      "docType": "API Inventory",
+      "listItems": 0,
       "codeBlocks": 0,
       "score": 90,
-      "docType": "Data Model",
-      "listItems": 0,
       "quality": "HIGH",
-      "exists": true,
       "placeholders": [],
+      "tableRows": 9,
+      "exists": true
+    },
+    {
       "issues": [
         "Data Models table has no populated rows"
       ],
-      "tableRows": 9
-    },
-    {
-      "codeBlocks": 0,
-      "score": 100,
-      "docType": "Config Catalog",
-      "listItems": 2,
-      "quality": "HIGH",
-      "exists": true,
-      "placeholders": [],
-      "issues": [],
-      "tableRows": 64
-    },
-    {
+      "docType": "Data Model",
+      "listItems": 0,
       "codeBlocks": 0,
       "score": 90,
-      "docType": "Build Cookbook",
-      "listItems": 1,
       "quality": "HIGH",
-      "exists": true,
       "placeholders": [],
-      "issues": [
-        "Build Steps table has no populated rows"
-      ],
-      "tableRows": 11
+      "tableRows": 9,
+      "exists": true
     },
     {
+      "issues": [],
+      "docType": "Config Catalog",
+      "listItems": 13,
       "codeBlocks": 0,
-      "score": 70,
-      "docType": "Test Catalog",
-      "listItems": 0,
-      "quality": "MEDIUM",
-      "exists": true,
+      "score": 100,
+      "quality": "HIGH",
       "placeholders": [],
+      "tableRows": 71,
+      "exists": true
+    },
+    {
+      "issues": [],
+      "docType": "Build Cookbook",
+      "listItems": 4,
+      "codeBlocks": 0,
+      "score": 100,
+      "quality": "HIGH",
+      "placeholders": [],
+      "tableRows": 29,
+      "exists": true
+    },
+    {
       "issues": [
         "Test Suites table has no populated rows",
         "Test Cases table has no populated rows"
       ],
-      "tableRows": 11
+      "docType": "Test Catalog",
+      "listItems": 0,
+      "codeBlocks": 0,
+      "score": 70,
+      "quality": "MEDIUM",
+      "placeholders": [],
+      "tableRows": 26,
+      "exists": true
     },
     {
-      "codeBlocks": 0,
-      "score": 90,
-      "docType": "Debt Register",
-      "listItems": 0,
-      "quality": "HIGH",
-      "exists": true,
-      "placeholders": [],
       "issues": [
         "Debt Items table has no populated rows"
       ],
-      "tableRows": 9
-    },
-    {
+      "docType": "Debt Register",
+      "listItems": 0,
       "codeBlocks": 0,
       "score": 90,
-      "docType": "Dependencies Catalog",
-      "listItems": 0,
       "quality": "HIGH",
-      "exists": true,
       "placeholders": [],
-      "issues": [
-        "Dependency summary table has no populated rows"
-      ],
-      "tableRows": 9
+      "tableRows": 9,
+      "exists": true
     },
     {
+      "issues": [],
+      "docType": "Dependencies Catalog",
+      "listItems": 0,
+      "codeBlocks": 0,
+      "score": 95,
+      "quality": "HIGH",
+      "placeholders": [
+        "2x Empty detection placeholder"
+      ],
+      "tableRows": 12,
+      "exists": true
+    },
+    {
+      "issues": [],
+      "docType": "Task Guides",
+      "listItems": 17,
       "codeBlocks": 0,
       "score": 100,
-      "docType": "Task Guides",
-      "listItems": 9,
       "quality": "HIGH",
-      "exists": true,
       "placeholders": [],
-      "issues": [],
-      "tableRows": 7
+      "tableRows": 7,
+      "exists": true
     }
   ],
-  "timestamp": "2026-02-18 13:44:50",
   "overall": {
     "lowQuality": 0,
-    "totalDocs": 10,
     "highQuality": 9,
-    "mediumQuality": 1,
+    "totalDocs": 10,
     "missingDocs": 0,
-    "averageScore": 92.0
-  }}
+    "mediumQuality": 9,
+    "averageScore": 93.5
+  }
+}

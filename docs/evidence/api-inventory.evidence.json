@@ -1,17 +1,17 @@
 {
   "artifact": "api-inventory",
-  "generatedAt": "2026-02-18T13:44:43-05:00",
+  "generatedAt": "2026-02-19T16:14:16-05:00",
   "recordCount": 0,
   "records": [],
   "metadata": {
-    "requiredEvidenceKeys": [
-      "endpoints"
-    ],
     "requiredSections": [
       "Executive Summary",
       "API Endpoints"
     ],
-    "generator": "generate-api-inventory.ps1"
+    "generator": "generate-api-inventory.ps1",
+    "requiredEvidenceKeys": [
+      "endpoints"
+    ]
   },
   "determinism": {
     "hashAlgorithm": "SHA256",

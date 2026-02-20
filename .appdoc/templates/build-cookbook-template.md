@@ -6,13 +6,11 @@ This document provides step-by-step instructions for building, testing, and depl
 
 ## Overview
 
-Describe the build process and automation for this codebase.
+This cookbook is assembled from detected build commands and CI hints so teams can reproduce, troubleshoot, and standardize build execution.
 
 ## Prerequisites
 
-List system requirements and prerequisites for building the project.
-
-_No prerequisites detected. Consult project README or setup documentation._
+Use a development environment with required build tools available on PATH and aligned to the versions expected by solution/project files and CI.
 
 ## Build Steps
 
@@ -23,30 +21,26 @@ _No build steps detected. Check for package.json scripts, Makefile, or build con
 
 ## Dependencies
 
-List all build dependencies and tools required.
+List build toolchain dependencies used to execute restore/build/test/publish workflows.
 
 | Dependency | Version | Purpose | Installation |
 |------------|---------|---------|--------------|  
 
-_No build dependencies detected. Refer to package.json, requirements.txt, or dependency manifests._
+_Build dependencies are populated from detected command/tool evidence._
 
 ## CI/CD Integration
 
-Describe how the build process integrates with continuous integration and deployment.
+CI/CD signals are derived from detected workflow manifests and pipeline files.
 
-_No CI/CD configuration detected. Check for .github/workflows, .gitlab-ci.yml, or Jenkins files._
+_No CI/CD configuration detected in scoped sources. Verify external pipeline repositories or organization-level workflows._
 
 ## Troubleshooting
 
-Common build issues and their solutions.
-
-_No troubleshooting documentation available. Consult build logs and error messages._
+Start with restore (`dotnet restore` or `nuget restore`) and then run the narrowest failing build command from this artifact. Compare local toolchain versions with CI when diagnosing persistent failures.
 
 ## Example Build Scripts
 
-Provide example build scripts or commands.
-
-_No example build scripts available. Refer to project build configuration files._
+A curated script may not always be extracted automatically. For repeatable local execution, chain `restore -> build -> test` commands from this artifact into a repo-specific helper script.
 
 ## Population Guide
 

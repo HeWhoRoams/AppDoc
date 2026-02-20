@@ -13,11 +13,12 @@ Use this prompt to run deterministic AppDoc generation from start to finish with
 1. Parse arguments:
 - Argument 1 (required): target repository root path.
 - Argument 2 (optional): output docs path (default `docs/`).
-- Optional flags: `--strict`, `--threshold <1-100>`, `--skip-diagrams`, `--no-ai`, `--dry-run`.
+- Optional flags: `--strict`, `--threshold <1-100>`, `--skip-diagrams`, `--no-ai`, `--ai-mode <auto|agent|apikey|deterministic>`, `--require-ai`, `--dry-run`.
 
 2. Validate prerequisites:
 - Target path exists.
 - `.appdoc/scripts/powershell/run-all-generators.ps1` exists.
+- If `--ai-mode agent` is used, ensure `.appdoc/scripts/powershell/agent-bridge-responder.ps1` is available and recommend running it in a second terminal.
 
 3. Execute a single orchestrated command:
 
@@ -30,6 +31,8 @@ Flag mapping:
 - `--threshold N` => `-QualityThreshold N`
 - `--skip-diagrams` => `-SkipDiagrams`
 - `--no-ai` => `-NoAI`
+- `--ai-mode <mode>` => `-AIMode <Auto|Agent|ApiKey|Deterministic>`
+- `--require-ai` => `-RequireAI`
 - `--dry-run` => `-DryRun`
 
 4. If command fails:

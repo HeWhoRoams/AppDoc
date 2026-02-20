@@ -11,6 +11,7 @@ $diagnosticsModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagnostics.psm1"
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
 $contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
 $validationCoreModule = Join-Path $PSScriptRoot "modules\AppDoc.Validation.Core.psm1"
+$architectureModule = Join-Path $PSScriptRoot "modules\AppDoc.ArchitectureFingerprint.psm1"
 
 # Required modules - fail fast if any are missing
 if (-not (Test-Path $diagnosticsModule)) {
@@ -36,6 +37,10 @@ if (-not (Test-Path $validationCoreModule)) {
     exit 1
 }
 Import-Module $validationCoreModule -Force -ErrorAction Stop
+
+if (Test-Path $architectureModule) {
+    Import-Module $architectureModule -Force -ErrorAction Stop
+}
 
 $docsPath = Join-Path $RootPath "docs"
 if (-not (Test-Path $docsPath)) {
@@ -345,14 +350,14 @@ function Get-DocRouteCount {
             if ($fromEvidence -gt 0) { return $fromEvidence }
         }
         catch {
-            Write-Warning "[validate-documentation] Failed to parse evidence at $evidencePath: $($_.Exception.Message)"
+            Write-Warning "[validate-documentation] Failed to parse evidence at ${evidencePath}: $($_.Exception.Message)"
         }
     }
 
     $content = Get-Content $ApiDocPath -Raw
     return ([regex]::Matches(
         $content,
-        '(?im)^\|\s*`[^|]+`\s*\|\s*`/[^|]+`\s*\|\s*(GET|POST|PUT|DELETE|PATCH|ANY)\s*\|'
+        '(?im)^\|\s*`[^|]+`\s*\|\s*`/[^|]+`\s*\|\s*(GET|POST|PUT|DELETE|PATCH|ANY|SOAP)\s*\|'
     )).Count
 }
 
@@ -818,10 +823,21 @@ function Get-MarkdownTableDataRows {
 }
 
 function Get-PolicyGateAnalysis {
-    param([string]$DocsPath)
+    param(
+        [string]$DocsPath,
+        [string]$RootPath
+    )
 
     $blockingIssues = @()
     $warnings = @()
+    $architectureFingerprint = $null
+    $apiSurfaceExpected = $true
+    if ($RootPath -and (Get-Command Get-AppDocArchitectureFingerprint -ErrorAction SilentlyContinue)) {
+        $architectureFingerprint = Get-AppDocArchitectureFingerprint -RootPath $RootPath
+        if ($null -ne $architectureFingerprint.apiSurfaceExpected) {
+            $apiSurfaceExpected = [bool]$architectureFingerprint.apiSurfaceExpected
+        }
+    }
 
     $criticalDocs = @(
         "overview.md",
@@ -848,13 +864,53 @@ function Get-PolicyGateAnalysis {
         }
     }
 
+    $overviewPath = Join-Path $DocsPath "overview.md"
+    if (Test-Path $overviewPath) {
+        $overviewContent = Get-Content $overviewPath -Raw
+        $welcomeSection = Get-MarkdownSectionBlock -Content $overviewContent -SectionName "Welcome"
+        if (-not $welcomeSection) {
+            $blockingIssues += "overview-welcome-section-missing"
+        }
+        else {
+            $requiredWelcomeSubsections = @(
+                "what_it_does",
+                "inputs",
+                "processing_steps",
+                "outputs",
+                "external_systems",
+                "confidence_notes",
+                "evidence_refs"
+            )
+
+            foreach ($subsection in $requiredWelcomeSubsections) {
+                if (-not [regex]::IsMatch($welcomeSection, "(?im)^###\s+" + [regex]::Escape($subsection) + "\b")) {
+                    $blockingIssues += "overview-welcome-subsection-missing:$subsection"
+                }
+            }
+
+            $overviewEvidenceRefHits = ([regex]::Matches($welcomeSection, '(?i)ev-\d{4}')).Count
+            if ($overviewEvidenceRefHits -eq 0) {
+                $blockingIssues += "overview-welcome-evidence-refs-empty"
+            }
+        }
+    }
+    else {
+        $blockingIssues += "overview-doc-missing"
+    }
+
     $apiPath = Join-Path $DocsPath "api-inventory.md"
     if (Test-Path $apiPath) {
         $apiContent = Get-Content $apiPath -Raw
         $apiSection = Get-MarkdownSectionBlock -Content $apiContent -SectionName "API Endpoints"
         $apiRows = Get-MarkdownTableDataRows -SectionContent $apiSection
         if ($apiRows.Count -eq 0) {
-            $blockingIssues += "api-endpoints-table-empty"
+            if ($apiSurfaceExpected) {
+                $blockingIssues += "api-endpoints-table-empty"
+            }
+            else {
+                $styleLabel = if ($architectureFingerprint -and $architectureFingerprint.primaryStyle) { [string]$architectureFingerprint.primaryStyle } else { "unknown" }
+                $warnings += "api-endpoints-table-empty-nonblocking:$styleLabel"
+            }
         }
 
         $blankPathRows = @($apiRows | Where-Object { $_ -match '^\|\s*``?[^|]+``?\s*\|\s*``?\s*``?\s*\|' })
@@ -908,7 +964,7 @@ $taskGuideOutcomes = Get-TaskGuideOutcomeMetrics -DocsPath $docsPath -EvidenceRo
 $taskGuideActionabilityScore = [double]$taskGuideOutcomes.actionabilityScore
 $taskGuideEvidenceCoverageScore = [double]$taskGuideOutcomes.evidenceCoverageScore
 $taskGuideTimeScore = [double]$taskGuideOutcomes.taskCompletionTimeScore
-$policyGates = Get-PolicyGateAnalysis -DocsPath $docsPath
+$policyGates = Get-PolicyGateAnalysis -DocsPath $docsPath -RootPath $RootPath
 $policyGateScore = [double]$policyGates.score
 
 foreach ($issue in @($contradictionAnalysis.issues)) {

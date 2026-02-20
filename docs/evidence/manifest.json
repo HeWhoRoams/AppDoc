@@ -1,92 +1,92 @@
 {
-  "generatedAt": "2026-02-18T15:19:44-05:00",
+  "generatedAt": "2026-02-19T16:14:22-05:00",
   "artifacts": [
     {
       "artifact": "api-inventory",
-      "path": "./docs/evidence/api-inventory.evidence.json",
+      "path": ".\\docs\\evidence\\api-inventory.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-02-18T13:44:43-05:00",
+      "updatedAt": "2026-02-19T16:14:16-05:00",
       "metadata": {
         "generator": "generate-api-inventory.ps1"
       }
     },
     {
       "artifact": "build-cookbook",
-      "path": "./docs/evidence/build-cookbook.evidence.json",
-      "recordCount": 1,
-      "updatedAt": "2026-02-18T13:44:48-05:00",
+      "path": ".\\docs\\evidence\\build-cookbook.evidence.json",
+      "recordCount": 15,
+      "updatedAt": "2026-02-19T16:14:21-05:00",
       "metadata": {
         "generator": "generate-build-cookbook.ps1"
       }
     },
     {
       "artifact": "config-catalog",
-      "path": "./docs/evidence/config-catalog.evidence.json",
-      "recordCount": 46,
-      "updatedAt": "2026-02-18T13:44:47-05:00",
+      "path": ".\\docs\\evidence\\config-catalog.evidence.json",
+      "recordCount": 59,
+      "updatedAt": "2026-02-19T16:14:20-05:00",
       "metadata": {
         "generator": "generate-config-catalog.ps1"
       }
     },
     {
       "artifact": "data-model",
-      "path": "./docs/evidence/data-model.evidence.json",
+      "path": ".\\docs\\evidence\\data-model.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-02-18T13:44:44-05:00",
+      "updatedAt": "2026-02-19T16:14:17-05:00",
       "metadata": {
         "generator": "generate-data-model.ps1"
       }
     },
     {
       "artifact": "debt-register",
-      "path": "./docs/evidence/debt-register.evidence.json",
+      "path": ".\\docs\\evidence\\debt-register.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-02-18T13:44:49-05:00",
+      "updatedAt": "2026-02-19T16:14:21-05:00",
       "metadata": {
         "generator": "generate-debt-register.ps1"
       }
     },
     {
       "artifact": "dependencies-catalog",
-      "path": "./docs/evidence/dependencies-catalog.evidence.json",
-      "recordCount": 0,
-      "updatedAt": "2026-02-18T13:44:49-05:00",
+      "path": ".\\docs\\evidence\\dependencies-catalog.evidence.json",
+      "recordCount": 10,
+      "updatedAt": "2026-02-19T16:14:22-05:00",
       "metadata": {
         "generator": "generate-dependencies-catalog.ps1"
       }
     },
     {
       "artifact": "overview",
-      "path": "./docs/evidence/overview.evidence.json",
-      "recordCount": 1,
-      "updatedAt": "2026-02-18T13:44:42-05:00",
+      "path": ".\\docs\\evidence\\overview.evidence.json",
+      "recordCount": 9,
+      "updatedAt": "2026-02-19T16:14:16-05:00",
       "metadata": {
         "generator": "generate-overview.ps1"
       }
     },
     {
       "artifact": "start-here",
-      "path": "./docs/evidence/start-here.evidence.json",
+      "path": ".\\docs\\evidence\\start-here.evidence.json",
       "recordCount": 3,
-      "updatedAt": "2026-02-18T13:44:50-05:00",
+      "updatedAt": "2026-02-19T16:14:22-05:00",
       "metadata": {
         "generator": "generate-start-here.ps1"
       }
     },
     {
       "artifact": "task-guides",
-      "path": "./docs/evidence/task-guides.evidence.json",
+      "path": ".\\docs\\evidence\\task-guides.evidence.json",
       "recordCount": 5,
-      "updatedAt": "2026-02-18T15:19:44-05:00",
+      "updatedAt": "2026-02-19T16:14:22-05:00",
       "metadata": {
         "generator": "generate-task-guides.ps1"
       }
     },
     {
       "artifact": "test-catalog",
-      "path": "./docs/evidence/test-catalog.evidence.json",
+      "path": ".\\docs\\evidence\\test-catalog.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-02-18T13:44:48-05:00",
+      "updatedAt": "2026-02-19T16:14:21-05:00",
       "metadata": {
         "generator": "generate-test-catalog.ps1"
       }
@@ -99,6 +99,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "7f48287458c983cd7eb65296e651916b584a865b4aa74a512b23ead78d50f148"
+    "contentHash": "3cc808c2d7ea424d08e8d87ecc2726cc325e5e4c493f2f1a18b2586c116a673c"
   }
 }

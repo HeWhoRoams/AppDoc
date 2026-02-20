@@ -1,0 +1,313 @@
+# AppDoc.Overview.ContextPack Module
+# Purpose: Build a versioned, normalized narrative context pack from deterministic overview truth data.
+
+$script:AppDocOverviewContextPackVersion = "3.0.0"
+
+function Get-AppDocOverviewContextPackValue {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [object]$Object,
+        [Parameter(Mandatory=$true)]
+        [string]$Name,
+        [AllowNull()]
+        [object]$Default = $null
+    )
+
+    if ($null -eq $Object) { return $Default }
+
+    if ($Object -is [System.Collections.IDictionary]) {
+        if ($Object.Contains($Name)) {
+            return $Object[$Name]
+        }
+        return $Default
+    }
+
+    $prop = $Object.PSObject.Properties[$Name]
+    if ($prop) {
+        return $prop.Value
+    }
+
+    return $Default
+}
+
+function ConvertTo-AppDocOverviewContextArray {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [object]$Value
+    )
+
+    if ($null -eq $Value) { return @() }
+    if ($Value -is [string]) {
+        if ([string]::IsNullOrWhiteSpace($Value)) { return @() }
+        return @([string]$Value)
+    }
+
+    if ($Value -is [System.Collections.IEnumerable]) {
+        $items = @()
+        foreach ($item in $Value) {
+            if ($null -ne $item) { $items += $item }
+        }
+        return @($items)
+    }
+
+    return @($Value)
+}
+
+function Get-AppDocOverviewEntityType {
+    [CmdletBinding()]
+    param([string]$Kind)
+
+    switch ($Kind) {
+        "endpoint" { return "endpoint" }
+        "model" { return "model" }
+        "configuration" { return "config" }
+        "dependency" { return "dep" }
+        default { return "signal" }
+    }
+}
+
+function New-AppDocOverviewIntentCandidate {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Id,
+        [Parameter(Mandatory=$true)]
+        [string]$Type,
+        [Parameter(Mandatory=$true)]
+        [string]$Text,
+        [AllowEmptyCollection()]
+        [string[]]$EvidenceIds = @()
+    )
+
+    return [ordered]@{
+        id = $Id
+        type = $Type
+        text = $Text
+        evidence_ids = @(
+            $EvidenceIds |
+                Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } |
+                Select-Object -Unique
+        )
+    }
+}
+
+function Get-AppDocOverviewContextPackData {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$RootPath,
+        [Parameter(Mandatory=$true)]
+        [object]$TruthPack,
+        [ValidateSet("new_dev","senior_dev","sre")]
+        [string]$Audience = "new_dev",
+        [ValidateSet("concise","standard","pedagogical")]
+        [string]$StyleProfile = "standard"
+    )
+
+    $projectName = [string](Get-AppDocOverviewContextPackValue -Object $TruthPack -Name "projectName" -Default (Split-Path $RootPath -Leaf))
+    $evidenceRefs = @(Get-AppDocOverviewContextPackValue -Object $TruthPack -Name "evidence_refs" -Default @())
+    $facts = Get-AppDocOverviewContextPackValue -Object $TruthPack -Name "facts" -Default @{}
+
+    $entities = @()
+    $entityIndex = @{}
+    $entityCounter = 1
+
+    foreach ($evidence in $evidenceRefs) {
+        if (-not $evidence) { continue }
+
+        $kind = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "kind" -Default "")
+        $entityType = Get-AppDocOverviewEntityType -Kind $kind
+        $name = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default "")
+        $source = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default "")
+        $evidenceId = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "id" -Default "")
+        if ([string]::IsNullOrWhiteSpace($evidenceId)) { continue }
+
+        $key = "{0}|{1}|{2}" -f $entityType, $name, $source
+        if (-not $entityIndex.ContainsKey($key)) {
+            $entityId = "ent-{0}" -f $entityCounter.ToString("0000")
+            $entityCounter++
+            $entity = [ordered]@{
+                id = $entityId
+                type = $entityType
+                name = $name
+                source = $source
+                evidence_ids = @($evidenceId)
+            }
+
+            $entities += $entity
+            $entityIndex[$key] = $entity
+        }
+        else {
+            $entity = $entityIndex[$key]
+            if (-not (@($entity.evidence_ids) -contains $evidenceId)) {
+                $entity.evidence_ids = @($entity.evidence_ids + $evidenceId)
+            }
+        }
+    }
+
+    $relations = @()
+    foreach ($evidence in $evidenceRefs) {
+        if (-not $evidence) { continue }
+
+        $kind = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "kind" -Default "")
+        if ($kind -ne "endpoint") { continue }
+
+        $name = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default "")
+        $source = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default "")
+        $entityKey = "endpoint|{0}|{1}" -f $name, $source
+        if (-not $entityIndex.ContainsKey($entityKey)) { continue }
+
+        $metadata = Get-AppDocOverviewContextPackValue -Object $evidence -Name "metadata" -Default @{}
+        $integrationUrl = [string](Get-AppDocOverviewContextPackValue -Object $metadata -Name "integrationUrl" -Default "")
+        if ([string]::IsNullOrWhiteSpace($integrationUrl)) { continue }
+
+        $host = ""
+        try {
+            $uri = [Uri]$integrationUrl
+            if ($uri -and $uri.Host) {
+                $host = [string]$uri.Host
+            }
+        }
+        catch {
+            $host = ""
+        }
+
+        if ([string]::IsNullOrWhiteSpace($host)) { continue }
+
+        $targetKey = "signal|{0}|integration-host" -f $host
+        if (-not $entityIndex.ContainsKey($targetKey)) {
+            $entityId = "ent-{0}" -f $entityCounter.ToString("0000")
+            $entityCounter++
+            $hostEntity = [ordered]@{
+                id = $entityId
+                type = "signal"
+                name = $host
+                source = "integration-host"
+                evidence_ids = @()
+            }
+            $entities += $hostEntity
+            $entityIndex[$targetKey] = $hostEntity
+        }
+
+        $fromEntity = $entityIndex[$entityKey]
+        $toEntity = $entityIndex[$targetKey]
+        $relations += [ordered]@{
+            from = [string]$fromEntity.id
+            to = [string]$toEntity.id
+            type = "calls"
+        }
+    }
+
+    $intentCandidates = @()
+    $intentCounter = 1
+    $factTypeMap = @{
+        "what_it_does" = "business_purpose"
+        "inputs" = "data_contract"
+        "processing_steps" = "workflow"
+        "outputs" = "data_contract"
+        "external_systems" = "workflow"
+        "confidence_notes" = "confidence_note"
+    }
+    $sectionEvidenceMap = [ordered]@{}
+
+    foreach ($factSection in @("what_it_does","inputs","processing_steps","outputs","external_systems","confidence_notes")) {
+        $items = @(Get-AppDocOverviewContextPackValue -Object $facts -Name $factSection -Default @())
+        $sectionEvidenceMap[$factSection] = @()
+        foreach ($item in $items) {
+            if (-not $item) { continue }
+            $text = [string](Get-AppDocOverviewContextPackValue -Object $item -Name "text" -Default "")
+            if ([string]::IsNullOrWhiteSpace($text)) { continue }
+            $ids = @(
+                ConvertTo-AppDocOverviewContextArray -Value (Get-AppDocOverviewContextPackValue -Object $item -Name "evidence_refs" -Default @()) |
+                    ForEach-Object { [string]$_ } |
+                    Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+                    Select-Object -Unique
+            )
+            $sectionEvidenceMap[$factSection] = @($sectionEvidenceMap[$factSection] + $ids | Select-Object -Unique)
+            $intentType = if ($factTypeMap.ContainsKey($factSection)) { [string]$factTypeMap[$factSection] } else { "workflow" }
+            $intentId = "intent-{0}" -f $intentCounter.ToString("0000")
+            $intentCounter++
+            $intentCandidates += New-AppDocOverviewIntentCandidate -Id $intentId -Type $intentType -Text $text -EvidenceIds $ids
+        }
+    }
+
+    $contextPack = [ordered]@{
+        schema_version = $script:AppDocOverviewContextPackVersion
+        generator_version = "generate-overview.ps1"
+        generated_at = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
+        run_id = [Guid]::NewGuid().ToString()
+        project = [ordered]@{
+            name = $projectName
+            root_path = $RootPath
+            audience = $Audience
+            style_profile = $StyleProfile
+        }
+        facts = [ordered]@{
+            entities = @($entities)
+            relations = @($relations)
+        }
+        intent_candidates = @($intentCandidates)
+        section_evidence_defaults = $sectionEvidenceMap
+        evidence_refs = @(
+            $evidenceRefs |
+                ForEach-Object {
+                    [ordered]@{
+                        id = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "id" -Default "")
+                        artifact = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "artifact" -Default "")
+                        kind = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "kind" -Default "")
+                        name = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "name" -Default "")
+                        source = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "source" -Default "")
+                    }
+                }
+        )
+        constraints = [ordered]@{
+            must_ground = $true
+            no_invention = $true
+            paragraph_level_evidence_preferred = $true
+            section_level_evidence_allowed = $true
+        }
+    }
+
+    return $contextPack
+}
+
+function Write-AppDocOverviewContextPack {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$RootPath,
+        [Parameter(Mandatory=$true)]
+        [hashtable]$ContextPack
+    )
+
+    $evidenceDir = Join-Path $RootPath "docs\evidence"
+    if (-not (Test-Path $evidenceDir)) {
+        New-Item -Path $evidenceDir -ItemType Directory -Force | Out-Null
+    }
+
+    $outputPath = Join-Path $evidenceDir "narrative-context-pack.json"
+    $payload = [ordered]@{}
+    foreach ($key in @($ContextPack.Keys)) {
+        $payload[$key] = $ContextPack[$key]
+    }
+
+    if (Get-Command Get-AppDocDeterministicHash -ErrorAction SilentlyContinue) {
+        $excludeKeys = @("generated_at", "run_id", "timestamp")
+        $payload.determinism = [ordered]@{
+            hashAlgorithm = "SHA256"
+            excludeKeys = $excludeKeys
+            contentHash = (Get-AppDocDeterministicHash -InputObject $payload -ExcludeKeys $excludeKeys)
+        }
+    }
+
+    $payload | ConvertTo-Json -Depth 50 | Out-File -FilePath $outputPath -Encoding UTF8
+    return $outputPath
+}
+
+Export-ModuleMember -Function @(
+    'Get-AppDocOverviewContextPackData',
+    'Write-AppDocOverviewContextPack'
+)
+

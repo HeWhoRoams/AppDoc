@@ -53,7 +53,7 @@ function ConvertTo-AppDocDeterministicValue {
     return [string]$Value
 }
 
-function Sort-AppDocExtractionRecords {
+function ConvertTo-AppDocOrderedExtractionRecords {
     [CmdletBinding()]
     param(
         [AllowEmptyCollection()]
@@ -120,6 +120,6 @@ function Get-AppDocDeterministicHash {
 }
 
 Export-ModuleMember -Function @(
-    'Sort-AppDocExtractionRecords',
+    'ConvertTo-AppDocOrderedExtractionRecords',
     'Get-AppDocDeterministicHash'
 )

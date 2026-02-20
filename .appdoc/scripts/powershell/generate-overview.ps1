@@ -6,8 +6,36 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [string]$RootPath
+    [string]$RootPath,
+    [Parameter(Mandatory=$false)]
+    [ValidateSet("Auto","Agent","ApiKey","Deterministic")]
+    [string]$AIMode = "Auto",
+    [Parameter(Mandatory=$false)]
+    [switch]$RequireAI,
+    [Parameter(Mandatory=$false)]
+    [switch]$NoAI
 )
+
+function Get-AppDocOverviewGeneratorValue {
+    param(
+        [AllowNull()]
+        [object]$Object,
+        [Parameter(Mandatory=$true)]
+        [string]$Name,
+        [AllowNull()]
+        [object]$Default = $null
+    )
+
+    if ($null -eq $Object) { return $Default }
+    if ($Object -is [System.Collections.IDictionary]) {
+        if ($Object.Contains($Name)) { return $Object[$Name] }
+        return $Default
+    }
+
+    $prop = $Object.PSObject.Properties[$Name]
+    if ($prop) { return $prop.Value }
+    return $Default
+}
 
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
 if (Test-Path $helpersPath) {
@@ -34,6 +62,26 @@ $overviewRendererModule = Join-Path $PSScriptRoot "modules\AppDoc.Overview.Rende
 if (-not (Test-Path $overviewRendererModule)) { Write-Error "Required module not found: $overviewRendererModule"; exit 1 }
 Import-Module $overviewRendererModule -Force -ErrorAction Stop
 
+$overviewTruthPackModule = Join-Path $PSScriptRoot "modules\AppDoc.Overview.TruthPack.psm1"
+if (-not (Test-Path $overviewTruthPackModule)) { Write-Error "Required module not found: $overviewTruthPackModule"; exit 1 }
+Import-Module $overviewTruthPackModule -Force -ErrorAction Stop
+
+$overviewNarrativeModule = Join-Path $PSScriptRoot "modules\AppDoc.Overview.Narrative.psm1"
+if (-not (Test-Path $overviewNarrativeModule)) { Write-Error "Required module not found: $overviewNarrativeModule"; exit 1 }
+Import-Module $overviewNarrativeModule -Force -ErrorAction Stop
+
+$overviewContextPackModule = Join-Path $PSScriptRoot "modules\AppDoc.Overview.ContextPack.psm1"
+if (-not (Test-Path $overviewContextPackModule)) { Write-Error "Required module not found: $overviewContextPackModule"; exit 1 }
+Import-Module $overviewContextPackModule -Force -ErrorAction Stop
+
+$overviewPromptCompilerModule = Join-Path $PSScriptRoot "modules\AppDoc.Overview.PromptCompiler.psm1"
+if (-not (Test-Path $overviewPromptCompilerModule)) { Write-Error "Required module not found: $overviewPromptCompilerModule"; exit 1 }
+Import-Module $overviewPromptCompilerModule -Force -ErrorAction Stop
+
+$overviewPipelineModule = Join-Path $PSScriptRoot "modules\AppDoc.Overview.Pipeline.psm1"
+if (-not (Test-Path $overviewPipelineModule)) { Write-Error "Required module not found: $overviewPipelineModule"; exit 1 }
+Import-Module $overviewPipelineModule -Force -ErrorAction Stop
+
 Write-Host "📊 Generating System Overview..." -ForegroundColor Cyan
 
 if (-not (Test-Path $RootPath)) {
@@ -57,9 +105,18 @@ if (-not $overviewData) {
 }
 $languageCount = $overviewData.languageCount
 
+$truthPack = Get-AppDocOverviewTruthPackData -RootPath $RootPath -OverviewData $overviewData
+$truthPackPath = Write-AppDocOverviewTruthPack -RootPath $RootPath -TruthPack $truthPack
+
+$contextPack = Get-AppDocOverviewContextPackData -RootPath $RootPath -TruthPack $truthPack -Audience "new_dev" -StyleProfile "standard"
+$contextPackPath = Write-AppDocOverviewContextPack -RootPath $RootPath -ContextPack $contextPack
+
+$welcomeNarrativeResult = Get-AppDocOverviewWelcomeNarrativeFromPipeline -RootPath $RootPath -TruthPack $truthPack -ContextPack $contextPack -Audience "new_dev" -StyleProfile "standard" -AIMode $AIMode -RequireAI:$RequireAI -NoAI:$NoAI
+$welcomeNarrative = $welcomeNarrativeResult.narrative
+
 Write-Progress -Activity "Generating System Overview" -Status "Populating template..." -PercentComplete 60
 $content = Get-Content -Path $outputPath -Raw
-$content = Update-AppDocOverviewContent -Content $content -CodeFileCount ([int]$overviewData.codeFileCount) -LanguageCount $languageCount
+$content = Update-AppDocOverviewContent -Content $content -CodeFileCount ([int]$overviewData.codeFileCount) -LanguageCount $languageCount -WelcomeNarrative $welcomeNarrative -TruthPack $truthPack
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
@@ -81,8 +138,60 @@ foreach ($lang in $languageCount.Keys) {
     }
 }
 
+if ($welcomeNarrative) {
+    $welcomeSectionOrder = @(
+        "what_it_does",
+        "inputs",
+        "processing_steps",
+        "outputs",
+        "external_systems",
+        "confidence_notes"
+    )
+
+    foreach ($section in $welcomeSectionOrder) {
+        $items = @(Get-AppDocOverviewGeneratorValue -Object $welcomeNarrative -Name $section -Default @())
+
+        $itemIndex = 0
+        foreach ($item in $items) {
+            if (-not $item) { continue }
+            $text = [string]$item.text
+            if ([string]::IsNullOrWhiteSpace($text)) { continue }
+
+            $itemIndex++
+            $evidenceRefs = @($item.evidence_refs | ForEach-Object { [string]$_ } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
+            $confidence = if ($evidenceRefs.Count -gt 0) { 0.9 } else { 0.6 }
+            $providerType = if ($welcomeNarrativeResult.usedAI) { "llm" } else { "deterministic" }
+
+            $evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "overview-welcome" -Name ("{0}-{1:00}" -f $section, $itemIndex) -Kind "welcome-summary" -Confidence $confidence -Provider ([string]$welcomeNarrativeResult.provider) -ProviderType $providerType -Metadata @{
+                section = $section
+                text = $text
+                evidenceRefs = $evidenceRefs
+                usedAI = [bool]$welcomeNarrativeResult.usedAI
+            }
+        }
+    }
+}
+
 $evidenceMetadata = @{
     generator = "generate-overview.ps1"
+    truthPackPath = $truthPackPath
+    contextPackPath = $contextPackPath
+    welcomeNarrativeProvider = [string]$welcomeNarrativeResult.provider
+    welcomeNarrativeUsedAI = [bool]$welcomeNarrativeResult.usedAI
+    welcomeNarrativeAIModeRequested = [string](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.runReport -Name "aiModeRequested" -Default "")
+    welcomeNarrativeAIModeResolved = [string](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.runReport -Name "aiModeResolved" -Default "")
+    welcomeNarrativeAIProvider = [string](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.runReport -Name "aiProvider" -Default "")
+    welcomeNarrativeVerified = [bool]$welcomeNarrativeResult.verification.passed
+    welcomeNarrativeIssues = @($welcomeNarrativeResult.verification.issues)
+    welcomeSectionCoveragePassed = [bool]$welcomeNarrativeResult.sectionCoverage.passed
+    welcomeSectionCoverageIssues = @($welcomeNarrativeResult.sectionCoverage.issues)
+    welcomeStyleGatePassed = [bool]$welcomeNarrativeResult.styleGate.passed
+    welcomeStyleGateIssues = @($welcomeNarrativeResult.styleGate.issues)
+    welcomeStyleGateMetrics = $welcomeNarrativeResult.styleGate.metrics
+    narrativeReviewRequired = [bool]$welcomeNarrativeResult.narrativeReviewRequired
+    welcomeNarrativePassSources = $welcomeNarrativeResult.passSources
+    narrativeArtifacts = $welcomeNarrativeResult.artifactPaths
+    narrativeRunReport = $welcomeNarrativeResult.runReport
 }
 if ($contract) {
     $evidenceMetadata.requiredEvidenceKeys = @($contract.requiredEvidenceKeys)

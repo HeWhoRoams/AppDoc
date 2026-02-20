@@ -102,7 +102,7 @@ _No environment variables detected. System may use configuration files or defaul
             "- **$($_.Name)**: $($_.Count) file(s)"
         }) -join "`n"
     } else {
-        "_No configuration sources detected. System may use hardcoded values or external configuration service._"
+        "No scoped configuration source files were detected in this scan. Verify repository scope and environment-specific config locations."
     }
 
     # Helper: Infer type from value
@@ -206,7 +206,7 @@ _No environment variables detected. System may use configuration files or defaul
         envVarsContent = $envVarsContent
         configTablePlaceholder = $configTablePlaceholder
         envTablePlaceholder = $envTablePlaceholder
-        configSourcesPlaceholder = "_No configuration sources detected. System may use hardcoded values or external configuration service._"
+        configSourcesPlaceholder = "No scoped configuration source files were detected in this scan. Verify repository scope and environment-specific config locations."
     }
 }
 
@@ -254,23 +254,29 @@ function Update-AppDocConfigCatalogContent {
         }
     )
 
-    # Replace raw deterministic placeholder text for known optional sections
-    # with a standardized professional note when no evidence is available.
-    $deferredSectionNote = "This section will be populated as artifacts are discovered."
-    $deferredSectionHeaders = @(
-        'Configuration Validation',
-        'Configuration Management',
-        'Security Considerations',
-        'Example Configurations'
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Overview\s*\r?\n\r?\n).*?(?=\r?\n##\s+Configuration Sources\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "This catalog is assembled from Web.config/App.config, project files, and pipeline YAML to show where runtime and deployment behavior are controlled." + "`r`n")
+        }
     )
-    foreach ($header in $deferredSectionHeaders) {
-        $sectionPattern = "(?s)(##\s+$([regex]::Escape($header))\s*\r?\n\r?\n)No deterministic evidence found in this section for the current scan\.\s*(?=(\r?\n##\s+)|\z)"
+
+    $sectionFallbacks = [ordered]@{
+        'Configuration Validation' = 'This run extracted configuration keys and sources but not a full validation matrix. Treat required-key checks, value-shape checks, and environment overrides as mandatory pre-release validation tasks.'
+        'Configuration Management' = 'Configuration is distributed across application config files, transforms, project metadata, and pipeline settings. Manage changes with environment-specific promotion controls and explicit review for sensitive settings.'
+        'Security Considerations' = 'No direct security classification was inferred for each key in this pass. Treat connection strings, credentials, tokens, and endpoint URLs as sensitive-by-default and validate redaction before publishing artifacts.'
+        'Example Configurations' = 'Environment-specific examples are not emitted automatically to avoid accidental secret leakage. Build examples from non-sensitive templates and validate with the required configuration criteria below.'
+    }
+    foreach ($header in $sectionFallbacks.Keys) {
+        $sectionPattern = "(?s)(##\s+$([regex]::Escape($header))\s*\r?\n\r?\n).*?(?=(\r?\n##\s+)|\z)"
         $updated = [regex]::Replace(
             $updated,
             $sectionPattern,
             [System.Text.RegularExpressions.MatchEvaluator]{
                 param($m)
-                return ($m.Groups[1].Value + $deferredSectionNote + "`r`n")
+                return ($m.Groups[1].Value + [string]$sectionFallbacks[$header] + "`r`n")
             }
         )
     }

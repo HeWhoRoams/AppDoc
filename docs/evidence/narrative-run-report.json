@@ -1,0 +1,49 @@
+{
+  "pipelineVersion": "1.0.0",
+  "startedAt": "2026-02-19T16:14:15-05:00",
+  "endedAt": "2026-02-19T16:14:15-05:00",
+  "durationMs": 74.0,
+  "model": "gpt-4o-mini",
+  "aiModeRequested": "Auto",
+  "aiModeResolved": "Deterministic",
+  "aiProvider": "deterministic",
+  "aiResolutionReason": "Auto mode found no AI provider.",
+  "aiAttempted": false,
+  "aiProvidersObserved": [],
+  "aiPassFailures": [],
+  "requireAI": false,
+  "noAI": false,
+  "audience": "new_dev",
+  "styleProfile": "standard",
+  "passSources": {
+    "pass1": "deterministic",
+    "pass2": "deterministic",
+    "pass3": "deterministic"
+  },
+  "retryCount": 0,
+  "styleRetryUsed": false,
+  "grounding": {
+    "passed": true,
+    "issues": []
+  },
+  "sectionCoverage": {
+    "passed": true,
+    "issues": []
+  },
+  "styleGate": {
+    "passed": false,
+    "issues": [
+      "style-business-verb-coverage-low:1",
+      "style-numeric-density-high:0.0959"
+    ],
+    "metrics": {
+      "textItemCount": 7,
+      "inventoryLeadCount": 0,
+      "countOnlySentenceCount": 1,
+      "businessVerbHits": 1,
+      "numericDensity": 0.0959
+    }
+  },
+  "narrativeReviewRequired": true,
+  "autoPassWithoutHumanEdits": false
+}

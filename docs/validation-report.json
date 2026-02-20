@@ -1,75 +1,75 @@
 {
-  "timestamp": "2026-02-18T13:44:52-05:00",
+  "timestamp": "2026-02-19T16:14:23-05:00",
   "strict": false,
   "threshold": 80,
-  "overallScore": 92.4,
+  "overallScore": 87.9,
   "metrics": {
     "validatorPassRate": 100.0,
     "artifactPresence": 100.0,
     "evidencePresence": 100.0,
     "semanticContractScore": 100.0,
-    "evidenceContractScore": 97.0,
-    "apiCoverage": 100,
+    "evidenceContractScore": 100.0,
+    "apiCoverage": 0.0,
     "configCoverage": 100,
     "dataModelCoverage": 100,
     "redactionSafetyScore": 100,
     "humanUsabilityScore": 100.0,
     "claimGroundingScore": 100.0,
-    "documentationFreshnessScore": 80.0,
-    "contradictionConsistencyScore": 80.0,
-    "taskGuideActionabilityScore": 83.3,
-    "taskGuideEvidenceCoverageScore": 50.0,
+    "documentationFreshnessScore": 70.0,
+    "contradictionConsistencyScore": 60.0,
+    "taskGuideActionabilityScore": 100.0,
+    "taskGuideEvidenceCoverageScore": 70.0,
     "taskGuideTimeToCompleteMinutes": 12.0,
     "taskGuideTimeScore": 100.0,
-    "policyGateScore": 80.0
+    "policyGateScore": 95.0
   },
   "missingArtifacts": [],
   "missingEvidenceArtifacts": [],
   "validators": [
     {
-      "script": "validate-start-here.ps1",
       "message": "OK",
-      "passed": true
+      "passed": true,
+      "script": "validate-start-here.ps1"
     },
     {
-      "script": "validate-overview.ps1",
       "message": "OK",
-      "passed": true
+      "passed": true,
+      "script": "validate-overview.ps1"
     },
     {
-      "script": "validate-api-inventory.ps1",
       "message": "OK",
-      "passed": true
+      "passed": true,
+      "script": "validate-api-inventory.ps1"
     },
     {
-      "script": "validate-data-model.ps1",
       "message": "OK",
-      "passed": true
+      "passed": true,
+      "script": "validate-data-model.ps1"
     },
     {
-      "script": "validate-config-catalog.ps1",
       "message": "OK",
-      "passed": true
+      "passed": true,
+      "script": "validate-config-catalog.ps1"
     },
     {
-      "script": "validate-build-cookbook.ps1",
       "message": "OK",
-      "passed": true
+      "passed": true,
+      "script": "validate-build-cookbook.ps1"
     },
     {
-      "script": "validate-test-catalog.ps1",
       "message": "OK",
-      "passed": true
+      "passed": true,
+      "script": "validate-test-catalog.ps1"
     },
     {
-      "script": "validate-task-guides.ps1",
       "message": "OK",
-      "passed": true
+      "passed": true,
+      "script": "validate-task-guides.ps1"
     },
     {
-      "script": "validate-debt-register.ps1",
       "message": "OK",
-      "passed": true
+      "passed": true,
+      "script": "validate-debt-register.ps1"
     }
   ],
   "contractValidation": [
@@ -153,11 +153,9 @@
     },
     {
       "artifact": "overview",
-      "passed": false,
-      "score": 85,
-      "issues": [
-        "missing-record-kind-for-key:technologies"
-      ]
+      "passed": true,
+      "score": 100,
+      "issues": []
     },
     {
       "artifact": "api-inventory",
@@ -179,11 +177,9 @@
     },
     {
       "artifact": "build-cookbook",
-      "passed": false,
-      "score": 85,
-      "issues": [
-        "missing-record-kind-for-key:commands"
-      ]
+      "passed": true,
+      "score": 100,
+      "issues": []
     },
     {
       "artifact": "test-catalog",
@@ -211,23 +207,22 @@
     }
   ],
   "contradictions": [
-    "start-here-model-signal-mismatch:3/0"
+    "traceability-record-count-mismatch:build-cookbook:1/15",
+    "start-here-model-signal-mismatch:4/0"
   ],
   "taskGuideOutcomes": {
-    "actionabilityScore": 83.3,
-    "evidenceCoverageScore": 50.0,
+    "actionabilityScore": 100.0,
+    "evidenceCoverageScore": 70.0,
     "estimatedCompletionMinutes": 12.0,
     "taskCompletionTimeScore": 100.0,
-    "issues": [
-      "task-guide-evidence-snapshot-low:1"
-    ]
+    "issues": []
   },
   "policyGates": {
-    "score": 80.0,
-    "passed": false,
-    "blockingIssues": [
-      "api-endpoints-table-empty"
-    ],
-    "warnings": []
+    "score": 95.0,
+    "passed": true,
+    "blockingIssues": [],
+    "warnings": [
+      "api-endpoints-table-empty-nonblocking:no-api-surface"
+    ]
   }
 }

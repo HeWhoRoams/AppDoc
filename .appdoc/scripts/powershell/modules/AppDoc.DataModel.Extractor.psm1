@@ -54,7 +54,9 @@ function Add-AppDocAstModels {
     param(
         [object]$AstPayload,
         [Parameter(Mandatory=$true)]
-        [ref]$Models
+        [ref]$Models,
+        [Parameter(Mandatory=$true)]
+        [string]$RootPath
     )
 
     if (-not $AstPayload -or -not $AstPayload.records) {
@@ -66,6 +68,26 @@ function Add-AppDocAstModels {
         if ($record.kind -ne "model") { continue }
 
         $filePath = [string]$record.file
+        if ($filePath) {
+            if (Get-Command Test-AppDocGeneratedProxyPath -ErrorAction SilentlyContinue) {
+                if (Test-AppDocGeneratedProxyPath -Path $filePath -RootPath $RootPath) {
+                    continue
+                }
+            }
+
+            if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {
+                $pathFilterArgs = @{
+                    Path = $filePath
+                    RootPath = $RootPath
+                    Artifact = "data-model"
+                    AdditionalExcludePatterns = @(Get-AppDocDataModelAdditionalExcludePatterns)
+                }
+                if (-not (Test-AppDocPathIncluded @pathFilterArgs)) {
+                    continue
+                }
+            }
+        }
+
         $fileName = if ($filePath) { [System.IO.Path]::GetFileName($filePath) } else { "unknown" }
         $modelType = if ($record.metadata -and $record.metadata.modelType) { [string]$record.metadata.modelType } else { "class" }
 
@@ -95,6 +117,21 @@ function Add-AppDocAstModels {
     return $added
 }
 
+function Get-AppDocDataModelAdditionalExcludePatterns {
+    [CmdletBinding()]
+    param()
+
+    if (Get-Command Get-AppDocGeneratedProxyExcludePatterns -ErrorAction SilentlyContinue) {
+        return @(Get-AppDocGeneratedProxyExcludePatterns)
+    }
+
+    return @(
+        '(?i)(?:^|[\\/])(Service References|Connected Services|Web References)(?:[\\/]|$)',
+        '(?i)(?:^|[\\/])Reference\.cs$',
+        '(?i)\.(svcmap|svcinfo|wsdl|disco)$'
+    )
+}
+
 function Get-AppDocDataModelSourceFiles {
     [CmdletBinding()]
     param(
@@ -104,11 +141,22 @@ function Get-AppDocDataModelSourceFiles {
         [string[]]$Include
     )
 
+    $additionalExcludePatterns = @(Get-AppDocDataModelAdditionalExcludePatterns)
+
     if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "data-model" -Include $Include)
+        return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "data-model" -Include $Include -AdditionalExcludePatterns $additionalExcludePatterns)
     }
 
-    return @(Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $Include -ErrorAction SilentlyContinue)
+    return @(
+        Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $Include -ErrorAction SilentlyContinue |
+            Where-Object {
+                $normalized = $_.FullName -replace '/', '\'
+                foreach ($pattern in $additionalExcludePatterns) {
+                    if ($normalized -match $pattern) { return $false }
+                }
+                return $true
+            }
+    )
 }
 
 function Get-AppDocDataModelRelativePath {
@@ -143,13 +191,19 @@ function Test-AppDocDataModelCandidate {
     $propertyCount = @($Model.properties).Count
 
     if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {
-        if ($path -and -not (Test-AppDocPathIncluded -Path $path -RootPath $RootPath -Artifact "data-model")) { return $false }
+        if ($path -and -not (Test-AppDocPathIncluded -Path $path -RootPath $RootPath -Artifact "data-model" -AdditionalExcludePatterns (Get-AppDocDataModelAdditionalExcludePatterns))) { return $false }
+    }
+
+    if (Get-Command Test-AppDocGeneratedProxyPath -ErrorAction SilentlyContinue) {
+        if ($path -and (Test-AppDocGeneratedProxyPath -Path $path -RootPath $RootPath)) { return $false }
     }
 
     if ($name -match '(?i)^(test|mock|fake|stub|sample|fixture)') { return $false }
     if ($name -match '(?i)(test|mock|fake|stub|sample|fixture)$') { return $false }
     if ($name -match '(?i)(controller|service|repository|helper|startup|program)$') { return $false }
     if ($path -match '(?i)(^|[\\/])(migrations?|seed|seeds|scripts?)([\\/]|$)') { return $false }
+    if ($path -match '(?i)(^|[\\/])(Service References|Connected Services|Web References)([\\/]|$)') { return $false }
+    if ($path -match '(?i)(^|[\\/])Reference\.cs$') { return $false }
     if ($path -match '(?i)(^|[\\/])(ui|views?|components?|pages?)([\\/]|$)' -and $propertyCount -eq 0) { return $false }
     if ($propertyCount -eq 0 -and $type -in @("class", "record", "entity")) { return $false }
 
@@ -228,8 +282,8 @@ function Get-AppDocDataModelData {
 
         $astCSharp = Invoke-AppDocDataModelAstParserScript -ScriptsRoot $ScriptsRoot -ScriptName "parse-csharp-ast.ps1" -RootPath $RootPath
         $astTs = Invoke-AppDocDataModelAstParserScript -ScriptsRoot $ScriptsRoot -ScriptName "parse-typescript-ast.ps1" -RootPath $RootPath
-        $astModelCount += Add-AppDocAstModels -AstPayload $astCSharp -Models ([ref]$workingModels)
-        $astModelCount += Add-AppDocAstModels -AstPayload $astTs -Models ([ref]$workingModels)
+        $astModelCount += Add-AppDocAstModels -AstPayload $astCSharp -Models ([ref]$workingModels) -RootPath $RootPath
+        $astModelCount += Add-AppDocAstModels -AstPayload $astTs -Models ([ref]$workingModels) -RootPath $RootPath
 
         $modelFiles = Get-AppDocDataModelSourceFiles -RootPath $RootPath -Include @("*.ts","*.js","*.cs","*.py") | Where-Object { $_.Name -match "model|entity|schema|type" }
         $potentialModelFileCount = $modelFiles.Count
@@ -262,7 +316,7 @@ function Get-AppDocDataModelData {
                         $propName = $prop.Groups[1].Value
                         if ($prop.Groups[2].Success) { $propName += '?' }
                         $propType = $prop.Groups[3].Value.Trim()
-                        $properties += "$propName: $propType"
+                        $properties += "${propName}: $propType"
                     }
                     $workingModels += @{
                         type = if ($match.Value -match 'interface') { 'interface' } else { 'class' }
@@ -408,7 +462,7 @@ function Get-AppDocDataModelData {
                             $typeHint = 'string' # Fallback if no type found
                         }
                         # Document fallback: type is inferred from CustomType, property declaration, or defaults to string
-                        $properties += "$propName: $typeHint"
+                        $properties += "${propName}: $typeHint"
                     }
                     $workingModels += @{
                         type = 'entity'

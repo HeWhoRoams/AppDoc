@@ -1,26 +1,45 @@
 # System Overview
 
+## Welcome
+
+### what_it_does
+- [TODO]
+
+### inputs
+- [TODO]
+
+### processing_steps
+- [TODO]
+
+### outputs
+- [TODO]
+
+### external_systems
+- [TODO]
+
+### confidence_notes
+- [TODO]
+
+### evidence_refs
+| ID | Artifact | Kind | Name | Source |
+|---|---|---|---|---|
+| `ev-0000` | `overview` | `summary` | `[TODO]` | `template` |
+
 ## Executive Summary
 
 This document provides a high-level overview of the system's purpose, architecture, and key components. It serves as the entry point for understanding the codebase and navigating to detailed documentation.
 
 ## System Purpose
 
-Describe what this system does and why it exists.
-
-_System purpose not yet documented. Analyze README and code structure to determine._
+This section explains what the system is responsible for and how to interpret the scope of the repository.
 
 ## Architecture
 
-Describe the high-level architecture and key design patterns.
-
-_Architecture analysis pending. Review code structure and dependencies._
+Architecture notes summarize extracted framework and endpoint signals and should be used as a map for deeper artifact review.
 
 ## Key Components
 
-List and describe the main components/modules of the system.
-
-_Components not yet cataloged. Scan codebase for module structure._
+Component hotspots are derived from endpoint/model evidence and highlight where changes are most likely to have wide impact.
 
 ## Technology Stack
 
@@ -31,9 +50,7 @@ _Technology stack not yet identified. Analyze package files and code._
 
 ## Configuration
 
-Describe how the system is configured and deployed.
-
-_Configuration approach not yet documented. See [Config Catalog](config-catalog.md) for details._
+Configuration is primarily file-based (`Web.config`, transforms, and project/YAML settings). See [Config Catalog](config-catalog.md) for required keys, environment-sensitive values, and validation guidance.
 
 ## Documentation Navigation
 
@@ -49,9 +66,7 @@ This documentation set includes the following artifacts:
 
 ## Getting Started
 
-Provide quick start instructions for developers.
-
-_Getting started guide not yet documented. Refer to README or build instructions._
+Start with [Start Here](start-here.md), run the minimal commands from [Build Cookbook](build-cookbook.md), then use [Task Guides](task-guides.md) for common maintenance workflows.
 
 ---
 

@@ -10,6 +10,9 @@ function Get-AppDocFrameworkMatrix {
     return @(
         @{ language = "C#"; framework = "ASP.NET Core"; supportLevel = "full"; coveragePercent = 90; versionRange = "2.1+"; detectionSignals = @("*.csproj", "[ApiController]", "MapControllers") },
         @{ language = "C#"; framework = "ASP.NET MVC 5"; supportLevel = "partial"; coveragePercent = 75; versionRange = "5.x"; detectionSignals = @("System.Web.Mvc", "*Controller.cs") },
+        @{ language = "C#"; framework = "WCF Services"; supportLevel = "partial"; coveragePercent = 70; versionRange = ".NET Framework"; detectionSignals = @("[ServiceContract]", "[OperationContract]", "*.svc") },
+        @{ language = "C#"; framework = "ASMX Web Services"; supportLevel = "partial"; coveragePercent = 65; versionRange = ".NET Framework"; detectionSignals = @("[WebMethod]", "*.asmx") },
+        @{ language = "C#"; framework = "SOAP Client Integrations"; supportLevel = "partial"; coveragePercent = 60; versionRange = ".NET Framework"; detectionSignals = @("Service References", "*.svcmap", "*.wsdl") },
         @{ language = "JavaScript/TypeScript"; framework = "Express.js"; supportLevel = "partial"; coveragePercent = 60; versionRange = "4.x"; detectionSignals = @("package.json:express", "app.get(", "router.") },
         @{ language = "Python"; framework = "Flask"; supportLevel = "partial"; coveragePercent = 65; versionRange = "2.x+"; detectionSignals = @("requirements.txt:flask", "@app.route") },
         @{ language = "Python"; framework = "FastAPI"; supportLevel = "partial"; coveragePercent = 70; versionRange = "0.9+"; detectionSignals = @("requirements.txt:fastapi", "@router.get") },
@@ -90,13 +93,40 @@ function Get-AppDocDetectedFrameworks {
             if ($content -match 'System\.Web\.Mvc|Controller\s*:\s*Controller') { $isMvc5 = $true }
         }
 
-        if ($isCore -or $hasWebSdk) {
+        $hasCoreRouting = $false
+        foreach ($file in ($csFiles | Select-Object -First 80)) {
+            $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
+            if ($content -match '\[ApiController\]|MapControllers|WebApplication\.CreateBuilder|Map(Get|Post|Put|Delete|Patch)\(') {
+                $hasCoreRouting = $true
+                break
+            }
+        }
+
+        if ($isCore -or ($hasWebSdk -and $hasCoreRouting)) {
             $record = $matrix | Where-Object { $_.framework -eq "ASP.NET Core" } | Select-Object -First 1
             [void]$detections.Add($record)
         }
         if ($isMvc5) {
             $record = $matrix | Where-Object { $_.framework -eq "ASP.NET MVC 5" } | Select-Object -First 1
             [void]$detections.Add($record)
+        }
+    }
+
+    if (Get-Command Get-AppDocArchitectureFingerprint -ErrorAction SilentlyContinue) {
+        $fingerprint = Get-AppDocArchitectureFingerprint -RootPath $RootPath
+        $styles = @($fingerprint.styles)
+
+        if ($styles -contains "wcf-service") {
+            $record = $matrix | Where-Object { $_.framework -eq "WCF Services" } | Select-Object -First 1
+            if ($record) { [void]$detections.Add($record) }
+        }
+        if ($styles -contains "asmx-service") {
+            $record = $matrix | Where-Object { $_.framework -eq "ASMX Web Services" } | Select-Object -First 1
+            if ($record) { [void]$detections.Add($record) }
+        }
+        if ($styles -contains "soap-client") {
+            $record = $matrix | Where-Object { $_.framework -eq "SOAP Client Integrations" } | Select-Object -First 1
+            if ($record) { [void]$detections.Add($record) }
         }
     }
 

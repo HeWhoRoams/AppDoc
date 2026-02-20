@@ -17,7 +17,7 @@ function Get-AppDocArtifactContract {
             requiredEvidenceKeys = @("summary","endpoints","models")
         }
         "overview" = @{
-            requiredSections = @("Executive Summary","System Purpose","Architecture","Technology Stack")
+            requiredSections = @("Welcome","Executive Summary","System Purpose","Architecture","Technology Stack")
             requiredEvidenceKeys = @("summary","technologies")
         }
         "api-inventory" = @{

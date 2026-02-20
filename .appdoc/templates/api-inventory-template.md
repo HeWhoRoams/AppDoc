@@ -6,7 +6,7 @@ This document catalogs all API endpoints exposed by the system, including their 
 
 ## Overview
 
-Describe the purpose and scope of the API inventory for this codebase.
+This inventory is extracted from controller/action evidence and is intended for implementation impact analysis, integration planning, and endpoint ownership review.
 
 ## API Endpoints
 
@@ -17,39 +17,27 @@ _No API endpoints detected. This codebase may not expose HTTP APIs, or uses patt
 
 ## Data Models
 
-List and describe all data models referenced by the API endpoints.
-
-_No data models detected. See the Data Model Catalog for a complete inventory of data structures._
+Data model contracts are documented in [Data Model](data-model.md). Use that catalog for field-level structure and model ownership.
 
 ## Authentication & Security
 
-Describe authentication requirements and security measures for each endpoint.
-
-_No explicit authentication patterns detected. Review endpoint implementations for authorization logic._
+Authentication and authorization behavior is summarized when explicit markers are extracted. For authoritative enforcement details, review controller attributes, middleware, and configuration policy in source.
 
 ## Error Responses
 
-Document common error responses and status codes across endpoints.
-
-_No standardized error responses documented. Refer to individual endpoint implementations._
+Error-response contracts should be validated against controller branches and exception handling paths before behavior changes.
 
 ## API Versioning
 
-Describe versioning strategy and current API versions.
-
-_No explicit API versioning detected. Endpoints may be unversioned or use implicit versioning._
+Versioning policy is inferred from discovered routes. If no explicit scheme appears, treat route and payload compatibility as a release-management concern.
 
 ## Usage Examples
 
-Provide example requests and responses for key endpoints.
-
-_No example requests/responses available. Refer to endpoint documentation or integration tests._
+Example request/response payloads are not always deterministically extractable; use endpoint signatures and implementation code to author scenario-specific examples.
 
 ## Dependencies
 
-List external services or APIs that this API depends on.
-
-_No external API dependencies detected. System may be self-contained or dependencies not yet documented._
+Outbound dependency contracts are documented when detectable. Cross-check [Dependencies Catalog](dependencies-catalog.md) and configuration URL entries for integration behavior.
 
 ## Population Guide
 

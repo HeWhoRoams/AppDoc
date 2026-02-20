@@ -57,10 +57,26 @@ try {
     $depData = $null
 }
 
-if ($null -eq $depData -or -not ($depData.PSObject.Properties.Name -contains 'dependencies') -or -not ($depData.PSObject.Properties.Name -contains 'projects')) {
+if ($null -eq $depData) {
     Write-Error "[DependenciesCatalog] Failed to extract dependencies catalog data. Extraction returned null or missing required properties."
     exit 1
 }
+
+$hasDependencies = $false
+$hasProjects = $false
+if ($depData -is [hashtable] -or $depData -is [System.Collections.Specialized.OrderedDictionary]) {
+    $hasDependencies = $depData.Contains('dependencies')
+    $hasProjects = $depData.Contains('projects')
+} else {
+    $hasDependencies = ($depData.PSObject.Properties.Name -contains 'dependencies')
+    $hasProjects = ($depData.PSObject.Properties.Name -contains 'projects')
+}
+
+if (-not $hasDependencies -or -not $hasProjects) {
+    Write-Error "[DependenciesCatalog] Failed to extract dependencies catalog data. Extraction returned null or missing required properties."
+    exit 1
+}
+
 $dependencies = @($depData.dependencies)
 $projects = @($depData.projects)
 

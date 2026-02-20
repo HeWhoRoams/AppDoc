@@ -6,48 +6,38 @@ This document defines all data structures, entities, and their relationships wit
 
 ## Overview
 
-Describe the purpose and scope of the data model catalog for this codebase.
+This catalog is extracted from model/type declarations and grouped by domain, model size, and structural shape to support impact analysis and refactoring.
 
 ## Data Models
 
 | Model Name | Fields | Types | Description | Constraints | Indexes |
 |------------|--------|-------|-------------|-------------|---------|
 
-_No data models detected. This codebase may use dynamic structures or patterns not yet recognized by the scanner._## Relationships
+_No data models detected. This codebase may use dynamic structures or patterns not yet recognized by the scanner._
 
-Describe relationships between data models (e.g., associations, inheritance).
+## Relationships
 
-_No explicit relationships detected. Models may be loosely coupled or relationships defined at runtime._
+Relationship coverage in this artifact depends on extractable type metadata; verify runtime associations in service and persistence layers where needed.
 
 ## Validation Rules
 
-Document business rules and data validation constraints for each model.
-
-_No validation rules detected. Review model implementations for constraint logic._
+Validation rules are frequently enforced in business logic rather than centralized schema annotations. Use model call-sites and domain services to confirm runtime behavior.
 
 ## Indexes and Performance
 
-Document database indexes, performance considerations, and optimization strategies.
-
-_No database indexes detected. Performance optimization may be handled at the database layer._
+Index and persistence-performance metadata are not directly available from type extraction alone. Pair this catalog with database artifacts and query traces when assessing performance risk.
 
 ## Data Flow Patterns
 
-Describe common data flow patterns and usage scenarios.
-
-_No specific data flow patterns documented. Refer to service layer implementations._
+Data flow is inferred from model usage, not reconstructed as full end-to-end pipelines. Use API and component hotspots in [System Overview](overview.md) for path-level analysis.
 
 ## Schema Evolution
 
-Describe how data models evolve over time and migration strategies.
-
-_No schema migration history detected. Check for database migration files or version control._
+Historical schema evolution is out of scope for deterministic model extraction. Use migration history and version control to track structural changes.
 
 ## Example Instances
 
-Provide example JSON or object instances for each model.
-
-_No example instances available. Refer to test fixtures or API response examples._
+Example instances should be derived from representative controller/service paths and test fixtures to stay aligned with live behavior.
 
 ## Population Guide
 

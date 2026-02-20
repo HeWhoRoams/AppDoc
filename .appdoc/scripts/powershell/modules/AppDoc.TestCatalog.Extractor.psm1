@@ -53,7 +53,7 @@ function Get-AppDocTestCatalogData {
         $relativePath = Get-AppDocTestCatalogRelativePath -RootPath $RootPath -Path $file.FullName
 
         # Regex: (it|test|describe)\((['"])((?:\\.|(?!\2).)*)\2
-        $jsPattern = "(it|test|describe)\\((['\"])((?:\\\\.|(?!\\2).)*?)\\2"
+        $jsPattern = '(it|test|describe)\(([''"])((?:\\.|(?!\2).)*?)\2'
         $jsCases = [regex]::Matches($content, $jsPattern)
         foreach ($match in $jsCases) {
             $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count

@@ -1,18 +1,18 @@
 {
   "artifact": "debt-register",
-  "generatedAt": "2026-02-18T13:44:49-05:00",
+  "generatedAt": "2026-02-19T16:14:21-05:00",
   "recordCount": 0,
   "records": [],
   "metadata": {
-    "requiredEvidenceKeys": [
-      "debtItems"
-    ],
+    "generator": "generate-debt-register.ps1",
     "requiredSections": [
       "Executive Summary",
       "Debt Items"
     ],
-    "generator": "generate-debt-register.ps1",
-    "debtCount": 0
+    "debtCount": 0,
+    "requiredEvidenceKeys": [
+      "debtItems"
+    ]
   },
   "determinism": {
     "hashAlgorithm": "SHA256",

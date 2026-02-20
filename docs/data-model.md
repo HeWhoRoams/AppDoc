@@ -1,6 +1,6 @@
 # Data Model Catalog
 
-**Generated**: 2026-02-18 13:44:44
+**Generated**: 2026-02-19 16:14:17
 
 ## Executive Summary
 
@@ -8,15 +8,13 @@ This document defines all data structures, entities, and their relationships wit
 
 ## Overview
 
-This section summarizes generated findings from deterministic codebase analysis.
+Deterministic scan summary for this artifact.
 
 ## Data Models
 
 | Model Name | Fields | Types | Description | Constraints | Indexes |
 |------------|--------|-------|-------------|-------------|---------|
-
-_No deterministic evidence found in this section for the current scan._
-
+No evidence found for this section in the current scan.
 ## Evidence Traceability
 
 | Field | Value |

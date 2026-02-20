@@ -1,6 +1,6 @@
 # Start Here
 
-**Generated**: 2026-02-18 13:44:50
+**Generated**: 2026-02-19 16:14:22
 
 ## Who This Is For
 
@@ -10,42 +10,41 @@
 
 ## 15-Minute Orientation
 
-> **Note:** This project is in an early-stage or empty state. Linked inventories (API, Build, Test) are not yet available and will be populated as the codebase grows.
-
 1. Read [System Overview](overview.md) for scope and system context.
 2. Review [C4 Context](diagrams/c4-context.md) and [C4 Container](diagrams/c4-container.md).
-3. Skim [API Inventory](api-inventory.md) and [Data Model](data-model.md) for behavior and structure. *(Coming Soon)*
-4. Review [Build Cookbook](build-cookbook.md) and [Test Catalog](test-catalog.md) before making changes. *(Coming Soon)*
+3. Skim [API Inventory](api-inventory.md) and [Data Model](data-model.md) for behavior and structure.
+4. Review [Build Cookbook](build-cookbook.md) and [Test Catalog](test-catalog.md) before making changes.
+5. Check [Technical Debt Register](debt-register.md) and [Dependencies Catalog](dependencies-catalog.md) for risk.
+
 ## Role-Based Paths
 
 | Role | Start Here | Then Go To | Goal |
 |------|------------|------------|------|
 | New Engineer | [System Overview](overview.md) | [Build Cookbook](build-cookbook.md) → [Test Catalog](test-catalog.md) | Make a safe first change |
-| Backend Developer | [API Inventory](api-inventory.md) | [Data Model](data-model.md) → [Configuration Catalog](config-catalog.md) | Implement or modify behavior |
+| Backend Developer | [API Inventory](api-inventory.md) | [Data Model](data-model.md) → [Config Catalog](config-catalog.md) | Implement or modify behavior |
 | Architect | [System Overview](overview.md) | [C4 Diagrams](diagrams/c4-context.md) → [Debt Register](debt-register.md) | Assess structure and modernization priorities |
-| Operations / Support | [Build Cookbook](build-cookbook.md) | [Configuration Catalog](config-catalog.md) → [Dependencies Catalog](dependencies-catalog.md) | Run, diagnose, and secure the system |
+| Operations / Support | [Build Cookbook](build-cookbook.md) | [Config Catalog](config-catalog.md) → [Dependencies Catalog](dependencies-catalog.md) | Run, diagnose, and secure the system |
+
 ## System Signals
 
-> **Placeholder:** No source files, languages, or API endpoints detected yet. This section will be updated as the project evolves.
-
-- Source files detected: **0**
-- Languages detected: **0** (No source files detected)
+- Source files detected: **8**
+- Languages detected: **1** (.cs (8))
 - API endpoints documented: **0**
-- Data model headings detected: **3**
+- Data model headings detected: **4**
 
 ## Documentation Map
 
 - [System Overview](overview.md)
-- [API Inventory](api-inventory.md) *(Coming Soon)*
+- [API Inventory](api-inventory.md)
 - [Data Model](data-model.md)
 - [Configuration Catalog](config-catalog.md)
-	- [Build Cookbook](build-cookbook.md) *(Coming Soon)*
-	- [Test Catalog](test-catalog.md) *(Coming Soon)*
-	- [Task Guides](task-guides.md)
-	- [Technical Debt Register](debt-register.md)
-	- [Dependencies Catalog](dependencies-catalog.md)
-	- [Documentation Index](index.md)
-	- [Evidence Manifest](evidence/manifest.json)
+- [Build Cookbook](build-cookbook.md)
+- [Test Catalog](test-catalog.md)
+- [Task Guides](task-guides.md)
+- [Technical Debt Register](debt-register.md)
+- [Dependencies Catalog](dependencies-catalog.md)
+- [Documentation Index](index.md)
+- [Evidence Manifest](evidence/manifest.json)
 
 ## Evidence Traceability
 

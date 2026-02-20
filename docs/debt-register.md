@@ -1,6 +1,6 @@
 # Technical Debt Register
 
-**Generated**: 2026-02-18 13:44:49
+**Generated**: 2026-02-19 16:14:21
 
 ## Executive Summary
 
@@ -8,7 +8,7 @@ This document tracks known technical debt items including code quality issues, a
 
 ## Overview
 
-This section summarizes generated findings from deterministic codebase analysis.
+Deterministic scan summary for this artifact.
 
 ## Debt Categories
 
@@ -20,12 +20,11 @@ _No debt categories established. Common categories: Code Quality, Architecture, 
 
 | Item | Location | Category | Impact | Priority | Effort | Description |
 |------|----------|----------|--------|----------|--------|-------------|
-| - | - | - | - | - | - | No deterministic evidence found in this section for the current scan. |
-
+No evidence found for this section in the current scan.
 ## Impact Assessment
 Assess the overall impact of technical debt on development velocity and system stability.
 
-No deterministic evidence found in this section for the current scan.
+No evidence found for this section in the current scan.
 ## Remediation Plan
 
 _No remediation plan established. Prioritize debt items and allocate time in upcoming sprints._

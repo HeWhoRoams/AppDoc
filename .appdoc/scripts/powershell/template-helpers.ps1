@@ -164,9 +164,11 @@ function Normalize-AppDocTemplateInstructionText {
         $updated = [regex]::Replace($updated, $pattern, '')
     }
 
-    # Normalize placeholder/no-evidence wording to a single deterministic sentence.
-    $updated = [regex]::Replace($updated, '(?im)^\s*_No\s+.+?(?:detected|available|documented)\.[^_]*_\s*$', 'No deterministic evidence found in this section for the current scan.')
-    $updated = [regex]::Replace($updated, '(?im)^\s*Current scan found 0 items for this section\.?\s*$', 'No deterministic evidence found in this section for the current scan.')
+    # Normalize placeholder/no-evidence wording to concise narrative language.
+    $updated = [regex]::Replace($updated, '(?im)^\s*_No\s+.+?(?:detected|available|documented)\.[^_]*_\s*$', 'Evidence for this section was not detected in this scan.')
+    $updated = [regex]::Replace($updated, '(?im)^\s*Current scan found 0 items for this section\.?\s*$', 'Evidence for this section was not detected in this scan.')
+    $updated = [regex]::Replace($updated, '(?im)No deterministic evidence found in this section for the current scan\.', 'Evidence for this section was not detected in this scan.')
+    $updated = [regex]::Replace($updated, '(?im)This section summarizes generated findings from deterministic codebase analysis\.', 'This section summarizes extracted findings for this artifact.')
 
     # Ensure overview is never empty after instruction cleanup.
     $updated = [regex]::Replace(
@@ -174,7 +176,7 @@ function Normalize-AppDocTemplateInstructionText {
         '(?ms)(^##\s+Overview\s*\r?\n)\s*(?=##\s+)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "`r`nThis section summarizes generated findings from deterministic codebase analysis.`r`n`r`n")
+            return ($m.Groups[1].Value + "`r`nThis section summarizes extracted findings for this artifact.`r`n`r`n")
         }
     )
 

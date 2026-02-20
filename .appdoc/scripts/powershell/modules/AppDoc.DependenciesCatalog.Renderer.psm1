@@ -17,6 +17,9 @@ _No dependencies detected. System may be self-contained or use alternative depen
 "@
 
     $nugetPlaceholder = "_No NuGet packages detected._"
+    $npmPlaceholder = "_No NPM packages detected._"
+    $pythonPlaceholder = "_No Python packages detected._"
+    $mavenPlaceholder = "_No Java dependencies detected._"
     $projectRefsPlaceholder = "_No project references detected._"
     $versionConflictsPlaceholder = "_No version conflicts detected._"
 
@@ -39,6 +42,10 @@ _No dependencies detected. System may be self-contained or use alternative depen
     }
 
     $nugetPackages = @($Dependencies | Where-Object { $_.type -eq 'NuGet Package' })
+    $npmPackages = @($Dependencies | Where-Object { [string]$_.type -match '(?i)npm' })
+    $pythonPackages = @($Dependencies | Where-Object { [string]$_.type -match '(?i)python|pip' })
+    $mavenPackages = @($Dependencies | Where-Object { [string]$_.type -match '(?i)maven|gradle|java' })
+
     $nugetContent = if ($nugetPackages.Count -gt 0) {
         $rows = $nugetPackages | Group-Object -Property name | Sort-Object Name | ForEach-Object {
             $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
@@ -59,6 +66,51 @@ $($rows -join "`n")
 "@
     } else {
         $nugetPlaceholder
+    }
+
+    $npmContent = if ($npmPackages.Count -gt 0) {
+        $rows = $npmPackages | Group-Object -Property name | Sort-Object Name | ForEach-Object {
+            $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
+            $usedBy = ($_.Group.project | Sort-Object -Unique) -join ', '
+            "| ``$($_.Name)`` | $versions | $usedBy | NPM package |"
+        }
+@"
+| Package | Version | Used By | Purpose |
+|---------|---------|---------|---------|
+$($rows -join "`n")
+"@
+    } else {
+        "No NPM package manifests were detected in scoped source paths for this run."
+    }
+
+    $pythonContent = if ($pythonPackages.Count -gt 0) {
+        $rows = $pythonPackages | Group-Object -Property name | Sort-Object Name | ForEach-Object {
+            $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
+            $usedBy = ($_.Group.project | Sort-Object -Unique) -join ', '
+            "| ``$($_.Name)`` | $versions | $usedBy | Python package |"
+        }
+@"
+| Package | Version | Used By | Purpose |
+|---------|---------|---------|---------|
+$($rows -join "`n")
+"@
+    } else {
+        "No Python package manifests were detected in scoped source paths for this run."
+    }
+
+    $mavenContent = if ($mavenPackages.Count -gt 0) {
+        $rows = $mavenPackages | Group-Object -Property name | Sort-Object Name | ForEach-Object {
+            $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
+            $usedBy = ($_.Group.project | Sort-Object -Unique) -join ', '
+            "| ``$($_.Name)`` | $versions | $usedBy | Maven/Gradle dependency |"
+        }
+@"
+| Package | Version | Used By | Purpose |
+|---------|---------|---------|---------|
+$($rows -join "`n")
+"@
+    } else {
+        "No Maven or Gradle dependency manifests were detected in scoped source paths for this run."
     }
 
     $projectRefs = @($Dependencies | Where-Object { $_.type -eq 'Project Reference' })
@@ -99,10 +151,16 @@ $($conflicts -join "`n`n")
     return [ordered]@{
         summaryContent = $summaryContent
         nugetContent = $nugetContent
+        npmContent = $npmContent
+        pythonContent = $pythonContent
+        mavenContent = $mavenContent
         projectRefsContent = $projectRefsContent
         versionConflictsContent = $versionConflictsContent
         summaryTablePlaceholder = $summaryTablePlaceholder
         nugetPlaceholder = $nugetPlaceholder
+        npmPlaceholder = $npmPlaceholder
+        pythonPlaceholder = $pythonPlaceholder
+        mavenPlaceholder = $mavenPlaceholder
         projectRefsPlaceholder = $projectRefsPlaceholder
         versionConflictsPlaceholder = $versionConflictsPlaceholder
     }
@@ -126,11 +184,17 @@ function Update-AppDocDependenciesCatalogContent {
     if (Get-Command Update-TemplateSection -ErrorAction SilentlyContinue) {
         $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.summaryTablePlaceholder -NewContent $sections.summaryContent
         $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.nugetPlaceholder -NewContent $sections.nugetContent
+        $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.npmPlaceholder -NewContent $sections.npmContent
+        $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.pythonPlaceholder -NewContent $sections.pythonContent
+        $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.mavenPlaceholder -NewContent $sections.mavenContent
         $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.projectRefsPlaceholder -NewContent $sections.projectRefsContent
         $updated = Update-TemplateSection -Content $updated -PlaceholderText $sections.versionConflictsPlaceholder -NewContent $sections.versionConflictsContent
     } else {
         $updated = $updated.Replace($sections.summaryTablePlaceholder, $sections.summaryContent)
         $updated = $updated.Replace($sections.nugetPlaceholder, $sections.nugetContent)
+        $updated = $updated.Replace($sections.npmPlaceholder, $sections.npmContent)
+        $updated = $updated.Replace($sections.pythonPlaceholder, $sections.pythonContent)
+        $updated = $updated.Replace($sections.mavenPlaceholder, $sections.mavenContent)
         $updated = $updated.Replace($sections.projectRefsPlaceholder, $sections.projectRefsContent)
         $updated = $updated.Replace($sections.versionConflictsPlaceholder, $sections.versionConflictsContent)
 
@@ -138,6 +202,9 @@ function Update-AppDocDependenciesCatalogContent {
         $patterns = @(
             @{ Pattern = '(?s)(##\s+Dependency Summary\s*\r?\n\r?\n)(.*?)(\r?\n)(?=##\s+Dependencies by Type\b)'; Header = '##\s+Dependency Summary' ; Content = $sections.summaryContent },
             @{ Pattern = '(?s)(###\s+NuGet Packages\s*\r?\n\r?\n)(.*?)(\r?\n)(?=###\s+NPM Packages\b)'; Header = '###\s+NuGet Packages' ; Content = $sections.nugetContent },
+            @{ Pattern = '(?s)(###\s+NPM Packages\s*\r?\n\r?\n)(.*?)(\r?\n)(?=###\s+Python Packages\b)'; Header = '###\s+NPM Packages' ; Content = $sections.npmContent },
+            @{ Pattern = '(?s)(###\s+Python Packages\s*\r?\n\r?\n)(.*?)(\r?\n)(?=###\s+Maven/Gradle Dependencies\b)'; Header = '###\s+Python Packages' ; Content = $sections.pythonContent },
+            @{ Pattern = '(?s)(###\s+Maven/Gradle Dependencies\s*\r?\n\r?\n)(.*?)(\r?\n)(?=##\s+Project References\b)'; Header = '###\s+Maven/Gradle Dependencies' ; Content = $sections.mavenContent },
             @{ Pattern = '(?s)(##\s+Project References\s*\r?\n\r?\n)(.*?)(\r?\n)(?=##\s+Version Conflicts\b)'; Header = '##\s+Project References' ; Content = $sections.projectRefsContent },
             @{ Pattern = '(?s)(##\s+Version Conflicts\s*\r?\n\r?\n)(.*?)(\r?\n)(?=##\s+Security Considerations\b)'; Header = '##\s+Version Conflicts' ; Content = $sections.versionConflictsContent }
         )
@@ -158,6 +225,60 @@ function Update-AppDocDependenciesCatalogContent {
             }
         }
     }
+
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Overview\s*\r?\n\r?\n).*?(?=\r?\n##\s+Dependency Summary\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "This catalog aggregates dependencies discovered from package manifests, project references, and assembly references. Use it to identify version drift, runtime coupling, and upgrade planning priorities." + "`r`n")
+        }
+    )
+
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(###\s+NPM Packages\s*\r?\n\r?\n).*?(?=\r?\n###\s+Python Packages\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + $sections.npmContent + "`r`n")
+        }
+    )
+
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(###\s+Python Packages\s*\r?\n\r?\n).*?(?=\r?\n###\s+Maven/Gradle Dependencies\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + $sections.pythonContent + "`r`n")
+        }
+    )
+
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(###\s+Maven/Gradle Dependencies\s*\r?\n\r?\n).*?(?=\r?\n##\s+Project References\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + $sections.mavenContent + "`r`n")
+        }
+    )
+
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Security Considerations\s*\r?\n\r?\n).*?(?=\r?\n##\s+Licensing\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "This artifact does not currently include automated CVE/advisory enrichment. Use dependency scanning tools in CI and prioritize packages with multiple versions or broad usage footprint for security review." + "`r`n")
+        }
+    )
+
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Upgrade Recommendations\s*\r?\n\r?\n).*?(?=(\r?\n##\s+)|\z)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "Focus upgrades on packages that appear in many projects, show version divergence, or sit on critical execution paths. Roll upgrades in small batches and validate build/test outputs after each change set." + "`r`n")
+        }
+    )
 
     return $updated
 }

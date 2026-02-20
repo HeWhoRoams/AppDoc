@@ -29,14 +29,14 @@ if (Test-Path $evidencePath) {
         $endpointCount = @($evidence.records | Where-Object { [string]$_.kind -eq "endpoint" }).Count
     }
     catch {
-        Write-Warning "[validate-api-inventory] Failed to parse evidence at $evidencePath: $($_.Exception.Message)"
+        Write-Warning "[validate-api-inventory] Failed to parse evidence at ${evidencePath}: $($_.Exception.Message)"
     }
 }
 
 if ($endpointCount -le 0) {
     $endpointCount = ([regex]::Matches(
         $content,
-        '(?im)^\|\s*`[^|]+`\s*\|\s*`/[^|]+`\s*\|\s*(GET|POST|PUT|DELETE|PATCH|ANY)\s*\|'
+        '(?im)^\|\s*`[^|]+`\s*\|\s*`/[^|]+`\s*\|\s*(GET|POST|PUT|DELETE|PATCH|ANY|SOAP)\s*\|'
     )).Count
 }
 

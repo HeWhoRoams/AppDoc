@@ -59,14 +59,26 @@ try {
     $configData = $null
 }
 
-if ($null -eq $configData -or -not ($configData.PSObject.Properties.Name -contains 'configs')) {
+if ($null -eq $configData) {
     Write-Error "[ConfigCatalog] Failed to extract config catalog data. Extraction returned null or missing required properties."
     exit 1
-} else {
-    $configs = @($configData.configs)
-    $discoveredConfigFiles = @($configData.discoveredConfigFiles)
-    $envVars = @($configData.envVars)
 }
+
+$hasConfigs = $false
+if ($configData -is [hashtable] -or $configData -is [System.Collections.Specialized.OrderedDictionary]) {
+    $hasConfigs = $configData.Contains('configs')
+} else {
+    $hasConfigs = ($configData.PSObject.Properties.Name -contains 'configs')
+}
+
+if (-not $hasConfigs) {
+    Write-Error "[ConfigCatalog] Failed to extract config catalog data. Extraction returned null or missing required properties."
+    exit 1
+}
+
+$configs = @($configData.configs)
+$discoveredConfigFiles = @($configData.discoveredConfigFiles)
+$envVars = @($configData.envVars)
 
 Write-Progress -Activity "Generating Config Catalog" -Status "Populating template..." -PercentComplete 60
 $scriptRoot = Split-Path $PSScriptRoot -Parent

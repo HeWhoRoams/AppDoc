@@ -85,7 +85,15 @@ function Write-AppDocEvidenceArtifact {
 
     $path = Get-AppDocEvidenceFilePath -RootPath $RootPath -Artifact $Artifact
     $normalizedRecords = @($Records)
-    if (Get-Command Sort-AppDocExtractionRecords -ErrorAction SilentlyContinue) {
+    if (Get-Command ConvertTo-AppDocOrderedExtractionRecords -ErrorAction SilentlyContinue) {
+        $normalizedRecords = @(ConvertTo-AppDocOrderedExtractionRecords -Records $normalizedRecords)
+    }
+    elseif (Get-Command Order-AppDocExtractionRecords -ErrorAction SilentlyContinue) {
+        # Backward compatibility for older determinism modules.
+        $normalizedRecords = @(Order-AppDocExtractionRecords -Records $normalizedRecords)
+    }
+    elseif (Get-Command Sort-AppDocExtractionRecords -ErrorAction SilentlyContinue) {
+        # Backward compatibility for older determinism modules.
         $normalizedRecords = @(Sort-AppDocExtractionRecords -Records $normalizedRecords)
     }
 
@@ -166,7 +174,7 @@ function Update-AppDocEvidenceManifest {
 
     if (Get-Command Get-AppDocDeterministicHash -ErrorAction SilentlyContinue) {
         $excludeKeys = @("generatedAt", "updatedAt", "timestamp")
-        $manifestForHash = $manifest.Clone()
+        $manifestForHash = ($manifest | ConvertTo-Json -Depth 20 | ConvertFrom-Json)
         $deterministicHash = Get-AppDocDeterministicHash -InputObject $manifestForHash -ExcludeKeys $excludeKeys
         $manifest['determinism'] = [ordered]@{
             hashAlgorithm = "SHA256"

@@ -6,13 +6,11 @@ This document tracks known technical debt items including code quality issues, a
 
 ## Overview
 
-Describe the purpose and scope of the technical debt register for this codebase.
+This register is built from extracted code-smell and maintainability signals and is intended to support prioritized remediation planning.
 
 ## Debt Categories
 
-Categorize technical debt by type (code quality, architecture, dependencies, performance, etc.).
-
-_No debt categories established. Common categories: Code Quality, Architecture, Dependencies, Documentation, Performance, Security._
+Debt categories are derived from extracted item types (for example code quality, maintainability, dependency, performance, and security signals).
 
 ## Debt Items
 
@@ -23,21 +21,15 @@ _No technical debt items detected. Great job maintaining code quality! Continue 
 
 ## Impact Assessment
 
-Assess the overall impact of technical debt on development velocity and system stability.
-
-_No impact assessment available. Monitor development velocity and system incidents for trends._
+Assess debt impact by concentration in high-churn modules, hotspot file size/complexity, and relationship to operational incidents.
 
 ## Remediation Plan
 
-Describe plans and recommendations for addressing technical debt.
-
-_No remediation plan established. Prioritize debt items and allocate time in upcoming sprints._
+Use a phased plan: isolate highest-risk files first, then reduce oversized classes/functions in small slices with regression coverage.
 
 ## Monitoring and Tracking
 
-Describe how technical debt will be monitored and tracked over time.
-
-_No monitoring process established. Consider using static analysis tools and regular code reviews._
+Track debt trendlines with recurring static-analysis runs and include debt deltas in release-readiness reviews.
 
 ## Population Guide
 

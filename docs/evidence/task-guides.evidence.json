@@ -1,6 +1,6 @@
 {
   "artifact": "task-guides",
-  "generatedAt": "2026-02-18T15:19:44-05:00",
+  "generatedAt": "2026-02-19T16:14:22-05:00",
   "recordCount": 5,
   "records": [
     {
@@ -8,18 +8,18 @@
       "source": "docs",
       "name": "task-guide-summary",
       "kind": "summary",
-      "confidence": 0.0,
+      "confidence": 1.0,
       "metadata": {
+        "endpointCount": 0,
         "debtCount": 0,
-        "testCount": 0,
-        "buildCommandCount": 0,
-        "dependencyCount": 0,
-        "endpointCount": 0
+        "dependencyCount": 10,
+        "buildCommandCount": 13,
+        "testCount": 0
       },
       "provider": "generator",
       "providerType": "deterministic",
-      "status": "NotDetected",
-      "timestamp": "2026-02-18T15:19:44-05:00"
+      "status": "Detected",
+      "timestamp": "2026-02-19T16:14:22-05:00"
     },
     {
       "artifact": "task-guides",
@@ -28,28 +28,28 @@
       "kind": "task-guide",
       "confidence": 0.0,
       "metadata": {
-        "category": "implementation",
-        "endpointCount": 0
+        "endpointEvidence": 0,
+        "category": "implementation"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "NotDetected",
-      "timestamp": "2026-02-18T15:19:44-05:00"
+      "timestamp": "2026-02-19T16:14:22-05:00"
     },
     {
       "artifact": "task-guides",
       "source": "docs",
       "name": "debug-build-failure",
       "kind": "task-guide",
-      "confidence": 0.0,
+      "confidence": 1.0,
       "metadata": {
-        "category": "operations",
-        "buildCount": 0
+        "buildEvidence": 13,
+        "category": "operations"
       },
       "provider": "generator",
       "providerType": "deterministic",
-      "status": "NotDetected",
-      "timestamp": "2026-02-18T15:19:44-05:00"
+      "status": "Detected",
+      "timestamp": "2026-02-19T16:14:22-05:00"
     },
     {
       "artifact": "task-guides",
@@ -58,40 +58,40 @@
       "kind": "task-guide",
       "confidence": 0.0,
       "metadata": {
-        "category": "maintenance",
-        "debtCount": 0
+        "debtEvidence": 0,
+        "category": "maintenance"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "NotDetected",
-      "timestamp": "2026-02-18T15:19:44-05:00"
+      "timestamp": "2026-02-19T16:14:22-05:00"
     },
     {
       "artifact": "task-guides",
       "source": "docs",
       "name": "triage-dependency-risk",
       "kind": "task-guide",
-      "confidence": 0.0,
+      "confidence": 1.0,
       "metadata": {
-        "category": "risk",
-        "dependencyCount": 0
+        "dependencyEvidence": 10,
+        "category": "risk"
       },
       "provider": "generator",
       "providerType": "deterministic",
-      "status": "NotDetected",
-      "timestamp": "2026-02-18T15:19:44-05:00"
+      "status": "Detected",
+      "timestamp": "2026-02-19T16:14:22-05:00"
     }
   ],
   "metadata": {
-    "generator": "generate-task-guides.ps1",
-    "requiredEvidenceKeys": [
-      "tasks",
-      "summary"
-    ],
     "requiredSections": [
       "Executive Summary",
       "Task Guides",
       "Operational Checklist"
+    ],
+    "generator": "generate-task-guides.ps1",
+    "requiredEvidenceKeys": [
+      "tasks",
+      "summary"
     ]
   },
   "determinism": {
@@ -101,6 +101,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "2da05f463987dfb21d27f7aa3da6d17f153d7bd3a479c9615fbabc45c7c291f7"
+    "contentHash": "f3de4d673581c2f48b9097386a2c696d20e2afbeea3a2109cd84bdcf624636e8"
   }
 }

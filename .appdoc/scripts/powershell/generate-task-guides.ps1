@@ -53,7 +53,19 @@ if (-not $initialized) {
 
 $taskData = Get-AppDocTaskGuidesData -RootPath $RootPath
 # Defensive null/structure check for $taskData
-if ($null -eq $taskData -or -not ($taskData.PSObject.Properties.Name -contains 'endpointRows')) {
+if ($null -eq $taskData) {
+    Write-Error "Get-AppDocTaskGuidesData returned null or missing required properties. Cannot continue generating task guides."
+    exit 1
+}
+
+$hasEndpointRows = $false
+if ($taskData -is [hashtable] -or $taskData -is [System.Collections.Specialized.OrderedDictionary]) {
+    $hasEndpointRows = $taskData.Contains('endpointRows')
+} else {
+    $hasEndpointRows = ($taskData.PSObject.Properties.Name -contains 'endpointRows')
+}
+
+if (-not $hasEndpointRows) {
     Write-Error "Get-AppDocTaskGuidesData returned null or missing required properties. Cannot continue generating task guides."
     exit 1
 }
@@ -71,9 +83,14 @@ if (Get-Command Get-AppDocArtifactContract -ErrorAction SilentlyContinue) {
 
 
 
+$endpointCount = ($taskData.endpointRows ?? @()).Count
+$buildCommandCount = ($taskData.buildCommandRows ?? @()).Count
+$dependencyCount = ($taskData.dependencyRows ?? @()).Count
+$debtCount = ($taskData.debtRows ?? @()).Count
+$testCount = ($taskData.testRows ?? @()).Count
+
 # Defensive logging for missing sources
 $logPrefix = "[TaskGuidesEvidence]"
-
 if ($endpointCount -eq 0 -and $buildCommandCount -eq 0 -and $dependencyCount -eq 0 -and $debtCount -eq 0 -and $testCount -eq 0) {
     Write-Warning "$logPrefix No task guide evidence sources found. All summary counts will be zero."
 }
@@ -85,16 +102,10 @@ function Get-ConfidenceAndStatus {
     param([int]$count)
     if ($count -gt 0) {
         return @{ Confidence = 1.0; Status = 'Detected' }
-    } else {
-        return @{ Confidence = 0.5; Status = 'NotDetected' }
     }
-}
 
-$endpointCount = ($taskData.endpointRows ?? @()).Count
-$buildCommandCount = ($taskData.buildCommandRows ?? @()).Count
-$dependencyCount = ($taskData.dependencyRows ?? @()).Count
-$debtCount = ($taskData.debtRows ?? @()).Count
-$testCount = ($taskData.testRows ?? @()).Count
+    return @{ Confidence = 0.5; Status = 'NotDetected' }
+}
 
 $metaList = @(
     @{ Name = 'change-endpoint-safely'; Category = 'implementation'; Count = $endpointCount; EvidenceKey = 'endpointEvidence' }

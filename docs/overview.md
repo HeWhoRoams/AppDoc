@@ -1,18 +1,55 @@
 # System Overview
 
-**Generated**: 2026-02-18 13:44:42
+**Generated**: 2026-02-19 16:14:16
 
+## Welcome
+
+### what_it_does
+- The repository currently contains 8 code file(s) with limited behavioral evidence. (evidence: ev-0085)
+
+### inputs
+- Configuration behavior is influenced by 59 discovered key(s). (evidence: ev-0016, ev-0017, ev-0018)
+
+### processing_steps
+- Processing steps could not be inferred beyond repository-level summaries. (evidence: ev-0085)
+
+### outputs
+- Output contracts are not strongly represented in current deterministic evidence. (evidence: ev-0085)
+
+### external_systems
+- Notable dependencies include: SampleApp.Common, EntityFramework, Microsoft.AspNetCore.Mvc, Microsoft.CodeAnalysis.CSharp, Microsoft.Extensions.Hosting.WindowsServices, Newtonsoft.Json, RabbitMQ.Client, System.Data.SqlClient. (evidence: ev-0075, ev-0076, ev-0077, ev-0078)
+
+### confidence_notes
+- Evidence coverage includes 0 endpoint record(s), 0 model record(s), 59 configuration record(s), and 10 dependency record(s). (evidence: ev-0001, ev-0002, ev-0003, ev-0004)
+- Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55. (evidence: ev-0085)
+
+### evidence_refs
+| ID | Artifact | Kind | Name | Source |
+|---|---|---|---|---|
+| ev-0001 | build-cookbook | build-command | Build (MSBuild) | SampleApp.sln |
+| ev-0002 | build-cookbook | build-command | Build AppDoc.CSharpAstParser | .appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj |
+| ev-0003 | build-cookbook | build-command | Build SampleApp.Common | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj |
+| ev-0004 | build-cookbook | build-command | Build SampleApp.Service | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj |
+| ev-0016 | config-catalog | configuration | chat.tools.fileOperations.autoApprove.list | .vscode/settings.json:chat.tools.fileOperations.autoApprove.list |
+| ev-0017 | config-catalog | configuration | chat.tools.fileOperations.autoApprove.read | .vscode/settings.json:chat.tools.fileOperations.autoApprove.read |
+| ev-0018 | config-catalog | configuration | chat.tools.terminal.autoApprove.-ErrorAction | .vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction |
+| ev-0075 | dependencies-catalog | dependency | EntityFramework | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj |
+| ev-0076 | dependencies-catalog | dependency | Microsoft.AspNetCore.Mvc | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj |
+| ev-0077 | dependencies-catalog | dependency | Microsoft.CodeAnalysis.CSharp | .appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj |
+| ev-0078 | dependencies-catalog | dependency | Microsoft.Extensions.Hosting.WindowsServices | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj |
+| ev-0085 | overview | summary | system-purpose | repository |
 ## Executive Summary
 
 This document provides a high-level overview of the system's purpose, architecture, and key components. It serves as the entry point for understanding the codebase and navigating to detailed documentation.
 
 ## System Purpose
 
-_System purpose not yet documented. Analyze README and code structure to determine._
+This codebase contains 8 code files across 1 language(s). Full analysis available in linked documentation.
 
 ## Architecture
 
-_Architecture analysis pending. Review code structure and dependencies._
+- Primary architectural style appears to be no-api-surface. (evidence: ev-0085, ev-0086)
+- Detected framework signals: ASP.NET Core. (evidence: ev-0085, ev-0086)
 
 ## Key Components
 
@@ -22,8 +59,7 @@ _Components not yet cataloged. Scan codebase for module structure._
 
 | Category | Technology | Version | Purpose |
 |----------|-----------|---------|---------|
-
-_Technology stack not yet identified. Analyze package files and code._
+| Language | C# / .NET | - | Application code |
 
 ## Configuration
 
@@ -49,7 +85,7 @@ _Getting started guide not yet documented. Refer to README or build instructions
 | Field | Value |
 |------|-------|
 | Evidence Artifact | evidence/overview.evidence.json |
-| Record Count | 1 |
+| Record Count | 9 |
 | Generator | generate-overview.ps1 |
 | Required Evidence Keys | summary, technologies |
 | Grounding Mode | Deterministic extraction records |

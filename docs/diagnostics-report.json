@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-18T13:44:52-05:00",
+  "generatedAt": "2026-02-19T16:14:23-05:00",
   "summary": {
     "total": 6,
     "byCategory": {
@@ -7,15 +7,15 @@
       "ENVIRONMENT_ERROR": 2
     },
     "bySeverity": {
-      "Info": 2,
-      "Warning": 4
+      "Warning": 4,
+      "Info": 2
     },
     "hasErrors": false,
     "hasWarnings": true
   },
   "events": [
     {
-      "timestamp": "2026-02-18T13:44:50-05:00",
+      "timestamp": "2026-02-19T16:14:22-05:00",
       "category": "ENVIRONMENT_ERROR",
       "severity": "Info",
       "component": "orchestrator",
@@ -27,34 +27,34 @@
       }
     },
     {
-      "timestamp": "2026-02-18T13:44:52-05:00",
+      "timestamp": "2026-02-19T16:14:23-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
-      "message": "Cross-artifact contradiction detected: start-here-model-signal-mismatch:3/0",
+      "message": "Cross-artifact contradiction detected: traceability-record-count-mismatch:build-cookbook:1/15",
       "filePath": ".\\docs",
       "details": {}
     },
     {
-      "timestamp": "2026-02-18T13:44:52-05:00",
+      "timestamp": "2026-02-19T16:14:23-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
-      "message": "Task outcome issue detected: task-guide-evidence-snapshot-low:1",
-      "filePath": ".\\docs\\task-guides.md",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-02-18T13:44:52-05:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: api-endpoints-table-empty",
+      "message": "Cross-artifact contradiction detected: start-here-model-signal-mismatch:4/0",
       "filePath": ".\\docs",
       "details": {}
     },
     {
-      "timestamp": "2026-02-18T13:44:52-05:00",
+      "timestamp": "2026-02-19T16:14:23-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate warning: api-endpoints-table-empty-nonblocking:no-api-surface",
+      "filePath": ".\\docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-02-19T16:14:23-05:00",
       "category": "ENVIRONMENT_ERROR",
       "severity": "Info",
       "component": "Validation",
@@ -63,34 +63,71 @@
       "details": {}
     },
     {
-      "timestamp": "2026-02-18T13:44:52-05:00",
+      "timestamp": "2026-02-19T16:14:23-05:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
-      "component": "Validation",
-      "message": "1 document below threshold in soft mode (average score passing)",
-      "filePath": "",
+      "component": "Narrative",
+      "message": "Narrative review required by overview pipeline gates",
+      "filePath": ".\\docs\\evidence\\narrative-run-report.json",
       "details": {
-        "averageScore": 92.4,
-        "threshold": 80,
-        "belowThreshold": 1
-      }    }
+        "reasons": [
+          "style-business-verb-coverage-low:1",
+          "style-numeric-density-high:0.0959"
+        ]
+      }
+    }
   ],
   "metadata": {
-    "noAI": false,
+    "profile": "default",
     "validationGate": {
-      "passed": false,
-      "reason": "Structured validation gate failed (score and/or policy gates)",
-      "averageScore": 92.4,
-      "belowThreshold": 1,
+      "passed": true,
+      "reason": "Structured validation gate passed",
+      "averageScore": 87.9,
+      "belowThreshold": 0,
       "strict": false,
       "qualityThreshold": 80,
       "evaluatedDocuments": 9
     },
-    "profile": "default",
-    "frameworks": [
-      "ASP.NET Core"
-    ],
+    "narrativeRunReportPath": ".\\docs\\evidence\\narrative-run-report.json",
+    "scriptFailures": [],
     "qualityThreshold": 80,
-    "strictValidation": false
+    "architecture": {
+      "version": "1.0.0",
+      "generatedAt": "2026-02-19T16:14:14-05:00",
+      "primaryStyle": "no-api-surface",
+      "styles": [
+        "no-api-surface"
+      ],
+      "apiSurfaceExpected": false,
+      "confidence": 0.55,
+      "scores": {
+        "restHttp": 0,
+        "wcfService": 0,
+        "asmxService": 0,
+        "soapClient": 0
+      },
+      "evidence": {
+        "csFileCount": 1,
+        "svcFileCount": 0,
+        "asmxFileCount": 0,
+        "wsdlFileCount": 0,
+        "svcMapFileCount": 0,
+        "svcInfoFileCount": 0,
+        "serviceReferenceFileCount": 0,
+        "sampledCodeFileCount": 1
+      }
+    },
+    "noAI": false,
+    "frameworks": [
+      null
+    ],
+    "narrativeReviewRequired": true,
+    "aiMode": "Auto",
+    "strictValidation": false,
+    "narrativeReviewReasons": [
+      "style-business-verb-coverage-low:1",
+      "style-numeric-density-high:0.0959"
+    ],
+    "requireAI": false
   }
 }

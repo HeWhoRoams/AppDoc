@@ -1,0 +1,1290 @@
+{
+  "version": "1.0.0",
+  "counts": {
+    "codeFiles": 8,
+    "endpointRecords": 0,
+    "inboundEndpoints": 0,
+    "outboundEndpoints": 0,
+    "outboundMappedEndpoints": 0,
+    "modelRecords": 0,
+    "configurationRecords": 59,
+    "dependencyRecords": 10
+  },
+  "generatedAt": "2026-02-19T16:14:15-05:00",
+  "languageCount": {
+    ".cs": 8
+  },
+  "projectName": "Appdoc",
+  "evidence_refs": [
+    {
+      "id": "ev-0001",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Build (MSBuild)",
+      "source": "SampleApp.sln",
+      "metadata": {
+        "invocation": "msbuild SampleApp.sln /p:Configuration=Release",
+        "type": "msbuild",
+        "command": "Build solution using MSBuild"
+      }
+    },
+    {
+      "id": "ev-0002",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Build AppDoc.CSharpAstParser",
+      "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj",
+      "metadata": {
+        "invocation": "dotnet build \".appdoc\\tools\\AppDoc.CSharpAstParser\\AppDoc.CSharpAstParser.csproj\"",
+        "type": "dotnet-project",
+        "command": "Build individual project"
+      }
+    },
+    {
+      "id": "ev-0003",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Build SampleApp.Common",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
+      "metadata": {
+        "invocation": "dotnet build \"tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Common\\SampleApp.Common.csproj\"",
+        "type": "dotnet-project",
+        "command": "Build individual project"
+      }
+    },
+    {
+      "id": "ev-0004",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Build SampleApp.Service",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
+      "metadata": {
+        "invocation": "dotnet build \"tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Service\\SampleApp.Service.csproj\"",
+        "type": "dotnet-project",
+        "command": "Build individual project"
+      }
+    },
+    {
+      "id": "ev-0005",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Build SampleApp.Web",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+      "metadata": {
+        "invocation": "dotnet build \"tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Web\\SampleApp.Web.csproj\"",
+        "type": "dotnet-project",
+        "command": "Build individual project"
+      }
+    },
+    {
+      "id": "ev-0006",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Build Solution",
+      "source": "SampleApp.sln",
+      "metadata": {
+        "invocation": "dotnet build SampleApp.sln",
+        "type": "dotnet",
+        "command": "Build all projects in the solution"
+      }
+    },
+    {
+      "id": "ev-0007",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Clean (MSBuild)",
+      "source": "SampleApp.sln",
+      "metadata": {
+        "invocation": "msbuild SampleApp.sln /t:Clean",
+        "type": "msbuild",
+        "command": "Clean using MSBuild"
+      }
+    },
+    {
+      "id": "ev-0008",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Clean Solution",
+      "source": "SampleApp.sln",
+      "metadata": {
+        "invocation": "dotnet clean SampleApp.sln",
+        "type": "dotnet",
+        "command": "Clean build artifacts"
+      }
+    },
+    {
+      "id": "ev-0009",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Publish (Release)",
+      "source": "SampleApp.sln",
+      "metadata": {
+        "invocation": "dotnet publish SampleApp.sln -c Release",
+        "type": "dotnet",
+        "command": "Publish release build"
+      }
+    },
+    {
+      "id": "ev-0010",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Rebuild (MSBuild)",
+      "source": "SampleApp.sln",
+      "metadata": {
+        "invocation": "msbuild SampleApp.sln /t:Rebuild /p:Configuration=Release",
+        "type": "msbuild",
+        "command": "Clean and rebuild"
+      }
+    },
+    {
+      "id": "ev-0011",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Restore NuGet",
+      "source": "SampleApp.sln",
+      "metadata": {
+        "invocation": "nuget restore SampleApp.sln",
+        "type": "msbuild",
+        "command": "Restore NuGet packages"
+      }
+    },
+    {
+      "id": "ev-0012",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Restore Packages",
+      "source": "SampleApp.sln",
+      "metadata": {
+        "invocation": "dotnet restore SampleApp.sln",
+        "type": "dotnet",
+        "command": "Restore NuGet packages"
+      }
+    },
+    {
+      "id": "ev-0013",
+      "artifact": "build-cookbook",
+      "kind": "build-command",
+      "name": "Run Tests",
+      "source": "SampleApp.sln",
+      "metadata": {
+        "invocation": "dotnet test SampleApp.sln",
+        "type": "dotnet",
+        "command": "Run all tests in the solution"
+      }
+    },
+    {
+      "id": "ev-0014",
+      "artifact": "build-cookbook",
+      "kind": "cicd",
+      "name": "GitHub Actions",
+      "source": ".github/workflows/appdoc-ci.yml",
+      "metadata": {
+        "file": "appdoc-ci.yml",
+        "details": "Workflow: appdoc-ci"
+      }
+    },
+    {
+      "id": "ev-0015",
+      "artifact": "build-cookbook",
+      "kind": "prerequisite",
+      "name": ".NET 8.0 SDK or later",
+      "source": "repository",
+      "metadata": {}
+    },
+    {
+      "id": "ev-0016",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.fileOperations.autoApprove.list",
+      "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.list",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0017",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.fileOperations.autoApprove.read",
+      "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.read",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0018",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.-ErrorAction",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0019",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.-Json",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-Json",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0020",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.-RootPath",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-RootPath",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0021",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.-Verbose",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-Verbose",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0022",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove..\\.AppDoc\\\\scripts\\\\powershell\\\\*.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove../.AppDoc/scripts/powershell/*.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0023",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0024",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0025",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/analyze-codebase.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-codebase.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0026",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/analyze-repository.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-repository.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0027",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0028",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/catalog-samples.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/catalog-samples.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0029",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/extract-config.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/extract-config.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0030",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0031",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0032",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0033",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0034",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-data-model.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-data-model.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0035",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-debt-register.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-debt-register.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0036",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0037",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0038",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-improvements.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-improvements.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0039",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-overview.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-overview.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0040",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0041",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/run-all-generators.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/run-all-generators.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0042",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0043",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0044",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0045",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0046",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/validate-data-model.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-data-model.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0047",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/validate-debt-register.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-debt-register.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0048",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/validate-overview.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-overview.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0049",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0050",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.Copy-Item",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Copy-Item",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0051",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.Get-ChildItem",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-ChildItem",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0052",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.Get-Content",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-Content",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0053",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.git",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git",
+      "metadata": {
+        "required": false,
+        "value": "false",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0054",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.git fetch",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git fetch",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0055",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.git status",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git status",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0056",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.pwsh",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.pwsh",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0057",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.Remove-Item",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Remove-Item",
+      "metadata": {
+        "required": false,
+        "value": "false",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0058",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.Set-ExecutionPolicy",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Set-ExecutionPolicy",
+      "metadata": {
+        "required": false,
+        "value": "false",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0059",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.Test-Path",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Test-Path",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0060",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "chat.tools.terminal.autoApprove.Write-Host",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Write-Host",
+      "metadata": {
+        "required": true,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0061",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "github.copilot.chat.executions.enabled",
+      "source": ".vscode/settings.json:github.copilot.chat.executions.enabled",
+      "metadata": {
+        "required": false,
+        "value": "true",
+        "file": ".vscode/settings.json",
+        "type": "JSON Configuration"
+      }
+    },
+    {
+      "id": "ev-0062",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.syntax-gate.runs-on",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.runs-on",
+      "metadata": {
+        "required": false,
+        "value": "windows-latest",
+        "file": ".github\\workflows\\appdoc-ci.yml",
+        "type": "YAML Configuration"
+      }
+    },
+    {
+      "id": "ev-0063",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.syntax-gate.steps.shell",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps.shell",
+      "metadata": {
+        "required": false,
+        "value": "pwsh",
+        "file": ".github\\workflows\\appdoc-ci.yml",
+        "type": "YAML Configuration"
+      }
+    },
+    {
+      "id": "ev-0064",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.syntax-gate.steps[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[0]",
+      "metadata": {
+        "required": false,
+        "value": "uses: actions/checkout@v4",
+        "file": ".github\\workflows\\appdoc-ci.yml",
+        "type": "YAML Configuration"
+      }
+    },
+    {
+      "id": "ev-0065",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.syntax-gate.steps[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[1]",
+      "metadata": {
+        "required": false,
+        "value": "name: Run PowerShell syntax gate",
+        "file": ".github\\workflows\\appdoc-ci.yml",
+        "type": "YAML Configuration"
+      }
+    },
+    {
+      "id": "ev-0066",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/name",
+      "metadata": {
+        "required": false,
+        "value": "appdoc-ci",
+        "file": ".github\\workflows\\appdoc-ci.yml",
+        "type": "YAML Configuration"
+      }
+    },
+    {
+      "id": "ev-0067",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "on.push.branches[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[0]",
+      "metadata": {
+        "required": false,
+        "value": "main",
+        "file": ".github\\workflows\\appdoc-ci.yml",
+        "type": "YAML Configuration"
+      }
+    },
+    {
+      "id": "ev-0068",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "on.push.branches[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[1]",
+      "metadata": {
+        "required": false,
+        "value": "master",
+        "file": ".github\\workflows\\appdoc-ci.yml",
+        "type": "YAML Configuration"
+      }
+    },
+    {
+      "id": "ev-0069",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "OutputType",
+      "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/OutputType",
+      "metadata": {
+        "required": false,
+        "value": "Exe",
+        "file": ".appdoc\\tools\\AppDoc.CSharpAstParser\\AppDoc.CSharpAstParser.csproj",
+        "type": "MSBuild Configuration"
+      }
+    },
+    {
+      "id": "ev-0070",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "OutputType",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/OutputType",
+      "metadata": {
+        "required": false,
+        "value": "WinExe",
+        "file": "tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Service\\SampleApp.Service.csproj",
+        "type": "MSBuild Configuration"
+      }
+    },
+    {
+      "id": "ev-0071",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "TargetFramework",
+      "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/TargetFramework",
+      "metadata": {
+        "required": false,
+        "value": "net8.0",
+        "file": ".appdoc\\tools\\AppDoc.CSharpAstParser\\AppDoc.CSharpAstParser.csproj",
+        "type": "MSBuild Configuration"
+      }
+    },
+    {
+      "id": "ev-0072",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "TargetFramework",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj:PropertyGroup/TargetFramework",
+      "metadata": {
+        "required": false,
+        "value": "net6.0",
+        "file": "tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Common\\SampleApp.Common.csproj",
+        "type": "MSBuild Configuration"
+      }
+    },
+    {
+      "id": "ev-0073",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "TargetFramework",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/TargetFramework",
+      "metadata": {
+        "required": false,
+        "value": "net6.0",
+        "file": "tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Service\\SampleApp.Service.csproj",
+        "type": "MSBuild Configuration"
+      }
+    },
+    {
+      "id": "ev-0074",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "TargetFramework",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj:PropertyGroup/TargetFramework",
+      "metadata": {
+        "required": false,
+        "value": "net6.0",
+        "file": "tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Web\\SampleApp.Web.csproj",
+        "type": "MSBuild Configuration"
+      }
+    },
+    {
+      "id": "ev-0075",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "EntityFramework",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
+      "metadata": {
+        "version": "6.4.4",
+        "type": "NuGet Package",
+        "project": "SampleApp.Common"
+      }
+    },
+    {
+      "id": "ev-0076",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "Microsoft.AspNetCore.Mvc",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+      "metadata": {
+        "version": "2.2.0",
+        "type": "NuGet Package",
+        "project": "SampleApp.Web"
+      }
+    },
+    {
+      "id": "ev-0077",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "Microsoft.CodeAnalysis.CSharp",
+      "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj",
+      "metadata": {
+        "version": "4.12.0",
+        "type": "NuGet Package",
+        "project": "AppDoc.CSharpAstParser"
+      }
+    },
+    {
+      "id": "ev-0078",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "Microsoft.Extensions.Hosting.WindowsServices",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
+      "metadata": {
+        "version": "6.0.0",
+        "type": "NuGet Package",
+        "project": "SampleApp.Service"
+      }
+    },
+    {
+      "id": "ev-0079",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "Newtonsoft.Json",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+      "metadata": {
+        "version": "13.0.1",
+        "type": "NuGet Package",
+        "project": "SampleApp.Web"
+      }
+    },
+    {
+      "id": "ev-0080",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "RabbitMQ.Client",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
+      "metadata": {
+        "version": "6.4.0",
+        "type": "NuGet Package",
+        "project": "SampleApp.Service"
+      }
+    },
+    {
+      "id": "ev-0081",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "SampleApp.Common",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
+      "metadata": {
+        "version": "Project",
+        "type": "Project Reference",
+        "project": "SampleApp.Service"
+      }
+    },
+    {
+      "id": "ev-0082",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "SampleApp.Common",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+      "metadata": {
+        "version": "Project",
+        "type": "Project Reference",
+        "project": "SampleApp.Web"
+      }
+    },
+    {
+      "id": "ev-0083",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "System.Data.SqlClient",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
+      "metadata": {
+        "version": "4.8.5",
+        "type": "NuGet Package",
+        "project": "SampleApp.Common"
+      }
+    },
+    {
+      "id": "ev-0084",
+      "artifact": "dependencies-catalog",
+      "kind": "dependency",
+      "name": "System.Net.Http",
+      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
+      "metadata": {
+        "version": "4.3.4",
+        "type": "NuGet Package",
+        "project": "SampleApp.Web"
+      }
+    },
+    {
+      "id": "ev-0085",
+      "artifact": "overview",
+      "kind": "summary",
+      "name": "system-purpose",
+      "source": "repository",
+      "metadata": {
+        "fileCount": 8,
+        "languageCount": 1,
+        "text": "This codebase contains 8 code files across 1 language(s). Full analysis available in linked documentation."
+      }
+    },
+    {
+      "id": "ev-0086",
+      "artifact": "overview",
+      "kind": "technology",
+      "name": ".cs",
+      "source": "repository",
+      "metadata": {
+        "extension": ".cs",
+        "count": 8
+      }
+    },
+    {
+      "id": "ev-0087",
+      "artifact": "overview",
+      "kind": "welcome-summary",
+      "name": "confidence_notes-01",
+      "source": "overview-welcome",
+      "metadata": {
+        "evidenceRefs": [
+          "ev-0001",
+          "ev-0002",
+          "ev-0003",
+          "ev-0004"
+        ],
+        "section": "confidence_notes",
+        "usedAI": false,
+        "text": "Evidence coverage includes 0 endpoint record(s), 0 model record(s), 59 configuration record(s), and 10 dependency record(s)."
+      }
+    },
+    {
+      "id": "ev-0088",
+      "artifact": "overview",
+      "kind": "welcome-summary",
+      "name": "confidence_notes-02",
+      "source": "overview-welcome",
+      "metadata": {
+        "evidenceRefs": [
+          "ev-0085"
+        ],
+        "section": "confidence_notes",
+        "usedAI": false,
+        "text": "Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55."
+      }
+    },
+    {
+      "id": "ev-0089",
+      "artifact": "overview",
+      "kind": "welcome-summary",
+      "name": "external_systems-01",
+      "source": "overview-welcome",
+      "metadata": {
+        "evidenceRefs": [
+          "ev-0075",
+          "ev-0076",
+          "ev-0077",
+          "ev-0078"
+        ],
+        "section": "external_systems",
+        "usedAI": false,
+        "text": "Notable dependencies include: SampleApp.Common, EntityFramework, Microsoft.AspNetCore.Mvc, Microsoft.CodeAnalysis.CSharp, Microsoft.Extensions.Hosting.WindowsServices, Newtonsoft.Json, RabbitMQ.Client, System.Data.SqlClient."
+      }
+    },
+    {
+      "id": "ev-0090",
+      "artifact": "overview",
+      "kind": "welcome-summary",
+      "name": "inputs-01",
+      "source": "overview-welcome",
+      "metadata": {
+        "evidenceRefs": [
+          "ev-0016",
+          "ev-0017",
+          "ev-0018"
+        ],
+        "section": "inputs",
+        "usedAI": false,
+        "text": "Configuration behavior is influenced by 59 discovered key(s)."
+      }
+    },
+    {
+      "id": "ev-0091",
+      "artifact": "overview",
+      "kind": "welcome-summary",
+      "name": "outputs-01",
+      "source": "overview-welcome",
+      "metadata": {
+        "evidenceRefs": [
+          "ev-0085"
+        ],
+        "section": "outputs",
+        "usedAI": false,
+        "text": "Output contracts are not strongly represented in current deterministic evidence."
+      }
+    },
+    {
+      "id": "ev-0092",
+      "artifact": "overview",
+      "kind": "welcome-summary",
+      "name": "processing_steps-01",
+      "source": "overview-welcome",
+      "metadata": {
+        "evidenceRefs": [
+          "ev-0085"
+        ],
+        "section": "processing_steps",
+        "usedAI": false,
+        "text": "Processing steps could not be inferred beyond repository-level summaries."
+      }
+    },
+    {
+      "id": "ev-0093",
+      "artifact": "overview",
+      "kind": "welcome-summary",
+      "name": "what_it_does-01",
+      "source": "overview-welcome",
+      "metadata": {
+        "evidenceRefs": [
+          "ev-0085"
+        ],
+        "section": "what_it_does",
+        "usedAI": false,
+        "text": "The repository currently contains 8 code file(s) with limited behavioral evidence."
+      }
+    }
+  ],
+  "rootPath": ".",
+  "architecture": {
+    "primaryStyle": "no-api-surface",
+    "styles": "no-api-surface",
+    "frameworks": [
+      "ASP.NET Core"
+    ]
+  },
+  "facts": {
+    "what_it_does": [
+      {
+        "text": "The repository currently contains 8 code file(s) with limited behavioral evidence.",
+        "evidence_refs": [
+          "ev-0085"
+        ]
+      }
+    ],
+    "inputs": [
+      {
+        "text": "Configuration behavior is influenced by 59 discovered key(s).",
+        "evidence_refs": [
+          "ev-0016",
+          "ev-0017",
+          "ev-0018"
+        ]
+      }
+    ],
+    "processing_steps": [
+      {
+        "text": "Processing steps could not be inferred beyond repository-level summaries.",
+        "evidence_refs": [
+          "ev-0085"
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "text": "Output contracts are not strongly represented in current deterministic evidence.",
+        "evidence_refs": [
+          "ev-0085"
+        ]
+      }
+    ],
+    "external_systems": [
+      {
+        "text": "Notable dependencies include: SampleApp.Common, EntityFramework, Microsoft.AspNetCore.Mvc, Microsoft.CodeAnalysis.CSharp, Microsoft.Extensions.Hosting.WindowsServices, Newtonsoft.Json, RabbitMQ.Client, System.Data.SqlClient.",
+        "evidence_refs": [
+          "ev-0075",
+          "ev-0076",
+          "ev-0077",
+          "ev-0078"
+        ]
+      }
+    ],
+    "confidence_notes": [
+      {
+        "text": "Evidence coverage includes 0 endpoint record(s), 0 model record(s), 59 configuration record(s), and 10 dependency record(s).",
+        "evidence_refs": [
+          "ev-0001",
+          "ev-0002",
+          "ev-0003",
+          "ev-0004"
+        ]
+      },
+      {
+        "text": "Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.",
+        "evidence_refs": [
+          "ev-0085"
+        ]
+      }
+    ]
+  }
+}

@@ -87,6 +87,78 @@ function Update-AppDocDebtRegisterContent {
         $updated += $newline + $newline + $sections.debtItemsContent + $newline
     }
 
+    $categoryResolver = {
+        param([string]$type)
+        $value = if ($type) { $type.ToLowerInvariant() } else { "" }
+        if ($value -match 'deprecated|obsolete|dependency|package') { return "Dependencies" }
+        if ($value -match 'security|auth|credential|secret') { return "Security" }
+        if ($value -match 'performance|slow|allocation|memory') { return "Performance" }
+        if ($value -match 'todo|fixme|hack|long function|large class|magic') { return "Code Quality" }
+        return "Maintainability"
+    }
+
+    $categoryGroups = @(
+        $Debts |
+            ForEach-Object { [pscustomobject]@{ category = (& $categoryResolver ([string]$_.type)) } } |
+            Group-Object -Property category |
+            Sort-Object Count -Descending
+    )
+    $categoriesContent = if ($categoryGroups.Count -gt 0) {
+        $lines = @("Most extracted debt in this run is concentrated in the following categories:")
+        foreach ($group in $categoryGroups) {
+            $lines += "- **$($group.Name)**: $($group.Count) item(s)"
+        }
+        ($lines -join [Environment]::NewLine)
+    }
+    else {
+        "No debt categories were derived from the current scan."
+    }
+
+    $debtCount = @($Debts).Count
+    $impactLevel = if ($debtCount -ge 200) { "high" } elseif ($debtCount -ge 75) { "moderate" } else { "localized" }
+    $impactContent = "The current register contains $debtCount item(s), indicating $impactLevel remediation pressure on delivery speed and change safety. Prioritize hotspots in high-churn files to reduce regression risk fastest."
+
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Overview\s*\r?\n\r?\n).*?(?=\r?\n##\s+Debt Categories\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "This register is built from extracted code-smell and maintainability signals and is intended to support prioritized remediation planning." + "`r`n")
+        }
+    )
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Debt Categories\s*\r?\n\r?\n).*?(?=\r?\n##\s+Debt Items\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + $categoriesContent + "`r`n")
+        }
+    )
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Impact Assessment\s*\r?\n\r?\n).*?(?=\r?\n##\s+Remediation Plan\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + $impactContent + "`r`n")
+        }
+    )
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Remediation Plan\s*\r?\n\r?\n).*?(?=\r?\n##\s+Monitoring and Tracking\b)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "Use a phased plan: isolate highest-risk files first, split oversized classes/methods in small slices, and add regression coverage around each refactor before broad cleanup." + "`r`n")
+        }
+    )
+    $updated = [regex]::Replace(
+        $updated,
+        '(?s)(##\s+Monitoring and Tracking\s*\r?\n\r?\n).*?(?=(\r?\n##\s+)|\z)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "Track debt trendlines with recurring static-analysis runs and include debt deltas in release-readiness reviews to prevent re-accumulation." + "`r`n")
+        }
+    )
+
     return $updated
 }
 

@@ -142,6 +142,211 @@ function Get-AppDocApiScopedFiles {
     )
 }
 
+function Test-AppDocApiGeneratedProxyPath {
+    [CmdletBinding()]
+    param(
+        [string]$Path,
+        [string]$RootPath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return $false
+    }
+
+    if (Get-Command Test-AppDocGeneratedProxyPath -ErrorAction SilentlyContinue) {
+        return (Test-AppDocGeneratedProxyPath -Path $Path -RootPath $RootPath)
+    }
+
+    return ($Path -match '(?i)(?:^|[\\/])(Service References|Connected Services|Web References)(?:[\\/]|$)' -or
+        $Path -match '(?i)(?:^|[\\/])Reference\.cs$')
+}
+
+function Get-AppDocApiEndpointDirectionLocal {
+    [CmdletBinding()]
+    param(
+        [string]$SourceType,
+        [string]$Path,
+        [string]$FilePath,
+        [string]$RootPath
+    )
+
+    $sourceTypeNorm = if ($SourceType) { ([string]$SourceType).ToLowerInvariant() } else { "" }
+    $pathNorm = if ($Path) { [string]$Path } else { "" }
+
+    if ($sourceTypeNorm -eq "soap-client" -or $pathNorm -match '^/soap-client/') {
+        return "outbound"
+    }
+
+    if ($FilePath -and (Test-AppDocApiGeneratedProxyPath -Path $FilePath -RootPath $RootPath)) {
+        return "outbound"
+    }
+
+    return "inbound"
+}
+
+function Get-AppDocSoapReferenceNameFromPath {
+    [CmdletBinding()]
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return ""
+    }
+
+    if ($Path -match '(?i)(?:Service References|Connected Services|Web References)[\\/]+([^\\/]+)[\\/]+Reference\.cs$') {
+        return [string]$Matches[1]
+    }
+    if ($Path -match '(?i)(?:Service References|Connected Services|Web References)[\\/]+([^\\/]+)(?:[\\/]|$)') {
+        return [string]$Matches[1]
+    }
+
+    return ""
+}
+
+function Get-AppDocSoapClientConfigEndpoints {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$RootPath
+    )
+
+    $configFiles = @()
+    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
+        $configFiles = @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "config-catalog" -Include @("*.config"))
+    }
+    else {
+        $configFiles = @(Get-ChildItem -Path $RootPath -Recurse -File -Include @("*.config") -ErrorAction SilentlyContinue)
+    }
+
+    if (-not $configFiles -or @($configFiles).Count -eq 0) {
+        return @()
+    }
+
+    $entries = @()
+    foreach ($file in $configFiles) {
+        $raw = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
+        if (-not $raw) { continue }
+
+        try {
+            [xml]$xml = $raw
+        }
+        catch {
+            continue
+        }
+
+        $nodes = $null
+        try {
+            $nodes = $xml.SelectNodes("//*[local-name()='system.serviceModel']/*[local-name()='client']/*[local-name()='endpoint']")
+        }
+        catch {
+            $nodes = $null
+        }
+        if (-not $nodes) { continue }
+
+        $relativePath = Get-AppDocApiRelativePath -RootPath $RootPath -Path $file.FullName
+        foreach ($node in $nodes) {
+            if (-not $node) { continue }
+
+            $address = [string]$node.address
+            if ([string]::IsNullOrWhiteSpace($address)) { continue }
+
+            $safeAddress = $address -replace '://([^:/@]+):([^@/]+)@', '://$1:[REDACTED]@'
+            $entries += [ordered]@{
+                address = $safeAddress
+                name = if ($node.name) { [string]$node.name } else { "" }
+                contract = if ($node.contract) { [string]$node.contract } else { "" }
+                binding = if ($node.binding) { [string]$node.binding } else { "" }
+                sourcePath = $relativePath
+            }
+        }
+    }
+
+    $entryByKey = @{}
+    foreach ($entry in $entries) {
+        $dedupeKey = "{0}|{1}|{2}|{3}" -f ([string]$entry.address).ToLowerInvariant(), ([string]$entry.name).ToLowerInvariant(), ([string]$entry.contract).ToLowerInvariant(), ([string]$entry.sourcePath).ToLowerInvariant()
+        if (-not $entryByKey.ContainsKey($dedupeKey)) {
+            $entryByKey[$dedupeKey] = $entry
+        }
+    }
+
+    return @(
+        $entryByKey.Values |
+            Sort-Object @{ Expression = { [string]$_.contract } }, @{ Expression = { [string]$_.name } }, @{ Expression = { [string]$_.address } }, @{ Expression = { [string]$_.sourcePath } }
+    )
+}
+
+function Resolve-AppDocSoapClientConfigEndpoint {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [hashtable]$Endpoint,
+        [Parameter(Mandatory=$true)]
+        [AllowEmptyCollection()]
+        [array]$ConfigEndpoints
+    )
+
+    if (-not $ConfigEndpoints -or @($ConfigEndpoints).Count -eq 0) {
+        return $null
+    }
+
+    $controller = if ($Endpoint.controller) { [string]$Endpoint.controller } else { "" }
+    $serviceReference = if ($Endpoint.serviceReference) { [string]$Endpoint.serviceReference } else { "" }
+    $contractName = if ($Endpoint.contractName) { [string]$Endpoint.contractName } else { "" }
+    $filePath = if ($Endpoint.filePath) { [string]$Endpoint.filePath } else { "" }
+    $sourceRoot = if ($filePath -and $filePath -match '^([^\\/]+)[\\/]') { [string]$Matches[1] } else { "" }
+
+    if (-not $serviceReference -and $filePath) {
+        $serviceReference = Get-AppDocSoapReferenceNameFromPath -Path $filePath
+    }
+
+    $scored = @()
+    foreach ($cfg in $ConfigEndpoints) {
+        $score = 0
+        $cfgContract = if ($cfg.contract) { [string]$cfg.contract } else { "" }
+        $cfgName = if ($cfg.name) { [string]$cfg.name } else { "" }
+        $cfgSource = if ($cfg.sourcePath) { [string]$cfg.sourcePath } else { "" }
+
+        if ($contractName) {
+            if ($cfgContract -eq $contractName) { $score += 25 }
+            elseif ($cfgContract -like "*$contractName") { $score += 16 }
+            elseif ($cfgContract -match [regex]::Escape($contractName)) { $score += 10 }
+        }
+
+        if ($controller) {
+            if ($cfgContract -match "(?i)\b$([regex]::Escape($controller))\b") { $score += 10 }
+            if ($cfgName -match "(?i)\b$([regex]::Escape($controller))\b") { $score += 7 }
+        }
+
+        if ($serviceReference) {
+            if ($cfgName -match "(?i)\b$([regex]::Escape($serviceReference))\b") { $score += 14 }
+            if ($cfgContract -match "(?i)\b$([regex]::Escape($serviceReference))\b") { $score += 11 }
+            if ($cfgSource -match "(?i)\b$([regex]::Escape($serviceReference))\b") { $score += 6 }
+        }
+
+        if ($sourceRoot -and $cfgSource -match "(?i)^$([regex]::Escape($sourceRoot))(?:[\\/]|$)") {
+            $score += 4
+        }
+
+        if ($score -ge 10) {
+            $scored += [ordered]@{
+                score = $score
+                contract = $cfgContract
+                name = $cfgName
+                sourcePath = $cfgSource
+                entry = $cfg
+            }
+        }
+    }
+
+    if (-not $scored -or @($scored).Count -eq 0) {
+        return $null
+    }
+
+    return @(
+        $scored |
+            Sort-Object @{ Expression = { -[int]$_.score } }, @{ Expression = { [string]$_.contract } }, @{ Expression = { [string]$_.name } }, @{ Expression = { [string]$_.sourcePath } }
+    )[0].entry
+}
+
 function Test-AppDocEndpointCandidate {
     [CmdletBinding()]
     param(
@@ -152,7 +357,7 @@ function Test-AppDocEndpointCandidate {
     )
 
     if (-not $Method) { return $false }
-    if ($Method.ToUpperInvariant() -notin @("GET","POST","PUT","PATCH","DELETE","OPTIONS","HEAD","ANY")) { return $false }
+    if ($Method.ToUpperInvariant() -notin @("GET","POST","PUT","PATCH","DELETE","OPTIONS","HEAD","ANY","SOAP")) { return $false }
     if (-not $Path -or $Path -eq "/") { return $false }
     if ($Path -match '^/(get|post|put|patch|delete)$') { return $false }
     if ($Path -match '^/[^/]+/(get|post|put|patch|delete)$') { return $false }
@@ -178,10 +383,14 @@ function Get-AppDocEndpointSignalScore {
     param($Endpoint)
 
     $score = 0
-    if (($Endpoint.sourceType ?? "regex") -eq "ast") { $score += 20 } else { $score += 10 }
+    $sourceType = if ($Endpoint.sourceType) { [string]$Endpoint.sourceType } else { "regex" }
+    if ($sourceType -eq "ast") { $score += 20 }
+    elseif ($sourceType -in @("wcf", "asmx")) { $score += 16 }
+    elseif ($sourceType -eq "soap-client") { $score += 12 }
+    else { $score += 10 }
     if ($Endpoint.auth -and $Endpoint.auth -ne "None") { $score += 5 }
     if ($Endpoint.parameters -and $Endpoint.parameters -ne "None") { $score += 3 }
-    if ($Endpoint.description -and $Endpoint.description -notmatch '^((GET|POST|PUT|PATCH|DELETE|ANY)\s+/.+\s+endpoint|API endpoint)$') { $score += 2 }
+    if ($Endpoint.description -and $Endpoint.description -notmatch '^((GET|POST|PUT|PATCH|DELETE|ANY|SOAP)\s+/.+\s+endpoint|API endpoint)$') { $score += 2 }
     if ($Endpoint.lineNumber -and [int]$Endpoint.lineNumber -gt 0) { $score += 1 }
     return $score
 }
@@ -233,6 +442,7 @@ function Get-AppDocApiEndpointStatusHintLocal {
         "PUT" { return "200, 400, 404, 500" }
         "PATCH" { return "200, 400, 404, 500" }
         "DELETE" { return "204, 404, 500" }
+        "SOAP" { return "200, SOAP Fault, 500" }
         default { return "200, 400, 500" }
     }
 }
@@ -294,6 +504,39 @@ function Add-AppDocRegexEndpointsToInventory {
         $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
         if (-not $content) { continue }
         $relativePath = Get-AppDocApiRelativePath -RootPath $RootPath -Path $file.FullName
+
+        # WCF/ASMX host descriptor files
+        if ($file.Extension -in @(".svc", ".asmx")) {
+            $descriptorClass = ""
+            if ($content -match '(?i)\b(?:Service|Class)\s*=\s*"([^"]+)"') {
+                $descriptorClass = [string]$Matches[1]
+            }
+            $serviceName = if ($descriptorClass) {
+                $parts = $descriptorClass -split '\.'
+                $parts[$parts.Length - 1]
+            } else {
+                [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
+            }
+            $hostPath = "/" + (($relativePath -replace '\\', '/').TrimStart('/'))
+
+            $Inventory.endpoints += @{
+                method = "SOAP"
+                path = $hostPath
+                file = $file.Name
+                filePath = $relativePath
+                lineNumber = 1
+                parameters = "SOAP body"
+                returnType = "SOAP envelope"
+                auth = "Service policy"
+                description = if ($file.Extension -eq ".svc") { "WCF service host descriptor" } else { "ASMX service host descriptor" }
+                example = $null
+                controller = $serviceName
+                actionName = "ServiceEndpoint"
+                schema = "WSDL contract"
+                sourceType = if ($file.Extension -eq ".svc") { "wcf" } else { "asmx" }
+            }
+            $added++
+        }
 
         # Express.js / Router
         $pattern = '(?<handler>(?:app|router|\w+Router|\w+Routes))\.(get|post|put|delete|patch)\s*\([' + "'" + '"' + ']([^' + "'" + '"' + ']+)[' + "'" + '"' + ']\s*,\s*(?:async\s+)?(?:function\s*)?\(([^)]*)\)'
@@ -457,6 +700,139 @@ function Add-AppDocRegexEndpointsToInventory {
             $added++
         }
 
+        # WCF / ASMX service operations
+        if ($file.Extension -eq ".cs") {
+            $isGeneratedServiceReference = (Test-AppDocApiGeneratedProxyPath -Path $relativePath -RootPath $RootPath)
+            if (-not $isGeneratedServiceReference) {
+                $serviceName = if ($file.BaseName) { [string]$file.BaseName } else { "Service" }
+
+                $serviceContractMatch = [regex]::Match(
+                    $content,
+                    '\[(?:[\w\.]+)?ServiceContract(?:Attribute)?(?:\([^\)]*\))?\][\s\r\n]*(?:\[[^\]]+\][\s\r\n]*)*(?:public\s+)?(?:interface|class)\s+([A-Za-z_]\w*)',
+                    'IgnoreCase'
+                )
+                if ($serviceContractMatch.Success) {
+                    $serviceName = [string]$serviceContractMatch.Groups[1].Value
+                    if ($serviceName.StartsWith("I") -and $serviceName.Length -gt 1 -and [char]::IsUpper($serviceName[1])) {
+                        $serviceName = $serviceName.Substring(1)
+                    }
+                }
+
+                $wcfPattern = '\[(?:[\w\.]+)?OperationContract(?:Attribute)?(?:\([^\)]*\))?\][\s\r\n]*(?:\[[^\]]+\][\s\r\n]*)*(?:public\s+)?(?:async\s+)?([A-Za-z_][\w<>\[\],\.\?]*)\s+([A-Za-z_]\w*)\s*\(([^)]*)\)'
+                $wcfMatches = [regex]::Matches($content, $wcfPattern, 'IgnoreCase')
+                foreach ($match in $wcfMatches) {
+                    $operationName = [string]$match.Groups[2].Value
+                    $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
+                    $paramSignature = if ($match.Groups[3].Value) { ([string]$match.Groups[3].Value -replace '\s+', ' ').Trim() } else { "None" }
+                    $path = "/svc/$serviceName/$operationName"
+
+                    $Inventory.endpoints += @{
+                        method = "SOAP"
+                        path = $path
+                        file = $file.Name
+                        filePath = $relativePath
+                        lineNumber = $lineNumber
+                        parameters = $paramSignature
+                        returnType = [string]$match.Groups[1].Value
+                        auth = "Service policy"
+                        description = "WCF operation contract"
+                        example = $null
+                        controller = $serviceName
+                        actionName = $operationName
+                        schema = if ($paramSignature -ne "None") { "See operation signature" } else { "N/A" }
+                        sourceType = "wcf"
+                    }
+                    $added++
+                }
+
+                $asmxServiceName = $serviceName
+                $asmxClassMatch = [regex]::Match(
+                    $content,
+                    'class\s+([A-Za-z_]\w*)\s*:\s*WebService\b',
+                    'IgnoreCase'
+                )
+                if ($asmxClassMatch.Success) {
+                    $asmxServiceName = [string]$asmxClassMatch.Groups[1].Value
+                }
+
+                $asmxPattern = '\[(?:[\w\.]+)?WebMethod(?:Attribute)?(?:\([^\)]*\))?\][\s\r\n]*(?:\[[^\]]+\][\s\r\n]*)*(?:public\s+)?(?:async\s+)?([A-Za-z_][\w<>\[\],\.\?]*)\s+([A-Za-z_]\w*)\s*\(([^)]*)\)'
+                $asmxMatches = [regex]::Matches($content, $asmxPattern, 'IgnoreCase')
+                foreach ($match in $asmxMatches) {
+                    $operationName = [string]$match.Groups[2].Value
+                    $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
+                    $paramSignature = if ($match.Groups[3].Value) { ([string]$match.Groups[3].Value -replace '\s+', ' ').Trim() } else { "None" }
+                    $path = "/asmx/$asmxServiceName.asmx/$operationName"
+
+                    $Inventory.endpoints += @{
+                        method = "SOAP"
+                        path = $path
+                        file = $file.Name
+                        filePath = $relativePath
+                        lineNumber = $lineNumber
+                        parameters = $paramSignature
+                        returnType = [string]$match.Groups[1].Value
+                        auth = "Service policy"
+                        description = "ASMX web method"
+                        example = $null
+                        controller = $asmxServiceName
+                        actionName = $operationName
+                        schema = if ($paramSignature -ne "None") { "See operation signature" } else { "N/A" }
+                        sourceType = "asmx"
+                    }
+                    $added++
+                }
+            }
+            else {
+                # SOAP client proxy interface operations (generated service references)
+                $serviceInterfaces = [regex]::Matches(
+                    $content,
+                    '\[(?:[\w\.]+)?ServiceContract(?:Attribute)?(?:\([^\)]*\))?\][\s\r\n]*(?:\[[^\]]+\][\s\r\n]*)*(?:public\s+)?interface\s+([A-Za-z_]\w*)[^{]*\{(?<body>[\s\S]*?)\}',
+                    'IgnoreCase'
+                )
+                foreach ($serviceInterface in $serviceInterfaces) {
+                    $serviceName = [string]$serviceInterface.Groups[1].Value
+                    $serviceReferenceName = Get-AppDocSoapReferenceNameFromPath -Path $relativePath
+                    $contractName = ""
+                    if ([string]$serviceInterface.Value -match '(?i)\bConfigurationName\s*=\s*"([^"]+)"') {
+                        $contractName = [string]$Matches[1]
+                    }
+                    $interfaceBody = [string]$serviceInterface.Groups['body'].Value
+                    $operationMatches = [regex]::Matches(
+                        $interfaceBody,
+                        '\[(?:[\w\.]+)?OperationContract(?:Attribute)?(?:\([^\)]*\))?\][\s\r\n]*(?:\[[^\]]+\][\s\r\n]*)*(?:[A-Za-z_][\w<>\[\],\.\?]*\s+)?([A-Za-z_]\w*)\s*\(([^)]*)\)\s*;',
+                        'IgnoreCase'
+                    )
+                    foreach ($operation in $operationMatches) {
+                        $operationName = [string]$operation.Groups[1].Value
+                        $paramSignature = if ($operation.Groups[2].Value) { ([string]$operation.Groups[2].Value -replace '\s+', ' ').Trim() } else { "None" }
+                        $lineOffset = [Math]::Max(0, $serviceInterface.Index + $operation.Index)
+                        $lineNumber = ($content.Substring(0, $lineOffset) -split "`n").Count
+                        $path = "/soap-client/$serviceName/$operationName"
+
+                        $Inventory.endpoints += @{
+                            method = "SOAP"
+                            path = $path
+                            file = $file.Name
+                            filePath = $relativePath
+                            lineNumber = $lineNumber
+                            parameters = $paramSignature
+                            returnType = "SOAP envelope"
+                            auth = "Client binding"
+                            description = "Outbound SOAP client operation"
+                            example = $null
+                            controller = $serviceName
+                            actionName = $operationName
+                            serviceReference = $serviceReferenceName
+                            contractName = $contractName
+                            schema = if ($paramSignature -ne "None") { "See operation signature" } else { "WSDL contract" }
+                            sourceType = "soap-client"
+                        }
+                        $added++
+                    }
+                }
+            }
+        }
+
         # Python routes
         if ($file.Extension -eq ".py") {
             $flaskPattern = '@(?<bp>[\w\.]+)\.route\(\s*[' + "'" + '"' + '](?<path>[^' + "'" + '"' + ']+)[' + "'" + '"' + '](?:\s*,\s*methods\s*=\s*\[(?<methods>[^\]]+)\])?'
@@ -594,8 +970,10 @@ function Get-AppDocApiInventoryData {
     $astEndpointCount += Add-AppDocAstEndpointsToInventory -AstPayload $astCSharp -Inventory $Inventory -RootPath $RootPath
     $astEndpointCount += Add-AppDocAstEndpointsToInventory -AstPayload $astTs -Inventory $Inventory -RootPath $RootPath
 
-    $apiFiles = @(Get-AppDocApiScopedFiles -RootPath $RootPath -Include @("*.js","*.ts","*.cs","*.py","*.java"))
+    $apiFiles = @(Get-AppDocApiScopedFiles -RootPath $RootPath -Include @("*.js","*.ts","*.cs","*.py","*.java","*.svc","*.asmx"))
     $regexEndpointCount = Add-AppDocRegexEndpointsToInventory -ApiFiles $apiFiles -RootPath $RootPath -Inventory $Inventory
+
+    $soapClientConfigEndpoints = @(Get-AppDocSoapClientConfigEndpoints -RootPath $RootPath)
 
     $normalizedEndpoints = @()
     foreach ($endpoint in $Inventory.endpoints) {
@@ -603,6 +981,7 @@ function Get-AppDocApiInventoryData {
         $controller = if ($endpoint.controller) { [string]$endpoint.controller } else { "Other" }
         $path = Get-AppDocApiNormalizedEndpointPathLocal -Path ([string]$endpoint.path) -Controller $controller -Method $method
         $sourcePath = if ($endpoint.filePath) { [string]$endpoint.filePath } else { "unknown" }
+        $sourceType = if ($endpoint.sourceType) { [string]$endpoint.sourceType } else { "regex" }
 
         if (-not (Test-AppDocEndpointCandidate -Method $method -Path $path -FilePath $sourcePath -RootPath $RootPath)) {
             continue
@@ -610,6 +989,21 @@ function Get-AppDocApiInventoryData {
 
         $description = Get-AppDocApiEndpointDescriptionLocal -Description ([string]$endpoint.description) -Method $method -Path $path
         $statusCodes = Get-AppDocApiEndpointStatusHintLocal -Method $method
+        $direction = Get-AppDocApiEndpointDirectionLocal -SourceType $sourceType -Path $path -FilePath $sourcePath -RootPath $RootPath
+
+        $integrationUrl = $null
+        $integrationName = $null
+        $integrationContract = $null
+        $integrationSource = $null
+        if ($direction -eq "outbound" -and $method -eq "SOAP") {
+            $configMatch = Resolve-AppDocSoapClientConfigEndpoint -Endpoint $endpoint -ConfigEndpoints $soapClientConfigEndpoints
+            if ($configMatch) {
+                $integrationUrl = if ($configMatch.address) { [string]$configMatch.address } else { $null }
+                $integrationName = if ($configMatch.name) { [string]$configMatch.name } else { $null }
+                $integrationContract = if ($configMatch.contract) { [string]$configMatch.contract } else { $null }
+                $integrationSource = if ($configMatch.sourcePath) { [string]$configMatch.sourcePath } else { $null }
+            }
+        }
 
         $normalizedEndpoints += @{
             method = $method
@@ -626,13 +1020,21 @@ function Get-AppDocApiInventoryData {
             schema = if ($endpoint.schema) { [string]$endpoint.schema } else { "N/A" }
             statusCodes = $statusCodes
             domain = Get-AppDocApiEndpointDomainLocal -Path $path -Controller $controller
-            sourceType = if ($endpoint.sourceType) { [string]$endpoint.sourceType } else { "regex" }
+            sourceType = $sourceType
+            direction = $direction
+            actionName = if ($endpoint.actionName) { [string]$endpoint.actionName } elseif ($endpoint.methodName) { [string]$endpoint.methodName } else { $null }
+            serviceReference = if ($endpoint.serviceReference) { [string]$endpoint.serviceReference } else { $null }
+            contractName = if ($endpoint.contractName) { [string]$endpoint.contractName } else { $null }
+            integrationUrl = $integrationUrl
+            integrationName = $integrationName
+            integrationContract = $integrationContract
+            integrationSource = $integrationSource
         }
     }
 
     $endpointByKey = @{}
     foreach ($endpoint in $normalizedEndpoints) {
-        $dedupeKey = "{0}|{1}|{2}" -f $endpoint.method, $endpoint.path.ToLowerInvariant(), $endpoint.controller.ToLowerInvariant()
+        $dedupeKey = "{0}|{1}|{2}|{3}" -f $endpoint.method, $endpoint.path.ToLowerInvariant(), $endpoint.controller.ToLowerInvariant(), $endpoint.direction
         if (-not $endpointByKey.ContainsKey($dedupeKey)) {
             $endpointByKey[$dedupeKey] = $endpoint
             continue
@@ -646,13 +1048,14 @@ function Get-AppDocApiInventoryData {
 
     $Inventory.endpoints = @(
         $endpointByKey.Values |
-            Sort-Object @{ Expression = { [string]$_.domain } }, @{ Expression = { [string]$_.path } }, @{ Expression = { [string]$_.method } }
+            Sort-Object @{ Expression = { if ([string]$_.direction -eq "inbound") { 0 } else { 1 } } }, @{ Expression = { [string]$_.domain } }, @{ Expression = { [string]$_.path } }, @{ Expression = { [string]$_.method } }
     )
 
     return [ordered]@{
         inventory = $Inventory
         astEndpointCount = $astEndpointCount
         regexEndpointCount = $regexEndpointCount
+        soapConfigEndpointCount = $soapClientConfigEndpoints.Count
         scannedApiFileCount = $apiFiles.Count
     }
 }

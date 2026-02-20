@@ -1,10 +1,10 @@
 {
   "artifact": "start-here",
-  "generatedAt": "2026-02-18T13:44:50-05:00",
+  "generatedAt": "2026-02-19T16:14:22-05:00",
   "recordCount": 3,
   "records": [
     {
-      "artifact": "start-here",
+      "artifact": "",
       "source": "docs",
       "name": "api-inventory",
       "kind": "endpoint",
@@ -15,51 +15,53 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-18T13:44:50-05:00"
+      "timestamp": ""
     },
     {
-      "artifact": "start-here",
+      "artifact": "",
       "source": "docs",
       "name": "data-model",
       "kind": "model",
       "confidence": 0.9,
       "metadata": {
-        "documentedModels": 3
+        "documentedModels": 4
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-18T13:44:50-05:00"
+      "timestamp": ""
     },
     {
-      "artifact": "start-here",
+      "artifact": "",
       "source": "repository",
       "name": "source-files",
       "kind": "summary",
       "confidence": 0.95,
       "metadata": {
-        "count": 0,
-        "languages": []
+        "languages": [
+          ".cs"
+        ],
+        "count": 8
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-18T13:44:50-05:00"
+      "timestamp": ""
     }
   ],
   "metadata": {
-    "requiredEvidenceKeys": [
-      "summary",
-      "endpoints",
-      "models"
-    ],
     "requiredSections": [
       "Who This Is For",
       "15-Minute Orientation",
       "Role-Based Paths",
       "System Signals"
     ],
-    "generator": "generate-start-here.ps1"
+    "generator": "generate-start-here.ps1",
+    "requiredEvidenceKeys": [
+      "summary",
+      "endpoints",
+      "models"
+    ]
   },
   "determinism": {
     "hashAlgorithm": "SHA256",
@@ -68,6 +70,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "66d088dec56f8cbc5a09fbb0c4032e145a1b6361a17d0b36946313d6b30001b6"
+    "contentHash": "a0df2bcaccb8a10b181a6094bb9395a3f64c2595d381bf14d0ab971bdfed24b7"
   }
 }
