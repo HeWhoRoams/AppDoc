@@ -6,6 +6,7 @@ $script:AppDocOverviewTruthPackVersion = "1.2.0"
 function Get-AppDocOverviewObjectValue {
     [CmdletBinding()]
     param(
+        [Parameter(ValueFromPipeline=$true, Mandatory=$false)]
         [AllowNull()]
         [object]$Object,
         [Parameter(Mandatory=$true)]
@@ -13,22 +14,23 @@ function Get-AppDocOverviewObjectValue {
         [AllowNull()]
         [object]$Default = $null
     )
+    process {
+        if ($null -eq $Object) { return $Default }
 
-    if ($null -eq $Object) { return $Default }
-
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) {
-            return $Object[$Name]
+        if ($Object -is [System.Collections.IDictionary]) {
+            if ($Object.Contains($Name)) {
+                return $Object[$Name]
+            }
+            return $Default
         }
+
+        $prop = $Object.PSObject.Properties[$Name]
+        if ($null -ne $prop) {
+            return $prop.Value
+        }
+
         return $Default
     }
-
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($null -ne $prop) {
-        return $prop.Value
-    }
-
-    return $Default
 }
 
 function Read-AppDocOverviewJsonFile {
@@ -544,7 +546,8 @@ function Get-AppDocOverviewTruthPackData {
     if ($domainNames.Count -eq 0 -and $graphComponentNames.Count -gt 0 -and $endpointRecordCount -gt 0) {
         # Avoid duplicating controllerNames if both use graphComponentNames
         if ($controllerNames -eq $graphComponentNames -or ($controllerNames.Count -eq $graphComponentNames.Count -and (@($controllerNames) -join ',') -eq (@($graphComponentNames) -join ','))) {
-            # Use next 6 items after those used for controllerNames, or exclude those already used
+            # Duplication is intentional: fallback yields domainNames identical to controllerNames when no additional components exist.
+            # No further de-duplication is performed by design.
             $skipped = @($graphComponentNames | Select-Object -Skip $controllerNames.Count -First 6)
             $domainNames = if ($skipped.Count -gt 0) { $skipped } else { @($graphComponentNames | Select-Object -First 6) }
         } else {

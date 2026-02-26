@@ -94,6 +94,11 @@ try {
                 }
             }
         }
-    } catch {}
+    } catch {
+        Write-Warning "Cleanup error: $($_.Exception.Message)"
+        if ($_.Exception.StackTrace) {
+            Write-Warning "StackTrace: $($_.Exception.StackTrace)"
+        }
+    }
     exit 1
 }

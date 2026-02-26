@@ -51,18 +51,29 @@ graph TD
 #### Error Detection
 *   **Exit Code Monitoring**: Orchestrator (`run-all-generators.ps1`) shall capture exit codes from `AnalyzerCS.exe` and AnalyzerTS runner (Node.js).
     *   Exit code 0: Success.
-    *   Exit code 1-127: Analyzer error (unrecognized project, missing dependencies, compilation failure).
-    *   Exit code 128+: System error (out of memory, file system error).
+    *   Exit code 1: Recoverable analyzer error (unrecognized project, missing dependencies, compilation failure).
+    *   Exit code 2-10: Reserved for defined system error categories:
+        *   2: Out of memory
+        *   3: File system error
+        *   4: Permission denied
+        *   5: Invalid arguments
+        *   6: Timeout
+        *   7-10: Reserved for future system errors
+    *   Exit code 11-127: Other analyzer errors (non-critical, may include partial failures).
+    *   Exit code 128+: Only used when run-all-generators.ps1 is executed on PowerShell/Windows and may conflict with Unix signal-based codes for AnalyzerCS.exe and AnalyzerTS (Node.js) runner.
+        *   **Note**: On Unix CI/CD, exit codes 128+ may indicate process termination by signal (e.g., SIGKILL = 137). Orchestrator must interpret 128+ codes as potential signal-based termination and log accordingly. Avoid using 128+ for custom system errors in cross-platform scripts.
+    *   **Cross-Platform Behavior**: Always document and map exit codes in logs; ensure orchestrator distinguishes between Windows/PowerShell and Unix conventions when handling 128+ codes.
 *   **Stderr/Stdout Capture**: Capture full stderr and stdout streams from analyzer processes for diagnostic logging.
     *   Log to `.appdoc/logs/analyzer-{timestamp}.log`.
     *   Include command line, working directory, and environment variables in log entries.
 
 #### Retry and Backoff Strategy
 *   **Initial Attempt**: Run analyzer with standard configuration.
-*   **Retry Logic** (if exit code != 0):
-    1.  Clear any error logs in the project (e.g., `bin/Debug`, `obj` folders for C#; `node_modules/.cache` for TS).
-    2.  Wait 2 seconds (exponential backoff: 2s, 4s, 8s for attempts 1, 2, 3).
-    3.  Retry up to 2 times before falling back.
+1.  **Cached AST Outputs**: If prior successful `ast-csharp.json` or `ast-typescript.json` exist in the workspace, reuse them if they are less than 24 hours old (configurable via `.appdoc/profile.json` field: `"cache.maxAgeHours"`).    1.  If `cacheClearOnRetry` flag is enabled in generation config, clear error logs in the project (e.g., `bin/Debug`, `obj` folders for C#; `node_modules/.cache` for TS). Otherwise, skip cache clearing.
+    2.  Analyzer output must use isolated temporary directories (e.g., set `ANALYZER_OUTPUT_DIR` or use temp-dir API) to avoid writing to shared build folders.
+    3.  Wait 2 seconds (exponential backoff: 2s, 4s, 8s for attempts 1, 2, 3).
+    4.  Retry up to 2 times before falling back.
+    5.  **Note**: Generation should not run concurrently with active builds or CI jobs if `cacheClearOnRetry` is enabled, as clearing shared folders may cause race conditions.
 *   **Fallback Decision**: If analyzer fails after retries, proceed with fallback generation (see section 2.4.2).
 
 ### 2.4.2. Fallback Generation Flow
@@ -149,8 +160,7 @@ When AST generation fails, Generators shall consume alternate data sources:
             *   Attempt to extract BaseUrl from `appsettings.json` (look for `"BaseUrl"`, `"ServiceUrl"`, or `"ApiRootPath"` keys).
             *   If not found, use template-configurable default (e.g., `https://api.example.com`, clearly marked as placeholder).
             *   Configurable via `.appdoc/profile.json` field: `"apiDocumentation.baseUrl"`.
-        *   **Route Template Substitution**:
-            *   Parse route for parameters like `{id}`, `{userId}`, `{resourceId}`.
+            *   Fallback to deterministic placeholder if Parameter name not in map (e.g., seeded GUID based on parameter name hash, or generic placeholder like "sample-{parameterName}").            *   Parse route for parameters like `{id}`, `{userId}`, `{resourceId}`.
             *   Substitute with example values inferred from Parameter metadata (e.g., `Parameter.Type == "int"` → use `"123"`; `Parameter.Type == "string"` → use `"sample-value"`).
             *   Maintain a configurable sample-values map in template settings:
                 ```json
@@ -166,6 +176,13 @@ When AST generation fails, Generators shall consume alternate data sources:
             *   If endpoint has a Body parameter, serialize its schema as a representative JSON object.
             *   Use schema default values where available; generate sample values (strings, numbers) for fields without defaults.
             *   Implement a schema traversal that handles nested objects and arrays (e.g., `List<Item>` → `[ { ...sample item... } ]`).
+                *   Limit recursion depth to a configurable maximum (default: 3, set via `.appdoc/profile.json` key: `"apiDocumentation.maxSchemaDepth"`).
+                *   Detect cycles/circular references; emit a placeholder comment (e.g., `"// Circular reference detected"`) instead of recursing for circular references.
+                *   Limit arrays to produce a single sample item by default (configurable via `.appdoc/profile.json` key: `"apiDocumentation.maxArraySampleCount"`, default: 1).
+                *   These rules apply to all nested object/array examples, including `List<Item>` and `CreateUserModel`.
+                *   Configuration keys and defaults:
+                    *   `apiDocumentation.maxSchemaDepth`: default 3
+                    *   `apiDocumentation.maxArraySampleCount`: default 1
             *   Example: `POST /users` with body parameter `CreateUserModel { Name: string, Age: int }` → include `-d '{"name": "John Doe", "age": 30}'`.
         *   **Authorization Handling**:
             *   Inspect endpoint and controller metadata for auth attributes (`[Authorize]`, `[AllowAnonymous]`, etc.) and auth schemes (`[Authorize(AuthenticationSchemes = "Bearer")]`, custom schemes).
@@ -189,11 +206,22 @@ When AST generation fails, Generators shall consume alternate data sources:
               -d '{"name": "John Doe", "email": "john@example.com", "age": 30}'
             
             # API Key Auth
-            curl -X GET "https://api.example.com/api/data" \
-              -H "X-API-Key: {{API_KEY}}"
-            ```
-        *   **Linking**: Use `FilePath` and `LineNumber` from AST to create a deterministic "View Code" link (e.g., `docs/api-inventory.md#endpoint-123` → `[View Code](../path-to-source-file.cs#L456)`).
-    3.  **Template Configuration** (`.appdoc/profile.json`):
+                        curl -X GET "https://api.example.com/api/data" \
+                            -H "X-API-Key: {{API_KEY}}"
+                        ```
+                *   **Linking**: Use `FilePath` and `LineNumber` from AST to create a deterministic "View Code" link. The link format is now configurable via the `codeLinkFormat` setting in `.appdoc/profile.json`:
+                        *   Example: `[View Code](https://github.com/org/repo/blob/main/{filePath}#L{line})` for GitHub, `[View Code](https://gitlab.com/org/repo/-/blob/main/{filePath}?line={line})` for GitLab, etc.
+                        *   At runtime, load and validate the `codeLinkFormat` template, substituting `{baseUrl}`, `{filePath}`, `{lineAnchor}` or `{line}` as needed.
+                        *   This enables support for GitHub, GitLab, Bitbucket, Azure DevOps, and custom VCS flavors without changing generator code.
+                        *   If `codeLinkFormat` is missing, default to GitHub-style anchor (`{baseUrl}/{filePath}#L{line}`).
+                        *   Example config:
+                                ```json
+                                {
+                                    "codeLinkFormat": "{baseUrl}/{filePath}#L{line}"
+                                }
+                                ```
+                        *   When constructing View Code links, always apply the loaded template and validate substitutions.
+        3.  **Template Configuration** (`.appdoc/profile.json`):
         ```json
         {
           "apiDocumentation": {
@@ -232,11 +260,17 @@ When AST generation fails, Generators shall consume alternate data sources:
             *   For each model `M`:
                 *   **Inheritance Detection**: If `M.BaseClass` or `M.Interfaces` (array) present, emit `M --|> BaseClass` (inheritance) and `M ..|> InterfaceName` (interface implementation) for each interface.
                 *   For each property `P`:
-                    *   **Type Analysis**: Parse `P.Type` to detect collection and nullability modifiers.
-                    *   **Collection Types** (List<T>, IEnumerable<T>, IReadOnlyList<T>, T[], ICollection<T>): If `P.Type` matches collection pattern, extract inner type `T` and emit `M ||--o{ T : "has many"` (one-to-many).
-                    *   **Nullable Types** (T?, Nullable<T>, reference types with `?` suffix, or explicit nullable reference types): If `P.Type` is nullable or nullable reference type, emit `M ||--o| T : "may have"` (zero-or-one).
-                    *   **Single Types**: If `P.Type` exists in Models list without collection/nullable modifiers, emit `M ||--|| T : "has"` (one-to-one).
-                    *   **No Relationship**: If `P.Type` is primitive (string, int, bool, etc.) or not in Models list, skip relationship generation but include property in data-model details.
+                    *   **Type Analysis**: Use Roslyn semantic model (Microsoft.CodeAnalysis.CSharp) to resolve `P.Type` to an `ITypeSymbol`.
+                        *   Unwrap generic type arguments recursively (e.g., `Dictionary<string,List<User>>` → `List<User>` → `User`).
+                        *   Detect tuple types and emit tuple relationships.
+                        *   Distinguish `Nullable<T>` (value types) vs nullable reference types.
+                        *   Honor generic constraints and resolve actual referenced types.
+                    *   **Collection Types**: If resolved symbol is a collection (implements `IEnumerable<T>`), extract inner type and emit `M ||--o{ T : "has many"` (one-to-many).
+                    *   **Nullable Types**: If resolved symbol is `Nullable<T>` or nullable reference type, emit `M ||--o| T : "may have"` (zero-or-one).
+                    *   **Tuple Types**: Emit relationships for each tuple element type.
+                    *   **Single Types**: If resolved symbol exists in Models list and is not collection/nullable/tuple, emit `M ||--|| T : "has"` (one-to-one).
+                    *   **No Relationship**: If resolved symbol is primitive or not in Models list, skip relationship generation but include property in data-model details.
+            *   **Note**: Remaining known limitations: cannot resolve dynamic/anonymous types, some deeply nested generics may be missed, and cross-assembly references may require additional symbol resolution.
         *   **Examples Discovery**: Scan Models array for those marked with `isTestModel: true` or files with test metadata, then traverse AST for:
             *   **ObjectCreation Nodes**: Find `new M { property = value }` patterns in test files.
             *   **Initializer Nodes**: Find collection/property initializers referencing model names.
@@ -247,96 +281,25 @@ When AST generation fails, Generators shall consume alternate data sources:
 ### 3.3. Configuration Catalog (`config-catalog.md`)
 
 *   **Current State**: Regex scanning for `appsettings.json` and `Configuration["Key"]` usage.
-*   **New Implementation**:
-    1.  **Input Sources**:
-        *   `appsettings.json` (all environments: development, production, staging).
-        *   `appsettings.{Environment}.json` overrides.
-        *   `ast-csharp.json` (expanded ConfigUsage array).
-        *   `.github/secrets/` or key vault references (optional).
-
-    2.  **Extended ConfigUsage Detection** (in C# Analyzer):
-        
-        Extend the AST to capture configuration sources beyond `Configuration["Key"]`:
-        
-        *   **Type 1**: `Configuration["Key"]` access (existing).
-            *   Record: `{ kind: "DirectAccess", symbol: "Configuration", key: "Key", filePath, lineNumber }`.
-        
-        *   **Type 2**: Strongly-typed `IOptions<T>` bindings.
-            *   Pattern: `services.Configure<AppSettings>(Configuration.GetSection("AppSettings"))`.
-            *   Pattern: `services.AddOptions<T>().BindConfiguration("SectionName")`.
-            *   Record: `{ kind: "IOptionsBinding", typeParameter: "AppSettings", boundSection: "AppSettings", filePath, lineNumber }`.
-        
-        *   **Type 3**: Environment variable reads.
-            *   Pattern: `Environment.GetEnvironmentVariable("MY_SETTING")`.
-            *   Pattern: `System.Environment.GetEnvironmentVariables()["MY_SETTING"]`.
-            *   Record: `{ kind: "EnvironmentVariable", envVarName: "MY_SETTING", normalizedKey: "MY:SETTING", filePath, lineNumber }`.
-            *   Note: Normalize env var names by converting `__` (double-underscore) to `:` (colon) for matching against hierarchical config.
-        
-        *   **Type 4**: User-secrets references.
-            *   Pattern: `userSecretsId="12345678-1234-1234-1234-123456789abc"` in `.csproj`.
-            *   Record: `{ kind: "UserSecret", secretsId: "12345678...", filePath: "project.csproj", lineNumber }`.
-        
-        *   **Type 5**: External provider usages.
-            *   Azure KeyVault: `new KeyVaultSecretManager()`, `new ConfigurationClientOptions()`, `client.GetSecretAsync("vaultUri/secretName")`.
-            *   AWS Secrets Manager: `new AmazonSecretsManagerClient()`, `GetSecretValueRequest`, `GetSecretValueResponse`.
-            *   Record: `{ kind: "ExternalProvider", provider: "AzureKeyVault"|"AWSSecretsManager"|"custom", symbol: "ClientType", secretKey: "pathOrId", filePath, lineNumber }`.
-        
-        *   **Type 6**: Configuration binding methods.
-            *   Pattern: `configuration.Bind(settings)`, `configuration.GetSection("Foo").Bind(obj)`, `services.Configure<T>(configuration.GetSection("Section"))`.
-            *   Record: `{ kind: "BindMethod", method: "Bind"|"Configure"|"ConfigureSection", targetType: "T", sectionName: "Section", filePath, lineNumber }`.
-
-    3.  **Configuration Key Normalization and Flattening**:
-        
-        *   **appsettings.json Flattening**:
-            ```json
-            {
-              "Database": {
-                "ConnectionString": "server=localhost",
-                "Timeout": 30
-              }
-            }
-            ```
-            Flattened keys: `["Database:ConnectionString", "Database:Timeout"]`.
-        
-        *   **Environment Variable Normalization**:
-            *   Input: `DATABASE__CONNECTIONSTRING`, `MY__NESTED__KEY`.
-            *   Normalized: `DATABASE:CONNECTIONSTRING`, `MY:NESTED:KEY`.
-            *   Case: By convention, normalize to match appsettings case (e.g., "Database:ConnectionString").
-        
-        *   **User-Secrets Override**:
-            *   User secrets are treated as additional appsettings keys with same normalization.
-            *   Marked with source: "User Secret" in catalog.
-        
-        *   **External Provider Keys**:
-            *   Azure KeyVault: Extract secret names from code (e.g., `GetSecretAsync("DbPassword")` → key: "DbPassword").
-            *   AWS Secrets Manager: Extract from code patterns.
-            *   Marked with source: "Azure KeyVault" / "AWS Secrets Manager".
-
-    4.  **Matching and Code Reference Population**:
-        
-        *   **Matching Algorithm**:
-            1.  Flatten all config sources (appsettings, environment variables, user-secrets, provider keys).
-            2.  For each ConfigUsage entry in `ast-csharp.json`, attempt to match its key/symbol:
-                *   **DirectAccess** (`Configuration["Key"]`): Match against flattened keys directly.
-                *   **IOptionsBinding**: Match `boundSection` against flattened keys; also record that this type binds to section.
-                *   **EnvironmentVariable**: Normalize env var name to `:` format; match against flattened keys.
-                *   **BindMethod**: Match `sectionName` against flattened keys; check if target type appears in Models.
-                *   **ExternalProvider**: Match secret key against provider-specific naming conventions.
-            3.  If match found, populate code reference: `"Code Reference": { filePath, lineNumber, symbol, kind }`.
-            4.  If no match found, log as "Unused" or "Unresolved" for diagnostic purposes.
-        
-        *   **Multi-Source Merging**:
-            *   A single configuration key may be defined in multiple sources (e.g., `appsettings.json` + environment variable override).
-            *   Merge entries by key, tracking all sources where each key appears.
-            *   Example: `Database:ConnectionString` → sources: `["appsettings.json", "Environment Variable (DATABASE__CONNECTIONSTRING)"]`.
-        
-        *   **Nested Key Handling**:
-            *   For hierarchical keys like `Database:Replica:ConnectionString`, ensure matching handles both forms:
-                *   Direct: `"Database:Replica:ConnectionString"`.
-                *   Environment: `DATABASE__REPLICA__CONNECTIONSTRING`.
-            *   Record all detected normalizations in catalog for transparency.
-
-    5.  **Catalog Schema** (`docs/config-catalog.json`):
+*   **Phased Implementation**:
+    *   **Phase 1**: DirectAccess detection and appsettings.json flattening
+        *   Detect `Configuration["Key"]` usage (DirectAccess).
+        *   Flatten appsettings.json and environment-specific overrides.
+        *   Output: Catalog with schemaVersion, configurationKeys (DirectAccess only), unusedSources.
+        *   Only match/merge DirectAccess and flattened keys; tests and docs/config-catalog.json validate this subset.
+    *   **Phase 2**: IOptionsBinding and EnvironmentVariable normalization/matching
+        *   Detect strongly-typed `IOptions<T>` bindings (IOptionsBinding).
+        *   Detect environment variable reads (EnvironmentVariable).
+        *   Normalize env var names (`__` → `:`), match against flattened keys, preserve appsettings casing.
+        *   Output: Catalog with schemaVersion, configurationKeys (DirectAccess, IOptionsBinding, EnvironmentVariable), unusedSources.
+        *   Matching/merging logic limited to these types; tests/docs validate incremental output.
+    *   **Phase 3**: ExternalProvider, UserSecret, and BindMethod support
+        *   Detect external provider usages (ExternalProvider), user-secrets references (UserSecret), and configuration binding methods (BindMethod).
+        *   Merge provider keys, user-secrets, and binding methods into catalog.
+        *   Output: Catalog with schemaVersion, configurationKeys (all types), unusedSources.
+        *   Matching/merging logic expanded to all types; tests/docs validate full output.
+    *   For each phase, produce incremental outputs following the catalog schema and ensure matching/merging logic is limited to the currently implemented types so tests and docs/config-catalog.json generation can be validated early before adding later providers.
+    *   **Catalog Schema** (`docs/config-catalog.json`):
         ```json
         {
           "schemaVersion": "1.0.0",
@@ -430,8 +393,11 @@ audience: {{Audience}}
     2.  **Environment Variable**: `$env:APPDOC_OWNER`.
     3.  **Configuration File**: `.appdoc/profile.json` field: `"generated.owner"`.
     4.  **Repository Metadata**:
-        *   Check for `CODEOWNERS` file in repo root; extract first owner from first line.
-        *   Fall back to `git config user.name` + `git config user.email`.
+        *   Check for `CODEOWNERS` file in repo root; use robust parser:
+            1. Read CODEOWNERS file, skip blank lines and comment lines starting with '#'.
+            2. Search for a default pattern entry (line whose pattern is '*' or bare wildcard); if absent, use first non-comment entry.
+            3. Split owners field on whitespace to handle multiple owners; return the first owner.
+            4. If no valid entry found, fall back to `git config user.name` + `git config user.email`.
     5.  **Default Fallback**: `"Documentation Team"`.
 *   **Implementation Site**: Function `Get-AppDocGenerationOwner` in `AppDoc.Generation.psm1` shall perform the above resolution and return a string.
 
@@ -489,9 +455,35 @@ audience: {{Audience}}
     *   `Get-AppDocGenerationDate [-Overr <override>] [-DateSource <"execution"|"lastCommit">]`
     *   `Get-AppDocGenerationAudience [-Override <override>] [-Profile <config>]`
 
+**Pre-Flight Repository Cleanliness Check**:
+*   When `dateSource` is set to `"lastCommit"`, the orchestrator (`run-all-generators.ps1`) shall execute a repository status check at startup.
+*   **Check Logic**:
+    *   Detect git repository by testing for `.git` directory or running `git rev-parse --is-inside-work-tree`.
+    *   If detected, attempt to retrieve last commit date via `git log -1 --format="%aI"`.
+    *   If not a git repo, git not installed, or git command fails, fall back to Option A (execution timestamp) and emit a non-fatal warning to the user.
+    *   Edge cases:
+        *   Detached HEAD: Warn that commit date may reflect a non-branch state.
+        *   Shallow clone: Warn that commit date may be unavailable or reflect shallow history.
+    *   Repository cleanliness: Execute `git status --porcelain` from the repository root to detect uncommitted changes.
+*   **Configuration**: New boolean flag in `.appdoc/profile.json` controls behavior: `"generated.verifyCleanRepo"` (default: `true`).
+*   **Behavior**:
+    *   If `verifyCleanRepo` is `true` and uncommitted changes detected: log error with details and abort generation with exit code 1.
+    *   If `verifyCleanRepo` is `false` and uncommitted changes detected: log warning listing changed files but continue generation.
+*   **Error Message**: Include detected file paths, types of changes (modified, untracked, deleted), rationale (e.g., "lastCommit date strategy requires clean repository state for reproducibility"), and any fallback or edge case warnings.
+*   **Implementation Site**: Function `Assert-AppDocRepositoryClean` in `AppDoc.Generation.psm1`; called at orchestrator entrypoint if `dateSource` is `"lastCommit"`.
+*   **Configuration Example**:
+    ```json
+    {
+      "generated": {
+        "dateSource": "lastCommit",
+        "verifyCleanRepo": true
+      }
+    }
+    ```
+
 **Determinism Note**:
 *   Front matter values are deterministic when generation timestamp is chosen (same input + same config → same output).
-*   If using last-commit-date strategy, ensure repository state is clean (all changes committed) before generation for reproducibility.
+*   If using last-commit-date strategy, ensure repository state is clean (all changes committed) before generation for reproducibility. Use the pre-flight check configured via `verifyCleanRepo` flag.
 
 ### 4.2. Evidence Summaries
 Create `generate-evidence-summary.ps1`:
@@ -755,6 +747,9 @@ Create `generate-evidence-summary.ps1`:
 **Performance SLA for v1.0.0**:
 *   Single artifact generation: < 3 seconds.
 *   Full orchestration on typical project: < 30 seconds.
-*   Full orchestration on large project (≥10K LOC, ≥50 endpoints): < 60 seconds.
+*   Full orchestration on large project (≥10K LOC, ≥50 endpoints):
+    *   Local-only analysis (no external provider calls): < 60 seconds.
+    *   External-provider-enabled analysis (e.g., Azure KeyVault, AWS Secrets Manager): < configurable target (default: 120 seconds; can be set via config).
+    *   Note: External provider calls should use configurable timeouts (default: 5-10 seconds per call) and implement caching of provider responses to minimize repeated latency. Document timeout and cache defaults in `.appdoc/profile.json` and generation logs.
 
 ---

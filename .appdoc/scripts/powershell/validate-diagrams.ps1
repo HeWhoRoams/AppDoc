@@ -141,20 +141,18 @@ foreach ($view in $requiredViews) {
     # Populate $diagramMermaidCountMap for this diagram
     if (Test-Path $path) {
         $content = Get-Content $path -Raw
-        $diagramMermaidCountMap[$file] = Get-MermaidFlowCounts -Content $content
+        $mermaid = Get-MermaidBlockContent -Content $content
+        $diagramMermaidCountMap[$file] = Get-MermaidFlowCounts -Mermaid $mermaid
     }
     $exists = Test-Path $path
     $hasMermaidFence = $false
     $size = 0
     if ($exists) {
-        $content = Get-Content $path -Raw
         if ($null -eq $content) { $content = "" }
         $diagramContentMap[$file] = $content
         $size = $content.Length
-        # Detect mermaid fenced code block: triple backticks, 'mermaid', then any content, then triple backticks
-        $hasMermaidFence = ($content -match '(?ms)```\s*mermaid.*?```')
-        }
-        $snapshot = Get-DiagramCoverageSnapshot -Markdown $content
+# Detect mermaid fenced code block: triple backticks, 'mermaid', then any content, then triple backticks
+        $hasMermaidFence = ($content -match '(?ms)
         if ($snapshot) {
             $diagramCoverageSnapshotMap[$file] = $snapshot
         }

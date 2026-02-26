@@ -118,7 +118,6 @@ function Get-MarkdownDataRowCount {
     if (-not $SectionContent) { return 0 }
 
     $rows = 0
-    $headerRows = 0
     foreach ($line in ($SectionContent -split "`n")) {
         $trimmed = $line.Trim()
         if ($trimmed -match '^\|' -and $trimmed -notmatch '^\|\s*-') {
@@ -313,15 +312,15 @@ function Get-AppDocValidationExpectations {
     $debtSignalCount = 0
     $filesToCheck = @($debtSignalCandidates | Select-Object -First 300)
     $debtSignalResults = $filesToCheck | ForEach-Object -Parallel {
-        param($file, $maxDebtFileSize)
-        if ($file.Length -gt $maxDebtFileSize) { return 0 }
+        $file = $_
+        if ($file.Length -gt $using:maxDebtFileSize) { return 0 }
         $raw = Get-Content -Path $file.FullName -Raw -ErrorAction SilentlyContinue
         if (-not $raw) { return 0 }
         $count = ([regex]::Matches($raw, '(?im)\b(TODO|FIXME|HACK|XXX)\b')).Count
         return $count
-    } -ArgumentList $maxDebtFileSize
-                }
-        )    $dependencySurfaceExpected = ($dependencyCount -gt 0 -or $dependencySignalCount -gt 0)
+    }
+    $debtSignalCount = ($debtSignalResults | Measure-Object -Sum).Sum
+    $dependencySurfaceExpected = ($dependencyCount -gt 0 -or $dependencySignalCount -gt 0)
     $testSurfaceExpected = ($testRecordCount -gt 0 -or $testSignalCount -gt 0)
     $debtSurfaceExpected = ($debtRecordCount -gt 0 -or $debtSignalCount -gt 0)
     $allowNoDependencySurface = (-not $dependencySurfaceExpected) -and ($dependencyCount -eq 0)

@@ -210,10 +210,19 @@ $evidenceRecords = @()
 $patchedCodeFileCount = [int]$overviewData.codeFileCount
 $patchedLanguageCount = [int]$languageCount.Keys.Count
 $patchedText = ""
-if ($truthPack.architecture -ne $null -and $truthPack.architecture.frameworks -ne $null -and ($truthPack.architecture.frameworks -is [System.Collections.IEnumerable]) -and $truthPack.architecture.frameworks.Count -gt 0 -and $patchedCodeFileCount -eq 0) {
+# Normalize frameworks to array
+$frameworks = $null
+if ($truthPack.architecture -ne $null -and $truthPack.architecture.frameworks -ne $null) {
+    if ($truthPack.architecture.frameworks -is [string]) {
+        $frameworks = @($truthPack.architecture.frameworks)
+    } else {
+        $frameworks = $truthPack.architecture.frameworks
+    }
+}
+if ($frameworks -ne $null -and $frameworks.Count -gt 0 -and $patchedCodeFileCount -eq 0) {
     $patchedCodeFileCount = 1
     $patchedLanguageCount = 1
-    $frameworkNames = $truthPack.architecture.frameworks -join ", "
+    $frameworkNames = $frameworks -join ", "
     $patchedText = "This codebase contains $patchedCodeFileCount code file(s) across $patchedLanguageCount language(s) (framework detected: $frameworkNames). Full analysis available in linked documentation."
 } else {
     $patchedText = "This codebase contains $patchedCodeFileCount code files across $patchedLanguageCount language(s). Full analysis available in linked documentation."
@@ -255,16 +264,19 @@ if ($welcomeNarrative) {
             $confidence = if ($evidenceRefs.Count -gt 0) { 0.9 } else { 0.6 }
             # Map provider to providerType: known AI providers yield 'ai', others 'deterministic'
             $provider = [string]$welcomeNarrativeResult.provider
-            $aiProviders = @('openai', 'azureopenai', 'anthropic', 'google', 'ai', 'gpt', 'claude', 'gemini')
             $providerType = if ($aiProviders -contains ($provider.ToLower())) { 'ai' } else { 'deterministic' }
 
-            $evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "overview-welcome" -Name ("{0}-{1:00}" -f $section, $itemIndex) -Kind "welcome-summary" -Confidence $confidence -Provider ([string]$welcomeNarrativeResult.provider) -ProviderType $providerType -Metadata @{
+            $evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "overview-welcome" -Name ("{0}-{1:00}" -f $section, $itemIndex) -Kind "welcome-summary" -Confidence $confidence -Provider $provider -ProviderType $providerType -Metadata @{
                 section = $section
                 text = $text
                 evidenceRefs = $evidenceRefs
             }
         }
     }
+}
+
+# Define AI providers array once, outside the loop
+$aiProviders = @('openai', 'azureopenai', 'anthropic', 'google', 'ai', 'gpt', 'claude', 'gemini')
 }
 
 $evidenceMetadata = @{

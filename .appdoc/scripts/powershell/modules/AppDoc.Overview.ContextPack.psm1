@@ -124,10 +124,8 @@ function Get-AppDocOverviewContextPackData {
         $name = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default "")
         $source = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default "")
         # Normalize path separators and escaping for portability
-        $name = $name -replace '\+', '/'
-        $name = $name -replace '(?<!:)//+', '/'
-        $source = $source -replace '\+', '/'
-        $source = $source -replace '(?<!:)//+', '/'
+        $name = Normalize-AppDocOverviewPath $name
+        $source = Normalize-AppDocOverviewPath $source
         $evidenceId = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "id" -Default "")
         if ([string]::IsNullOrWhiteSpace($evidenceId)) { continue }
 
