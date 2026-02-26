@@ -109,6 +109,8 @@ function Get-AppDocOverviewContextPackData {
     $projectName = [string](Get-AppDocOverviewContextPackValue -Object $TruthPack -Name "projectName" -Default (Split-Path $RootPath -Leaf))
     $evidenceRefs = @(Get-AppDocOverviewContextPackValue -Object $TruthPack -Name "evidence_refs" -Default @())
     $facts = Get-AppDocOverviewContextPackValue -Object $TruthPack -Name "facts" -Default @{}
+    $counts = Get-AppDocOverviewContextPackValue -Object $TruthPack -Name "counts" -Default @{}
+    $graph = Get-AppDocOverviewContextPackValue -Object $TruthPack -Name "graph" -Default @{}
 
     $entities = @()
     $entityIndex = @{}
@@ -121,6 +123,11 @@ function Get-AppDocOverviewContextPackData {
         $entityType = Get-AppDocOverviewEntityType -Kind $kind
         $name = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default "")
         $source = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default "")
+        # Normalize path separators and escaping for portability
+        $name = $name -replace '\\+', '/'
+        $name = $name -replace '/+', '/'
+        $source = $source -replace '\\+', '/'
+        $source = $source -replace '/+', '/'
         $evidenceId = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "id" -Default "")
         if ([string]::IsNullOrWhiteSpace($evidenceId)) { continue }
 
@@ -204,6 +211,15 @@ function Get-AppDocOverviewContextPackData {
     $intentCounter = 1
     $factTypeMap = @{
         "what_it_does" = "business_purpose"
+        # Helper: Normalize path, preserving protocol double-slashes
+        function Normalize-AppDocOverviewPath {
+            param([string]$Path)
+            if ([string]::IsNullOrWhiteSpace($Path)) { return $Path }
+            $norm = $Path -replace '\\', '/'
+            # Collapse multiple slashes except after protocol (e.g., 'http://')
+            $norm = $norm -replace '(?<!:)/{2,}', '/'
+            return $norm
+        }
         "inputs" = "data_contract"
         "processing_steps" = "workflow"
         "outputs" = "data_contract"
@@ -253,12 +269,16 @@ function Get-AppDocOverviewContextPackData {
         evidence_refs = @(
             $evidenceRefs |
                 ForEach-Object {
+                    $name = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "name" -Default "")
+                    $source = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "source" -Default "")
                     [ordered]@{
                         id = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "id" -Default "")
                         artifact = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "artifact" -Default "")
                         kind = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "kind" -Default "")
-                        name = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "name" -Default "")
-                        source = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "source" -Default "")
+                        name = $name
+                        source = $source
+                        normalized_name = $name
+                        normalized_source = Normalize-AppDocOverviewPath $source
                     }
                 }
         )
@@ -267,6 +287,15 @@ function Get-AppDocOverviewContextPackData {
             no_invention = $true
             paragraph_level_evidence_preferred = $true
             section_level_evidence_allowed = $true
+        }
+        graph_summary = [ordered]@{
+            enabled = [bool](Get-AppDocOverviewContextPackValue -Object $graph -Name "enabled" -Default $false)
+            entity_count = [int](Get-AppDocOverviewContextPackValue -Object $graph -Name "entityCount" -Default 0)
+            edge_count = [int](Get-AppDocOverviewContextPackValue -Object $graph -Name "edgeCount" -Default 0)
+            endpoint_count = [int](Get-AppDocOverviewContextPackValue -Object $counts -Name "endpointRecords" -Default 0)
+            model_count = [int](Get-AppDocOverviewContextPackValue -Object $counts -Name "modelRecords" -Default 0)
+            config_count = [int](Get-AppDocOverviewContextPackValue -Object $counts -Name "configurationRecords" -Default 0)
+            dependency_count = [int](Get-AppDocOverviewContextPackValue -Object $counts -Name "dependencyRecords" -Default 0)
         }
     }
 

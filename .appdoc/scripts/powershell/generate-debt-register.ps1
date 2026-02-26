@@ -77,6 +77,7 @@ Write-Progress -Activity "Generating Technical Debt Register" -Status "Populatin
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocDebtRegisterContent -Content $content -Debts $debts
 $content = Normalize-AppDocTemplateInstructionText -Content $content
+$content = Normalize-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 

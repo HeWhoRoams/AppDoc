@@ -1,18 +1,11 @@
 {
   "pipelineVersion": "1.1.0",
-  "startedAt": "2026-02-20T14:53:11-05:00",
-  "endedAt": "2026-02-20T14:53:11-05:00",
-  "durationMs": 75.0,
-  "model": "local-deterministic",
-  "aiModeRequested": "Deterministic",
-  "aiModeResolved": "Deterministic",
-  "aiProvider": "deterministic",
-  "aiResolutionReason": "Provider-backed AI modes are disabled; deterministic local pipeline is enforced.",
-  "aiAttempted": false,
-  "aiProvidersObserved": [],
-  "aiPassFailures": [],
-  "requireAI": false,
-  "noAI": true,
+  "startedAt": "2026-02-25T14:48:55-05:00",
+  "endedAt": "2026-02-25T14:48:55-05:00",
+  "durationMs": 79.0,
+  "model": "deterministic-local",
+  "executionMode": "deterministic-local",
+  "externalModelCalls": false,
   "audience": "new_dev",
   "styleProfile": "standard",
   "passSources": {
@@ -37,13 +30,13 @@
       "style-what-it-does-purpose-verb-low:0"
     ],
     "metrics": {
-      "textItemCount": 7,
+      "textItemCount": 8,
       "inventoryLeadCount": 0,
       "countOnlySentenceCount": 0,
       "businessVerbHits": 1,
       "whatItDoesMetricLeadCount": 0,
       "whatItDoesPurposeVerbHits": 0,
-      "numericDensity": 0.0612
+      "numericDensity": 0.0729
     }
   },
   "narrativeReviewRequired": true,

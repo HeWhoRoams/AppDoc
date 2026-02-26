@@ -1,0 +1,101 @@
+
+Name                           Value
+----                           -----
+timestamp                      2026-02-25T11:54:06-05:00
+category                       ENVIRONMENT_ERROR
+severity                       Info
+component                      orchestrator
+message                        Diagnostics initialized
+filePath                       
+details                        {[outputPath, C:\Github\DegreeAudit\docs], [rootPath, C:\Github\DegreeAudit]}
+{
+  "totalFiles": 8464,
+  "services": [
+    "CMich.DegreeAudit.Tests",
+    "CMich.DegreeAudit.Web",
+    "CMich.WorkbenchTesting",
+    "CMichDegreeAudit",
+    "docs"
+  ],
+  "languages": {
+    ".gif": 2,
+    ".config": 21,
+    ".eot": 1,
+    ".asax": 1,
+    ".props": 3,
+    ".htm": 7,
+    ".csproj": 7,
+    ".targets": 3,
+    ".rdlc": 6,
+    ".jpg": 16,
+    ".md": 68,
+    ".psm1": 2,
+    ".settings": 1,
+    ".xsd": 2,
+    ".dll": 8,
+    ".ico": 1,
+    ".cache": 14,
+    ".cs": 414,
+    ".txt": 65,
+    ".defaults": 1,
+    ".nuspec": 1,
+    ".html": 75,
+    ".css": 13,
+    ".xml": 7347,
+    ".ps1": 42,
+    ".csv": 1,
+    ".editorconfig": 5,
+    ".thmx": 4,
+    ".png": 68,
+    ".mso": 1,
+    ".emz": 1,
+    ".resx": 7,
+    ".less": 4,
+    ".ds_store": 1,
+    ".svg": 1,
+    ".otf": 1,
+    ".js": 41,
+    ".xsl": 1,
+    ".sql": 5,
+    ".aspx": 1,
+    ".gitignore": 1,
+    ".sln": 2,
+    ".xlsx": 1,
+    ".diagram": 1,
+    ".bat": 1,
+    ".map": 17,
+    ".docx": 5,
+    ".woff": 1,
+    ".pubxml": 1,
+    ".cshtml": 108,
+    ".ttf": 1,
+    ".yml": 1,
+    ".pdf": 2,
+    ".edmx": 1,
+    ".json": 40,
+    ".ts": 16,
+    ".tt": 2
+  },
+  "directories": [
+    "CMich.DegreeAudit.Tests",
+    "CMich.DegreeAudit.Web",
+    "CMich.WorkbenchTesting",
+    "CMichDegreeAudit",
+    "docs",
+    "Docs_original",
+    "docuwriter",
+    "External Documentation",
+    "specs",
+    "SqlScripts",
+    "tests"
+  ]
+}
+{
+  "edges": [],
+  "nodes": []
+}
+{
+  "flags": [],
+  "options": []
+}
+

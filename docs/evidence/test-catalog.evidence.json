@@ -1,18 +1,20 @@
 {
   "artifact": "test-catalog",
-  "generatedAt": "2026-02-20T14:53:18-05:00",
+  "generatedAt": "2026-02-25T14:48:52-05:00",
   "recordCount": 0,
   "records": [],
   "metadata": {
-    "testCount": 0,
-    "requiredEvidenceKeys": [
-      "testSuites"
-    ],
-    "generator": "generate-test-catalog.ps1",
+    "graphSchemaTarget": "appdoc-evidence-graph/v1",
     "requiredSections": [
       "Executive Summary",
       "Test Suites"
-    ]
+    ],
+    "requiredEvidenceKeys": [
+      "testSuites"
+    ],
+    "testCount": 0,
+    "generator": "generate-test-catalog.ps1",
+    "suiteCount": 0
   },
   "determinism": {
     "hashAlgorithm": "SHA256",
@@ -21,6 +23,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "9d0162edf266ad21ed345b16f7e9354b4642cfd3ea69e6e61ef1a09c44c27816"
+    "contentHash": "db6cc8fd400941a1d687a70fe0e8943a42e898e5b979152c761c04f1971cd467"
   }
 }

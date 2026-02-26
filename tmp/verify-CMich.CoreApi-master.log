@@ -1,0 +1,82 @@
+
+Name                           Value
+----                           -----
+timestamp                      2026-02-25T11:56:09-05:00
+category                       ENVIRONMENT_ERROR
+severity                       Info
+component                      orchestrator
+message                        Diagnostics initialized
+filePath                       
+details                        {[outputPath, C:\Github\CMich.CoreApi-master\docs], [rootPath, C:\Github\CMich.CoreApi-m…
+{
+  "totalFiles": 1768,
+  "services": [
+    "CMich",
+    "CMich.Data",
+    "CMich.WebServices",
+    "docs"
+  ],
+  "languages": {
+    ".cd": 1,
+    ".gif": 4,
+    ".config": 16,
+    ".cs": 1206,
+    ".csproj": 19,
+    ".gitignore": 3,
+    ".bak": 1,
+    ".jpg": 1,
+    ".xsd": 6,
+    ".datasource": 97,
+    ".gitattributes": 1,
+    ".md": 33,
+    ".nuspec": 13,
+    ".css": 1,
+    ".xml": 202,
+    ".ps1": 1,
+    ".png": 2,
+    ".svcmap": 27,
+    ".svcinfo": 54,
+    ".js": 1,
+    ".snk": 16,
+    ".resx": 2,
+    ".sln": 1,
+    ".wsdl": 27,
+    ".cshtml": 2,
+    ".disco": 2,
+    ".yml": 1,
+    ".json": 28
+  },
+  "directories": [
+    "CMich",
+    "CMich.ConnectionSettings",
+    "CMich.ConnectionSettings.Tests",
+    "CMich.CoreApi Documentation",
+    "CMich.Data",
+    "CMich.Data.Tests",
+    "CMich.Logging",
+    "CMich.Sap",
+    "CMich.Sap.Tests",
+    "CMich.Security",
+    "CMich.Security.Tests",
+    "CMich.Settings",
+    "CMich.Settings.Tests",
+    "CMich.Tests",
+    "CMich.Web",
+    "CMich.Web.Mvc",
+    "CMich.Web.Mvc.Tests",
+    "CMich.Web.Tests",
+    "CMich.WebServices",
+    "CMich.WebServices.Tests",
+    "docs",
+    "Templates"
+  ]
+}
+{
+  "edges": [],
+  "nodes": []
+}
+{
+  "flags": [],
+  "options": []
+}
+

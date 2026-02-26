@@ -87,8 +87,15 @@ function Get-AppDocScopePropertyValue {
 
     if ($null -eq $Object) { return $Default }
 
-    if ($Object -is [hashtable]) {
-        if ($Object.ContainsKey($Name)) { return $Object[$Name] }
+    if ($Object -is [System.Collections.IDictionary]) {
+        if ($Object.Contains($Name)) { return $Object[$Name] }
+
+        foreach ($key in @($Object.Keys)) {
+            if ([string]::Equals([string]$key, $Name, [System.StringComparison]::OrdinalIgnoreCase)) {
+                return $Object[$key]
+            }
+        }
+
         return $Default
     }
 

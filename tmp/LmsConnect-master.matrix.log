@@ -1,0 +1,258 @@
+Running all documentation generators...
+
+Name                           Value
+----                           -----
+timestamp                      2026-02-25T09:48:16-05:00
+category                       ENVIRONMENT_ERROR
+severity                       Info
+component                      orchestrator
+message                        Diagnostics initialized
+filePath                       
+details                        {[rootPath, C:\Github\LmsConnect-master], [outputPath, C:\Github\LmsConnect-master\docs]}
+Running syntax gate...
+
+[Analysis]
+Running analyze-repository.ps1...
+{
+  "languages": {
+    ".cs": 270,
+    ".gitkeep": 1,
+    ".md": 69,
+    ".yml": 1,
+    ".config": 26,
+    ".npmrc": 1,
+    ".editorconfig": 1,
+    ".cshtml": 3,
+    ".docx": 1,
+    ".svc": 1,
+    ".vsdx": 2,
+    ".ico": 1,
+    ".resx": 1,
+    ".ts": 48,
+    ".html": 38,
+    ".ps1": 2,
+    ".scss": 3,
+    ".xml": 1,
+    ".sln": 1,
+    ".gitattributes": 1,
+    ".json": 45,
+    ".pubxml": 1,
+    ".csproj": 9,
+    ".gitignore": 1,
+    ".sql": 12,
+    ".defaults": 2,
+    ".dotsettings": 1,
+    ".css": 3,
+    ".txt": 2
+  },
+  "services": [
+    "Common",
+    "Common.Tests",
+    "Docs",
+    "Persistence",
+    "Persistence.Tests",
+    "ProcessingService",
+    "ProcessingService.Tests",
+    "Web.Tests"
+  ],
+  "totalFiles": 548,
+  "directories": [
+    "Common",
+    "Common.Tests",
+    "Docs",
+    "Model",
+    "Persistence",
+    "Persistence.Tests",
+    "ProcessingService",
+    "ProcessingService.Tests",
+    "Scripts",
+    "Testing Tools",
+    "Web",
+    "Web.Tests",
+    "Web.Ui"
+  ]
+}
+Running generate-dependency-graph.ps1...
+{
+  "nodes": [],
+  "edges": []
+}
+Running extract-config.ps1...
+{
+  "flags": [],
+  "options": []
+}
+
+[Generation]
+Running generate-api-inventory.ps1...
+📡 Generating API Inventory...
+  Scanned 256 potential API files
+✅ API inventory generated: C:\Github\LmsConnect-master\docs\api-inventory.md
+   Endpoints found: 8
+Running generate-data-model.ps1...
+🗂️  Generating Data Model...
+  Added 210 AST model records
+  Found 4 potential model files
+✅ Data model generated: C:\Github\LmsConnect-master\docs\data-model.md
+   Models found: 115
+Running generate-config-catalog.ps1...
+⚙️  Generating Config Catalog...
+✅ Config catalog generated: C:\Github\LmsConnect-master\docs\config-catalog.md
+   Configurations found: 185
+   Configuration sources: 17
+   Environment variables: 9
+Running generate-build-cookbook.ps1...
+🔨 Generating Build Cookbook...
+✅ Build cookbook generated: C:\Github\LmsConnect-master\docs\build-cookbook.md
+   Commands found: 14
+   Prerequisites detected: 0
+   CI/CD platforms detected: 4
+Running generate-test-catalog.ps1...
+🧪 Generating Test Catalog...
+  Found 2 test files
+✅ Test catalog generated: C:\Github\LmsConnect-master\docs\test-catalog.md
+   Test cases found: 4
+Running generate-debt-register.ps1...
+📋 Generating Technical Debt Register...
+✅ Technical debt register generated: C:\Github\LmsConnect-master\docs\debt-register.md
+   Debt items found: 12
+   Files scanned: 255
+Running generate-dependencies-catalog.ps1...
+📦 Generating Dependencies Catalog...
+✅ Dependencies catalog generated: C:\Github\LmsConnect-master\docs\dependencies-catalog.md
+   Projects: 5, Dependencies: 134
+Running generate-task-guides.ps1...
+🧭 Generating Task Guides...
+✅ Task guides generated: C:\Github\LmsConnect-master\docs\task-guides.md
+   Evidence categories: 4
+Running generate-overview.ps1...
+📊 Generating System Overview...
+✅ System overview generated: C:\Github\LmsConnect-master\docs\overview.md
+   Code files analyzed: 255
+Running generate-start-here.ps1...
+✅ Start-here guide generated: C:\Github\LmsConnect-master\docs\start-here.md
+Running generate-docs-index.ps1...
+📑 Generating Documentation Index...
+✅ Documentation index generated: C:\Github\LmsConnect-master\docs\index.md
+   Documents indexed: 10 / 10
+Generating C4 Mermaid architecture diagrams...
+=== AppDoc Mermaid C4 Diagram Generator ===
+Codebase: C:\Github\LmsConnect-master
+Output: C:\Github\LmsConnect-master\docs
+
+Found solution: LmsConnect.sln
+Context diagram already exists (use -Force to regenerate)
+Container diagram already exists (use -Force to regenerate)
+
+✓ Mermaid C4 diagram generation complete
+Generating deterministic internal/data-flow Mermaid diagrams...
+🧱 Generating deterministic architecture diagram suite...
+=== AppDoc Mermaid C4 Diagram Generator ===
+Codebase: C:\Github\LmsConnect-master
+Output: C:\Github\LmsConnect-master\docs
+
+Found solution: LmsConnect.sln
+Context diagram already exists (use -Force to regenerate)
+Container diagram already exists (use -Force to regenerate)
+
+✓ Mermaid C4 diagram generation complete
+✅ Diagram suite generated:
+   Internal flow: C:\Github\LmsConnect-master\docs\diagrams\internal-flow.md
+   Data flow:     C:\Github\LmsConnect-master\docs\diagrams\data-flow.md
+   Sequences:     C:\Github\LmsConnect-master\docs\diagrams\critical-sequences.md
+   Data lineage:  C:\Github\LmsConnect-master\docs\diagrams\data-lineage-core.md
+   Diagram index: C:\Github\LmsConnect-master\docs\diagrams\index.md
+   Truth pack:    C:\Github\LmsConnect-master\docs\evidence\diagram-truth-pack.json
+   Nodes: 56, Edges: 62, Inbound: 8, Outbound: 0
+
+[Remediation]
+Running remediate-generated-docs.ps1...
+Remediation complete. Updated 10 documentation files.
+
+[Integrity Gate]
+Running ci-doc-integrity-gate.ps1...
+🧱 Generating deterministic architecture diagram suite...
+✅ Diagram suite generated:
+   Internal flow: C:\Github\LmsConnect-master\docs\diagrams\internal-flow.md
+   Data flow:     C:\Github\LmsConnect-master\docs\diagrams\data-flow.md
+   Sequences:     C:\Github\LmsConnect-master\docs\diagrams\critical-sequences.md
+   Data lineage:  C:\Github\LmsConnect-master\docs\diagrams\data-lineage-core.md
+   Diagram index: C:\Github\LmsConnect-master\docs\diagrams\index.md
+   Truth pack:    C:\Github\LmsConnect-master\docs\evidence\diagram-truth-pack.json
+   Nodes: 56, Edges: 62, Inbound: 8, Outbound: 0
+🧱 Generating deterministic architecture diagram suite...
+✅ Diagram suite generated:
+   Internal flow: C:\Github\LmsConnect-master\docs\diagrams\internal-flow.md
+   Data flow:     C:\Github\LmsConnect-master\docs\diagrams\data-flow.md
+   Sequences:     C:\Github\LmsConnect-master\docs\diagrams\critical-sequences.md
+   Data lineage:  C:\Github\LmsConnect-master\docs\diagrams\data-lineage-core.md
+   Diagram index: C:\Github\LmsConnect-master\docs\diagrams\index.md
+   Truth pack:    C:\Github\LmsConnect-master\docs\evidence\diagram-truth-pack.json
+   Nodes: 56, Edges: 62, Inbound: 8, Outbound: 0
+Documentation integrity gate passed.
+
+=== Documentation Quality Report ===
+
+Quality Summary:
+================================================================================
+🟢 
+Start Here: 
+HIGH (100%)
+🟢 
+Overview: 
+HIGH (100%)
+🟢 
+API Inventory: 
+HIGH (100%)
+🟢 
+Data Model: 
+HIGH (100%)
+🟢 
+Config Catalog: 
+HIGH (100%)
+🟢 
+Build Cookbook: 
+HIGH (100%)
+🟢 
+Test Catalog: 
+HIGH (100%)
+🟢 
+Debt Register: 
+HIGH (100%)
+🟢 
+Dependencies Catalog: 
+HIGH (95%)
+   ⚠️  1x Empty detection placeholder
+🟢 
+Task Guides: 
+HIGH (100%)
+
+ + ================================================================================
+Overall Statistics:
+  Total Documents: 10
+  🟢 High Quality (>80%): 10
+  🟡 Medium Quality (40-80%): 0
+  🔴 Low Quality (<40%): 0
+  📊 Average Quality Score: 99.5%
+
+📄 Quality report saved: C:\Github\LmsConnect-master\docs\quality-report.json
+Start Here validated: all required sections present
+Overview validation passed
+API inventory validated: 8 endpoints found
+Data model validated: 115 models found
+Config catalog validated: 190 configs found
+Build cookbook validated: 14 commands found
+Test catalog validated: 4 tests found
+Task guides validated: 4 task sections found
+Technical debt register validated: 12 debts found
+[DETECTION_PATTERN_MISMATCH] Banned placeholder pattern found (dependencies-catalog)
+
+Validation Gate:
+  Mode: Soft
+  Threshold: 80
+  Average Score: 90.8%
+  Below Threshold: 0
+📄 Diagnostics report saved: C:\Github\LmsConnect-master\docs\diagnostics-report.json
+
+All generators completed.
+

@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-02-20T14:53:19-05:00",
+  "generatedAt": "2026-02-25T14:48:56-05:00",
   "artifacts": [
     {
       "artifact": "api-inventory",
       "path": "C:\\Github\\Appdoc\\docs\\evidence\\api-inventory.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-02-20T14:53:12-05:00",
+      "updatedAt": "2026-02-25T14:48:43-05:00",
       "metadata": {
         "generator": "generate-api-inventory.ps1"
       }
@@ -13,8 +13,8 @@
     {
       "artifact": "build-cookbook",
       "path": "C:\\Github\\Appdoc\\docs\\evidence\\build-cookbook.evidence.json",
-      "recordCount": 15,
-      "updatedAt": "2026-02-20T14:53:17-05:00",
+      "recordCount": 1,
+      "updatedAt": "2026-02-25T14:48:51-05:00",
       "metadata": {
         "generator": "generate-build-cookbook.ps1"
       }
@@ -22,8 +22,8 @@
     {
       "artifact": "config-catalog",
       "path": "C:\\Github\\Appdoc\\docs\\evidence\\config-catalog.evidence.json",
-      "recordCount": 60,
-      "updatedAt": "2026-02-20T14:53:17-05:00",
+      "recordCount": 54,
+      "updatedAt": "2026-02-25T14:48:50-05:00",
       "metadata": {
         "generator": "generate-config-catalog.ps1"
       }
@@ -32,7 +32,7 @@
       "artifact": "data-model",
       "path": "C:\\Github\\Appdoc\\docs\\evidence\\data-model.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-02-20T14:53:13-05:00",
+      "updatedAt": "2026-02-25T14:48:45-05:00",
       "metadata": {
         "generator": "generate-data-model.ps1"
       }
@@ -41,7 +41,7 @@
       "artifact": "debt-register",
       "path": "C:\\Github\\Appdoc\\docs\\evidence\\debt-register.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-02-20T14:53:18-05:00",
+      "updatedAt": "2026-02-25T14:48:53-05:00",
       "metadata": {
         "generator": "generate-debt-register.ps1"
       }
@@ -49,8 +49,8 @@
     {
       "artifact": "dependencies-catalog",
       "path": "C:\\Github\\Appdoc\\docs\\evidence\\dependencies-catalog.evidence.json",
-      "recordCount": 10,
-      "updatedAt": "2026-02-20T14:53:19-05:00",
+      "recordCount": 0,
+      "updatedAt": "2026-02-25T14:48:54-05:00",
       "metadata": {
         "generator": "generate-dependencies-catalog.ps1"
       }
@@ -59,7 +59,7 @@
       "artifact": "overview",
       "path": "C:\\Github\\Appdoc\\docs\\evidence\\overview.evidence.json",
       "recordCount": 9,
-      "updatedAt": "2026-02-20T14:53:11-05:00",
+      "updatedAt": "2026-02-25T14:48:55-05:00",
       "metadata": {
         "generator": "generate-overview.ps1"
       }
@@ -68,7 +68,7 @@
       "artifact": "start-here",
       "path": "C:\\Github\\Appdoc\\docs\\evidence\\start-here.evidence.json",
       "recordCount": 3,
-      "updatedAt": "2026-02-20T14:53:19-05:00",
+      "updatedAt": "2026-02-25T14:48:56-05:00",
       "metadata": {
         "generator": "generate-start-here.ps1"
       }
@@ -77,7 +77,7 @@
       "artifact": "task-guides",
       "path": "C:\\Github\\Appdoc\\docs\\evidence\\task-guides.evidence.json",
       "recordCount": 5,
-      "updatedAt": "2026-02-20T14:53:19-05:00",
+      "updatedAt": "2026-02-25T14:48:54-05:00",
       "metadata": {
         "generator": "generate-task-guides.ps1"
       }
@@ -86,7 +86,7 @@
       "artifact": "test-catalog",
       "path": "C:\\Github\\Appdoc\\docs\\evidence\\test-catalog.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-02-20T14:53:18-05:00",
+      "updatedAt": "2026-02-25T14:48:52-05:00",
       "metadata": {
         "generator": "generate-test-catalog.ps1"
       }
@@ -99,6 +99,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "b934a200b336c32f0be6d38cd80b3679ed569818b552700e533b1c9241e2e151"
+    "contentHash": "ebe8d50ad808ebdb3fc53575ee33cb860af8fdcd7978f5a99eef36b657f34f8b"
   }
 }

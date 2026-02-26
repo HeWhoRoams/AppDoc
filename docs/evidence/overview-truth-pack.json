@@ -1,83 +1,7 @@
 {
-  "languageCount": {
-    ".cs": 8
-  },
-  "version": "1.1.0",
-  "facts": {
-    "what_it_does": [
-      {
-        "text": "The repository contains implementation code, but current deterministic evidence is not strong enough to confidently describe business behavior yet (files scanned: 8).",
-        "evidence_refs": [
-          "ev-0071"
-        ]
-      }
-    ],
-    "inputs": [
-      {
-        "text": "Runtime behavior is also influenced by environment and application configuration values loaded at startup.",
-        "evidence_refs": [
-          "ev-0001",
-          "ev-0002",
-          "ev-0003"
-        ]
-      }
-    ],
-    "processing_steps": [
-      {
-        "text": "Processing flow could not be inferred beyond repository-level summaries in this scan.",
-        "evidence_refs": [
-          "ev-0071"
-        ]
-      }
-    ],
-    "outputs": [
-      {
-        "text": "Output contracts are not strongly represented in current deterministic evidence.",
-        "evidence_refs": [
-          "ev-0071"
-        ]
-      }
-    ],
-    "external_systems": [
-      {
-        "text": "The runtime and build surface rely on key libraries including SampleApp.Common, EntityFramework, Microsoft.AspNetCore.Mvc, Microsoft.CodeAnalysis.CSharp, and Microsoft.Extensions.Hosting.WindowsServices.",
-        "evidence_refs": [
-          "ev-0061",
-          "ev-0062",
-          "ev-0063",
-          "ev-0064"
-        ]
-      }
-    ],
-    "confidence_notes": [
-      {
-        "text": "Evidence coverage includes 0 endpoint records, 0 model records, 60 configuration records, and 10 dependency records.",
-        "evidence_refs": [
-          "ev-0001",
-          "ev-0002",
-          "ev-0003",
-          "ev-0004"
-        ]
-      },
-      {
-        "text": "Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.",
-        "evidence_refs": [
-          "ev-0071"
-        ]
-      }
-    ]
-  },
   "projectName": "Appdoc",
-  "architecture": {
-    "primaryStyle": "no-api-surface",
-    "styles": [
-      "no-api-surface"
-    ],
-    "frameworks": [
-      "ASP.NET Core"
-    ]
-  },
-  "rootPath": "C:\\Github\\Appdoc",
+  "generatedAt": "2026-02-25T14:48:54-05:00",
+  "languageCount": {},
   "evidence_refs": [
     {
       "id": "ev-0001",
@@ -143,18 +67,8 @@
       "id": "ev-0007",
       "artifact": "config-catalog",
       "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove..\\.AppDoc\\\\scripts\\\\powershell\\\\*.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove../.AppDoc/scripts/powershell/*.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0008",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
+        "name": "chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
+        "source": ".vscode/settings.json:chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
       "metadata": {
         "required": false
       }
@@ -621,204 +535,112 @@
     },
     {
       "id": "ev-0055",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "OutputType",
-      "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/OutputType",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0056",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "OutputType",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/OutputType",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0057",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "TargetFramework",
-      "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/TargetFramework",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0058",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "TargetFramework",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj:PropertyGroup/TargetFramework",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0059",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "TargetFramework",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/TargetFramework",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0060",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "TargetFramework",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj:PropertyGroup/TargetFramework",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0061",
-      "artifact": "dependencies-catalog",
-      "kind": "dependency",
-      "name": "EntityFramework",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
-      "metadata": {
-        "version": "6.4.4",
-        "type": "NuGet Package",
-        "project": "SampleApp.Common"
-      }
-    },
-    {
-      "id": "ev-0062",
-      "artifact": "dependencies-catalog",
-      "kind": "dependency",
-      "name": "Microsoft.AspNetCore.Mvc",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
-      "metadata": {
-        "version": "2.2.0",
-        "type": "NuGet Package",
-        "project": "SampleApp.Web"
-      }
-    },
-    {
-      "id": "ev-0063",
-      "artifact": "dependencies-catalog",
-      "kind": "dependency",
-      "name": "Microsoft.CodeAnalysis.CSharp",
-      "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj",
-      "metadata": {
-        "version": "4.12.0",
-        "type": "NuGet Package",
-        "project": "AppDoc.CSharpAstParser"
-      }
-    },
-    {
-      "id": "ev-0064",
-      "artifact": "dependencies-catalog",
-      "kind": "dependency",
-      "name": "Microsoft.Extensions.Hosting.WindowsServices",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
-      "metadata": {
-        "version": "6.0.0",
-        "type": "NuGet Package",
-        "project": "SampleApp.Service"
-      }
-    },
-    {
-      "id": "ev-0065",
-      "artifact": "dependencies-catalog",
-      "kind": "dependency",
-      "name": "Newtonsoft.Json",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
-      "metadata": {
-        "version": "13.0.1",
-        "type": "NuGet Package",
-        "project": "SampleApp.Web"
-      }
-    },
-    {
-      "id": "ev-0066",
-      "artifact": "dependencies-catalog",
-      "kind": "dependency",
-      "name": "RabbitMQ.Client",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
-      "metadata": {
-        "version": "6.4.0",
-        "type": "NuGet Package",
-        "project": "SampleApp.Service"
-      }
-    },
-    {
-      "id": "ev-0067",
-      "artifact": "dependencies-catalog",
-      "kind": "dependency",
-      "name": "SampleApp.Common",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj",
-      "metadata": {
-        "version": "Project",
-        "type": "Project Reference",
-        "project": "SampleApp.Service"
-      }
-    },
-    {
-      "id": "ev-0068",
-      "artifact": "dependencies-catalog",
-      "kind": "dependency",
-      "name": "SampleApp.Common",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
-      "metadata": {
-        "version": "Project",
-        "type": "Project Reference",
-        "project": "SampleApp.Web"
-      }
-    },
-    {
-      "id": "ev-0069",
-      "artifact": "dependencies-catalog",
-      "kind": "dependency",
-      "name": "System.Data.SqlClient",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
-      "metadata": {
-        "version": "4.8.5",
-        "type": "NuGet Package",
-        "project": "SampleApp.Common"
-      }
-    },
-    {
-      "id": "ev-0070",
-      "artifact": "dependencies-catalog",
-      "kind": "dependency",
-      "name": "System.Net.Http",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj",
-      "metadata": {
-        "version": "4.3.4",
-        "type": "NuGet Package",
-        "project": "SampleApp.Web"
-      }
-    },
-    {
-      "id": "ev-0071",
       "artifact": "overview",
       "kind": "summary",
       "name": "system-purpose",
       "source": "repository",
       "metadata": {
-        "text": "This codebase contains 8 code files across 1 language(s). Full analysis available in linked documentation."
+        "text": "This codebase contains 0 code files across 0 language(s). Full analysis available in linked documentation."
       }
     }
   ],
-  "generatedAt": "2026-02-20T14:53:11-05:00",
+  "version": "1.2.0",
+  "graph": {
+    "enabled": true,
+    "path": "docs/evidence/evidence-graph.json",
+    "schemaVersion": "appdoc-evidence-graph/v1",
+    "graphVersion": "1.0.0",
+    "entityCount": 56,
+    "edgeCount": 54
+  },
+  "architecture": {
+    "primaryStyle": "no-api-surface",
+    "styles": [
+      "no-api-surface"
+    ],
+    "frameworks": [
+      "ASP.NET Core"
+    ]
+  },
+  "rootPath": "C:\\Github\\Appdoc",
+  "facts": {
+    "what_it_does": [
+      {
+        "text": "This repository primarily defines tooling, automation, and configuration behavior rather than an exposed runtime API surface.",
+        "evidence_refs": [
+          "ev-0001",
+          "ev-0002",
+          "ev-0003",
+          "ev-0004"
+        ]
+      }
+    ],
+    "inputs": [
+      {
+        "text": "Runtime behavior is also influenced by environment and application configuration values loaded at startup.",
+        "evidence_refs": [
+          "ev-0001",
+          "ev-0002",
+          "ev-0003"
+        ]
+      }
+    ],
+    "processing_steps": [
+      {
+        "text": "Processing flow could not be inferred beyond repository-level summaries in this scan.",
+        "evidence_refs": [
+          "ev-0055"
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "text": "Output contracts are not strongly represented in current deterministic evidence.",
+        "evidence_refs": [
+          "ev-0055"
+        ]
+      }
+    ],
+    "external_systems": [
+      {
+        "text": "No clear external system integration evidence was detected.",
+        "evidence_refs": [
+          "ev-0055"
+        ]
+      }
+    ],
+    "confidence_notes": [
+      {
+        "text": "Evidence coverage includes 0 endpoint records, 0 model records, 54 configuration records, and 0 dependency records.",
+        "evidence_refs": [
+          "ev-0001",
+          "ev-0002",
+          "ev-0003",
+          "ev-0004"
+        ]
+      },
+      {
+        "text": "Canonical evidence graph captured 56 entities and 54 relationships for this run.",
+        "evidence_refs": [
+          "ev-0055"
+        ]
+      },
+      {
+        "text": "Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.",
+        "evidence_refs": [
+          "ev-0055"
+        ]
+      }
+    ]
+  },
   "counts": {
-    "codeFiles": 8,
+    "codeFiles": 0,
     "endpointRecords": 0,
     "inboundEndpoints": 0,
     "outboundEndpoints": 0,
     "outboundMappedEndpoints": 0,
     "modelRecords": 0,
-    "configurationRecords": 60,
-    "dependencyRecords": 10
+    "configurationRecords": 54,
+    "dependencyRecords": 0
   }
 }

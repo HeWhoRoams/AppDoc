@@ -36,6 +36,11 @@ $testRendererModule = Join-Path $PSScriptRoot "modules\AppDoc.TestCatalog.Render
 if (-not (Test-Path $testRendererModule)) { Write-Error "Required module not found: $testRendererModule"; exit 1 }
 Import-Module $testRendererModule -Force -ErrorAction Stop
 
+$evidenceGraphModule = Join-Path $PSScriptRoot "modules\AppDoc.EvidenceGraph.psm1"
+if (Test-Path $evidenceGraphModule) {
+    Import-Module $evidenceGraphModule -Force -ErrorAction SilentlyContinue
+}
+
 Write-Host "🧪 Generating Test Catalog..." -ForegroundColor Cyan
 
 if (-not (Test-Path $RootPath)) {
@@ -64,11 +69,22 @@ Write-Progress -Activity "Generating Test Catalog" -Status "Populating template.
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocTestCatalogContent -Content $content -Tests $tests -MaxTestCases $MaxTestCases
 $content = Normalize-AppDocTemplateInstructionText -Content $content
+$content = Normalize-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 $artifact = "test-catalog"
 $contract = Get-AppDocArtifactContract -Artifact $artifact
+$graphContract = $null
+if (Get-Command Get-AppDocEvidenceGraphContract -ErrorAction SilentlyContinue) {
+    try {
+        $graphContract = Get-AppDocEvidenceGraphContract
+    } catch {
+        Write-Warning "Get-AppDocEvidenceGraphContract failed: $($_.Exception.Message)"
+        $graphContract = $null
+    }
+}
+$suiteCount = if ($tests.Count -gt 0) { @($tests | Group-Object -Property file).Count } else { 0 }
 $evidenceRecords = @(
     $tests | ForEach-Object {
         New-AppDocExtractionRecord -Artifact $artifact -Source ([string]$_.source) -Name ([string]$_.name) -Kind "test-case" -Confidence 0.85 -Provider "generator" -ProviderType "deterministic" -Metadata @{
@@ -83,6 +99,8 @@ $evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $arti
     requiredEvidenceKeys = @($contract.requiredEvidenceKeys)
     requiredSections = @($contract.requiredSections)
     testCount = $tests.Count
+    suiteCount = [int]$suiteCount
+    graphSchemaTarget = if ($graphContract) { [string]$graphContract.schemaVersion } else { "" }
     generator = "generate-test-catalog.ps1"
 }
 if ($evidencePath) {

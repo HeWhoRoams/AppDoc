@@ -13,37 +13,37 @@ This catalog aggregates dependencies discovered from package manifests, project 
 | Package Manager | Total Dependencies | Direct | Transitive |
 |-----------------|-------------------|--------|------------|
 
-_No dependencies detected. System may be self-contained or use alternative dependency management._
+Dependency records in scope: none in this scan. The repository may be self-contained or use unmanaged dependency sources.
 
 ## Dependencies by Type
 
 ### NuGet Packages
 
-_No NuGet packages detected._
+NuGet package entries in scope: none in this scan.
 
 ### NPM Packages
 
-_No NPM packages detected._
+NPM package manifests in scope: none in this scan.
 
 ### Python Packages
 
-_No Python packages detected._
+Python package manifests in scope: none in this scan.
 
 ### Maven/Gradle Dependencies
 
-_No Java dependencies detected._
+Java build manifests in scope: none in this scan.
 
 ## Project References
 
 Internal project dependency relationships are listed when project-reference evidence is detected.
 
-_No project references detected._
+Project-reference edges in scope: none in this scan.
 
 ## Version Conflicts
 
 Version divergence across projects is highlighted to support upgrade planning and compatibility review.
 
-_No version conflicts detected._
+Version divergence signals in scope: none in this scan.
 
 ## Security Considerations
 

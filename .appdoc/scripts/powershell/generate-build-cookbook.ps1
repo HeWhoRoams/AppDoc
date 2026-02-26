@@ -13,10 +13,17 @@ param(
     [string]$RootPath
 )
 
-# Import template helpers
+
+# Import template helpers with explicit error handling
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) {
-    . $helpersPath
+if (-not (Test-Path $helpersPath)) {
+    Write-Error "Required helpers file not found: $helpersPath"
+    exit 1
+}
+. $helpersPath
+if (-not (Get-Command Normalize-AppDocMarkdownStructure -ErrorAction SilentlyContinue)) {
+    Write-Error "Failed to import Normalize-AppDocMarkdownStructure from $helpersPath. File may be corrupt or missing required functions."
+    exit 1
 }
 
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
@@ -90,13 +97,22 @@ try {
 
 Write-Progress -Activity "Generating Build Cookbook" -Status "Populating template..." -PercentComplete 50
 
-# Update template
-$content = Get-Content -Path $outputPath -Raw
-$content = Update-AppDocBuildCookbookContent -Content $content -Commands $commands -Prerequisites $prerequisites -CicdInfo $cicdInfo
 
-$content = Normalize-AppDocTemplateInstructionText -Content $content
-$content = Add-GenerationMetadata -Content $content
-$content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
+# Update template with error handling
+try {
+    $content = Get-Content -Path $outputPath -Raw
+    $content = Update-AppDocBuildCookbookContent -Content $content -Commands $commands -Prerequisites $prerequisites -CicdInfo $cicdInfo
+    $content = Normalize-AppDocTemplateInstructionText -Content $content
+    $content = Normalize-AppDocMarkdownStructure -Content $content
+    $content = Add-GenerationMetadata -Content $content
+    $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
+} catch {
+    Write-Error "Error during build cookbook template processing: $($_.Exception.Message)"
+    if ($_.Exception.StackTrace) {
+        Write-Verbose $($_.Exception.StackTrace)
+    }
+    exit 1
+}
 
 $artifact = "build-cookbook"
 $contract = Get-AppDocArtifactContract -Artifact $artifact

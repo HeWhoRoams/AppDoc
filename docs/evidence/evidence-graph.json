@@ -1,0 +1,1353 @@
+{
+  "determinism": {
+    "canonicalOrdering": [
+      "entities:type,name,id",
+      "edges:type,from,to,id"
+    ],
+    "stableIdAlgorithm": "sha1(prefix|seed)[0:8]"
+  },
+  "edges": [
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.fileOperations.autoApprove.list",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_fileoperations_autoapprove_list_9b230137",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_8eafe942"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.fileOperations.autoApprove.read",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_fileoperations_autoapprove_read_45eb7a2c",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_837fd2d5"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_analyze_ca_01dae0a0",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_b11ce625"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/analyze-codebase.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_analyze_co_0ebd052f",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_e9af70f9"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/analyze-repository.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_analyze_re_5c1951f0",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_8ea938e0"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_appdoc_scr_34994e74",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_ce1613b9"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove..\\.AppDoc\\\\scripts\\\\powershell\\\\*.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_appdoc_scr_3f3c485c",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_5888a056"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_calculate_6e15cd9a",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_5057f4c3"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/catalog-samples.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_catalog_sa_dc846ab5",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_6a31c056"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.Copy-Item",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_copy_item_48fa2791",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_406360f9"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.-ErrorAction",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_erroractio_a2e1a481",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_c55506d9"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/extract-config.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_extract_co_fdb5ed88",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_4c932bd1"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_generate_a_095e0904",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_baf92aec"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_generate_a_d85eadc8",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_3a563f80"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_generate_b_01d8bcec",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_d3a5d3a3"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_generate_c_a5bc65b1",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_9926f702"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/generate-data-model.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_generate_d_0eefdb25",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_e929dc6e"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/generate-debt-register.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_generate_d_9ebfc04d",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_30aad17e"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_generate_d_ba784240",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_de539c75"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_generate_d_d1a1f7bb",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_ead34279"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/generate-improvements.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_generate_i_1808dda6",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_4b422d79"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/generate-overview.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_generate_o_61b0d29f",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_7ae98ac2"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_generate_t_76ac8047",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_f657605e"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.Get-ChildItem",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_get_childi_1de2b179",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_020148ae"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.Get-Content",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_get_conten_2a2701e0",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_687c335c"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.git",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_git_67f31604",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_51eb36eb"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.git fetch",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_git_fetch_63723100",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_e3a2394d"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.git status",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_git_status_2f398f84",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_50040d32"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.-Json",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_json_0f6a6f58",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_e9c9ae8c"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.pwsh",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_pwsh_823d23c0",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_0b593a66"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.Remove-Item",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_remove_ite_bd8d38e5",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_9116d123"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.-RootPath",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_rootpath_215c0fd3",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_433626b1"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/run-all-generators.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_run_all_ge_423d9d44",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_c0773ee8"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.Set-ExecutionPolicy",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_set_execut_bb37afb4",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_9b998cf1"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_synthesize_6076a1c7",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_5cdf9f49"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.Test-Path",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_test_path_8a8b28d0",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_bab08862"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_validate_a_b3ee8113",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_7072d2d4"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_validate_b_3ad5608a",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_ff4f6e55"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_validate_c_55577327",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_108db821"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/validate-data-model.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_validate_d_c1b0c054",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_d42811d3"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/validate-debt-register.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_validate_d_d8dbdf24",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_1a42234b"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/validate-overview.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_validate_o_620b6790",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_f9f93ccb"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_validate_t_8c91457d",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_c0892555"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.-Verbose",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_verbose_b9bc2224",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_b8d7df11"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "chat.tools.terminal.autoApprove.Write-Host",
+      "type": "maps_to_config",
+      "to": "config_key_chat_tools_terminal_autoapprove_write_host_36fdd336",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_86bbfb4e"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "github.copilot.chat.executions.enabled",
+      "type": "maps_to_config",
+      "to": "config_key_github_copilot_chat_executions_enabled_3233c7ea",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_ae820387"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "jobs.syntax-gate.runs-on",
+      "type": "maps_to_config",
+      "to": "config_key_jobs_syntax_gate_runs_on_1cc1bd48",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_d8991a94"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "jobs.syntax-gate.steps[0]",
+      "type": "maps_to_config",
+      "to": "config_key_jobs_syntax_gate_steps_0_c21bece1",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_4630cc69"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "jobs.syntax-gate.steps[1]",
+      "type": "maps_to_config",
+      "to": "config_key_jobs_syntax_gate_steps_1_f955e977",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_139470d5"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "jobs.syntax-gate.steps[2]",
+      "type": "maps_to_config",
+      "to": "config_key_jobs_syntax_gate_steps_2_fea78b6a",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_d919a1cf"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "jobs.syntax-gate.steps.shell",
+      "type": "maps_to_config",
+      "to": "config_key_jobs_syntax_gate_steps_shell_b0ed346a",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_b08d44a7"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "name",
+      "type": "maps_to_config",
+      "to": "config_key_name_6ae99955",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_acd4cc39"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "on.push.branches[0]",
+      "type": "maps_to_config",
+      "to": "config_key_on_push_branches_0_2a450bbd",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_6bbd5431"
+    },
+    {
+      "from": "component_core_processing_6d28d771",
+      "label": "on.push.branches[1]",
+      "type": "maps_to_config",
+      "to": "config_key_on_push_branches_1_81342622",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
+      "id": "edge_maps_to_config_component_core_processing_6_cfc6fd48"
+    }
+  ],
+  "entities": [
+    {
+      "name": "Core Processing",
+      "confidence": 1.0,
+      "type": "component",
+      "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.list",
+      "artifact": "config-catalog",
+      "id": "component_core_processing_6d28d771",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.fileOperations.autoApprove.list"
+        ]
+      }
+    },
+    {
+      "name": "chat.tools.fileOperations.autoApprove.list",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.list",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_fileoperations_autoapprove_list_9b230137",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.fileOperations.autoApprove.list"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.fileOperations.autoApprove.read",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.read",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_fileoperations_autoapprove_read_45eb7a2c",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.fileOperations.autoApprove.read"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.-ErrorAction",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_erroractio_a2e1a481",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.-Json",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-Json",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_json_0f6a6f58",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.-Json"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.-RootPath",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-RootPath",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_rootpath_215c0fd3",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.-RootPath"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.-Verbose",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-Verbose",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_verbose_b9bc2224",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.-Verbose"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove..\\.AppDoc\\\\scripts\\\\powershell\\\\*.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove../.AppDoc/scripts/powershell/*.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_appdoc_scr_3f3c485c",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove../.AppDoc/scripts/powershell/*.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_appdoc_scr_34994e74",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_analyze_ca_01dae0a0",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/analyze-codebase.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-codebase.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_analyze_co_0ebd052f",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-codebase.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/analyze-repository.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-repository.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_analyze_re_5c1951f0",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-repository.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_calculate_6e15cd9a",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/catalog-samples.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/catalog-samples.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_catalog_sa_dc846ab5",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/catalog-samples.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/extract-config.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/extract-config.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_extract_co_fdb5ed88",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/extract-config.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_generate_a_095e0904",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_generate_a_d85eadc8",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_generate_b_01d8bcec",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_generate_c_a5bc65b1",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/generate-data-model.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-data-model.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_generate_d_0eefdb25",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-data-model.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/generate-debt-register.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-debt-register.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_generate_d_9ebfc04d",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-debt-register.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_generate_d_ba784240",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_generate_d_d1a1f7bb",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/generate-improvements.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-improvements.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_generate_i_1808dda6",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-improvements.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/generate-overview.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-overview.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_generate_o_61b0d29f",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-overview.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_generate_t_76ac8047",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/run-all-generators.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/run-all-generators.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_run_all_ge_423d9d44",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/run-all-generators.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_synthesize_6076a1c7",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_validate_a_b3ee8113",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_validate_b_3ad5608a",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_validate_c_55577327",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/validate-data-model.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-data-model.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_validate_d_c1b0c054",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-data-model.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/validate-debt-register.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-debt-register.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_validate_d_d8dbdf24",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-debt-register.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/validate-overview.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-overview.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_validate_o_620b6790",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-overview.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_validate_t_8c91457d",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.Copy-Item",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Copy-Item",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_copy_item_48fa2791",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.Copy-Item"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.Get-ChildItem",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-ChildItem",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_get_childi_1de2b179",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-ChildItem"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.Get-Content",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-Content",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_get_conten_2a2701e0",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-Content"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.git",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_git_67f31604",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.git"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.git fetch",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git fetch",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_git_fetch_63723100",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.git fetch"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.git status",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git status",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_git_status_2f398f84",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.git status"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.pwsh",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.pwsh",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_pwsh_823d23c0",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.pwsh"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.Remove-Item",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Remove-Item",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_remove_ite_bd8d38e5",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.Remove-Item"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.Set-ExecutionPolicy",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Set-ExecutionPolicy",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_set_execut_bb37afb4",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.Set-ExecutionPolicy"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.Test-Path",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Test-Path",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_test_path_8a8b28d0",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.Test-Path"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "chat.tools.terminal.autoApprove.Write-Host",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Write-Host",
+      "artifact": "config-catalog",
+      "id": "config_key_chat_tools_terminal_autoapprove_write_host_36fdd336",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:chat.tools.terminal.autoApprove.Write-Host"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "github.copilot.chat.executions.enabled",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".vscode/settings.json:github.copilot.chat.executions.enabled",
+      "artifact": "config-catalog",
+      "id": "config_key_github_copilot_chat_executions_enabled_3233c7ea",
+      "attributes": {
+        "sources": [
+          ".vscode/settings.json:github.copilot.chat.executions.enabled"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "jobs.syntax-gate.runs-on",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.runs-on",
+      "artifact": "config-catalog",
+      "id": "config_key_jobs_syntax_gate_runs_on_1cc1bd48",
+      "attributes": {
+        "sources": [
+          ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.runs-on"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "jobs.syntax-gate.steps.shell",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps.shell",
+      "artifact": "config-catalog",
+      "id": "config_key_jobs_syntax_gate_steps_shell_b0ed346a",
+      "attributes": {
+        "sources": [
+          ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps.shell"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "jobs.syntax-gate.steps[0]",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[0]",
+      "artifact": "config-catalog",
+      "id": "config_key_jobs_syntax_gate_steps_0_c21bece1",
+      "attributes": {
+        "sources": [
+          ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[0]"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "jobs.syntax-gate.steps[1]",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[1]",
+      "artifact": "config-catalog",
+      "id": "config_key_jobs_syntax_gate_steps_1_f955e977",
+      "attributes": {
+        "sources": [
+          ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[1]"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "jobs.syntax-gate.steps[2]",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[2]",
+      "artifact": "config-catalog",
+      "id": "config_key_jobs_syntax_gate_steps_2_fea78b6a",
+      "attributes": {
+        "sources": [
+          ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[2]"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "name",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/name",
+      "artifact": "config-catalog",
+      "id": "config_key_name_6ae99955",
+      "attributes": {
+        "sources": [
+          ".github/workflows/appdoc-ci.yml:yaml/name"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "on.push.branches[0]",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[0]",
+      "artifact": "config-catalog",
+      "id": "config_key_on_push_branches_0_2a450bbd",
+      "attributes": {
+        "sources": [
+          ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[0]"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "on.push.branches[1]",
+      "confidence": 1.0,
+      "type": "config_key",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[1]",
+      "artifact": "config-catalog",
+      "id": "config_key_on_push_branches_1_81342622",
+      "attributes": {
+        "sources": [
+          ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[1]"
+        ],
+        "classification": ""
+      }
+    },
+    {
+      "name": "Appdoc",
+      "confidence": 1.0,
+      "type": "system",
+      "source": "repository",
+      "artifact": "overview",
+      "id": "system_appdoc_9c524279",
+      "attributes": {
+        "role": "root-system"
+      }
+    }
+  ],
+  "generatedAt": "2026-02-25T14:48:57-05:00",
+  "graphVersion": "1.0.0",
+  "metrics": {
+    "entityCount": 56,
+    "edgeCount": 54,
+    "entityTypeCount": {
+      "endpoint_inbound": 0,
+      "data_model": 0,
+      "config_key": 54,
+      "test_case": 0,
+      "dependency": 0,
+      "component": 1,
+      "system": 1,
+      "endpoint_outbound": 0
+    },
+    "inboundEndpointCount": 0,
+    "outboundEndpointCount": 0,
+    "componentCount": 1,
+    "modelCount": 0,
+    "configCount": 54,
+    "dependencyCount": 0,
+    "testCaseCount": 0
+  },
+  "project": {
+    "name": "Appdoc",
+    "rootPath": "."
+  },
+  "schemaVersion": "appdoc-evidence-graph/v1",
+  "sources": [
+    {
+      "artifact": "api-inventory",
+      "path": "docs/evidence/api-inventory.evidence.json",
+      "exists": true,
+      "recordCount": 0,
+      "parseError": ""
+    },
+    {
+      "artifact": "config-catalog",
+      "path": "docs/evidence/config-catalog.evidence.json",
+      "exists": true,
+      "recordCount": 54,
+      "parseError": ""
+    },
+    {
+      "artifact": "data-model",
+      "path": "docs/evidence/data-model.evidence.json",
+      "exists": true,
+      "recordCount": 0,
+      "parseError": ""
+    },
+    {
+      "artifact": "dependencies-catalog",
+      "path": "docs/evidence/dependencies-catalog.evidence.json",
+      "exists": true,
+      "recordCount": 0,
+      "parseError": ""
+    },
+    {
+      "artifact": "test-catalog",
+      "path": "docs/evidence/test-catalog.evidence.json",
+      "exists": true,
+      "recordCount": 0,
+      "parseError": ""
+    }
+  ],
+  "determinismHash": {
+    "hashAlgorithm": "SHA256",
+    "excludeKeys": [
+      "generatedAt",
+      "updatedAt",
+      "timestamp"
+    ],
+    "contentHash": "d8f35bfac7d530bbbd256dc9dcbaf524dee80bcbc9cada8195725a0f15948bfb"
+  }
+}

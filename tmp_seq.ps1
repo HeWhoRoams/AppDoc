@@ -1,6 +1,43 @@
-function Get-AppDocDiagramRendererValue{param($Object,$Name,$Default);return $null}
-function Get-AppDocDiagramNodeMap{param($GraphData);return @{}}
-function ConvertTo-AppDocMermaidLabel{param($Label);return $Label}
+function Get-AppDocDiagramRendererValue {
+    param($Object, $Name, $Default)
+    if ($null -eq $Object) { return $Default }
+    if ($Object -is [System.Collections.IDictionary]) {
+        if ($Object.Contains($Name)) { return $Object[$Name] }
+        return $Default
+    }
+    $prop = $Object.PSObject.Properties[$Name]
+    if ($prop) { return $prop.Value }
+    return $Default
+}
+
+function Get-AppDocDiagramNodeMap {
+    param($GraphData)
+    $map = @{}
+    $nodes = @(
+        Get-AppDocDiagramRendererValue -Object $GraphData -Name "nodes" -Default @()
+    )
+    foreach ($node in $nodes) {
+        $id = [string](Get-AppDocDiagramRendererValue -Object $node -Name "id" -Default "")
+        if ([string]::IsNullOrWhiteSpace($id)) { continue }
+        if (-not $map.ContainsKey($id)) {
+            $map[$id] = $node
+        }
+    }
+    return $map
+}
+
+function ConvertTo-AppDocMermaidLabel {
+    param($Label)
+    if ([string]::IsNullOrWhiteSpace([string]$Label)) { return "Unknown" }
+    $value = [string]$Label
+    $value = $value.Trim()
+    $value = $value.Replace('"', "'")
+    $value = $value.Replace("`r", " ").Replace("`n", " ")
+    $value = $value.Replace('|', '/')
+    $value = $value.Replace('[', '(').Replace(']', ')')
+    $value = $value.Replace('`', "'")
+    return $value
+}
 function Get-AppDocSequenceScenarios {
     [CmdletBinding()]
     param(
@@ -66,6 +103,7 @@ function Get-AppDocSequenceScenarios {
         if ([string]::IsNullOrWhiteSpace($requestFrom)) {
             $requestFrom = @(
                 $nodeMap.Keys |
+                    Sort-Object { $_ } |
                     Where-Object { [string](Get-AppDocDiagramRendererValue -Object $nodeMap[$_] -Name "type" -Default "") -eq "actor" } |
                     Select-Object -First 1
             )[0]

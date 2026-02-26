@@ -1,6 +1,6 @@
 # System Overview
 
-**Generated**: 2026-02-20 14:53:11
+**Generated**: 2026-02-25 14:48:55
 
 ## Plain Language Summary
 
@@ -9,23 +9,24 @@ This page explains, in plain language, what the application appears to do, how r
 ## Welcome
 
 ### what_it_does
-- The repository contains implementation code, but current deterministic evidence is not strong enough to confidently describe business behavior yet (files scanned: 8). (evidence: ev-0071)
+- This repository primarily defines tooling, automation, and configuration behavior rather than an exposed runtime API surface. (evidence: ev-0001, ev-0002, ev-0003, ev-0004)
 
 ### inputs
 - Runtime behavior is also influenced by environment and application configuration values loaded at startup. (evidence: ev-0001, ev-0002, ev-0003)
 
 ### processing_steps
-- Processing flow could not be inferred beyond repository-level summaries in this scan. (evidence: ev-0071)
+- Processing flow could not be inferred beyond repository-level summaries in this scan. (evidence: ev-0055)
 
 ### outputs
-- Output contracts are not strongly represented in current deterministic evidence. (evidence: ev-0071)
+- Output contracts are not strongly represented in current deterministic evidence. (evidence: ev-0055)
 
 ### external_systems
-- The runtime and build surface rely on key libraries including SampleApp.Common, EntityFramework, Microsoft.AspNetCore.Mvc, Microsoft.CodeAnalysis.CSharp, and Microsoft.Extensions.Hosting.WindowsServices. (evidence: ev-0061, ev-0062, ev-0063, ev-0064)
+- No clear external system integration evidence was detected. (evidence: ev-0055)
 
 ### confidence_notes
-- Evidence coverage includes 0 endpoint records, 0 model records, 60 configuration records, and 10 dependency records. (evidence: ev-0001, ev-0002, ev-0003, ev-0004)
-- Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55. (evidence: ev-0071)
+- Evidence coverage includes 0 endpoint records, 0 model records, 54 configuration records, and 0 dependency records. (evidence: ev-0001, ev-0002, ev-0003, ev-0004)
+- Canonical evidence graph captured 56 entities and 54 relationships for this run. (evidence: ev-0055)
+- Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55. (evidence: ev-0055)
 
 ### evidence_refs
 | ID | Artifact | Kind | Name | Source |
@@ -34,11 +35,7 @@ This page explains, in plain language, what the application appears to do, how r
 | ev-0002 | config-catalog | configuration | chat.tools.fileOperations.autoApprove.read | .vscode/settings.json:chat.tools.fileOperations.autoApprove.read |
 | ev-0003 | config-catalog | configuration | chat.tools.terminal.autoApprove.-ErrorAction | .vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction |
 | ev-0004 | config-catalog | configuration | chat.tools.terminal.autoApprove.-Json | .vscode/settings.json:chat.tools.terminal.autoApprove.-Json |
-| ev-0061 | dependencies-catalog | dependency | EntityFramework | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj |
-| ev-0062 | dependencies-catalog | dependency | Microsoft.AspNetCore.Mvc | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj |
-| ev-0063 | dependencies-catalog | dependency | Microsoft.CodeAnalysis.CSharp | .appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj |
-| ev-0064 | dependencies-catalog | dependency | Microsoft.Extensions.Hosting.WindowsServices | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj |
-| ev-0071 | overview | summary | system-purpose | repository |
+| ev-0055 | overview | summary | system-purpose | repository |
 
 ## Executive Summary
 
@@ -46,14 +43,13 @@ This document provides a high-level overview of the system's purpose, architectu
 
 ## System Purpose
 
-The repository contains 8 code files across 1 languages and reflects the implementation surface analyzed in this documentation set. Use this overview for orientation, then move to API, data model, config, build, and dependency artifacts for implementation detail.
+Source inventory was not detected in this scan. Verify repository scope and rerun generation.
 
 ## Architecture
 
-Generated C4 Mermaid diagrams:
+- Primary architectural style appears to be no-api-surface. (evidence: ev-0055)
+- Detected framework signals: ASP.NET Core. (evidence: ev-0055)
 
-- [C4 Context](diagrams/c4-context.md)
-- [C4 Container](diagrams/c4-container.md)
 ## Key Components
 
 _Components not yet cataloged. Scan codebase for module structure._
@@ -62,7 +58,8 @@ _Components not yet cataloged. Scan codebase for module structure._
 
 | Category | Technology | Version | Purpose |
 |----------|-----------|---------|---------|
-| Language | C# / .NET | - | Application code |
+
+_Technology stack not yet identified. Analyze package files and code._
 
 ## Configuration
 

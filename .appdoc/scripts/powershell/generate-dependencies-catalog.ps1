@@ -34,6 +34,15 @@ $depsRendererModule = Join-Path $PSScriptRoot "modules\AppDoc.DependenciesCatalo
 if (-not (Test-Path $depsRendererModule)) { Write-Error "Required module not found: $depsRendererModule"; exit 1 }
 Import-Module $depsRendererModule -Force -ErrorAction Stop
 
+$evidenceGraphModule = Join-Path $PSScriptRoot "modules\AppDoc.EvidenceGraph.psm1"
+if (Test-Path $evidenceGraphModule) {
+    try {
+        Import-Module $evidenceGraphModule -Force
+    } catch {
+        Write-Warning "Optional module import failed: $evidenceGraphModule. Error: $($_.Exception.Message)"
+    }
+}
+
 Write-Host "📦 Generating Dependencies Catalog..." -ForegroundColor Cyan
 
 if (-not (Test-Path $RootPath)) {
@@ -101,11 +110,18 @@ $projects = @($depData.projects)
 Write-Progress -Activity "Generating Dependencies Catalog" -Status "Populating template..." -PercentComplete 60
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocDependenciesCatalogContent -Content $content -Dependencies $dependencies -Projects $projects
+$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
+if (-not (Test-Path $helpersPath)) { Write-Error "Required helpers not found: $helpersPath"; exit 1 }
+. $helpersPath
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 $artifact = "dependencies-catalog"
 $contract = Get-AppDocArtifactContract -Artifact $artifact
+$graphContract = $null
+if (Get-Command Get-AppDocEvidenceGraphContract -ErrorAction SilentlyContinue) {
+    $graphContract = Get-AppDocEvidenceGraphContract
+}
 if ($null -eq $contract) {
     $contract = @{
         requiredEvidenceKeys = @()
@@ -135,8 +151,9 @@ $evidenceRecords = @(
 $evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $artifact -Records $evidenceRecords -Metadata @{
     requiredEvidenceKeys = @($contract.requiredEvidenceKeys)
     requiredSections = @($contract.requiredSections)
-    projectCount = $projects.Count
-    dependencyCount = $dependencies.Count
+    projectCount = [int]$projects.Count
+    dependencyCount = [int]$dependencies.Count
+    graphSchemaTarget = if ($graphContract) { [string]$graphContract.schemaVersion } else { "" }
     generator = "generate-dependencies-catalog.ps1"
 }
 if ($evidencePath) {

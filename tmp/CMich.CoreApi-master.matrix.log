@@ -1,0 +1,270 @@
+Running all documentation generators...
+
+Name                           Value
+----                           -----
+timestamp                      2026-02-25T09:50:06-05:00
+category                       ENVIRONMENT_ERROR
+severity                       Info
+component                      orchestrator
+message                        Diagnostics initialized
+filePath                       
+details                        {[rootPath, C:\Github\CMich.CoreApi-master], [outputPath, C:\Github\CMich.CoreApi-master…
+Running syntax gate...
+
+[Analysis]
+Running analyze-repository.ps1...
+{
+  "languages": {
+    ".datasource": 97,
+    ".xsd": 6,
+    ".cshtml": 2,
+    ".cs": 1206,
+    ".md": 33,
+    ".jpg": 1,
+    ".cd": 1,
+    ".config": 16,
+    ".snk": 16,
+    ".yml": 1,
+    ".bak": 1,
+    ".png": 2,
+    ".wsdl": 27,
+    ".resx": 2,
+    ".js": 1,
+    ".ps1": 1,
+    ".svcinfo": 54,
+    ".xml": 202,
+    ".sln": 1,
+    ".gif": 4,
+    ".css": 1,
+    ".nuspec": 13,
+    ".gitattributes": 1,
+    ".json": 28,
+    ".csproj": 19,
+    ".gitignore": 3,
+    ".svcmap": 27,
+    ".disco": 2
+  },
+  "services": [
+    "CMich",
+    "CMich.Data",
+    "CMich.WebServices",
+    "docs"
+  ],
+  "totalFiles": 1768,
+  "directories": [
+    "CMich",
+    "CMich.ConnectionSettings",
+    "CMich.ConnectionSettings.Tests",
+    "CMich.CoreApi Documentation",
+    "CMich.Data",
+    "CMich.Data.Tests",
+    "CMich.Logging",
+    "CMich.Sap",
+    "CMich.Sap.Tests",
+    "CMich.Security",
+    "CMich.Security.Tests",
+    "CMich.Settings",
+    "CMich.Settings.Tests",
+    "CMich.Tests",
+    "CMich.Web",
+    "CMich.Web.Mvc",
+    "CMich.Web.Mvc.Tests",
+    "CMich.Web.Tests",
+    "CMich.WebServices",
+    "CMich.WebServices.Tests",
+    "docs",
+    "Templates"
+  ]
+}
+Running generate-dependency-graph.ps1...
+{
+  "nodes": [],
+  "edges": []
+}
+Running extract-config.ps1...
+{
+  "flags": [],
+  "options": []
+}
+
+[Generation]
+Running generate-api-inventory.ps1...
+📡 Generating API Inventory...
+  Scanned 1159 potential API files
+✅ API inventory generated: C:\Github\CMich.CoreApi-master\docs\api-inventory.md
+   Endpoints found: 101
+Running generate-data-model.ps1...
+🗂️  Generating Data Model...
+  Added 1116 AST model records
+  Found 9 potential model files
+✅ Data model generated: C:\Github\CMich.CoreApi-master\docs\data-model.md
+   Models found: 819
+Running generate-config-catalog.ps1...
+⚙️  Generating Config Catalog...
+✅ Config catalog generated: C:\Github\CMich.CoreApi-master\docs\config-catalog.md
+   Configurations found: 94
+   Configuration sources: 15
+   Environment variables: 3
+Running generate-build-cookbook.ps1...
+🔨 Generating Build Cookbook...
+✅ Build cookbook generated: C:\Github\CMich.CoreApi-master\docs\build-cookbook.md
+   Commands found: 14
+   Prerequisites detected: 0
+   CI/CD platforms detected: 4
+Running generate-test-catalog.ps1...
+🧪 Generating Test Catalog...
+  Found 2 test files
+✅ Test catalog generated: C:\Github\CMich.CoreApi-master\docs\test-catalog.md
+   Test cases found: 0
+Running generate-debt-register.ps1...
+📋 Generating Technical Debt Register...
+✅ Technical debt register generated: C:\Github\CMich.CoreApi-master\docs\debt-register.md
+   Debt items found: 178
+   Files scanned: 1159
+Running generate-dependencies-catalog.ps1...
+📦 Generating Dependencies Catalog...
+✅ Dependencies catalog generated: C:\Github\CMich.CoreApi-master\docs\dependencies-catalog.md
+   Projects: 10, Dependencies: 44
+Running generate-task-guides.ps1...
+🧭 Generating Task Guides...
+✅ Task guides generated: C:\Github\CMich.CoreApi-master\docs\task-guides.md
+   Evidence categories: 4
+Running generate-overview.ps1...
+📊 Generating System Overview...
+✅ System overview generated: C:\Github\CMich.CoreApi-master\docs\overview.md
+   Code files analyzed: 1159
+Running generate-start-here.ps1...
+✅ Start-here guide generated: C:\Github\CMich.CoreApi-master\docs\start-here.md
+Running generate-docs-index.ps1...
+📑 Generating Documentation Index...
+✅ Documentation index generated: C:\Github\CMich.CoreApi-master\docs\index.md
+   Documents indexed: 10 / 10
+Generating C4 Mermaid architecture diagrams...
+=== AppDoc Mermaid C4 Diagram Generator ===
+Codebase: C:\Github\CMich.CoreApi-master
+Output: C:\Github\CMich.CoreApi-master\docs
+
+Found solution: CMich.CoreApi.sln
+Context diagram already exists (use -Force to regenerate)
+Container diagram already exists (use -Force to regenerate)
+
+✓ Mermaid C4 diagram generation complete
+Generating deterministic internal/data-flow Mermaid diagrams...
+🧱 Generating deterministic architecture diagram suite...
+=== AppDoc Mermaid C4 Diagram Generator ===
+Codebase: C:\Github\CMich.CoreApi-master
+Output: C:\Github\CMich.CoreApi-master\docs
+
+Found solution: CMich.CoreApi.sln
+Context diagram already exists (use -Force to regenerate)
+Container diagram already exists (use -Force to regenerate)
+
+✓ Mermaid C4 diagram generation complete
+✅ Diagram suite generated:
+   Internal flow: C:\Github\CMich.CoreApi-master\docs\diagrams\internal-flow.md
+   Data flow:     C:\Github\CMich.CoreApi-master\docs\diagrams\data-flow.md
+   Sequences:     C:\Github\CMich.CoreApi-master\docs\diagrams\critical-sequences.md
+   Data lineage:  C:\Github\CMich.CoreApi-master\docs\diagrams\data-lineage-core.md
+   Diagram index: C:\Github\CMich.CoreApi-master\docs\diagrams\index.md
+   Truth pack:    C:\Github\CMich.CoreApi-master\docs\evidence\diagram-truth-pack.json
+   Nodes: 57, Edges: 65, Inbound: 0, Outbound: 12
+
+[Remediation]
+Running remediate-generated-docs.ps1...
+Remediation complete. Updated 10 documentation files.
+
+[Integrity Gate]
+Running ci-doc-integrity-gate.ps1...
+🧱 Generating deterministic architecture diagram suite...
+✅ Diagram suite generated:
+   Internal flow: C:\Github\CMich.CoreApi-master\docs\diagrams\internal-flow.md
+   Data flow:     C:\Github\CMich.CoreApi-master\docs\diagrams\data-flow.md
+   Sequences:     C:\Github\CMich.CoreApi-master\docs\diagrams\critical-sequences.md
+   Data lineage:  C:\Github\CMich.CoreApi-master\docs\diagrams\data-lineage-core.md
+   Diagram index: C:\Github\CMich.CoreApi-master\docs\diagrams\index.md
+   Truth pack:    C:\Github\CMich.CoreApi-master\docs\evidence\diagram-truth-pack.json
+   Nodes: 57, Edges: 65, Inbound: 0, Outbound: 12
+🧱 Generating deterministic architecture diagram suite...
+✅ Diagram suite generated:
+   Internal flow: C:\Github\CMich.CoreApi-master\docs\diagrams\internal-flow.md
+   Data flow:     C:\Github\CMich.CoreApi-master\docs\diagrams\data-flow.md
+   Sequences:     C:\Github\CMich.CoreApi-master\docs\diagrams\critical-sequences.md
+   Data lineage:  C:\Github\CMich.CoreApi-master\docs\diagrams\data-lineage-core.md
+   Diagram index: C:\Github\CMich.CoreApi-master\docs\diagrams\index.md
+   Truth pack:    C:\Github\CMich.CoreApi-master\docs\evidence\diagram-truth-pack.json
+   Nodes: 57, Edges: 65, Inbound: 0, Outbound: 12
+Documentation integrity gate failed with 1 issue(s).
+ - [quality_summary_mismatch] quality-report overall counts do not sum to totalDocs. (C:\Github\CMich.CoreApi-master\docs\quality-report.json)
+[DETECTION_PATTERN_MISMATCH] Documentation integrity gate failed
+Documentation integrity gate failed (soft mode).
+
+=== Documentation Quality Report ===
+
+Quality Summary:
+================================================================================
+🟢 
+Start Here: 
+HIGH (100%)
+🟢 
+Overview: 
+HIGH (100%)
+🟢 
+API Inventory: 
+HIGH (100%)
+🟢 
+Data Model: 
+HIGH (100%)
+🟢 
+Config Catalog: 
+HIGH (100%)
+🟢 
+Build Cookbook: 
+HIGH (100%)
+🟡 
+Test Catalog: 
+MEDIUM (55%)
+   ⚠️  2x Empty detection placeholder
+   ❌ Test Suites section missing or empty
+   ❌ Test Cases placeholder text remains
+🟢 
+Debt Register: 
+HIGH (100%)
+🟢 
+Dependencies Catalog: 
+HIGH (95%)
+   ⚠️  1x Empty detection placeholder
+🟢 
+Task Guides: 
+HIGH (100%)
+
+ + ================================================================================
+Overall Statistics:
+  Total Documents: 10
+  🟢 High Quality (>80%): 9
+  🟡 Medium Quality (40-80%): 1
+  🔴 Low Quality (<40%): 0
+  📊 Average Quality Score: 95%
+
+📄 Quality report saved: C:\Github\CMich.CoreApi-master\docs\quality-report.json
+Start Here validated: all required sections present
+Overview validation passed
+API inventory validated: 101 endpoints found
+Data model validated: 819 models found
+Config catalog validated: 96 configs found
+Build cookbook validated: 14 commands found
+No test cases found using fallback regex. The test catalog format may have changed.
+Test catalog validated: 0 tests found
+Task guides validated: 4 task sections found
+Technical debt register validated: 178 debts found
+[DETECTION_PATTERN_MISMATCH] Banned placeholder pattern found (test-catalog)
+[DETECTION_PATTERN_MISMATCH] Banned placeholder pattern found (dependencies-catalog)
+
+Validation Gate:
+  Mode: Soft
+  Threshold: 80
+  Average Score: 86.4%
+  Below Threshold: 0
+📄 Diagnostics report saved: C:\Github\CMich.CoreApi-master\docs\diagnostics-report.json
+
+All generators completed.
+

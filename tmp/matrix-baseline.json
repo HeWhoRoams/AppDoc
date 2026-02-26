@@ -1,0 +1,53 @@
+[
+  {
+    "repo": "C:\\Github\\LmsConnect-master",
+    "quality": {
+      "avg": 99.5,
+      "high": 10,
+      "med": 0,
+      "low": 0,
+      "total": 10,
+      "missing": 0
+    },
+    "validation": {
+      "score": 90.8,
+      "warnings": 0,
+      "errors": 0
+    },
+    "diagramValidation": null
+  },
+  {
+    "repo": "C:\\Github\\DegreeAudit",
+    "quality": {
+      "avg": 95.5,
+      "high": 9,
+      "med": 1,
+      "low": 0,
+      "total": 10,
+      "missing": 0
+    },
+    "validation": {
+      "score": 92.8,
+      "warnings": 0,
+      "errors": 0
+    },
+    "diagramValidation": null
+  },
+  {
+    "repo": "C:\\Github\\CMich.CoreApi-master",
+    "quality": {
+      "avg": 99.5,
+      "high": 10,
+      "med": 0,
+      "low": 0,
+      "total": 10,
+      "missing": 0
+    },
+    "validation": {
+      "score": 86.5,
+      "warnings": 0,
+      "errors": 0
+    },
+    "diagramValidation": null
+  }
+]

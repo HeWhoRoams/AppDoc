@@ -36,6 +36,11 @@ $dataModelRendererModule = Join-Path $PSScriptRoot "modules\AppDoc.DataModel.Ren
 if (-not (Test-Path $dataModelRendererModule)) { Write-Error "Required module not found: $dataModelRendererModule"; exit 1 }
 Import-Module $dataModelRendererModule -Force -ErrorAction Stop
 
+$architectureModule = Join-Path $PSScriptRoot "modules\AppDoc.ArchitectureFingerprint.psm1"
+if (Test-Path $architectureModule) {
+    Import-Module $architectureModule -Force -ErrorAction SilentlyContinue
+}
+
 Write-Host "🗂️  Generating Data Model..." -ForegroundColor Cyan
 
 if (-not (Test-Path $RootPath)) {
@@ -61,9 +66,29 @@ if ($modelData.potentialModelFileCount -gt 0) {
     Write-Host "  Found $($modelData.potentialModelFileCount) potential model files" -ForegroundColor Gray
 }
 
+$apiSurfaceExpected = $true
+if (Get-Command Get-AppDocArchitectureFingerprint -ErrorAction SilentlyContinue) {
+    try {
+        $fingerprint = Get-AppDocArchitectureFingerprint -RootPath $RootPath
+        if ($null -ne $fingerprint -and $null -ne $fingerprint.apiSurfaceExpected) {
+            $apiSurfaceExpected = [bool]$fingerprint.apiSurfaceExpected
+        }
+    }
+    catch {
+        Write-Verbose "Get-AppDocArchitectureFingerprint failed: $($_.Exception.Message)" 
+        # Keep default expected=true when fingerprinting fails.
+    }
+}
+
+$modelSurfaceExpected = ($apiSurfaceExpected -or $modelData.potentialModelFileCount -gt 0)
 if ($models.Count -eq 0) {
-    Write-Host "⚠️  No data models detected!" -ForegroundColor Yellow
-    Write-Host "   Searched in: $RootPath" -ForegroundColor Gray
+    if ($modelSurfaceExpected) {
+        Write-Host "⚠️  No data models detected!" -ForegroundColor Yellow
+        Write-Host "   Searched in: $RootPath" -ForegroundColor Gray
+    }
+    else {
+        Write-Host "ℹ️  No data models detected (no API/model surface expected by architecture fingerprint)." -ForegroundColor Gray
+    }
 }
 
 Write-Progress -Activity "Generating Data Model" -Status "Populating template..." -PercentComplete 80
@@ -71,6 +96,7 @@ $modelContent = Get-AppDocDataModelMarkdown -Models $models -MaxDetailedModels $
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocDataModelContent -Content $content -ModelContent $modelContent
 $content = Normalize-AppDocTemplateInstructionText -Content $content
+$content = Normalize-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 

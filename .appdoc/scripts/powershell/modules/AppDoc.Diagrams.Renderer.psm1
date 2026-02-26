@@ -29,6 +29,9 @@ function ConvertTo-AppDocMermaidLabel {
     $value = $Label.Trim()
     $value = $value.Replace('"', "'")
     $value = $value.Replace("`r", " ").Replace("`n", " ")
+    $value = $value.Replace('|', '/')
+    $value = $value.Replace('[', '(').Replace(']', ')')
+    $value = $value.Replace('`', "'")
     return $value
 }
 
@@ -78,6 +81,71 @@ function Get-AppDocDiagramNodeClassName {
     }
 }
 
+function Get-AppDocDiagramSemanticEdgeLabel {
+    [CmdletBinding()]
+    param(
+        [string]$EdgeType,
+        [string]$CurrentLabel
+    )
+
+    $label = if ($CurrentLabel) { [string]$CurrentLabel } else { "" }
+    $normalized = $label.Trim().ToLowerInvariant()
+    if (-not [string]::IsNullOrWhiteSpace($normalized) -and $normalized -notin @("request","routes","returns","data","invoke","calls","uses","configures","contains")) {
+        return $label
+    }
+
+    $normalized = if ($EdgeType) { $EdgeType.ToString().Trim().ToLowerInvariant() } else { "" }
+    switch ($normalized) {
+        "request" { return "initiates" }
+        "routes" { return "routes to" }
+        "returns" { return "returns" }
+        "data" { return "reads/writes" }
+        "invoke" { return "invokes" }
+        "calls" { return "calls" }
+        "uses" { return "uses" }
+        "configures" { return "configures" }
+        "contains" { return "contains" }
+        default {
+            if ([string]::IsNullOrWhiteSpace($label)) { return "relates to" }
+            return $label
+        }
+    }
+}
+
+function Get-AppDocDiagramEdgeOperator {
+    [CmdletBinding()]
+    param(
+        [string]$EdgeType
+    )
+
+    switch (($EdgeType | ForEach-Object { if ($_){ $_.ToString().Trim().ToLowerInvariant() } else { "" } })) {
+        "configures" { return "-.->" }
+        "uses" { return "-.->" }
+        "contains" { return "-.->" }
+        default { return "-->" }
+    }
+}
+
+function New-AppDocMermaidEdgeLine {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$From,
+        [Parameter(Mandatory=$true)]
+        [string]$To,
+        [string]$EdgeType,
+        [string]$EdgeLabel
+    )
+
+    $operator = Get-AppDocDiagramEdgeOperator -EdgeType $EdgeType
+    $semanticLabel = Get-AppDocDiagramSemanticEdgeLabel -EdgeType $EdgeType -CurrentLabel $EdgeLabel
+    if ([string]::IsNullOrWhiteSpace($semanticLabel)) {
+        return ("    {0} {1} {2}" -f $From, $operator, $To)
+    }
+
+    return ("    {0} {1}|{2}| {3}" -f $From, $operator, (ConvertTo-AppDocMermaidLabel -Label $semanticLabel), $To)
+}
+
 function New-AppDocMermaidClassDefs {
     [CmdletBinding()]
     param(
@@ -111,6 +179,21 @@ function Get-AppDocDiagramNodeMap {
     return $map
 }
 
+function Get-AppDocDiagramOrderedNodes {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [hashtable]$GraphData
+    )
+
+    return @(
+        Get-AppDocDiagramRendererValue -Object $GraphData -Name "nodes" -Default @() |
+            Sort-Object @{ Expression = { [string](Get-AppDocDiagramRendererValue -Object $_ -Name "type" -Default "") } }, `
+                        @{ Expression = { [string](Get-AppDocDiagramRendererValue -Object $_ -Name "label" -Default "") } }, `
+                        @{ Expression = { [string](Get-AppDocDiagramRendererValue -Object $_ -Name "id" -Default "") } }
+    )
+}
+
 function New-AppDocGroupedMermaidLines {
     [CmdletBinding()]
     param(
@@ -121,7 +204,27 @@ function New-AppDocGroupedMermaidLines {
     )
 
     $lines = @()
-    foreach ($groupId in @("actors","inputs","processing","data","outputs","dependencies")) {
+    $preferredOrder = @(
+        "actors",
+        "inputs",
+        "processing",
+        "models",
+        "runtime_config",
+        "workflow_config",
+        "dotnet_project",
+        "vscode_settings",
+        "data",
+        "outputs",
+        "dependencies"
+    )
+    $dynamicOrder = @(
+        @($preferredOrder + @($GroupMap.Keys)) |
+            ForEach-Object { [string]$_ } |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+            Select-Object -Unique
+    )
+
+    foreach ($groupId in $dynamicOrder) {
         if (-not $GroupMap.ContainsKey($groupId)) { continue }
         $group = $GroupMap[$groupId]
         $title = [string](Get-AppDocDiagramRendererValue -Object $group -Name "title" -Default $groupId)
@@ -156,31 +259,61 @@ function New-AppDocInternalFlowMermaid {
     $maxEdges = [int](Get-AppDocDiagramRendererValue -Object $limits -Name "maxEdgesPerDiagram" -Default 120)
 
     $nodeMap = Get-AppDocDiagramNodeMap -GraphData $GraphData
-    $allNodes = @($nodeMap.Values)
+    $allNodes = Get-AppDocDiagramOrderedNodes -GraphData $GraphData
     $edges = @(
         Get-AppDocDiagramRendererValue -Object $GraphData -Name "edges" -Default @() |
             Select-Object -First $maxEdges
     )
 
+    $dataNodeIds = @($allNodes | Where-Object { [string]$_.type -eq "data" } | ForEach-Object { [string]$_.id })
+    $runtimeConfigIds = @($allNodes | Where-Object { [string]$_.type -eq "config" -and [string]$_.group -eq "config-runtime" } | ForEach-Object { [string]$_.id })
+    $workflowConfigIds = @($allNodes | Where-Object { [string]$_.type -eq "config" -and [string]$_.group -eq "config-workflow" } | ForEach-Object { [string]$_.id })
+    $dotnetProjectConfigIds = @($allNodes | Where-Object { [string]$_.type -eq "config" -and [string]$_.group -eq "config-dotnet" } | ForEach-Object { [string]$_.id })
+    $vscodeConfigIds = @($allNodes | Where-Object { [string]$_.type -eq "config" -and [string]$_.group -eq "config-vscode" } | ForEach-Object { [string]$_.id })
+    $otherConfigIds = @(
+        $allNodes |
+            Where-Object {
+                [string]$_.type -eq "config" -and
+                [string]$_.group -notin @("config-runtime","config-workflow","config-dotnet","config-vscode")
+            } |
+            ForEach-Object { [string]$_.id }
+    )
+
     $groupMap = @{
         actors = [ordered]@{
-            title = "Actors"
+            title = "Trust Boundary: External Actors"
             nodeIds = @($allNodes | Where-Object { [string]$_.type -eq "actor" } | ForEach-Object { [string]$_.id })
         }
         inputs = [ordered]@{
-            title = "Inbound Interfaces"
+            title = "Trust Boundary: Inbound Interfaces"
             nodeIds = @($allNodes | Where-Object { [string]$_.type -eq "inbound" } | ForEach-Object { [string]$_.id })
         }
         processing = [ordered]@{
-            title = "Application Processing"
+            title = "Application Core Services"
             nodeIds = @($allNodes | Where-Object { [string]$_.type -eq "component" } | ForEach-Object { [string]$_.id })
         }
-        data = [ordered]@{
-            title = "Models and Data"
-            nodeIds = @($allNodes | Where-Object { [string]$_.type -in @("data","config") } | ForEach-Object { [string]$_.id })
+        models = [ordered]@{
+            title = "Data Models"
+            nodeIds = $dataNodeIds
+        }
+        runtime_config = [ordered]@{
+            title = "Runtime Configuration"
+            nodeIds = @($runtimeConfigIds + $otherConfigIds | Select-Object -Unique)
+        }
+        workflow_config = [ordered]@{
+            title = "GitHub Actions Workflow"
+            nodeIds = $workflowConfigIds
+        }
+        dotnet_project = [ordered]@{
+            title = ".NET Project Settings"
+            nodeIds = $dotnetProjectConfigIds
+        }
+        vscode_settings = [ordered]@{
+            title = "VS Code Settings"
+            nodeIds = $vscodeConfigIds
         }
         outputs = [ordered]@{
-            title = "Outbound Integrations"
+            title = "Trust Boundary: External Integrations"
             nodeIds = @($allNodes | Where-Object { [string]$_.type -in @("outbound","external") } | ForEach-Object { [string]$_.id })
         }
         dependencies = [ordered]@{
@@ -190,6 +323,7 @@ function New-AppDocInternalFlowMermaid {
     }
 
     $lines = @("flowchart LR")
+    $lines += "    %% Solid edges: runtime request/data flow. Dashed edges: structural/config/dependency links."
     $lines += New-AppDocGroupedMermaidLines -NodeMap $nodeMap -GroupMap $groupMap
 
     foreach ($edge in $edges) {
@@ -197,12 +331,8 @@ function New-AppDocInternalFlowMermaid {
         $to = [string](Get-AppDocDiagramRendererValue -Object $edge -Name "to" -Default "")
         if (-not $nodeMap.ContainsKey($from) -or -not $nodeMap.ContainsKey($to)) { continue }
         $label = [string](Get-AppDocDiagramRendererValue -Object $edge -Name "label" -Default "")
-        if ([string]::IsNullOrWhiteSpace($label)) {
-            $lines += ("    {0} --> {1}" -f $from, $to)
-        }
-        else {
-            $lines += ("    {0} -->|{1}| {2}" -f $from, (ConvertTo-AppDocMermaidLabel -Label $label), $to)
-        }
+        $edgeType = [string](Get-AppDocDiagramRendererValue -Object $edge -Name "type" -Default "")
+        $lines += New-AppDocMermaidEdgeLine -From $from -To $to -EdgeType $edgeType -EdgeLabel $label
     }
 
     foreach ($node in $allNodes) {
@@ -229,34 +359,35 @@ function New-AppDocDataFlowMermaid {
     $limits = Get-AppDocDiagramRendererValue -Object $Contract -Name "limits" -Default @{}
     $maxEdges = [int](Get-AppDocDiagramRendererValue -Object $limits -Name "maxEdgesPerDiagram" -Default 120)
     $nodeMap = Get-AppDocDiagramNodeMap -GraphData $GraphData
-    $allNodes = @($nodeMap.Values)
+    $allNodes = Get-AppDocDiagramOrderedNodes -GraphData $GraphData
 
     $edges = @(
         Get-AppDocDiagramRendererValue -Object $GraphData -Name "edges" -Default @() |
-            Where-Object { [string]$_.type -in @("request","routes","configures","data","returns","invoke","calls") } |
+            Where-Object { [string]$_.type -in @("request","routes","configures","data","returns","invoke","calls","uses") } |
             Select-Object -First $maxEdges
     )
 
     $groupMap = @{
         inputs = [ordered]@{
-            title = "Inputs"
+            title = "Input Boundary"
             nodeIds = @($allNodes | Where-Object { [string]$_.type -in @("actor","inbound","config") } | ForEach-Object { [string]$_.id })
         }
         processing = [ordered]@{
-            title = "Transforms"
+            title = "Core Transformations"
             nodeIds = @($allNodes | Where-Object { [string]$_.type -eq "component" } | ForEach-Object { [string]$_.id })
         }
         data = [ordered]@{
-            title = "Data Structures"
+            title = "Data Stores and Models"
             nodeIds = @($allNodes | Where-Object { [string]$_.type -eq "data" } | ForEach-Object { [string]$_.id })
         }
         outputs = [ordered]@{
-            title = "Outputs"
+            title = "Output Boundary"
             nodeIds = @($allNodes | Where-Object { [string]$_.type -in @("outbound","external","dependency") } | ForEach-Object { [string]$_.id })
         }
     }
 
     $lines = @("flowchart LR")
+    $lines += "    %% Solid edges: runtime request/data flow. Dashed edges: structural/config/dependency links."
     $lines += New-AppDocGroupedMermaidLines -NodeMap $nodeMap -GroupMap $groupMap
 
     foreach ($edge in $edges) {
@@ -264,12 +395,8 @@ function New-AppDocDataFlowMermaid {
         $to = [string](Get-AppDocDiagramRendererValue -Object $edge -Name "to" -Default "")
         if (-not $nodeMap.ContainsKey($from) -or -not $nodeMap.ContainsKey($to)) { continue }
         $label = [string](Get-AppDocDiagramRendererValue -Object $edge -Name "label" -Default "")
-        if ([string]::IsNullOrWhiteSpace($label)) {
-            $lines += ("    {0} --> {1}" -f $from, $to)
-        }
-        else {
-            $lines += ("    {0} -->|{1}| {2}" -f $from, (ConvertTo-AppDocMermaidLabel -Label $label), $to)
-        }
+        $edgeType = [string](Get-AppDocDiagramRendererValue -Object $edge -Name "type" -Default "")
+        $lines += New-AppDocMermaidEdgeLine -From $from -To $to -EdgeType $edgeType -EdgeLabel $label
     }
 
     foreach ($node in $allNodes) {
@@ -298,6 +425,7 @@ function Get-AppDocSequenceScenarios {
     if ($maxScenarios -lt 1) { $maxScenarios = 1 }
 
     $nodeMap = Get-AppDocDiagramNodeMap -GraphData $GraphData
+    $orderedNodes = Get-AppDocDiagramOrderedNodes -GraphData $GraphData
     $edges = @(
         Get-AppDocDiagramRendererValue -Object $GraphData -Name "edges" -Default @()
     )
@@ -348,8 +476,10 @@ function Get-AppDocSequenceScenarios {
         $requestFrom = if ($requestEdge) { [string](Get-AppDocDiagramRendererValue -Object $requestEdge -Name "from" -Default "") } else { "" }
         if ([string]::IsNullOrWhiteSpace($requestFrom)) {
             $requestFrom = @(
-                $nodeMap.Keys |
-                    Where-Object { [string](Get-AppDocDiagramRendererValue -Object $nodeMap[$_] -Name "type" -Default "") -eq "actor" } |
+                $orderedNodes |
+                    Where-Object { [string](Get-AppDocDiagramRendererValue -Object $_ -Name "type" -Default "") -eq "actor" } |
+                    ForEach-Object { [string](Get-AppDocDiagramRendererValue -Object $_ -Name "id" -Default "") } |
+                    Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
                     Select-Object -First 1
             )[0]
         }
@@ -376,6 +506,8 @@ function Get-AppDocSequenceScenarios {
             actorId = $requestFrom
             endpointId = $endpointId
             componentId = $componentId
+            requestEdge = $requestEdge
+            routeEdge = $route
             dataEdge = $dataEdge
             outboundEdge = $outboundEdge
             score = $score
@@ -415,6 +547,9 @@ function New-AppDocCriticalSequencesMarkdown {
 
     if ($scenarios.Count -eq 0) {
         $lines += "No high-confidence request journeys were available for scenario rendering in this scan."
+        if ($refs.Count -gt 0) {
+            $lines += "Evidence was scanned (" + (($refs -join ", ")) + ") but was insufficient for reconstructing high-confidence request journeys."
+        }
         $lines += ""
         $lines += "## Baseline Sequence"
         $lines += ""
@@ -449,16 +584,30 @@ function New-AppDocCriticalSequencesMarkdown {
             $lines += ("    participant actor as {0}" -f $actorLabel)
             $lines += ("    participant endpoint as {0}" -f $endpointLabel)
             $lines += ("    participant component as {0}" -f $componentLabel)
-            $lines += "    actor->>endpoint: Request"
-            $lines += "    endpoint->>component: Route request"
+            $requestEdgeType = if ($scenario.requestEdge) { [string](Get-AppDocDiagramRendererValue -Object $scenario.requestEdge -Name "type" -Default "request") } else { "request" }
+            $requestEdgeLabel = if ($scenario.requestEdge) { [string](Get-AppDocDiagramRendererValue -Object $scenario.requestEdge -Name "label" -Default "") } else { "" }
+            $requestAction = ConvertTo-AppDocMermaidLabel -Label (Get-AppDocDiagramSemanticEdgeLabel -EdgeType $requestEdgeType -CurrentLabel $requestEdgeLabel)
+            if ([string]::IsNullOrWhiteSpace($requestAction)) { $requestAction = "Request" }
+
+            $routeEdgeType = if ($scenario.routeEdge) { [string](Get-AppDocDiagramRendererValue -Object $scenario.routeEdge -Name "type" -Default "routes") } else { "routes" }
+            $routeEdgeLabel = if ($scenario.routeEdge) { [string](Get-AppDocDiagramRendererValue -Object $scenario.routeEdge -Name "label" -Default "") } else { "" }
+            $routeAction = ConvertTo-AppDocMermaidLabel -Label (Get-AppDocDiagramSemanticEdgeLabel -EdgeType $routeEdgeType -CurrentLabel $routeEdgeLabel)
+            if ([string]::IsNullOrWhiteSpace($routeAction)) { $routeAction = "Routes to" }
+
+            $lines += ("    actor->>endpoint: {0}" -f $requestAction)
+            $lines += ("    endpoint->>component: {0}" -f $routeAction)
 
             if ($scenario.dataEdge) {
                 $dataTo = [string](Get-AppDocDiagramRendererValue -Object $scenario.dataEdge -Name "to" -Default "")
                 if ($nodeMap.ContainsKey($dataTo)) {
                     $dataNode = $nodeMap[$dataTo]
                     $dataLabel = ConvertTo-AppDocMermaidLabel -Label ([string](Get-AppDocDiagramRendererValue -Object $dataNode -Name "label" -Default "Data Model"))
+                    $dataEdgeType = [string](Get-AppDocDiagramRendererValue -Object $scenario.dataEdge -Name "type" -Default "data")
+                    $dataEdgeLabel = [string](Get-AppDocDiagramRendererValue -Object $scenario.dataEdge -Name "label" -Default "")
+                    $dataAction = ConvertTo-AppDocMermaidLabel -Label (Get-AppDocDiagramSemanticEdgeLabel -EdgeType $dataEdgeType -CurrentLabel $dataEdgeLabel)
+                    if ([string]::IsNullOrWhiteSpace($dataAction)) { $dataAction = "Reads/Writes" }
                     $lines += ("    participant data as {0}" -f $dataLabel)
-                    $lines += "    component->>data: Read/Write"
+                    $lines += ("    component->>data: {0}" -f $dataAction)
                 }
             }
 
@@ -467,12 +616,18 @@ function New-AppDocCriticalSequencesMarkdown {
                 if ($nodeMap.ContainsKey($outboundTo)) {
                     $outboundNode = $nodeMap[$outboundTo]
                     $outboundLabel = ConvertTo-AppDocMermaidLabel -Label ([string](Get-AppDocDiagramRendererValue -Object $outboundNode -Name "label" -Default "External Integration"))
+                    $outboundEdgeType = [string](Get-AppDocDiagramRendererValue -Object $scenario.outboundEdge -Name "type" -Default "invoke")
+                    $outboundEdgeLabel = [string](Get-AppDocDiagramRendererValue -Object $scenario.outboundEdge -Name "label" -Default "")
+                    $outboundAction = ConvertTo-AppDocMermaidLabel -Label (Get-AppDocDiagramSemanticEdgeLabel -EdgeType $outboundEdgeType -CurrentLabel $outboundEdgeLabel)
+                    if ([string]::IsNullOrWhiteSpace($outboundAction)) { $outboundAction = "Invokes" }
                     $lines += ("    participant external as {0}" -f $outboundLabel)
-                    $lines += "    component->>external: Invoke integration"
+                    $lines += ("    component->>external: {0}" -f $outboundAction)
                 }
             }
 
-            $lines += "    component-->>actor: Response"
+            # Mirror response path through endpoint
+            $lines += "    component-->>endpoint: Response"
+            $lines += "    endpoint-->>actor: Response"
             $lines += '```'
             $lines += ""
         }
@@ -505,7 +660,7 @@ function Get-AppDocLineagePartitionRecords {
     $maxEdgesPerDiagram = [int](Get-AppDocDiagramRendererValue -Object $limits -Name "maxLineageEdgesPerDiagram" -Default 80)
 
     $nodeMap = Get-AppDocDiagramNodeMap -GraphData $GraphData
-    $nodes = @($nodeMap.Values)
+    $nodes = Get-AppDocDiagramOrderedNodes -GraphData $GraphData
     $edges = @(
         Get-AppDocDiagramRendererValue -Object $GraphData -Name "edges" -Default @() |
             Where-Object { [string]$_.type -in @("request","routes","configures","data","returns","invoke","calls","uses") }
@@ -602,11 +757,11 @@ function New-AppDocDataLineageMermaid {
 
     $groupMap = @{
         inputs = [ordered]@{
-            title = "Inputs"
+            title = "Input Boundary"
             nodeIds = @($allNodes | Where-Object { [string]$_.type -in @("actor","inbound","config") } | ForEach-Object { [string]$_.id })
         }
         processing = [ordered]@{
-            title = "Transforms"
+            title = "Core Transformations"
             nodeIds = @($allNodes | Where-Object { [string]$_.type -eq "component" } | ForEach-Object { [string]$_.id })
         }
         data = [ordered]@{
@@ -614,12 +769,13 @@ function New-AppDocDataLineageMermaid {
             nodeIds = @($allNodes | Where-Object { [string]$_.type -in @("data","dependency") } | ForEach-Object { [string]$_.id })
         }
         outputs = [ordered]@{
-            title = "Outputs"
+            title = "Output Boundary"
             nodeIds = @($allNodes | Where-Object { [string]$_.type -in @("outbound","external") } | ForEach-Object { [string]$_.id })
         }
     }
 
     $lines = @("flowchart LR")
+    $lines += "    %% Solid edges: runtime request/data flow. Dashed edges: structural/config/dependency links."
     $lines += New-AppDocGroupedMermaidLines -NodeMap $nodeMap -GroupMap $groupMap
 
     foreach ($edge in $edges) {
@@ -627,12 +783,8 @@ function New-AppDocDataLineageMermaid {
         $to = [string](Get-AppDocDiagramRendererValue -Object $edge -Name "to" -Default "")
         if (-not $nodeMap.ContainsKey($from) -or -not $nodeMap.ContainsKey($to)) { continue }
         $label = [string](Get-AppDocDiagramRendererValue -Object $edge -Name "label" -Default "")
-        if ([string]::IsNullOrWhiteSpace($label)) {
-            $lines += ("    {0} --> {1}" -f $from, $to)
-        }
-        else {
-            $lines += ("    {0} -->|{1}| {2}" -f $from, (ConvertTo-AppDocMermaidLabel -Label $label), $to)
-        }
+        $edgeType = [string](Get-AppDocDiagramRendererValue -Object $edge -Name "type" -Default "")
+        $lines += New-AppDocMermaidEdgeLine -From $from -To $to -EdgeType $edgeType -EdgeLabel $label
     }
 
     foreach ($node in $allNodes) {
@@ -686,6 +838,10 @@ function New-AppDocDiagramMarkdown {
         [int](Get-AppDocDiagramRendererValue -Object $metrics -Name "edgeCount" -Default 0), `
         [int](Get-AppDocDiagramRendererValue -Object $metrics -Name "inboundEndpointCount" -Default 0), `
         [int](Get-AppDocDiagramRendererValue -Object $metrics -Name "outboundEndpointCount" -Default 0))
+    $dependencyCount = [int](Get-AppDocDiagramRendererValue -Object $metrics -Name "dependencyCount" -Default 0)
+    if ($dependencyCount -gt 0) {
+        $lines += ("- Outbound integrations count protocol/interface endpoints only; supporting dependency outputs in this view: {0}." -f $dependencyCount)
+    }
     $lines += ""
     $lines += "## Evidence Refs"
     $lines += ""
@@ -726,7 +882,18 @@ function Write-AppDocDiagramSuite {
     $dataLineageCorePath = Join-Path $diagramsPath "data-lineage-core.md"
     $indexPath = Join-Path $diagramsPath "index.md"
 
-    (New-AppDocDiagramMarkdown -Title "Internal Flow Diagram" -IntentText "This view shows how requests move from callers into core processing components and then to data models or external integrations." -Mermaid $internalFlowMermaid -GraphData $GraphData) | Out-File -FilePath $internalFlowPath -Encoding UTF8
+    $hasRequestFlow = @(
+        Get-AppDocDiagramRendererValue -Object $GraphData -Name "edges" -Default @() |
+            Where-Object { [string]$_.type -in @("request","routes") }
+    ).Count -gt 0
+    $internalFlowTitle = if ($hasRequestFlow) { "Internal Flow Diagram" } else { "Component Dependencies and Configuration" }
+    $internalFlowIntent = if ($hasRequestFlow) {
+        "This view shows how requests move from callers into core processing components and then to data models or external integrations."
+    } else {
+        "This view summarizes static component relationships, supporting dependencies, and configuration sources that shape runtime behavior."
+    }
+
+    (New-AppDocDiagramMarkdown -Title $internalFlowTitle -IntentText $internalFlowIntent -Mermaid $internalFlowMermaid -GraphData $GraphData) | Out-File -FilePath $internalFlowPath -Encoding UTF8
     (New-AppDocDiagramMarkdown -Title "Data Flow Diagram" -IntentText "This view traces input sources, processing transformations, and output channels so teams can reason about data movement and side effects." -Mermaid $dataFlowMermaid -GraphData $GraphData) | Out-File -FilePath $dataFlowPath -Encoding UTF8
     (New-AppDocCriticalSequencesMarkdown -GraphData $GraphData -Contract $Contract) | Out-File -FilePath $criticalSequencesPath -Encoding UTF8
 

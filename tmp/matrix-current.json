@@ -1,0 +1,109 @@
+[
+  {
+    "repo": "C:\\Github\\LmsConnect-master",
+    "quality": {
+      "avg": 99.5,
+      "high": 10,
+      "med": 0,
+      "low": 0,
+      "total": 10,
+      "missing": 0,
+      "depDoc": {
+        "docType": "Dependencies Catalog",
+        "issues": [],
+        "placeholders": [
+          "1x Empty detection placeholder"
+        ],
+        "codeBlocks": 0,
+        "tableRows": 55,
+        "score": 95,
+        "exists": true,
+        "quality": "HIGH",
+        "listItems": 2
+      }
+    },
+    "validation": {
+      "score": 90.8,
+      "warnings": 0,
+      "errors": 0,
+      "failedContracts": [
+        "dependencies-catalog"
+      ]
+    },
+    "diag": null,
+    "apiRows": 8,
+    "modelRows": 115,
+    "testRows": 4,
+    "depRows": 134
+  },
+  {
+    "repo": "C:\\Github\\DegreeAudit",
+    "quality": {
+      "avg": 100.0,
+      "high": 10,
+      "med": 0,
+      "low": 0,
+      "total": 10,
+      "missing": 0,
+      "depDoc": {
+        "score": 100,
+        "docType": "Dependencies Catalog",
+        "codeBlocks": 0,
+        "placeholders": [],
+        "quality": "HIGH",
+        "exists": true,
+        "issues": [],
+        "listItems": 6,
+        "tableRows": 44
+      }
+    },
+    "validation": {
+      "score": 92.8,
+      "warnings": 0,
+      "errors": 0,
+      "failedContracts": []
+    },
+    "diag": null,
+    "apiRows": 152,
+    "modelRows": 292,
+    "testRows": 0,
+    "depRows": 83
+  },
+  {
+    "repo": "C:\\Github\\CMich.CoreApi-master",
+    "quality": {
+      "avg": 99.5,
+      "high": 10,
+      "med": 0,
+      "low": 0,
+      "total": 10,
+      "missing": 0,
+      "depDoc": {
+        "exists": true,
+        "placeholders": [
+          "1x Empty detection placeholder"
+        ],
+        "quality": "HIGH",
+        "docType": "Dependencies Catalog",
+        "listItems": 8,
+        "issues": [],
+        "score": 95,
+        "tableRows": 22,
+        "codeBlocks": 0
+      }
+    },
+    "validation": {
+      "score": 86.5,
+      "warnings": 0,
+      "errors": 0,
+      "failedContracts": [
+        "dependencies-catalog"
+      ]
+    },
+    "diag": null,
+    "apiRows": 101,
+    "modelRows": 819,
+    "testRows": 0,
+    "depRows": 44
+  }
+]

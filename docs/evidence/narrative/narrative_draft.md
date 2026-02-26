@@ -1,6 +1,6 @@
 ### what_it_does
 
-The repository contains implementation code, but current deterministic evidence is not strong enough to confidently describe business behavior yet (files scanned: 8). (evidence: ev-0071)
+This repository primarily defines tooling, automation, and configuration behavior rather than an exposed runtime API surface. (evidence: ev-0001, ev-0002, ev-0003, ev-0004)
 
 ### inputs
 
@@ -8,20 +8,23 @@ Runtime behavior is also influenced by environment and application configuration
 
 ### processing_steps
 
-Processing flow could not be inferred beyond repository-level summaries in this scan. (evidence: ev-0071)
+Processing flow could not be inferred beyond repository-level summaries in this scan. (evidence: ev-0055)
 
 ### outputs
 
-Output contracts are not strongly represented in current deterministic evidence. (evidence: ev-0071)
+Output contracts are not strongly represented in current deterministic evidence. (evidence: ev-0055)
 
 ### external_systems
 
-The runtime and build surface rely on key libraries including SampleApp.Common, EntityFramework, Microsoft.AspNetCore.Mvc, Microsoft.CodeAnalysis.CSharp, and Microsoft.Extensions.Hosting.WindowsServices. (evidence: ev-0061, ev-0062, ev-0063, ev-0064)
+No clear external system integration evidence was detected. (evidence: ev-0055)
 
 ### confidence_notes
 
-Evidence coverage includes 0 endpoint records, 0 model records, 60 configuration records, and 10 dependency records. (evidence: ev-0001, ev-0002, ev-0003, ev-0004)
+Evidence coverage includes 0 endpoint records, 0 model records, 54 configuration records, and 0 dependency records. (evidence: ev-0001, ev-0002, ev-0003, ev-0004)
 
 
-Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55. (evidence: ev-0071)
+Canonical evidence graph captured 56 entities and 54 relationships for this run. (evidence: ev-0055)
+
+
+Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55. (evidence: ev-0055)
 

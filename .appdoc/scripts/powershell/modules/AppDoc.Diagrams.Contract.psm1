@@ -3,7 +3,8 @@ function Get-AppDocDiagramContract {
     param()
 
     return [ordered]@{
-        schemaVersion = "1.0.0"
+        schemaVersion = "1.1.0"
+        graphSchemaVersion = "appdoc-graph/v1"
         requiredViews = @(
             [ordered]@{ id = "c4-context"; file = "c4-context.md"; purpose = "System boundary and external actors." }
             [ordered]@{ id = "c4-container"; file = "c4-container.md"; purpose = "Deployable/runtime containers and relationships." }

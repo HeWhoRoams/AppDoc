@@ -1,6 +1,6 @@
 # Start Here
 
-**Generated**: 2026-02-20 14:53:19
+**Generated**: 2026-02-25 14:48:56
 
 ## Plain Language Summary
 
@@ -31,8 +31,8 @@ This guide gives a fast orientation path through the generated documentation so 
 
 ## System Signals
 
-- Source files detected: **8**
-- Languages detected: **1** (.cs (8))
+- Source files detected: **0**
+- Languages detected: **0** (No source files detected)
 - API endpoints documented: **0**
 - Data model headings detected: **9**
 

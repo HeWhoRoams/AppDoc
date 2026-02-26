@@ -87,6 +87,7 @@ $templateFallbackPath = if ($appDocRoot) { Join-Path $appDocRoot "templates\conf
 $content = Get-AppDocConfigCatalogTemplateContent -RootPath $RootPath -TemplateName "config-catalog-template.md" -FallbackPath $templateFallbackPath
 $content = Update-AppDocConfigCatalogContent -Content $content -Configs $configs -DiscoveredConfigFiles $discoveredConfigFiles -EnvVars $envVars
 $content = Normalize-AppDocTemplateInstructionText -Content $content
+$content = Normalize-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 

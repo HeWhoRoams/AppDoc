@@ -1,6 +1,6 @@
 # Build Cookbook
 
-**Generated**: 2026-02-20 14:53:17
+**Generated**: 2026-02-25 14:48:51
 
 ## Plain Language Summary
 
@@ -16,25 +16,11 @@ This cookbook is assembled from detected build commands and CI hints so teams ca
 
 ## Prerequisites
 
-- .NET 8.0 SDK or later
+Use a Windows development environment with dotnet, msbuild, and nuget available on PATH. Align SDK/toolchain versions with solution and CI expectations before running full builds.
 
 ## Build Steps
 
-| Step | Command | Description | Estimated Time |
-|------|---------|-------------|----------------|
-| 1 | `dotnet build SampleApp.sln` | Build all projects in the solution | N/A |
-| 2 | `dotnet clean SampleApp.sln` | Clean build artifacts | N/A |
-| 3 | `dotnet publish SampleApp.sln -c Release` | Publish release build | N/A |
-| 4 | `dotnet restore SampleApp.sln` | Restore NuGet packages | N/A |
-| 5 | `dotnet test SampleApp.sln` | Run all tests in the solution | N/A |
-| 6 | `dotnet build ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj"` | Build individual project | N/A |
-| 7 | `dotnet build "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj"` | Build individual project | N/A |
-| 8 | `dotnet build "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj"` | Build individual project | N/A |
-| 9 | `dotnet build "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj"` | Build individual project | N/A |
-| 10 | `msbuild SampleApp.sln /p:Configuration=Release` | Build solution using MSBuild | N/A |
-| 11 | `msbuild SampleApp.sln /t:Clean` | Clean using MSBuild | N/A |
-| 12 | `msbuild SampleApp.sln /t:Rebuild /p:Configuration=Release` | Clean and rebuild | N/A |
-| 13 | `nuget restore SampleApp.sln` | Restore NuGet packages | N/A |
+_Add step-by-step build instructions or reference build scripts here. Remove this section if not needed._
 
 ## Dependencies
 
@@ -62,7 +48,7 @@ A curated script was not extracted in this run. For repeatable local execution, 
 | Field | Value |
 |------|-------|
 | Evidence Artifact | evidence/build-cookbook.evidence.json |
-| Record Count | 15 |
+| Record Count | 1 |
 | Generator | generate-build-cookbook.ps1 |
 | Required Evidence Keys | commands |
 | Grounding Mode | Deterministic extraction records |

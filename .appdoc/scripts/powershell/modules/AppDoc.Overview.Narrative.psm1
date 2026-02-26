@@ -245,8 +245,7 @@ function Get-AppDocOverviewWelcomeNarrative {
     param(
         [Parameter(Mandatory=$true)]
         [object]$TruthPack,
-        [string]$RootPath = "",
-        [switch]$NoAI
+        [string]$RootPath = ""
     )
 
     $deterministicNarrative = Get-AppDocOverviewDeterministicWelcomeNarrative -TruthPack $TruthPack
@@ -255,8 +254,6 @@ function Get-AppDocOverviewWelcomeNarrative {
     $result = [ordered]@{
         narrative = $deterministicNarrative
         provider = "deterministic"
-        usedAI = $false
-        aiAttempted = $false
         verification = $deterministicVerification
     }
     return $result

@@ -124,6 +124,217 @@ $artifactMap = @{
     "dependencies-catalog" = "dependencies-catalog.md"
 }
 
+function Get-AppDocValidationContentExpectations {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$RootPath,
+        [Parameter(Mandatory=$true)]
+        [string]$DocsPath
+    )
+
+    $overviewTruthPath = Join-Path $DocsPath "evidence\overview-truth-pack.json"
+    $overviewTruth = $null
+    if (Test-Path $overviewTruthPath) {
+        try {
+            $overviewTruth = Get-Content $overviewTruthPath -Raw | ConvertFrom-Json -Depth 80
+        }
+        catch {
+            $overviewTruth = $null
+        }
+    }
+
+    $apiCount = 0
+    $modelCount = 0
+    $dependencyCount = 0
+    $testRecordCount = 0
+    $debtRecordCount = 0
+    if ($overviewTruth -and $overviewTruth.counts) {
+        $apiCount = [int]($overviewTruth.counts.endpointRecords ?? 0)
+        $modelCount = [int]($overviewTruth.counts.modelRecords ?? 0)
+        $dependencyCount = [int]($overviewTruth.counts.dependencyRecords ?? 0)
+    }
+
+    $dependencyEvidencePath = Join-Path $DocsPath "evidence\dependencies-catalog.evidence.json"
+    if ($dependencyCount -eq 0 -and (Test-Path $dependencyEvidencePath)) {
+        try {
+            $dependencyPayload = Get-Content $dependencyEvidencePath -Raw | ConvertFrom-Json -Depth 80
+            $dependencyCount = @($dependencyPayload.records | Where-Object { $_ -and [string]$_.kind -eq "dependency" }).Count
+        }
+        catch {
+            $dependencyCount = 0
+        }
+    }
+
+    $testEvidencePath = Join-Path $DocsPath "evidence\test-catalog.evidence.json"
+    if (Test-Path $testEvidencePath) {
+        try {
+            $testPayload = Get-Content $testEvidencePath -Raw | ConvertFrom-Json -Depth 80
+            $testRecordCount = @($testPayload.records | Where-Object { $_ -and [string]$_.kind -in @("test-case","test-suite") }).Count
+        }
+        catch {
+            $testRecordCount = 0
+        }
+    }
+
+    $debtEvidencePath = Join-Path $DocsPath "evidence\debt-register.evidence.json"
+    if (Test-Path $debtEvidencePath) {
+        try {
+            $debtPayload = Get-Content $debtEvidencePath -Raw | ConvertFrom-Json -Depth 80
+            $debtRecordCount = @($debtPayload.records | Where-Object { $_ -and [string]$_.kind -in @("technical-debt","debt-item") }).Count
+        }
+        catch {
+            $debtRecordCount = 0
+        }
+    }
+
+    $architectureFingerprint = $null
+    if (Get-Command Get-AppDocArchitectureFingerprint -ErrorAction SilentlyContinue) {
+        $architectureFingerprint = Get-AppDocArchitectureFingerprint -RootPath $RootPath
+    }
+
+    $primaryStyle = if ($architectureFingerprint -and $architectureFingerprint.primaryStyle) { [string]$architectureFingerprint.primaryStyle } else { "" }
+    if ([string]::IsNullOrWhiteSpace($primaryStyle) -and $overviewTruth -and $overviewTruth.architecture -and $overviewTruth.architecture.primaryStyle) {
+        $primaryStyle = [string]$overviewTruth.architecture.primaryStyle
+    }
+
+    $apiSurfaceExpected = $true
+    if ($architectureFingerprint -and $null -ne $architectureFingerprint.apiSurfaceExpected) {
+        $apiSurfaceExpected = [bool]$architectureFingerprint.apiSurfaceExpected
+    }
+    elseif ($primaryStyle -eq "no-api-surface") {
+        $apiSurfaceExpected = $false
+    }
+
+    $allowNoApiSurface = (-not $apiSurfaceExpected) -and ($apiCount -eq 0)
+    $modelSurfaceExpected = ($apiSurfaceExpected -or $apiCount -gt 0)
+    if ($primaryStyle -eq "no-api-surface" -and $apiCount -eq 0) {
+        $modelSurfaceExpected = $false
+    }
+    $allowNoModelSurface = (-not $modelSurfaceExpected) -and ($modelCount -eq 0)
+
+    $dependencySignalFiles = @()
+    $dependencySignalPatterns = @(
+        "*.csproj",
+        "*.vbproj",
+        "packages.config",
+        "package.json",
+        "pom.xml",
+        "build.gradle",
+        "build.gradle.kts",
+        "requirements.txt",
+        "Pipfile",
+        "poetry.lock",
+        "*.nuspec"
+    )
+    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
+        $dependencySignalFiles = @(
+            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "dependencies-catalog" -Include $dependencySignalPatterns
+        )
+    }
+    else {
+        $dependencySignalFiles = @(
+            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $dependencySignalPatterns -ErrorAction SilentlyContinue
+        )
+    }
+    $dependencySignalCount = @($dependencySignalFiles).Count
+
+    $testSignalCandidates = @()
+    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
+        $testSignalCandidates = @(
+            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Include @("*.cs","*.ts","*.js","*.py","*.java","*.go","*.feature")
+        )
+    }
+    else {
+        $testSignalCandidates = @(
+            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include @("*.cs","*.ts","*.js","*.py","*.java","*.go","*.feature") -ErrorAction SilentlyContinue
+        )
+    }
+    $testSignalFiles = @(
+        $testSignalCandidates |
+            Where-Object {
+                $p = [string]$_.FullName
+                $p -match '(?i)(?:^|[\\/])(?:test|tests|spec|specs|__tests__)(?:[\\/]|$)' -or
+                $p -match '(?i)(?:^|[\\/]).*(?:\.test|\.tests|\.spec|_test|_tests)\.[A-Za-z0-9]+$'
+            }
+    )
+    $testProjectSignals = @()
+    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
+        $testProjectSignals = @(
+            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Include @("*.csproj","*.vbproj","*.fsproj") |
+                Where-Object {
+                    $p = [string]$_.FullName
+                    $n = [string]$_.Name
+                    $p -match '(?i)(?:^|[\\/])(?:test|tests|spec|specs)(?:[\\/]|$)' -or
+                    $n -match '(?i)\.(tests?|specs?)\.(csproj|vbproj|fsproj)$'
+                }
+        )
+    }
+    else {
+        $testProjectSignals = @(
+            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include @("*.csproj","*.vbproj","*.fsproj") -ErrorAction SilentlyContinue |
+                Where-Object {
+                    $p = [string]$_.FullName
+                    $n = [string]$_.Name
+                    $p -match '(?i)(?:^|[\\/])(?:test|tests|spec|specs)(?:[\\/]|$)' -or
+                    $n -match '(?i)\.(tests?|specs?)\.(csproj|vbproj|fsproj)$'
+                }
+        )
+    }
+    $testSignalCount = @($testSignalFiles).Count + @($testProjectSignals).Count
+
+    $debtSignalCandidates = @()
+    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
+        $debtSignalCandidates = @(
+            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "debt-register" -Include @("*.cs","*.vb","*.fs","*.ts","*.js","*.tsx","*.jsx","*.py","*.java","*.go","*.rb","*.php","*.ps1","*.psm1","*.sql")
+        )
+    }
+    else {
+        $debtSignalCandidates = @(
+            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include @("*.cs","*.vb","*.fs","*.ts","*.js","*.tsx","*.jsx","*.py","*.java","*.go","*.rb","*.php","*.ps1","*.psm1","*.sql") -ErrorAction SilentlyContinue
+        )
+    }
+    $debtSignalCount = 0
+    foreach ($file in @($debtSignalCandidates | Select-Object -First 300)) {
+        if ((Get-Item $file.FullName).Length -gt 1MB) { continue }
+        try {
+            Get-Content -Path $file.FullName -ErrorAction SilentlyContinue | ForEach-Object {
+                $debtSignalCount += ([regex]::Matches($_, '(?im)\b(TODO|FIXME|HACK|XXX)\b')).Count
+            }
+        } catch {}
+    }
+
+    $dependencySurfaceExpected = ($dependencyCount -gt 0 -or $dependencySignalCount -gt 0)
+    $testSurfaceExpected = ($testRecordCount -gt 0 -or $testSignalCount -gt 0)
+    $debtSurfaceExpected = ($debtRecordCount -gt 0 -or $debtSignalCount -gt 0)
+    $allowNoDependencySurface = (-not $dependencySurfaceExpected) -and ($dependencyCount -eq 0)
+    $allowNoTestSurface = (-not $testSurfaceExpected) -and ($testRecordCount -eq 0)
+    $allowNoDebtSurface = (-not $debtSurfaceExpected) -and ($debtRecordCount -eq 0)
+
+    return [ordered]@{
+        primaryStyle = $primaryStyle
+        apiSurfaceExpected = [bool]$apiSurfaceExpected
+        modelSurfaceExpected = [bool]$modelSurfaceExpected
+        dependencySurfaceExpected = [bool]$dependencySurfaceExpected
+        testSurfaceExpected = [bool]$testSurfaceExpected
+        debtSurfaceExpected = [bool]$debtSurfaceExpected
+        allowNoApiSurface = [bool]$allowNoApiSurface
+        allowNoModelSurface = [bool]$allowNoModelSurface
+        allowNoDependencySurface = [bool]$allowNoDependencySurface
+        allowNoTestSurface = [bool]$allowNoTestSurface
+        allowNoDebtSurface = [bool]$allowNoDebtSurface
+        endpointRecordCount = [int]$apiCount
+        modelRecordCount = [int]$modelCount
+        dependencyRecordCount = [int]$dependencyCount
+        testRecordCount = [int]$testRecordCount
+        debtRecordCount = [int]$debtRecordCount
+        dependencySignalCount = [int]$dependencySignalCount
+        testSignalCount = [int]$testSignalCount
+        debtSignalCount = [int]$debtSignalCount
+    }
+}
+
+$script:AppDocValidationContentExpectations = Get-AppDocValidationContentExpectations -RootPath $RootPath -DocsPath $docsPath
+
 function Test-ArtifactContractSections {
     param(
         [Parameter(Mandatory=$true)]
@@ -143,6 +354,11 @@ function Test-ArtifactContractSections {
 
     $content = Get-Content $DocPath -Raw
     $missingSections = @()
+    $allowNoApiSurface = [bool]($script:AppDocValidationContentExpectations.allowNoApiSurface ?? $false)
+    $allowNoModelSurface = [bool]($script:AppDocValidationContentExpectations.allowNoModelSurface ?? $false)
+    $allowNoDependencySurface = [bool]($script:AppDocValidationContentExpectations.allowNoDependencySurface ?? $false)
+    $allowNoTestSurface = [bool]($script:AppDocValidationContentExpectations.allowNoTestSurface ?? $false)
+    $allowNoDebtSurface = [bool]($script:AppDocValidationContentExpectations.allowNoDebtSurface ?? $false)
     foreach ($requiredSection in @($contract.requiredSections)) {
         if (-not ([regex]::IsMatch($content, "(?im)^##\s+" + [regex]::Escape([string]$requiredSection) + "\b"))) {
             $missingSections += [string]$requiredSection
@@ -151,7 +367,19 @@ function Test-ArtifactContractSections {
     }
 
     $bannedHits = @()
+    # Map artifact to allow flag variable
+    $artifactAllowMap = @{
+        'api-inventory'      = $allowNoApiSurface
+        'data-model'         = $allowNoModelSurface
+        'test-catalog'       = $allowNoTestSurface
+        'dependencies-catalog' = $allowNoDependencySurface
+        'debt-register'      = $allowNoDebtSurface
+    }
     foreach ($pattern in @(Get-AppDocBannedContentPatterns)) {
+        $allowFlag = $artifactAllowMap[$Artifact]
+        if ($allowFlag -and $pattern -match '(?i)_No .* detected') {
+            continue
+        }
         if ([regex]::IsMatch($content, $pattern)) {
             $bannedHits += $pattern
             Write-AppDocDiagnostic -Category "DETECTION_PATTERN_MISMATCH" -Severity "Warning" -Message "Banned placeholder pattern found ($Artifact)" -Component "validation" -FilePath $DocPath -Details @{ pattern = $pattern } | Out-Null
@@ -830,6 +1058,7 @@ function Get-PolicyGateAnalysis {
 
     $blockingIssues = @()
     $warnings = @()
+    $allowNoApiSurface = [bool]($script:AppDocValidationContentExpectations.allowNoApiSurface ?? $false)
     $architectureFingerprint = $null
     $apiSurfaceExpected = $true
     if ($RootPath -and (Get-Command Get-AppDocArchitectureFingerprint -ErrorAction SilentlyContinue)) {
@@ -909,7 +1138,7 @@ function Get-PolicyGateAnalysis {
             if ($apiSurfaceExpected) {
                 $blockingIssues += "api-endpoints-table-empty"
             }
-            else {
+            elseif (-not $allowNoApiSurface) {
                 $styleLabel = if ($architectureFingerprint -and $architectureFingerprint.primaryStyle) { [string]$architectureFingerprint.primaryStyle } else { "unknown" }
                 $warnings += "api-endpoints-table-empty-nonblocking:$styleLabel"
             }

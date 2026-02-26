@@ -4,6 +4,99 @@
 $script:AppDocDiagnosticsVersion = "1.0.0"
 $script:AppDocDiagnosticEvents = New-Object System.Collections.ArrayList
 
+function ConvertTo-AppDocDiagnosticsPortablePath {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string]$PathValue,
+        [string]$RootPath = "",
+        [string]$OutputPath = ""
+    )
+
+    if ([string]::IsNullOrWhiteSpace($PathValue)) { return "" }
+    $candidate = [string]$PathValue
+
+    if (-not [string]::IsNullOrWhiteSpace($RootPath)) {
+        try {
+            $resolvedRoot = [System.IO.Path]::GetFullPath($RootPath)
+            $resolvedCandidate = [System.IO.Path]::GetFullPath($candidate)
+            if ($resolvedCandidate -eq $resolvedRoot) {
+                return "./"
+            }
+            if ($resolvedCandidate.StartsWith($resolvedRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+                $relative = [System.IO.Path]::GetRelativePath($resolvedRoot, $resolvedCandidate)
+                if ([string]::IsNullOrWhiteSpace($relative) -or $relative -eq ".") { return "./" }
+                return ("./" + ($relative -replace '\\', '/'))
+            }
+        }
+        catch {
+            # Fall through to normalized original candidate.
+        }
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($OutputPath)) {
+        try {
+            $resolvedOutput = [System.IO.Path]::GetFullPath($OutputPath)
+            $resolvedCandidate = [System.IO.Path]::GetFullPath($candidate)
+            if ($resolvedCandidate -eq $resolvedOutput) {
+                $dirName = [System.IO.Path]::GetFileName($resolvedOutput)
+                if ([string]::IsNullOrWhiteSpace($dirName)) { $dirName = "output" }
+                return "./$dirName"
+            }
+        }
+        catch {
+            # Ignore and continue with normalized candidate.
+        }
+    }
+
+    $normalized = $candidate -replace '\\', '/'
+        if ($normalized -match '^[A-Za-z]:') {
+            $normalizedPath = $normalized -replace '\\', '/'
+            $normalizedPath = $normalizedPath -replace '^[A-Za-z]:', '${ROOT_PATH}'
+            return $normalizedPath
+    }
+    return $normalized
+}
+
+function ConvertTo-AppDocDiagnosticsPortableValue {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [object]$Value,
+        [string]$PropertyName = "",
+        [string]$RootPath = "",
+        [string]$OutputPath = ""
+    )
+
+    if ($null -eq $Value) { return $null }
+
+    if ($Value -is [System.Collections.IDictionary]) {
+        $result = [ordered]@{}
+        foreach ($key in @($Value.Keys)) {
+            $keyName = [string]$key
+            $result[$keyName] = ConvertTo-AppDocDiagnosticsPortableValue -Value $Value[$key] -PropertyName $keyName -RootPath $RootPath -OutputPath $OutputPath
+        }
+        return $result
+    }
+
+    if (($Value -is [System.Collections.IEnumerable]) -and -not ($Value -is [string])) {
+        return $Value | ForEach-Object { ConvertTo-AppDocDiagnosticsPortableValue -Value $_ -PropertyName $PropertyName -RootPath $RootPath -OutputPath $OutputPath }
+    }
+
+    if ($Value -is [string]) {
+        $name = if ($PropertyName) { $PropertyName.ToLowerInvariant() } else { "" }
+        if ($name -eq "profile") {
+            return [string]$Value
+        }
+        if ($name -in @("path","filepath","file","rootpath","outputpath") -or $name -match 'path$' -or $name -match 'filepath$') {
+            return ConvertTo-AppDocDiagnosticsPortablePath -PathValue ([string]$Value) -RootPath $RootPath -OutputPath $OutputPath
+        }
+        return [string]$Value
+    }
+
+    return $Value
+}
+
 function Initialize-AppDocDiagnostics {
     [CmdletBinding()]
     param(
@@ -17,7 +110,7 @@ function Initialize-AppDocDiagnostics {
     }
 
     if ($RootPath) {
-        Write-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" `
+            Write-AppDocDiagnostic -Category "INITIALIZATION" -Severity "Info" `
             -Message "Diagnostics initialized" -Component "orchestrator" `
             -Details @{ rootPath = $RootPath; outputPath = $OutputPath }
     }
@@ -109,11 +202,52 @@ function Export-AppDocDiagnostics {
         New-Item -Path $directory -ItemType Directory -Force | Out-Null
     }
 
+    $rootPath = ""
+    if ($AdditionalData -and $AdditionalData.ContainsKey("rootPath")) {
+        $rootPath = [string]$AdditionalData["rootPath"]
+    }
+    if ([string]::IsNullOrWhiteSpace($rootPath)) {
+        $rootPath = [string](
+            Get-AppDocDiagnostics |
+                ForEach-Object { $_.details.rootPath } |
+                Where-Object { $_ } |
+                Select-Object -First 1
+        )
+    }
+
+    $outputPath = ""
+    if ($AdditionalData -and $AdditionalData.ContainsKey("outputPath")) {
+        $outputPath = [string]$AdditionalData["outputPath"]
+    }
+    if ([string]::IsNullOrWhiteSpace($outputPath)) {
+        $outputPath = [string](
+            Get-AppDocDiagnostics |
+                ForEach-Object { $_.details.outputPath } |
+                Where-Object { $_ } |
+                Select-Object -First 1
+        )
+    }
+
+    $portableEvents = @()
+    foreach ($event in @($script:AppDocDiagnosticEvents)) {
+        $portableEvents += [ordered]@{
+            timestamp = [string]$event.timestamp
+            category = [string]$event.category
+            severity = [string]$event.severity
+            component = [string]$event.component
+            message = [string]$event.message
+            filePath = ConvertTo-AppDocDiagnosticsPortablePath -PathValue ([string]$event.filePath) -RootPath $rootPath -OutputPath $outputPath
+            details = ConvertTo-AppDocDiagnosticsPortableValue -Value $event.details -RootPath $rootPath -OutputPath $outputPath
+        }
+    }
+
+    $portableMetadata = ConvertTo-AppDocDiagnosticsPortableValue -Value $AdditionalData -RootPath $rootPath -OutputPath $outputPath
+
     $payload = [ordered]@{
         generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
         summary = Get-AppDocDiagnosticsSummary
-        events = @($script:AppDocDiagnosticEvents)
-        metadata = $AdditionalData
+        events = $portableEvents
+        metadata = $portableMetadata
     }
 
     $payload | ConvertTo-Json -Depth 20 | Out-File -FilePath $Path -Encoding UTF8

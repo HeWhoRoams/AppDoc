@@ -1,6 +1,6 @@
 # C4 System Context
 
-**Generated**: 2026-02-20 14:53:19
+**Generated**: 2026-02-20 22:34:41
 
 ## Summary
 
@@ -11,18 +11,17 @@
 ## Diagram
 
 ```mermaid
-graph LR
-    user["User"]
-    sampleapp["SampleApp"]
-    user -->|Uses| sampleapp
-    external_api["External API"]
-    sampleapp -->|Integrates with| external_api
-    mq_rabbitmq["RabbitMQ"]
-    sampleapp -->|Integrates with| mq_rabbitmq
-    database["Database"]
-    sampleapp -->|Integrates with| database
-    database_sql_server["SQL Server"]
-    sampleapp -->|Integrates with| database_sql_server
+C4Context
+title SampleApp - System Context
+Person(user, "User", "Primary caller of the system")
+System(sampleapp, "SampleApp", "Software system: SampleApp")
+Rel(user, sampleapp, "Uses")
+System_Ext(database_sql_server, "SQL Server", "SQL Server database system")
+Rel(sampleapp, database_sql_server, "Integrates with")
+System_Ext(mq_rabbitmq, "RabbitMQ", "RabbitMQ message broker")
+Rel(sampleapp, mq_rabbitmq, "Integrates with")
+System_Ext(external_api, "External API", "Third-party REST API")
+Rel(sampleapp, external_api, "Integrates with")
 ```
 
 ---

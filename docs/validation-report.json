@@ -1,74 +1,79 @@
 {
-  "timestamp": "2026-02-20T14:53:21-05:00",
+  "timestamp": "2026-02-25T14:49:06-05:00",
   "strict": false,
   "threshold": 80,
-  "overallScore": 88.8,
+  "overallScore": 93.5,
   "metrics": {
     "validatorPassRate": 100.0,
     "artifactPresence": 100.0,
     "evidencePresence": 100.0,
-    "semanticContractScore": 95.0,
-    "evidenceContractScore": 100.0,
-    "apiCoverage": 0.0,
+    "semanticContractScore": 99.0,
+    "evidenceContractScore": 97.0,
+    "apiCoverage": 100,
     "configCoverage": 100,
     "dataModelCoverage": 100,
     "redactionSafetyScore": 100,
     "humanUsabilityScore": 100.0,
     "claimGroundingScore": 100.0,
-    "documentationFreshnessScore": 70.0,
+    "documentationFreshnessScore": 80.0,
     "contradictionConsistencyScore": 80.0,
-    "taskGuideActionabilityScore": 100.0,
-    "taskGuideEvidenceCoverageScore": 70.0,
+    "taskGuideActionabilityScore": 83.3,
+    "taskGuideEvidenceCoverageScore": 50.0,
     "taskGuideTimeToCompleteMinutes": 12.0,
     "taskGuideTimeScore": 100.0,
-    "policyGateScore": 95.0
+    "policyGateScore": 100.0
   },
   "missingArtifacts": [],
   "missingEvidenceArtifacts": [],
   "validators": [
     {
-      "passed": true,
       "script": "validate-start-here.ps1",
+      "passed": true,
       "message": "OK"
     },
     {
-      "passed": true,
       "script": "validate-overview.ps1",
+      "passed": true,
       "message": "OK"
     },
     {
-      "passed": true,
       "script": "validate-api-inventory.ps1",
+      "passed": true,
       "message": "OK"
     },
     {
-      "passed": true,
       "script": "validate-data-model.ps1",
+      "passed": true,
       "message": "OK"
     },
     {
-      "passed": true,
       "script": "validate-config-catalog.ps1",
+      "passed": true,
       "message": "OK"
     },
     {
-      "passed": true,
       "script": "validate-build-cookbook.ps1",
+      "passed": true,
       "message": "OK"
     },
     {
-      "passed": true,
       "script": "validate-test-catalog.ps1",
+      "passed": true,
       "message": "OK"
     },
     {
+      "script": "validate-dependencies-catalog.ps1",
       "passed": true,
+      "message": "OK"
+    },
+    {
       "script": "validate-task-guides.ps1",
+      "passed": true,
       "message": "OK"
     },
     {
-      "passed": true,
       "script": "validate-debt-register.ps1",
+      "passed": true,
       "message": "OK"
     }
   ],
@@ -89,21 +94,17 @@
     },
     {
       "artifact": "api-inventory",
-      "passed": false,
-      "score": 90,
+      "passed": true,
+      "score": 100,
       "missingSections": [],
-      "bannedPatterns": [
-        "(?im)_No [^_]+ detected\\."
-      ]
+      "bannedPatterns": []
     },
     {
       "artifact": "data-model",
-      "passed": false,
-      "score": 90,
+      "passed": true,
+      "score": 100,
       "missingSections": [],
-      "bannedPatterns": [
-        "(?im)_No [^_]+ detected\\."
-      ]
+      "bannedPatterns": []
     },
     {
       "artifact": "config-catalog",
@@ -121,12 +122,10 @@
     },
     {
       "artifact": "test-catalog",
-      "passed": false,
-      "score": 90,
+      "passed": true,
+      "score": 100,
       "missingSections": [],
-      "bannedPatterns": [
-        "(?im)_No [^_]+ detected\\."
-      ]
+      "bannedPatterns": []
     },
     {
       "artifact": "task-guides",
@@ -146,12 +145,10 @@
     },
     {
       "artifact": "dependencies-catalog",
-      "passed": false,
-      "score": 90,
+      "passed": true,
+      "score": 100,
       "missingSections": [],
-      "bannedPatterns": [
-        "(?im)_No [^_]+ detected\\."
-      ]
+      "bannedPatterns": []
     }
   ],
   "evidenceContractValidation": [
@@ -163,9 +160,11 @@
     },
     {
       "artifact": "overview",
-      "passed": true,
-      "score": 100,
-      "issues": []
+      "passed": false,
+      "score": 85,
+      "issues": [
+        "missing-record-kind-for-key:technologies"
+      ]
     },
     {
       "artifact": "api-inventory",
@@ -187,9 +186,11 @@
     },
     {
       "artifact": "build-cookbook",
-      "passed": true,
-      "score": 100,
-      "issues": []
+      "passed": false,
+      "score": 85,
+      "issues": [
+        "missing-record-kind-for-key:commands"
+      ]
     },
     {
       "artifact": "test-catalog",
@@ -220,18 +221,18 @@
     "start-here-model-signal-mismatch:9/0"
   ],
   "taskGuideOutcomes": {
-    "actionabilityScore": 100.0,
-    "evidenceCoverageScore": 70.0,
+    "actionabilityScore": 83.3,
+    "evidenceCoverageScore": 50.0,
     "estimatedCompletionMinutes": 12.0,
     "taskCompletionTimeScore": 100.0,
-    "issues": []
+    "issues": [
+      "task-guide-evidence-snapshot-low:1"
+    ]
   },
   "policyGates": {
-    "score": 95.0,
+    "score": 100.0,
     "passed": true,
     "blockingIssues": [],
-    "warnings": [
-      "api-endpoints-table-empty-nonblocking:no-api-surface"
-    ]
+    "warnings": []
   }
 }

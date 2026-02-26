@@ -35,6 +35,16 @@ $apiRendererModule = Join-Path $PSScriptRoot "modules\AppDoc.ApiInventory.Render
 if (-not (Test-Path $apiRendererModule)) { Write-Error "Required module not found: $apiRendererModule"; exit 1 }
 Import-Module $apiRendererModule -Force -ErrorAction Stop
 
+$evidenceGraphModule = Join-Path $PSScriptRoot "modules\AppDoc.EvidenceGraph.psm1"
+if (Test-Path $evidenceGraphModule) {
+    Import-Module $evidenceGraphModule -Force -ErrorAction SilentlyContinue
+}
+
+$architectureModule = Join-Path $PSScriptRoot "modules\AppDoc.ArchitectureFingerprint.psm1"
+if (Test-Path $architectureModule) {
+    Import-Module $architectureModule -Force -ErrorAction SilentlyContinue
+}
+
 Write-Host "📡 Generating API Inventory..." -ForegroundColor Cyan
 
 if (-not (Test-Path $RootPath)) {
@@ -59,21 +69,47 @@ if ($apiData.astEndpointCount -gt 0) {
 }
 Write-Host "  Scanned $($apiData.scannedApiFileCount) potential API files" -ForegroundColor Gray
 
+$apiSurfaceExpected = $true
+if (Get-Command Get-AppDocArchitectureFingerprint -ErrorAction SilentlyContinue) {
+    try {
+        $fingerprint = Get-AppDocArchitectureFingerprint -RootPath $RootPath
+        if ($null -ne $fingerprint -and $null -ne $fingerprint.apiSurfaceExpected) {
+            $apiSurfaceExpected = [bool]$fingerprint.apiSurfaceExpected
+        }
+    }
+    catch {
+        Write-Verbose "Get-AppDocArchitectureFingerprint failed for RootPath $RootPath: $($_.Exception.Message). apiSurfaceExpected will remain default true."
+        # Keep default expected=true when fingerprinting fails.
+    }
+}
+
 if ($endpoints.Count -eq 0) {
-    Write-Host "⚠️  No API endpoints detected!" -ForegroundColor Yellow
-    Write-Host "   Searched in: $RootPath" -ForegroundColor Gray
-    Write-Host "   File extensions: *.js, *.ts, *.cs, *.py, *.java, *.svc, *.asmx" -ForegroundColor Gray
+    if ($apiSurfaceExpected) {
+        Write-Host "⚠️  No API endpoints detected!" -ForegroundColor Yellow
+        Write-Host "   Searched in: $RootPath" -ForegroundColor Gray
+        Write-Host "   File extensions: *.js, *.ts, *.cs, *.py, *.java, *.svc, *.asmx" -ForegroundColor Gray
+    }
+    else {
+        Write-Host "ℹ️  No API endpoints detected (architecture fingerprint indicates no inbound API surface)." -ForegroundColor Gray
+    }
 }
 
 Write-Progress -Activity "Generating API Inventory" -Status "Populating template..." -PercentComplete 80
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocApiInventoryContent -Content $content -Endpoints $endpoints
 $content = Normalize-AppDocTemplateInstructionText -Content $content
+$content = Normalize-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 $artifact = "api-inventory"
 $contract = Get-AppDocArtifactContract -Artifact $artifact
+$graphContract = $null
+if (Get-Command Get-AppDocEvidenceGraphContract -ErrorAction SilentlyContinue) {
+    $graphContract = Get-AppDocEvidenceGraphContract
+}
+$inboundCount = @($endpoints | Where-Object { $_.direction -ne "outbound" }).Count
+$outboundCount = @($endpoints | Where-Object { $_.direction -eq "outbound" }).Count
 $evidenceRecords = @(
     $endpoints | ForEach-Object {
         $sourcePath = if ([string]::IsNullOrWhiteSpace([string]$_.filePath)) { "unknown" } else { [string]$_.filePath }
@@ -97,6 +133,10 @@ $evidencePath = Write-AppDocEvidenceArtifact -RootPath $RootPath -Artifact $arti
     requiredEvidenceKeys = @($contract.requiredEvidenceKeys)
     requiredSections = @($contract.requiredSections)
     generator = "generate-api-inventory.ps1"
+    endpointCount = [int]$endpoints.Count
+    inboundEndpointCount = [int]$inboundCount
+    outboundEndpointCount = [int]$outboundCount
+    graphSchemaTarget = if ($graphContract) { [string]$graphContract.schemaVersion } else { "" }
 }
 if ($evidencePath) {
     [void](Update-AppDocEvidenceManifest -RootPath $RootPath -Artifact $artifact -EvidencePath $evidencePath -RecordCount $evidenceRecords.Count -Metadata @{

@@ -1,0 +1,53 @@
+
+Name                           Value
+----                           -----
+timestamp                      2026-02-25T10:53:00-05:00
+category                       ENVIRONMENT_ERROR
+severity                       Info
+component                      orchestrator
+message                        Diagnostics initialized
+filePath                       
+details                        {[outputPath, C:\Github\Appdoc\docs], [rootPath, C:\Github\Appdoc]}
+{
+  "languages": {
+    ".yml": 1,
+    ".json": 61,
+    ".log": 7,
+    ".psm1": 39,
+    ".pdb": 2,
+    ".cs": 8,
+    ".txt": 1,
+    ".ps1": 56,
+    ".cache": 19,
+    ".sln": 1,
+    ".csproj": 4,
+    ".props": 4,
+    ".up2date": 1,
+    ".editorconfig": 4,
+    ".gitignore": 1,
+    ".jar": 1,
+    ".targets": 4,
+    ".md": 66,
+    ".exe": 2,
+    ".dll": 32
+  },
+  "services": [
+    "docs"
+  ],
+  "totalFiles": 314,
+  "directories": [
+    "docs",
+    "specs",
+    "tests",
+    "tmp"
+  ]
+}
+{
+  "edges": [],
+  "nodes": []
+}
+{
+  "flags": [],
+  "options": []
+}
+

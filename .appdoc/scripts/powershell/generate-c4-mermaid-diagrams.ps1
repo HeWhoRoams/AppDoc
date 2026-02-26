@@ -49,6 +49,139 @@ function ConvertTo-MermaidNodeId {
     return $normalized
 }
 
+function ConvertTo-C4Text {
+    param([string]$Text)
+    if ([string]::IsNullOrWhiteSpace($Text)) { return "" }
+    return (($Text -replace '"', "'") -replace '\r?\n', ' ').Trim()
+}
+
+function Test-AppDocOutboundEndpointRecord {
+    param(
+        [AllowNull()]
+        [object]$Record
+    )
+
+    if (-not $Record) { return $false }
+    $metadata = if ($Record.PSObject.Properties["metadata"]) { $Record.metadata } else { $null }
+    $direction = if ($metadata -and $metadata.PSObject.Properties["direction"]) { [string]$metadata.direction } else { "" }
+    $sourceType = if ($metadata -and $metadata.PSObject.Properties["sourceType"]) { [string]$metadata.sourceType } else { "" }
+    $name = if ($Record.PSObject.Properties["name"]) { [string]$Record.name } else { "" }
+
+    if ($direction -eq "outbound") { return $true }
+    if ($sourceType -in @("soap-client","wcf-client","asmx-client","proxy-client")) { return $true }
+    if ($name -match '^/soap-client/') { return $true }
+    return $false
+}
+
+function Get-AppDocApiEvidenceExternalSystems {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$RootPath
+    )
+
+    $evidencePath = Join-Path $RootPath "docs/evidence/api-inventory.evidence.json"
+    if (-not (Test-Path $evidencePath)) { return @() }
+
+    $payload = $null
+    try {
+        $payload = Get-Content -Path $evidencePath -Raw | ConvertFrom-Json -Depth 80
+    }
+    catch {
+        Write-Verbose "Unable to parse api-inventory evidence for C4 enrichment: $($_.Exception.Message)"
+        return @()
+    }
+
+    $records = @($payload.records | Where-Object { $_ -and [string]$_.kind -eq "endpoint" })
+    if ($records.Count -eq 0) { return @() }
+
+    $externalByName = @{}
+    foreach ($record in $records) {
+        if (-not (Test-AppDocOutboundEndpointRecord -Record $record)) { continue }
+
+        $metadata = if ($record.PSObject.Properties["metadata"]) { $record.metadata } else { $null }
+        $integrationUrl = if ($metadata -and $metadata.PSObject.Properties["integrationUrl"]) { [string]$metadata.integrationUrl } else { "" }
+        $path = if ($metadata -and $metadata.PSObject.Properties["path"]) { [string]$metadata.path } else { "" }
+        $recordName = if ($record.PSObject.Properties["name"]) { [string]$record.name } else { "" }
+
+        $extName = ""
+        if (-not [string]::IsNullOrWhiteSpace($integrationUrl)) {
+            try {
+                $uri = [Uri]$integrationUrl
+                if ($uri -and $uri.Host) {
+                    $extName = [string]$uri.Host
+                }
+            }
+            catch {
+                $extName = $integrationUrl
+            }
+        }
+
+        if ([string]::IsNullOrWhiteSpace($extName)) {
+            $candidate = if (-not [string]::IsNullOrWhiteSpace($path)) { $path } else { $recordName }
+            if ($candidate -match '^/soap-client/([^/]+)') {
+                $extName = [string]$Matches[1]
+            }
+            elseif ($candidate -match '^https?://([^/]+)') {
+                $extName = [string]$Matches[1]
+            }
+            else {
+                $extName = $candidate
+            }
+        }
+
+        if ([string]::IsNullOrWhiteSpace($extName)) { continue }
+        $extName = ConvertTo-C4Text -Text $extName
+        if ([string]::IsNullOrWhiteSpace($extName)) { continue }
+
+        $nameKey = $extName.ToLowerInvariant()
+        if ($externalByName.ContainsKey($nameKey)) { continue }
+
+        $description = "External integration inferred from outbound API evidence"
+        if (-not [string]::IsNullOrWhiteSpace($integrationUrl)) {
+            $description = "External integration derived from outbound endpoint URL"
+        }
+        elseif ($recordName -match '^/soap-client/') {
+            $description = "Legacy SOAP/WCF integration inferred from client endpoint evidence"
+        }
+
+        $externalByName[$nameKey] = @{
+            Id = ("api_" + (ConvertTo-MermaidNodeId -Text $extName))
+            Name = $extName
+            Description = $description
+            Type = "ExternalSystem"
+        }
+    }
+
+    return @(
+        $externalByName.Values |
+            Sort-Object @{ Expression = { [string]$_.Name } }
+    )
+}
+
+function Merge-AppDocExternalSystemsByName {
+    param(
+        [AllowEmptyCollection()]
+        [array]$Primary = @(),
+        [AllowEmptyCollection()]
+        [array]$Secondary = @()
+    )
+
+    $byName = @{}
+    foreach ($ext in @($Primary + $Secondary)) {
+        if (-not $ext) { continue }
+        $name = ConvertTo-C4Text -Text ([string]$ext.Name)
+        if ([string]::IsNullOrWhiteSpace($name)) { continue }
+        $key = $name.ToLowerInvariant()
+        if ($byName.ContainsKey($key)) { continue }
+        $byName[$key] = $ext
+    }
+
+    return @(
+        $byName.Values |
+            Sort-Object @{ Expression = { [string]$_.Name } }
+    )
+}
+
 function New-ContextMermaid {
     param(
         [Parameter(Mandatory=$true)]
@@ -56,17 +189,47 @@ function New-ContextMermaid {
     )
 
     $systemId = ConvertTo-MermaidNodeId -Text $SystemModel.Id
+    $systemName = ConvertTo-C4Text -Text $SystemModel.Name
+    $systemDescription = ConvertTo-C4Text -Text $SystemModel.Description
+    if ([string]::IsNullOrWhiteSpace($systemDescription)) {
+        $systemDescription = "Primary software system"
+    }
+
+    $externalSystems = @($SystemModel.ExternalSystems)
+    $hasSpecificDatabase = @(
+        $externalSystems |
+            Where-Object { ([string]$_.Name) -match '(?i)sql\s*server|postgres|mysql|oracle' }
+    ).Count -gt 0
+
+    $seenNames = @{}
     $lines = @(
-        "graph LR"
-        "    user[`"User`"]"
-        "    $systemId[`"$($SystemModel.Name)`"]"
-        "    user -->|Uses| $systemId"
+        "C4Context"
+        "title $systemName - System Context"
+        "Person(user, `"User`", `"Primary caller of the system`")"
+        "System($systemId, `"$systemName`", `"$systemDescription`")"
+        "Rel(user, $systemId, `"Uses`")"
     )
 
-    foreach ($ext in @($SystemModel.ExternalSystems)) {
-        $extId = ConvertTo-MermaidNodeId -Text $ext.Id
-        $lines += "    $extId[`"$($ext.Name)`"]"
-        $lines += "    $systemId -->|Integrates with| $extId"
+    foreach ($ext in $externalSystems) {
+        $extName = ConvertTo-C4Text -Text ([string]$ext.Name)
+        if ([string]::IsNullOrWhiteSpace($extName)) { continue }
+        if ($hasSpecificDatabase -and $extName -match '^(?i)database$') { continue }
+
+        $nameKey = $extName.ToLowerInvariant()
+        if ($seenNames.ContainsKey($nameKey)) { continue }
+        $seenNames[$nameKey] = $true
+
+        $extId = ConvertTo-MermaidNodeId -Text ([string]$ext.Id)
+        if ([string]::IsNullOrWhiteSpace($extId)) {
+            $extId = ConvertTo-MermaidNodeId -Text $extName
+        }
+        $extDescription = ConvertTo-C4Text -Text ([string]$ext.Description)
+        if ([string]::IsNullOrWhiteSpace($extDescription)) {
+            $extDescription = "External system"
+        }
+
+        $lines += "System_Ext($extId, `"$extName`", `"$extDescription`")"
+        $lines += "Rel($systemId, $extId, `"Integrates with`")"
     }
 
     return ($lines -join "`n")
@@ -75,26 +238,102 @@ function New-ContextMermaid {
 function New-ContainerMermaid {
     param(
         [Parameter(Mandatory=$true)]
-        [hashtable]$ContainerModel
+        [hashtable]$ContainerModel,
+        [Parameter(Mandatory=$false)]
+        [AllowEmptyCollection()]
+        [array]$ExternalSystems = @()
     )
 
-    $lines = @(
-        "graph LR"
-    )
+    $systemName = ConvertTo-C4Text -Text ([string]$ContainerModel.SystemName)
+    if ([string]::IsNullOrWhiteSpace($systemName)) { $systemName = "System" }
+
+    $lines = @("C4Container")
+    $lines += "title $systemName - Container View"
+    $lines += "Person(user, `"User`", `"Primary caller of the system`")"
+    $lines += "System_Boundary(system_boundary, `"$systemName`") {"
 
     foreach ($container in @($ContainerModel.Containers)) {
         $containerId = ConvertTo-MermaidNodeId -Text $container.Id
-        $lines += "    $containerId[`"$($container.Name)<br/>$($container.Technology)`"]"
-    }
-    foreach ($rel in @($ContainerModel.Relationships)) {
-        $sourceId = ConvertTo-MermaidNodeId -Text $rel.Source
-        $targetId = ConvertTo-MermaidNodeId -Text $rel.Target
-        $label = if ($rel.Description) { $rel.Description } else { "Uses" }
-        $lines += "    $sourceId -->|$label| $targetId"
+        $containerName = ConvertTo-C4Text -Text ([string]$container.Name)
+        $containerTech = ConvertTo-C4Text -Text ([string]$container.Technology)
+        $containerDesc = ConvertTo-C4Text -Text ([string]$container.Description)
+        if ([string]::IsNullOrWhiteSpace($containerDesc)) { $containerDesc = "Application container" }
+        $lines += "  Container($containerId, `"$containerName`", `"$containerTech`", `"$containerDesc`")"
     }
 
     if ($ContainerModel.Containers.Count -eq 0) {
-        $lines += "    no_containers[`"No deployable containers detected`"]"
+        $lines += "  Container(no_containers, `"No deployable containers detected`", `"N/A`", `"Detection fallback`")"
+    }
+    $lines += "}"
+
+    $primaryContainerId = @(
+        $ContainerModel.Containers |
+            Sort-Object @{ Expression = { if (([string]$_.Type) -eq "WebApp") { 0 } elseif (([string]$_.Type) -eq "Service") { 1 } else { 2 } } }, @{ Expression = { [string]$_.Name } } |
+            Select-Object -First 1 |
+            ForEach-Object { ConvertTo-MermaidNodeId -Text ([string]$_.Id) }
+    )
+    if ($primaryContainerId.Count -gt 0 -and -not [string]::IsNullOrWhiteSpace([string]$primaryContainerId[0])) {
+        $lines += "Rel(user, $($primaryContainerId[0]), `"Uses`")"
+    } else {
+        $lines += "Rel(user, no_containers, `"Inspects`")"
+    }
+
+    $externalByName = @{}
+    foreach ($ext in @($ExternalSystems)) {
+        $extName = ConvertTo-C4Text -Text ([string]$ext.Name)
+        if ([string]::IsNullOrWhiteSpace($extName)) { continue }
+        $nameKey = $extName.ToLowerInvariant()
+        if ($externalByName.ContainsKey($nameKey)) { continue }
+        $externalByName[$nameKey] = $ext
+    }
+
+    foreach ($ext in @($externalByName.Values | Sort-Object @{ Expression = { [string]$_.Name } })) {
+        $extName = ConvertTo-C4Text -Text ([string]$ext.Name)
+        $extDesc = ConvertTo-C4Text -Text ([string]$ext.Description)
+        if ([string]::IsNullOrWhiteSpace($extDesc)) { $extDesc = "External system" }
+        $extId = "ext_" + (ConvertTo-MermaidNodeId -Text ([string]$ext.Id))
+        if ([string]::IsNullOrWhiteSpace($extId) -or $extId -eq "ext_node") {
+            $extId = "ext_" + (ConvertTo-MermaidNodeId -Text $extName)
+        }
+
+        $lines += "System_Ext($extId, `"$extName`", `"$extDesc`")"
+
+        $relText = "Calls"
+        $relProtocol = ""
+        if ($extName -match '(?i)sql|postgres|mysql|oracle|database') {
+            $relText = "Reads/Writes"
+            $relProtocol = "SQL"
+        }
+        elseif ($extName -match '(?i)rabbitmq|queue|service bus|broker') {
+            $relText = "Publishes/Subscribes"
+            $relProtocol = "AMQP"
+        }
+        elseif ($extName -match '(?i)api|service|http') {
+            $relText = "Calls"
+            $relProtocol = "HTTPS"
+        }
+
+        if ($primaryContainerId.Count -gt 0 -and -not [string]::IsNullOrWhiteSpace([string]$primaryContainerId[0])) {
+            if ([string]::IsNullOrWhiteSpace($relProtocol)) {
+                $lines += "Rel($($primaryContainerId[0]), $extId, `"$relText`")"
+            }
+            else {
+                $lines += "Rel($($primaryContainerId[0]), $extId, `"$relText`", `"$relProtocol`")"
+            }
+        }
+    }
+
+    foreach ($rel in @($ContainerModel.Relationships)) {
+        $sourceId = ConvertTo-MermaidNodeId -Text $rel.Source
+        $targetId = ConvertTo-MermaidNodeId -Text $rel.Target
+        $label = if ($rel.Description) { (ConvertTo-C4Text -Text ([string]$rel.Description)) } else { "Uses" }
+        $protocol = if ($rel.Protocol) { (ConvertTo-C4Text -Text ([string]$rel.Protocol)) } else { "" }
+        if ([string]::IsNullOrWhiteSpace($protocol)) {
+            $lines += "Rel($sourceId, $targetId, `"$label`")"
+        }
+        else {
+            $lines += "Rel($sourceId, $targetId, `"$label`", `"$protocol`")"
+        }
     }
 
     return ($lines -join "`n")
@@ -121,7 +360,7 @@ function Save-MermaidMarkdown {
     $markdownLines = @()
     $markdownLines += "# $Title"
     $markdownLines += ''
-    $markdownLines += "**Generated**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+    $markdownLines += "**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss', [System.Globalization.CultureInfo]::InvariantCulture))"
     $markdownLines += ''
     $markdownLines += '## Summary'
     $markdownLines += ''
@@ -188,6 +427,9 @@ if (-not (Test-Path $diagramsPath)) {
     New-Item -Path $diagramsPath -ItemType Directory -Force | Out-Null
 }
 
+$analysisRoot = if (Test-Path $CodebasePath -PathType Leaf) { Split-Path $CodebasePath -Parent } else { $CodebasePath }
+$apiEvidenceExternalSystems = Get-AppDocApiEvidenceExternalSystems -RootPath $analysisRoot
+
 $solutionFile = $null
 if ($CodebasePath -like "*.sln") {
     $solutionFile = $CodebasePath
@@ -199,7 +441,7 @@ else {
         $generatedFiles = @()
         if ($DiagramLevels -in @('Context', 'All')) {
             $contextOutput = Join-Path $diagramsPath "c4-context.md"
-            Save-MermaidMarkdown -FilePath $contextOutput -Title "C4 System Context" -Mermaid "graph LR`n    system[`"System`"]" -Summary @(
+            Save-MermaidMarkdown -FilePath $contextOutput -Title "C4 System Context" -Mermaid "C4Context`ntitle System Context`nPerson(user, `"User`", `"Primary caller`")`nSystem(system, `"System`", `"Application boundary`")`nRel(user, system, `"Uses`")" -Summary @(
                 "System detection unavailable (no solution file found)",
                 "External systems detected: 0",
                 "Scope: high-level system context"
@@ -209,7 +451,7 @@ else {
 
         if ($DiagramLevels -in @('Container', 'All')) {
             $containerOutput = Join-Path $diagramsPath "c4-container.md"
-            Save-MermaidMarkdown -FilePath $containerOutput -Title "C4 Container" -Mermaid "graph LR`n    no_containers[`"No deployable containers detected`"]" -Summary @(
+            Save-MermaidMarkdown -FilePath $containerOutput -Title "C4 Container" -Mermaid "C4Container`ntitle Container View`nPerson(user, `"User`", `"Primary caller`")`nContainer(no_containers, `"No deployable containers detected`", `"N/A`", `"Detection fallback`")`nRel(user, no_containers, `"Inspects`")" -Summary @(
                 "System detection unavailable (no solution file found)",
                 "Containers detected: 0",
                 "Relationships detected: 0"
@@ -226,11 +468,17 @@ else {
         exit 0
     }
 
+    if ($slnFiles.Count -gt 1) {
+        Write-Warning ("Multiple solution files found in $CodebasePath. The following .sln files were detected:")
+        $slnFiles | ForEach-Object { Write-Warning ("  - " + $_.FullName) }
+        Write-Warning ("Using the first solution file: $($slnFiles[0].FullName)")
+    }
     $solutionFile = $slnFiles[0].FullName
     Write-Host "Found solution: $($slnFiles[0].Name)" -ForegroundColor Green
 }
 
 $generatedFiles = @()
+$contextModelForContainer = $null
 
 if ($DiagramLevels -in @('Context', 'All')) {
     $contextOutput = Join-Path $diagramsPath "c4-context.md"
@@ -240,6 +488,8 @@ if ($DiagramLevels -in @('Context', 'All')) {
     else {
         $systemModel = Build-SystemContextModel -SolutionPath $solutionFile
         if ($systemModel) {
+            $systemModel.ExternalSystems = Merge-AppDocExternalSystemsByName -Primary @($systemModel.ExternalSystems) -Secondary $apiEvidenceExternalSystems
+            $contextModelForContainer = $systemModel
             $mermaid = New-ContextMermaid -SystemModel $systemModel
             Save-MermaidMarkdown -FilePath $contextOutput -Title "C4 System Context" -Mermaid $mermaid -Summary @(
                 "System: $($systemModel.Name)",
@@ -260,11 +510,27 @@ if ($DiagramLevels -in @('Container', 'All')) {
     else {
         $containerModel = Build-ContainerModel -SolutionPath $solutionFile
         if ($containerModel) {
-            $mermaid = New-ContainerMermaid -ContainerModel $containerModel
+            if (-not $contextModelForContainer) {
+                $contextModelForContainer = Build-SystemContextModel -SolutionPath $solutionFile
+                if ($contextModelForContainer) {
+                    $contextModelForContainer.ExternalSystems = Merge-AppDocExternalSystemsByName -Primary @($contextModelForContainer.ExternalSystems) -Secondary $apiEvidenceExternalSystems
+                }
+            }
+
+
+            $externalSystems = @()
+            if ($contextModelForContainer -and $contextModelForContainer.ExternalSystems) {
+                $externalSystems = @($contextModelForContainer.ExternalSystems)
+            } elseif ($apiEvidenceExternalSystems) {
+                $externalSystems = Merge-AppDocExternalSystemsByName -Primary $externalSystems -Secondary $apiEvidenceExternalSystems
+            }
+
+            $mermaid = New-ContainerMermaid -ContainerModel $containerModel -ExternalSystems $externalSystems
             Save-MermaidMarkdown -FilePath $containerOutput -Title "C4 Container" -Mermaid $mermaid -Summary @(
                 "System: $($containerModel.SystemName)",
                 "Containers detected: $($containerModel.Containers.Count)",
-                "Relationships detected: $($containerModel.Relationships.Count)"
+                "Relationships detected: $($containerModel.Relationships.Count)",
+                "External systems mapped: $($externalSystems.Count)"
             )
             $generatedFiles += "[C4 Container](diagrams/c4-container.md)"
             Write-Host "Generated: $containerOutput" -ForegroundColor Green

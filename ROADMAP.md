@@ -20,6 +20,7 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 - Structured diagnostics/contracts/evidence modules are implemented (`AppDoc.Diagnostics`, `AppDoc.Contracts`, `AppDoc.Evidence`, `AppDoc.Scope`).
 - Mermaid C4 generation replaced the prior PlantUML pipeline (`generate-c4-mermaid-diagrams.ps1`).
 - Framework support matrix is now maintained in `README.md` (not a standalone `FRAMEWORK_SUPPORT.md` file).
+- **Technical Implementation Plan** created to guide AST migration and robustness upgrades (see `docs/technical-implementation-plan.md`).
 
 ---
 
@@ -178,6 +179,7 @@ The following practical improvements were observed during the LmsConnect run and
 ### MP-1: Implement AST Parsing for C#/TypeScript
 
 **Summary:** Replace regex-based parsing with Abstract Syntax Tree parsing for accurate code analysis.
+**Reference:** See `docs/technical-implementation-plan.md` for detailed architecture.
 
 **Implementation Details:**
 1. **C# AST Parsing:**
@@ -464,41 +466,34 @@ The following practical improvements were observed during the LmsConnect run and
 
 ## Experimental Features
 
-### EX-1: AI-Powered Documentation Enhancement
+### EX-1: IDE-Assisted Narrative Enhancement
 
-**Summary:** Use LLM to automatically improve generated documentation quality and completeness.
+**Summary:** Use in-IDE chat assistance to improve readability and developer orientation on top of deterministic artifacts.
 
 **Implementation Details:**
-1. **LLM Integration:**
-   - Support OpenAI, Anthropic Claude, Azure OpenAI APIs
-   - Configurable API keys in `.appdoc/config.json`
-   - Add `--ai-enhance` flag to generators
+1. **IDE-First Workflow:**
+   - Keep deterministic script generation as source of truth.
+   - Run narrative improvements directly in IDE chat using local workspace context.
+   - Avoid external provider orchestration from scripts.
 2. **Enhancement Pipeline:**
-   - Generate base documentation using existing scripts
-   - Pass to LLM with context: code snippets, config files, existing docs
-   - LLM tasks:
-     - Fill placeholder sections with inferred content
-     - Generate human-friendly descriptions from code
-     - Create usage examples from test files
-     - Suggest architecture improvements based on patterns
+   - Generate base documentation using existing scripts.
+   - Feed evidence artifacts and generated docs into the current chat session.
+   - Improve prose quality, onboarding clarity, and operational guidance without changing factual extraction logic.
 3. **Guardrails:**
-   - Mark AI-generated content with `<!-- AI-GENERATED: Review Required -->`
-   - Include confidence scores for each AI suggestion
-   - Require human review before accepting AI content
-   - Log all AI interactions to audit trail
-4. **Cost Controls:**
-   - Token budget limits to prevent runaway costs
-   - Cache LLM responses to avoid redundant calls
-   - Local model support (Ollama, llama.cpp) for offline use
+   - Require evidence-backed claims for narrative additions.
+   - Mark low-confidence statements with verification notes.
+   - Keep deterministic fallback output available at all times.
+4. **Operational Controls:**
+   - Track which files received narrative enhancement.
+   - Preserve deterministic evidence references and traceability.
+   - Add quality gates to detect placeholder residue and malformed markdown.
 
 **Definition of Done:**
-- [ ] LLM integration module supports OpenAI and Claude
-- [ ] `--ai-enhance` flag implemented in generators
-- [ ] AI-generated content clearly marked and requires review
-- [ ] Token budget and caching implemented
-- [ ] Local model support (Ollama) working
-- [ ] Cost tracking dashboard shows API usage
-- [ ] Documentation includes AI enhancement guide with examples
+- [ ] IDE-first enhancement guidance is documented in prompts and README
+- [ ] Deterministic generation remains provider-free and stable
+- [ ] Enhanced narrative sections preserve evidence references
+- [ ] Quality gates catch readability regressions and malformed markdown
+- [ ] Documentation includes enhancement workflow examples for common repo types
 
 **Complexity/Effort:** High
 

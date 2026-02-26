@@ -1,3 +1,6 @@
+# Ignore local validation diagnostics
+docs/validation-diagnostics.json
+docs/diagnostics-report.json
 # Exclude test/example repositories
 LmsConnect-master/
 

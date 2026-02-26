@@ -8,6 +8,7 @@ param(
 $contractModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagrams.Contract.psm1"
 $extractorModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagrams.GraphExtractor.psm1"
 $rendererModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagrams.Renderer.psm1"
+$normalizerModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagrams.Normalizer.psm1"
 $determinismModule = Join-Path $PSScriptRoot "modules\AppDoc.Determinism.psm1"
 
 if (-not (Test-Path $contractModule)) { Write-Error "Required module not found: $contractModule"; exit 1 }
@@ -15,6 +16,9 @@ if (-not (Test-Path $extractorModule)) { Write-Error "Required module not found:
 if (-not (Test-Path $rendererModule)) { Write-Error "Required module not found: $rendererModule"; exit 1 }
 
 Import-Module $contractModule -Force -ErrorAction Stop
+if (Test-Path $normalizerModule) {
+    Import-Module $normalizerModule -Force -ErrorAction SilentlyContinue
+}
 Import-Module $extractorModule -Force -ErrorAction Stop
 Import-Module $rendererModule -Force -ErrorAction Stop
 if (Test-Path $determinismModule) {
@@ -43,18 +47,54 @@ if (-not $SkipC4 -and (Test-Path $c4Script)) {
     }
 }
 
-$contract = Get-AppDocDiagramContract
-$graphData = Get-AppDocDiagramGraphData -RootPath $RootPath -Contract $contract
-$truthPackPath = Write-AppDocDiagramTruthPack -RootPath $RootPath -GraphData $graphData
-$diagramPaths = Write-AppDocDiagramSuite -RootPath $RootPath -GraphData $graphData -Contract $contract
+$contract = $null
+$graphData = $null
+$truthPackPath = $null
+$diagramPaths = $null
 
-$metrics = $graphData.metrics
-Write-Host "✅ Diagram suite generated:" -ForegroundColor Green
-Write-Host ("   Internal flow: {0}" -f [string]$diagramPaths.internalFlow) -ForegroundColor Gray
-Write-Host ("   Data flow:     {0}" -f [string]$diagramPaths.dataFlow) -ForegroundColor Gray
-Write-Host ("   Sequences:     {0}" -f [string]$diagramPaths.criticalSequences) -ForegroundColor Gray
-Write-Host ("   Data lineage:  {0}" -f [string]$diagramPaths.dataLineageCore) -ForegroundColor Gray
-Write-Host ("   Diagram index: {0}" -f [string]$diagramPaths.index) -ForegroundColor Gray
-Write-Host ("   Truth pack:    {0}" -f [string]$truthPackPath) -ForegroundColor Gray
-Write-Host ("   Nodes: {0}, Edges: {1}, Inbound: {2}, Outbound: {3}" -f `
-    [int]$metrics.nodeCount, [int]$metrics.edgeCount, [int]$metrics.inboundEndpointCount, [int]$metrics.outboundEndpointCount) -ForegroundColor Gray
+
+try {
+    $contract = Get-AppDocDiagramContract
+    $graphData = Get-AppDocDiagramGraphData -RootPath $RootPath -Contract $contract
+    $truthPackPath = Write-AppDocDiagramTruthPack -RootPath $RootPath -GraphData $graphData
+    $diagramPaths = Write-AppDocDiagramSuite -RootPath $RootPath -GraphData $graphData -Contract $contract
+
+    $metrics = $graphData.metrics
+    Write-Host "✅ Diagram suite generated:" -ForegroundColor Green
+    Write-Host ("   Internal flow: {0}" -f [string]$diagramPaths.internalFlow) -ForegroundColor Gray
+    Write-Host ("   Data flow:     {0}" -f [string]$diagramPaths.dataFlow) -ForegroundColor Gray
+    Write-Host ("   Sequences:     {0}" -f [string]$diagramPaths.criticalSequences) -ForegroundColor Gray
+    Write-Host ("   Data lineage:  {0}" -f [string]$diagramPaths.dataLineageCore) -ForegroundColor Gray
+    Write-Host ("   Diagram index: {0}" -f [string]$diagramPaths.index) -ForegroundColor Gray
+    Write-Host ("   Truth pack:    {0}" -f [string]$truthPackPath) -ForegroundColor Gray
+    Write-Host ("   Nodes: {0}, Edges: {1}, Inbound: {2}, Outbound: {3}" -f `
+        [int]$metrics.nodeCount, [int]$metrics.edgeCount, [int]$metrics.inboundEndpointCount, [int]$metrics.outboundEndpointCount) -ForegroundColor Gray
+} catch {
+    $errStep = ""
+    if (-not $contract) { $errStep = "Get-AppDocDiagramContract" }
+    elseif (-not $graphData) { $errStep = "Get-AppDocDiagramGraphData" }
+    elseif (-not $truthPackPath) { $errStep = "Write-AppDocDiagramTruthPack" }
+    elseif (-not $diagramPaths) { $errStep = "Write-AppDocDiagramSuite" }
+    else { $errStep = "Unknown step" }
+    Write-Error ("Diagram suite generation failed at step: {0}. Error: {1}" -f $errStep, $_.Exception.Message)
+    # Cleanup partial files if they exist
+    try {
+        if ($truthPackPath -and (Test-Path $truthPackPath)) {
+            try {
+                Remove-Item $truthPackPath -Force
+            } catch {
+                Write-Warning "Cleanup failed for $truthPackPath: $($_.Exception.Message)"
+            }
+        }
+        if ($diagramPaths) {
+            foreach ($path in $diagramPaths.PSObject.Properties | Where-Object { $_.Value -and (Test-Path $_.Value) }) {
+                try {
+                    Remove-Item $path.Value -Force
+                } catch {
+                    Write-Warning "Cleanup failed for $($path.Value): $($_.Exception.Message)"
+                }
+            }
+        }
+    } catch {}
+    exit 1
+}

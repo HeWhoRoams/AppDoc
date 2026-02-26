@@ -72,6 +72,7 @@ if (-not $hasEndpointRows) {
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocTaskGuidesContent -Content $content -TaskData $taskData
 $content = Normalize-AppDocTemplateInstructionText -Content $content
+$content = Normalize-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 

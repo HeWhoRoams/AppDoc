@@ -1,6 +1,6 @@
 {
   "artifact": "task-guides",
-  "generatedAt": "2026-02-20T14:53:19-05:00",
+  "generatedAt": "2026-02-25T14:48:54-05:00",
   "recordCount": 5,
   "records": [
     {
@@ -8,18 +8,18 @@
       "source": "docs",
       "name": "task-guide-summary",
       "kind": "summary",
-      "confidence": 1.0,
+      "confidence": 0.0,
       "metadata": {
-        "endpointCount": 0,
-        "buildCommandCount": 13,
-        "debtCount": 0,
+        "buildCommandCount": 0,
         "testCount": 0,
-        "dependencyCount": 10
+        "dependencyCount": 0,
+        "endpointCount": 0,
+        "debtCount": 0
       },
       "provider": "generator",
       "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-02-20T14:53:19-05:00"
+      "status": "NotDetected",
+      "timestamp": "2026-02-25T14:48:54-05:00"
     },
     {
       "artifact": "task-guides",
@@ -34,22 +34,22 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "NotDetected",
-      "timestamp": "2026-02-20T14:53:19-05:00"
+      "timestamp": "2026-02-25T14:48:54-05:00"
     },
     {
       "artifact": "task-guides",
       "source": "docs",
       "name": "debug-build-failure",
       "kind": "task-guide",
-      "confidence": 1.0,
+      "confidence": 0.0,
       "metadata": {
         "category": "operations",
-        "buildEvidence": 13
+        "buildEvidence": 0
       },
       "provider": "generator",
       "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-02-20T14:53:19-05:00"
+      "status": "NotDetected",
+      "timestamp": "2026-02-25T14:48:54-05:00"
     },
     {
       "artifact": "task-guides",
@@ -64,34 +64,34 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "NotDetected",
-      "timestamp": "2026-02-20T14:53:19-05:00"
+      "timestamp": "2026-02-25T14:48:54-05:00"
     },
     {
       "artifact": "task-guides",
       "source": "docs",
       "name": "triage-dependency-risk",
       "kind": "task-guide",
-      "confidence": 1.0,
+      "confidence": 0.0,
       "metadata": {
-        "dependencyEvidence": 10,
-        "category": "risk"
+        "category": "risk",
+        "dependencyEvidence": 0
       },
       "provider": "generator",
       "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-02-20T14:53:19-05:00"
+      "status": "NotDetected",
+      "timestamp": "2026-02-25T14:48:54-05:00"
     }
   ],
   "metadata": {
-    "requiredEvidenceKeys": [
-      "tasks",
-      "summary"
-    ],
     "generator": "generate-task-guides.ps1",
     "requiredSections": [
       "Executive Summary",
       "Task Guides",
       "Operational Checklist"
+    ],
+    "requiredEvidenceKeys": [
+      "tasks",
+      "summary"
     ]
   },
   "determinism": {
@@ -101,6 +101,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "f3de4d673581c2f48b9097386a2c696d20e2afbeea3a2109cd84bdcf624636e8"
+    "contentHash": "2da05f463987dfb21d27f7aa3da6d17f153d7bd3a479c9615fbabc45c7c291f7"
   }
 }

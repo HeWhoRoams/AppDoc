@@ -6,6 +6,16 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+$evidenceGraphModulePath = Join-Path $PSScriptRoot "modules\AppDoc.EvidenceGraph.psm1"
+if (Test-Path $evidenceGraphModulePath) {
+    try {
+        Import-Module $evidenceGraphModulePath -Force -ErrorAction SilentlyContinue | Out-Null
+    }
+    catch {
+        Write-Verbose ("Unable to import AppDoc.EvidenceGraph module: {0}" -f $_.Exception.Message)
+    }
+}
+
 function Add-IntegrityIssue {
     param(
         [System.Collections.Generic.List[object]]$Issues,
@@ -81,6 +91,55 @@ function Test-NoTableHeaderContamination {
     )
 
     return (-not $contaminated)
+}
+
+function Get-EvidencePayload {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Path
+    )
+
+    if (-not (Test-Path $Path)) { return $null }
+    try {
+        return (Get-Content -Path $Path -Raw | ConvertFrom-Json -Depth 120)
+    }
+    catch {
+        return $null
+    }
+}
+
+function Get-EvidenceRecordsByKind {
+    param(
+        [AllowNull()]
+        [object]$Payload,
+        [string]$Kind
+    )
+
+    if (-not $Payload) { return @() }
+    $records = @(Get-ObjectPropertyValue -Object $Payload -Name "records" -Default @())
+    if ([string]::IsNullOrWhiteSpace($Kind)) { return @($records) }
+    return @($records | Where-Object { [string]$_.kind -eq $Kind })
+}
+
+function Test-SourceLooksLikeFixtureOrTest {
+    param(
+        [string]$Source
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Source)) { return $false }
+    $normalized = $Source.Replace('\','/').ToLowerInvariant()
+    $patterns = @(
+        '/tests/',
+        '/test/',
+        '/fixtures/',
+        '/fixture/',
+        '/sample-dotnet-app/',
+        '/samples/'
+    )
+    foreach ($pattern in $patterns) {
+        if ($normalized.Contains($pattern)) { return $true }
+    }
+    return $false
 }
 
 if (-not (Test-Path $RootPath)) {
@@ -231,6 +290,131 @@ if (Test-Path $startHereEvidencePath) {
             break
         }
     }
+}
+
+$apiEvidencePath = Join-Path $docsPath "evidence\api-inventory.evidence.json"
+$modelEvidencePath = Join-Path $docsPath "evidence\data-model.evidence.json"
+$configEvidencePath = Join-Path $docsPath "evidence\config-catalog.evidence.json"
+$dependencyEvidencePath = Join-Path $docsPath "evidence\dependencies-catalog.evidence.json"
+
+$apiEvidence = Get-EvidencePayload -Path $apiEvidencePath
+$modelEvidence = Get-EvidencePayload -Path $modelEvidencePath
+$configEvidence = Get-EvidencePayload -Path $configEvidencePath
+$dependencyEvidence = Get-EvidencePayload -Path $dependencyEvidencePath
+
+$apiEndpointRecords = @(Get-EvidenceRecordsByKind -Payload $apiEvidence -Kind "endpoint")
+$modelRecords = @(Get-EvidenceRecordsByKind -Payload $modelEvidence -Kind "model")
+$configRecords = @(Get-EvidenceRecordsByKind -Payload $configEvidence -Kind "configuration")
+$dependencyRecords = @(Get-EvidenceRecordsByKind -Payload $dependencyEvidence -Kind "dependency")
+
+$outboundRecords = @(
+    $apiEndpointRecords |
+        Where-Object {
+            $meta = Get-ObjectPropertyValue -Object $_ -Name "metadata" -Default @{}
+            $direction = [string](Get-ObjectPropertyValue -Object $meta -Name "direction" -Default "")
+            $sourceType = [string](Get-ObjectPropertyValue -Object $meta -Name "sourceType" -Default "")
+            $name = [string](Get-ObjectPropertyValue -Object $_ -Name "name" -Default "")
+            ($direction -eq "outbound") -or
+            ($sourceType -in @("soap-client","wcf-client","asmx-client","proxy-client")) -or
+            ($name -match '^/soap-client/')
+        }
+)
+
+if ($truthPack) {
+    $counts = Get-ObjectPropertyValue -Object $truthPack -Name "counts" -Default $null
+    if ($counts) {
+        $reportedEndpointCount = [int](Get-ObjectPropertyValue -Object $counts -Name "endpointRecords" -Default -1)
+        $reportedModelCount = [int](Get-ObjectPropertyValue -Object $counts -Name "modelRecords" -Default -1)
+        $reportedConfigCount = [int](Get-ObjectPropertyValue -Object $counts -Name "configurationRecords" -Default -1)
+        $reportedDependencyCount = [int](Get-ObjectPropertyValue -Object $counts -Name "dependencyRecords" -Default -1)
+        $reportedOutboundCount = [int](Get-ObjectPropertyValue -Object $counts -Name "outboundEndpoints" -Default -1)
+
+        if ($reportedEndpointCount -ne $apiEndpointRecords.Count) {
+            Add-IntegrityIssue -Issues $issues -Code "overview_endpoint_count_mismatch" -Message ("overview-truth-pack endpointRecords mismatch: expected {0}, got {1}" -f $apiEndpointRecords.Count, $reportedEndpointCount) -Path $overviewTruthPackPath
+        }
+        if ($reportedModelCount -ne $modelRecords.Count) {
+            Add-IntegrityIssue -Issues $issues -Code "overview_model_count_mismatch" -Message ("overview-truth-pack modelRecords mismatch: expected {0}, got {1}" -f $modelRecords.Count, $reportedModelCount) -Path $overviewTruthPackPath
+        }
+        if ($reportedConfigCount -ne $configRecords.Count) {
+            Add-IntegrityIssue -Issues $issues -Code "overview_config_count_mismatch" -Message ("overview-truth-pack configurationRecords mismatch: expected {0}, got {1}" -f $configRecords.Count, $reportedConfigCount) -Path $overviewTruthPackPath
+        }
+        if ($reportedDependencyCount -ne $dependencyRecords.Count) {
+            Add-IntegrityIssue -Issues $issues -Code "overview_dependency_count_mismatch" -Message ("overview-truth-pack dependencyRecords mismatch: expected {0}, got {1}" -f $dependencyRecords.Count, $reportedDependencyCount) -Path $overviewTruthPackPath
+        }
+        if ($reportedOutboundCount -ne $outboundRecords.Count) {
+            Add-IntegrityIssue -Issues $issues -Code "overview_outbound_count_mismatch" -Message ("overview-truth-pack outboundEndpoints mismatch: expected {0}, got {1}" -f $outboundRecords.Count, $reportedOutboundCount) -Path $overviewTruthPackPath
+        }
+    }
+}
+
+if (Test-Path $overviewPath) {
+    $overviewContent = Get-Content -Path $overviewPath -Raw
+    if ($outboundRecords.Count -gt 0 -and $overviewContent -match '(?i)No clear external system integration evidence was detected') {
+        Add-IntegrityIssue -Issues $issues -Code "overview_external_systems_contradiction" -Message "Overview says no external integrations while outbound API evidence exists." -Path $overviewPath
+    }
+}
+
+$contaminationArtifactPaths = @(
+    $apiEvidencePath,
+    $modelEvidencePath,
+    $configEvidencePath,
+    $dependencyEvidencePath,
+    $buildEvidencePath
+) | Where-Object { Test-Path $_ }
+
+foreach ($artifactPath in $contaminationArtifactPaths) {
+    $payload = Get-EvidencePayload -Path $artifactPath
+    if (-not $payload) { continue }
+    $artifactName = [string](Get-ObjectPropertyValue -Object $payload -Name "artifact" -Default "")
+    if ($artifactName -eq "test-catalog") { continue }
+
+    foreach ($record in @(Get-ObjectPropertyValue -Object $payload -Name "records" -Default @())) {
+        if (-not $record) { continue }
+        $source = [string](Get-ObjectPropertyValue -Object $record -Name "source" -Default "")
+        if (Test-SourceLooksLikeFixtureOrTest -Source $source) {
+            Add-IntegrityIssue -Issues $issues -Code "fixture_test_contamination" -Message ("Fixture/test path leaked into evidence record source '{0}'." -f $source) -Path $artifactPath
+            break
+        }
+    }
+}
+
+$evidenceGraphPath = Join-Path $docsPath "evidence\evidence-graph.json"
+if (Get-Command Test-AppDocEvidenceGraphIntegrity -ErrorAction SilentlyContinue) {
+    try {
+        $graphIntegrity = Test-AppDocEvidenceGraphIntegrity -RootPath $RootPath
+        if (-not $graphIntegrity.passed) {
+            foreach ($issue in @($graphIntegrity.issues)) {
+                Add-IntegrityIssue -Issues $issues -Code "evidence_graph_integrity" -Message ([string]$issue) -Path $evidenceGraphPath
+            }
+        }
+        foreach ($warning in @($graphIntegrity.warnings)) {
+            Write-Host ("Evidence graph warning: {0}" -f [string]$warning) -ForegroundColor DarkYellow
+        }
+    }
+    catch {
+        Add-IntegrityIssue -Issues $issues -Code "evidence_graph_validation_error" -Message ("Failed to validate evidence graph: {0}" -f $_.Exception.Message) -Path $evidenceGraphPath
+    }
+} elseif (Test-Path $evidenceGraphPath) {
+    Add-IntegrityIssue -Issues $issues -Code "validator_unavailable" -Message ("Validator Test-AppDocEvidenceGraphIntegrity is unavailable; evidence graph validation skipped for $evidenceGraphPath.") -Path $evidenceGraphPath
+} elseif (-not (Test-Path $evidenceGraphPath)) {
+    Add-IntegrityIssue -Issues $issues -Code "evidence_graph_missing" -Message "Canonical evidence graph is missing." -Path $evidenceGraphPath
+}
+
+$diagramStabilityScriptPath = Join-Path $PSScriptRoot "ci-diagram-stability-gate.ps1"
+if (Test-Path $diagramStabilityScriptPath) {
+    try {
+        $stabilityJson = & $diagramStabilityScriptPath -RootPath $RootPath -Iterations 2 -SkipC4 -Json
+        $stability = if ($stabilityJson) { $stabilityJson | ConvertFrom-Json -Depth 20 } else { $null }
+        if ($stability -and -not $stability.passed) {
+            Add-IntegrityIssue -Issues $issues -Code "diagram_stability_failed" -Message ("Diagram stability gate failed: {0}" -f ((@($stability.issues) -join "; "))) -Path $diagramStabilityScriptPath
+        }
+    }
+    catch {
+        Add-IntegrityIssue -Issues $issues -Code "diagram_stability_error" -Message ("Diagram stability gate execution failed: {0}" -f $_.Exception.Message) -Path $diagramStabilityScriptPath
+    }
+}
+else {
+    Add-IntegrityIssue -Issues $issues -Code "diagram_stability_script_missing" -Message "Diagram stability gate script is missing." -Path $diagramStabilityScriptPath
 }
 
 if ($issues.Count -gt 0) {

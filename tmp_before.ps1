@@ -28,10 +28,10 @@ function ConvertTo-AppDocMermaidLabel {
     if ([string]::IsNullOrWhiteSpace($Label)) { return "Unknown" }
     $value = $Label.Trim()
     $value = $value.Replace('"', "'")
+    $value = $value.Replace('|', '/')
     $value = $value.Replace("`r", " ").Replace("`n", " ")
     return $value
 }
-
 function Get-AppDocDiagramTopEvidenceRefs {
     [CmdletBinding()]
     param(

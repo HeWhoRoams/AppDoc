@@ -1,6 +1,6 @@
 # Configuration Catalog
 
-**Generated**: 2026-02-20 14:53:17
+**Generated**: 2026-02-25 14:48:50
 
 ## Plain Language Summary
 
@@ -17,15 +17,12 @@ This catalog is assembled from Web.config/App.config, project files, and pipelin
 ## Configuration Sources
 
 - **JSON Configuration**: 1 files
-- **MSBuild Project Configuration**: 4 files
 - **YAML Configuration**: 1 files
 
 ## Configuration Options
 
 | Name | Type | Default | Description | Required | Source |
 |------|------|---------|-------------|----------|--------|
-| OutputType | string | Exe | Auto-generated: Controls OutputType behavior. | No | .appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/OutputType |
-| TargetFramework | string | net8.0 | Auto-generated: Controls TargetFramework behavior. | No | .appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/TargetFramework |
 | jobs.syntax-gate.runs-on | string | windows-latest | Auto-generated: Controls jobs.syntax-gate.runs-on behavior. | No | .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.runs-on |
 | jobs.syntax-gate.steps.shell | string | pwsh | Auto-generated: Controls jobs.syntax-gate.steps.shell behavior. | No | .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps.shell |
 | jobs.syntax-gate.steps[0] | string | uses: actions/checkout@v4 | Auto-generated: Controls jobs.syntax-gate.steps[0] behavior. | No | .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[0] |
@@ -80,10 +77,6 @@ This catalog is assembled from Web.config/App.config, project files, and pipelin
 | chat.tools.terminal.autoApprove.Test-Path | boolean | true | If true, allows Copilot or automation to run chat.tools.terminal.autoApprove.Test-Path commands/scripts without manual approval. | No | .vscode/settings.json:chat.tools.terminal.autoApprove.Test-Path |
 | chat.tools.terminal.autoApprove.Write-Host | boolean | true | If true, allows Copilot or automation to run chat.tools.terminal.autoApprove.Write-Host commands/scripts without manual approval. | Yes | .vscode/settings.json:chat.tools.terminal.autoApprove.Write-Host |
 | github.copilot.chat.executions.enabled | boolean | true | Enables Copilot chat command execution features. | No | .vscode/settings.json:github.copilot.chat.executions.enabled |
-| TargetFramework | string | net6.0 | Auto-generated: Controls TargetFramework behavior. | No | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj:PropertyGroup/TargetFramework |
-| OutputType | string | WinExe | Auto-generated: Controls OutputType behavior. | No | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/OutputType |
-| TargetFramework | string | net6.0 | Auto-generated: Controls TargetFramework behavior. | No | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/TargetFramework |
-| TargetFramework | string | net6.0 | Auto-generated: Controls TargetFramework behavior. | No | tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj:PropertyGroup/TargetFramework |
 
 ## Environment Variables
 
@@ -120,7 +113,7 @@ Do not treat chat.tools.terminal.autoApprove.Write-Host as a required security c
 | Field | Value |
 |------|-------|
 | Evidence Artifact | evidence/config-catalog.evidence.json |
-| Record Count | 60 |
+| Record Count | 54 |
 | Generator | generate-config-catalog.ps1 |
 | Required Evidence Keys | configurations |
 | Grounding Mode | Deterministic extraction records |

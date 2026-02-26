@@ -1,16 +1,16 @@
 {
   "artifact": "data-model",
-  "generatedAt": "2026-02-20T14:53:13-05:00",
+  "generatedAt": "2026-02-25T14:48:45-05:00",
   "recordCount": 0,
   "records": [],
   "metadata": {
-    "requiredEvidenceKeys": [
-      "models"
-    ],
     "generator": "generate-data-model.ps1",
     "requiredSections": [
       "Executive Summary",
       "Data Models"
+    ],
+    "requiredEvidenceKeys": [
+      "models"
     ]
   },
   "determinism": {

@@ -1,0 +1,284 @@
+Running all documentation generators...
+
+Name                           Value
+----                           -----
+timestamp                      2026-02-25T09:48:42-05:00
+category                       ENVIRONMENT_ERROR
+severity                       Info
+component                      orchestrator
+message                        Diagnostics initialized
+filePath                       
+details                        {[rootPath, C:\Github\DegreeAudit], [outputPath, C:\Github\DegreeAudit\docs]}
+Running syntax gate...
+
+[Analysis]
+Running analyze-repository.ps1...
+{
+  "languages": {
+    ".diagram": 1,
+    ".xsd": 2,
+    ".ps1": 42,
+    ".cshtml": 108,
+    ".edmx": 1,
+    ".cs": 414,
+    ".md": 68,
+    ".jpg": 16,
+    ".targets": 3,
+    ".pdf": 2,
+    ".config": 21,
+    ".emz": 1,
+    ".editorconfig": 5,
+    ".yml": 1,
+    ".aspx": 1,
+    ".htm": 7,
+    ".props": 3,
+    ".docx": 5,
+    ".png": 68,
+    ".rdlc": 6,
+    ".csv": 1,
+    ".asax": 1,
+    ".xsl": 1,
+    ".ttf": 1,
+    ".otf": 1,
+    ".resx": 7,
+    ".ts": 16,
+    ".woff": 1,
+    ".html": 75,
+    ".cache": 14,
+    ".ico": 1,
+    ".xml": 7347,
+    ".sln": 2,
+    ".gif": 2,
+    ".tt": 2,
+    ".ds_store": 1,
+    ".psm1": 2,
+    ".map": 17,
+    ".nuspec": 1,
+    ".mso": 1,
+    ".xlsx": 1,
+    ".json": 40,
+    ".pubxml": 1,
+    ".eot": 1,
+    ".js": 41,
+    ".csproj": 7,
+    ".less": 4,
+    ".settings": 1,
+    ".gitignore": 1,
+    ".dll": 8,
+    ".sql": 5,
+    ".defaults": 1,
+    ".bat": 1,
+    ".css": 13,
+    ".svg": 1,
+    ".txt": 65,
+    ".thmx": 4
+  },
+  "services": [
+    "CMich.DegreeAudit.Tests",
+    "CMich.DegreeAudit.Web",
+    "CMich.WorkbenchTesting",
+    "CMichDegreeAudit",
+    "docs"
+  ],
+  "totalFiles": 8464,
+  "directories": [
+    "CMich.DegreeAudit.Tests",
+    "CMich.DegreeAudit.Web",
+    "CMich.WorkbenchTesting",
+    "CMichDegreeAudit",
+    "docs",
+    "Docs_original",
+    "docuwriter",
+    "External Documentation",
+    "specs",
+    "SqlScripts",
+    "tests"
+  ]
+}
+Running generate-dependency-graph.ps1...
+{
+  "nodes": [],
+  "edges": []
+}
+Running extract-config.ps1...
+{
+  "flags": [],
+  "options": []
+}
+
+[Generation]
+Running generate-api-inventory.ps1...
+📡 Generating API Inventory...
+  Scanned 440 potential API files
+✅ API inventory generated: C:\Github\DegreeAudit\docs\api-inventory.md
+   Endpoints found: 152
+Running generate-data-model.ps1...
+🗂️  Generating Data Model...
+  Added 369 AST model records
+  Found 130 potential model files
+✅ Data model generated: C:\Github\DegreeAudit\docs\data-model.md
+   Models found: 292
+Running generate-config-catalog.ps1...
+⚙️  Generating Config Catalog...
+✅ Config catalog generated: C:\Github\DegreeAudit\docs\config-catalog.md
+   Configurations found: 215
+   Configuration sources: 15
+   Environment variables: 11
+Running generate-build-cookbook.ps1...
+🔨 Generating Build Cookbook...
+✅ Build cookbook generated: C:\Github\DegreeAudit\docs\build-cookbook.md
+   Commands found: 11
+   Prerequisites detected: 0
+   CI/CD platforms detected: 4
+Running generate-test-catalog.ps1...
+🧪 Generating Test Catalog...
+  Found 1 test files
+✅ Test catalog generated: C:\Github\DegreeAudit\docs\test-catalog.md
+   Test cases found: 0
+Running generate-debt-register.ps1...
+📋 Generating Technical Debt Register...
+✅ Technical debt register generated: C:\Github\DegreeAudit\docs\debt-register.md
+   Debt items found: 342
+   Files scanned: 425
+Running generate-dependencies-catalog.ps1...
+📦 Generating Dependencies Catalog...
+✅ Dependencies catalog generated: C:\Github\DegreeAudit\docs\dependencies-catalog.md
+   Projects: 2, Dependencies: 83
+Running generate-task-guides.ps1...
+🧭 Generating Task Guides...
+✅ Task guides generated: C:\Github\DegreeAudit\docs\task-guides.md
+   Evidence categories: 4
+Running generate-overview.ps1...
+📊 Generating System Overview...
+✅ System overview generated: C:\Github\DegreeAudit\docs\overview.md
+   Code files analyzed: 440
+Running generate-start-here.ps1...
+✅ Start-here guide generated: C:\Github\DegreeAudit\docs\start-here.md
+Running generate-docs-index.ps1...
+📑 Generating Documentation Index...
+✅ Documentation index generated: C:\Github\DegreeAudit\docs\index.md
+   Documents indexed: 10 / 10
+Generating C4 Mermaid architecture diagrams...
+=== AppDoc Mermaid C4 Diagram Generator ===
+Codebase: C:\Github\DegreeAudit
+Output: C:\Github\DegreeAudit\docs
+
+Found solution: DegreeAudit.sln
+Context diagram already exists (use -Force to regenerate)
+Container diagram already exists (use -Force to regenerate)
+
+✓ Mermaid C4 diagram generation complete
+Generating deterministic internal/data-flow Mermaid diagrams...
+🧱 Generating deterministic architecture diagram suite...
+=== AppDoc Mermaid C4 Diagram Generator ===
+Codebase: C:\Github\DegreeAudit
+Output: C:\Github\DegreeAudit\docs
+
+Found solution: DegreeAudit.sln
+Context diagram already exists (use -Force to regenerate)
+Container diagram already exists (use -Force to regenerate)
+
+✓ Mermaid C4 diagram generation complete
+✅ Diagram suite generated:
+   Internal flow: C:\Github\DegreeAudit\docs\diagrams\internal-flow.md
+   Data flow:     C:\Github\DegreeAudit\docs\diagrams\data-flow.md
+   Sequences:     C:\Github\DegreeAudit\docs\diagrams\critical-sequences.md
+   Data lineage:  C:\Github\DegreeAudit\docs\diagrams\data-lineage-core.md
+   Diagram index: C:\Github\DegreeAudit\docs\diagrams\index.md
+   Truth pack:    C:\Github\DegreeAudit\docs\evidence\diagram-truth-pack.json
+   Nodes: 75, Edges: 98, Inbound: 21, Outbound: 0
+
+[Remediation]
+Running remediate-generated-docs.ps1...
+Remediation complete. Updated 10 documentation files.
+
+[Integrity Gate]
+Running ci-doc-integrity-gate.ps1...
+🧱 Generating deterministic architecture diagram suite...
+✅ Diagram suite generated:
+   Internal flow: C:\Github\DegreeAudit\docs\diagrams\internal-flow.md
+   Data flow:     C:\Github\DegreeAudit\docs\diagrams\data-flow.md
+   Sequences:     C:\Github\DegreeAudit\docs\diagrams\critical-sequences.md
+   Data lineage:  C:\Github\DegreeAudit\docs\diagrams\data-lineage-core.md
+   Diagram index: C:\Github\DegreeAudit\docs\diagrams\index.md
+   Truth pack:    C:\Github\DegreeAudit\docs\evidence\diagram-truth-pack.json
+   Nodes: 75, Edges: 98, Inbound: 21, Outbound: 0
+🧱 Generating deterministic architecture diagram suite...
+✅ Diagram suite generated:
+   Internal flow: C:\Github\DegreeAudit\docs\diagrams\internal-flow.md
+   Data flow:     C:\Github\DegreeAudit\docs\diagrams\data-flow.md
+   Sequences:     C:\Github\DegreeAudit\docs\diagrams\critical-sequences.md
+   Data lineage:  C:\Github\DegreeAudit\docs\diagrams\data-lineage-core.md
+   Diagram index: C:\Github\DegreeAudit\docs\diagrams\index.md
+   Truth pack:    C:\Github\DegreeAudit\docs\evidence\diagram-truth-pack.json
+   Nodes: 75, Edges: 98, Inbound: 21, Outbound: 0
+Documentation integrity gate passed.
+
+=== Documentation Quality Report ===
+
+Quality Summary:
+================================================================================
+🟢 
+Start Here: 
+HIGH (100%)
+🟢 
+Overview: 
+HIGH (100%)
+🟢 
+API Inventory: 
+HIGH (100%)
+🟢 
+Data Model: 
+HIGH (100%)
+🟢 
+Config Catalog: 
+HIGH (100%)
+🟢 
+Build Cookbook: 
+HIGH (100%)
+🟡 
+Test Catalog: 
+MEDIUM (55%)
+   ⚠️  2x Empty detection placeholder
+   ❌ Test Suites section missing or empty
+   ❌ Test Cases placeholder text remains
+🟢 
+Debt Register: 
+HIGH (100%)
+🟢 
+Dependencies Catalog: 
+HIGH (100%)
+🟢 
+Task Guides: 
+HIGH (100%)
+
+ + ================================================================================
+Overall Statistics:
+  Total Documents: 10
+  🟢 High Quality (>80%): 9
+  🟡 Medium Quality (40-80%): 1
+  🔴 Low Quality (<40%): 0
+  📊 Average Quality Score: 95.5%
+
+📄 Quality report saved: C:\Github\DegreeAudit\docs\quality-report.json
+Start Here validated: all required sections present
+Overview validation passed
+API inventory validated: 152 endpoints found
+Data model validated: 292 models found
+Config catalog validated: 220 configs found
+Build cookbook validated: 11 commands found
+No test cases found using fallback regex. The test catalog format may have changed.
+Test catalog validated: 0 tests found
+Task guides validated: 4 task sections found
+Technical debt register validated: 342 debts found
+[DETECTION_PATTERN_MISMATCH] Banned placeholder pattern found (test-catalog)
+
+Validation Gate:
+  Mode: Soft
+  Threshold: 80
+  Average Score: 92.8%
+  Below Threshold: 0
+📄 Diagnostics report saved: C:\Github\DegreeAudit\docs\diagnostics-report.json
+
+All generators completed.
+

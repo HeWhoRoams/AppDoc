@@ -430,15 +430,14 @@ function Get-AppDocOverviewWelcomeNarrativeFromPipeline {
         [ValidateSet("new_dev","senior_dev","sre")]
         [string]$Audience = "new_dev",
         [ValidateSet("concise","standard","pedagogical")]
-        [string]$StyleProfile = "standard",
-        [ValidateSet("Auto","Deterministic")]
-        [string]$AIMode = "Auto",
-        [switch]$NoAI
+        [string]$StyleProfile = "standard"
     )
 
+
     $startedAt = Get-Date
-    $model = "local-deterministic"
-    $requestedAIMode = "Deterministic"
+    $model = "deterministic-local"
+    # Compatibility: normalize model identifier for downstream consumers
+    $normalizedModel = if ($model -eq 'deterministic-local') { 'local-deterministic' } else { $model }
 
     $pass1Source = "deterministic"
     $pass1Result = Get-AppDocOverviewDeterministicPass1 -ContextPack $ContextPack
@@ -456,8 +455,6 @@ function Get-AppDocOverviewWelcomeNarrativeFromPipeline {
         )
     }
     $finalNarrative = $pass2Narrative
-    $retryCount = 0
-    $styleRetryUsed = $false
 
     $groundingVerification = Test-AppDocOverviewNarrativeGrounding -Narrative $finalNarrative -TruthPack $TruthPack
     $sectionEvidenceMap = Get-AppDocOverviewPipelineValue -Object $pass1Result -Name "section_evidence_map" -Default @{}
@@ -472,16 +469,9 @@ function Get-AppDocOverviewWelcomeNarrativeFromPipeline {
         startedAt = $startedAt.ToString("yyyy-MM-ddTHH:mm:ssK")
         endedAt = $endedAt.ToString("yyyy-MM-ddTHH:mm:ssK")
         durationMs = [Math]::Round(($endedAt - $startedAt).TotalMilliseconds, 0)
-        model = $model
-        aiModeRequested = $requestedAIMode
-        aiModeResolved = "Deterministic"
-        aiProvider = "deterministic"
-        aiResolutionReason = "Provider-backed AI modes are disabled; deterministic local pipeline is enforced."
-        aiAttempted = $false
-        aiProvidersObserved = @()
-        aiPassFailures = @()
-        requireAI = $false
-        noAI = $true
+        model = $normalizedModel
+        executionMode = $normalizedModel
+        externalModelCalls = $false
         audience = $Audience
         styleProfile = $StyleProfile
         passSources = [ordered]@{
@@ -489,8 +479,6 @@ function Get-AppDocOverviewWelcomeNarrativeFromPipeline {
             pass2 = $pass2Source
             pass3 = $pass3Source
         }
-        retryCount = $retryCount
-        styleRetryUsed = $styleRetryUsed
         grounding = $groundingVerification
         sectionCoverage = $sectionCoverage
         styleGate = $styleGate
@@ -500,14 +488,11 @@ function Get-AppDocOverviewWelcomeNarrativeFromPipeline {
 
     $artifactPaths = Write-AppDocOverviewNarrativeArtifacts -RootPath $RootPath -Pass1Result $pass1Result -Pass2Narrative $pass2Narrative -Pass3ReviewNotes $reviewNotes -FinalNarrative $finalNarrative -RunReport $runReport
 
-    $usedAI = $false
     $provider = "deterministic"
 
     return [ordered]@{
         narrative = $finalNarrative
         provider = $provider
-        usedAI = $usedAI
-        aiAttempted = $false
         verification = $groundingVerification
         sectionCoverage = $sectionCoverage
         styleGate = $styleGate

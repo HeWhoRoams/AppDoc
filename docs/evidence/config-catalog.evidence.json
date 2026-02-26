@@ -1,7 +1,7 @@
 {
   "artifact": "config-catalog",
-  "generatedAt": "2026-02-20T14:53:17-05:00",
-  "recordCount": 60,
+  "generatedAt": "2026-02-25T14:48:50-05:00",
+  "recordCount": 54,
   "records": [
     {
       "artifact": "config-catalog",
@@ -18,7 +18,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -35,7 +35,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -52,7 +52,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -69,7 +69,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -86,7 +86,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -103,7 +103,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -120,7 +120,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -137,7 +137,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -154,7 +154,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -171,7 +171,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -188,7 +188,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -205,7 +205,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -222,7 +222,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -239,7 +239,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -256,7 +256,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -273,7 +273,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -290,7 +290,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -307,7 +307,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -324,7 +324,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -341,7 +341,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -358,7 +358,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -375,7 +375,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -392,7 +392,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -409,7 +409,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -426,7 +426,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -443,7 +443,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -460,7 +460,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -477,7 +477,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -494,7 +494,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -511,7 +511,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -528,7 +528,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -545,7 +545,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -562,7 +562,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -579,7 +579,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -596,7 +596,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -613,7 +613,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -630,7 +630,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -647,7 +647,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -664,7 +664,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -681,7 +681,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -698,7 +698,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -715,7 +715,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -732,7 +732,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -749,7 +749,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -766,7 +766,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -783,7 +783,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -800,7 +800,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -817,7 +817,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -834,7 +834,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -851,7 +851,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -868,7 +868,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -885,7 +885,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -902,7 +902,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     },
     {
       "artifact": "config-catalog",
@@ -919,120 +919,18 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/OutputType",
-      "name": "OutputType",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "required": false,
-        "type": "MSBuild Configuration",
-        "value": "Exe",
-        "file": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/OutputType",
-      "name": "OutputType",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "required": false,
-        "type": "MSBuild Configuration",
-        "value": "WinExe",
-        "file": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj:PropertyGroup/TargetFramework",
-      "name": "TargetFramework",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "required": false,
-        "type": "MSBuild Configuration",
-        "value": "net8.0",
-        "file": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj:PropertyGroup/TargetFramework",
-      "name": "TargetFramework",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "required": false,
-        "type": "MSBuild Configuration",
-        "value": "net6.0",
-        "file": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj:PropertyGroup/TargetFramework",
-      "name": "TargetFramework",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "required": false,
-        "type": "MSBuild Configuration",
-        "value": "net6.0",
-        "file": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj:PropertyGroup/TargetFramework",
-      "name": "TargetFramework",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "required": false,
-        "type": "MSBuild Configuration",
-        "value": "net6.0",
-        "file": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-02-20T14:53:17-05:00"
+      "timestamp": "2026-02-25T14:48:50-05:00"
     }
   ],
   "metadata": {
-    "configCount": 60,
-    "requiredEvidenceKeys": [
-      "configurations"
-    ],
+    "configCount": 54,
     "generator": "generate-config-catalog.ps1",
     "requiredSections": [
       "Executive Summary",
       "Configuration Options"
+    ],
+    "requiredEvidenceKeys": [
+      "configurations"
     ]
   },
   "determinism": {
@@ -1042,6 +940,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "f6508feb7c31ac67f03569f2b21dc55110645ffd4659547a6a242eec39e11aa5"
+    "contentHash": "4ff82eaed9cc32eef9842b14731d6a61ac4db83135888638f36e0579ee6839d9"
   }
 }

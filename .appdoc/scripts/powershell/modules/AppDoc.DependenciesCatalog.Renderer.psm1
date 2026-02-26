@@ -13,15 +13,15 @@ function Get-AppDocDependenciesCatalogMarkdown {
 | Package Manager | Total Dependencies | Direct | Transitive |
 |-----------------|-------------------|--------|------------|
 
-_No dependencies detected. System may be self-contained or use alternative dependency management._
+Dependency records in scope: none in this scan. The repository may be self-contained or use unmanaged dependency sources.
 "@
 
-    $nugetPlaceholder = "_No NuGet packages detected._"
-    $npmPlaceholder = "_No NPM packages detected._"
-    $pythonPlaceholder = "_No Python packages detected._"
-    $mavenPlaceholder = "_No Java dependencies detected._"
-    $projectRefsPlaceholder = "_No project references detected._"
-    $versionConflictsPlaceholder = "_No version conflicts detected._"
+    $nugetPlaceholder = "NuGet package entries in scope: none in this scan."
+    $npmPlaceholder = "NPM package manifests in scope: none in this scan."
+    $pythonPlaceholder = "Python package manifests in scope: none in this scan."
+    $mavenPlaceholder = "Java build manifests in scope: none in this scan."
+    $projectRefsPlaceholder = "Project-reference edges in scope: none in this scan."
+    $versionConflictsPlaceholder = "Version divergence signals in scope: none in this scan."
 
     $nugetCount = (@($Dependencies | Where-Object { $_.type -eq 'NuGet Package' })).Count
     $projectRefCount = (@($Dependencies | Where-Object { $_.type -eq 'Project Reference' })).Count
@@ -79,8 +79,9 @@ $($rows -join "`n")
 |---------|---------|---------|---------|
 $($rows -join "`n")
 "@
+
     } else {
-        "No NPM package manifests were detected in scoped source paths for this run."
+        $npmPlaceholder
     }
 
     $pythonContent = if ($pythonPackages.Count -gt 0) {
@@ -94,8 +95,9 @@ $($rows -join "`n")
 |---------|---------|---------|---------|
 $($rows -join "`n")
 "@
+
     } else {
-        "No Python package manifests were detected in scoped source paths for this run."
+        $pythonPlaceholder
     }
 
     $mavenContent = if ($mavenPackages.Count -gt 0) {
@@ -109,8 +111,9 @@ $($rows -join "`n")
 |---------|---------|---------|---------|
 $($rows -join "`n")
 "@
+
     } else {
-        "No Maven or Gradle dependency manifests were detected in scoped source paths for this run."
+        $mavenPlaceholder
     }
 
     $projectRefs = @($Dependencies | Where-Object { $_.type -eq 'Project Reference' })

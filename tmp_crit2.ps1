@@ -1,8 +1,61 @@
-function Get-AppDocDiagramNodeMap{param($GraphData); return @{a=@{label="x"}}}
-function Get-AppDocSequenceScenarios{param($GraphData,$Contract); return @()}
+function Get-AppDocDiagramNodeMap {
+    param($GraphData)
+    # TODO: Implement node map extraction from $GraphData
+    return @{}
+}
+function Get-AppDocSequenceScenarios {
+    param($GraphData, $Contract)
+    # TODO: Implement scenario extraction from $GraphData and $Contract
+    return @()
+}
 function Get-AppDocDiagramTopEvidenceRefs{param($GraphData,$Limit); return @()}
-function ConvertTo-AppDocMermaidLabel{param($Label); return $Label}
-function Get-AppDocDiagramRendererValue{param($Object,$Name,$Default); return $Default}
+function ConvertTo-AppDocMermaidLabel {
+    param($Label)
+    if ($null -eq $Label) { return "" }
+    $safe = [string]$Label
+    # Escape double quotes
+    $safe = $safe -replace '"', '\"'
+    # Remove or replace newlines
+    $safe = $safe -replace '\r?\n', ' '
+    # Remove semicolons (can break Mermaid syntax)
+    $safe = $safe -replace ';', ''
+    # Remove backticks (can break code blocks)
+    $safe = $safe -replace '`', ''
+    # Optionally strip other problematic punctuation
+    $safe = $safe -replace '[\[\]\{\}]', ''
+    return $safe.Trim()
+}
+
+# Inline tests for ConvertTo-AppDocMermaidLabel
+if ($MyInvocation.InvocationName -eq '.') {
+    function Test-ConvertTo-AppDocMermaidLabel {
+        $tests = @(
+            @{input='User"Name'; expected='User\"Name'},
+            @{input="Line1`nLine2"; expected='Line1 Line2'},
+            @{input='Foo;Bar'; expected='FooBar'},
+            @{input='`Backtick`'; expected='Backtick'},
+            @{input='[Actor]'; expected='Actor'},
+            @{input='{"key": "value"}'; expected='"key": "value"'},
+            @{input=$null; expected=''}
+        )
+        foreach ($t in $tests) {
+            $actual = ConvertTo-AppDocMermaidLabel $t.input
+            if ($actual -ne $t.expected) {
+                Write-Host "Test failed: '$($t.input)' → '$actual' (expected '$($t.expected)')" -ForegroundColor Red
+            } else {
+                Write-Host "Test passed: '$($t.input)' → '$actual'" -ForegroundColor Green
+            }
+        }
+    }
+    Test-ConvertTo-AppDocMermaidLabel
+}
+function Get-AppDocDiagramRendererValue {
+    param($Object, $Name, $Default)
+    if ($null -ne $Object -and $Object.ContainsKey($Name) -and $null -ne $Object[$Name]) {
+        return $Object[$Name]
+    }
+    return $Default
+}
 function New-AppDocCriticalSequencesMarkdown {
     [CmdletBinding()]
     param(
@@ -18,6 +71,10 @@ function New-AppDocCriticalSequencesMarkdown {
 
     $lines = @()
     $lines += "# Critical Sequences"
+    if ($scenarios.Count -eq 0) {
+        $lines += "_No deterministic request journeys (sequence extraction not implemented)._"
+        return $lines -join "`n"
+    }
     $lines += ""
     $lines += "_Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')_"
     $lines += ""

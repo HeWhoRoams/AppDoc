@@ -191,3 +191,52 @@ function Normalize-AppDocTemplateInstructionText {
     return $updated
 }
 
+function Normalize-AppDocMarkdownStructure {
+    <#
+    .SYNOPSIS
+    Applies cross-artifact markdown structure normalization after template population.
+
+    .PARAMETER Content
+    The markdown content to normalize
+    #>
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Content
+    )
+
+    $updated = $Content
+
+    # Split concatenated headings + no-evidence text into separate lines.
+    $updated = [regex]::Replace(
+        $updated,
+        '(?im)^(##\s+[^\r\n#]+?)\s*(No evidence found for this section in the current scan\.)\s*$',
+        '$1' + "`r`n`r`n" + '$2'
+    )
+    $updated = [regex]::Replace(
+        $updated,
+        '(?im)^(##\s+[^\r\n#]+?)\s*(_No[^\r\n_]+_)\s*$',
+        '$1' + "`r`n`r`n" + '$2'
+    )
+
+    # Prevent no-evidence sentence from living inside markdown table bodies.
+    $updated = [regex]::Replace(
+        $updated,
+        '(?ms)(^\|[^\r\n]+\|\r?\n\|[-:\s|]+\|\r?\n)(No evidence found for this section in the current scan\.)',
+        [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Groups[1].Value + "`r`n`r`n" + $m.Groups[2].Value)
+        }
+    )
+
+    # Ensure a blank line separates table blocks from following headings.
+    $updated = [regex]::Replace(
+        $updated,
+        '(?m)(^\|[^\r\n]*\|\r?\n)(##\s+[^\r\n]+)',
+        '$1' + "`r`n" + '$2'
+    )
+
+    # Trim redundant blank lines introduced by cleanup.
+    $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`r`n`r`n")
+    return $updated
+}
+

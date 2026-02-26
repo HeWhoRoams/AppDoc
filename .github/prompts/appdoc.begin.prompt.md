@@ -13,7 +13,7 @@ Use this prompt to run deterministic AppDoc generation from start to finish with
 1. Parse arguments:
 - Argument 1 (required): target repository root path.
 - Argument 2 (optional): output docs path (default `docs/`).
-- Optional flags: `--strict`, `--threshold <1-100>`, `--skip-diagrams`, `--no-ai`, `--ai-mode <auto|deterministic>`, `--dry-run`.
+- Optional flags: `--strict`, `--threshold <1-100>`, `--skip-diagrams`, `--dry-run`.
 
 2. Validate prerequisites:
 - Target path exists.
@@ -29,8 +29,6 @@ Flag mapping:
 - `--strict` => `-StrictValidation`
 - `--threshold N` => `-QualityThreshold N`
 - `--skip-diagrams` => `-SkipDiagrams`
-- `--no-ai` => `-NoAI`
-- `--ai-mode <mode>` => `-AIMode <Auto|Deterministic>`
 - `--dry-run` => `-DryRun`
 
 4. If command fails:

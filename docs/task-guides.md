@@ -1,6 +1,6 @@
 # Task Guides
 
-**Generated**: 2026-02-20 14:53:19
+**Generated**: 2026-02-25 14:48:54
 
 ## Plain Language Summary
 
@@ -12,7 +12,7 @@ This document provides task-centric implementation and maintenance playbooks der
 
 ## Task Guides
 
-**Generated**: 2026-02-20 14:53:19
+**Generated**: 2026-02-25 14:48:54
 
 ### Change an Endpoint Safely
 
@@ -32,11 +32,7 @@ This document provides task-centric implementation and maintenance playbooks der
 4. Confirm recovery by running targeted tests from [Test Catalog](test-catalog.md).
 
 **Evidence snapshot**:
-- `msbuild SampleApp.sln /p:Configuration=Release`
-- `dotnet build ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj"`
-- `dotnet build "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj"`
-- `dotnet build "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Service/SampleApp.Service.csproj"`
-- `dotnet build "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Web/SampleApp.Web.csproj"`
+- No build command evidence available
 
 ### Triage Dependency Risk
 
@@ -46,11 +42,7 @@ This document provides task-centric implementation and maintenance playbooks der
 4. Stage upgrades incrementally and re-run strict documentation validation.
 
 **Evidence snapshot**:
-- `SampleApp.Common` used in 2 locations
-- `EntityFramework` used in 1 locations
-- `Microsoft.AspNetCore.Mvc` used in 1 locations
-- `Microsoft.CodeAnalysis.CSharp` used in 1 locations
-- `Microsoft.Extensions.Hosting.WindowsServices` used in 1 locations
+- No dependency evidence available
 
 ### Plan a Debt Sprint
 

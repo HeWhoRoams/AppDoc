@@ -1,6 +1,6 @@
 {
   "artifact": "start-here",
-  "generatedAt": "2026-02-20T14:53:19-05:00",
+  "generatedAt": "2026-02-25T14:48:56-05:00",
   "recordCount": 3,
   "records": [
     {
@@ -15,7 +15,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:19-05:00"
+      "timestamp": "2026-02-25T14:48:56-05:00"
     },
     {
       "artifact": "start-here",
@@ -29,7 +29,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:19-05:00"
+      "timestamp": "2026-02-25T14:48:56-05:00"
     },
     {
       "artifact": "start-here",
@@ -38,29 +38,27 @@
       "kind": "summary",
       "confidence": 1.0,
       "metadata": {
-        "count": 8,
-        "languages": [
-          ".cs"
-        ]
+        "count": 0,
+        "languages": []
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-02-20T14:53:19-05:00"
+      "timestamp": "2026-02-25T14:48:56-05:00"
     }
   ],
   "metadata": {
-    "requiredEvidenceKeys": [
-      "summary",
-      "endpoints",
-      "models"
-    ],
     "generator": "generate-start-here.ps1",
     "requiredSections": [
       "Who This Is For",
       "15-Minute Orientation",
       "Role-Based Paths",
       "System Signals"
+    ],
+    "requiredEvidenceKeys": [
+      "summary",
+      "endpoints",
+      "models"
     ]
   },
   "determinism": {
@@ -70,6 +68,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "172465a648322e8b34818231d85ec30c8a5ebc2376e93552c197feb1b56274cc"
+    "contentHash": "e2a42d23af638fac08162073ca61a4d7cc00cb09954f6b0fb0483fa5684a3b14"
   }
 }

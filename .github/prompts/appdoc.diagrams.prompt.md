@@ -39,7 +39,7 @@ Improve human readability and architectural context of generated Mermaid diagram
 [QUALITY TARGET]
 Diagrams should let a new engineer answer:
 1. What enters the system?
-2. Where processing happens?
+2. Where does processing happen?
 3. What data is transformed or stored?
 4. What leaves the system and where it goes?
 

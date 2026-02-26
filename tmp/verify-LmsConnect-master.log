@@ -1,0 +1,78 @@
+
+Name                           Value
+----                           -----
+timestamp                      2026-02-25T11:53:15-05:00
+category                       ENVIRONMENT_ERROR
+severity                       Info
+component                      orchestrator
+message                        Diagnostics initialized
+filePath                       
+details                        {[outputPath, C:\Github\LmsConnect-master\docs], [rootPath, C:\Github\LmsConnect-master]}
+{
+  "totalFiles": 548,
+  "services": [
+    "Common",
+    "Common.Tests",
+    "Docs",
+    "Persistence",
+    "Persistence.Tests",
+    "ProcessingService",
+    "ProcessingService.Tests",
+    "Web.Tests"
+  ],
+  "languages": {
+    ".svc": 1,
+    ".config": 26,
+    ".html": 38,
+    ".pubxml": 1,
+    ".cs": 270,
+    ".csproj": 9,
+    ".gitignore": 1,
+    ".docx": 1,
+    ".md": 69,
+    ".defaults": 2,
+    ".txt": 2,
+    ".vsdx": 2,
+    ".ps1": 2,
+    ".scss": 3,
+    ".css": 3,
+    ".xml": 1,
+    ".editorconfig": 1,
+    ".gitkeep": 1,
+    ".sql": 12,
+    ".gitattributes": 1,
+    ".resx": 1,
+    ".ico": 1,
+    ".dotsettings": 1,
+    ".npmrc": 1,
+    ".sln": 1,
+    ".cshtml": 3,
+    ".yml": 1,
+    ".json": 45,
+    ".ts": 48
+  },
+  "directories": [
+    "Common",
+    "Common.Tests",
+    "Docs",
+    "Model",
+    "Persistence",
+    "Persistence.Tests",
+    "ProcessingService",
+    "ProcessingService.Tests",
+    "Scripts",
+    "Testing Tools",
+    "Web",
+    "Web.Tests",
+    "Web.Ui"
+  ]
+}
+{
+  "edges": [],
+  "nodes": []
+}
+{
+  "flags": [],
+  "options": []
+}
+

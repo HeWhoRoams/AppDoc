@@ -5,7 +5,7 @@
 
 AppDoc provides automated documentation extraction, quality assessment, and improvement tools for codebases. The toolkit is implemented in PowerShell and outputs comprehensive reports and recommendations based on analysis of your codebase and generated documentation.
 
-**Note:** The layout and content of external AI-generated samples were used only to inform improvements to AppDoc's templates and prompts. No external sample files are required or processed at runtime.
+**Note:** The current workflow is local-first. Deterministic scripts generate technical artifacts, and readability enhancements are performed directly in your IDE chat session.
 
 ## Prerequisites
 
@@ -67,10 +67,7 @@ Useful flags:
 - `-StrictValidation` — fails the run when generated artifacts score below threshold.
 - `-QualityThreshold <1-100>` — sets strict validation cutoff (default: `80`).
 - `-SkipDiagrams` — skips C4 diagram generation.
-- `-AIMode <Auto|Deterministic>` — both values run local deterministic mode.
-- `-NoAI` — compatibility flag; deterministic local mode is already default.
-
-AppDoc does not call external AI providers at runtime. Use your IDE/chat AI session as the orchestration layer around deterministic script output.
+Readability and narrative enhancements are handled directly in your IDE/chat AI session over local workspace context and generated evidence artifacts.
 
 Mermaid C4 diagrams can be generated directly with:
 

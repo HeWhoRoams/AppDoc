@@ -257,11 +257,27 @@ function Get-AppDocConfigSourceFiles {
         [string[]]$Include
     )
 
+    if (-not (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue)) {
+        $scopeModulePath = Join-Path $PSScriptRoot "AppDoc.Scope.psm1"
+        if (Test-Path $scopeModulePath) {
+            Import-Module $scopeModulePath -Force -ErrorAction SilentlyContinue
+        }
+    }
+
     if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
         return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "config-catalog" -Include $Include)
     }
 
-    return @(Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $Include -ErrorAction SilentlyContinue)
+    $files = @(Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $Include -ErrorAction SilentlyContinue)
+    if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {
+        return @(
+            $files | Where-Object {
+                Test-AppDocPathIncluded -Path $_.FullName -RootPath $RootPath -Artifact "config-catalog"
+            }
+        )
+    }
+
+    return @($files)
 }
 
 function Add-AppDocJsonConfigProperties {

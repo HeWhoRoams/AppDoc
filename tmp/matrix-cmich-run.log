@@ -1,0 +1,84 @@
+Running C:\Github\CMich.CoreApi-master
+
+Name                           Value
+----                           -----
+timestamp                      2026-02-25T10:46:57-05:00
+category                       ENVIRONMENT_ERROR
+severity                       Info
+component                      orchestrator
+message                        Diagnostics initialized
+filePath                       
+details                        {[rootPath, C:\Github\CMich.CoreApi-master], [outputPath, C:\Github\CMich.CoreApi-master…
+{
+  "directories": [
+    "CMich",
+    "CMich.ConnectionSettings",
+    "CMich.ConnectionSettings.Tests",
+    "CMich.CoreApi Documentation",
+    "CMich.Data",
+    "CMich.Data.Tests",
+    "CMich.Logging",
+    "CMich.Sap",
+    "CMich.Sap.Tests",
+    "CMich.Security",
+    "CMich.Security.Tests",
+    "CMich.Settings",
+    "CMich.Settings.Tests",
+    "CMich.Tests",
+    "CMich.Web",
+    "CMich.Web.Mvc",
+    "CMich.Web.Mvc.Tests",
+    "CMich.Web.Tests",
+    "CMich.WebServices",
+    "CMich.WebServices.Tests",
+    "docs",
+    "Templates"
+  ],
+  "services": [
+    "CMich",
+    "CMich.Data",
+    "CMich.WebServices",
+    "docs"
+  ],
+  "languages": {
+    ".wsdl": 27,
+    ".xsd": 6,
+    ".csproj": 19,
+    ".md": 33,
+    ".cs": 1206,
+    ".js": 1,
+    ".nuspec": 13,
+    ".json": 28,
+    ".snk": 16,
+    ".jpg": 1,
+    ".png": 2,
+    ".cd": 1,
+    ".svcmap": 27,
+    ".xml": 202,
+    ".css": 1,
+    ".yml": 1,
+    ".svcinfo": 54,
+    ".gitignore": 3,
+    ".gif": 4,
+    ".resx": 2,
+    ".sln": 1,
+    ".config": 16,
+    ".datasource": 97,
+    ".disco": 2,
+    ".gitattributes": 1,
+    ".cshtml": 2,
+    ".bak": 1,
+    ".ps1": 1
+  },
+  "totalFiles": 1768
+}
+{
+  "edges": [],
+  "nodes": []
+}
+{
+  "flags": [],
+  "options": []
+}
+
+EXIT_CODE=0

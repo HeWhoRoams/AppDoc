@@ -1,0 +1,103 @@
+Running C:\Github\DegreeAudit
+
+Name                           Value
+----                           -----
+timestamp                      2026-02-25T10:44:53-05:00
+category                       ENVIRONMENT_ERROR
+severity                       Info
+component                      orchestrator
+message                        Diagnostics initialized
+filePath                       
+details                        {[outputPath, C:\Github\DegreeAudit\docs], [rootPath, C:\Github\DegreeAudit]}
+{
+  "services": [
+    "CMich.DegreeAudit.Tests",
+    "CMich.DegreeAudit.Web",
+    "CMich.WorkbenchTesting",
+    "CMichDegreeAudit",
+    "docs"
+  ],
+  "languages": {
+    ".tt": 2,
+    ".js": 41,
+    ".json": 40,
+    ".png": 68,
+    ".mso": 1,
+    ".edmx": 1,
+    ".gif": 2,
+    ".ps1": 42,
+    ".cshtml": 108,
+    ".resx": 7,
+    ".eot": 1,
+    ".jpg": 16,
+    ".pubxml": 1,
+    ".pdf": 2,
+    ".woff": 1,
+    ".txt": 65,
+    ".thmx": 4,
+    ".ttf": 1,
+    ".yml": 1,
+    ".ds_store": 1,
+    ".targets": 3,
+    ".cs": 414,
+    ".gitignore": 1,
+    ".diagram": 1,
+    ".svg": 1,
+    ".rdlc": 6,
+    ".bat": 1,
+    ".dll": 8,
+    ".csproj": 7,
+    ".otf": 1,
+    ".defaults": 1,
+    ".ts": 16,
+    ".less": 4,
+    ".md": 68,
+    ".editorconfig": 5,
+    ".config": 21,
+    ".ico": 1,
+    ".cache": 14,
+    ".docx": 5,
+    ".asax": 1,
+    ".xsl": 1,
+    ".props": 3,
+    ".psm1": 2,
+    ".xsd": 2,
+    ".emz": 1,
+    ".csv": 1,
+    ".sln": 2,
+    ".nuspec": 1,
+    ".settings": 1,
+    ".sql": 5,
+    ".html": 75,
+    ".xlsx": 1,
+    ".map": 17,
+    ".htm": 7,
+    ".xml": 7347,
+    ".aspx": 1,
+    ".css": 13
+  },
+  "directories": [
+    "CMich.DegreeAudit.Tests",
+    "CMich.DegreeAudit.Web",
+    "CMich.WorkbenchTesting",
+    "CMichDegreeAudit",
+    "docs",
+    "Docs_original",
+    "docuwriter",
+    "External Documentation",
+    "specs",
+    "SqlScripts",
+    "tests"
+  ],
+  "totalFiles": 8464
+}
+{
+  "edges": [],
+  "nodes": []
+}
+{
+  "flags": [],
+  "options": []
+}
+
+EXIT_CODE=0

@@ -74,7 +74,8 @@ function New-AppDocCriticalSequencesMarkdown {
                 }
             }
 
-            $lines += "    component-->>actor: Response"
+            $lines += "    component-->>endpoint: Response"
+            $lines += "    endpoint-->>actor: Response"
             $lines += "```"
             $lines += ""
         }

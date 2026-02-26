@@ -1,6 +1,6 @@
 # Dependencies Catalog
 
-**Generated**: 2026-02-20 14:53:19
+**Generated**: 2026-02-25 14:48:54
 
 ## Plain Language Summary
 
@@ -18,27 +18,13 @@ This catalog aggregates dependencies discovered from package manifests, project 
 
 | Package Manager | Total Dependencies | Direct | Transitive |
 |-----------------|-------------------|--------|------------|
-| NuGet | 8 | 8 | 0 |
-| Project References | 2 | 2 | 0 |
-| Assembly References | 0 | 0 | 0 |
 
-**Projects**: 4
+Dependency records in scope: none in this scan. The repository may be self-contained or use unmanaged dependency sources.
 ## Dependencies by Type
 
 ### NuGet Packages
 
-| Package | Version | Used By | Purpose |
-|---------|---------|---------|---------|
-| `EntityFramework` | 6.4.4 | SampleApp.Common | NuGet package |
-| `Microsoft.AspNetCore.Mvc` | 2.2.0 | SampleApp.Web | NuGet package |
-| `Microsoft.CodeAnalysis.CSharp` | 4.12.0 | AppDoc.CSharpAstParser | NuGet package |
-| `Microsoft.Extensions.Hosting.WindowsServices` | 6.0.0 | SampleApp.Service | NuGet package |
-| `Newtonsoft.Json` | 13.0.1 | SampleApp.Web | NuGet package |
-| `RabbitMQ.Client` | 6.4.0 | SampleApp.Service | NuGet package |
-| `System.Data.SqlClient` | 4.8.5 | SampleApp.Common | NuGet package |
-| `System.Net.Http` | 4.3.4 | SampleApp.Web | NuGet package |
-
-**Total NuGet Packages**: 8
+NuGet package entries in scope: none in this scan.
 ### NPM Packages
 
 No NPM package manifests were detected in scoped source paths for this run.
@@ -50,14 +36,10 @@ No Python package manifests were detected in scoped source paths for this run.
 No Maven or Gradle dependency manifests were detected in scoped source paths for this run.
 ## Project References
 
-Internal project dependencies:
-
-- **`SampleApp.Common`** referenced by: SampleApp.Service, SampleApp.Web
-
-**Total Project References**: 2
+Project-reference edges in scope: none in this scan.
 ## Version Conflicts
 
-_No version conflicts detected._
+Version divergence signals in scope: none in this scan.
 ## Security Considerations
 
 This artifact does not currently include automated CVE/advisory enrichment. Use dependency scanning tools in CI and prioritize packages with multiple versions or broad usage footprint for security review.
@@ -65,7 +47,6 @@ This artifact does not currently include automated CVE/advisory enrichment. Use 
 ## Licensing
 
 _No license information extracted. Verify licenses for compliance._
-
 ## Upgrade Recommendations
 
 Focus upgrades on packages that appear in many projects, show version divergence, or sit on critical execution paths. Roll upgrades in small batches and validate build/test outputs after each change set.
@@ -74,7 +55,7 @@ Focus upgrades on packages that appear in many projects, show version divergence
 | Field | Value |
 |------|-------|
 | Evidence Artifact | evidence/dependencies-catalog.evidence.json |
-| Record Count | 10 |
+| Record Count | 0 |
 | Generator | generate-dependencies-catalog.ps1 |
 | Required Evidence Keys | dependencies |
 | Grounding Mode | Deterministic extraction records |
