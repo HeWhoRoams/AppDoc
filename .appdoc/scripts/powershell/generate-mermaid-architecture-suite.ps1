@@ -47,16 +47,21 @@ if (-not $SkipC4 -and (Test-Path $c4Script)) {
     }
 }
 
+
 $contract = $null
 $graphData = $null
 $truthPackPath = $null
 $diagramPaths = $null
-
+$currentStep = "Starting"
 
 try {
+    $currentStep = "Get-AppDocDiagramContract"
     $contract = Get-AppDocDiagramContract
+    $currentStep = "Get-AppDocDiagramGraphData"
     $graphData = Get-AppDocDiagramGraphData -RootPath $RootPath -Contract $contract
+    $currentStep = "Write-AppDocDiagramTruthPack"
     $truthPackPath = Write-AppDocDiagramTruthPack -RootPath $RootPath -GraphData $graphData
+    $currentStep = "Write-AppDocDiagramSuite"
     $diagramPaths = Write-AppDocDiagramSuite -RootPath $RootPath -GraphData $graphData -Contract $contract
 
     $metrics = $graphData.metrics
@@ -70,13 +75,7 @@ try {
     Write-Host ("   Nodes: {0}, Edges: {1}, Inbound: {2}, Outbound: {3}" -f `
         [int]$metrics.nodeCount, [int]$metrics.edgeCount, [int]$metrics.inboundEndpointCount, [int]$metrics.outboundEndpointCount) -ForegroundColor Gray
 } catch {
-    $errStep = ""
-    if (-not $contract) { $errStep = "Get-AppDocDiagramContract" }
-    elseif (-not $graphData) { $errStep = "Get-AppDocDiagramGraphData" }
-    elseif (-not $truthPackPath) { $errStep = "Write-AppDocDiagramTruthPack" }
-    elseif (-not $diagramPaths) { $errStep = "Write-AppDocDiagramSuite" }
-    else { $errStep = "Unknown step" }
-    Write-Error ("Diagram suite generation failed at step: {0}. Error: {1}" -f $errStep, $_.Exception.Message)
+    Write-Error ("Diagram suite generation failed at step: {0}. Error: {1}" -f $currentStep, $_.Exception.Message)
     # Cleanup partial files if they exist
     try {
         if ($truthPackPath -and (Test-Path $truthPackPath)) {

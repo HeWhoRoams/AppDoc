@@ -45,7 +45,7 @@ function Get-NormalizedDiagramContent {
     if ($null -eq $content) { $content = "" }
 
     # Remove volatile generation timestamps while preserving diagram semantics.
-    $content = [regex]::Replace($content, '(?im)^\*\*Generated\*\:\s*.+$', '**Generated**: {{timestamp}}')
+    $content = [regex]::Replace($content, '(?im)^\*\*Generated\*\*\s*:\s*.+$', '**Generated**: {{timestamp}}')
     $content = [regex]::Replace($content, '(?im)^_Generated:\s*.+_$', '_Generated: {{timestamp}}_')
     $content = [regex]::Replace($content, '(?im)^Generated:\s*.+$', 'Generated: {{timestamp}}')
 

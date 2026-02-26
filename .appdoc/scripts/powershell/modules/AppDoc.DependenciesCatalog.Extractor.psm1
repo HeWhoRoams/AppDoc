@@ -19,7 +19,7 @@ function Get-AppDocDependenciesSourceFiles {
             }
         }
         if (-not (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue)) {
-            throw "Get-AppDocSourceFiles is not available after attempting to import AppDoc.Scope.psm1 from $scopeModulePath. Import failed or the command is missing."
+            Write-Verbose "Get-AppDocSourceFiles is not available after attempting to import AppDoc.Scope.psm1 from $scopeModulePath. Falling back to Get-ChildItem."
         }
     }
 

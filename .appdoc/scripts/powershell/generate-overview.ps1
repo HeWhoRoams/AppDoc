@@ -67,7 +67,7 @@ function ConvertTo-AppDocPortableRelativePath {
     while ($relative.StartsWith("./")) {
         $relative = $relative.Substring(2)
     }
-    if ([string]::IsNullOrWhiteSpace($relative)) { return "./" }
+    if ([string]::IsNullOrWhiteSpace($relative)) { return "" }
     return $relative
 }
 
@@ -210,7 +210,7 @@ $evidenceRecords = @()
 $patchedCodeFileCount = [int]$overviewData.codeFileCount
 $patchedLanguageCount = [int]$languageCount.Keys.Count
 $patchedText = ""
-if ($truthPack.architecture.frameworks.Count -gt 0 -and $patchedCodeFileCount -eq 0) {
+if ($truthPack.architecture -ne $null -and $truthPack.architecture.frameworks -ne $null -and ($truthPack.architecture.frameworks -is [System.Collections.IEnumerable]) -and $truthPack.architecture.frameworks.Count -gt 0 -and $patchedCodeFileCount -eq 0) {
     $patchedCodeFileCount = 1
     $patchedLanguageCount = 1
     $frameworkNames = $truthPack.architecture.frameworks -join ", "
@@ -253,7 +253,10 @@ if ($welcomeNarrative) {
             $itemIndex++
             $evidenceRefs = @($item.evidence_refs | ForEach-Object { [string]$_ } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
             $confidence = if ($evidenceRefs.Count -gt 0) { 0.9 } else { 0.6 }
-            $providerType = "deterministic"
+            # Map provider to providerType: known AI providers yield 'ai', others 'deterministic'
+            $provider = [string]$welcomeNarrativeResult.provider
+            $aiProviders = @('openai', 'azureopenai', 'anthropic', 'google', 'ai', 'gpt', 'claude', 'gemini')
+            $providerType = if ($aiProviders -contains ($provider.ToLower())) { 'ai' } else { 'deterministic' }
 
             $evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "overview-welcome" -Name ("{0}-{1:00}" -f $section, $itemIndex) -Kind "welcome-summary" -Confidence $confidence -Provider ([string]$welcomeNarrativeResult.provider) -ProviderType $providerType -Metadata @{
                 section = $section

@@ -122,48 +122,8 @@ function Get-MarkdownDataRowCount {
     foreach ($line in ($SectionContent -split "`n")) {
         $trimmed = $line.Trim()
         if ($trimmed -match '^\|' -and $trimmed -notmatch '^\|\s*-') {
-            <#
-            .SYNOPSIS
-            Run all AppDoc documentation generators in sequence.
-
-            .DESCRIPTION
-            This script runs all AppDoc documentation generator scripts in the correct order for a full documentation refresh.
-
-            .PARAMETER RootPath
-            The root path of the repository to document.
-
-            .PARAMETER OutputPath
-            The output path for generated documentation artifacts.
-
-            .PARAMETER Force
-            Force regeneration of all artifacts, even if up-to-date.
-
-            .PARAMETER Verbose
-            Enable verbose output.
-
-            .PARAMETER SkipSyntaxGate
-            Skip the syntax gate validation step during execution.
-
-            .EXAMPLE
-            ./run-all-generators.ps1 -RootPath C:\MyRepo -OutputPath C:\MyRepo\docs
-            #>
-        [AllowNull()]
-        [object]$Object,
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) { return $Object[$Name] }
-        return $Default
-    }
-
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
-}
+            $rows++
+        }
 
 function Get-AppDocValidationExpectations {
     param(
@@ -350,26 +310,18 @@ function Get-AppDocValidationExpectations {
 
     # Configurable file size threshold (in bytes, e.g., 1MB)
     $maxDebtFileSize = 1MB
-    # In-memory cache: key = "$($file.FullName)|$($file.LastWriteTimeUtc.Ticks)|$($file.Length)"
-    if (-not $script:DebtSignalCache) { $script:DebtSignalCache = @{} }
     $debtSignalCount = 0
     $filesToCheck = @($debtSignalCandidates | Select-Object -First 300)
     $debtSignalResults = $filesToCheck | ForEach-Object -Parallel {
-        param($file, $maxDebtFileSize, $using:DebtSignalCache)
-        $cacheKey = "$($file.FullName)|$($file.LastWriteTimeUtc.Ticks)|$($file.Length)"
-        if ($using:DebtSignalCache.ContainsKey($cacheKey)) {
-            return $using:DebtSignalCache[$cacheKey]
-        }
+        param($file, $maxDebtFileSize)
         if ($file.Length -gt $maxDebtFileSize) { return 0 }
         $raw = Get-Content -Path $file.FullName -Raw -ErrorAction SilentlyContinue
         if (-not $raw) { return 0 }
         $count = ([regex]::Matches($raw, '(?im)\b(TODO|FIXME|HACK|XXX)\b')).Count
-        $using:DebtSignalCache[$cacheKey] = $count
         return $count
-    } -ArgumentList $maxDebtFileSize, $script:DebtSignalCache
-    $debtSignalCount = ($debtSignalResults | Measure-Object -Sum).Sum
-
-    $dependencySurfaceExpected = ($dependencyCount -gt 0 -or $dependencySignalCount -gt 0)
+    } -ArgumentList $maxDebtFileSize
+                }
+        )    $dependencySurfaceExpected = ($dependencyCount -gt 0 -or $dependencySignalCount -gt 0)
     $testSurfaceExpected = ($testRecordCount -gt 0 -or $testSignalCount -gt 0)
     $debtSurfaceExpected = ($debtRecordCount -gt 0 -or $debtSignalCount -gt 0)
     $allowNoDependencySurface = (-not $dependencySurfaceExpected) -and ($dependencyCount -eq 0)

@@ -120,7 +120,7 @@ function Write-AppDocDiagnostic {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
-        [ValidateSet("NOT_FOUND", "DETECTION_PATTERN_MISMATCH", "UNSUPPORTED_FRAMEWORK", "ENVIRONMENT_ERROR", "PARSING_ERROR", "TEMPLATE_ERROR", "IO_ERROR", "INTERNAL_ERROR")]
+        [ValidateSet("NOT_FOUND", "DETECTION_PATTERN_MISMATCH", "UNSUPPORTED_FRAMEWORK", "ENVIRONMENT_ERROR", "PARSING_ERROR", "TEMPLATE_ERROR", "IO_ERROR", "INTERNAL_ERROR", "INITIALIZATION")]
         [string]$Category,
         [Parameter(Mandatory=$true)]
         [ValidateSet("Info", "Warning", "Error")]

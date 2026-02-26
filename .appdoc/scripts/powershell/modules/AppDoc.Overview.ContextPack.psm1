@@ -124,10 +124,10 @@ function Get-AppDocOverviewContextPackData {
         $name = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default "")
         $source = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default "")
         # Normalize path separators and escaping for portability
-        $name = $name -replace '\\+', '/'
-        $name = $name -replace '/+', '/'
-        $source = $source -replace '\\+', '/'
-        $source = $source -replace '/+', '/'
+        $name = $name -replace '\+', '/'
+        $name = $name -replace '(?<!:)//+', '/'
+        $source = $source -replace '\+', '/'
+        $source = $source -replace '(?<!:)//+', '/'
         $evidenceId = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "id" -Default "")
         if ([string]::IsNullOrWhiteSpace($evidenceId)) { continue }
 
@@ -209,17 +209,17 @@ function Get-AppDocOverviewContextPackData {
 
     $intentCandidates = @()
     $intentCounter = 1
+    # Helper: Normalize path, preserving protocol double-slashes
+    function Normalize-AppDocOverviewPath {
+        param([string]$Path)
+        if ([string]::IsNullOrWhiteSpace($Path)) { return $Path }
+        $norm = $Path -replace '\\', '/'
+        # Collapse multiple slashes except after protocol (e.g., 'http://')
+        $norm = $norm -replace '(?<!:)/{2,}', '/'
+        return $norm
+    }
     $factTypeMap = @{
         "what_it_does" = "business_purpose"
-        # Helper: Normalize path, preserving protocol double-slashes
-        function Normalize-AppDocOverviewPath {
-            param([string]$Path)
-            if ([string]::IsNullOrWhiteSpace($Path)) { return $Path }
-            $norm = $Path -replace '\\', '/'
-            # Collapse multiple slashes except after protocol (e.g., 'http://')
-            $norm = $norm -replace '(?<!:)/{2,}', '/'
-            return $norm
-        }
         "inputs" = "data_contract"
         "processing_steps" = "workflow"
         "outputs" = "data_contract"

@@ -545,7 +545,8 @@ function Get-AppDocOverviewTruthPackData {
         # Avoid duplicating controllerNames if both use graphComponentNames
         if ($controllerNames -eq $graphComponentNames -or ($controllerNames.Count -eq $graphComponentNames.Count -and (@($controllerNames) -join ',') -eq (@($graphComponentNames) -join ','))) {
             # Use next 6 items after those used for controllerNames, or exclude those already used
-            $domainNames = @($graphComponentNames | Select-Object -Skip $controllerNames.Count -First 6)
+            $skipped = @($graphComponentNames | Select-Object -Skip $controllerNames.Count -First 6)
+            $domainNames = if ($skipped.Count -gt 0) { $skipped } else { @($graphComponentNames | Select-Object -First 6) }
         } else {
             $domainNames = @($graphComponentNames | Select-Object -First 6)
         }
@@ -679,7 +680,7 @@ function Get-AppDocOverviewTruthPackData {
                 $meta = Get-AppDocOverviewObjectValue -Object $_ -Name "metadata" -Default @{}
                 -not [string]::IsNullOrWhiteSpace([string](Get-AppDocOverviewObjectValue -Object $meta -Name "integrationUrl" -Default ""))
             }).Count
-            $confidenceNotes += New-AppDocOverviewFact -Text ("Outbound endpoint URL mapping coverage (graph) is {0}/{1}." -f $graphMappedCount, $graphOutboundEndpoints.Count) -EvidenceRefs @($graphOutboundEndpoints | Select-Object -First 4 | ForEach-Object { [string]$_.id })
+            $confidenceNotes += New-AppDocOverviewFact -Text ("Outbound endpoint URL mapping coverage (graph) is {0}/{1}." -f $graphMappedCount, $graphOutboundEndpoints.Count) -EvidenceRefs @($graphOutboundEndpoints | Select-Object -First 4 | ForEach-Object { [string](($_ | Get-AppDocOverviewObjectValue -Name 'id' -Default $null) ?? $_.name) })
         } else {
             # Use deterministic mapped count and outbound endpoint count/refs
             $confidenceNotes += New-AppDocOverviewFact -Text ("Outbound endpoint URL mapping coverage (deterministic) is {0}/{1}." -f $mappedOutbound.Count, $outboundEndpointCount) -EvidenceRefs @($outboundEndpoints | Select-Object -First 4 | ForEach-Object { [string]$_.id })

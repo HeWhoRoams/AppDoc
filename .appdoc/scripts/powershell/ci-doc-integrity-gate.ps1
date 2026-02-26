@@ -302,23 +302,25 @@ $modelEvidence = Get-EvidencePayload -Path $modelEvidencePath
 $configEvidence = Get-EvidencePayload -Path $configEvidencePath
 $dependencyEvidence = Get-EvidencePayload -Path $dependencyEvidencePath
 
-$apiEndpointRecords = @(Get-EvidenceRecordsByKind -Payload $apiEvidence -Kind "endpoint")
-$modelRecords = @(Get-EvidenceRecordsByKind -Payload $modelEvidence -Kind "model")
-$configRecords = @(Get-EvidenceRecordsByKind -Payload $configEvidence -Kind "configuration")
-$dependencyRecords = @(Get-EvidenceRecordsByKind -Payload $dependencyEvidence -Kind "dependency")
+ $apiEndpointRecords = @(Get-EvidenceRecordsByKind -Payload $apiEvidence -Kind "endpoint")
+ $modelRecords = @(Get-EvidenceRecordsByKind -Payload $modelEvidence -Kind "model")
+ $configRecords = @(Get-EvidenceRecordsByKind -Payload $configEvidence -Kind "configuration")
+ $dependencyRecords = @(Get-EvidenceRecordsByKind -Payload $dependencyEvidence -Kind "dependency")
 
-$outboundRecords = @(
-    $apiEndpointRecords |
-        Where-Object {
-            $meta = Get-ObjectPropertyValue -Object $_ -Name "metadata" -Default @{}
-            $direction = [string](Get-ObjectPropertyValue -Object $meta -Name "direction" -Default "")
-            $sourceType = [string](Get-ObjectPropertyValue -Object $meta -Name "sourceType" -Default "")
-            $name = [string](Get-ObjectPropertyValue -Object $_ -Name "name" -Default "")
-            ($direction -eq "outbound") -or
-            ($sourceType -in @("soap-client","wcf-client","asmx-client","proxy-client")) -or
-            ($name -match '^/soap-client/')
-        }
-)
+ $outboundRecords = @(
+     $apiEndpointRecords |
+         Where-Object {
+             $meta = Get-ObjectPropertyValue -Object $_ -Name "metadata" -Default @{}
+             $direction = [string](Get-ObjectPropertyValue -Object $meta -Name "direction" -Default "")
+             $sourceType = [string](Get-ObjectPropertyValue -Object $meta -Name "sourceType" -Default "")
+             $name = [string](Get-ObjectPropertyValue -Object $_ -Name "name" -Default "")
+             ($direction -eq "outbound") -or
+             ($sourceType -in @("soap-client","wcf-client","asmx-client","proxy-client")) -or
+             ($name -match '^/soap-client/')
+         }
+ )
+
+ $truthPack = $null
 
 if ($truthPack) {
     $counts = Get-ObjectPropertyValue -Object $truthPack -Name "counts" -Default $null

@@ -85,7 +85,6 @@ function Get-MermaidFlowCounts {
                 break
             }
         }
-        }
     }
 
     return [ordered]@{
@@ -138,6 +137,12 @@ foreach ($view in $requiredViews) {
     $file = [string]$view.file
     if ([string]::IsNullOrWhiteSpace($file)) { continue }
     $path = Join-Path $diagramsPath $file
+
+    # Populate $diagramMermaidCountMap for this diagram
+    if (Test-Path $path) {
+        $content = Get-Content $path -Raw
+        $diagramMermaidCountMap[$file] = Get-MermaidFlowCounts -Content $content
+    }
     $exists = Test-Path $path
     $hasMermaidFence = $false
     $size = 0
@@ -146,7 +151,8 @@ foreach ($view in $requiredViews) {
         if ($null -eq $content) { $content = "" }
         $diagramContentMap[$file] = $content
         $size = $content.Length
-$hasMermaidFence = ($content -match '(?ms)
+        # Detect mermaid fenced code block: triple backticks, 'mermaid', then any content, then triple backticks
+        $hasMermaidFence = ($content -match '(?ms)```\s*mermaid.*?```')
         }
         $snapshot = Get-DiagramCoverageSnapshot -Markdown $content
         if ($snapshot) {

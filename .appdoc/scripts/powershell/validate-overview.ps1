@@ -106,6 +106,7 @@ else {
         $issues += "missing-welcome-evidence-refs"
     }
 
+    $whatItDoesContent = ''
     $whatItDoesContent = Get-OverviewSubsectionContent -SectionContent $welcomeContent -SubHeading "what_it_does"
     if (-not [string]::IsNullOrWhiteSpace($whatItDoesContent)) {
         $purposeVerbHits = ([regex]::Matches($whatItDoesContent, '(?i)\b(help|allow|enable|provide|support|manage|process|evaluate|calculate|determine|assign|track|integrate|report|validate|orchestrate|define|configure|automate)\w*\b')).Count

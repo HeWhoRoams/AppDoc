@@ -275,7 +275,7 @@ function ConvertTo-AppDocGraphV1 {
         $edgeTo = [string](Get-AppDocGraphValue -Object $edge -Name "to" -Default "")
         if (-not $nodeMap.ContainsKey($edgeFrom) -or -not $nodeMap.ContainsKey($edgeTo)) { continue }
 
-
+        $edgeId = [string](Get-AppDocGraphValue -Object $edge -Name "id" -Default "")
         if (-not $edgeMap.ContainsKey($edgeId)) {
             $edgeMap[$edgeId] = $edge
             continue
@@ -334,9 +334,7 @@ function ConvertTo-AppDocGraphV1 {
         }
     }
 
-    if (Get-Command Get-AppDocDeterministicHash -ErrorAction SilentlyContinue) {
     # Optional dependency: Get-AppDocDeterministicHash provides contentHash for integrity metadata.
-    # If unavailable, contentHash will not be set and consumers relying on it will not have integrity metadata.
     if (Get-Command Get-AppDocDeterministicHash -ErrorAction SilentlyContinue) {
         $excludeKeys = @("generatedAt", "updatedAt", "timestamp")
         $graph.determinism["hashAlgorithm"] = "SHA256"
@@ -379,8 +377,6 @@ function Test-AppDocGraphV1 {
     )
 
     if ($nodes.Count -eq 0) { $issues += "nodes-empty" }
-    if (-not $warnings) { $warnings = @() }
-    if ($edges.Count -eq 0) { $warnings += "edges-empty" }
 
     $nodeIds = @($nodes | ForEach-Object { [string](Get-AppDocGraphValue -Object $_ -Name "id" -Default "") })
     $duplicateNodes = @($nodeIds | Group-Object | Where-Object { -not [string]::IsNullOrWhiteSpace($_.Name) -and $_.Count -gt 1 })
