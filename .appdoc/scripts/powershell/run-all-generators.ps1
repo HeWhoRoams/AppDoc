@@ -118,11 +118,49 @@ function Get-MarkdownDataRowCount {
     if (-not $SectionContent) { return 0 }
 
     $rows = 0
+    $headerRows = 0
     foreach ($line in ($SectionContent -split "`n")) {
         $trimmed = $line.Trim()
         if ($trimmed -match '^\|' -and $trimmed -notmatch '^\|\s*-') {
             $rows++
+            if ($trimmed -match '^\|\s*Name\s*\|\s*Path\s*\|\s*Method\s*\|' -or
+                $trimmed -match '^\|\s*Model Name\s*\|' -or
+                $trimmed -match '^\|\s*Step\s*\|\s*Command\s*\|' -or
+                $trimmed -match '^\|\s*Dependency\s*\|\s*Version\s*\|') {
+                $headerRows++
+            }
         }
+    }
+
+    if ($rows -gt 0) {
+        if ($headerRows -gt 0) {
+            return [Math]::Max(0, $rows - $headerRows)
+        }
+        return [Math]::Max(0, $rows - 1)
+    }
+
+    return 0
+}
+
+function Get-AppDocValidationObjectValue {
+    param(
+        [AllowNull()]
+        [object]$Object,
+        [string]$Name,
+        [AllowNull()]
+        [object]$Default = $null
+    )
+
+    if ($null -eq $Object) { return $Default }
+    if ($Object -is [System.Collections.IDictionary]) {
+        if ($Object.Contains($Name)) { return $Object[$Name] }
+        return $Default
+    }
+
+    $prop = $Object.PSObject.Properties[$Name]
+    if ($prop) { return $prop.Value }
+    return $Default
+}
 
 function Get-AppDocValidationExpectations {
     param(
@@ -319,7 +357,8 @@ function Get-AppDocValidationExpectations {
         $count = ([regex]::Matches($raw, '(?im)\b(TODO|FIXME|HACK|XXX)\b')).Count
         return $count
     }
-    $debtSignalCount = ($debtSignalResults | Measure-Object -Sum).Sum
+    $debtSignalCountRaw = ($debtSignalResults | Measure-Object -Sum).Sum
+    $debtSignalCount = if ($null -eq $debtSignalCountRaw) { 0 } else { [int]$debtSignalCountRaw }
     $dependencySurfaceExpected = ($dependencyCount -gt 0 -or $dependencySignalCount -gt 0)
     $testSurfaceExpected = ($testRecordCount -gt 0 -or $testSignalCount -gt 0)
     $debtSurfaceExpected = ($debtRecordCount -gt 0 -or $debtSignalCount -gt 0)

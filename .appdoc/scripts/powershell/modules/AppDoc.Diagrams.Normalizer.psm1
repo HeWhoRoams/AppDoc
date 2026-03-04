@@ -339,7 +339,7 @@ function ConvertTo-AppDocGraphV1 {
         $excludeKeys = @("generatedAt", "updatedAt", "timestamp")
         $graph.determinism["hashAlgorithm"] = "SHA256"
         $graph.determinism["excludeKeys"] = $excludeKeys
-        $graph.determinism["contentHash"] = Get-AppDocDeterministicHash -Object $graph -ExcludeKeys $excludeKeys
+        $graph.determinism["contentHash"] = Get-AppDocDeterministicHash -InputObject $graph -ExcludeKeys $excludeKeys
     } else {
         Write-Verbose "Get-AppDocDeterministicHash not found: contentHash will not be set in determinism metadata. Consumers relying on contentHash will not have integrity metadata."
     }

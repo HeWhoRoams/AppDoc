@@ -78,7 +78,7 @@ if (Get-Command Get-AppDocArchitectureFingerprint -ErrorAction SilentlyContinue)
         }
     }
     catch {
-        Write-Verbose "Get-AppDocArchitectureFingerprint failed for RootPath $RootPath: $($_.Exception.Message). apiSurfaceExpected will remain default true."
+        Write-Verbose ("Get-AppDocArchitectureFingerprint failed for RootPath {0}: {1}. apiSurfaceExpected will remain default true." -f $RootPath, $_.Exception.Message)
         # Keep default expected=true when fingerprinting fails.
     }
 }

@@ -51,7 +51,7 @@ graph TD
 #### Error Detection
 *   **Exit Code Monitoring**: Orchestrator (`run-all-generators.ps1`) shall capture exit codes from `AnalyzerCS.exe` and AnalyzerTS runner (Node.js).
     *   Exit code 0: Success.
-    *   Exit code 1: Recoverable analyzer error (unrecognized project, missing dependencies, compilation failure).
+    *   Exit code 1: Recoverable analyzer error (retry-worthy transient failures or gracefully degradable with automatic retry attempts; e.g., missing optional dependency, transient compilation failure). Implementers should attempt retries (up to 2 with exponential backoff), degrade functionality, or fallback as appropriate.
     *   Exit code 2-10: Reserved for defined system error categories:
         *   2: Out of memory
         *   3: File system error
@@ -59,9 +59,9 @@ graph TD
         *   5: Invalid arguments
         *   6: Timeout
         *   7-10: Reserved for future system errors
-    *   Exit code 11-127: Other analyzer errors (non-critical, may include partial failures).
+    *   Exit code 11-127: Other analyzer errors (non-critical/other; partial analysis failures that should trigger immediate fallback/continue without retry; e.g., partial parsing error in one file, non-retryable AST extraction failure). Implementers should trigger fallback or alert only, no retry.
     *   Exit code 128+: Only used when run-all-generators.ps1 is executed on PowerShell/Windows and may conflict with Unix signal-based codes for AnalyzerCS.exe and AnalyzerTS (Node.js) runner.
-        *   **Note**: On Unix CI/CD, exit codes 128+ may indicate process termination by signal (e.g., SIGKILL = 137). Orchestrator must interpret 128+ codes as potential signal-based termination and log accordingly. Avoid using 128+ for custom system errors in cross-platform scripts.
+        *   **Note**: On Unix CI/CD, exit codes 128+ may indicate process termination by signal (e.g., SIGKILL = 137). Orchestrator must interpret 128+ codes as potential signal-based termination and log accordingly. Avoid using 128+ for custom system errors in cross-platform scripts. Refined semantics above guide implementers on retry/fallback behavior.
     *   **Cross-Platform Behavior**: Always document and map exit codes in logs; ensure orchestrator distinguishes between Windows/PowerShell and Unix conventions when handling 128+ codes.
 *   **Stderr/Stdout Capture**: Capture full stderr and stdout streams from analyzer processes for diagnostic logging.
     *   Log to `.appdoc/logs/analyzer-{timestamp}.log`.
@@ -176,9 +176,9 @@ When AST generation fails, Generators shall consume alternate data sources:
             *   If endpoint has a Body parameter, serialize its schema as a representative JSON object.
             *   Use schema default values where available; generate sample values (strings, numbers) for fields without defaults.
             *   Implement a schema traversal that handles nested objects and arrays (e.g., `List<Item>` → `[ { ...sample item... } ]`).
-                *   Limit recursion depth to a configurable maximum (default: 3, set via `.appdoc/profile.json` key: `"apiDocumentation.maxSchemaDepth"`).
-                *   Detect cycles/circular references; emit a placeholder comment (e.g., `"// Circular reference detected"`) instead of recursing for circular references.
-                *   Limit arrays to produce a single sample item by default (configurable via `.appdoc/profile.json` key: `"apiDocumentation.maxArraySampleCount"`, default: 1).
+                *   Limit recursion depth to a configurable maximum (default: 3, set via `.appdoc/profile.json` key: `"apiDocumentation.maxSchemaDepth"`). When max depth is exceeded, emit the literal placeholder string `[Max depth exceeded]` for property values.
+                *   Detect cycles/circular references; emit the literal placeholder string `[Circular reference to {TypeName}]` (substitute detected type name) instead of recursing for circular references.
+                *   Limit arrays to produce a single sample item by default (configurable via `.appdoc/profile.json` key: `"apiDocumentation.maxArraySampleCount"`, default: 1). When arrays are truncated, the curl/example block should include a short inline note such as `# Array truncated to N items for brevity`.
                 *   These rules apply to all nested object/array examples, including `List<Item>` and `CreateUserModel`.
                 *   Configuration keys and defaults:
                     *   `apiDocumentation.maxSchemaDepth`: default 3
@@ -467,9 +467,13 @@ audience: {{Audience}}
     *   Repository cleanliness: Execute `git status --porcelain` from the repository root to detect uncommitted changes.
 *   **Configuration**: New boolean flag in `.appdoc/profile.json` controls behavior: `"generated.verifyCleanRepo"` (default: `true`).
 *   **Behavior**:
-    *   If `verifyCleanRepo` is `true` and uncommitted changes detected: log error with details and abort generation with exit code 1.
-    *   If `verifyCleanRepo` is `false` and uncommitted changes detected: log warning listing changed files but continue generation.
-*   **Error Message**: Include detected file paths, types of changes (modified, untracked, deleted), rationale (e.g., "lastCommit date strategy requires clean repository state for reproducibility"), and any fallback or edge case warnings.
+    *   Parse `git status --porcelain` output in `Assert-AppDocRepositoryClean`:
+        *   Classify entries by prefix: "M", "A", "D", staged files = dirty; "??" = untracked.
+        *   If `generated.verifyCleanRepo` is `true` and dirty files detected: log error with details and abort generation with exit code 15 ("Repository not clean").
+        *   If `generated.verifyCleanRepo` is `false` and dirty files detected: log warning listing changed files but continue generation.
+        *   Untracked files ("??") are treated as non-fatal warnings by default; emit a detailed log listing file paths and change types and rationale.
+        *   Optional config flag `generated.treatUntrackedAsDirty` (default: false) allows making untracked files fatal if desired.
+    *   **Error Message**: Include detected file paths, types of changes (modified, added, deleted, staged, untracked), rationale (e.g., "lastCommit date strategy requires clean repository state for reproducibility"), and any fallback or edge case warnings. Document config keys in `.appdoc/profile.json`.
 *   **Implementation Site**: Function `Assert-AppDocRepositoryClean` in `AppDoc.Generation.psm1`; called at orchestrator entrypoint if `dateSource` is `"lastCommit"`.
 *   **Configuration Example**:
     ```json

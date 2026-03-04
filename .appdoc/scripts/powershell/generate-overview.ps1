@@ -240,45 +240,6 @@ foreach ($lang in $languageCount.Keys) {
     }
 }
 
-if ($welcomeNarrative) {
-    $welcomeSectionOrder = @(
-        "what_it_does",
-        "inputs",
-        "processing_steps",
-        "outputs",
-        "external_systems",
-        "confidence_notes"
-    )
-
-    foreach ($section in $welcomeSectionOrder) {
-        $items = @(Get-AppDocOverviewGeneratorValue -Object $welcomeNarrative -Name $section -Default @())
-
-        $itemIndex = 0
-        foreach ($item in $items) {
-            if (-not $item) { continue }
-            $text = [string]$item.text
-            if ([string]::IsNullOrWhiteSpace($text)) { continue }
-
-            $itemIndex++
-            $evidenceRefs = @($item.evidence_refs | ForEach-Object { [string]$_ } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
-            $confidence = if ($evidenceRefs.Count -gt 0) { 0.9 } else { 0.6 }
-            # Map provider to providerType: known AI providers yield 'ai', others 'deterministic'
-            $provider = [string]$welcomeNarrativeResult.provider
-            $providerType = if ($aiProviders -contains ($provider.ToLower())) { 'ai' } else { 'deterministic' }
-
-            $evidenceRecords += New-AppDocExtractionRecord -Artifact $artifact -Source "overview-welcome" -Name ("{0}-{1:00}" -f $section, $itemIndex) -Kind "welcome-summary" -Confidence $confidence -Provider $provider -ProviderType $providerType -Metadata @{
-                section = $section
-                text = $text
-                evidenceRefs = $evidenceRefs
-            }
-        }
-    }
-}
-
-# Define AI providers array once, outside the loop
-$aiProviders = @('openai', 'azureopenai', 'anthropic', 'google', 'ai', 'gpt', 'claude', 'gemini')
-}
-
 $evidenceMetadata = @{
     generator = "generate-overview.ps1"
     truthPackPath = (ConvertTo-AppDocPortableRelativePath -RootPath $RootPath -Value $truthPackPath)

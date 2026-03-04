@@ -108,6 +108,27 @@ function Get-DependencySignalStrength {
     }
 }
 
+function Get-DependencyGraphAlignedEntityCount {
+    param(
+        [AllowEmptyCollection()]
+        [array]$Records = @()
+    )
+
+    # Evidence graph de-duplicates dependency entities by deterministic id seeded from dependency name.
+    $uniqueNames = New-Object 'System.Collections.Generic.HashSet[string]'
+    foreach ($record in @($Records)) {
+        if (-not $record) { continue }
+        $kind = ([string](Get-DependencyValidationValue -Object $record -Name "kind" -Default "")).Trim().ToLowerInvariant()
+        if ($kind -ne "dependency") { continue }
+
+        $name = [string](Get-DependencyValidationValue -Object $record -Name "name" -Default "")
+        if ([string]::IsNullOrWhiteSpace($name)) { $name = "unknown-dependency" }
+        [void]$uniqueNames.Add($name.Trim().ToLowerInvariant())
+    }
+
+    return [int]$uniqueNames.Count
+}
+
 Write-Progress -Activity "Validating Dependencies Catalog" -Status "Checking catalog..." -PercentComplete 0
 
 $catalogPath = Join-Path $RootPath "docs" "dependencies-catalog.md"
@@ -127,6 +148,7 @@ $warnings = @()
 
 $evidencePath = Join-Path $RootPath "docs" "evidence" "dependencies-catalog.evidence.json"
 $dependencyCount = 0
+$expectedGraphDependencyCount = 0
 if (Test-Path $evidencePath) {
     try {
         $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json -Depth 120
@@ -135,6 +157,7 @@ if (Test-Path $evidencePath) {
                 Where-Object { $_ -and [string]$_.kind -eq "dependency" }
         )
         $dependencyCount = $records.Count
+        $expectedGraphDependencyCount = Get-DependencyGraphAlignedEntityCount -Records $records
     }
     catch {
         $issues += "dependencies-evidence-unparseable"
@@ -160,8 +183,8 @@ else {
     $warnings += "evidence-graph-missing"
 }
 
-if ($graphDependencyCount -ge 0 -and $graphDependencyCount -ne $dependencyCount) {
-    $issues += ("graph-evidence-dependency-mismatch:{0}/{1}" -f $graphDependencyCount, $dependencyCount)
+if ($graphDependencyCount -ge 0 -and $graphDependencyCount -ne $expectedGraphDependencyCount) {
+    $issues += ("graph-evidence-dependency-mismatch:{0}/{1}" -f $graphDependencyCount, $expectedGraphDependencyCount)
 }
 
 $signals = Get-DependencySignalStrength -RootPath $RootPath

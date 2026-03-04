@@ -683,7 +683,17 @@ function Get-AppDocOverviewTruthPackData {
                 $meta = Get-AppDocOverviewObjectValue -Object $_ -Name "metadata" -Default @{}
                 -not [string]::IsNullOrWhiteSpace([string](Get-AppDocOverviewObjectValue -Object $meta -Name "integrationUrl" -Default ""))
             }).Count
-            $confidenceNotes += New-AppDocOverviewFact -Text ("Outbound endpoint URL mapping coverage (graph) is {0}/{1}." -f $graphMappedCount, $graphOutboundEndpoints.Count) -EvidenceRefs @($graphOutboundEndpoints | Select-Object -First 4 | ForEach-Object { [string](($_ | Get-AppDocOverviewObjectValue -Name 'id' -Default $null) ?? $_.name) })
+            $graphCoverageRefs = @(
+                $outboundEndpoints |
+                    Select-Object -First 4 |
+                    ForEach-Object { [string]$_.id } |
+                    Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+                    Select-Object -Unique
+            )
+            if ($graphCoverageRefs.Count -eq 0) {
+                $graphCoverageRefs = @($defaultRefIds)
+            }
+            $confidenceNotes += New-AppDocOverviewFact -Text ("Outbound endpoint URL mapping coverage (graph) is {0}/{1}." -f $graphMappedCount, $graphOutboundEndpoints.Count) -EvidenceRefs $graphCoverageRefs
         } else {
             # Use deterministic mapped count and outbound endpoint count/refs
             $confidenceNotes += New-AppDocOverviewFact -Text ("Outbound endpoint URL mapping coverage (deterministic) is {0}/{1}." -f $mappedOutbound.Count, $outboundEndpointCount) -EvidenceRefs @($outboundEndpoints | Select-Object -First 4 | ForEach-Object { [string]$_.id })
@@ -728,6 +738,7 @@ function Get-AppDocOverviewTruthPackData {
     $patchedDependencyCount = $dependencyRecordCount
     $patchedCodeFileCount = $codeFileCount
     $hasFrameworkButNoCode = $false
+    $architectureDetectionWarning = [string](Get-AppDocOverviewObjectValue -Object $architecture -Name "detectionWarning" -Default "")
     if ($frameworkList.Count -gt 0 -and $codeFileCount -eq 0) {
         # Heuristic: Framework detected (e.g., ASP.NET Core) but no code files found
         $hasFrameworkButNoCode = $true
@@ -737,10 +748,8 @@ function Get-AppDocOverviewTruthPackData {
             $patchedCodeFileCount = 1
             $patchedDependencyCount = [Math]::Max(1, $dependencyRecordCount)
         }
-        # Optionally, flag architecture as uncertain if no code found
-        if ($architecture) {
-            $architecture["detectionWarning"] = "Framework detected without code scan hit; counts patched for consistency."
-        }
+        # Flag architecture as uncertain if frameworks are detected but no code scan hit.
+        $architectureDetectionWarning = "Framework detected without code scan hit; counts patched for consistency."
     }
     $truthPack = [ordered]@{
         version = $script:AppDocOverviewTruthPackVersion
@@ -751,7 +760,7 @@ function Get-AppDocOverviewTruthPackData {
             primaryStyle = if ($architecture) { [string](Get-AppDocOverviewObjectValue -Object $architecture -Name "primaryStyle" -Default "unknown") } else { "unknown" }
             styles = [string[]]$architectureStyles
             frameworks = @($frameworkList)
-            detectionWarning = if ($architecture -and $architecture.ContainsKey("detectionWarning")) { $architecture["detectionWarning"] } else { $null }
+            detectionWarning = if ([string]::IsNullOrWhiteSpace($architectureDetectionWarning)) { $null } else { $architectureDetectionWarning }
         }
         counts = [ordered]@{
             codeFiles = $patchedCodeFileCount

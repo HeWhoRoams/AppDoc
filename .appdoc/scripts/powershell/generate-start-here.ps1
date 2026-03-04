@@ -79,7 +79,19 @@ if (Test-Path $modelEvidencePath) {
 }
 if ($modelCount -eq 0 -and (Test-Path $modelDocPath)) {
     $modelContent = Get-Content $modelDocPath -Raw
-    $modelCount = ([regex]::Matches($modelContent, '^##\s+([A-Za-z_][\w]+)', 'Multiline')).Count
+    $modelSectionMatch = [regex]::Match($modelContent, '(?ims)^##\s+Data Models\s*$\r?\n(.*?)(?=^##\s+[^\r\n]+|\z)')
+    if ($modelSectionMatch.Success) {
+        $tableRows = @(
+            ($modelSectionMatch.Groups[1].Value -split "`r?`n") |
+                Where-Object {
+                    $line = ([string]$_).Trim()
+                    $line -match '^\|' -and $line -notmatch '^\|\s*[-: ]+\|'
+                }
+        )
+        if ($tableRows.Count -gt 1) {
+            $modelCount = $tableRows.Count - 1
+        }
+    }
 }
 
 $languagesText = if ($languageCount.Count -gt 0) {
@@ -121,7 +133,7 @@ $markdown = @"
 - Source files detected: **$($codeFiles.Count)**
 - Languages detected: **$($languageCount.Count)** ($languagesText)
 - API endpoints documented: **$apiEndpointCount**
-- Data model headings detected: **$modelCount**
+- Data models documented: **$modelCount**
 
 ## Documentation Map
 

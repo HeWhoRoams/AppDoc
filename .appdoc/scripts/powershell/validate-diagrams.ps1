@@ -70,10 +70,10 @@ function Get-MermaidFlowCounts {
         # Expanded Mermaid edge detection: require matching pipe pairs for labels, support more connectors
         # Supported connectors: -->, -+->, ==>, <->, <-->, ~~~, ==> , <==>, etc.
         $edgePattern = @(
-            # With label (require both pipes)
-            '^(?<from>[A-Za-z][A-Za-z0-9_]*)\s*(-->|-+->|==>|<->|<-->|~~~|==>|<==>|<-+->)\s*\|(?<label>[^|]+)\|\s*(?<to>[A-Za-z][A-Za-z0-9_]*)$',
+            # With label (require both pipes), include dotted edge operators used for config/dependency links.
+            '^(?<from>[A-Za-z][A-Za-z0-9_]*)\s*(-->|-\.->|-+->|==>|<->|<-->|~~~|<==>|<-+->)\s*\|(?<label>[^|]+)\|\s*(?<to>[A-Za-z][A-Za-z0-9_]*)$',
             # Without label
-            '^(?<from>[A-Za-z][A-Za-z0-9_]*)\s*(-->|-+->|==>|<->|<-->|~~~|==>|<==>|<-+->)\s*(?<to>[A-Za-z][A-Za-z0-9_]*)$'
+            '^(?<from>[A-Za-z][A-Za-z0-9_]*)\s*(-->|-\.->|-+->|==>|<->|<-->|~~~|<==>|<-+->)\s*(?<to>[A-Za-z][A-Za-z0-9_]*)$'
         )
         $matched = $false
         foreach ($pat in $edgePattern) {
@@ -141,7 +141,7 @@ foreach ($view in $requiredViews) {
     # Populate $diagramMermaidCountMap for this diagram
     if (Test-Path $path) {
         $content = Get-Content $path -Raw
-        $mermaid = Get-MermaidBlockContent -Content $content
+        $mermaid = Get-MermaidBlockContent -Markdown $content
         $diagramMermaidCountMap[$file] = Get-MermaidFlowCounts -Mermaid $mermaid
     }
     $exists = Test-Path $path
@@ -151,8 +151,9 @@ foreach ($view in $requiredViews) {
         if ($null -eq $content) { $content = "" }
         $diagramContentMap[$file] = $content
         $size = $content.Length
-# Detect mermaid fenced code block: triple backticks, 'mermaid', then any content, then triple backticks
-        $hasMermaidFence = ($content -match '(?ms)
+        # Detect mermaid fenced code block.
+        $hasMermaidFence = ($content -match '(?ms)```mermaid\s+.*?```')
+        $snapshot = Get-DiagramCoverageSnapshot -Markdown $content
         if ($snapshot) {
             $diagramCoverageSnapshotMap[$file] = $snapshot
         }
@@ -243,7 +244,7 @@ else {
         $truthInboundCount = [int](Get-DiagramValidationValue -Object $truthMetrics -Name "inboundEndpointCount" -Default 0)
         $truthOutboundCount = [int](Get-DiagramValidationValue -Object $truthMetrics -Name "outboundEndpointCount" -Default 0)
 
-        foreach ($diagramFile in @("internal-flow.md","data-flow.md")) {
+        foreach ($diagramFile in @("internal-flow.md")) {
             if (-not $diagramCoverageSnapshotMap.ContainsKey($diagramFile)) {
                 $issues += ("coverage-snapshot-missing:{0}" -f $diagramFile)
                 continue
@@ -261,6 +262,18 @@ else {
             }
             if ([int]$snapshot.outboundCount -ne $truthOutboundCount) {
                 $issues += ("snapshot-outbound-mismatch:{0}:{1}/{2}" -f $diagramFile, [int]$snapshot.outboundCount, $truthOutboundCount)
+            }
+        }
+
+        # data-flow.md can be a focused/filtered view; enforce local consistency and sane bounds instead of exact
+        # equality with full truth-pack graph totals.
+        if ($diagramCoverageSnapshotMap.ContainsKey("data-flow.md")) {
+            $dataSnapshot = $diagramCoverageSnapshotMap["data-flow.md"]
+            if ([int]$dataSnapshot.nodeCount -gt $truthNodeCount) {
+                $issues += ("snapshot-node-exceeds-truth:data-flow.md:{0}/{1}" -f [int]$dataSnapshot.nodeCount, $truthNodeCount)
+            }
+            if ([int]$dataSnapshot.edgeCount -gt $truthEdgeCount) {
+                $issues += ("snapshot-edge-exceeds-truth:data-flow.md:{0}/{1}" -f [int]$dataSnapshot.edgeCount, $truthEdgeCount)
             }
         }
 

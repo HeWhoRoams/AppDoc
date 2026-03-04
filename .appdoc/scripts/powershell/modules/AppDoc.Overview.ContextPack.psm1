@@ -55,6 +55,20 @@ function ConvertTo-AppDocOverviewContextArray {
     return @($Value)
 }
 
+function Normalize-AppDocOverviewPath {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string]$Path
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Path)) { return "" }
+    $normalized = $Path -replace '\\', '/'
+    # collapse duplicate slash but preserve URL protocol separator (e.g. https://)
+    $normalized = $normalized -replace '(?<!:)/{2,}', '/'
+    return $normalized.Trim()
+}
+
 function Get-AppDocOverviewEntityType {
     [CmdletBinding()]
     param([string]$Kind)
@@ -121,11 +135,8 @@ function Get-AppDocOverviewContextPackData {
 
         $kind = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "kind" -Default "")
         $entityType = Get-AppDocOverviewEntityType -Kind $kind
-        $name = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default "")
-        $source = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default "")
-        # Normalize path separators and escaping for portability
-        $name = Normalize-AppDocOverviewPath $name
-        $source = Normalize-AppDocOverviewPath $source
+        $name = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default ""))
+        $source = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default ""))
         $evidenceId = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "id" -Default "")
         if ([string]::IsNullOrWhiteSpace($evidenceId)) { continue }
 
@@ -159,8 +170,8 @@ function Get-AppDocOverviewContextPackData {
         $kind = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "kind" -Default "")
         if ($kind -ne "endpoint") { continue }
 
-        $name = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default "")
-        $source = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default "")
+        $name = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default ""))
+        $source = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default ""))
         $entityKey = "endpoint|{0}|{1}" -f $name, $source
         if (-not $entityIndex.ContainsKey($entityKey)) { continue }
 
@@ -207,15 +218,6 @@ function Get-AppDocOverviewContextPackData {
 
     $intentCandidates = @()
     $intentCounter = 1
-    # Helper: Normalize path, preserving protocol double-slashes
-    function Normalize-AppDocOverviewPath {
-        param([string]$Path)
-        if ([string]::IsNullOrWhiteSpace($Path)) { return $Path }
-        $norm = $Path -replace '\\', '/'
-        # Collapse multiple slashes except after protocol (e.g., 'http://')
-        $norm = $norm -replace '(?<!:)/{2,}', '/'
-        return $norm
-    }
     $factTypeMap = @{
         "what_it_does" = "business_purpose"
         "inputs" = "data_contract"
@@ -224,8 +226,8 @@ function Get-AppDocOverviewContextPackData {
         "external_systems" = "workflow"
         "confidence_notes" = "confidence_note"
     }
-    $sectionEvidenceMap = [ordered]@{}
 
+    $sectionEvidenceMap = [ordered]@{}
     foreach ($factSection in @("what_it_does","inputs","processing_steps","outputs","external_systems","confidence_notes")) {
         $items = @(Get-AppDocOverviewContextPackValue -Object $facts -Name $factSection -Default @())
         $sectionEvidenceMap[$factSection] = @()
@@ -233,12 +235,14 @@ function Get-AppDocOverviewContextPackData {
             if (-not $item) { continue }
             $text = [string](Get-AppDocOverviewContextPackValue -Object $item -Name "text" -Default "")
             if ([string]::IsNullOrWhiteSpace($text)) { continue }
+
             $ids = @(
                 ConvertTo-AppDocOverviewContextArray -Value (Get-AppDocOverviewContextPackValue -Object $item -Name "evidence_refs" -Default @()) |
                     ForEach-Object { [string]$_ } |
                     Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
                     Select-Object -Unique
             )
+
             $sectionEvidenceMap[$factSection] = @($sectionEvidenceMap[$factSection] + $ids | Select-Object -Unique)
             $intentType = if ($factTypeMap.ContainsKey($factSection)) { [string]$factTypeMap[$factSection] } else { "workflow" }
             $intentId = "intent-{0}" -f $intentCounter.ToString("0000")
@@ -247,7 +251,7 @@ function Get-AppDocOverviewContextPackData {
         }
     }
 
-    $contextPack = [ordered]@{
+    return [ordered]@{
         schema_version = $script:AppDocOverviewContextPackVersion
         generator_version = "generate-overview.ps1"
         generated_at = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
@@ -267,8 +271,8 @@ function Get-AppDocOverviewContextPackData {
         evidence_refs = @(
             $evidenceRefs |
                 ForEach-Object {
-                    $name = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "name" -Default "")
-                    $source = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "source" -Default "")
+                    $name = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $_ -Name "name" -Default ""))
+                    $source = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $_ -Name "source" -Default ""))
                     [ordered]@{
                         id = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "id" -Default "")
                         artifact = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "artifact" -Default "")
@@ -276,7 +280,7 @@ function Get-AppDocOverviewContextPackData {
                         name = $name
                         source = $source
                         normalized_name = $name
-                        normalized_source = Normalize-AppDocOverviewPath $source
+                        normalized_source = $source
                     }
                 }
         )
@@ -296,8 +300,6 @@ function Get-AppDocOverviewContextPackData {
             dependency_count = [int](Get-AppDocOverviewContextPackValue -Object $counts -Name "dependencyRecords" -Default 0)
         }
     }
-
-    return $contextPack
 }
 
 function Write-AppDocOverviewContextPack {
@@ -329,7 +331,7 @@ function Write-AppDocOverviewContextPack {
         }
     }
 
-    $payload | ConvertTo-Json -Depth 50 | Out-File -FilePath $outputPath -Encoding UTF8
+    $payload | ConvertTo-Json -Depth 80 | Out-File -FilePath $outputPath -Encoding UTF8
     return $outputPath
 }
 

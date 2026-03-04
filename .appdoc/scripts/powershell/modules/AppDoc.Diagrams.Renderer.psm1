@@ -35,6 +35,50 @@ function ConvertTo-AppDocMermaidLabel {
     return $value
 }
 
+function Get-AppDocMermaidFlowCounts {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string]$Mermaid
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Mermaid)) {
+        return [ordered]@{ nodeCount = 0; edgeCount = 0 }
+    }
+
+    $nodeIds = New-Object System.Collections.Generic.HashSet[string]
+    $edgeCount = 0
+    $edgePatterns = @(
+        '^(?<from>[A-Za-z][A-Za-z0-9_]*)\s*(-->|-\.->|-+->|==>|<->|<-->|~~~|<==>|<-+->)\s*\|(?<label>[^|]+)\|\s*(?<to>[A-Za-z][A-Za-z0-9_]*)$',
+        '^(?<from>[A-Za-z][A-Za-z0-9_]*)\s*(-->|-\.->|-+->|==>|<->|<-->|~~~|<==>|<-+->)\s*(?<to>[A-Za-z][A-Za-z0-9_]*)$'
+    )
+
+    foreach ($line in ($Mermaid -split "`r?`n")) {
+        $trimmed = $line.Trim()
+        if ([string]::IsNullOrWhiteSpace($trimmed)) { continue }
+        if ($trimmed -match '^(flowchart|graph|sequenceDiagram|subgraph|end)\b') { continue }
+        if ($trimmed -match '^class(Def)?\b') { continue }
+        if ($trimmed -match '^(?<id>[A-Za-z][A-Za-z0-9_]*)\s*\[') {
+            [void]$nodeIds.Add([string]$Matches['id'])
+            continue
+        }
+
+        foreach ($pattern in $edgePatterns) {
+            if ($trimmed -match $pattern) {
+                $edgeCount++
+                [void]$nodeIds.Add([string]$Matches['from'])
+                [void]$nodeIds.Add([string]$Matches['to'])
+                break
+            }
+        }
+    }
+
+    return [ordered]@{
+        nodeCount = [int]$nodeIds.Count
+        edgeCount = [int]$edgeCount
+    }
+}
+
 function Get-AppDocDiagramTopEvidenceRefs {
     [CmdletBinding()]
     param(
@@ -812,6 +856,15 @@ function New-AppDocDiagramMarkdown {
     )
 
     $metrics = Get-AppDocDiagramRendererValue -Object $GraphData -Name "metrics" -Default @{}
+    $renderedCounts = Get-AppDocMermaidFlowCounts -Mermaid $Mermaid
+    $snapshotNodeCount = [int](Get-AppDocDiagramRendererValue -Object $renderedCounts -Name "nodeCount" -Default 0)
+    $snapshotEdgeCount = [int](Get-AppDocDiagramRendererValue -Object $renderedCounts -Name "edgeCount" -Default 0)
+    if ($snapshotNodeCount -le 0) {
+        $snapshotNodeCount = [int](Get-AppDocDiagramRendererValue -Object $metrics -Name "nodeCount" -Default 0)
+    }
+    if ($snapshotEdgeCount -le 0) {
+        $snapshotEdgeCount = [int](Get-AppDocDiagramRendererValue -Object $metrics -Name "edgeCount" -Default 0)
+    }
     $refs = Get-AppDocDiagramTopEvidenceRefs -GraphData $GraphData -Limit 12
 
     $lines = @()
@@ -834,8 +887,8 @@ function New-AppDocDiagramMarkdown {
     $lines += "- Solid arrows represent deterministic code-evidenced relationships."
     $lines += "- Nodes are filtered and ordered for readability; full detail remains in evidence artifacts."
     $lines += ("- Coverage snapshot: {0} nodes, {1} edges, {2} inbound interfaces, {3} outbound integrations." -f `
-        [int](Get-AppDocDiagramRendererValue -Object $metrics -Name "nodeCount" -Default 0), `
-        [int](Get-AppDocDiagramRendererValue -Object $metrics -Name "edgeCount" -Default 0), `
+        $snapshotNodeCount, `
+        $snapshotEdgeCount, `
         [int](Get-AppDocDiagramRendererValue -Object $metrics -Name "inboundEndpointCount" -Default 0), `
         [int](Get-AppDocDiagramRendererValue -Object $metrics -Name "outboundEndpointCount" -Default 0))
     $dependencyCount = [int](Get-AppDocDiagramRendererValue -Object $metrics -Name "dependencyCount" -Default 0)

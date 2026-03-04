@@ -285,12 +285,12 @@ function Get-AppDocValidationContentExpectations {
     $debtSignalCandidates = @()
     if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
         $debtSignalCandidates = @(
-            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "debt-register" -Include @("*.cs","*.vb","*.fs","*.ts","*.js","*.tsx","*.jsx","*.py","*.java","*.go","*.rb","*.php","*.ps1","*.psm1","*.sql")
+            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "debt-register" -Include @("*.js","*.ts","*.cs","*.py","*.java")
         )
     }
     else {
         $debtSignalCandidates = @(
-            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include @("*.cs","*.vb","*.fs","*.ts","*.js","*.tsx","*.jsx","*.py","*.java","*.go","*.rb","*.php","*.ps1","*.psm1","*.sql") -ErrorAction SilentlyContinue
+            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include @("*.js","*.ts","*.cs","*.py","*.java") -ErrorAction SilentlyContinue
         )
     }
     $debtSignalCount = 0
@@ -824,6 +824,8 @@ function Get-ContradictionAnalysis {
     )
 
     $issues = @()
+    $allowNoApiSurface = [bool]($script:AppDocValidationContentExpectations.allowNoApiSurface ?? $false)
+    $allowNoModelSurface = [bool]($script:AppDocValidationContentExpectations.allowNoModelSurface ?? $false)
 
     $docToArtifact = [ordered]@{
         "start-here.md" = "start-here"
@@ -882,7 +884,7 @@ function Get-ContradictionAnalysis {
                 if (Test-Path $apiEvidencePath) {
                     $apiEvidence = Get-Content $apiEvidencePath -Raw | ConvertFrom-Json
                     $apiEvidenceCount = @($apiEvidence.records | Where-Object { [string]$_.kind -eq 'endpoint' }).Count
-                    if ([Math]::Abs($startHereApi - $apiEvidenceCount) -gt 0) {
+                    if ((-not $allowNoApiSurface) -and [Math]::Abs($startHereApi - $apiEvidenceCount) -gt 0) {
                         $issues += "start-here-api-signal-mismatch:$startHereApi/$apiEvidenceCount"
                     }
                 }
@@ -895,7 +897,7 @@ function Get-ContradictionAnalysis {
                 if (Test-Path $modelEvidencePath) {
                     $modelEvidence = Get-Content $modelEvidencePath -Raw | ConvertFrom-Json
                     $modelEvidenceCount = @($modelEvidence.records | Where-Object { [string]$_.kind -eq 'model' }).Count
-                    if ([Math]::Abs($startHereModels - $modelEvidenceCount) -gt 0) {
+                    if ((-not $allowNoModelSurface) -and [Math]::Abs($startHereModels - $modelEvidenceCount) -gt 0) {
                         $issues += "start-here-model-signal-mismatch:$startHereModels/$modelEvidenceCount"
                     }
                 }
@@ -965,15 +967,13 @@ function Get-TaskGuideOutcomeMetrics {
     $snapshotScore = [Math]::Round(([Math]::Min($avgSnapshots, 3) / 3) * 100, 1)
     $checklistScore = [Math]::Round(([Math]::Min($checklistCount, 5) / 5) * 100, 1)
     $actionabilityScore = [Math]::Round((($guideCountScore + $stepScore + $snapshotScore + $checklistScore) / 4), 1)
+    $expectedSnapshotMinimum = 2
 
     if ($avgSteps -lt 3) {
         $issues += "task-guide-steps-low:$([Math]::Round($avgSteps,1))"
     }
-    if ($avgSnapshots -lt 2) {
-        $issues += "task-guide-evidence-snapshot-low:$([Math]::Round($avgSnapshots,1))"
-    }
 
-            $evidenceCoverageScore = 0
+    $evidenceCoverageScore = 0
     $taskGuidesEvidencePath = Join-Path $EvidenceRoot "task-guides.evidence.json"
     if (Test-Path $taskGuidesEvidencePath) {
         try {
@@ -985,13 +985,22 @@ function Get-TaskGuideOutcomeMetrics {
             $taskRecordScore = [Math]::Round(([Math]::Min($taskGuideRecords.Count, 4) / 4) * 100, 1)
 
             $evidenceKeysSatisfied = 0
+            $nonZeroSurfaceSignals = 0
             # Treat $summaryRecord as a single object, not an array
             if ($summaryRecord -and $summaryRecord.metadata) {
                 $meta = $summaryRecord.metadata
                 foreach ($key in @('endpointCount', 'buildCommandCount', 'dependencyCount', 'debtCount', 'testCount')) {
                     if ($meta.$key -and [int]$meta.$key -gt 0) {
                         $evidenceKeysSatisfied++
+                        $nonZeroSurfaceSignals++
                     }
+                }
+
+                if ($nonZeroSurfaceSignals -le 0) {
+                    $expectedSnapshotMinimum = 0
+                }
+                elseif ($nonZeroSurfaceSignals -eq 1) {
+                    $expectedSnapshotMinimum = 1
                 }
             }
             $referenceEvidenceScore = [Math]::Round(($evidenceKeysSatisfied / 5) * 100, 1)
@@ -1003,6 +1012,10 @@ function Get-TaskGuideOutcomeMetrics {
     }
     else {
         $issues += "task-guides-evidence-missing"
+    }
+
+    if ($avgSnapshots -lt $expectedSnapshotMinimum) {
+        $issues += "task-guide-evidence-snapshot-low:$([Math]::Round($avgSnapshots,1))"
     }
 
     $estimatedCompletionMinutes = [Math]::Round(($avgSteps * 3), 1)

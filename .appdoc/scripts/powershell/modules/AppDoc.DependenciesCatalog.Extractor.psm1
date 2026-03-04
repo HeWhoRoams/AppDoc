@@ -14,7 +14,7 @@ function Get-AppDocDependenciesSourceFiles {
             try {
                 Import-Module $scopeModulePath -Force
             } catch {
-                Write-Verbose "Failed to import AppDoc.Scope.psm1 from $scopeModulePath: $_"
+                Write-Verbose ("Failed to import AppDoc.Scope.psm1 from {0}: {1}" -f $scopeModulePath, $_.Exception.Message)
                 # Optionally, use a logger if available: $AppDocLogger?.LogError(...)
             }
         }

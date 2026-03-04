@@ -120,6 +120,28 @@ function Get-TestSignalStrength {
     }
 }
 
+function Get-TestGraphAlignedEntityCount {
+    param(
+        [AllowEmptyCollection()]
+        [array]$Records = @()
+    )
+
+    # Evidence graph de-duplicates test entities by deterministic id seeded from test name.
+    # Mirror that behavior so validator compares like-for-like counts.
+    $uniqueNames = New-Object 'System.Collections.Generic.HashSet[string]'
+    foreach ($record in @($Records)) {
+        if (-not $record) { continue }
+        $kind = ([string](Get-TestValidationValue -Object $record -Name "kind" -Default "")).Trim().ToLowerInvariant()
+        if ($kind -notin @("test-case","test-suite","test","suite","parameterized test")) { continue }
+
+        $name = [string](Get-TestValidationValue -Object $record -Name "name" -Default "")
+        if ([string]::IsNullOrWhiteSpace($name)) { $name = "unnamed-test" }
+        [void]$uniqueNames.Add($name.Trim().ToLowerInvariant())
+    }
+
+    return [int]$uniqueNames.Count
+}
+
 Write-Progress -Activity "Validating Test Catalog" -Status "Checking catalog..." -PercentComplete 0
 
 $catalogPath = Join-Path $RootPath "docs\test-catalog.md"
@@ -140,6 +162,7 @@ $warnings = @()
 $evidencePath = Join-Path $RootPath "docs\evidence\test-catalog.evidence.json"
 $testCaseCount = 0
 $testSuiteCount = 0
+$expectedGraphTestCaseCount = 0
 if (Test-Path $evidencePath) {
     try {
         $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json -Depth 120
@@ -155,6 +178,7 @@ if (Test-Path $evidencePath) {
             $records |
                 Where-Object { [string]$_.kind -in @("test-suite","suite") }
         ).Count
+        $expectedGraphTestCaseCount = Get-TestGraphAlignedEntityCount -Records $records
     }
     catch {
         $issues += "test-evidence-unparseable"
@@ -180,8 +204,8 @@ else {
     $warnings += "evidence-graph-missing"
 }
 
-if ($graphTestCaseCount -ge 0 -and $graphTestCaseCount -ne $testCaseCount -and ($issues -notcontains 'test-evidence-unparseable')) {
-    $issues += ("graph-evidence-testcase-mismatch:{0}/{1}" -f $graphTestCaseCount, $testCaseCount)
+if ($graphTestCaseCount -ge 0 -and $graphTestCaseCount -ne $expectedGraphTestCaseCount -and ($issues -notcontains 'test-evidence-unparseable')) {
+    $issues += ("graph-evidence-testcase-mismatch:{0}/{1}" -f $graphTestCaseCount, $expectedGraphTestCaseCount)
 }
 
 $signals = Get-TestSignalStrength -RootPath $RootPath

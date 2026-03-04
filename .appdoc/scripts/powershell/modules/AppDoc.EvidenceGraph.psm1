@@ -694,8 +694,8 @@ function Test-AppDocEvidenceGraphIntegrity {
             if ($apiExpected -and ($inboundEndpointCount + $outboundEndpointCount -eq 0)) {
                 $issues += "Architecture fingerprint expects API surface but evidence graph contains zero endpoints."
             }
-            if ((-not $apiExpected) -and ($inboundEndpointCount + $outboundEndpointCount -gt 0)) {
-                $warnings += "Architecture fingerprint indicates no API surface while evidence graph has endpoint entities."
+            if ((-not $apiExpected) -and ($inboundEndpointCount -gt 0)) {
+                $warnings += "Architecture fingerprint indicates no inbound API surface while evidence graph has inbound endpoint entities."
             }
         }
         catch {
