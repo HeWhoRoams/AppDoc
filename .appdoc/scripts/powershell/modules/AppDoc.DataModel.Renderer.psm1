@@ -32,6 +32,48 @@ function Get-AppDocDataModelMarkdown {
         }
     })
 
+    $isInfrastructureModel = {
+        param($model)
+        $path = [string]($model.filePath ?? "")
+        $name = [string]($model.name ?? "")
+        $type = [string]($model.type ?? "")
+        return (
+            $path -match '(?i)(?:^|[\\/])(bin|obj|generated|service references|connected services|reference\.cs|proxy|proxies)(?:[\\/]|$)' -or
+            $name -match '(?i)(proxy|client|generated|reference)' -or
+            $type -match '(?i)(dto|proxy)'
+        )
+    }
+
+    $domainEntities = @($Models | Where-Object { -not (& $isInfrastructureModel $_) })
+    $infrastructureEntities = @($Models | Where-Object { (& $isInfrastructureModel $_) })
+
+    $highImpact = @(
+        $domainEntities |
+            Sort-Object @{ Expression = { @($_.properties).Count }; Descending = $true }, @{ Expression = { [string]$_.name } } |
+            Select-Object -First 20
+    )
+
+    $highImpactTable = @(
+        "| Model | Fields | Domain | Source |",
+        "|-------|--------|--------|--------|"
+    )
+    foreach ($model in $highImpact) {
+        $path = [string]$model.filePath
+        $domain = "general"
+        if ($path -match '^([^/\\]+)/') { $domain = $Matches[1] }
+        $source = "{0}:{1}" -f $path, [int]$model.lineNumber
+        $highImpactTable += "| ``$([string]$model.name)`` | $(@($model.properties).Count) | $domain | $source |"
+    }
+
+    $infraTable = @(
+        "| Model | Type | Source |",
+        "|-------|------|--------|"
+    )
+    foreach ($model in ($infrastructureEntities | Select-Object -First 40)) {
+        $source = "{0}:{1}" -f [string]$model.filePath, [int]$model.lineNumber
+        $infraTable += "| ``$([string]$model.name)`` | $([string]$model.type) | $source |"
+    }
+
     $domainSummary = @($domainRows | Group-Object -Property domain | Sort-Object Count -Descending)
     $domainSummaryTable = @(
         "| Domain | Models | Avg Fields | Dominant Type |",
@@ -53,7 +95,7 @@ function Get-AppDocDataModelMarkdown {
         $topModelTable += "| ``$([string]$model.name)`` | $(@($model.properties).Count) | $([string]$model.type) | $source |"
     }
 
-    $detailedModels = @($Models | Select-Object -First $MaxDetailedModels)
+    $detailedModels = @($domainEntities | Select-Object -First $MaxDetailedModels)
     $modelRows = @()
     foreach ($model in $detailedModels) {
         $fieldsCount = @($model.properties).Count
@@ -88,13 +130,17 @@ function Get-AppDocDataModelMarkdown {
         $modelRows += "| ``$([string]$model.name)`` | $fieldsCount | $typesSummary | $description | $constraints | N/A |"
     }
 
-    $propertyCounts = $Models | ForEach-Object { @($_.properties).Count }
+    $propertyCounts = $domainEntities | ForEach-Object { @($_.properties).Count }
     $propertyStats = $propertyCounts | Measure-Object -Sum -Average
     $totalProperties = $propertyStats.Sum
     $averageProperties = [Math]::Round(($propertyStats.Average), 1)
-    $typeDistribution = ($Models | Group-Object type | ForEach-Object { "- $($_.Name): $($_.Count)" }) -join "`n"
+    $typeDistribution = ($domainEntities | Group-Object type | ForEach-Object { "- $($_.Name): $($_.Count)" }) -join "`n"
 
     return @"
+### High-Impact Domain Entities
+
+$($highImpactTable -join "`n")
+
 ### Domain Summary
 
 $($domainSummaryTable -join "`n")
@@ -111,8 +157,14 @@ $($modelRows -join "`n")
 
 _Detailed inventory is capped to first $($detailedModels.Count) models for readability. Full model evidence is preserved in_ ``docs/evidence/data-model.evidence.json``.
 
+### Infrastructure and Generated Proxies
+
+$(if ($infrastructureEntities.Count -gt 0) { $infraTable -join "`n" } else { "No infrastructure/generated proxy models were detected in this scan." })
+
 **Statistics:**
 - Total Models: $($Models.Count)
+- Domain Models: $($domainEntities.Count)
+- Infrastructure/Generated Models: $($infrastructureEntities.Count)
 - Total Properties: $totalProperties
 - Average Properties per Model: $averageProperties
 

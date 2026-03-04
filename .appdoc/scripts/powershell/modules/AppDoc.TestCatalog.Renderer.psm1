@@ -30,8 +30,14 @@ _No test cases detected. Refer to test files for individual test implementations
         }
     }
 
-    $testSuitesRows = @(
+    $dedupedTests = @(
         $Tests |
+            Group-Object -Property @{ Expression = { "{0}|{1}" -f [string]$_.file, [string]$_.name } } |
+            ForEach-Object { $_.Group | Select-Object -First 1 }
+    )
+
+    $testSuitesRows = @(
+        $dedupedTests |
             Group-Object -Property file |
             Sort-Object Name |
             ForEach-Object {
@@ -43,18 +49,19 @@ _No test cases detected. Refer to test files for individual test implementations
     )
     $testSuitesContent = "| Suite Name | Type | Purpose | Coverage Target | Key Scenarios | Execution Time |`n|------------|------|--------|----------------|--------------|----------------|`n" + ($testSuitesRows -join "`n")
 
-    $visibleTests = @($Tests | Select-Object -First $MaxTestCases)
+    $visibleTests = @($dedupedTests | Select-Object -First $MaxTestCases)
     $testCasesRows = @(
         $visibleTests | ForEach-Object {
             $testName = [string]$_.name
             $suiteName = [string]$_.file
             $description = $testName -creplace '([a-z])([A-Z])', '$1 $2' -replace 'test_', '' -replace '_', ' '
-            "| ``$testName`` | ``$suiteName`` | N/A | N/A | $description | Medium |"
+            $priority = if ($suiteName -match '(?i)integration|e2e|critical|smoke') { "High" } elseif ($suiteName -match '(?i)unit') { "Medium" } else { "Medium" }
+            "| ``$testName`` | ``$suiteName`` | N/A | N/A | $description | $priority |"
         }
     )
     $testCasesContent = "| Case Name | Suite | Input | Expected Output | Description | Priority |`n|-----------|-------|------|----------------|-------------|----------|`n" + ($testCasesRows -join "`n")
-    if ($Tests.Count -gt $MaxTestCases) {
-        $testCasesContent += "`n`n_Showing first $MaxTestCases of $($Tests.Count) test cases. See test files for complete list._"
+    if ($dedupedTests.Count -gt $MaxTestCases) {
+        $testCasesContent += "`n`n_Showing first $MaxTestCases of $($dedupedTests.Count) de-duplicated test cases. See test files for complete list._"
     }
 
     return [ordered]@{

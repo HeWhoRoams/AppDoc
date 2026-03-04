@@ -1,0 +1,393 @@
+
+Name                           Value
+----                           -----
+timestamp                      2026-03-04T15:10:39-05:00
+category                       INITIALIZATION
+severity                       Info
+component                      orchestrator
+message                        Diagnostics initialized
+filePath                       
+details                        {[rootPath, .], [outputPath, .\docs]}
+{
+  "timestamp": "2026-03-04T15:10:41-05:00",
+  "strict": false,
+  "threshold": 80,
+  "status": "pass",
+  "overallScore": 92,
+  "overallScoreRaw": 94.9,
+  "penaltyDeduction": 3.0,
+  "metrics": {
+    "validatorPassRate": 100.0,
+    "artifactPresence": 100.0,
+    "evidencePresence": 100.0,
+    "semanticContractScore": 100.0,
+    "evidenceContractScore": 97.0,
+    "apiCoverage": 100,
+    "configCoverage": 100,
+    "dataModelCoverage": 100,
+    "redactionSafetyScore": 100,
+    "humanUsabilityScore": 97.5,
+    "claimGroundingScore": 100.0,
+    "documentationFreshnessScore": 80.0,
+    "contradictionConsistencyScore": 100.0,
+    "taskGuideActionabilityScore": 83.3,
+    "taskGuideEvidenceCoverageScore": 50.0,
+    "taskGuideTimeToCompleteMinutes": 12.0,
+    "taskGuideTimeScore": 100.0,
+    "metricDriftScore": 100.0,
+    "policyGateScore": 100.0
+  },
+  "qualityPenaltyBreakdown": {
+    "totalPenaltyPoints": 32,
+    "categoryTotals": {
+      "contradiction": 0,
+      "duplicateRows": 16,
+      "misclassification": 0,
+      "staleProvenance": 16,
+      "verbosityOverflow": 0
+    },
+    "perArtifact": {
+      "start-here": {
+        "total": 8,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 8,
+        "verbosityOverflow": 0,
+        "reasons": [
+          "provenance-missing-generated"
+        ]
+      },
+      "overview": {
+        "total": 0,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": []
+      },
+      "api-inventory": {
+        "total": 0,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": []
+      },
+      "data-model": {
+        "total": 0,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": []
+      },
+      "config-catalog": {
+        "total": 8,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 8,
+        "verbosityOverflow": 0,
+        "reasons": [
+          "provenance-missing-generated"
+        ]
+      },
+      "build-cookbook": {
+        "total": 0,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": []
+      },
+      "test-catalog": {
+        "total": 0,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": []
+      },
+      "task-guides": {
+        "total": 0,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": []
+      },
+      "debt-register": {
+        "total": 0,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": []
+      },
+      "dependencies-catalog": {
+        "total": 16,
+        "contradiction": 0,
+        "duplicateRows": 16,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": [
+          "duplicate-rows:2"
+        ]
+      }
+    },
+    "artifactCount": 10
+  },
+  "missingArtifacts": [],
+  "missingEvidenceArtifacts": [],
+  "validators": [
+    {
+      "message": "OK",
+      "script": "validate-start-here.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-overview.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-api-inventory.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-data-model.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-config-catalog.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-build-cookbook.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-test-catalog.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-task-guides.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-debt-register.ps1",
+      "passed": true
+    },
+    {
+      "message": "OK",
+      "script": "validate-dependencies-catalog.ps1",
+      "passed": true
+    }
+  ],
+  "contractValidation": [
+    {
+      "artifact": "start-here",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "overview",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "api-inventory",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "data-model",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "config-catalog",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "build-cookbook",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "test-catalog",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "task-guides",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "debt-register",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    },
+    {
+      "artifact": "dependencies-catalog",
+      "passed": true,
+      "score": 100,
+      "missingSections": [],
+      "bannedPatterns": []
+    }
+  ],
+  "evidenceContractValidation": [
+    {
+      "artifact": "start-here",
+      "passed": true,
+      "score": 100,
+      "issues": []
+    },
+    {
+      "artifact": "overview",
+      "passed": false,
+      "score": 85,
+      "issues": [
+        "missing-record-kind-for-key:technologies"
+      ]
+    },
+    {
+      "artifact": "api-inventory",
+      "passed": true,
+      "score": 100,
+      "issues": []
+    },
+    {
+      "artifact": "data-model",
+      "passed": true,
+      "score": 100,
+      "issues": []
+    },
+    {
+      "artifact": "config-catalog",
+      "passed": true,
+      "score": 100,
+      "issues": []
+    },
+    {
+      "artifact": "build-cookbook",
+      "passed": false,
+      "score": 85,
+      "issues": [
+        "missing-record-kind-for-key:commands"
+      ]
+    },
+    {
+      "artifact": "test-catalog",
+      "passed": true,
+      "score": 100,
+      "issues": []
+    },
+    {
+      "artifact": "task-guides",
+      "passed": true,
+      "score": 100,
+      "issues": []
+    },
+    {
+      "artifact": "debt-register",
+      "passed": true,
+      "score": 100,
+      "issues": []
+    },
+    {
+      "artifact": "dependencies-catalog",
+      "passed": true,
+      "score": 100,
+      "issues": []
+    }
+  ],
+  "contradictions": [],
+  "architectureContradiction": {
+    "score": 100.0,
+    "passed": true,
+    "issues": [],
+    "signals": {
+      "primaryStyle": "no-api-surface",
+      "frameworkHints": [
+        "ASP.NET Core"
+      ],
+      "apiInventoryRestRows": 0,
+      "apiInventorySoapRows": 0,
+      "overviewRestMentions": 0,
+      "overviewSoapMentions": 0
+    }
+  },
+  "metricDrift": {
+    "score": 100.0,
+    "passed": true,
+    "issues": [],
+    "signals": {
+      "canonical": {
+        "endpointCount": 0,
+        "modelCount": 0,
+        "dependencyCount": 0,
+        "testCaseCount": 0
+      },
+      "overviewTruthPack": {
+        "endpointCount": 0,
+        "modelCount": 0,
+        "dependencyCount": 0
+      },
+      "startHereApiCount": 0,
+      "startHereModelCount": 0,
+      "testEvidenceCaseCount": 0,
+      "dependencyEvidenceCount": 0
+    }
+  },
+  "taskGuideOutcomes": {
+    "actionabilityScore": 83.3,
+    "evidenceCoverageScore": 50.0,
+    "estimatedCompletionMinutes": 12.0,
+    "taskCompletionTimeScore": 100.0,
+    "issues": []
+  },
+  "policyGates": {
+    "score": 100.0,
+    "passed": true,
+    "blockingIssues": [],
+    "warnings": []
+  }
+}
+

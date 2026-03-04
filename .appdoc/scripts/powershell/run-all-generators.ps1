@@ -389,6 +389,298 @@ function Get-AppDocValidationExpectations {
     }
 }
 
+function Get-AppDocCanonicalMetricCount {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$EvidencePath,
+        [Parameter(Mandatory=$true)]
+        [string[]]$Kinds
+    )
+
+    if (-not (Test-Path $EvidencePath)) { return 0 }
+    try {
+        $payload = Get-Content $EvidencePath -Raw | ConvertFrom-Json -Depth 80
+        return @(
+            @($payload.records) |
+                Where-Object { $_ -and ($Kinds -contains ([string]$_.kind)) }
+        ).Count
+    }
+    catch {
+        return 0
+    }
+}
+
+function Write-AppDocCanonicalMetrics {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$RootPath,
+        [Parameter(Mandatory=$true)]
+        [string]$DocsPath
+    )
+
+    $evidencePath = Join-Path $DocsPath "evidence"
+    if (-not (Test-Path $evidencePath)) {
+        New-Item -Path $evidencePath -ItemType Directory -Force | Out-Null
+    }
+
+    $apiEvidencePath = Join-Path $evidencePath "api-inventory.evidence.json"
+    $modelEvidencePath = Join-Path $evidencePath "data-model.evidence.json"
+    $dependencyEvidencePath = Join-Path $evidencePath "dependencies-catalog.evidence.json"
+    $testEvidencePath = Join-Path $evidencePath "test-catalog.evidence.json"
+    $graphPath = Join-Path $evidencePath "evidence-graph.json"
+    $overviewTruthPath = Join-Path $evidencePath "overview-truth-pack.json"
+
+    $endpointCount = Get-AppDocCanonicalMetricCount -EvidencePath $apiEvidencePath -Kinds @("endpoint")
+    $modelCount = Get-AppDocCanonicalMetricCount -EvidencePath $modelEvidencePath -Kinds @("model")
+    $dependencyCount = Get-AppDocCanonicalMetricCount -EvidencePath $dependencyEvidencePath -Kinds @("dependency")
+    $testCaseCount = Get-AppDocCanonicalMetricCount -EvidencePath $testEvidencePath -Kinds @("test-case", "test", "parameterized test")
+    $testSuiteCount = Get-AppDocCanonicalMetricCount -EvidencePath $testEvidencePath -Kinds @("test-suite", "suite")
+
+    $inboundEndpointCount = 0
+    $outboundEndpointCount = 0
+    if (Test-Path $apiEvidencePath) {
+        try {
+            $apiPayload = Get-Content $apiEvidencePath -Raw | ConvertFrom-Json -Depth 80
+            $inboundEndpointCount = @(
+                @($apiPayload.records) |
+                    Where-Object {
+                        $_ -and [string]$_.kind -eq 'endpoint' -and
+                        [string](Get-AppDocValidationObjectValue -Object $_.metadata -Name 'direction' -Default 'inbound') -ne 'outbound'
+                    }
+            ).Count
+            $outboundEndpointCount = @(
+                @($apiPayload.records) |
+                    Where-Object {
+                        $_ -and [string]$_.kind -eq 'endpoint' -and
+                        [string](Get-AppDocValidationObjectValue -Object $_.metadata -Name 'direction' -Default '') -eq 'outbound'
+                    }
+            ).Count
+        }
+        catch {
+            $inboundEndpointCount = 0
+            $outboundEndpointCount = 0
+        }
+    }
+
+    $graphMetrics = @{}
+    if (Test-Path $graphPath) {
+        try {
+            $graph = Get-Content $graphPath -Raw | ConvertFrom-Json -Depth 80
+            $graphMetrics = Get-AppDocValidationObjectValue -Object $graph -Name "metrics" -Default @{}
+        }
+        catch {
+            $graphMetrics = @{}
+        }
+    }
+
+    $truthPackCounts = @{}
+    if (Test-Path $overviewTruthPath) {
+        try {
+            $truthPack = Get-Content $overviewTruthPath -Raw | ConvertFrom-Json -Depth 80
+            $truthPackCounts = Get-AppDocValidationObjectValue -Object $truthPack -Name "counts" -Default @{}
+        }
+        catch {
+            $truthPackCounts = @{}
+        }
+    }
+
+    $payload = [ordered]@{
+        schemaVersion = "appdoc-metrics-canonical/v1"
+        generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
+        source = [ordered]@{
+            endpoint = "docs/evidence/api-inventory.evidence.json"
+            model = "docs/evidence/data-model.evidence.json"
+            dependency = "docs/evidence/dependencies-catalog.evidence.json"
+            test = "docs/evidence/test-catalog.evidence.json"
+        }
+        totals = [ordered]@{
+            endpointCount = [int]$endpointCount
+            inboundEndpointCount = [int]$inboundEndpointCount
+            outboundEndpointCount = [int]$outboundEndpointCount
+            modelCount = [int]$modelCount
+            dependencyCount = [int]$dependencyCount
+            testCaseCount = [int]$testCaseCount
+            testSuiteCount = [int]$testSuiteCount
+        }
+        crossChecks = [ordered]@{
+            evidenceGraph = [ordered]@{
+                endpointCount = [int](Get-AppDocValidationObjectValue -Object $graphMetrics -Name "endpointCount" -Default 0)
+                inboundEndpointCount = [int](Get-AppDocValidationObjectValue -Object $graphMetrics -Name "inboundEndpointCount" -Default 0)
+                outboundEndpointCount = [int](Get-AppDocValidationObjectValue -Object $graphMetrics -Name "outboundEndpointCount" -Default 0)
+                modelCount = [int](Get-AppDocValidationObjectValue -Object $graphMetrics -Name "modelCount" -Default 0)
+                dependencyCount = [int](Get-AppDocValidationObjectValue -Object $graphMetrics -Name "dependencyCount" -Default 0)
+                testCaseCount = [int](Get-AppDocValidationObjectValue -Object $graphMetrics -Name "testCaseCount" -Default 0)
+            }
+            overviewTruthPack = [ordered]@{
+                endpointCount = [int](Get-AppDocValidationObjectValue -Object $truthPackCounts -Name "endpointRecords" -Default 0)
+                modelCount = [int](Get-AppDocValidationObjectValue -Object $truthPackCounts -Name "modelRecords" -Default 0)
+                dependencyCount = [int](Get-AppDocValidationObjectValue -Object $truthPackCounts -Name "dependencyRecords" -Default 0)
+            }
+        }
+    }
+
+    $metricsPath = Join-Path $evidencePath "metrics-canonical.json"
+    $payload | ConvertTo-Json -Depth 20 | Out-File -FilePath $metricsPath -Encoding UTF8
+    return $metricsPath
+}
+
+function Get-AppDocGitCommitHash {
+    param([string]$RootPath)
+
+    try {
+        $hash = (& git -C $RootPath rev-parse --short HEAD 2>$null | Out-String).Trim()
+        if ([string]::IsNullOrWhiteSpace($hash)) { return "unknown" }
+        return $hash
+    }
+    catch {
+        return "unknown"
+    }
+}
+
+function Set-AppDocRootProvenance {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$RootPath,
+        [Parameter(Mandatory=$true)]
+        [string]$DocsPath,
+        [Parameter(Mandatory=$true)]
+        [string]$Profile
+    )
+
+    $timestamp = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ssK")
+    $commitHash = Get-AppDocGitCommitHash -RootPath $RootPath
+    $generatorVersion = "appdoc-run-all-generators/3.0.0"
+    $scopeValue = "."
+    $inferenceFlags = @("deterministic", "evidence-backed")
+
+    $markdownFiles = @(
+        Get-ChildItem -Path $DocsPath -Filter "*.md" -File -ErrorAction SilentlyContinue
+    )
+    foreach ($file in $markdownFiles) {
+        $content = Get-Content $file.FullName -Raw
+        $block = @(
+            "## Provenance",
+            "",
+            "- Generator Version: $generatorVersion",
+            "- Commit Hash: $commitHash",
+            "- Generated At: $timestamp",
+            "- Profile: $Profile",
+            "- Scope: $scopeValue",
+            "- Confidence/Inference Flags: $($inferenceFlags -join ', ')"
+        ) -join "`r`n"
+
+        if ($content -match '(?ims)^##\s+Provenance\s*$') {
+            $content = [regex]::Replace(
+                $content,
+                '(?ims)^##\s+Provenance\s*$.*?(?=^##\s+[^\r\n]+|\z)',
+                $block + "`r`n"
+            )
+        }
+        else {
+            $content = $content.TrimEnd() + "`r`n`r`n" + $block + "`r`n"
+        }
+
+        $content | Out-File -FilePath $file.FullName -Encoding UTF8 -NoNewline
+    }
+
+    $jsonFiles = @(
+        Get-ChildItem -Path $DocsPath -Filter "*.json" -File -ErrorAction SilentlyContinue
+    )
+    foreach ($file in $jsonFiles) {
+        try {
+            $obj = Get-Content $file.FullName -Raw | ConvertFrom-Json -Depth 120
+            $provenance = [ordered]@{
+                generatorVersion = $generatorVersion
+                commitHash = $commitHash
+                generatedAt = $timestamp
+                profile = $Profile
+                scope = $scopeValue
+                confidenceInferenceFlags = $inferenceFlags
+            }
+            if ($obj -is [System.Collections.IDictionary]) {
+                $obj["provenance"] = $provenance
+            }
+            else {
+                $obj | Add-Member -NotePropertyName "provenance" -NotePropertyValue $provenance -Force
+            }
+            $obj | ConvertTo-Json -Depth 100 | Out-File -FilePath $file.FullName -Encoding UTF8
+        }
+        catch {
+            Write-Warning ("Skipping provenance for non-JSON file payload: {0}" -f $file.FullName)
+        }
+    }
+}
+
+function Write-AppDocJsonCompanionSummaries {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$DocsPath
+    )
+
+    $targets = @(
+        "evidence/diagram-truth-pack.json",
+        "evidence/evidence-graph.json",
+        "evidence/manifest.json",
+        "evidence/narrative-context-pack.json",
+        "evidence/narrative-run-report.json",
+        "evidence/overview-truth-pack.json",
+        "diagnostics-report.json",
+        "quality-report.json",
+        "validation-report.json"
+    )
+
+    foreach ($target in $targets) {
+        $jsonPath = Join-Path $DocsPath $target
+        if (-not (Test-Path $jsonPath)) { continue }
+
+        $summaryPath = [System.IO.Path]::ChangeExtension($jsonPath, ".summary.md")
+        $displayName = Split-Path $jsonPath -Leaf
+        $changed = "Generated/updated in this run"
+        $why = "Provides deterministic machine-readable state for validation, trust, and reproducibility workflows."
+        $next = "Review key metrics and issues, then trace to linked evidence for remediation."
+        $verify = "Compare against source markdown and evidence entries; confirm no contradiction/drift findings."
+
+        try {
+            $payload = Get-Content $jsonPath -Raw | ConvertFrom-Json -Depth 120
+            $issueCount = 0
+            if ($payload.issues) { $issueCount = @($payload.issues).Count }
+            $metricHints = @()
+            if ($payload.metrics) {
+                foreach ($p in @($payload.metrics.PSObject.Properties | Select-Object -First 4)) {
+                    $metricHints += ("{0}={1}" -f $p.Name, $p.Value)
+                }
+            }
+            if ($issueCount -gt 0) {
+                $next = "Address $issueCount issue(s) captured in $displayName, then regenerate and revalidate."
+            }
+            if ($metricHints.Count -gt 0) {
+                $why += " Key metrics: $($metricHints -join '; ')."
+            }
+        }
+        catch {
+            $verify = "File could not be parsed in summary generation; validate JSON syntax before relying on this artifact."
+        }
+
+        $summaryContent = @(
+            "# Companion Summary — $displayName",
+            "",
+            "## What changed",
+            "- $changed",
+            "",
+            "## Why it matters",
+            "- $why",
+            "",
+            "## What to do next",
+            "- $next",
+            "",
+            "## Trust but verify",
+            "- $verify"
+        ) -join "`r`n"
+
+        $summaryContent | Out-File -FilePath $summaryPath -Encoding UTF8 -NoNewline
+    }
+}
+
 function Get-DocSpecificIssues {
     param(
         [string]$DocType,
@@ -1056,6 +1348,17 @@ else {
     Add-AppDocDiagnostic -Category "IO_ERROR" -Severity "Info" -Message "Evidence graph module unavailable; skipping canonical graph generation" -Component "Generation" -FilePath $evidenceGraphModule
 }
 
+$canonicalMetricsPath = $null
+try {
+    $canonicalMetricsPath = Write-AppDocCanonicalMetrics -RootPath $RootPath -DocsPath $docsPath
+    Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Canonical metrics generated" -Component "Generation" -FilePath $canonicalMetricsPath
+    Write-Host "📄 Canonical metrics generated: $canonicalMetricsPath" -ForegroundColor Cyan
+}
+catch {
+    Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to generate canonical metrics" -Component "Generation" -Details @{ exception = $_.Exception.Message }
+    Write-Warning ("Failed to generate canonical metrics: {0}" -f $_.Exception.Message)
+}
+
 $integrityGateScriptPath = Join-Path $PSScriptRoot "ci-doc-integrity-gate.ps1"
 if (Test-Path $integrityGateScriptPath) {
     Write-Host "`n[Integrity Gate]" -ForegroundColor Cyan
@@ -1176,8 +1479,8 @@ if ($missingDocs -gt 0) {
 }
 Write-Host "  📊 Average Quality Score: $avgScore%" -ForegroundColor White
 
-# Save quality report JSON
-$reportPath = Join-Path $docsPath "quality-report.json"
+# Save quality report JSON (written after structured validation is merged)
+$qualityReportPath = Join-Path $docsPath "quality-report.json"
 $reportData = @{
     timestamp = (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
     overall = @{
@@ -1187,11 +1490,14 @@ $reportData = @{
         lowQuality = $lowQuality
         missingDocs = $missingDocs
         averageScore = $avgScore
+        adjustedAverageScore = $avgScore
+        hardPenaltyApplied = $false
+        hardPenaltyReasons = @()
     }
     documents = $validationResults
+    status = "pass"
+    penaltyBreakdown = @{}
 }
-$reportData | ConvertTo-Json -Depth 10 | Out-File -FilePath $reportPath -Encoding UTF8
-Write-Host "`n📄 Quality report saved: $reportPath" -ForegroundColor Cyan
 
 $structuredValidationPath = Join-Path $PSScriptRoot "validate-documentation.ps1"
 $structuredValidationResult = $null
@@ -1242,6 +1548,31 @@ if (Test-Path $structuredValidationPath) {
         Add-AppDocDiagnostic -Category "DETECTION_PATTERN_MISMATCH" -Severity "Warning" -Message "Structured validation reported issues" -Component "Validation" -Details @{ exception = $_.Exception.Message }
     }
 }
+
+if ($structuredValidationResult) {
+    $reportData.status = if ($structuredValidationResult.status) { [string]$structuredValidationResult.status } else { "pass" }
+    if ($structuredValidationResult.qualityPenaltyBreakdown) {
+        $reportData.penaltyBreakdown = $structuredValidationResult.qualityPenaltyBreakdown
+    }
+
+    $hardPenaltyReasons = @()
+    $contradictionIssues = @($structuredValidationResult.contradictions)
+    if (@($contradictionIssues | Where-Object { [string]$_ -match '^architecture-contradiction:' }).Count -gt 0) {
+        $hardPenaltyReasons += "architecture-contradiction"
+    }
+
+    $adjustedScore = [double]$avgScore
+    if ($structuredValidationResult.overallScore -ne $null) {
+        $adjustedScore = [double]$structuredValidationResult.overallScore
+    }
+
+    $reportData.overall.adjustedAverageScore = [Math]::Round($adjustedScore, 1)
+    $reportData.overall.hardPenaltyApplied = ($hardPenaltyReasons.Count -gt 0)
+    $reportData.overall.hardPenaltyReasons = @($hardPenaltyReasons)
+}
+
+$reportData | ConvertTo-Json -Depth 20 | Out-File -FilePath $qualityReportPath -Encoding UTF8
+Write-Host "`n📄 Quality report saved: $qualityReportPath" -ForegroundColor Cyan
 
 $narrativeReviewRequired = $false
 $narrativeReviewReasons = @()
@@ -1334,6 +1665,25 @@ if (Get-Command Export-AppDocDiagnostics -ErrorAction SilentlyContinue) {
     }
     Export-AppDocDiagnostics -Path $diagnosticsPath -AdditionalData $metadata | Out-Null
     Write-Host "📄 Diagnostics report saved: $diagnosticsPath" -ForegroundColor Cyan
+}
+
+try {
+    $provenanceProfile = if ($activeProfile) { [string]$activeProfile.profile } else { [string]$Profile }
+    Set-AppDocRootProvenance -RootPath $RootPath -DocsPath $docsPath -Profile $provenanceProfile
+    Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Root artifact provenance applied" -Component "Generation" -FilePath $docsPath
+}
+catch {
+    Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to apply provenance" -Component "Generation" -Details @{ exception = $_.Exception.Message }
+    Write-Warning ("Failed to apply root provenance: {0}" -f $_.Exception.Message)
+}
+
+try {
+    Write-AppDocJsonCompanionSummaries -DocsPath $docsPath
+    Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "JSON companion summaries generated" -Component "Generation" -FilePath (Join-Path $docsPath "evidence")
+}
+catch {
+    Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to generate JSON companion summaries" -Component "Generation" -Details @{ exception = $_.Exception.Message }
+    Write-Warning ("Failed to generate JSON companion summaries: {0}" -f $_.Exception.Message)
 }
 
 # Exit with warning if majority are low quality

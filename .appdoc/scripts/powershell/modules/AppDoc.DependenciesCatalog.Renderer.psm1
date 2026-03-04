@@ -16,10 +16,26 @@ function Get-AppDocDependenciesCatalogMarkdown {
 Dependency records in scope: none in this scan. The repository may be self-contained or use unmanaged dependency sources.
 "@
 
-    $nugetPlaceholder = "NuGet package entries in scope: none in this scan."
-    $npmPlaceholder = "NPM package manifests in scope: none in this scan."
-    $pythonPlaceholder = "Python package manifests in scope: none in this scan."
-    $mavenPlaceholder = "Java build manifests in scope: none in this scan."
+    $nugetPlaceholder = @"
+| Package | Version | Used By | Purpose | Critical Path |
+|---------|---------|---------|---------|---------------|
+| N/A | N/A | N/A | NuGet package entries in scope: none in this scan. | N/A |
+"@
+    $npmPlaceholder = @"
+| Package | Version | Used By | Purpose | Critical Path |
+|---------|---------|---------|---------|---------------|
+| N/A | N/A | N/A | NPM package manifests in scope: none in this scan. | N/A |
+"@
+    $pythonPlaceholder = @"
+| Package | Version | Used By | Purpose | Critical Path |
+|---------|---------|---------|---------|---------------|
+| N/A | N/A | N/A | Python package manifests in scope: none in this scan. | N/A |
+"@
+    $mavenPlaceholder = @"
+| Package | Version | Used By | Purpose | Critical Path |
+|---------|---------|---------|---------|---------------|
+| N/A | N/A | N/A | Java build manifests in scope: none in this scan. | N/A |
+"@
     $projectRefsPlaceholder = "Project-reference edges in scope: none in this scan."
     $versionConflictsPlaceholder = "Version divergence signals in scope: none in this scan."
 
@@ -55,11 +71,12 @@ Dependency records in scope: none in this scan. The repository may be self-conta
             if ($projCount -gt 3) {
                 $usedBy += " +$($projCount - 3) more"
             }
-            "| ``$($_.Name)`` | $versions | $usedBy | NuGet package |"
+            $criticalPath = if ($projCount -ge 3 -or $_.Name -match '(?i)(logging|auth|identity|http|json|entityframework|grpc|swagger)') { "Yes" } else { "No" }
+            "| ``$($_.Name)`` | $versions | $usedBy | NuGet package | $criticalPath |"
         }
 @"
-| Package | Version | Used By | Purpose |
-|---------|---------|---------|---------|
+| Package | Version | Used By | Purpose | Critical Path |
+|---------|---------|---------|---------|---------------|
 $($rows -join "`n")
 
 **Total NuGet Packages**: $(($nugetPackages | Group-Object name).Count)
@@ -72,11 +89,12 @@ $($rows -join "`n")
         $rows = $npmPackages | Group-Object -Property name | Sort-Object Name | ForEach-Object {
             $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
             $usedBy = ($_.Group.project | Sort-Object -Unique) -join ', '
-            "| ``$($_.Name)`` | $versions | $usedBy | NPM package |"
+            $criticalPath = if (($_.Name -match '(?i)(react|angular|vue|express|axios|auth|routing)') -or (@($_.Group.project | Sort-Object -Unique).Count -ge 2)) { "Yes" } else { "No" }
+            "| ``$($_.Name)`` | $versions | $usedBy | NPM package | $criticalPath |"
         }
 @"
-| Package | Version | Used By | Purpose |
-|---------|---------|---------|---------|
+| Package | Version | Used By | Purpose | Critical Path |
+|---------|---------|---------|---------|---------------|
 $($rows -join "`n")
 "@
 
@@ -88,11 +106,12 @@ $($rows -join "`n")
         $rows = $pythonPackages | Group-Object -Property name | Sort-Object Name | ForEach-Object {
             $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
             $usedBy = ($_.Group.project | Sort-Object -Unique) -join ', '
-            "| ``$($_.Name)`` | $versions | $usedBy | Python package |"
+            $criticalPath = if (($_.Name -match '(?i)(django|flask|fastapi|requests|sqlalchemy|auth)') -or (@($_.Group.project | Sort-Object -Unique).Count -ge 2)) { "Yes" } else { "No" }
+            "| ``$($_.Name)`` | $versions | $usedBy | Python package | $criticalPath |"
         }
 @"
-| Package | Version | Used By | Purpose |
-|---------|---------|---------|---------|
+| Package | Version | Used By | Purpose | Critical Path |
+|---------|---------|---------|---------|---------------|
 $($rows -join "`n")
 "@
 
@@ -104,11 +123,12 @@ $($rows -join "`n")
         $rows = $mavenPackages | Group-Object -Property name | Sort-Object Name | ForEach-Object {
             $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
             $usedBy = ($_.Group.project | Sort-Object -Unique) -join ', '
-            "| ``$($_.Name)`` | $versions | $usedBy | Maven/Gradle dependency |"
+            $criticalPath = if (($_.Name -match '(?i)(spring|jackson|http|security|hibernate)') -or (@($_.Group.project | Sort-Object -Unique).Count -ge 2)) { "Yes" } else { "No" }
+            "| ``$($_.Name)`` | $versions | $usedBy | Maven/Gradle dependency | $criticalPath |"
         }
 @"
-| Package | Version | Used By | Purpose |
-|---------|---------|---------|---------|
+| Package | Version | Used By | Purpose | Critical Path |
+|---------|---------|---------|---------|---------------|
 $($rows -join "`n")
 "@
 

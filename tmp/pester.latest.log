@@ -1,0 +1,152 @@
+
+
+
+
+
+Describing C4ModelBuilder Module
+   Context Get-ProjectFiles
+    [+] Should find projects from solution file 224ms
+    [+] Should find .csproj files when given directory 10ms
+   Context Read-CsprojFile
+    [+] Should parse project file and extract metadata 41ms
+    [+] Should extract NuGet package references 2ms
+    [+] Should extract project references 2ms
+Project file not found: C:\NonExistent\Project.csproj
+    [+] Should return null for non-existent project 3ms
+   Context Get-SolutionInfo
+    [+] Should extract system name from .sln file 29ms
+Solution file not found: C:\NonExistent\Solution.sln
+    [+] Should return null for non-existent solution 2ms
+   Context Find-ExternalSystems
+    [?] Should detect external systems from NuGet packages 19ms
+    [?] Should detect external systems from HttpClient usages 0ms
+    [?] Should detect database systems from connection string packages 0ms
+   Context Build-SystemContextModel
+    [?] Should build complete C4System model 20ms
+   Context Get-ContainerType
+    [+] Should detect Web App container from .csproj with Microsoft.AspNetCore 20ms
+    [+] Should detect Background Service container from Windows Service project 34ms
+    [+] Should detect Database container from Entity Framework references 26ms
+    [+] Should default to Library for unrecognized project types 3ms
+   Context Find-ProjectDependencies
+    [+] Should extract project references as container relationships 24ms
+    [+] Should return empty array for project with no dependencies 2ms
+    [+] Should handle multiple project references 3ms
+   Context Build-ContainerModel
+    [?] Should create C4Container objects from project files 21ms
+    [?] Should include container name, type, and technology 0ms
+    [?] Should exclude test projects from container model 0ms
+   Context Build-ContainerRelationships
+    [?] Should map project references to C4Relationship objects 18ms
+    [?] Should infer relationship descriptions based on container types 0ms
+[AppDoc] Framework(s) detected (ASP.NET Core) but no code files found. Patching counts for evidence consistency.
+PASS: Framework detection patch logic works as expected.
+Describing Mermaid C4 Diagram Generation
+=== AppDoc Mermaid C4 Diagram Generator ===
+Codebase: C:\Github\Appdoc\tests\powershell\test-output\sample-dotnet-app
+Output: C:\Github\Appdoc\tests\powershell\test-output\sample-dotnet-app\docs
+
+Found solution: SampleApp.sln
+Generated: C:\Github\Appdoc\tests\powershell\test-output\sample-dotnet-app\docs\diagrams\c4-context.md
+Generated: C:\Github\Appdoc\tests\powershell\test-output\sample-dotnet-app\docs\diagrams\c4-container.md
+Updated overview architecture section
+
+✓ Mermaid C4 diagram generation complete
+ [+] Generates C4 Mermaid markdown files 1.5s
+=== AppDoc Mermaid C4 Diagram Generator ===
+Codebase: C:\Github\Appdoc\tests\powershell\test-output\sample-dotnet-app
+Output: C:\Github\Appdoc\tests\powershell\test-output\sample-dotnet-app\docs
+
+Found solution: SampleApp.sln
+Generated: C:\Github\Appdoc\tests\powershell\test-output\sample-dotnet-app\docs\diagrams\c4-context.md
+Generated: C:\Github\Appdoc\tests\powershell\test-output\sample-dotnet-app\docs\diagrams\c4-container.md
+Updated overview architecture section
+
+✓ Mermaid C4 diagram generation complete
+ [+] Updates overview architecture section with Mermaid references 342ms
+Describing validate-documentation architecture contradiction
+[NOT_FOUND] Evidence manifest missing
+[NOT_FOUND] Evidence missing: start-here
+[NOT_FOUND] Evidence missing: overview
+[NOT_FOUND] Evidence missing: api-inventory
+[NOT_FOUND] Evidence missing: data-model
+[NOT_FOUND] Evidence missing: config-catalog
+[NOT_FOUND] Evidence missing: build-cookbook
+[NOT_FOUND] Evidence missing: test-catalog
+[NOT_FOUND] Evidence missing: task-guides
+[NOT_FOUND] Evidence missing: debt-register
+[NOT_FOUND] Evidence missing: dependencies-catalog
+[PARSING_ERROR] Validator failed: validate-start-here.ps1
+Overview validation failed:
+ - missing-section:System Boundary
+ - missing-section:Runtime Path
+ - missing-section:Inputs→Processing→Outputs
+ - missing-section:External Systems
+ - missing-section:Confidence Notes
+ - architecture-statement-missing-primary-style
+API inventory validation failed:
+ - api-evidence-missing
+Data model validated: 0 models found
+[PARSING_ERROR] Validator failed: validate-config-catalog.ps1
+Build cookbook validated: 0 commands found
+Test catalog validation failed:
+ - test-evidence-missing
+[PARSING_ERROR] Validator failed: validate-task-guides.ps1
+[PARSING_ERROR] Validator failed: validate-debt-register.ps1
+[PARSING_ERROR] Validator failed: validate-dependencies-catalog.ps1
+[DETECTION_PATTERN_MISMATCH] Required section missing (start-here): Who This Is For
+[DETECTION_PATTERN_MISMATCH] Required section missing (start-here): First 30 Minutes
+[DETECTION_PATTERN_MISMATCH] Required section missing (start-here): First 3 Files
+[DETECTION_PATTERN_MISMATCH] Required section missing (start-here): Expected Outputs
+[DETECTION_PATTERN_MISMATCH] Required section missing (start-here): Role-Based Paths
+[DETECTION_PATTERN_MISMATCH] Required section missing (start-here): System Signals
+[DETECTION_PATTERN_MISMATCH] Required section missing (start-here): Evidence Traceability
+[DETECTION_PATTERN_MISMATCH] Required section missing (overview): System Boundary
+[DETECTION_PATTERN_MISMATCH] Required section missing (overview): Runtime Path
+[DETECTION_PATTERN_MISMATCH] Required section missing (overview): Inputs→Processing→Outputs
+[DETECTION_PATTERN_MISMATCH] Required section missing (overview): External Systems
+[DETECTION_PATTERN_MISMATCH] Required section missing (overview): Confidence Notes
+[DETECTION_PATTERN_MISMATCH] Required section missing (api-inventory): Executive Summary
+[DETECTION_PATTERN_MISMATCH] Required section missing (data-model): Executive Summary
+[DETECTION_PATTERN_MISMATCH] Required section missing (data-model): Data Models
+[DETECTION_PATTERN_MISMATCH] Required section missing (config-catalog): Executive Summary
+[DETECTION_PATTERN_MISMATCH] Required section missing (config-catalog): Configuration Options
+[DETECTION_PATTERN_MISMATCH] Required section missing (build-cookbook): Executive Summary
+[DETECTION_PATTERN_MISMATCH] Required section missing (build-cookbook): Build Steps
+[DETECTION_PATTERN_MISMATCH] Required section missing (test-catalog): Executive Summary
+[DETECTION_PATTERN_MISMATCH] Required section missing (test-catalog): Test Suites
+[DETECTION_PATTERN_MISMATCH] Required section missing (task-guides): Executive Summary
+[DETECTION_PATTERN_MISMATCH] Required section missing (task-guides): Task Guides
+[DETECTION_PATTERN_MISMATCH] Required section missing (task-guides): Operational Checklist
+[DETECTION_PATTERN_MISMATCH] Required section missing (debt-register): Executive Summary
+[DETECTION_PATTERN_MISMATCH] Required section missing (debt-register): Debt Items
+[DETECTION_PATTERN_MISMATCH] Required section missing (dependencies-catalog): Executive Summary
+[DETECTION_PATTERN_MISMATCH] Required section missing (dependencies-catalog): Dependency Summary
+[DETECTION_PATTERN_MISMATCH] Cross-artifact contradiction detected: architecture-contradiction:soap-primary-vs-overview-rest-language
+[DETECTION_PATTERN_MISMATCH] Cross-artifact contradiction detected: architecture-contradiction:soap-primary-vs-framework-rest-only
+[DETECTION_PATTERN_MISMATCH] Cross-artifact metric drift detected: cross-artifact-metric-drift:canonical-metrics-missing
+[DETECTION_PATTERN_MISMATCH] Task outcome issue detected: task-guide-count-low:0
+[DETECTION_PATTERN_MISMATCH] Task outcome issue detected: task-guide-steps-low:0
+[DETECTION_PATTERN_MISMATCH] Task outcome issue detected: task-guides-evidence-missing
+[DETECTION_PATTERN_MISMATCH] Task outcome issue detected: task-guide-evidence-snapshot-low:0
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: provenance-missing:overview.md
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: provenance-missing:start-here.md
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: provenance-missing:api-inventory.md
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: provenance-missing:data-model.md
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: provenance-missing:config-catalog.md
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: provenance-missing:build-cookbook.md
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: overview-section-missing:System Boundary
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: overview-section-missing:Runtime Path
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: overview-section-missing:Inputs→Processing→Outputs
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: overview-section-missing:External Systems
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: overview-section-missing:Confidence Notes
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: api-appendix-link-missing
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: api-appendix-missing
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: config-options-table-empty
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: architecture-contradiction:soap-primary-vs-overview-rest-language
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: architecture-contradiction:soap-primary-vs-framework-rest-only
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: cross-artifact-metric-drift:canonical-metrics-missing
+[DETECTION_PATTERN_MISMATCH] Policy gate warning: environment-variables-table-empty
+ [+] emits architecture-contradiction issues and applies contradiction penalties 722ms
+Tests completed in 3.08s
+Passed: 18 Failed: 0 Skipped: 0 Pending: 9 Inconclusive: 0

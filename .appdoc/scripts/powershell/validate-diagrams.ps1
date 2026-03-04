@@ -93,6 +93,20 @@ function Get-MermaidFlowCounts {
     }
 }
 
+function Get-MermaidNodeLabels {
+    param([string]$Mermaid)
+
+    if ([string]::IsNullOrWhiteSpace($Mermaid)) { return @() }
+    $labels = @()
+    foreach ($line in ($Mermaid -split "`r?`n")) {
+        $trimmed = $line.Trim()
+        if ($trimmed -match '^[A-Za-z][A-Za-z0-9_]*\s*\["(?<label>[^"]+)"\]') {
+            $labels += [string]$Matches['label']
+        }
+    }
+    return @($labels)
+}
+
 function Get-DiagramCoverageSnapshot {
     param([string]$Markdown)
 
@@ -131,12 +145,16 @@ $truthPackValidation = $null
 $diagramContentMap = @{}
 $diagramMermaidCountMap = @{}
 $diagramCoverageSnapshotMap = @{}
-$requiredViews = @(if ($contract -and $contract.requiredViews) { $contract.requiredViews } else { @() })
+$requiredViews = @()
+if ($contract -and $contract.requiredViews) {
+    $requiredViews = @($contract.requiredViews)
+}
 
 foreach ($view in $requiredViews) {
     $file = [string]$view.file
     if ([string]::IsNullOrWhiteSpace($file)) { continue }
     $path = Join-Path $diagramsPath $file
+    $content = ""
 
     # Populate $diagramMermaidCountMap for this diagram
     if (Test-Path $path) {
@@ -152,7 +170,7 @@ foreach ($view in $requiredViews) {
         $diagramContentMap[$file] = $content
         $size = $content.Length
         # Detect mermaid fenced code block.
-        $hasMermaidFence = ($content -match '(?ms)```mermaid\s+.*?```')
+        $hasMermaidFence = ($content -match '(?ms)```mermaid\s*.*?```')
         $snapshot = Get-DiagramCoverageSnapshot -Markdown $content
         if ($snapshot) {
             $diagramCoverageSnapshotMap[$file] = $snapshot
@@ -186,6 +204,18 @@ foreach ($view in $requiredViews) {
         if ($file -eq "critical-sequences.md" -and $content -notmatch '(?im)^\s*sequenceDiagram\s*$') {
             $issues += "missing-sequence-directive:$file"
         }
+
+        $labels = Get-MermaidNodeLabels -Mermaid (Get-MermaidBlockContent -Markdown $content)
+        $noisyLabels = @(
+            $labels | Where-Object {
+                $_ -match '(?i)[a-f0-9]{8,}' -or
+                $_ -match '(?i)\b(unknown|item|node)\b' -or
+                $_ -match '^\s*[a-z]+_[a-z0-9_]+_[a-f0-9]{8}\s*$'
+            }
+        )
+        if ($noisyLabels.Count -gt 0) {
+            $issues += ("noisy-reader-labels:{0}:{1}" -f $file, $noisyLabels.Count)
+        }
     }
     else {
         $issues += "missing-diagram:$file"
@@ -198,6 +228,23 @@ foreach ($view in $requiredViews) {
         hasMermaidFence = $hasMermaidFence
         length = $size
     }
+}
+
+$diagramIndexPath = Join-Path $diagramsPath "index.md"
+if (Test-Path $diagramIndexPath) {
+    $indexContent = Get-Content $diagramIndexPath -Raw
+    if ($indexContent -notmatch '(?im)^##\s+Layer\s+L1\b') {
+        $issues += "diagram-index-missing-layer-l1"
+    }
+    if ($indexContent -notmatch '(?im)^##\s+Layer\s+L2\b') {
+        $issues += "diagram-index-missing-layer-l2"
+    }
+    if ($indexContent -notmatch '(?i)When to use:') {
+        $issues += "diagram-index-missing-when-to-use"
+    }
+}
+else {
+    $issues += "missing-diagram-index:index.md"
 }
 
 if (-not (Test-Path $truthPackPath)) {
@@ -275,6 +322,8 @@ else {
             if ([int]$dataSnapshot.edgeCount -gt $truthEdgeCount) {
                 $issues += ("snapshot-edge-exceeds-truth:data-flow.md:{0}/{1}" -f [int]$dataSnapshot.edgeCount, $truthEdgeCount)
             }
+        } else {
+            $issues += "coverage-snapshot-missing:data-flow.md"
         }
 
         foreach ($diagramFile in @("internal-flow.md","data-flow.md")) {

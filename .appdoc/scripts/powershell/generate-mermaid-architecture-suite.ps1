@@ -82,7 +82,7 @@ try {
             try {
                 Remove-Item $truthPackPath -Force
             } catch {
-                Write-Warning ("Cleanup failed for {0}: {1}" -f $truthPackPath, $_.Exception.Message)
+                Write-Warning "Cleanup failed for $($truthPackPath): $($_.Exception.Message)"
             }
         }
         if ($diagramPaths) {

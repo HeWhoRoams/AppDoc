@@ -1,0 +1,67 @@
+{
+  "passed": true,
+  "strict": false,
+  "diagramsPath": ".\\docs\\diagrams",
+  "truthPackPath": ".\\docs\\evidence\\diagram-truth-pack.json",
+  "issueCount": 0,
+  "issues": [],
+  "truthPackValidation": {
+    "passed": true,
+    "issueCount": 0,
+    "issues": [],
+    "computedMetrics": {
+      "nodeCount": 10,
+      "edgeCount": 0,
+      "inboundEndpointCount": 0,
+      "outboundEndpointCount": 0,
+      "componentCount": 1,
+      "modelCount": 0,
+      "configCount": 9,
+      "dependencyCount": 0
+    }
+  },
+  "details": [
+    {
+      "file": "c4-context.md",
+      "path": ".\\docs\\diagrams\\c4-context.md",
+      "exists": true,
+      "hasMermaidFence": true,
+      "length": 762
+    },
+    {
+      "file": "c4-container.md",
+      "path": ".\\docs\\diagrams\\c4-container.md",
+      "exists": true,
+      "hasMermaidFence": true,
+      "length": 1151
+    },
+    {
+      "file": "internal-flow.md",
+      "path": ".\\docs\\diagrams\\internal-flow.md",
+      "exists": true,
+      "hasMermaidFence": true,
+      "length": 2789
+    },
+    {
+      "file": "data-flow.md",
+      "path": ".\\docs\\diagrams\\data-flow.md",
+      "exists": true,
+      "hasMermaidFence": true,
+      "length": 2691
+    },
+    {
+      "file": "critical-sequences.md",
+      "path": ".\\docs\\diagrams\\critical-sequences.md",
+      "exists": true,
+      "hasMermaidFence": true,
+      "length": 823
+    },
+    {
+      "file": "data-lineage-core.md",
+      "path": ".\\docs\\diagrams\\data-lineage-core.md",
+      "exists": true,
+      "hasMermaidFence": true,
+      "length": 2695
+    }
+  ]
+}

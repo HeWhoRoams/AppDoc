@@ -100,6 +100,49 @@ function ConvertTo-AppDocPortablePathMap {
     return $result
 }
 
+function Get-AppDocOverviewFactTexts {
+    param(
+        [AllowNull()]
+        [object]$TruthPack,
+        [Parameter(Mandatory=$true)]
+        [string]$FactName,
+        [string[]]$Fallback = @()
+    )
+
+    $facts = Get-AppDocOverviewGeneratorValue -Object $TruthPack -Name "facts" -Default $null
+    $factItems = Get-AppDocOverviewGeneratorValue -Object $facts -Name $FactName -Default @()
+    $texts = @(
+        @($factItems) |
+            ForEach-Object { [string](Get-AppDocOverviewGeneratorValue -Object $_ -Name "text" -Default "") } |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+    )
+
+    if ($texts.Count -eq 0) { return @($Fallback) }
+    return @($texts)
+}
+
+function Ensure-AppDocOverviewSection {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Content,
+        [Parameter(Mandatory=$true)]
+        [string]$SectionName,
+        [Parameter(Mandatory=$true)]
+        [string[]]$Lines
+    )
+
+    if ([regex]::IsMatch($Content, "(?im)^##\s+" + [regex]::Escape($SectionName) + "\b")) {
+        return $Content
+    }
+
+    $body = @($Lines | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | ForEach-Object { "- " + $_.Trim() })
+    if ($body.Count -eq 0) {
+        $body = @("- No deterministic evidence available for this section in the current run.")
+    }
+
+    return ($Content.TrimEnd() + "`r`n`r`n## " + $SectionName + "`r`n" + ($body -join "`r`n") + "`r`n")
+}
+
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
 if (Test-Path $helpersPath) {
     . $helpersPath
@@ -174,6 +217,24 @@ if ($null -eq $truthPack) {
     Write-Warning "Get-AppDocOverviewTruthPackData returned null. Using empty truth pack."
     $truthPack = @{}
 } else {
+    $canonicalMetricsPath = Join-Path $RootPath "docs\evidence\metrics-canonical.json"
+    if (Test-Path $canonicalMetricsPath) {
+        try {
+            $canonical = Get-Content $canonicalMetricsPath -Raw | ConvertFrom-Json -Depth 50
+            $totals = Get-AppDocOverviewGeneratorValue -Object $canonical -Name "totals" -Default $null
+            if ($totals -and $truthPack.counts) {
+                $truthPack.counts.endpointRecords = [int](Get-AppDocOverviewGeneratorValue -Object $totals -Name "endpointCount" -Default $truthPack.counts.endpointRecords)
+                $truthPack.counts.inboundEndpoints = [int](Get-AppDocOverviewGeneratorValue -Object $totals -Name "inboundEndpointCount" -Default $truthPack.counts.inboundEndpoints)
+                $truthPack.counts.outboundEndpoints = [int](Get-AppDocOverviewGeneratorValue -Object $totals -Name "outboundEndpointCount" -Default $truthPack.counts.outboundEndpoints)
+                $truthPack.counts.modelRecords = [int](Get-AppDocOverviewGeneratorValue -Object $totals -Name "modelCount" -Default $truthPack.counts.modelRecords)
+                $truthPack.counts.dependencyRecords = [int](Get-AppDocOverviewGeneratorValue -Object $totals -Name "dependencyCount" -Default $truthPack.counts.dependencyRecords)
+            }
+        }
+        catch {
+            Write-Verbose ("Unable to read canonical metrics for overview alignment: {0}" -f $_.Exception.Message)
+        }
+    }
+
     $truthPackPath = Write-AppDocOverviewTruthPack -RootPath $RootPath -TruthPack $truthPack
 }
 
@@ -196,6 +257,36 @@ if ($null -eq $welcomeNarrativeResult -or $null -eq $welcomeNarrativeResult.narr
 Write-Progress -Activity "Generating System Overview" -Status "Populating template..." -PercentComplete 60
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocOverviewContent -Content $content -CodeFileCount ([int]$overviewData.codeFileCount) -LanguageCount $languageCount -WelcomeNarrative $welcomeNarrative -TruthPack $truthPack
+
+$primaryStyle = [string](Get-AppDocOverviewGeneratorValue -Object (Get-AppDocOverviewGeneratorValue -Object $truthPack -Name "architecture" -Default @{}) -Name "primaryStyle" -Default "unknown")
+$confidence = [string](Get-AppDocOverviewGeneratorValue -Object (Get-AppDocOverviewGeneratorValue -Object $truthPack -Name "architecture" -Default @{}) -Name "confidence" -Default "")
+$confidenceSuffix = if ([string]::IsNullOrWhiteSpace($confidence)) { "" } else { " (confidence $confidence)" }
+$systemBoundaryLines = @(
+    "System scope is documented for this repository run and bounded to generated artifacts under docs/ and evidence/."
+    ("Architecture statement: {0}{1}." -f $primaryStyle, $confidenceSuffix)
+)
+$runtimePathLines = Get-AppDocOverviewFactTexts -TruthPack $truthPack -FactName "processing_steps" -Fallback @("Runtime flow is inferred from deterministic evidence and may require manual verification for edge paths.")
+$ipoLines = @()
+$ipoLines += "Inputs"
+$ipoLines += @(Get-AppDocOverviewFactTexts -TruthPack $truthPack -FactName "inputs" -Fallback @("No strong input contract evidence detected."))
+$ipoLines += "Processing"
+$ipoLines += @(Get-AppDocOverviewFactTexts -TruthPack $truthPack -FactName "processing_steps" -Fallback @("No strong processing evidence detected."))
+$ipoLines += "Outputs"
+$ipoLines += @(Get-AppDocOverviewFactTexts -TruthPack $truthPack -FactName "outputs" -Fallback @("No strong output contract evidence detected."))
+$externalLines = Get-AppDocOverviewFactTexts -TruthPack $truthPack -FactName "external_systems" -Fallback @("No explicit external systems detected.")
+$confidenceLines = Get-AppDocOverviewFactTexts -TruthPack $truthPack -FactName "confidence_notes" -Fallback @("Confidence is low when evidence records are sparse.")
+
+$runtimePathLines = @($runtimePathLines | ForEach-Object { ([string]$_ -replace '(?i)\bappears to\b', 'is inferred to') })
+$ipoLines = @($ipoLines | ForEach-Object { ([string]$_ -replace '(?i)\bappears to\b', 'is inferred to') })
+$externalLines = @($externalLines | ForEach-Object { ([string]$_ -replace '(?i)\bappears to\b', 'is inferred to') })
+$confidenceLines = @($confidenceLines | ForEach-Object { ([string]$_ -replace '(?i)\bappears to\b', 'is inferred to') })
+
+$content = Ensure-AppDocOverviewSection -Content $content -SectionName "System Boundary" -Lines $systemBoundaryLines
+$content = Ensure-AppDocOverviewSection -Content $content -SectionName "Runtime Path" -Lines $runtimePathLines
+$content = Ensure-AppDocOverviewSection -Content $content -SectionName "Inputs→Processing→Outputs" -Lines $ipoLines
+$content = Ensure-AppDocOverviewSection -Content $content -SectionName "External Systems" -Lines $externalLines
+$content = Ensure-AppDocOverviewSection -Content $content -SectionName "Confidence Notes" -Lines $confidenceLines
+
 $content = Normalize-AppDocTemplateInstructionText -Content $content
 $content = Normalize-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content

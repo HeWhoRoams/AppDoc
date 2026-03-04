@@ -252,6 +252,11 @@ function New-AppDocEvidenceGraphEntity {
     )
 
     $id = ConvertTo-AppDocEvidenceGraphId -Prefix $Type -Seed $Name
+    $ownership = if ($Type -in @("endpoint_outbound","dependency")) { "vendor-or-external" } else { "first-party" }
+    $runtimeRelevance = if ($Type -in @("endpoint_inbound","endpoint_outbound","component","data_model","config_key")) { "runtime" } else { "supporting" }
+    $sensitivity = if ($Type -eq "config_key") { "potentially-sensitive" } else { "normal" }
+    $dedupeKey = "{0}|{1}" -f $Type, $Name
+
     return [ordered]@{
         id = $id
         type = $Type
@@ -259,6 +264,11 @@ function New-AppDocEvidenceGraphEntity {
         artifact = $Artifact
         source = $Source
         confidence = [Math]::Round([Math]::Max(0, [Math]::Min(1, $Confidence)), 4)
+        inferred = ([double]$Confidence -lt 1.0)
+        dedupeKey = $dedupeKey
+        ownership = $ownership
+        runtimeRelevance = $runtimeRelevance
+        sensitivity = $sensitivity
         attributes = $Attributes
     }
 }

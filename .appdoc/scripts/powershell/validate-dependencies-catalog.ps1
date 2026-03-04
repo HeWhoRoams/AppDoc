@@ -116,14 +116,19 @@ function Get-DependencyGraphAlignedEntityCount {
 
     # Evidence graph de-duplicates dependency entities by deterministic id seeded from dependency name.
     $uniqueNames = New-Object 'System.Collections.Generic.HashSet[string]'
+    $recordIndex = 0
     foreach ($record in @($Records)) {
-        if (-not $record) { continue }
+        if (-not $record) { $recordIndex++; continue }
         $kind = ([string](Get-DependencyValidationValue -Object $record -Name "kind" -Default "")).Trim().ToLowerInvariant()
-        if ($kind -ne "dependency") { continue }
+        if ($kind -ne "dependency") { $recordIndex++; continue }
 
         $name = [string](Get-DependencyValidationValue -Object $record -Name "name" -Default "")
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = "unknown-dependency" }
+        if ([string]::IsNullOrWhiteSpace($name)) {
+            $name = "unknown-dependency-$recordIndex"
+            Write-Warning "Dependency record at index $recordIndex is missing a name. Assigned placeholder: $name."
+        }
         [void]$uniqueNames.Add($name.Trim().ToLowerInvariant())
+        $recordIndex++
     }
 
     return [int]$uniqueNames.Count
@@ -146,6 +151,20 @@ if ($content -notmatch '(?im)^#\s+Dependencies Catalog\b') {
 $issues = @()
 $warnings = @()
 
+$canonicalPath = Join-Path $RootPath "docs\evidence\metrics-canonical.json"
+$canonicalDependencyCount = $null
+if (Test-Path $canonicalPath) {
+    try {
+        $canonical = Get-Content $canonicalPath -Raw | ConvertFrom-Json -Depth 60
+        if ($canonical.totals) {
+            $canonicalDependencyCount = [int](Get-DependencyValidationValue -Object $canonical.totals -Name "dependencyCount" -Default 0)
+        }
+    }
+    catch {
+        $warnings += "canonical-metrics-unparseable"
+    }
+}
+
 $evidencePath = Join-Path $RootPath "docs" "evidence" "dependencies-catalog.evidence.json"
 $dependencyCount = 0
 $expectedGraphDependencyCount = 0
@@ -158,6 +177,15 @@ if (Test-Path $evidencePath) {
         )
         $dependencyCount = $records.Count
         $expectedGraphDependencyCount = Get-DependencyGraphAlignedEntityCount -Records $records
+
+        $duplicateDependencies = @(
+            $records |
+                Group-Object -Property @{ Expression = { "{0}|{1}|{2}" -f [string]$_.name, [string]$_.source, [string](Get-DependencyValidationValue -Object $_.metadata -Name "version" -Default "") } } |
+                Where-Object { $_.Count -gt 1 }
+        )
+        if ($duplicateDependencies.Count -gt 0) {
+            $issues += ("duplicate-dependency-records:{0}" -f $duplicateDependencies.Count)
+        }
     }
     catch {
         $issues += "dependencies-evidence-unparseable"
@@ -187,6 +215,10 @@ if ($graphDependencyCount -ge 0 -and $graphDependencyCount -ne $expectedGraphDep
     $issues += ("graph-evidence-dependency-mismatch:{0}/{1}" -f $graphDependencyCount, $expectedGraphDependencyCount)
 }
 
+if ($null -ne $canonicalDependencyCount -and $dependencyCount -ne $canonicalDependencyCount) {
+    $issues += ("cross-artifact-metric-drift:dependencies-catalog:{0}/{1}" -f $dependencyCount, $canonicalDependencyCount)
+}
+
 $signals = Get-DependencySignalStrength -RootPath $RootPath
 $dependencySurfaceExpected = ($dependencyCount -gt 0 -or [int]$signals.signalCount -gt 0)
 
@@ -205,6 +237,10 @@ if ($dependencyCount -eq 0 -and $dependencySurfaceExpected) {
 }
 if ($dependencyCount -eq 0 -and -not $dependencySurfaceExpected -and -not $summaryEmptyNote) {
     $warnings += "no-dependency-surface-but-missing-explicit-empty-note"
+}
+
+if ($content -notmatch '(?im)\bCritical Path\b') {
+    $warnings += "critical-path-column-missing"
 }
 
 Write-Progress -Activity "Validating Dependencies Catalog" -Status "Complete" -PercentComplete 100

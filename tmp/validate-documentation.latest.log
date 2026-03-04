@@ -1,0 +1,23 @@
+
+Name                           Value
+----                           -----
+timestamp                      2026-03-04T14:07:30-05:00
+category                       INITIALIZATION
+severity                       Info
+component                      orchestrator
+message                        Diagnostics initialized
+filePath                       
+details                        {[rootPath, .], [outputPath, .\docs]}
+Start Here validated: all required sections present
+Overview validation passed
+API inventory validated: 0 endpoints found (0 inbound, 0 outbound)
+Data model validated: 0 models found
+Config catalog validated: 55 configs found
+Build cookbook validated: 0 commands found
+Test catalog validated: 0 tests and 0 suites found
+Task guides validated: 4 task sections found
+Technical debt register validated: 0 debts found
+Dependencies catalog validated: 0 dependency records found
+Validation score: 92
+Validation report: .\docs\validation-report.json
+

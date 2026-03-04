@@ -1,0 +1,12 @@
+
+TagFilter        : {}
+ExcludeTagFilter : {}
+TestNameFilter   : 
+TotalCount       : 27
+PassedCount      : 18
+FailedCount      : 0
+SkippedCount     : 0
+PendingCount     : 9
+Time             : 00:00:04.1130373
+TestResult       : {@{Describe=C4ModelBuilder Module; Context=Get-ProjectFiles; Name=Should find projects from solution file; Result=Passed; Passed=True; Time=00:00:00.6099581; FailureMessage=; StackTrace=; ErrorRecord=; ParameterizedSuiteName=; Parameters=System.Collections.Specialized.OrderedDictionary}, @{Describe=C4ModelBuilder Module; Context=Get-ProjectFiles; Name=Should find .csproj files when given directory; Result=Passed; Passed=True; Time=00:00:00.0835582; FailureMessage=; StackTrace=; ErrorRecord=; ParameterizedSuiteName=; Parameters=System.Collections.Specialized.OrderedDictionary}, @{Describe=C4ModelBuilder Module; Context=Read-CsprojFile; Name=Should parse project file and extract metadata; Result=Passed; Passed=True; Time=00:00:00.1230502; FailureMessage=; StackTrace=; ErrorRecord=; ParameterizedSuiteName=; Parameters=System.Collections.Specialized.OrderedDictionary}, @{Describe=C4ModelBuilder Module; Context=Read-CsprojFile; Name=Should extract NuGet package references; Result=Passed; Passed=True; Time=00:00:00.0453131; FailureMessage=; StackTrace=; ErrorRecord=; ParameterizedSuiteName=; Parameters=System.Collections.Specialized.OrderedDictionary}…}
+

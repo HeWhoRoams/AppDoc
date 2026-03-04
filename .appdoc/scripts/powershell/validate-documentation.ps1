@@ -124,6 +124,27 @@ $artifactMap = @{
     "dependencies-catalog" = "dependencies-catalog.md"
 }
 
+function Get-AppDocValidationContentValue {
+    param(
+        [AllowNull()]
+        [object]$Object,
+        [Parameter(Mandatory=$true)]
+        [string]$Name,
+        [AllowNull()]
+        [object]$Default = $null
+    )
+
+    if ($null -eq $Object) { return $Default }
+    if ($Object -is [System.Collections.IDictionary]) {
+        if ($Object.Contains($Name)) { return $Object[$Name] }
+        return $Default
+    }
+
+    $prop = $Object.PSObject.Properties[$Name]
+    if ($prop) { return $prop.Value }
+    return $Default
+}
+
 function Get-AppDocValidationContentExpectations {
     param(
         [Parameter(Mandatory=$true)]
@@ -283,14 +304,15 @@ function Get-AppDocValidationContentExpectations {
     $testSignalCount = @($testSignalFiles).Count + @($testProjectSignals).Count
 
     $debtSignalCandidates = @()
+    $debtExtensions = @("*.js","*.ts","*.cs","*.py","*.java","*.go","*.rb","*.php","*.kt","*.kts","*.swift")
     if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
         $debtSignalCandidates = @(
-            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "debt-register" -Include @("*.js","*.ts","*.cs","*.py","*.java")
+            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "debt-register" -Include $debtExtensions
         )
     }
     else {
         $debtSignalCandidates = @(
-            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include @("*.js","*.ts","*.cs","*.py","*.java") -ErrorAction SilentlyContinue
+            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $debtExtensions -ErrorAction SilentlyContinue
         )
     }
     $debtSignalCount = 0
@@ -916,6 +938,361 @@ function Get-ContradictionAnalysis {
     }
 }
 
+function Get-ArchitectureContradictionAnalysis {
+    param(
+        [string]$RootPath,
+        [string]$DocsPath
+    )
+
+    $issues = @()
+    $signals = [ordered]@{
+        primaryStyle = "unknown"
+        frameworkHints = @()
+        apiInventoryRestRows = 0
+        apiInventorySoapRows = 0
+        overviewRestMentions = 0
+        overviewSoapMentions = 0
+    }
+
+    $fingerprintPath = Join-Path $DocsPath "architecture-fingerprint.json"
+    $frameworkPath = Join-Path $DocsPath "framework-detection.json"
+    $apiPath = Join-Path $DocsPath "api-inventory.md"
+    $overviewPath = Join-Path $DocsPath "overview.md"
+
+    $fingerprint = $null
+    if (Test-Path $fingerprintPath) {
+        try {
+            $fingerprint = Get-Content $fingerprintPath -Raw | ConvertFrom-Json -Depth 50
+        }
+        catch {
+            $issues += "architecture-contradiction:fingerprint-unreadable"
+        }
+    }
+
+    $primaryStyle = if ($fingerprint -and $fingerprint.primaryStyle) { [string]$fingerprint.primaryStyle } else { "unknown" }
+    $signals.primaryStyle = $primaryStyle
+
+    $frameworkHints = @()
+    if (Test-Path $frameworkPath) {
+        try {
+            $frameworkRows = @(Get-Content $frameworkPath -Raw | ConvertFrom-Json -Depth 50)
+            $frameworkHints = @(
+                $frameworkRows |
+                    ForEach-Object { [string]$_.framework } |
+                    Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+                    Select-Object -Unique
+            )
+        }
+        catch {
+            $issues += "architecture-contradiction:framework-detection-unreadable"
+        }
+    }
+    $signals.frameworkHints = @($frameworkHints)
+
+    $apiInventoryContent = ""
+    if (Test-Path $apiPath) {
+        $apiInventoryContent = Get-Content $apiPath -Raw
+        $restRows = ([regex]::Matches($apiInventoryContent, '(?im)^\|\s*`[^|]+`\s*\|\s*`/[^|]+`\s*\|\s*(GET|POST|PUT|DELETE|PATCH|ANY)\s*\|')).Count
+        $soapRows = ([regex]::Matches($apiInventoryContent, '(?im)^\|\s*`[^|]+`\s*\|\s*`/[^|]+`\s*\|\s*SOAP\s*\|')).Count
+        $signals.apiInventoryRestRows = [int]$restRows
+        $signals.apiInventorySoapRows = [int]$soapRows
+    }
+
+    $overviewContent = ""
+    if (Test-Path $overviewPath) {
+        $overviewContent = Get-Content $overviewPath -Raw
+        $signals.overviewRestMentions = ([regex]::Matches($overviewContent, '(?i)\bREST\b|\bHTTP API\b|\bApiController\b')).Count
+        $signals.overviewSoapMentions = ([regex]::Matches($overviewContent, '(?i)\bSOAP\b|\bWCF\b|\bServiceContract\b|\bOperationContract\b')).Count
+    }
+
+    $isSoapPrimary = ($primaryStyle -match '(?i)^(WCF-first|SOAP-first|wcf-service|asmx-service|soap-client)$')
+    $isRestPrimary = ($primaryStyle -match '(?i)^rest-http')
+    $isNoApiPrimary = ($primaryStyle -eq 'no-api-surface')
+    $soapFrameworkHint = (@($frameworkHints | Where-Object { $_ -match '(?i)\bWCF\b|SOAP|ASMX' }).Count -gt 0)
+    $restFrameworkHint = (@($frameworkHints | Where-Object { $_ -match '(?i)ASP\.NET\s+Core|ASP\.NET\s+MVC|Web API' }).Count -gt 0)
+
+    if ($isSoapPrimary -and $signals.apiInventoryRestRows -gt 0 -and $signals.apiInventorySoapRows -eq 0) {
+        $issues += "architecture-contradiction:soap-primary-vs-rest-api-inventory"
+    }
+    if ($isRestPrimary -and $signals.apiInventorySoapRows -gt 0 -and $signals.apiInventoryRestRows -eq 0) {
+        $issues += "architecture-contradiction:rest-primary-vs-soap-api-inventory"
+    }
+    if ($isNoApiPrimary -and ($signals.apiInventoryRestRows -gt 0 -or $signals.apiInventorySoapRows -gt 0)) {
+        $issues += "architecture-contradiction:no-api-primary-vs-api-inventory"
+    }
+
+    if ($isSoapPrimary -and $signals.overviewRestMentions -gt 0 -and $signals.overviewSoapMentions -eq 0) {
+        $issues += "architecture-contradiction:soap-primary-vs-overview-rest-language"
+    }
+    if ($isRestPrimary -and $signals.overviewSoapMentions -gt 0 -and $signals.overviewRestMentions -eq 0) {
+        $issues += "architecture-contradiction:rest-primary-vs-overview-soap-language"
+    }
+
+    if ($isSoapPrimary -and $restFrameworkHint -and -not $soapFrameworkHint -and $signals.apiInventorySoapRows -eq 0) {
+        $issues += "architecture-contradiction:soap-primary-vs-framework-rest-only"
+    }
+    if ($isRestPrimary -and $soapFrameworkHint -and -not $restFrameworkHint -and $signals.apiInventoryRestRows -eq 0) {
+        $issues += "architecture-contradiction:rest-primary-vs-framework-soap-only"
+    }
+
+    $score = [Math]::Max(0, (100 - ($issues.Count * 35)))
+    return [ordered]@{
+        score = [Math]::Round($score, 1)
+        passed = ($issues.Count -eq 0)
+        issues = @($issues)
+        signals = $signals
+    }
+}
+
+function Get-QualityPenaltyBreakdown {
+    param(
+        [string]$DocsPath,
+        [string[]]$Contradictions = @()
+    )
+
+    $docMap = [ordered]@{
+        "start-here" = "start-here.md"
+        "overview" = "overview.md"
+        "api-inventory" = "api-inventory.md"
+        "data-model" = "data-model.md"
+        "config-catalog" = "config-catalog.md"
+        "build-cookbook" = "build-cookbook.md"
+        "test-catalog" = "test-catalog.md"
+        "task-guides" = "task-guides.md"
+        "debt-register" = "debt-register.md"
+        "dependencies-catalog" = "dependencies-catalog.md"
+    }
+
+    $perArtifact = [ordered]@{}
+    foreach ($artifact in $docMap.Keys) {
+        $perArtifact[$artifact] = [ordered]@{
+            total = 0
+            contradiction = 0
+            duplicateRows = 0
+            misclassification = 0
+            staleProvenance = 0
+            verbosityOverflow = 0
+            reasons = @()
+        }
+    }
+
+    function Add-AppDocPenalty {
+        param(
+            [string]$Artifact,
+            [string]$Category,
+            [int]$Points,
+            [string]$Reason
+        )
+
+        if (-not $perArtifact.Contains($Artifact)) { return }
+        $entry = $perArtifact[$Artifact]
+        $entry.total = [int]$entry.total + $Points
+        $entry[$Category] = [int]$entry[$Category] + $Points
+        $entry.reasons = @($entry.reasons) + @($Reason)
+        $perArtifact[$Artifact] = $entry
+    }
+
+    foreach ($issue in @($Contradictions)) {
+        if ([string]$issue -notmatch '^architecture-contradiction:') { continue }
+
+        $targets = @("overview", "api-inventory")
+        if ([string]$issue -match 'overview') { $targets = @("overview") }
+        elseif ([string]$issue -match 'api-inventory') { $targets = @("api-inventory", "start-here") }
+
+        foreach ($target in $targets) {
+            Add-AppDocPenalty -Artifact $target -Category "contradiction" -Points 30 -Reason $issue
+        }
+
+        Add-AppDocPenalty -Artifact "overview" -Category "misclassification" -Points 10 -Reason "misclassification:$issue"
+        Add-AppDocPenalty -Artifact "api-inventory" -Category "misclassification" -Points 10 -Reason "misclassification:$issue"
+    }
+
+    foreach ($artifact in $docMap.Keys) {
+        $docPath = Join-Path $DocsPath $docMap[$artifact]
+        if (-not (Test-Path $docPath)) { continue }
+        $content = Get-Content $docPath -Raw
+
+        $rows = @([regex]::Matches($content, '(?im)^\|[^\r\n]+\|\s*$') | ForEach-Object { [string]$_.Value.Trim() })
+        if ($rows.Count -gt 2) {
+            $dataRows = @($rows | Select-Object -Skip 2)
+            $dupeCount = @($dataRows | Group-Object | Where-Object { $_.Count -gt 1 }).Count
+            if ($dupeCount -gt 0) {
+                Add-AppDocPenalty -Artifact $artifact -Category "duplicateRows" -Points ($dupeCount * 8) -Reason "duplicate-rows:$dupeCount"
+            }
+        }
+
+        $generatedMatch = [regex]::Match($content, '(?im)^\*\*Generated\*\*:\s*([^\r\n]+)$')
+        if (-not $generatedMatch.Success) {
+            Add-AppDocPenalty -Artifact $artifact -Category "staleProvenance" -Points 8 -Reason "provenance-missing-generated"
+        }
+        else {
+            try {
+                $generatedAt = [datetime]::Parse($generatedMatch.Groups[1].Value.Trim())
+                $ageHours = ((Get-Date) - $generatedAt).TotalHours
+                if ($ageHours -gt 72) {
+                    Add-AppDocPenalty -Artifact $artifact -Category "staleProvenance" -Points 8 -Reason "provenance-stale-hours:$([Math]::Round($ageHours,1))"
+                }
+            }
+            catch {
+                Add-AppDocPenalty -Artifact $artifact -Category "staleProvenance" -Points 8 -Reason "provenance-invalid-generated"
+            }
+        }
+
+        $lineCount = @($content -split "`n").Count
+        $hasQuickLinks = [regex]::IsMatch($content, '(?im)^##\s+(Quick Links|Contents|Table of Contents)\b')
+        if ($lineCount -gt 350 -and -not $hasQuickLinks) {
+            Add-AppDocPenalty -Artifact $artifact -Category "verbosityOverflow" -Points 6 -Reason "verbosity-overflow-lines:$lineCount"
+        }
+    }
+
+    $categoryTotals = [ordered]@{
+        contradiction = 0
+        duplicateRows = 0
+        misclassification = 0
+        staleProvenance = 0
+        verbosityOverflow = 0
+    }
+    $categoryKeys = @($categoryTotals.Keys)
+    $totalPenaltyPoints = 0
+    foreach ($artifact in $perArtifact.Keys) {
+        $entry = $perArtifact[$artifact]
+        foreach ($category in $categoryKeys) {
+            $categoryTotals[$category] = [int]$categoryTotals[$category] + [int]$entry[$category]
+        }
+        $totalPenaltyPoints += [int]$entry.total
+    }
+
+    return [ordered]@{
+        totalPenaltyPoints = [int]$totalPenaltyPoints
+        categoryTotals = $categoryTotals
+        perArtifact = $perArtifact
+        artifactCount = [int]$perArtifact.Keys.Count
+    }
+}
+
+function Get-CrossArtifactMetricDriftAnalysis {
+    param(
+        [string]$DocsPath
+    )
+
+    $issues = @()
+    $signals = [ordered]@{}
+    $canonicalPath = Join-Path $DocsPath "evidence\metrics-canonical.json"
+    if (-not (Test-Path $canonicalPath)) {
+        return [ordered]@{
+            score = 0
+            passed = $false
+            issues = @("cross-artifact-metric-drift:canonical-metrics-missing")
+            signals = $signals
+        }
+    }
+
+    $canonical = $null
+    try {
+        $canonical = Get-Content $canonicalPath -Raw | ConvertFrom-Json -Depth 80
+    }
+    catch {
+        return [ordered]@{
+            score = 0
+            passed = $false
+            issues = @("cross-artifact-metric-drift:canonical-metrics-unparseable")
+            signals = $signals
+        }
+    }
+
+    $totals = Get-AppDocValidationContentValue -Object $canonical -Name "totals" -Default @{}
+    $canonicalEndpointCount = [int](Get-AppDocValidationContentValue -Object $totals -Name "endpointCount" -Default 0)
+    $canonicalModelCount = [int](Get-AppDocValidationContentValue -Object $totals -Name "modelCount" -Default 0)
+    $canonicalDependencyCount = [int](Get-AppDocValidationContentValue -Object $totals -Name "dependencyCount" -Default 0)
+    $canonicalTestCaseCount = [int](Get-AppDocValidationContentValue -Object $totals -Name "testCaseCount" -Default 0)
+
+    $signals.canonical = [ordered]@{
+        endpointCount = $canonicalEndpointCount
+        modelCount = $canonicalModelCount
+        dependencyCount = $canonicalDependencyCount
+        testCaseCount = $canonicalTestCaseCount
+    }
+
+    $overviewTruthPath = Join-Path $DocsPath "evidence\overview-truth-pack.json"
+    if (Test-Path $overviewTruthPath) {
+        try {
+            $truthPack = Get-Content $overviewTruthPath -Raw | ConvertFrom-Json -Depth 80
+            $counts = Get-AppDocValidationContentValue -Object $truthPack -Name "counts" -Default @{}
+            $overviewEndpoint = [int](Get-AppDocValidationContentValue -Object $counts -Name "endpointRecords" -Default 0)
+            $overviewModel = [int](Get-AppDocValidationContentValue -Object $counts -Name "modelRecords" -Default 0)
+            $overviewDependency = [int](Get-AppDocValidationContentValue -Object $counts -Name "dependencyRecords" -Default 0)
+            $signals.overviewTruthPack = [ordered]@{
+                endpointCount = $overviewEndpoint
+                modelCount = $overviewModel
+                dependencyCount = $overviewDependency
+            }
+
+            if ($overviewEndpoint -ne $canonicalEndpointCount) { $issues += ("cross-artifact-metric-drift:overview-endpoint-count:{0}/{1}" -f $overviewEndpoint, $canonicalEndpointCount) }
+            if ($overviewModel -ne $canonicalModelCount) { $issues += ("cross-artifact-metric-drift:overview-model-count:{0}/{1}" -f $overviewModel, $canonicalModelCount) }
+            if ($overviewDependency -ne $canonicalDependencyCount) { $issues += ("cross-artifact-metric-drift:overview-dependency-count:{0}/{1}" -f $overviewDependency, $canonicalDependencyCount) }
+        }
+        catch {
+            $issues += "cross-artifact-metric-drift:overview-truth-pack-unparseable"
+        }
+    }
+
+    $startHerePath = Join-Path $DocsPath "start-here.md"
+    if (Test-Path $startHerePath) {
+        try {
+            $startHere = Get-Content $startHerePath -Raw
+            $mApi = [regex]::Match($startHere, '(?im)^-\s+API endpoints documented:\s*\*\*(\d+)\*\*')
+            $mModel = [regex]::Match($startHere, '(?im)^-\s+Data models documented:\s*\*\*(\d+)\*\*')
+            if ($mApi.Success) {
+                $startHereApi = [int]$mApi.Groups[1].Value
+                $signals.startHereApiCount = $startHereApi
+                if ($startHereApi -ne $canonicalEndpointCount) { $issues += ("cross-artifact-metric-drift:start-here-endpoint-count:{0}/{1}" -f $startHereApi, $canonicalEndpointCount) }
+            }
+            if ($mModel.Success) {
+                $startHereModel = [int]$mModel.Groups[1].Value
+                $signals.startHereModelCount = $startHereModel
+                if ($startHereModel -ne $canonicalModelCount) { $issues += ("cross-artifact-metric-drift:start-here-model-count:{0}/{1}" -f $startHereModel, $canonicalModelCount) }
+            }
+        }
+        catch {
+            $issues += "cross-artifact-metric-drift:start-here-unparseable"
+        }
+    }
+
+    $testEvidencePath = Join-Path $DocsPath "evidence\test-catalog.evidence.json"
+    if (Test-Path $testEvidencePath) {
+        try {
+            $testEvidence = Get-Content $testEvidencePath -Raw | ConvertFrom-Json -Depth 80
+            $testCaseCount = @(@($testEvidence.records) | Where-Object { $_ -and [string]$_.kind -in @("test-case", "test", "parameterized test") }).Count
+            $signals.testEvidenceCaseCount = $testCaseCount
+            if ($testCaseCount -ne $canonicalTestCaseCount) { $issues += ("cross-artifact-metric-drift:test-case-count:{0}/{1}" -f $testCaseCount, $canonicalTestCaseCount) }
+        }
+        catch {
+            $issues += "cross-artifact-metric-drift:test-evidence-unparseable"
+        }
+    }
+
+    $dependencyEvidencePath = Join-Path $DocsPath "evidence\dependencies-catalog.evidence.json"
+    if (Test-Path $dependencyEvidencePath) {
+        try {
+            $dependencyEvidence = Get-Content $dependencyEvidencePath -Raw | ConvertFrom-Json -Depth 80
+            $dependencyCount = @(@($dependencyEvidence.records) | Where-Object { $_ -and [string]$_.kind -eq "dependency" }).Count
+            $signals.dependencyEvidenceCount = $dependencyCount
+            if ($dependencyCount -ne $canonicalDependencyCount) { $issues += ("cross-artifact-metric-drift:dependency-count:{0}/{1}" -f $dependencyCount, $canonicalDependencyCount) }
+        }
+        catch {
+            $issues += "cross-artifact-metric-drift:dependency-evidence-unparseable"
+        }
+    }
+
+    $score = [Math]::Max(0, (100 - (@($issues).Count * 35)))
+    return [ordered]@{
+        score = [Math]::Round($score, 1)
+        passed = (@($issues).Count -eq 0)
+        issues = @($issues)
+        signals = $signals
+    }
+}
+
 function Get-TaskGuideOutcomeMetrics {
     param(
         [string]$DocsPath,
@@ -1002,6 +1379,7 @@ function Get-TaskGuideOutcomeMetrics {
                 elseif ($nonZeroSurfaceSignals -eq 1) {
                     $expectedSnapshotMinimum = 1
                 }
+                # If metadata is absent or unreadable, do not override $expectedSnapshotMinimum (preserve default)
             }
             $referenceEvidenceScore = [Math]::Round(($evidenceKeysSatisfied / 5) * 100, 1)
             $evidenceCoverageScore = [Math]::Round((($taskRecordScore + $referenceEvidenceScore) / 2), 1)
@@ -1104,35 +1482,61 @@ function Get-PolicyGateAnalysis {
         if ($placeholderHits -gt 0) {
             $blockingIssues += ("template-residue:{0}:{1}" -f $docName, $placeholderHits)
         }
+
+        $requiredProvenanceLines = @(
+            "Generator Version:",
+            "Commit Hash:",
+            "Generated At:",
+            "Profile:",
+            "Scope:",
+            "Confidence/Inference Flags:"
+        )
+        if ($content -notmatch '(?im)^##\s+Provenance\s*$') {
+            $blockingIssues += "provenance-missing:$docName"
+        }
+        else {
+            foreach ($line in $requiredProvenanceLines) {
+                if ($content -notmatch [regex]::Escape($line)) {
+                    $blockingIssues += ("provenance-field-missing:{0}:{1}" -f $docName, $line)
+                }
+            }
+        }
+    }
+
+    foreach ($jsonName in @("quality-report.json","validation-report.json","diagnostics-report.json")) {
+        $jsonPath = Join-Path $DocsPath $jsonName
+        if (-not (Test-Path $jsonPath)) { continue }
+        try {
+            $payload = Get-Content $jsonPath -Raw | ConvertFrom-Json -Depth 120
+            if ($null -eq $payload.provenance) {
+                $blockingIssues += "provenance-missing:$jsonName"
+                continue
+            }
+            $requiredJsonFields = @("generatorVersion","commitHash","generatedAt","profile","scope","confidenceInferenceFlags")
+            foreach ($field in $requiredJsonFields) {
+                if ($null -eq $payload.provenance.$field) {
+                    $blockingIssues += ("provenance-field-missing:{0}:{1}" -f $jsonName, $field)
+                }
+            }
+        }
+        catch {
+            $blockingIssues += ("provenance-json-unparseable:{0}" -f $jsonName)
+        }
     }
 
     $overviewPath = Join-Path $DocsPath "overview.md"
     if (Test-Path $overviewPath) {
         $overviewContent = Get-Content $overviewPath -Raw
-        $welcomeSection = Get-MarkdownSectionBlock -Content $overviewContent -SectionName "Welcome"
-        if (-not $welcomeSection) {
-            $blockingIssues += "overview-welcome-section-missing"
-        }
-        else {
-            $requiredWelcomeSubsections = @(
-                "what_it_does",
-                "inputs",
-                "processing_steps",
-                "outputs",
-                "external_systems",
-                "confidence_notes",
-                "evidence_refs"
-            )
-
-            foreach ($subsection in $requiredWelcomeSubsections) {
-                if (-not [regex]::IsMatch($welcomeSection, "(?im)^###\s+" + [regex]::Escape($subsection) + "\b")) {
-                    $blockingIssues += "overview-welcome-subsection-missing:$subsection"
-                }
-            }
-
-            $overviewEvidenceRefHits = ([regex]::Matches($welcomeSection, '(?i)ev-\d{4}')).Count
-            if ($overviewEvidenceRefHits -eq 0) {
-                $blockingIssues += "overview-welcome-evidence-refs-empty"
+        $requiredOverviewSections = @(
+            "System Boundary",
+            "Runtime Path",
+            "Inputs→Processing→Outputs",
+            "External Systems",
+            "Confidence Notes"
+        )
+        foreach ($section in $requiredOverviewSections) {
+            if (-not [regex]::IsMatch($overviewContent, "(?im)^##\s+" + [regex]::Escape($section) + "\b")) {
+                $blockingIssues += "overview-section-missing:$section"
             }
         }
     }
@@ -1161,6 +1565,35 @@ function Get-PolicyGateAnalysis {
         if ($blankPathRows.Count -gt 0) {
             $blockingIssues += "api-endpoints-blank-paths:$($blankPathRows.Count)"
         }
+
+        if ($apiContent -notmatch '(?im)\[API Inventory Appendix\]\(api-inventory\.appendix\.md\)') {
+            $blockingIssues += "api-appendix-link-missing"
+        }
+
+        $apiAppendixPath = Join-Path $DocsPath "api-inventory.appendix.md"
+        if (-not (Test-Path $apiAppendixPath)) {
+            $blockingIssues += "api-appendix-missing"
+        }
+        else {
+            $appendixContent = Get-Content $apiAppendixPath -Raw
+            $requiredAppendixColumns = @(
+                "Operation Intent",
+                "Auth Boundary",
+                "Timeout/Retry",
+                "Idempotency",
+                "Confidence"
+            )
+            foreach ($column in $requiredAppendixColumns) {
+                if ($appendixContent -notmatch [regex]::Escape($column)) {
+                    $blockingIssues += "api-appendix-column-missing:$column"
+                }
+            }
+
+            $appendixRows = @([regex]::Matches($appendixContent, '(?im)^\|\s*``?[^|]+\|.*\|\s*$') | ForEach-Object { [string]$_.Value })
+            if ($apiSurfaceExpected -and $appendixRows.Count -eq 0) {
+                $blockingIssues += "api-appendix-empty"
+            }
+        }
     }
 
     $configPath = Join-Path $DocsPath "config-catalog.md"
@@ -1184,6 +1617,45 @@ function Get-PolicyGateAnalysis {
         }
     }
 
+    $manifestPath = Join-Path $DocsPath "evidence\manifest.json"
+    if (Test-Path $manifestPath) {
+        try {
+            $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json -Depth 120
+            if ($null -eq $manifest.markdownChecksums -or @($manifest.markdownChecksums).Count -eq 0) {
+                $blockingIssues += "manifest-markdown-checksums-missing"
+            }
+            if ($null -eq $manifest.signoff) {
+                $blockingIssues += "manifest-signoff-missing"
+            }
+        }
+        catch {
+            $blockingIssues += "manifest-unparseable"
+        }
+    }
+
+    $evidenceGraphPath = Join-Path $DocsPath "evidence\evidence-graph.json"
+    if (Test-Path $evidenceGraphPath) {
+        try {
+            $graph = Get-Content $evidenceGraphPath -Raw | ConvertFrom-Json -Depth 120
+            $entities = @($graph.entities)
+            $missingEnrichment = @(
+                $entities | Where-Object {
+                    $null -eq $_.inferred -or
+                    [string]::IsNullOrWhiteSpace([string]$_.dedupeKey) -or
+                    [string]::IsNullOrWhiteSpace([string]$_.ownership) -or
+                    [string]::IsNullOrWhiteSpace([string]$_.runtimeRelevance) -or
+                    [string]::IsNullOrWhiteSpace([string]$_.sensitivity)
+                }
+            )
+            if ($missingEnrichment.Count -gt 0) {
+                $blockingIssues += ("evidence-graph-enrichment-missing:{0}" -f $missingEnrichment.Count)
+            }
+        }
+        catch {
+            $blockingIssues += "evidence-graph-unparseable"
+        }
+    }
+
     $score = [Math]::Max(0, (100 - ($blockingIssues.Count * 20) - ($warnings.Count * 5)))
     return [ordered]@{
         score = [Math]::Round($score, 1)
@@ -1203,16 +1675,38 @@ $humanUsabilityScore = Get-HumanUsabilityScore -DocsPath $docsPath
 $claimGroundingScore = Get-ClaimGroundingScore -DocsPath $docsPath
 $documentationFreshnessScore = Get-DocumentationFreshnessScore -DocsPath $docsPath
 $contradictionAnalysis = Get-ContradictionAnalysis -DocsPath $docsPath -EvidenceRoot $evidenceRoot
-$contradictionConsistencyScore = [double]$contradictionAnalysis.score
+$architectureContradictionAnalysis = Get-ArchitectureContradictionAnalysis -RootPath $RootPath -DocsPath $docsPath
+$allContradictionIssues = @($contradictionAnalysis.issues + $architectureContradictionAnalysis.issues)
+$contradictionConsistencyScore = [Math]::Min([double]$contradictionAnalysis.score, [double]$architectureContradictionAnalysis.score)
 $taskGuideOutcomes = Get-TaskGuideOutcomeMetrics -DocsPath $docsPath -EvidenceRoot $evidenceRoot
 $taskGuideActionabilityScore = [double]$taskGuideOutcomes.actionabilityScore
 $taskGuideEvidenceCoverageScore = [double]$taskGuideOutcomes.evidenceCoverageScore
 $taskGuideTimeScore = [double]$taskGuideOutcomes.taskCompletionTimeScore
+$metricDriftAnalysis = Get-CrossArtifactMetricDriftAnalysis -DocsPath $docsPath
+$metricDriftScore = [double]$metricDriftAnalysis.score
 $policyGates = Get-PolicyGateAnalysis -DocsPath $docsPath -RootPath $RootPath
 $policyGateScore = [double]$policyGates.score
 
-foreach ($issue in @($contradictionAnalysis.issues)) {
+if (@($architectureContradictionAnalysis.issues).Count -gt 0) {
+    $policyGates.blockingIssues = @($policyGates.blockingIssues + $architectureContradictionAnalysis.issues)
+    $policyGates.passed = $false
+    $policyGates.score = [Math]::Max(0, ([double]$policyGates.score - (@($architectureContradictionAnalysis.issues).Count * 20)))
+    $policyGateScore = [double]$policyGates.score
+}
+
+if (@($metricDriftAnalysis.issues).Count -gt 0) {
+    $policyGates.blockingIssues = @($policyGates.blockingIssues + $metricDriftAnalysis.issues)
+    $policyGates.passed = $false
+    $policyGates.score = [Math]::Max(0, ([double]$policyGates.score - (@($metricDriftAnalysis.issues).Count * 20)))
+    $policyGateScore = [double]$policyGates.score
+}
+
+foreach ($issue in @($allContradictionIssues)) {
     Write-AppDocDiagnostic -Category "DETECTION_PATTERN_MISMATCH" -Severity "Warning" -Message "Cross-artifact contradiction detected: $issue" -Component "validation" -FilePath $docsPath | Out-Null
+}
+
+foreach ($issue in @($metricDriftAnalysis.issues)) {
+    Write-AppDocDiagnostic -Category "DETECTION_PATTERN_MISMATCH" -Severity "Warning" -Message "Cross-artifact metric drift detected: $issue" -Component "validation" -FilePath $docsPath | Out-Null
 }
 
 foreach ($issue in @($taskGuideOutcomes.issues)) {
@@ -1235,13 +1729,32 @@ $evidenceContractScore = if ($evidenceValues.Count -gt 0) { [Math]::Round((($evi
 
 $validatorPassRate = [Math]::Round(((@($validatorResults | Where-Object { $_.passed }).Count / [Math]::Max(1, $validatorResults.Count)) * 100), 1)
 $artifactPresence = [Math]::Round(((($artifactFiles.Count - $missing.Count) / [Math]::Max(1, $artifactFiles.Count)) * 100), 1)
-$overallScore = [Math]::Round((($validatorPassRate + $artifactPresence + $evidencePresence + $semanticContractScore + $evidenceContractScore + $apiCoverage + $configCoverage + $dataCoverage + $redactionSafetyScore + $humanUsabilityScore + $claimGroundingScore + $documentationFreshnessScore + $contradictionConsistencyScore + $taskGuideActionabilityScore + $taskGuideEvidenceCoverageScore + $taskGuideTimeScore + $policyGateScore) / 17), 1)
+$overallScoreRaw = [Math]::Round((($validatorPassRate + $artifactPresence + $evidencePresence + $semanticContractScore + $evidenceContractScore + $apiCoverage + $configCoverage + $dataCoverage + $redactionSafetyScore + $humanUsabilityScore + $claimGroundingScore + $documentationFreshnessScore + $contradictionConsistencyScore + $taskGuideActionabilityScore + $taskGuideEvidenceCoverageScore + $taskGuideTimeScore + $metricDriftScore + $policyGateScore) / 18), 1)
+
+$qualityPenaltyBreakdown = Get-QualityPenaltyBreakdown -DocsPath $docsPath -Contradictions $allContradictionIssues
+$penaltyDeduction = [Math]::Round([Math]::Min(45, ($qualityPenaltyBreakdown.totalPenaltyPoints / [Math]::Max(1, $qualityPenaltyBreakdown.artifactCount))), 1)
+$overallScore = [Math]::Max(0, [Math]::Round(($overallScoreRaw - $penaltyDeduction), 1))
+
+$hasBlockingIssues = (@($policyGates.blockingIssues).Count -gt 0)
+$weakCoverage = ($evidencePresence -lt 70 -or $semanticContractScore -lt 65 -or $evidenceContractScore -lt 65 -or $claimGroundingScore -lt 50)
+$validationStatus = if ($hasBlockingIssues -or $overallScore -lt $Threshold) {
+    "fail"
+}
+elseif ($weakCoverage) {
+    "pass-with-weak-coverage"
+}
+else {
+    "pass"
+}
 
 $result = [ordered]@{
     timestamp = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
     strict = $Strict.IsPresent
     threshold = $Threshold
+    status = $validationStatus
     overallScore = $overallScore
+    overallScoreRaw = $overallScoreRaw
+    penaltyDeduction = $penaltyDeduction
     metrics = [ordered]@{
         validatorPassRate = $validatorPassRate
         artifactPresence = $artifactPresence
@@ -1260,14 +1773,18 @@ $result = [ordered]@{
         taskGuideEvidenceCoverageScore = $taskGuideEvidenceCoverageScore
         taskGuideTimeToCompleteMinutes = $taskGuideOutcomes.estimatedCompletionMinutes
         taskGuideTimeScore = $taskGuideTimeScore
+        metricDriftScore = $metricDriftScore
         policyGateScore = $policyGateScore
     }
+    qualityPenaltyBreakdown = $qualityPenaltyBreakdown
     missingArtifacts = $missing
     missingEvidenceArtifacts = $missingEvidence
     validators = $validatorResults
     contractValidation = $contractValidationResults
     evidenceContractValidation = $evidenceContractResults
-    contradictions = @($contradictionAnalysis.issues)
+    contradictions = @($allContradictionIssues)
+    architectureContradiction = $architectureContradictionAnalysis
+    metricDrift = $metricDriftAnalysis
     taskGuideOutcomes = $taskGuideOutcomes
     policyGates = $policyGates
 }
@@ -1295,5 +1812,10 @@ if ($Strict -and $overallScore -lt $Threshold) {
 if ($Strict -and @($policyGates.blockingIssues).Count -gt 0) {
     $issueSummary = (@($policyGates.blockingIssues) -join "; ")
     Write-Error "Validation policy gates failed: $issueSummary"
+    exit 1
+}
+
+if ($Strict -and $validationStatus -eq "pass-with-weak-coverage") {
+    Write-Error "Validation status is pass-with-weak-coverage; strict mode requires full pass."
     exit 1
 }

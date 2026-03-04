@@ -67,11 +67,11 @@ $overview = Get-Content $overviewPath -Raw
 $issues = @()
 
 $requiredSections = @(
-    "Welcome",
-    "Executive Summary",
-    "System Purpose",
-    "Architecture",
-    "Technology Stack"
+    "System Boundary",
+    "Runtime Path",
+    "Inputs→Processing→Outputs",
+    "External Systems",
+    "Confidence Notes"
 )
 
 foreach ($section in $requiredSections) {
@@ -80,45 +80,22 @@ foreach ($section in $requiredSections) {
     }
 }
 
-$welcomeContent = Get-OverviewSectionContent -Content $overview -Heading "Welcome"
-if ([string]::IsNullOrWhiteSpace($welcomeContent)) {
-    $issues += "missing-welcome-content"
+$fingerprintPath = Join-Path $RootPath "docs\architecture-fingerprint.json"
+if (Test-Path $fingerprintPath) {
+    try {
+        $fingerprint = Get-Content $fingerprintPath -Raw | ConvertFrom-Json -Depth 40
+        $primaryStyle = [string](Get-OverviewValue -Object $fingerprint -Name "primaryStyle" -Default "")
+        if (-not [string]::IsNullOrWhiteSpace($primaryStyle) -and $overview -notmatch [regex]::Escape($primaryStyle)) {
+            $issues += "architecture-statement-missing-primary-style"
+        }
+    }
+    catch {
+        $issues += "architecture-fingerprint-unparseable"
+    }
 }
-else {
-    $requiredWelcomeSubsections = @(
-        "what_it_does",
-        "inputs",
-        "processing_steps",
-        "outputs",
-        "external_systems",
-        "confidence_notes",
-        "evidence_refs"
-    )
 
-    foreach ($subsection in $requiredWelcomeSubsections) {
-        if (-not [regex]::IsMatch($welcomeContent, "(?im)^###\s+" + [regex]::Escape($subsection) + "\b")) {
-            $issues += "missing-welcome-subsection:$subsection"
-        }
-    }
-
-    $welcomeEvidenceHits = ([regex]::Matches($welcomeContent, '(?i)ev-\d{4}')).Count
-    if ($welcomeEvidenceHits -eq 0) {
-        $issues += "missing-welcome-evidence-refs"
-    }
-
-    $whatItDoesContent = ''
-            $whatItDoesContent = Get-OverviewSubsectionContent -SectionContent $welcomeContent -SubHeading "what_it_does"
-    if (-not [string]::IsNullOrWhiteSpace($whatItDoesContent)) {
-        $purposeVerbHits = ([regex]::Matches($whatItDoesContent, '(?i)\b(help|allow|enable|provide|support|manage|process|evaluate|calculate|determine|assign|track|integrate|report|validate|orchestrate|define|configure|automate)\w*\b')).Count
-        if ($purposeVerbHits -lt 1) {
-            $issues += "welcome-what-it-does-purpose-verb-low"
-        }
-
-        $metricLeadHits = ([regex]::Matches($whatItDoesContent, '(?im)^\s*-\s*(the application|it|this application|this codebase)\s+(exposes|contains|uses|operates on)\s+\d+')).Count
-        if ($metricLeadHits -gt 0) {
-            $issues += "welcome-what-it-does-metric-led"
-        }
-    }
+if ($overview -match '(?im)\b(contradiction unresolved|architecture contradiction|conflicting architecture)\b') {
+    $issues += "unresolved-contradiction-language-present"
 }
 
 $truthPackPath = Join-Path $RootPath "docs\evidence\overview-truth-pack.json"
@@ -148,10 +125,6 @@ if ((Test-Path $truthPackPath) -and (Test-Path $graphPath)) {
         if ($truthModel -ne $graphModel) { $issues += "graph-count-mismatch:modelRecords:$truthModel/$graphModel" }
         if ($truthConfig -ne $graphConfig) { $issues += "graph-count-mismatch:configurationRecords:$truthConfig/$graphConfig" }
         if ($truthDependency -ne $graphDependency) { $issues += "graph-count-mismatch:dependencyRecords:$truthDependency/$graphDependency" }
-
-        if (($graphInbound + $graphOutbound) -gt 0 -and $whatItDoesContent -match '(?i)not strong enough to confidently describe business behavior') {
-            $issues += "welcome-what-it-does-fallback-invalid-with-graph-evidence"
-        }
     }
     catch {
         $issues += "graph-or-truth-pack-parse-error: $($_.Exception.Message)"

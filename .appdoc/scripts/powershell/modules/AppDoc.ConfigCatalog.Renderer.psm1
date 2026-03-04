@@ -166,20 +166,61 @@ _No environment variables detected. System may use configuration files or defaul
     }
 
     $configOptionsContent = if ($Configs.Count -gt 0) {
-        $tableHeader = "| Name | Type | Default | Description | Required | Source |`n|------|------|---------|-------------|----------|--------|"
-        $tableRows = $Configs | ForEach-Object {
-            $key = Sanitize-AppDocConfigMarkdownCell -Value $_.key -MaxLength 140
-            $displayValue = Sanitize-AppDocConfigMarkdownCell -Value $_.value -MaxLength 80
-            $type = Infer-AppDocConfigType $_.value
-            $type = Sanitize-AppDocConfigMarkdownCell -Value $type -MaxLength 50
-            $source = Sanitize-AppDocConfigMarkdownCell -Value $_.source -MaxLength 140
-            $parent = $null
-            if ($key -match '^(.*?)\.[^.]+$') { $parent = $Matches[1] }
-            $description = Synthesize-AppDocConfigDescription $key $parent $settingsComments
-            $required = if ($_.required) { "Yes" } else { "No" }
-            "| $key | $type | $displayValue | $description | $required | $source |"
+        $isToolingConfig = {
+            param($cfg)
+            $src = [string]($cfg.source ?? "")
+            $key = [string]($cfg.key ?? "")
+            return (
+                $src -match '(?i)(\.vscode|tasks\.json|launch\.json|workflow|github|pipeline|ci|editorconfig|copilot)' -or
+                $key -match '(?i)(chat\.tools|copilot|pipeline|workflow|build|test)'
+            )
         }
-        $tableHeader + "`n" + ($tableRows -join "`n")
+
+        $maskValue = {
+            param($key, $value)
+            $k = [string]($key ?? "")
+            $v = [string]($value ?? "")
+            if ($k -match '(?i)\b(password|secret|token|credential|key|apikey|private|certificate|cert|passwd|pwd)\b') {
+                return "***masked***"
+            }
+            return (Sanitize-AppDocConfigMarkdownCell -Value $v -MaxLength 80)
+        }
+
+        $renderRows = {
+            param([array]$rows)
+            foreach ($item in $rows) {
+                $key = Sanitize-AppDocConfigMarkdownCell -Value $item.key -MaxLength 120
+                $displayValue = & $maskValue $item.key $item.value
+                $type = Sanitize-AppDocConfigMarkdownCell -Value (Infer-AppDocConfigType $item.value) -MaxLength 40
+                $source = Sanitize-AppDocConfigMarkdownCell -Value $item.source -MaxLength 120
+                $parent = $null
+                if ($key -match '^(.*?)\.[^.]+$') { $parent = $Matches[1] }
+                $description = Synthesize-AppDocConfigDescription $key $parent $settingsComments
+                $required = if ($item.required) { "Yes" } else { "No" }
+                $whereUsed = if ($source -match '(?i)appsettings|web\.config|app\.config|\.env') { "Runtime path" } else { "Tooling/workflow" }
+                $environmentReq = if ($source -match '(?i)\.env|appsettings\.[^.]+\.json|transform') { "Environment-specific" } else { "Shared default" }
+                "| $key | $type | $displayValue | $description | $required | $whereUsed | $environmentReq | $source |"
+            }
+        }
+
+        $runtimeConfigs = @($Configs | Where-Object { -not (& $isToolingConfig $_) })
+        $toolingConfigs = @($Configs | Where-Object { (& $isToolingConfig $_) })
+
+        $tableHeader = "| Name | Type | Default | Description | Required | Where Used | Environment Requirement | Source |`n|------|------|---------|-------------|----------|------------|--------------------------|--------|"
+        $runtimeRows = @(& $renderRows $runtimeConfigs)
+        $toolingRows = @(& $renderRows $toolingConfigs)
+
+        @(
+            "### Runtime Configuration (Priority)",
+            "",
+            $(if ($runtimeRows.Count -gt 0) { $tableHeader + "`n" + ($runtimeRows -join "`n") } else { "No runtime configuration entries detected." }),
+            "",
+            "### Tooling and Workflow Configuration",
+            "",
+            $(if ($toolingRows.Count -gt 0) { $tableHeader + "`n" + ($toolingRows -join "`n") } else { "No tooling/workflow configuration entries detected." }),
+            "",
+            "Masking policy: secret-like keys are masked in defaults to reduce accidental leakage."
+        ) -join "`n"
     } else {
         $configTablePlaceholder
     }

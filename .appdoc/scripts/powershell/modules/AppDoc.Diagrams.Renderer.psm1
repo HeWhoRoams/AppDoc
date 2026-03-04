@@ -971,18 +971,19 @@ function Write-AppDocDiagramSuite {
     $indexLines = @()
     $indexLines += "# Diagram Index"
     $indexLines += ""
-    $indexLines += "Use this sequence to understand architecture quickly: context -> containers -> internal flow -> critical sequences -> data flow -> data lineage."
+    $indexLines += "## Layer L1 — System Scope"
     $indexLines += ""
-    $indexLines += "## Recommended Reading Order"
+    $indexLines += "- [C4 System Context](c4-context.md) — **When to use:** orient to external actors and system boundary."
+    $indexLines += "- [C4 Container](c4-container.md) — **When to use:** understand deployment/runtime container responsibilities."
     $indexLines += ""
-    $indexLines += "1. [C4 System Context](c4-context.md)"
-    $indexLines += "2. [C4 Container](c4-container.md)"
-    $indexLines += "3. [Internal Flow](internal-flow.md)"
-    $indexLines += "4. [Critical Sequences](critical-sequences.md)"
-    $indexLines += "5. [Data Flow](data-flow.md)"
-    $lineageOrder = 6
+    $indexLines += "## Layer L2 — Runtime and Data Paths"
+    $indexLines += ""
+    $indexLines += "- [Internal Flow](internal-flow.md) — **When to use:** trace inbound requests into core components."
+    $indexLines += "- [Critical Sequences](critical-sequences.md) — **When to use:** inspect primary request/response scenarios."
+    $indexLines += "- [Data Flow](data-flow.md) — **When to use:** follow inputs, transformations, and outputs."
+    $lineageOrder = 1
     foreach ($lineage in $lineageFiles) {
-        $indexLines += ("{0}. [{1}]({2})" -f $lineageOrder, [string]$lineage.title, [string]$lineage.fileName)
+        $indexLines += ("- [{0}]({1}) — **When to use:** inspect partitioned lineage details for focused data-review sessions." -f [string]$lineage.title, [string]$lineage.fileName)
         $lineageOrder++
     }
     $indexLines += ""

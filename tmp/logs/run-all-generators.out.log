@@ -1,0 +1,53 @@
+
+Name                           Value
+----                           -----
+timestamp                      2026-03-04T15:08:45-05:00
+category                       INITIALIZATION
+severity                       Info
+component                      orchestrator
+message                        Diagnostics initialized
+filePath                       
+details                        {[rootPath, .], [outputPath, .\docs]}
+{
+  "languages": {
+    ".ps1": 60,
+    ".json": 65,
+    ".gitignore": 1,
+    ".props": 4,
+    ".sln": 1,
+    ".targets": 4,
+    ".dll": 32,
+    ".editorconfig": 4,
+    ".jar": 1,
+    ".up2date": 1,
+    ".yml": 1,
+    ".md": 78,
+    ".exe": 2,
+    ".csproj": 4,
+    ".log": 17,
+    ".pdb": 2,
+    ".cache": 19,
+    ".psm1": 40,
+    ".cs": 8,
+    ".txt": 1
+  },
+  "directories": [
+    "docs",
+    "specs",
+    "tests",
+    "tmp"
+  ],
+  "totalFiles": 345,
+  "services": [
+    "docs"
+  ]
+}
+{
+  "nodes": [],
+  "edges": []
+}
+{
+  "options": [],
+  "flags": []
+}
+

@@ -1,0 +1,255 @@
+Running all documentation generators...
+
+Name                           Value
+----                           -----
+timestamp                      2026-03-04T14:04:47-05:00
+category                       INITIALIZATION
+severity                       Info
+component                      orchestrator
+message                        Diagnostics initialized
+filePath                       
+details                        {[rootPath, .], [outputPath, .\docs]}
+Running syntax gate...
+[UNSUPPORTED_FRAMEWORK] No supported framework signatures detected
+
+[Analysis]
+Running analyze-repository.ps1...
+{
+  "services": [
+    "docs"
+  ],
+  "languages": {
+    ".yml": 1,
+    ".sln": 1,
+    ".log": 11,
+    ".psm1": 40,
+    ".csproj": 4,
+    ".txt": 1,
+    ".ps1": 59,
+    ".targets": 4,
+    ".props": 4,
+    ".editorconfig": 4,
+    ".up2date": 1,
+    ".cs": 8,
+    ".gitignore": 1,
+    ".json": 64,
+    ".exe": 2,
+    ".dll": 32,
+    ".cache": 19,
+    ".jar": 1,
+    ".md": 78,
+    ".pdb": 2
+  },
+  "directories": [
+    "docs",
+    "specs",
+    "tests",
+    "tmp"
+  ],
+  "totalFiles": 337
+}
+Running generate-dependency-graph.ps1...
+{
+  "edges": [],
+  "nodes": []
+}
+Running extract-config.ps1...
+{
+  "options": [],
+  "flags": []
+}
+
+[Generation]
+Running generate-api-inventory.ps1...
+📡 Generating API Inventory...
+  Scanned 0 potential API files
+ℹ️  No API endpoints detected (architecture fingerprint indicates no inbound API surface).
+✅ API inventory generated: .\docs\api-inventory.md
+   Appendix generated: .\docs\api-inventory.appendix.md
+   Endpoints found: 0
+Running generate-data-model.ps1...
+🗂️  Generating Data Model...
+ℹ️  No data models detected (no API/model surface expected by architecture fingerprint).
+✅ Data model generated: .\docs\data-model.md
+   Models found: 0
+Running generate-config-catalog.ps1...
+⚙️  Generating Config Catalog...
+✅ Config catalog generated: .\docs\config-catalog.md
+   Configurations found: 54
+   Configuration sources: 2
+   Environment variables: 1
+Running generate-build-cookbook.ps1...
+🔨 Generating Build Cookbook...
+✅ Build cookbook generated: .\docs\build-cookbook.md
+   Commands found: 0
+   Prerequisites detected: 0
+   CI/CD platforms detected: 4
+Running generate-test-catalog.ps1...
+🧪 Generating Test Catalog...
+  Found 0 test files
+✅ Test catalog generated: .\docs\test-catalog.md
+   Test cases found: 0
+Running generate-debt-register.ps1...
+📋 Generating Technical Debt Register...
+✅ Technical debt register generated: .\docs\debt-register.md
+   Debt items found: 0
+   Files scanned: 0
+Running generate-dependencies-catalog.ps1...
+📦 Generating Dependencies Catalog...
+✅ Dependencies catalog generated: .\docs\dependencies-catalog.md
+   Projects: 0, Dependencies: 0
+Running generate-task-guides.ps1...
+🧭 Generating Task Guides...
+[TaskGuidesEvidence] No task guide evidence sources found. All summary counts will be zero.
+✅ Task guides generated: .\docs\task-guides.md
+   Evidence categories: 4
+Running generate-overview.ps1...
+📊 Generating System Overview...
+[AppDoc] Framework(s) detected (ASP.NET Core) but no code files found. Patching counts for evidence consistency.
+✅ System overview generated: .\docs\overview.md
+   Code files analyzed: 0
+Running generate-start-here.ps1...
+✅ Start-here guide generated: .\docs\start-here.md
+Running generate-docs-index.ps1...
+📑 Generating Documentation Index...
+✅ Documentation index generated: .\docs\index.md
+   Documents indexed: 10 / 10
+Generating C4 Mermaid architecture diagrams...
+=== AppDoc Mermaid C4 Diagram Generator ===
+Codebase: .
+Output: .\docs
+
+Found solution: SampleApp.sln
+Context diagram already exists (use -Force to regenerate)
+Container diagram already exists (use -Force to regenerate)
+
+✓ Mermaid C4 diagram generation complete
+Generating deterministic internal/data-flow Mermaid diagrams...
+🧱 Generating deterministic architecture diagram suite...
+=== AppDoc Mermaid C4 Diagram Generator ===
+Codebase: .
+Output: .\docs
+
+Found solution: SampleApp.sln
+Context diagram already exists (use -Force to regenerate)
+Container diagram already exists (use -Force to regenerate)
+
+✓ Mermaid C4 diagram generation complete
+✅ Diagram suite generated:
+   Internal flow: .\docs\diagrams\internal-flow.md
+   Data flow:     .\docs\diagrams\data-flow.md
+   Sequences:     .\docs\diagrams\critical-sequences.md
+   Data lineage:  .\docs\diagrams\data-lineage-core.md
+   Diagram index: .\docs\diagrams\index.md
+   Truth pack:    .\docs\evidence\diagram-truth-pack.json
+   Nodes: 10, Edges: 0, Inbound: 0, Outbound: 0
+
+[Remediation]
+Running remediate-generated-docs.ps1...
+Remediation complete. Updated 10 documentation files.
+
+[Evidence Graph]
+Compiling canonical evidence graph...
+📄 Canonical metrics generated: .\docs\evidence\metrics-canonical.json
+
+[Integrity Gate]
+Running ci-doc-integrity-gate.ps1...
+🧱 Generating deterministic architecture diagram suite...
+✅ Diagram suite generated:
+   Internal flow: .\docs\diagrams\internal-flow.md
+   Data flow:     .\docs\diagrams\data-flow.md
+   Sequences:     .\docs\diagrams\critical-sequences.md
+   Data lineage:  .\docs\diagrams\data-lineage-core.md
+   Diagram index: .\docs\diagrams\index.md
+   Truth pack:    .\docs\evidence\diagram-truth-pack.json
+   Nodes: 10, Edges: 0, Inbound: 0, Outbound: 0
+🧱 Generating deterministic architecture diagram suite...
+✅ Diagram suite generated:
+   Internal flow: .\docs\diagrams\internal-flow.md
+   Data flow:     .\docs\diagrams\data-flow.md
+   Sequences:     .\docs\diagrams\critical-sequences.md
+   Data lineage:  .\docs\diagrams\data-lineage-core.md
+   Diagram index: .\docs\diagrams\index.md
+   Truth pack:    .\docs\evidence\diagram-truth-pack.json
+   Nodes: 10, Edges: 0, Inbound: 0, Outbound: 0
+Documentation integrity gate passed.
+
+=== Documentation Quality Report ===
+
+Quality Summary:
+================================================================================
+🟢 
+Start Here: 
+HIGH (100%)
+🟢 
+Overview: 
+HIGH (100%)
+🟢 
+API Inventory: 
+HIGH (100%)
+🟢 
+Data Model: 
+HIGH (100%)
+🟢 
+Config Catalog: 
+HIGH (100%)
+🟢 
+Build Cookbook: 
+HIGH (90%)
+   ❌ Build Steps table has no populated rows
+🟡 
+Test Catalog: 
+MEDIUM (55%)
+   ⚠️  2x Empty detection placeholder
+   ❌ Test Suites section missing or empty
+   ❌ Test Cases placeholder text remains
+🟢 
+Debt Register: 
+HIGH (100%)
+🟢 
+Dependencies Catalog: 
+HIGH (90%)
+   ❌ Dependency summary table has no populated rows
+🟢 
+Task Guides: 
+HIGH (100%)
+
+ + ================================================================================
+Overall Statistics:
+  Total Documents: 10
+  🟢 High Quality (>80%): 9
+  🟡 Medium Quality (40-80%): 1
+  🔴 Low Quality (<40%): 0
+  📊 Average Quality Score: 93.5%
+Start Here validated: all required sections present
+Overview validation passed
+API inventory validated: 0 endpoints found (0 inbound, 0 outbound)
+Data model validated: 0 models found
+Config catalog validated: 55 configs found
+Build cookbook validated: 0 commands found
+Test catalog validated: 0 tests and 0 suites found
+Task guides validated: 4 task sections found
+Technical debt register validated: 0 debts found
+Dependencies catalog validated: 0 dependency records found
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: provenance-missing:overview.md
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: provenance-missing:start-here.md
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: provenance-missing:api-inventory.md
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: provenance-missing:data-model.md
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: provenance-missing:config-catalog.md
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: provenance-missing:build-cookbook.md
+[DETECTION_PATTERN_MISMATCH] Policy gate blocking issue: provenance-missing:validation-report.json
+
+📄 Quality report saved: .\docs\quality-report.json
+[DETECTION_PATTERN_MISMATCH] Narrative review required by overview pipeline gates
+⚠️ Narrative review required (overview narrative gates).
+
+Validation Gate:
+  Mode: Soft
+  Threshold: 80
+  Average Score: 86%
+  Below Threshold: 1
+[DETECTION_PATTERN_MISMATCH] Validation is below threshold in soft mode
+📄 Diagnostics report saved: .\docs\diagnostics-report.json
+
+All generators completed.
+

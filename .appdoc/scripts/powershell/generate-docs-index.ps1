@@ -40,8 +40,26 @@ $artifacts = @(
 
 $markdown = "# Documentation Index`n`n"
 $markdown += "**Generated**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')`n`n"
-$markdown += "This is the complete documentation set for the codebase. Select a document below to explore specific aspects of the system.`n`n"
-$markdown += "## Available Documentation`n`n"
+$markdown += "## Reader Paths`n`n"
+$markdown += "### Operate`n"
+$markdown += "- **When to read**: You need to run, troubleshoot, or support the system.`n"
+$markdown += "- **What you'll learn**: startup commands, runtime config, test/verification hooks, operational risks.`n"
+$markdown += "- **Estimated read time**: 12-15 minutes.`n"
+$markdown += "- **Start with**: [Start Here](start-here.md), [Build Cookbook](build-cookbook.md), [Configuration Catalog](config-catalog.md), [Dependencies Catalog](dependencies-catalog.md)`n`n"
+
+$markdown += "### Change Code`n"
+$markdown += "- **When to read**: You are implementing or modifying behavior.`n"
+$markdown += "- **What you'll learn**: API surface, data contracts, test coverage, task-level implementation guides.`n"
+$markdown += "- **Estimated read time**: 15-20 minutes.`n"
+$markdown += "- **Start with**: [API Inventory](api-inventory.md), [Data Model](data-model.md), [Test Catalog](test-catalog.md), [Task Guides](task-guides.md)`n`n"
+
+$markdown += "### Architecture`n"
+$markdown += "- **When to read**: You need system boundaries, integration shape, and modernization priorities.`n"
+$markdown += "- **What you'll learn**: architecture style, runtime path, external dependencies, debt hotspots.`n"
+$markdown += "- **Estimated read time**: 10-15 minutes.`n"
+$markdown += "- **Start with**: [System Overview](overview.md), [Diagram Index](diagrams/index.md), [Technical Debt Register](debt-register.md)`n`n"
+
+$markdown += "## Artifact Catalog`n`n"
 
 $foundCount = 0
 foreach ($artifact in $artifacts) {

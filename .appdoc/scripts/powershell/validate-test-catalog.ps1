@@ -159,6 +159,22 @@ if ($content -notmatch '(?im)^#\s+Test Catalog\b') {
 $issues = @()
 $warnings = @()
 
+$canonicalPath = Join-Path $RootPath "docs\evidence\metrics-canonical.json"
+$canonicalTestCaseCount = $null
+$canonicalTestSuiteCount = $null
+if (Test-Path $canonicalPath) {
+    try {
+        $canonical = Get-Content $canonicalPath -Raw | ConvertFrom-Json -Depth 60
+        if ($canonical.totals) {
+            $canonicalTestCaseCount = [int](Get-TestValidationValue -Object $canonical.totals -Name "testCaseCount" -Default 0)
+            $canonicalTestSuiteCount = [int](Get-TestValidationValue -Object $canonical.totals -Name "testSuiteCount" -Default 0)
+        }
+    }
+    catch {
+        $warnings += "canonical-metrics-unparseable"
+    }
+}
+
 $evidencePath = Join-Path $RootPath "docs\evidence\test-catalog.evidence.json"
 $testCaseCount = 0
 $testSuiteCount = 0
@@ -179,6 +195,16 @@ if (Test-Path $evidencePath) {
                 Where-Object { [string]$_.kind -in @("test-suite","suite") }
         ).Count
         $expectedGraphTestCaseCount = Get-TestGraphAlignedEntityCount -Records $records
+
+        $duplicateTestRows = @(
+            $records |
+                Where-Object { [string]$_.kind -in @("test-case","test","parameterized test") } |
+                Group-Object -Property @{ Expression = { "{0}|{1}" -f [string]$_.source, [string]$_.name } } |
+                Where-Object { $_.Count -gt 1 }
+        )
+        if ($duplicateTestRows.Count -gt 0) {
+            $issues += ("duplicate-test-records:{0}" -f $duplicateTestRows.Count)
+        }
     }
     catch {
         $issues += "test-evidence-unparseable"
@@ -204,7 +230,7 @@ else {
     $warnings += "evidence-graph-missing"
 }
 
-if ($graphTestCaseCount -ge 0 -and $graphTestCaseCount -ne $expectedGraphTestCaseCount -and ($issues -notcontains 'test-evidence-unparseable')) {
+if ($graphTestCaseCount -ge 0 -and $graphTestCaseCount -ne $expectedGraphTestCaseCount -and ($issues -notcontains 'test-evidence-unparseable') -and ($issues -notcontains 'test-evidence-missing')) {
     $issues += ("graph-evidence-testcase-mismatch:{0}/{1}" -f $graphTestCaseCount, $expectedGraphTestCaseCount)
 }
 
@@ -220,6 +246,12 @@ $casePlaceholderPresent = ($casesSection -match '(?i)_No test cases detected')
 
 if (($testCaseCount + $testSuiteCount) -gt 0 -and ($suitePlaceholderPresent -or $casePlaceholderPresent)) {
     $issues += "placeholders-present-with-nonzero-test-evidence"
+}
+
+if ($null -ne $canonicalTestCaseCount -and $null -ne $canonicalTestSuiteCount) {
+    if ($testCaseCount -ne $canonicalTestCaseCount -or $testSuiteCount -ne $canonicalTestSuiteCount) {
+        $issues += ("cross-artifact-metric-drift:test-catalog:{0}/{1}-cases,{2}/{3}-suites" -f $testCaseCount, $canonicalTestCaseCount, $testSuiteCount, $canonicalTestSuiteCount)
+    }
 }
 
 if (($testCaseCount + $testSuiteCount) -eq 0 -and $testSurfaceExpected) {

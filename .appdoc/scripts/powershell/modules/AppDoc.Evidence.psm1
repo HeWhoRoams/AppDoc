@@ -184,6 +184,32 @@ function Update-AppDocEvidenceManifest {
     $manifest.artifacts = @($filtered + $entry | Sort-Object { [string]$_.artifact })
     $manifest.generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
 
+    $docsPath = Join-Path $RootPath "docs"
+    $markdownChecksums = @()
+    if (Test-Path $docsPath) {
+        foreach ($md in @(Get-ChildItem -Path $docsPath -Filter "*.md" -File -ErrorAction SilentlyContinue | Sort-Object Name)) {
+            try {
+                $hash = (Get-FileHash -Path $md.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+                $relativePath = $md.FullName.Replace((Join-Path $RootPath ""), "").Replace('\\', '/')
+                $markdownChecksums += [ordered]@{
+                    path = $relativePath
+                    sha256 = $hash
+                }
+            }
+            catch {
+                continue
+            }
+        }
+    }
+
+    $manifest['markdownChecksums'] = @($markdownChecksums)
+    $manifest['signoff'] = [ordered]@{
+        status = "unsigned"
+        required = $true
+        signedBy = ""
+        signedAt = ""
+    }
+
 
     if (Get-Command Get-AppDocDeterministicHash -ErrorAction SilentlyContinue) {
         $excludeKeys = @("generatedAt", "updatedAt", "timestamp")

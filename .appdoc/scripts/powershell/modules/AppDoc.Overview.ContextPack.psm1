@@ -64,8 +64,16 @@ function Normalize-AppDocOverviewPath {
 
     if ([string]::IsNullOrWhiteSpace($Path)) { return "" }
     $normalized = $Path -replace '\\', '/'
-    # collapse duplicate slash but preserve URL protocol separator (e.g. https://)
-    $normalized = $normalized -replace '(?<!:)/{2,}', '/'
+    if ($normalized -like 'file:///*') {
+        # Preserve three slashes for file URIs, only collapse after prefix
+        $prefix = 'file:///'
+        $rest = $normalized.Substring($prefix.Length)
+        $restCollapsed = $rest -replace '/{2,}', '/'
+        $normalized = $prefix + $restCollapsed
+    } else {
+        # collapse duplicate slash but preserve URL protocol separator (e.g. https://)
+        $normalized = $normalized -replace '(?<!:)/{2,}', '/'
+    }
     return $normalized.Trim()
 }
 
@@ -271,16 +279,18 @@ function Get-AppDocOverviewContextPackData {
         evidence_refs = @(
             $evidenceRefs |
                 ForEach-Object {
-                    $name = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $_ -Name "name" -Default ""))
-                    $source = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $_ -Name "source" -Default ""))
+                    $rawName = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "name" -Default "")
+                    $rawSource = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "source" -Default "")
+                    $normalizedName = Normalize-AppDocOverviewPath $rawName
+                    $normalizedSource = Normalize-AppDocOverviewPath $rawSource
                     [ordered]@{
                         id = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "id" -Default "")
                         artifact = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "artifact" -Default "")
                         kind = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "kind" -Default "")
-                        name = $name
-                        source = $source
-                        normalized_name = $name
-                        normalized_source = $source
+                        name = $rawName
+                        source = $rawSource
+                        normalized_name = $normalizedName
+                        normalized_source = $normalizedSource
                     }
                 }
         )

@@ -25,3 +25,4 @@ Thumbs.db
 .specify/
 specs/
 tests/
+docs/*

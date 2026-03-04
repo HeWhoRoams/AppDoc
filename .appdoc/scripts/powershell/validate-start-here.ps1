@@ -19,7 +19,9 @@ if ($content -notmatch "(?m)^# Start Here") {
 
 $requiredSections = @(
     "Who This Is For",
-    "15-Minute Orientation",
+    "First 30 Minutes",
+    "First 3 Files",
+    "Expected Outputs",
     "Role-Based Paths",
     "System Signals",
     "Evidence Traceability"

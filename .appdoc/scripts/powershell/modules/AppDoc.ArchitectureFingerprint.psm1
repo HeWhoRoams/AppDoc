@@ -1,7 +1,7 @@
 # AppDoc.ArchitectureFingerprint Module
 # Purpose: Classify architecture/API styles from deterministic repository signals.
 
-$script:AppDocArchitectureFingerprintVersion = "1.0.0"
+$script:AppDocArchitectureFingerprintVersion = "1.1.0"
 
 function Get-AppDocArchitectureFingerprint {
     [CmdletBinding()]
@@ -61,12 +61,12 @@ function Get-AppDocArchitectureFingerprint {
         }
     }
 
-    $soapClientSignalCount = $serviceReferenceFiles.Count + $wsdlFiles.Count + $svcMapFiles.Count + $svcInfoFiles.Count
+    $soapClientSignalCount = ($serviceReferenceFiles.Count * 3) + ($wsdlFiles.Count * 3) + ($svcMapFiles.Count * 2) + $svcInfoFiles.Count
 
     $scores = [ordered]@{
         restHttp = [int]$restSignalCount
-        wcfService = [int](($wcfServerSignalCount * 2) + $svcFiles.Count)
-        asmxService = [int](($asmxServerSignalCount * 2) + $asmxFiles.Count)
+        wcfService = [int](($wcfServerSignalCount * 4) + ($svcFiles.Count * 6) + ($wsdlFiles.Count * 2) + ($svcMapFiles.Count * 2))
+        asmxService = [int](($asmxServerSignalCount * 4) + ($asmxFiles.Count * 6) + ($wsdlFiles.Count * 2))
         soapClient = [int]$soapClientSignalCount
     }
 
@@ -84,9 +84,9 @@ function Get-AppDocArchitectureFingerprint {
             $topScore = [int]$pair.Value
             $primaryStyle = switch ([string]$pair.Key) {
                 "restHttp" { "rest-http" }
-                "wcfService" { "wcf-service" }
-                "asmxService" { "asmx-service" }
-                "soapClient" { "soap-client" }
+                "wcfService" { "WCF-first" }
+                "asmxService" { "SOAP-first" }
+                "soapClient" { "SOAP-first" }
                 default { "no-api-surface" }
             }
         }
@@ -98,7 +98,28 @@ function Get-AppDocArchitectureFingerprint {
         $apiSurfaceExpected = $false
     }
 
-    $confidence = if ($topScore -le 0) { 0.55 } else { [Math]::Min(0.99, (0.65 + ([Math]::Min($topScore, 80) / 200.0))) }
+    $hasStrongSoapHostEvidence = ($scores.wcfService -ge 12 -or $scores.asmxService -ge 12)
+    $restOnlyWeak = ($scores.restHttp -gt 0 -and -not $hasStrongSoapHostEvidence -and $scores.soapClient -eq 0)
+    if ($restOnlyWeak -and $scores.restHttp -lt 6) {
+        $primaryStyle = "rest-http-weak"
+    }
+
+    $confidence = if ($topScore -le 0) {
+        0.55
+    }
+    elseif ($hasStrongSoapHostEvidence) {
+        [Math]::Min(0.99, (0.72 + ([Math]::Min($topScore, 120) / 250.0)))
+    }
+    elseif ($restOnlyWeak) {
+        [Math]::Max(0.45, (0.58 + ([Math]::Min($scores.restHttp, 30) / 250.0)))
+    }
+    else {
+        [Math]::Min(0.99, (0.65 + ([Math]::Min($topScore, 80) / 200.0)))
+    }
+
+    if ($styles -notcontains $primaryStyle -and $primaryStyle -ne "rest-http-weak") {
+        [void]$styles.Add($primaryStyle)
+    }
 
     return [ordered]@{
         version = $script:AppDocArchitectureFingerprintVersion

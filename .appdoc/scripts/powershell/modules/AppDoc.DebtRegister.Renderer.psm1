@@ -46,25 +46,74 @@ _No technical debt items detected. Great job maintaining code quality! Continue 
 "@
 
     if (-not $Debts -or $Debts.Count -eq 0) {
+        $emptySectionContent = @(
+            "### First-Party Debt (Priority)",
+            "",
+            "| Item | Location | Ownership | Category | Impact | Priority | Risk Metadata | Description |",
+            "|------|----------|-----------|----------|--------|----------|---------------|-------------|",
+            "| N/A | N/A | first-party | N/A | N/A | N/A | N/A | No first-party debt rows detected |",
+            "",
+            "### Vendor/Generated Debt",
+            "",
+            "| Item | Location | Ownership | Category | Impact | Priority | Risk Metadata | Description |",
+            "|------|----------|-----------|----------|--------|----------|---------------|-------------|",
+            "| N/A | N/A | vendor/generated | N/A | N/A | N/A | N/A | No vendor/generated debt rows detected |"
+        ) -join "`n"
+
         return [ordered]@{
-            debtItemsContent = $debtTablePlaceholder
+            debtItemsContent = $emptySectionContent
             debtTablePlaceholder = $debtTablePlaceholder
         }
     }
 
-    $tableHeader = "| Item | Location | Category | Impact | Priority | Effort | Description |`n|------|----------|----------|--------|----------|--------|-------------|"
-    $tableRows = $Debts | ForEach-Object {
-        $location = if ($_.filePath) { "$($_.filePath):$($_.line)" } else { "$($_.file):$($_.line)" }
-        $item = [string]$_.type
-        $category = "Code Quality"
-        $impact = if ($_.priority -eq "High") { "High" } else { "Medium" }
-        $effort = "TBD"
-        $description = ([string]$_.description -replace '\|', '\\|').Trim()
-        "| $item | ``$location`` | $category | $impact | $($_.priority) | $effort | $description |"
+    $dedupedDebts = @(
+        $Debts |
+            Group-Object -Property @{ Expression = {
+                "{0}|{1}|{2}" -f [string]$_.type, [string]$_.file, [string]$_.line
+            } } |
+            ForEach-Object { $_.Group | Select-Object -First 1 }
+    )
+
+    $isVendorOrGenerated = {
+        param($debt)
+        $path = [string]($debt.filePath ?? $debt.file ?? "")
+        return $path -match '(?i)(?:^|[\\/])(bin|obj|node_modules|packages|vendor|generated|service references|connected services)(?:[\\/]|$)'
     }
 
+    $firstPartyDebts = @($dedupedDebts | Where-Object { -not (& $isVendorOrGenerated $_) })
+    $vendorDebts = @($dedupedDebts | Where-Object { (& $isVendorOrGenerated $_) })
+
+    $tableHeader = "| Item | Location | Ownership | Category | Impact | Priority | Risk Metadata | Description |`n|------|----------|-----------|----------|--------|----------|---------------|-------------|"
+    $renderRows = {
+        param([array]$rows, [string]$ownership)
+        foreach ($debt in @($rows)) {
+            $location = if ($debt.filePath) { "$($debt.filePath):$($debt.line)" } else { "$($debt.file):$($debt.line)" }
+            $item = [string]$debt.type
+            $category = "Code Quality"
+            $impact = if ($debt.priority -eq "High") { "High" } else { "Medium" }
+            $description = ([string]$debt.description -replace '\|', '\\|').Trim()
+            $riskMetadata = if ($ownership -eq "first-party") { "Direct runtime/refactor risk" } else { "Generated/vendor maintenance risk" }
+            "| $item | ``$location`` | $ownership | $category | $impact | $($debt.priority) | $riskMetadata | $description |"
+        }
+    }
+
+    $firstPartyRows = @(& $renderRows $firstPartyDebts "first-party")
+    $vendorRows = @(& $renderRows $vendorDebts "vendor/generated")
+
+    $tableRows = @($firstPartyRows + $vendorRows)
+
     return [ordered]@{
-        debtItemsContent = ($tableHeader + "`n" + ($tableRows -join "`n"))
+        debtItemsContent = @(
+            "### First-Party Debt (Priority)",
+            "",
+            $tableHeader,
+            $(if ($firstPartyRows.Count -gt 0) { $firstPartyRows -join "`n" } else { "| N/A | N/A | first-party | N/A | N/A | N/A | N/A | No first-party debt rows detected |" }),
+            "",
+            "### Vendor/Generated Debt",
+            "",
+            $tableHeader,
+            $(if ($vendorRows.Count -gt 0) { $vendorRows -join "`n" } else { "| N/A | N/A | vendor/generated | N/A | N/A | N/A | N/A | No vendor/generated debt rows detected |" })
+        ) -join "`n"
         debtTablePlaceholder = $debtTablePlaceholder
     }
 }

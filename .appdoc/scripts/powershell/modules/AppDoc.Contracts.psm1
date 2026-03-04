@@ -13,11 +13,11 @@ function Get-AppDocArtifactContract {
 
     $contracts = @{
         "start-here" = @{
-            requiredSections = @("Who This Is For","15-Minute Orientation","Role-Based Paths","System Signals")
+            requiredSections = @("Who This Is For","First 30 Minutes","First 3 Files","Expected Outputs","Role-Based Paths","System Signals","Evidence Traceability")
             requiredEvidenceKeys = @("summary","endpoints","models")
         }
         "overview" = @{
-            requiredSections = @("Welcome","Executive Summary","System Purpose","Architecture","Technology Stack")
+            requiredSections = @("System Boundary","Runtime Path","Inputs→Processing→Outputs","External Systems","Confidence Notes")
             requiredEvidenceKeys = @("summary","technologies")
         }
         "api-inventory" = @{

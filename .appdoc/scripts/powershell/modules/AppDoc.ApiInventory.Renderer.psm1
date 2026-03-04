@@ -203,8 +203,13 @@ _No API endpoints detected. This codebase may not expose HTTP APIs, or uses patt
 "@
 
     if (-not $Endpoints -or $Endpoints.Count -eq 0) {
+        $emptyEndpointContent = @(
+            $endpointTablePlaceholder,
+            "### Detailed Appendix`n`nFull endpoint catalogs with operation intent, auth boundary, timeout/retry guidance, idempotency, and confidence are in [API Inventory Appendix](api-inventory.appendix.md).`n`nDeterministic evidence remains in ``docs/evidence/api-inventory.evidence.json``."
+        ) -join "`n`n"
+
         return [ordered]@{
-            endpointContent = $endpointTablePlaceholder
+            endpointContent = $emptyEndpointContent
             endpointTablePlaceholder = $endpointTablePlaceholder
         }
     }
@@ -385,14 +390,34 @@ _No API endpoints detected. This codebase may not expose HTTP APIs, or uses patt
 
     $mappedOutboundCount = @($outboundEndpoints | Where-Object { $_.integrationUrl }).Count
 
+    $topInbound = @($inboundDetailedEndpoints | Select-Object -First 12)
+    $topOutbound = @($outboundDetailedEndpoints | Select-Object -First 8)
+
+    $summaryCatalogHeader = "| Name | Path | Method | Auth Required | Direction |`n|------|------|--------|---------------|-----------|"
+    $summaryCatalogRows = @(
+        @($topInbound + $topOutbound) | ForEach-Object {
+            $actionId = Get-AppDocEndpointActionId -Endpoint $_
+            $name = Format-AppDocMarkdownCell -Value ("{0}.{1}" -f $_.controller, $actionId) -MaxLength 96
+            $path = Format-AppDocMarkdownCell -Value $_.path -MaxLength 120
+            $auth = if ($_.auth) { Format-AppDocMarkdownCell -Value $_.auth -MaxLength 60 } else { "None" }
+            $direction = if ($_.direction) { [string]$_.direction } else { "inbound" }
+            "| ``$name`` | ``$path`` | $($_.method) | $auth | $direction |"
+        }
+    )
+    $summaryCatalogContent = if ($summaryCatalogRows.Count -gt 0) {
+        "$summaryCatalogHeader`n$($summaryCatalogRows -join "`n")"
+    }
+    else {
+        $endpointTablePlaceholder
+    }
+
     $endpointContent = @(
         "### Coverage Snapshot`n`n- Total endpoints detected: **$($Endpoints.Count)**`n- Inbound endpoints: **$($inboundEndpoints.Count)**`n- Outbound API integrations: **$($outboundEndpoints.Count)**`n- Outbound integrations mapped to config URL: **$mappedOutboundCount**`n- Domains detected: **$($domainSummaryRows.Count)**"
         "### Direction Summary`n`n$directionSummaryHeader`n$($directionSummaryRows -join "`n")"
-        "### Domain Summary`n`n$domainSummaryTableHeader`n$($domainSummaryTableRows -join "`n")"
         "### Method Distribution`n`n$methodDistributionHeader`n$($methodDistributionRows -join "`n")"
         "### Auth-Sensitive Endpoints`n`n$authSensitiveContent"
-        "### Inbound Endpoint Catalog`n`n$inboundContent"
-        "### Outbound API Integrations`n`n$outboundContent`n`n_Detailed catalogs are capped for readability. Full endpoint evidence is preserved in_ ``docs/evidence/api-inventory.evidence.json``."
+        "### High-Impact Endpoint Summary`n`n$summaryCatalogContent"
+        "### Detailed Appendix`n`nFull endpoint catalogs with operation intent, auth boundary, timeout/retry guidance, idempotency, and confidence are in [API Inventory Appendix](api-inventory.appendix.md).`n`nDeterministic evidence remains in ``docs/evidence/api-inventory.evidence.json``."
     ) -join "`n`n"
 
     return [ordered]@{

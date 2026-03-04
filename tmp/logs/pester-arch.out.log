@@ -1,0 +1,12 @@
+
+TagFilter        : {}
+ExcludeTagFilter : {}
+TestNameFilter   : 
+TotalCount       : 1
+PassedCount      : 1
+FailedCount      : 0
+SkippedCount     : 0
+PendingCount     : 0
+Time             : 00:00:03.1225378
+TestResult       : {@{Describe=validate-documentation architecture contradiction; Context=; Name=emits architecture-contradiction issues and applies contradiction penalties; Result=Passed; Passed=True; Time=00:00:03.1225378; FailureMessage=; StackTrace=; ErrorRecord=; ParameterizedSuiteName=; Parameters=System.Collections.Specialized.OrderedDictionary}}
+
