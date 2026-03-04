@@ -78,30 +78,48 @@ function Get-AppDocArchitectureFingerprint {
     if ($styles.Count -eq 0) { [void]$styles.Add("no-api-surface") }
 
     $primaryStyle = "no-api-surface"
+    $primaryStyleLabel = "No API Surface"
     $topScore = 0
     foreach ($pair in $scores.GetEnumerator()) {
         if ([int]$pair.Value -gt $topScore) {
             $topScore = [int]$pair.Value
-            $primaryStyle = switch ([string]$pair.Key) {
-                "restHttp" { "rest-http" }
-                "wcfService" { "WCF-first" }
-                "asmxService" { "SOAP-first" }
-                "soapClient" { "SOAP-first" }
-                default { "no-api-surface" }
+            switch ([string]$pair.Key) {
+                "restHttp" {
+                    $primaryStyle = "rest-http"
+                    $primaryStyleLabel = "REST-first"
+                }
+                "wcfService" {
+                    $primaryStyle = "wcf-service"
+                    $primaryStyleLabel = "WCF-first"
+                }
+                "asmxService" {
+                    $primaryStyle = "asmx-service"
+                    $primaryStyleLabel = "SOAP-first (ASMX)"
+                }
+                "soapClient" {
+                    $primaryStyle = "soap-client"
+                    $primaryStyleLabel = "SOAP Client"
+                }
+                default {
+                    $primaryStyle = "no-api-surface"
+                    $primaryStyleLabel = "No API Surface"
+                }
             }
         }
     }
 
     $serverSignals = [int]($scores.restHttp + $scores.wcfService + $scores.asmxService)
     $apiSurfaceExpected = ($serverSignals -gt 0)
-    if (-not $apiSurfaceExpected -and $styles.Count -eq 1 -and $styles[0] -eq "soap-client") {
-        $apiSurfaceExpected = $false
+    elseif ($restOnlyWeak) {
+        0.58 + ([Math]::Min($scores.restHttp, 30) / 250.0)
+    }
     }
 
     $hasStrongSoapHostEvidence = ($scores.wcfService -ge 12 -or $scores.asmxService -ge 12)
     $restOnlyWeak = ($scores.restHttp -gt 0 -and -not $hasStrongSoapHostEvidence -and $scores.soapClient -eq 0)
     if ($restOnlyWeak -and $scores.restHttp -lt 6) {
         $primaryStyle = "rest-http-weak"
+        $primaryStyleLabel = "REST (weak evidence)"
     }
 
     $confidence = if ($topScore -le 0) {
@@ -125,6 +143,7 @@ function Get-AppDocArchitectureFingerprint {
         version = $script:AppDocArchitectureFingerprintVersion
         generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
         primaryStyle = $primaryStyle
+        primaryStyleLabel = $primaryStyleLabel
         styles = @($styles)
         apiSurfaceExpected = [bool]$apiSurfaceExpected
         confidence = [Math]::Round($confidence, 3)

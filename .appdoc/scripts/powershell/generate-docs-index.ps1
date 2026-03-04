@@ -57,7 +57,12 @@ $markdown += "### Architecture`n"
 $markdown += "- **When to read**: You need system boundaries, integration shape, and modernization priorities.`n"
 $markdown += "- **What you'll learn**: architecture style, runtime path, external dependencies, debt hotspots.`n"
 $markdown += "- **Estimated read time**: 10-15 minutes.`n"
-$markdown += "- **Start with**: [System Overview](overview.md), [Diagram Index](diagrams/index.md), [Technical Debt Register](debt-register.md)`n`n"
+if (Test-Path (Join-Path $docsPath 'diagrams/index.md')) {
+    $markdown += "- **Start with**: [System Overview](overview.md), [Diagram Index](diagrams/index.md), [Technical Debt Register](debt-register.md)`n`n"
+} else {
+    $markdown += "- **Start with**: [System Overview](overview.md), [Technical Debt Register](debt-register.md)`n`n"
+    Write-Warning "diagrams/index.md not found; skipping link in index."
+}
 
 $markdown += "## Artifact Catalog`n`n"
 

@@ -66,12 +66,8 @@ Dependency records in scope: none in this scan. The repository may be self-conta
         $rows = $nugetPackages | Group-Object -Property name | Sort-Object Name | ForEach-Object {
             $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
             $uniqueProjects = @($_.Group.project | Sort-Object -Unique)
-            $projCount = $uniqueProjects.Count
-            $usedBy = ($uniqueProjects | Select-Object -First 3) -join ', '
-            if ($projCount -gt 3) {
-                $usedBy += " +$($projCount - 3) more"
-            }
-            $criticalPath = if ($projCount -ge 3 -or $_.Name -match '(?i)(logging|auth|identity|http|json|entityframework|grpc|swagger)') { "Yes" } else { "No" }
+            $usedBy = $uniqueProjects -join ', '
+            $criticalPath = if (($_.Name -match '(?i)(microsoft\.extensions|system|newtonsoft|entityframework|auth)') -or ($uniqueProjects.Count -ge 3)) { "Yes" } else { "No" }
             "| ``$($_.Name)`` | $versions | $usedBy | NuGet package | $criticalPath |"
         }
 @"
@@ -105,8 +101,9 @@ $($rows -join "`n")
     $pythonContent = if ($pythonPackages.Count -gt 0) {
         $rows = $pythonPackages | Group-Object -Property name | Sort-Object Name | ForEach-Object {
             $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
-            $usedBy = ($_.Group.project | Sort-Object -Unique) -join ', '
-            $criticalPath = if (($_.Name -match '(?i)(django|flask|fastapi|requests|sqlalchemy|auth)') -or (@($_.Group.project | Sort-Object -Unique).Count -ge 2)) { "Yes" } else { "No" }
+            $uniqueProjects = ($_.Group.project | Sort-Object -Unique)
+            $usedBy = $uniqueProjects -join ', '
+            $criticalPath = if (($_.Name -match '(?i)(django|flask|fastapi|requests|sqlalchemy|auth)') -or ($uniqueProjects.Count -ge 2)) { "Yes" } else { "No" }
             "| ``$($_.Name)`` | $versions | $usedBy | Python package | $criticalPath |"
         }
 @"
@@ -122,8 +119,10 @@ $($rows -join "`n")
     $mavenContent = if ($mavenPackages.Count -gt 0) {
         $rows = $mavenPackages | Group-Object -Property name | Sort-Object Name | ForEach-Object {
             $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
-            $usedBy = ($_.Group.project | Sort-Object -Unique) -join ', '
-            $criticalPath = if (($_.Name -match '(?i)(spring|jackson|http|security|hibernate)') -or (@($_.Group.project | Sort-Object -Unique).Count -ge 2)) { "Yes" } else { "No" }
+            $uniqueProjects = @($_.Group.project | Sort-Object -Unique)
+            $usedBy = $uniqueProjects -join ', '
+            # Maven/Gradle uses >= 2 projects for critical path, NuGet uses >= 3. Change to >= 3 for consistency, or adjust comment if keeping >= 2.
+            $criticalPath = if (($_.Name -match '(?i)(spring|jackson|http|security|hibernate)') -or ($uniqueProjects.Count -ge 3)) { "Yes" } else { "No" }
             "| ``$($_.Name)`` | $versions | $usedBy | Maven/Gradle dependency | $criticalPath |"
         }
 @"

@@ -197,6 +197,7 @@ function Update-AppDocEvidenceManifest {
                 }
             }
             catch {
+                Write-Warning "Skipping file $($md.FullName): $($_.Exception.Message)"
                 continue
             }
         }

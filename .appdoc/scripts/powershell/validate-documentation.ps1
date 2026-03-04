@@ -1072,7 +1072,7 @@ function Get-QualityPenaltyBreakdown {
             misclassification = 0
             staleProvenance = 0
             verbosityOverflow = 0
-            reasons = @()
+            reasons = [System.Collections.ArrayList]@()
         }
     }
 
@@ -1088,7 +1088,10 @@ function Get-QualityPenaltyBreakdown {
         $entry = $perArtifact[$Artifact]
         $entry.total = [int]$entry.total + $Points
         $entry[$Category] = [int]$entry[$Category] + $Points
-        $entry.reasons = @($entry.reasons) + @($Reason)
+        if (-not $entry.reasons) {
+            $entry.reasons = [System.Collections.ArrayList]@()
+        }
+        $null = $entry.reasons.Add($Reason)
         $perArtifact[$Artifact] = $entry
     }
 
@@ -1589,7 +1592,18 @@ function Get-PolicyGateAnalysis {
                 }
             }
 
-            $appendixRows = @([regex]::Matches($appendixContent, '(?im)^\|\s*``?[^|]+\|.*\|\s*$') | ForEach-Object { [string]$_.Value })
+            $appendixRows = @(
+                [regex]::Matches($appendixContent, '(?im)^\|\s*``?[^|]+\|.*\|\s*$') |
+                ForEach-Object {
+                    $row = [string]$_.Value
+                    # Exclude header and separator rows
+                    if ($row -match '^[|\s-:]+$') { return }
+                    if ($row -match '^\|\s*Case Name\s*\|') { return }
+                    if ($row -match '^\|\s*-+\s*\|') { return }
+                    return $row
+                }
+            )
+            $appendixRows = @($appendixRows | Where-Object { $_ })
             if ($apiSurfaceExpected -and $appendixRows.Count -eq 0) {
                 $blockingIssues += "api-appendix-empty"
             }
@@ -1684,19 +1698,24 @@ $taskGuideEvidenceCoverageScore = [double]$taskGuideOutcomes.evidenceCoverageSco
 $taskGuideTimeScore = [double]$taskGuideOutcomes.taskCompletionTimeScore
 $metricDriftAnalysis = Get-CrossArtifactMetricDriftAnalysis -DocsPath $docsPath
 $metricDriftScore = [double]$metricDriftAnalysis.score
-$policyGates = Get-PolicyGateAnalysis -DocsPath $docsPath -RootPath $RootPath
-$policyGateScore = [double]$policyGates.score
-
-if (@($architectureContradictionAnalysis.issues).Count -gt 0) {
-    $policyGates.blockingIssues = @($policyGates.blockingIssues + $architectureContradictionAnalysis.issues)
-    $policyGates.passed = $false
-    $policyGates.score = [Math]::Max(0, ([double]$policyGates.score - (@($architectureContradictionAnalysis.issues).Count * 20)))
-    $policyGateScore = [double]$policyGates.score
+${policyGatesRaw} = Get-PolicyGateAnalysis -DocsPath $docsPath -RootPath $RootPath
+$compositePolicyGate = [ordered]@{
+    blockingIssues = @($policyGatesRaw.blockingIssues)
+    score = [double]$policyGatesRaw.score
+    passed = $policyGatesRaw.passed
 }
-
+if (@($architectureContradictionAnalysis.issues).Count -gt 0) {
+    $compositePolicyGate.blockingIssues += $architectureContradictionAnalysis.issues
+    $compositePolicyGate.passed = $false
+    $compositePolicyGate.score = [Math]::Max(0, ($compositePolicyGate.score - (@($architectureContradictionAnalysis.issues).Count * 20)))
+}
 if (@($metricDriftAnalysis.issues).Count -gt 0) {
-    $policyGates.blockingIssues = @($policyGates.blockingIssues + $metricDriftAnalysis.issues)
-    $policyGates.passed = $false
+    $compositePolicyGate.blockingIssues += $metricDriftAnalysis.issues
+    $compositePolicyGate.passed = $false
+    $compositePolicyGate.score = [Math]::Max(0, ($compositePolicyGate.score - (@($metricDriftAnalysis.issues).Count * 10)))
+}
+$policyGates = $compositePolicyGate
+$policyGateScore = [double]$policyGates.score
     $policyGates.score = [Math]::Max(0, ([double]$policyGates.score - (@($metricDriftAnalysis.issues).Count * 20)))
     $policyGateScore = [double]$policyGates.score
 }
@@ -1789,8 +1808,10 @@ $result = [ordered]@{
     policyGates = $policyGates
 }
 
-$reportPath = Join-Path $docsPath "validation-report.json"
-$result | ConvertTo-Json -Depth 20 | Out-File -FilePath $reportPath -Encoding UTF8
+
+# Write only the JSON payload to the output file, suppressing any console/table output
+$jsonOutPath = Join-Path $RootPath "tmp\logs\validate-documentation.out.json"
+$result | ConvertTo-Json -Depth 20 | Out-File -FilePath $jsonOutPath -Encoding UTF8
 
 if (Get-Command Export-AppDocDiagnostics -ErrorAction SilentlyContinue) {
     Export-AppDocDiagnostics -Path (Join-Path $docsPath "validation-diagnostics.json") -AdditionalData @{ validation = $result } | Out-Null

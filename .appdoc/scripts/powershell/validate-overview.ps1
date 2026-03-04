@@ -19,21 +19,6 @@ function Get-OverviewSectionContent {
     return ""
 }
 
-function Get-OverviewSubsectionContent {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$SectionContent,
-        [Parameter(Mandatory=$true)]
-        [string]$SubHeading
-    )
-
-    $pattern = '(?ims)^###\s+' + [regex]::Escape($SubHeading) + '\s*$\r?\n(.*?)(?=^###\s+[^\r\n]+|\z)'
-    $match = [regex]::Match($SectionContent, $pattern)
-    if ($match.Success) {
-        return [string]$match.Groups[1].Value
-    }
-    return ""
-}
 
 function Get-OverviewValue {
     param(

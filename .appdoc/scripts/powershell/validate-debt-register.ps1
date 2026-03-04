@@ -46,7 +46,26 @@ if ($content -notmatch '(?im)^###\s+Vendor/Generated Debt\s*$') {
     $issues += "missing-vendor-generated-debt-section"
 }
 
-$debtRows = @([regex]::Matches($content, '(?im)^\|\s*[^|]+\|\s*``[^`]+``\s*\|\s*(first-party|vendor/generated)\s*\|.*\|\s*$') | ForEach-Object { [string]$_.Value.Trim() })
+$debtRows = @([regex]::Matches($content, '(?im)^\|\s*[^|]+\|\s*`[^`]+`\s*\|\s*(first-party|vendor/generated)\s*\|.*\|\s*
+if ($debtRows.Count -gt 0) {
+    $duplicates = @($debtRows | Group-Object | Where-Object { $_.Count -gt 1 })
+    if ($duplicates.Count -gt 0) {
+        $issues += ("duplicate-debt-rows:{0}" -f $duplicates.Count)
+    }
+}
+
+Write-Progress -Activity "Validating Technical Debt Register" -Status "Validated $debtCount debts" -PercentComplete 100
+
+if ($issues.Count -gt 0) {
+    Write-Host "Technical debt register validation failed:" -ForegroundColor Red
+    foreach ($issue in ($issues | Select-Object -Unique)) {
+        Write-Host (" - {0}" -f $issue) -ForegroundColor Red
+    }
+    exit 1
+}
+
+Write-Host "Technical debt register validated: $debtCount debts found"
+) | ForEach-Object { [string]$_.Value.Trim() })
 if ($debtRows.Count -gt 0) {
     $duplicates = @($debtRows | Group-Object | Where-Object { $_.Count -gt 1 })
     if ($duplicates.Count -gt 0) {

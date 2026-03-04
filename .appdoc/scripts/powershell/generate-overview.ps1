@@ -121,7 +121,7 @@ function Get-AppDocOverviewFactTexts {
     return @($texts)
 }
 
-function Ensure-AppDocOverviewSection {
+function Add-AppDocOverviewSection {
     param(
         [Parameter(Mandatory=$true)]
         [string]$Content,
@@ -267,11 +267,11 @@ $systemBoundaryLines = @(
 )
 $runtimePathLines = Get-AppDocOverviewFactTexts -TruthPack $truthPack -FactName "processing_steps" -Fallback @("Runtime flow is inferred from deterministic evidence and may require manual verification for edge paths.")
 $ipoLines = @()
-$ipoLines += "Inputs"
+$ipoLines += "### Inputs"
 $ipoLines += @(Get-AppDocOverviewFactTexts -TruthPack $truthPack -FactName "inputs" -Fallback @("No strong input contract evidence detected."))
-$ipoLines += "Processing"
+$ipoLines += "### Processing"
 $ipoLines += @(Get-AppDocOverviewFactTexts -TruthPack $truthPack -FactName "processing_steps" -Fallback @("No strong processing evidence detected."))
-$ipoLines += "Outputs"
+$ipoLines += "### Outputs"
 $ipoLines += @(Get-AppDocOverviewFactTexts -TruthPack $truthPack -FactName "outputs" -Fallback @("No strong output contract evidence detected."))
 $externalLines = Get-AppDocOverviewFactTexts -TruthPack $truthPack -FactName "external_systems" -Fallback @("No explicit external systems detected.")
 $confidenceLines = Get-AppDocOverviewFactTexts -TruthPack $truthPack -FactName "confidence_notes" -Fallback @("Confidence is low when evidence records are sparse.")
@@ -281,11 +281,11 @@ $ipoLines = @($ipoLines | ForEach-Object { ([string]$_ -replace '(?i)\bappears t
 $externalLines = @($externalLines | ForEach-Object { ([string]$_ -replace '(?i)\bappears to\b', 'is inferred to') })
 $confidenceLines = @($confidenceLines | ForEach-Object { ([string]$_ -replace '(?i)\bappears to\b', 'is inferred to') })
 
-$content = Ensure-AppDocOverviewSection -Content $content -SectionName "System Boundary" -Lines $systemBoundaryLines
-$content = Ensure-AppDocOverviewSection -Content $content -SectionName "Runtime Path" -Lines $runtimePathLines
-$content = Ensure-AppDocOverviewSection -Content $content -SectionName "Inputs→Processing→Outputs" -Lines $ipoLines
-$content = Ensure-AppDocOverviewSection -Content $content -SectionName "External Systems" -Lines $externalLines
-$content = Ensure-AppDocOverviewSection -Content $content -SectionName "Confidence Notes" -Lines $confidenceLines
+$content = Add-AppDocOverviewSection -Content $content -SectionName "System Boundary" -Lines $systemBoundaryLines
+$content = Add-AppDocOverviewSection -Content $content -SectionName "Runtime Path" -Lines $runtimePathLines
+$content = Add-AppDocOverviewSection -Content $content -SectionName "Inputs→Processing→Outputs" -Lines $ipoLines
+$content = Add-AppDocOverviewSection -Content $content -SectionName "External Systems" -Lines $externalLines
+$content = Add-AppDocOverviewSection -Content $content -SectionName "Confidence Notes" -Lines $confidenceLines
 
 $content = Normalize-AppDocTemplateInstructionText -Content $content
 $content = Normalize-AppDocMarkdownStructure -Content $content

@@ -89,8 +89,13 @@ _No technical debt items detected. Great job maintaining code quality! Continue 
         foreach ($debt in @($rows)) {
             $location = if ($debt.filePath) { "$($debt.filePath):$($debt.line)" } else { "$($debt.file):$($debt.line)" }
             $item = [string]$debt.type
-            $category = "Code Quality"
-            $impact = if ($debt.priority -eq "High") { "High" } else { "Medium" }
+            $category = & $categoryResolver ([string]$debt.type)
+            $impact = switch ($debt.priority) {
+                "High" { "High" }
+                "Medium" { "Medium" }
+                "Low" { "Low" }
+                default { "Medium" }
+            }
             $description = ([string]$debt.description -replace '\|', '\\|').Trim()
             $riskMetadata = if ($ownership -eq "first-party") { "Direct runtime/refactor risk" } else { "Generated/vendor maintenance risk" }
             "| $item | ``$location`` | $ownership | $category | $impact | $($debt.priority) | $riskMetadata | $description |"
@@ -100,7 +105,6 @@ _No technical debt items detected. Great job maintaining code quality! Continue 
     $firstPartyRows = @(& $renderRows $firstPartyDebts "first-party")
     $vendorRows = @(& $renderRows $vendorDebts "vendor/generated")
 
-    $tableRows = @($firstPartyRows + $vendorRows)
 
     return [ordered]@{
         debtItemsContent = @(
@@ -159,15 +163,7 @@ function Update-AppDocDebtRegisterContent {
         $updated += $newline + $newline + $sections.debtItemsContent + $newline
     }
 
-    $categoryResolver = {
-        param([string]$type)
-        $value = if ($type) { $type.ToLowerInvariant() } else { "" }
-        if ($value -match 'deprecated|obsolete|dependency|package') { return "Dependencies" }
-        if ($value -match 'security|auth|credential|secret') { return "Security" }
-        if ($value -match 'performance|slow|allocation|memory') { return "Performance" }
-        if ($value -match 'todo|fixme|hack|long function|large class|magic') { return "Code Quality" }
-        return "Maintainability"
-    }
+    # $categoryResolver is already defined in the shared scope above; removed duplicate definition here.
 
     $categoryGroups = @(
         $Debts |

@@ -27,6 +27,7 @@ _No test cases detected. Refer to test files for individual test implementations
             testCasesContent = $testCasesPlaceholder
             testSuitesPlaceholder = $testSuitesPlaceholder
             testCasesPlaceholder = $testCasesPlaceholder
+            dedupedTestCount = 0
         }
     }
 
@@ -55,7 +56,7 @@ _No test cases detected. Refer to test files for individual test implementations
             $testName = [string]$_.name
             $suiteName = [string]$_.file
             $description = $testName -creplace '([a-z])([A-Z])', '$1 $2' -replace 'test_', '' -replace '_', ' '
-            $priority = if ($suiteName -match '(?i)integration|e2e|critical|smoke') { "High" } elseif ($suiteName -match '(?i)unit') { "Medium" } else { "Medium" }
+            $priority = if ($suiteName -match '(?i)integration|e2e|critical|smoke') { "High" } else { "Medium" }
             "| ``$testName`` | ``$suiteName`` | N/A | N/A | $description | $priority |"
         }
     )
@@ -69,6 +70,7 @@ _No test cases detected. Refer to test files for individual test implementations
         testCasesContent = $testCasesContent
         testSuitesPlaceholder = $testSuitesPlaceholder
         testCasesPlaceholder = $testCasesPlaceholder
+        dedupedTestCount = $dedupedTests.Count
     }
 }
 
@@ -85,7 +87,7 @@ function Update-AppDocTestCatalogContent {
 
     $sections = Get-AppDocTestCatalogMarkdown -Tests $Tests -MaxTestCases $MaxTestCases
     $updated = $Content
-    $testCount = if ($Tests) { @($Tests).Count } else { 0 }
+    $testCount = $sections.dedupedTestCount
     $suiteCount = if ($testCount -gt 0) { @($Tests | Group-Object -Property file).Count } else { 0 }
 
 
@@ -153,7 +155,7 @@ function Update-AppDocTestCatalogContent {
     }
 
     $coverageSummary = if ($testCount -gt 0) {
-        "Detected $testCount test cases across $suiteCount suites in this scan. Line/branch coverage percentages are not computed here; use CI coverage tooling for quantitative baselines."
+        "Detected $testCount de-duplicated test cases across $suiteCount suites in this scan. Line/branch coverage percentages are not computed here; use CI coverage tooling for quantitative baselines."
     } else {
         "No tests were detected in this scan. Validate test project scope and framework discovery settings."
     }

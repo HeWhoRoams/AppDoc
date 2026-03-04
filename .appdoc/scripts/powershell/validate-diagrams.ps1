@@ -100,7 +100,7 @@ function Get-MermaidNodeLabels {
     $labels = @()
     foreach ($line in ($Mermaid -split "`r?`n")) {
         $trimmed = $line.Trim()
-        if ($trimmed -match '^[A-Za-z][A-Za-z0-9_]*\s*\["(?<label>[^"]+)"\]') {
+        if ($trimmed -match '^[A-Za-z][A-Za-z0-9_]*\s*(\["(?<label>[^"]+)"\]|\[(?<label>[^\]]+)\]|\((?<label>[^\)]+)\)|\{(?<label>[^\}]+)\}|\{\{(?<label>[^\}]+)\}\})') {
             $labels += [string]$Matches['label']
         }
     }
@@ -155,17 +155,13 @@ foreach ($view in $requiredViews) {
     if ([string]::IsNullOrWhiteSpace($file)) { continue }
     $path = Join-Path $diagramsPath $file
     $content = ""
-
-    # Populate $diagramMermaidCountMap for this diagram
-    if (Test-Path $path) {
-        $content = Get-Content $path -Raw
-        $mermaid = Get-MermaidBlockContent -Markdown $content
-        $diagramMermaidCountMap[$file] = Get-MermaidFlowCounts -Mermaid $mermaid
-    }
     $exists = Test-Path $path
     $hasMermaidFence = $false
     $size = 0
     if ($exists) {
+        $content = Get-Content $path -Raw
+        $mermaid = Get-MermaidBlockContent -Markdown $content
+        $diagramMermaidCountMap[$file] = Get-MermaidFlowCounts -Mermaid $mermaid
         if ($null -eq $content) { $content = "" }
         $diagramContentMap[$file] = $content
         $size = $content.Length
@@ -205,7 +201,7 @@ foreach ($view in $requiredViews) {
             $issues += "missing-sequence-directive:$file"
         }
 
-        $labels = Get-MermaidNodeLabels -Mermaid (Get-MermaidBlockContent -Markdown $content)
+        $labels = Get-MermaidNodeLabels -Mermaid $mermaid
         $noisyLabels = @(
             $labels | Where-Object {
                 $_ -match '(?i)[a-f0-9]{8,}' -or

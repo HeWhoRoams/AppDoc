@@ -1,6 +1,5 @@
-# Ignore local validation diagnostics
-docs/validation-diagnostics.json
-docs/diagnostics-report.json
+# Ignore the entire docs tree
+docs/
 # Exclude test/example repositories
 LmsConnect-master/
 
@@ -25,4 +24,3 @@ Thumbs.db
 .specify/
 specs/
 tests/
-docs/*

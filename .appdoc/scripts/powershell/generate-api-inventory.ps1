@@ -148,6 +148,10 @@ function Write-AppDocApiInventoryAppendix {
     )
 
     $appendixPath = Join-Path $RootPath "docs\api-inventory.appendix.md"
+    $appendixDir = Split-Path $appendixPath -Parent
+    if (-not (Test-Path $appendixDir)) {
+        New-Item -ItemType Directory -Path $appendixDir -Force | Out-Null
+    }
     $inbound = @($Endpoints | Where-Object {
         $directionValue = if ($null -ne $_.direction) { [string]$_.direction } else { "inbound" }
         $directionValue.ToLowerInvariant() -ne "outbound"

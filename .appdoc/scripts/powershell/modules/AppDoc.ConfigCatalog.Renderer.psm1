@@ -168,8 +168,8 @@ _No environment variables detected. System may use configuration files or defaul
     $configOptionsContent = if ($Configs.Count -gt 0) {
         $isToolingConfig = {
             param($cfg)
-            $src = [string]($cfg.source ?? "")
-            $key = [string]($cfg.key ?? "")
+            $src = [string]$cfg.source
+            $key = [string]$cfg.key
             return (
                 $src -match '(?i)(\.vscode|tasks\.json|launch\.json|workflow|github|pipeline|ci|editorconfig|copilot)' -or
                 $key -match '(?i)(chat\.tools|copilot|pipeline|workflow|build|test)'
@@ -187,7 +187,7 @@ _No environment variables detected. System may use configuration files or defaul
         }
 
         $renderRows = {
-            param([array]$rows)
+            param([array]$rows, [bool]$isToolingConfig)
             foreach ($item in $rows) {
                 $key = Sanitize-AppDocConfigMarkdownCell -Value $item.key -MaxLength 120
                 $displayValue = & $maskValue $item.key $item.value
@@ -197,7 +197,7 @@ _No environment variables detected. System may use configuration files or defaul
                 if ($key -match '^(.*?)\.[^.]+$') { $parent = $Matches[1] }
                 $description = Synthesize-AppDocConfigDescription $key $parent $settingsComments
                 $required = if ($item.required) { "Yes" } else { "No" }
-                $whereUsed = if ($source -match '(?i)appsettings|web\.config|app\.config|\.env') { "Runtime path" } else { "Tooling/workflow" }
+                $whereUsed = if ($isToolingConfig) { "Tooling/workflow" } else { "Runtime path" }
                 $environmentReq = if ($source -match '(?i)\.env|appsettings\.[^.]+\.json|transform') { "Environment-specific" } else { "Shared default" }
                 "| $key | $type | $displayValue | $description | $required | $whereUsed | $environmentReq | $source |"
             }
@@ -207,8 +207,8 @@ _No environment variables detected. System may use configuration files or defaul
         $toolingConfigs = @($Configs | Where-Object { (& $isToolingConfig $_) })
 
         $tableHeader = "| Name | Type | Default | Description | Required | Where Used | Environment Requirement | Source |`n|------|------|---------|-------------|----------|------------|--------------------------|--------|"
-        $runtimeRows = @(& $renderRows $runtimeConfigs)
-        $toolingRows = @(& $renderRows $toolingConfigs)
+        $runtimeRows = @(& $renderRows $runtimeConfigs $false)
+        $toolingRows = @(& $renderRows $toolingConfigs $true)
 
         @(
             "### Runtime Configuration (Priority)",

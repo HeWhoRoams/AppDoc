@@ -151,11 +151,11 @@ if ($content -notmatch '(?im)^#\s+Dependencies Catalog\b') {
 $issues = @()
 $warnings = @()
 
-$canonicalPath = Join-Path $RootPath "docs\evidence\metrics-canonical.json"
+$canonicalPath = Join-Path (Join-Path (Join-Path $RootPath "docs") "evidence") "metrics-canonical.json"
 $canonicalDependencyCount = $null
 if (Test-Path $canonicalPath) {
     try {
-        $canonical = Get-Content $canonicalPath -Raw | ConvertFrom-Json -Depth 60
+        $canonical = Get-Content $canonicalPath -Raw | ConvertFrom-Json -Depth 120
         if ($canonical.totals) {
             $canonicalDependencyCount = [int](Get-DependencyValidationValue -Object $canonical.totals -Name "dependencyCount" -Default 0)
         }
@@ -183,8 +183,9 @@ if (Test-Path $evidencePath) {
                 Group-Object -Property @{ Expression = { "{0}|{1}|{2}" -f [string]$_.name, [string]$_.source, [string](Get-DependencyValidationValue -Object $_.metadata -Name "version" -Default "") } } |
                 Where-Object { $_.Count -gt 1 }
         )
-        if ($duplicateDependencies.Count -gt 0) {
-            $issues += ("duplicate-dependency-records:{0}" -f $duplicateDependencies.Count)
+        $totalExcessDuplicates = ($duplicateDependencies | Measure-Object -Property Count -Sum).Sum - $duplicateDependencies.Count
+        if ($totalExcessDuplicates -gt 0) {
+            $issues += ("duplicate-dependency-records:{0}" -f $totalExcessDuplicates)
         }
     }
     catch {
@@ -239,7 +240,7 @@ if ($dependencyCount -eq 0 -and -not $dependencySurfaceExpected -and -not $summa
     $warnings += "no-dependency-surface-but-missing-explicit-empty-note"
 }
 
-if ($content -notmatch '(?im)\bCritical Path\b') {
+if ($content -notmatch '(?im)^\|.*\bCritical Path\b.*\|') {
     $warnings += "critical-path-column-missing"
 }
 

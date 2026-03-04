@@ -1,7 +1,7 @@
 # AppDoc.Contracts Module
 # Purpose: Shared record contracts for extraction, diagnostics, validation, and framework support
 
-$script:AppDocContractsVersion = "1.0.0"
+$script:AppDocContractsVersion = "2.0.0"
 
 function Get-AppDocArtifactContract {
     [CmdletBinding()]
@@ -17,8 +17,17 @@ function Get-AppDocArtifactContract {
             requiredEvidenceKeys = @("summary","endpoints","models")
         }
         "overview" = @{
-            requiredSections = @("System Boundary","Runtime Path","Inputs→Processing→Outputs","External Systems","Confidence Notes")
+            requiredSections = @("System Boundary","Runtime Path","Inputs-Processing-Outputs","External Systems","Confidence Notes")
             requiredEvidenceKeys = @("summary","technologies")
+        }
+        function Normalize-AppDocSectionName {
+            param([string]$Name)
+            $norm = $Name
+            $norm = $norm -replace '\s+', ''
+            $norm = $norm -replace '[→\-]+', '-'
+            $norm = $norm -replace '->', '-'
+            $norm = $norm.ToLowerInvariant()
+            return $norm
         }
         "api-inventory" = @{
             requiredSections = @("Executive Summary","API Endpoints")

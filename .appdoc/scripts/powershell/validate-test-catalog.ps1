@@ -198,8 +198,8 @@ if (Test-Path $evidencePath) {
 
         $duplicateTestRows = @(
             $records |
-                Where-Object { [string]$_.kind -in @("test-case","test","parameterized test") } |
-                Group-Object -Property @{ Expression = { "{0}|{1}" -f [string]$_.source, [string]$_.name } } |
+                Where-Object { [string]$_.kind -in @("test-case","test","parameterized test") -and ($_.source -or $_.name) } |
+                Group-Object -Property @{ Expression = { "{0}|{1}" -f ([string]::IsNullOrWhiteSpace($_.source) ? '<missing>' : $_.source), ([string]::IsNullOrWhiteSpace($_.name) ? '<missing>' : $_.name) } } |
                 Where-Object { $_.Count -gt 1 }
         )
         if ($duplicateTestRows.Count -gt 0) {
@@ -248,7 +248,7 @@ if (($testCaseCount + $testSuiteCount) -gt 0 -and ($suitePlaceholderPresent -or 
     $issues += "placeholders-present-with-nonzero-test-evidence"
 }
 
-if ($null -ne $canonicalTestCaseCount -and $null -ne $canonicalTestSuiteCount) {
+if ($null -ne $canonicalTestCaseCount -and $null -ne $canonicalTestSuiteCount -and -not ($issues -contains 'test-evidence-missing') -and ($testCaseCount -gt 0 -and $testSuiteCount -gt 0)) {
     if ($testCaseCount -ne $canonicalTestCaseCount -or $testSuiteCount -ne $canonicalTestSuiteCount) {
         $issues += ("cross-artifact-metric-drift:test-catalog:{0}/{1}-cases,{2}/{3}-suites" -f $testCaseCount, $canonicalTestCaseCount, $testSuiteCount, $canonicalTestSuiteCount)
     }

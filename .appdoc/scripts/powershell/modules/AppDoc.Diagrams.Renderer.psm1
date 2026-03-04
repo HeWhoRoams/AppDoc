@@ -973,18 +973,19 @@ function Write-AppDocDiagramSuite {
     $indexLines += ""
     $indexLines += "## Layer L1 — System Scope"
     $indexLines += ""
-    $indexLines += "- [C4 System Context](c4-context.md) — **When to use:** orient to external actors and system boundary."
-    $indexLines += "- [C4 Container](c4-container.md) — **When to use:** understand deployment/runtime container responsibilities."
+    $indexLines += "## Layer L1 — System Scope"
+    $indexLines += ""
+    $indexLines += "- C4 System Context (planned) — orient to external actors and system boundary."
+    $indexLines += "- C4 Container (planned) — understand deployment/runtime container responsibilities."
+    $indexLines += ""
     $indexLines += ""
     $indexLines += "## Layer L2 — Runtime and Data Paths"
     $indexLines += ""
     $indexLines += "- [Internal Flow](internal-flow.md) — **When to use:** trace inbound requests into core components."
     $indexLines += "- [Critical Sequences](critical-sequences.md) — **When to use:** inspect primary request/response scenarios."
     $indexLines += "- [Data Flow](data-flow.md) — **When to use:** follow inputs, transformations, and outputs."
-    $lineageOrder = 1
     foreach ($lineage in $lineageFiles) {
         $indexLines += ("- [{0}]({1}) — **When to use:** inspect partitioned lineage details for focused data-review sessions." -f [string]$lineage.title, [string]$lineage.fileName)
-        $lineageOrder++
     }
     $indexLines += ""
     $indexLines += "## Deterministic Source"

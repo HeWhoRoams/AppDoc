@@ -54,8 +54,8 @@ Describe "Mermaid C4 Diagram Generation" {
         $workRoot = $script:workRoot
         & $generatorPath -CodebasePath $workRoot -OutputPath (Join-Path $workRoot "docs") -DiagramLevels All -Force
 
-        $contextPath = Join-Path $workRoot "docs\diagrams\c4-context.md"
-        $containerPath = Join-Path $workRoot "docs\diagrams\c4-container.md"
+        $contextPath = Join-Path (Join-Path (Join-Path (Join-Path $workRoot "docs") "diagrams") "c4-context.md")
+        $containerPath = Join-Path (Join-Path (Join-Path (Join-Path $workRoot "docs") "diagrams") "c4-container.md")
 
         (Test-Path $contextPath) | Should Be $true
         (Test-Path $containerPath) | Should Be $true

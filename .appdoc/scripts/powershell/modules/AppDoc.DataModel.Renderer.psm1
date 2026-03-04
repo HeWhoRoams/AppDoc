@@ -134,7 +134,12 @@ function Get-AppDocDataModelMarkdown {
     $propertyStats = $propertyCounts | Measure-Object -Sum -Average
     $totalProperties = $propertyStats.Sum
     $averageProperties = [Math]::Round(($propertyStats.Average), 1)
-    $typeDistribution = ($domainEntities | Group-Object type | ForEach-Object { "- $($_.Name): $($_.Count)" }) -join "`n"
+    $infraPropertyCounts = $infrastructureEntities | ForEach-Object { @($_.properties).Count }
+    $infraPropertyStats = $infraPropertyCounts | Measure-Object -Sum -Average
+    $infraTotalProperties = $infraPropertyStats.Sum
+    $infraAverageProperties = if ($infraPropertyStats.Average) { [Math]::Round($infraPropertyStats.Average, 1) } else { 0 }
+    $typeDistributionDomain = ($domainEntities | Group-Object type | ForEach-Object { "- $($_.Name): $($_.Count)" }) -join "`n"
+    $typeDistributionInfra = ($infrastructureEntities | Group-Object type | ForEach-Object { "- $($_.Name): $($_.Count)" }) -join "`n"
 
     return @"
 ### High-Impact Domain Entities
@@ -165,11 +170,16 @@ $(if ($infrastructureEntities.Count -gt 0) { $infraTable -join "`n" } else { "No
 - Total Models: $($Models.Count)
 - Domain Models: $($domainEntities.Count)
 - Infrastructure/Generated Models: $($infrastructureEntities.Count)
-- Total Properties: $totalProperties
-- Average Properties per Model: $averageProperties
+- Total Properties (domain only): $totalProperties
+- Average Properties per Model (domain only): $averageProperties
+- Total Properties (infrastructure only): $infraTotalProperties
+- Average Properties per Model (infrastructure only): $infraAverageProperties
 
-**Type Distribution:**
-$typeDistribution
+**Type Distribution (domain only):**
+$typeDistributionDomain
+
+**Type Distribution (infrastructure only):**
+$typeDistributionInfra
 "@
 }
 

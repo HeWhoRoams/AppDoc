@@ -395,12 +395,15 @@ _No API endpoints detected. This codebase may not expose HTTP APIs, or uses patt
 
     $summaryCatalogHeader = "| Name | Path | Method | Auth Required | Direction |`n|------|------|--------|---------------|-----------|"
     $summaryCatalogRows = @(
-        @($topInbound + $topOutbound) | ForEach-Object {
+        @(
+            $topInbound | ForEach-Object { $_ | Add-Member -NotePropertyName SourceDirection -NotePropertyValue 'inbound' -Force; $_ }
+            $topOutbound | ForEach-Object { $_ | Add-Member -NotePropertyName SourceDirection -NotePropertyValue 'outbound' -Force; $_ }
+        ) | ForEach-Object {
             $actionId = Get-AppDocEndpointActionId -Endpoint $_
             $name = Format-AppDocMarkdownCell -Value ("{0}.{1}" -f $_.controller, $actionId) -MaxLength 96
             $path = Format-AppDocMarkdownCell -Value $_.path -MaxLength 120
             $auth = if ($_.auth) { Format-AppDocMarkdownCell -Value $_.auth -MaxLength 60 } else { "None" }
-            $direction = if ($_.direction) { [string]$_.direction } else { "inbound" }
+            $direction = if ($_.direction) { [string]$_.direction } else { $_.SourceDirection }
             "| ``$name`` | ``$path`` | $($_.method) | $auth | $direction |"
         }
     )

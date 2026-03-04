@@ -68,7 +68,7 @@ function Normalize-AppDocOverviewPath {
         # Preserve three slashes for file URIs, only collapse after prefix
         $prefix = 'file:///'
         $rest = $normalized.Substring($prefix.Length)
-        $restCollapsed = $rest -replace '/{2,}', '/'
+        $restCollapsed = ($rest -replace '/{2,}', '/').TrimStart('/')
         $normalized = $prefix + $restCollapsed
     } else {
         # collapse duplicate slash but preserve URL protocol separator (e.g. https://)
