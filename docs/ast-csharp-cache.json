@@ -1,0 +1,18 @@
+{
+  "generatedAt": "2026-02-18T13:07:15.6174026-05:00",
+  "provider": "roslyn",
+  "providerReady": true,
+  "records": [],
+  "note": "Extracted using Microsoft.CodeAnalysis (Roslyn).",
+  "provenance": {
+    "generatorVersion": "appdoc-run-all-generators/3.0.0",
+    "commitHash": "1a97947",
+    "generatedAt": "2026-03-04T15:09:09-05:00",
+    "profile": "default",
+    "scope": ".",
+    "confidenceInferenceFlags": [
+      "deterministic",
+      "evidence-backed"
+    ]
+  }
+}

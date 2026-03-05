@@ -1,0 +1,150 @@
+{
+  "artifact": "task-guides",
+  "generatedAt": "2026-03-05T16:38:22-05:00",
+  "source": "task-guides.evidence.enriched.json",
+  "records": [
+    {
+      "source": "docs",
+      "name": "task-guide-summary",
+      "kind": "summary",
+      "confidence": 0.0,
+      "metadata": {
+        "debtCount": 0,
+        "buildCommandCount": 0,
+        "dependencyCount": 0,
+        "testCount": 0,
+        "endpointCount": 0
+      },
+      "expectedFields": [
+        "confidenceNote",
+        "role",
+        "businessPurpose",
+        "isGenerated",
+        "tier",
+        "dependencyKind",
+        "criticalPath",
+        "upgradeUrgency",
+        "requiredForDeployment",
+        "schemaSource",
+        "integrationTargets",
+        "relationships",
+        "operationalProfile",
+        "projectRole",
+        "usageFrequency",
+        "testDiagnosis"
+      ]
+    },
+    {
+      "source": "docs",
+      "name": "change-endpoint-safely",
+      "kind": "task-guide",
+      "confidence": 0.0,
+      "metadata": {
+        "category": "implementation",
+        "endpointEvidence": 0
+      },
+      "expectedFields": [
+        "confidenceNote",
+        "role",
+        "businessPurpose",
+        "isGenerated",
+        "tier",
+        "dependencyKind",
+        "criticalPath",
+        "upgradeUrgency",
+        "requiredForDeployment",
+        "schemaSource",
+        "integrationTargets",
+        "relationships",
+        "operationalProfile",
+        "projectRole",
+        "usageFrequency",
+        "testDiagnosis"
+      ]
+    },
+    {
+      "source": "docs",
+      "name": "debug-build-failure",
+      "kind": "task-guide",
+      "confidence": 0.0,
+      "metadata": {
+        "category": "operations",
+        "buildEvidence": 0
+      },
+      "expectedFields": [
+        "confidenceNote",
+        "role",
+        "businessPurpose",
+        "isGenerated",
+        "tier",
+        "dependencyKind",
+        "criticalPath",
+        "upgradeUrgency",
+        "requiredForDeployment",
+        "schemaSource",
+        "integrationTargets",
+        "relationships",
+        "operationalProfile",
+        "projectRole",
+        "usageFrequency",
+        "testDiagnosis"
+      ]
+    },
+    {
+      "source": "docs",
+      "name": "plan-debt-sprint",
+      "kind": "task-guide",
+      "confidence": 0.0,
+      "metadata": {
+        "category": "maintenance",
+        "debtEvidence": 0
+      },
+      "expectedFields": [
+        "confidenceNote",
+        "role",
+        "businessPurpose",
+        "isGenerated",
+        "tier",
+        "dependencyKind",
+        "criticalPath",
+        "upgradeUrgency",
+        "requiredForDeployment",
+        "schemaSource",
+        "integrationTargets",
+        "relationships",
+        "operationalProfile",
+        "projectRole",
+        "usageFrequency",
+        "testDiagnosis"
+      ]
+    },
+    {
+      "source": "docs",
+      "name": "triage-dependency-risk",
+      "kind": "task-guide",
+      "confidence": 0.0,
+      "metadata": {
+        "category": "risk",
+        "dependencyEvidence": 0
+      },
+      "expectedFields": [
+        "confidenceNote",
+        "role",
+        "businessPurpose",
+        "isGenerated",
+        "tier",
+        "dependencyKind",
+        "criticalPath",
+        "upgradeUrgency",
+        "requiredForDeployment",
+        "schemaSource",
+        "integrationTargets",
+        "relationships",
+        "operationalProfile",
+        "projectRole",
+        "usageFrequency",
+        "testDiagnosis"
+      ]
+    }
+  ]
+}

@@ -59,6 +59,67 @@ Write-Progress -Activity "Generating Data Model" -Status "Scanning for models...
 $modelData = Get-AppDocDataModelData -RootPath $RootPath -ScriptsRoot $PSScriptRoot
 $models = @($modelData.models)
 
+function Set-AppDocFieldValue {
+    param(
+        [Parameter(Mandatory=$true)]
+        [object]$Target,
+        [Parameter(Mandatory=$true)]
+        [string]$Name,
+        $Value
+    )
+
+    if ($Target -is [System.Collections.IDictionary]) {
+        $Target[$Name] = $Value
+        return
+    }
+
+    $existing = $Target.PSObject.Properties[$Name]
+    if ($existing) {
+        $existing.Value = $Value
+    }
+    else {
+        Add-Member -InputObject $Target -MemberType NoteProperty -Name $Name -Value $Value -Force
+    }
+}
+
+$enrichedEvidencePath = Join-Path $RootPath "docs\evidence\data-model.evidence.enriched.json"
+if (Test-Path $enrichedEvidencePath) {
+    try {
+        $enrichedPayload = Get-Content -Path $enrichedEvidencePath -Raw | ConvertFrom-Json -Depth 80
+        $enrichedRecords = @($enrichedPayload.records | Where-Object { $_ -and [string]$_.kind -eq 'model' })
+        if ($enrichedRecords.Count -gt 0) {
+            $lookup = @{}
+            foreach ($record in $enrichedRecords) {
+                $recordSource = [string]$record.source
+                $recordName = [string]$record.name
+                $lookupKey = ("{0}|{1}" -f $recordSource.ToLowerInvariant(), $recordName.ToLowerInvariant())
+                $lookup[$lookupKey] = $record
+            }
+
+            foreach ($model in $models) {
+                $modelSource = [string]$model.filePath
+                $modelName = [string]$model.name
+                $lookupKey = ("{0}|{1}" -f $modelSource.ToLowerInvariant(), $modelName.ToLowerInvariant())
+                if ($lookup.ContainsKey($lookupKey)) {
+                    $record = $lookup[$lookupKey]
+                    Set-AppDocFieldValue -Target $model -Name 'role' -Value $record.role
+                    Set-AppDocFieldValue -Target $model -Name 'businessPurpose' -Value $record.businessPurpose
+                    Set-AppDocFieldValue -Target $model -Name 'isGenerated' -Value $record.isGenerated
+                    Set-AppDocFieldValue -Target $model -Name 'relationships' -Value $record.relationships
+                    Set-AppDocFieldValue -Target $model -Name 'schemaSource' -Value $record.schemaSource
+                    Set-AppDocFieldValue -Target $model -Name 'confidence' -Value $record.confidence
+                    Set-AppDocFieldValue -Target $model -Name 'confidenceNote' -Value $record.confidenceNote
+                }
+            }
+
+            Write-Host "   Applied enriched model records: $($enrichedRecords.Count)" -ForegroundColor Gray
+        }
+    }
+    catch {
+        Write-Warning "Failed to apply enriched data-model evidence: $($_.Exception.Message)"
+    }
+}
+
 if ($modelData.astModelCount -gt 0) {
     Write-Host "  Added $($modelData.astModelCount) AST model records" -ForegroundColor Gray
 }

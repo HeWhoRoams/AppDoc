@@ -1,0 +1,223 @@
+{
+  "generatedAt": "2026-03-04T15:09:09-05:00",
+  "summary": {
+    "total": 11,
+    "byCategory": {
+      "INITIALIZATION": 1,
+      "DETECTION_PATTERN_MISMATCH": 9,
+      "ENVIRONMENT_ERROR": 1
+    },
+    "bySeverity": {
+      "Info": 2,
+      "Warning": 9
+    },
+    "hasErrors": false,
+    "hasWarnings": true
+  },
+  "events": [
+    {
+      "timestamp": "2026-03-04T15:09:04-05:00",
+      "category": "INITIALIZATION",
+      "severity": "Info",
+      "component": "orchestrator",
+      "message": "Diagnostics initialized",
+      "filePath": "",
+      "details": {
+        "rootPath": "./",
+        "outputPath": "./docs"
+      }
+    },
+    {
+      "timestamp": "2026-03-04T15:09:09-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: provenance-missing:overview.md",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-03-04T15:09:09-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: provenance-missing:start-here.md",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-03-04T15:09:09-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: provenance-missing:api-inventory.md",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-03-04T15:09:09-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: provenance-missing:data-model.md",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-03-04T15:09:09-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: provenance-missing:config-catalog.md",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-03-04T15:09:09-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: provenance-missing:build-cookbook.md",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-03-04T15:09:09-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: provenance-missing:validation-report.json",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-03-04T15:09:09-05:00",
+      "category": "ENVIRONMENT_ERROR",
+      "severity": "Info",
+      "component": "Validation",
+      "message": "Structured validation completed",
+      "filePath": "",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-03-04T15:09:09-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "Narrative",
+      "message": "Narrative review required by overview pipeline gates",
+      "filePath": "./docs/evidence/narrative-run-report.json",
+      "details": {
+        "reasons": [
+          "style-business-verb-coverage-low:1",
+          "style-what-it-does-purpose-verb-low:0"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-03-04T15:09:09-05:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "Validation",
+      "message": "Validation is below threshold in soft mode",
+      "filePath": "",
+      "details": {
+        "averageScore": 86.0,
+        "threshold": 80,
+        "belowThreshold": 1
+      }
+    }
+  ],
+  "metadata": {
+    "architecture": {
+      "version": "1.1.0",
+      "generatedAt": "2026-03-04T15:08:46-05:00",
+      "primaryStyle": "no-api-surface",
+      "styles": "no-api-surface",
+      "apiSurfaceExpected": false,
+      "confidence": 0.55,
+      "scores": {
+        "restHttp": 0,
+        "wcfService": 0,
+        "asmxService": 0,
+        "soapClient": 0
+      },
+      "evidence": {
+        "csFileCount": 1,
+        "svcFileCount": 0,
+        "asmxFileCount": 0,
+        "wsdlFileCount": 0,
+        "svcMapFileCount": 0,
+        "svcInfoFileCount": 0,
+        "serviceReferenceFileCount": 0,
+        "sampledCodeFileCount": 1
+      }
+    },
+    "frameworks": null,
+    "scriptFailures": null,
+    "profile": "default",
+    "evidenceGraphPath": "./docs/evidence/evidence-graph.json",
+    "narrativeReviewRequired": true,
+    "validationGate": {
+      "passed": false,
+      "reason": "Structured validation gate failed (score and/or policy gates)",
+      "averageScore": 86.0,
+      "belowThreshold": 1,
+      "strict": false,
+      "qualityThreshold": 80,
+      "evaluatedDocuments": 10
+    },
+    "qualityThreshold": 80,
+    "strictValidation": false,
+    "outputPath": "./docs",
+    "evidenceGraphMetrics": {
+      "entityCount": 56,
+      "edgeCount": 54,
+      "entityTypeCount": {
+        "system": 1,
+        "endpoint_inbound": 0,
+        "data_model": 0,
+        "component": 1,
+        "endpoint_outbound": 0,
+        "config_key": 54,
+        "test_case": 0,
+        "dependency": 0
+      },
+      "inboundEndpointCount": 0,
+      "outboundEndpointCount": 0,
+      "componentCount": 1,
+      "modelCount": 0,
+      "configCount": 54,
+      "dependencyCount": 0,
+      "testCaseCount": 0
+    },
+    "narrativeReviewReasons": [
+      "style-business-verb-coverage-low:1",
+      "style-what-it-does-purpose-verb-low:0"
+    ],
+    "evidenceGraphIntegrity": {
+      "passed": true,
+      "issues": null,
+      "warnings": null,
+      "metrics": {
+        "entityCount": 56,
+        "edgeCount": 54,
+        "inboundEndpointCount": 0,
+        "outboundEndpointCount": 0
+      }
+    },
+    "localOnly": true,
+    "narrativeRunReportPath": "./docs/evidence/narrative-run-report.json",
+    "rootPath": "./"
+  },
+  "provenance": {
+    "generatorVersion": "appdoc-run-all-generators/3.0.0",
+    "commitHash": "1a97947",
+    "generatedAt": "2026-03-04T15:09:09-05:00",
+    "profile": "default",
+    "scope": ".",
+    "confidenceInferenceFlags": [
+      "deterministic",
+      "evidence-backed"
+    ]
+  }
+}

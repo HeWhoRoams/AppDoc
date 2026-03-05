@@ -1,0 +1,16 @@
+{
+  "artifact": "api-inventory",
+  "generatedAt": "2026-02-17T14:11:54-05:00",
+  "recordCount": 0,
+  "records": [],
+  "metadata": {
+    "requiredEvidenceKeys": [
+      "endpoints"
+    ],
+    "generator": "generate-api-inventory.ps1",
+    "requiredSections": [
+      "Executive Summary",
+      "API Endpoints"
+    ]
+  }
+}

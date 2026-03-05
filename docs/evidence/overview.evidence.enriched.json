@@ -1,0 +1,51 @@
+{
+  "artifact": "overview",
+  "architectureFingerprint": "no-api-surface",
+  "generatedAt": "2026-03-05T16:38:21-05:00",
+  "recordCount": 1,
+  "records": [
+    {
+      "artifact": "overview",
+      "source": "repository",
+      "name": "system-purpose",
+      "kind": "summary",
+      "confidence": 1.0,
+      "metadata": {
+        "languageCount": 1,
+        "text": "This codebase contains 1 code file(s) across 1 language(s) (framework detected: ASP.NET Core). Full analysis available in linked documentation.",
+        "fileCount": 1
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-03-04T15:08:58-05:00",
+      "confidenceNote": null,
+      "role": null,
+      "businessPurpose": "Purpose unclear from available evidence — review repository.",
+      "isGenerated": null,
+      "tier": null,
+      "dependencyKind": null,
+      "criticalPath": null,
+      "upgradeUrgency": null,
+      "requiredForDeployment": null,
+      "schemaSource": null,
+      "integrationTargets": null,
+      "relationships": null,
+      "operationalProfile": null,
+      "projectRole": null,
+      "usageFrequency": null,
+      "testDiagnosis": null
+    }
+  ],
+  "metadata": {
+    "enriched": true,
+    "enrichmentMode": "semantic-applied",
+    "enrichmentPrompt": ".github/prompts/appdoc.enrich.prompt.md",
+    "sourceEvidence": "overview.evidence.json",
+    "requiresSemanticEnrichment": true,
+    "semanticInputPath": ".\\docs\\evidence\\semantic\\input\\overview.semantic.input.json",
+    "semanticOutputPath": "",
+    "semanticOutputApplied": false,
+    "semanticAppliedAt": "2026-03-05T16:38:22-05:00"
+  }
+}

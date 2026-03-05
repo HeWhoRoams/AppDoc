@@ -1,7 +1,7 @@
 ## Module-scoped placeholder for data model table
 $script:DataModelPlaceholder = @"
-| Model Name | Fields | Types | Description | Constraints | Indexes |
-|------------|--------|-------|-------------|-------------|---------|
+| Model Name | Fields | Types | Description | Constraints | Schema Source |
+|------------|--------|-------|-------------|-------------|---------------|
 
 _No data models detected. This codebase may use dynamic structures or patterns not yet recognized by the scanner._
 "@
@@ -32,16 +32,61 @@ function Get-AppDocDataModelMarkdown {
         }
     })
 
-    $isInfrastructureModel = {
+    $getField = {
+        param($record, [string]$fieldName, $defaultValue = $null)
+
+        if ($null -eq $record) { return $defaultValue }
+
+        if ($record -is [System.Collections.IDictionary] -and $record.Contains($fieldName)) {
+            return $record[$fieldName]
+        }
+
+        $prop = $record.PSObject.Properties[$fieldName]
+        if ($prop) { return $prop.Value }
+
+        $metadata = $null
+        if ($record -is [System.Collections.IDictionary] -and $record.Contains('metadata')) {
+            $metadata = $record['metadata']
+        } elseif ($record.PSObject.Properties['metadata']) {
+            $metadata = $record.metadata
+        }
+
+        if ($null -ne $metadata) {
+            if ($metadata -is [System.Collections.IDictionary] -and $metadata.Contains($fieldName)) {
+                return $metadata[$fieldName]
+            }
+            $metadataProp = $metadata.PSObject.Properties[$fieldName]
+            if ($metadataProp) { return $metadataProp.Value }
+        }
+
+        return $defaultValue
+    }
+
+    $getRole = {
         param($model)
+        $role = [string](& $getField $model 'role' '')
+        if (-not [string]::IsNullOrWhiteSpace($role)) { return $role }
+
+        $isGenerated = & $getField $model 'isGenerated' $null
+        if ($null -ne $isGenerated -and [bool]$isGenerated) { return 'GeneratedProxy' }
+
         $path = [string]($model.filePath ?? "")
         $name = [string]($model.name ?? "")
         $type = [string]($model.type ?? "")
-        return (
-            $path -match '(?i)(?:^|[\\/])(bin|obj|generated|service references|connected services|reference\.cs|proxy|proxies)(?:[\\/]|$)' -or
-            $name -match '(?i)(proxy|client|generated|reference)' -or
-            $type -match '(?i)(dto|proxy)'
-        )
+
+        if ($path -match '(?i)(?:^|[\\/])(generated|service references|connected services|reference\.cs|proxy|proxies)(?:[\\/]|$)' -or $name -match '(?i)(proxy|generated|reference)') {
+            return 'GeneratedProxy'
+        }
+        if ($path -match '(?i)(?:^|[\\/])viewmodels?(?:[\\/]|$)') { return 'ViewModel' }
+        if ($path -match '(?i)(?:^|[\\/])entities(?:[\\/]|$)') { return 'Entity' }
+        if ($type -match '(?i)dto') { return 'DTO' }
+        return 'Unknown'
+    }
+
+    $isInfrastructureModel = {
+        param($model)
+        $role = (& $getRole $model)
+        return $role -eq 'GeneratedProxy'
     }
 
     $domainEntities = @($Models | Where-Object { -not (& $isInfrastructureModel $_) })
@@ -54,24 +99,34 @@ function Get-AppDocDataModelMarkdown {
     )
 
     $highImpactTable = @(
-        "| Model | Fields | Domain | Source |",
-        "|-------|--------|--------|--------|"
+        "| Model | Role | Fields | Domain | Source | Business Purpose |",
+        "|-------|------|--------|--------|--------|------------------|"
     )
     foreach ($model in $highImpact) {
         $path = [string]$model.filePath
         $domain = "general"
         if ($path -match '^([^/\\]+)/') { $domain = $Matches[1] }
         $source = "{0}:{1}" -f $path, [int]$model.lineNumber
-        $highImpactTable += "| ``$([string]$model.name)`` | $(@($model.properties).Count) | $domain | $source |"
+        $role = [string](& $getRole $model)
+        $businessPurpose = [string](& $getField $model 'businessPurpose' '')
+        if ([string]::IsNullOrWhiteSpace($businessPurpose)) {
+            $businessPurpose = "Purpose unclear from available evidence — review $path."
+        }
+        $highImpactTable += "| ``$([string]$model.name)`` | $role | $(@($model.properties).Count) | $domain | $source | $businessPurpose |"
     }
 
     $infraTable = @(
-        "| Model | Type | Source |",
-        "|-------|------|--------|"
+        "| Model | Role | Type | Source | Business Purpose |",
+        "|-------|------|------|--------|------------------|"
     )
     foreach ($model in ($infrastructureEntities | Select-Object -First 40)) {
         $source = "{0}:{1}" -f [string]$model.filePath, [int]$model.lineNumber
-        $infraTable += "| ``$([string]$model.name)`` | $([string]$model.type) | $source |"
+        $role = [string](& $getRole $model)
+        $businessPurpose = [string](& $getField $model 'businessPurpose' '')
+        if ([string]::IsNullOrWhiteSpace($businessPurpose)) {
+            $businessPurpose = "Generated/infrastructure model; verify runtime usage from source."
+        }
+        $infraTable += "| ``$([string]$model.name)`` | $role | $([string]$model.type) | $source | $businessPurpose |"
     }
 
     $domainSummary = @($domainRows | Group-Object -Property domain | Sort-Object Count -Descending)
@@ -87,12 +142,13 @@ function Get-AppDocDataModelMarkdown {
 
     $topModels = @($Models | Sort-Object { @($_.properties).Count } -Descending | Select-Object -First 30)
     $topModelTable = @(
-        "| Model | Fields | Type | Source |",
-        "|-------|--------|------|--------|"
+        "| Model | Role | Fields | Type | Source |",
+        "|-------|------|--------|------|--------|"
     )
     foreach ($model in $topModels) {
         $source = "{0}:{1}" -f [string]$model.filePath, [int]$model.lineNumber
-        $topModelTable += "| ``$([string]$model.name)`` | $(@($model.properties).Count) | $([string]$model.type) | $source |"
+        $role = [string](& $getRole $model)
+        $topModelTable += "| ``$([string]$model.name)`` | $role | $(@($model.properties).Count) | $([string]$model.type) | $source |"
     }
 
     $detailedModels = @($domainEntities | Select-Object -First $MaxDetailedModels)
@@ -125,9 +181,40 @@ function Get-AppDocDataModelMarkdown {
         }
         if ($fieldsCount -gt 3) { $typesSummary += "..." }
 
-        $description = "$([string]$model.type) from $([string]$model.filePath):$([int]$model.lineNumber)"
+        $description = [string](& $getField $model 'businessPurpose' '')
+        if ([string]::IsNullOrWhiteSpace($description)) {
+            $description = "$([string]$model.type) from $([string]$model.filePath):$([int]$model.lineNumber)"
+        }
         $constraints = if ($model.example) { "See example" } else { "N/A" }
-        $modelRows += "| ``$([string]$model.name)`` | $fieldsCount | $typesSummary | $description | $constraints | N/A |"
+        $schemaSource = [string](& $getField $model 'schemaSource' 'N/A')
+        if ([string]::IsNullOrWhiteSpace($schemaSource)) { $schemaSource = 'N/A' }
+        $relationships = & $getField $model 'relationships' $null
+        $relationshipSummary = 'N/A'
+        if ($relationships) {
+            $relList = @($relationships | ForEach-Object {
+                if ($_ -is [System.Collections.IDictionary]) {
+                    $target = [string]$_.target
+                    $relType = [string]$_.type
+                    if (-not [string]::IsNullOrWhiteSpace($target)) {
+                        if (-not [string]::IsNullOrWhiteSpace($relType)) { "$target ($relType)" } else { $target }
+                    }
+                } elseif ($_.PSObject.Properties['target']) {
+                    $target = [string]$_.target
+                    $relType = [string]$_.type
+                    if (-not [string]::IsNullOrWhiteSpace($target)) {
+                        if (-not [string]::IsNullOrWhiteSpace($relType)) { "$target ($relType)" } else { $target }
+                    }
+                } else {
+                    [string]$_
+                }
+            } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+            if ($relList.Count -gt 0) { $relationshipSummary = ($relList -join ', ') }
+        }
+        $role = [string](& $getRole $model)
+        $modelRows += "| ``$([string]$model.name)`` | $fieldsCount | $typesSummary | $description | $constraints | $schemaSource |"
+        if ($relationshipSummary -ne 'N/A') {
+            $modelRows += "|  ↳ Relationships |  |  | $relationshipSummary |  |  |"
+        }
     }
 
     $propertyCounts = $domainEntities | ForEach-Object { @($_.properties).Count }

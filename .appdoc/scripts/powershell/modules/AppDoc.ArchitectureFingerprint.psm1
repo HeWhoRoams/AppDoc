@@ -110,10 +110,6 @@ function Get-AppDocArchitectureFingerprint {
 
     $serverSignals = [int]($scores.restHttp + $scores.wcfService + $scores.asmxService)
     $apiSurfaceExpected = ($serverSignals -gt 0)
-    elseif ($restOnlyWeak) {
-        0.58 + ([Math]::Min($scores.restHttp, 30) / 250.0)
-    }
-    }
 
     $hasStrongSoapHostEvidence = ($scores.wcfService -ge 12 -or $scores.asmxService -ge 12)
     $restOnlyWeak = ($scores.restHttp -gt 0 -and -not $hasStrongSoapHostEvidence -and $scores.soapClient -eq 0)

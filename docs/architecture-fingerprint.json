@@ -1,0 +1,37 @@
+{
+  "version": "1.1.0",
+  "generatedAt": "2026-03-04T15:08:46-05:00",
+  "primaryStyle": "no-api-surface",
+  "styles": [
+    "no-api-surface"
+  ],
+  "apiSurfaceExpected": false,
+  "confidence": 0.55,
+  "scores": {
+    "restHttp": 0,
+    "wcfService": 0,
+    "asmxService": 0,
+    "soapClient": 0
+  },
+  "evidence": {
+    "csFileCount": 1,
+    "svcFileCount": 0,
+    "asmxFileCount": 0,
+    "wsdlFileCount": 0,
+    "svcMapFileCount": 0,
+    "svcInfoFileCount": 0,
+    "serviceReferenceFileCount": 0,
+    "sampledCodeFileCount": 1
+  },
+  "provenance": {
+    "generatorVersion": "appdoc-run-all-generators/3.0.0",
+    "commitHash": "1a97947",
+    "generatedAt": "2026-03-04T15:09:09-05:00",
+    "profile": "default",
+    "scope": ".",
+    "confidenceInferenceFlags": [
+      "deterministic",
+      "evidence-backed"
+    ]
+  }
+}

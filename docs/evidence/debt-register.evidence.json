@@ -1,0 +1,26 @@
+{
+  "artifact": "debt-register",
+  "generatedAt": "2026-03-05T16:38:34-05:00",
+  "recordCount": 0,
+  "records": [],
+  "metadata": {
+    "requiredSections": [
+      "Executive Summary",
+      "Debt Items"
+    ],
+    "requiredEvidenceKeys": [
+      "debtItems"
+    ],
+    "debtCount": 0,
+    "generator": "generate-debt-register.ps1"
+  },
+  "determinism": {
+    "hashAlgorithm": "SHA256",
+    "excludeKeys": [
+      "generatedAt",
+      "updatedAt",
+      "timestamp"
+    ],
+    "contentHash": "7238e3e47dcf6753f129caeb8ac0c4b2941172f9c29ee442788c48286c048ed6"
+  }
+}

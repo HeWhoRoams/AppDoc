@@ -80,6 +80,66 @@ $configs = @($configData.configs | Where-Object { $_ -ne $null })
 $discoveredConfigFiles = @($configData.discoveredConfigFiles | Where-Object { $_ -ne $null })
 $envVars = @($configData.envVars | Where-Object { $_ -ne $null })
 
+function Set-AppDocFieldValue {
+    param(
+        [Parameter(Mandatory=$true)]
+        [object]$Target,
+        [Parameter(Mandatory=$true)]
+        [string]$Name,
+        $Value
+    )
+
+    if ($Target -is [System.Collections.IDictionary]) {
+        $Target[$Name] = $Value
+        return
+    }
+
+    $existing = $Target.PSObject.Properties[$Name]
+    if ($existing) {
+        $existing.Value = $Value
+    }
+    else {
+        Add-Member -InputObject $Target -MemberType NoteProperty -Name $Name -Value $Value -Force
+    }
+}
+
+$enrichedEvidencePath = Join-Path $RootPath "docs\evidence\config-catalog.evidence.enriched.json"
+if (Test-Path $enrichedEvidencePath) {
+    try {
+        $enrichedPayload = Get-Content -Path $enrichedEvidencePath -Raw | ConvertFrom-Json -Depth 80
+        $enrichedRecords = @($enrichedPayload.records | Where-Object { $_ -and [string]$_.kind -eq 'configuration' })
+        if ($enrichedRecords.Count -gt 0) {
+            $lookup = @{}
+            foreach ($record in $enrichedRecords) {
+                $recordSource = [string]$record.source
+                $recordName = [string]$record.name
+                $lookupKey = ("{0}|{1}" -f $recordSource.ToLowerInvariant(), $recordName.ToLowerInvariant())
+                $lookup[$lookupKey] = $record
+            }
+
+            foreach ($cfg in $configs) {
+                $cfgSource = [string]$cfg.source
+                $cfgKey = [string]$cfg.key
+                $lookupKey = ("{0}|{1}" -f $cfgSource.ToLowerInvariant(), $cfgKey.ToLowerInvariant())
+                if ($lookup.ContainsKey($lookupKey)) {
+                    $record = $lookup[$lookupKey]
+                    Set-AppDocFieldValue -Target $cfg -Name 'tier' -Value $record.tier
+                    Set-AppDocFieldValue -Target $cfg -Name 'businessPurpose' -Value $record.businessPurpose
+                    Set-AppDocFieldValue -Target $cfg -Name 'isGenerated' -Value $record.isGenerated
+                    Set-AppDocFieldValue -Target $cfg -Name 'requiredForDeployment' -Value $record.requiredForDeployment
+                    Set-AppDocFieldValue -Target $cfg -Name 'confidence' -Value $record.confidence
+                    Set-AppDocFieldValue -Target $cfg -Name 'confidenceNote' -Value $record.confidenceNote
+                }
+            }
+
+            Write-Host "   Applied enriched config records: $($enrichedRecords.Count)" -ForegroundColor Gray
+        }
+    }
+    catch {
+        Write-Warning "Failed to apply enriched config evidence: $($_.Exception.Message)"
+    }
+}
+
 Write-Progress -Activity "Generating Config Catalog" -Status "Populating template..." -PercentComplete 60
 $scriptRoot = Split-Path $PSScriptRoot -Parent
 $appDocRoot = if ($scriptRoot) { Split-Path $scriptRoot -Parent } else { $null }

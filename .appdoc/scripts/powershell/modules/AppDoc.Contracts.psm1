@@ -1,7 +1,7 @@
 # AppDoc.Contracts Module
 # Purpose: Shared record contracts for extraction, diagnostics, validation, and framework support
 
-$script:AppDocContractsVersion = "2.0.0"
+$script:AppDocContractsVersion = "2.1.0"
 
 function Get-AppDocArtifactContract {
     [CmdletBinding()]
@@ -19,15 +19,6 @@ function Get-AppDocArtifactContract {
         "overview" = @{
             requiredSections = @("System Boundary","Runtime Path","Inputs-Processing-Outputs","External Systems","Confidence Notes")
             requiredEvidenceKeys = @("summary","technologies")
-        }
-        function Normalize-AppDocSectionName {
-            param([string]$Name)
-            $norm = $Name
-            $norm = $norm -replace '\s+', ''
-            $norm = $norm -replace '[→\-]+', '-'
-            $norm = $norm -replace '->', '-'
-            $norm = $norm.ToLowerInvariant()
-            return $norm
         }
         "api-inventory" = @{
             requiredSections = @("Executive Summary","API Endpoints")
@@ -91,7 +82,39 @@ function New-AppDocExtractionRecord {
         [Parameter(Mandatory=$true)]
         [string]$Kind,
         [double]$Confidence = 1.0,
+        [AllowNull()]
+        [string]$ConfidenceNote = $null,
         [hashtable]$Metadata = @{},
+        [AllowNull()]
+        [string]$Role = $null,
+        [AllowNull()]
+        [string]$BusinessPurpose = $null,
+        [AllowNull()]
+        [Nullable[bool]]$IsGenerated = $null,
+        [AllowNull()]
+        [string]$Tier = $null,
+        [AllowNull()]
+        [string]$DependencyKind = $null,
+        [AllowNull()]
+        [Nullable[bool]]$CriticalPath = $null,
+        [AllowNull()]
+        [string]$UpgradeUrgency = $null,
+        [AllowNull()]
+        [Nullable[bool]]$RequiredForDeployment = $null,
+        [AllowNull()]
+        [string]$SchemaSource = $null,
+        [AllowNull()]
+        [array]$IntegrationTargets = $null,
+        [AllowNull()]
+        [array]$Relationships = $null,
+        [AllowNull()]
+        [hashtable]$OperationalProfile = $null,
+        [AllowNull()]
+        [string]$ProjectRole = $null,
+        [AllowNull()]
+        [string]$UsageFrequency = $null,
+        [AllowNull()]
+        [hashtable]$TestDiagnosis = $null,
         [string]$Provider = "unknown",
         [string]$ProviderType = "regex",
         [string]$Status = "Detected"
@@ -103,6 +126,22 @@ function New-AppDocExtractionRecord {
         name = $Name
         kind = $Kind
         confidence = [Math]::Round([Math]::Max(0, [Math]::Min(1, $Confidence)), 4)
+        confidenceNote = $ConfidenceNote
+        role = $Role
+        businessPurpose = $BusinessPurpose
+        isGenerated = $IsGenerated
+        tier = $Tier
+        dependencyKind = $DependencyKind
+        criticalPath = $CriticalPath
+        upgradeUrgency = $UpgradeUrgency
+        requiredForDeployment = $RequiredForDeployment
+        schemaSource = $SchemaSource
+        integrationTargets = $IntegrationTargets
+        relationships = $Relationships
+        operationalProfile = $OperationalProfile
+        projectRole = $ProjectRole
+        usageFrequency = $UsageFrequency
+        testDiagnosis = $TestDiagnosis
         metadata = $Metadata
         provider = $Provider
         providerType = $ProviderType

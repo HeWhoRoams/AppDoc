@@ -1,0 +1,236 @@
+{
+  "artifact": "build-cookbook",
+  "generatedAt": "2026-02-17T14:11:55-05:00",
+  "recordCount": 14,
+  "records": [
+    {
+      "artifact": "build-cookbook",
+      "source": "SampleApp.sln",
+      "name": "Build (MSBuild)",
+      "kind": "build-command",
+      "confidence": 1.0,
+      "metadata": {
+        "invocation": "msbuild SampleApp.sln /p:Configuration=Release",
+        "command": "Build solution using MSBuild",
+        "type": "msbuild"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "build-cookbook",
+      "source": "SampleApp.sln",
+      "name": "Clean (MSBuild)",
+      "kind": "build-command",
+      "confidence": 1.0,
+      "metadata": {
+        "invocation": "msbuild SampleApp.sln /t:Clean",
+        "command": "Clean using MSBuild",
+        "type": "msbuild"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "build-cookbook",
+      "source": "SampleApp.sln",
+      "name": "Rebuild (MSBuild)",
+      "kind": "build-command",
+      "confidence": 1.0,
+      "metadata": {
+        "invocation": "msbuild SampleApp.sln /t:Rebuild /p:Configuration=Release",
+        "command": "Clean and rebuild",
+        "type": "msbuild"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "build-cookbook",
+      "source": "SampleApp.sln",
+      "name": "Restore NuGet",
+      "kind": "build-command",
+      "confidence": 1.0,
+      "metadata": {
+        "invocation": "nuget restore SampleApp.sln",
+        "command": "Restore NuGet packages",
+        "type": "msbuild"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "build-cookbook",
+      "source": "SampleApp.sln",
+      "name": "Build Solution",
+      "kind": "build-command",
+      "confidence": 1.0,
+      "metadata": {
+        "invocation": "dotnet build SampleApp.sln",
+        "command": "Build all projects in the solution",
+        "type": "dotnet"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "build-cookbook",
+      "source": "SampleApp.sln",
+      "name": "Restore Packages",
+      "kind": "build-command",
+      "confidence": 1.0,
+      "metadata": {
+        "invocation": "dotnet restore SampleApp.sln",
+        "command": "Restore NuGet packages",
+        "type": "dotnet"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "build-cookbook",
+      "source": "SampleApp.sln",
+      "name": "Clean Solution",
+      "kind": "build-command",
+      "confidence": 1.0,
+      "metadata": {
+        "invocation": "dotnet clean SampleApp.sln",
+        "command": "Clean build artifacts",
+        "type": "dotnet"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "build-cookbook",
+      "source": "SampleApp.sln",
+      "name": "Run Tests",
+      "kind": "build-command",
+      "confidence": 1.0,
+      "metadata": {
+        "invocation": "dotnet test SampleApp.sln",
+        "command": "Run all tests in the solution",
+        "type": "dotnet"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "build-cookbook",
+      "source": "SampleApp.sln",
+      "name": "Publish (Release)",
+      "kind": "build-command",
+      "confidence": 1.0,
+      "metadata": {
+        "invocation": "dotnet publish SampleApp.sln -c Release",
+        "command": "Publish release build",
+        "type": "dotnet"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "build-cookbook",
+      "source": "C:\\Github\\Appdoc\\tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Common\\SampleApp.Common.csproj",
+      "name": "Build SampleApp.Common",
+      "kind": "build-command",
+      "confidence": 1.0,
+      "metadata": {
+        "invocation": "dotnet build \"C:\\Github\\Appdoc\\tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Common\\SampleApp.Common.csproj\"",
+        "command": "Build individual project",
+        "type": "dotnet-project"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "build-cookbook",
+      "source": "C:\\Github\\Appdoc\\tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Service\\SampleApp.Service.csproj",
+      "name": "Build SampleApp.Service",
+      "kind": "build-command",
+      "confidence": 1.0,
+      "metadata": {
+        "invocation": "dotnet build \"C:\\Github\\Appdoc\\tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Service\\SampleApp.Service.csproj\"",
+        "command": "Build individual project",
+        "type": "dotnet-project"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "build-cookbook",
+      "source": "C:\\Github\\Appdoc\\tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Web\\SampleApp.Web.csproj",
+      "name": "Build SampleApp.Web",
+      "kind": "build-command",
+      "confidence": 1.0,
+      "metadata": {
+        "invocation": "dotnet build \"C:\\Github\\Appdoc\\tests\\powershell\\fixtures\\sample-dotnet-app\\SampleApp.Web\\SampleApp.Web.csproj\"",
+        "command": "Build individual project",
+        "type": "dotnet-project"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "build-cookbook",
+      "source": "repository",
+      "name": ".NET 6.0 SDK or later",
+      "kind": "prerequisite",
+      "confidence": 1.0,
+      "metadata": {},
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    },
+    {
+      "artifact": "build-cookbook",
+      "source": "repository",
+      "name": "SQL Server or compatible database",
+      "kind": "prerequisite",
+      "confidence": 1.0,
+      "metadata": {},
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-02-17T14:11:55-05:00"
+    }
+  ],
+  "metadata": {
+    "cicdCount": 0,
+    "requiredSections": [
+      "Executive Summary",
+      "Build Steps"
+    ],
+    "commandCount": 12,
+    "prerequisiteCount": 2,
+    "requiredEvidenceKeys": [
+      "commands"
+    ],
+    "generator": "generate-build-cookbook.ps1"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "artifact": "test-catalog",
+  "generatedAt": "2026-02-17T14:11:55-05:00",
+  "recordCount": 0,
+  "records": [],
+  "metadata": {
+    "requiredEvidenceKeys": [
+      "testSuites"
+    ],
+    "testCount": 0,
+    "generator": "generate-test-catalog.ps1",
+    "requiredSections": [
+      "Executive Summary",
+      "Test Suites"
+    ]
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "artifact": "start-here",
+  "generatedAt": "2026-03-05T16:38:22-05:00",
+  "source": "start-here.evidence.enriched.json",
+  "records": [
+    {
+      "source": "docs",
+      "name": "api-inventory",
+      "kind": "endpoint",
+      "confidence": 1.0,
+      "metadata": {
+        "documentedEndpoints": 0
+      },
+      "expectedFields": [
+        "confidenceNote",
+        "role",
+        "businessPurpose",
+        "isGenerated",
+        "tier",
+        "dependencyKind",
+        "criticalPath",
+        "upgradeUrgency",
+        "requiredForDeployment",
+        "schemaSource",
+        "integrationTargets",
+        "relationships",
+        "operationalProfile",
+        "projectRole",
+        "usageFrequency",
+        "testDiagnosis"
+      ]
+    },
+    {
+      "source": "docs",
+      "name": "data-model",
+      "kind": "model",
+      "confidence": 1.0,
+      "metadata": {
+        "documentedModels": 0
+      },
+      "expectedFields": [
+        "confidenceNote",
+        "role",
+        "businessPurpose",
+        "isGenerated",
+        "tier",
+        "dependencyKind",
+        "criticalPath",
+        "upgradeUrgency",
+        "requiredForDeployment",
+        "schemaSource",
+        "integrationTargets",
+        "relationships",
+        "operationalProfile",
+        "projectRole",
+        "usageFrequency",
+        "testDiagnosis"
+      ]
+    },
+    {
+      "source": "repository",
+      "name": "source-files",
+      "kind": "summary",
+      "confidence": 1.0,
+      "metadata": {
+        "languages": [],
+        "count": 0
+      },
+      "expectedFields": [
+        "confidenceNote",
+        "role",
+        "businessPurpose",
+        "isGenerated",
+        "tier",
+        "dependencyKind",
+        "criticalPath",
+        "upgradeUrgency",
+        "requiredForDeployment",
+        "schemaSource",
+        "integrationTargets",
+        "relationships",
+        "operationalProfile",
+        "projectRole",
+        "usageFrequency",
+        "testDiagnosis"
+      ]
+    }
+  ]
+}

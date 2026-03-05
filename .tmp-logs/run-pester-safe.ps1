@@ -11,12 +11,25 @@ try {
         exit 1
     }
 
+    $result = [string]$res.Result
+    if ([string]::IsNullOrWhiteSpace($result)) {
+        if ($res.FailedCount -gt 0) {
+            $result = 'Failed'
+        }
+        elseif ($res.TotalCount -gt 0) {
+            $result = 'Passed'
+        }
+        else {
+            $result = 'Unknown'
+        }
+    }
+
     $summary = [ordered]@{
         Passed  = $res.PassedCount
         Failed  = $res.FailedCount
         Skipped = $res.SkippedCount
         Total   = $res.TotalCount
-        Result  = $res.Result
+        Result  = $result
     }
 
     $summary | ConvertTo-Json | Out-File -FilePath $resultFile -Encoding utf8

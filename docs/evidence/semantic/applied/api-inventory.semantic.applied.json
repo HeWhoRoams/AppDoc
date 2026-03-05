@@ -1,0 +1,18 @@
+{
+  "artifact": "api-inventory",
+  "architectureFingerprint": "no-api-surface",
+  "generatedAt": "2026-03-05T16:38:21-05:00",
+  "recordCount": 0,
+  "records": [],
+  "metadata": {
+    "enriched": true,
+    "enrichmentMode": "semantic-applied",
+    "enrichmentPrompt": ".github/prompts/appdoc.enrich.prompt.md",
+    "sourceEvidence": "api-inventory.evidence.json",
+    "requiresSemanticEnrichment": true,
+    "semanticInputPath": ".\\docs\\evidence\\semantic\\input\\api-inventory.semantic.input.json",
+    "semanticOutputPath": "",
+    "semanticOutputApplied": false,
+    "semanticAppliedAt": "2026-03-05T16:38:22-05:00"
+  }
+}

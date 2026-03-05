@@ -30,6 +30,20 @@ function Get-DetectedNewline {
     if ($Text -match "\n") { return "`n" }
     return [Environment]::NewLine
 }
+
+function Resolve-AppDocDebtCategory {
+    param([string]$Type)
+
+    $value = ([string]$Type).ToLowerInvariant()
+    if ($value -match 'security|vulnerability|xss|injection|auth|secret') { return 'Security' }
+    if ($value -match 'performance|slow|latency|allocation|memory') { return 'Performance' }
+    if ($value -match 'test|coverage|assert|flaky') { return 'Testing' }
+    if ($value -match 'dependency|package|library|version') { return 'Dependencies' }
+    if ($value -match 'style|format|lint|naming') { return 'Code Quality' }
+    if ($value -match 'complex|duplication|maintain|smell|refactor|todo|fixme') { return 'Maintainability' }
+    return 'General'
+}
+
 function Get-AppDocDebtRegisterMarkdown {
     [CmdletBinding()]
     param(
@@ -74,9 +88,50 @@ _No technical debt items detected. Great job maintaining code quality! Continue 
             ForEach-Object { $_.Group | Select-Object -First 1 }
     )
 
+    $getField = {
+        param($record, [string]$fieldName, $defaultValue = $null)
+
+        if ($null -eq $record) { return $defaultValue }
+
+        if ($record -is [System.Collections.IDictionary] -and $record.Contains($fieldName)) {
+            return $record[$fieldName]
+        }
+
+        $prop = $record.PSObject.Properties[$fieldName]
+        if ($prop) { return $prop.Value }
+
+        $metadata = $null
+        if ($record -is [System.Collections.IDictionary] -and $record.Contains('metadata')) {
+            $metadata = $record['metadata']
+        } elseif ($record.PSObject.Properties['metadata']) {
+            $metadata = $record.metadata
+        }
+
+        if ($null -ne $metadata) {
+            if ($metadata -is [System.Collections.IDictionary] -and $metadata.Contains($fieldName)) {
+                return $metadata[$fieldName]
+            }
+            $metadataProp = $metadata.PSObject.Properties[$fieldName]
+            if ($metadataProp) { return $metadataProp.Value }
+        }
+
+        return $defaultValue
+    }
+
     $isVendorOrGenerated = {
         param($debt)
-        $path = [string]($debt.filePath ?? $debt.file ?? "")
+
+        $role = [string](& $getField $debt 'role' '')
+        if (-not [string]::IsNullOrWhiteSpace($role)) {
+            return $role -eq 'generated-artifact'
+        }
+
+        $isGenerated = & $getField $debt 'isGenerated' $null
+        if ($null -ne $isGenerated) {
+            return [bool]$isGenerated
+        }
+
+        $path = [string](& $getField $debt 'filePath' (& $getField $debt 'file' ''))
         return $path -match '(?i)(?:^|[\\/])(bin|obj|node_modules|packages|vendor|generated|service references|connected services)(?:[\\/]|$)'
     }
 
@@ -87,36 +142,44 @@ _No technical debt items detected. Great job maintaining code quality! Continue 
     $renderRows = {
         param([array]$rows, [string]$ownership)
         foreach ($debt in @($rows)) {
-            $location = if ($debt.filePath) { "$($debt.filePath):$($debt.line)" } else { "$($debt.file):$($debt.line)" }
-            $item = [string]$debt.type
-            $category = & $categoryResolver ([string]$debt.type)
-            $impact = switch ($debt.priority) {
+            $filePath = [string](& $getField $debt 'filePath' (& $getField $debt 'file' ''))
+            $line = & $getField $debt 'line' 0
+            $location = if (-not [string]::IsNullOrWhiteSpace($filePath)) { "${filePath}:$line" } else { "unknown:0" }
+            $item = [string](& $getField $debt 'type' (& $getField $debt 'name' 'debt-item'))
+            $category = Resolve-AppDocDebtCategory -Type $item
+            $priority = [string](& $getField $debt 'priority' 'Medium')
+            $impact = switch ($priority) {
                 "High" { "High" }
                 "Medium" { "Medium" }
                 "Low" { "Low" }
                 default { "Medium" }
             }
-            $description = ([string]$debt.description -replace '\|', '\\|').Trim()
-            $riskMetadata = if ($ownership -eq "first-party") { "Direct runtime/refactor risk" } else { "Generated/vendor maintenance risk" }
-            "| $item | ``$location`` | $ownership | $category | $impact | $($debt.priority) | $riskMetadata | $description |"
+            $businessPurpose = [string](& $getField $debt 'businessPurpose' '')
+            $descriptionSource = if (-not [string]::IsNullOrWhiteSpace($businessPurpose)) { $businessPurpose } else { [string](& $getField $debt 'description' '') }
+            $description = ($descriptionSource -replace '\|', '\\|').Trim()
+            if ([string]::IsNullOrWhiteSpace($description)) {
+                $description = "Purpose unclear from available evidence — review $filePath."
+            }
+            $riskMetadata = if ($ownership -eq "developer-authored") { "Direct runtime/refactor risk" } else { "Generated/vendor maintenance risk" }
+            "| $item | ``$location`` | $ownership | $category | $impact | $priority | $riskMetadata | $description |"
         }
     }
 
-    $firstPartyRows = @(& $renderRows $firstPartyDebts "first-party")
-    $vendorRows = @(& $renderRows $vendorDebts "vendor/generated")
+    $firstPartyRows = @(& $renderRows $firstPartyDebts "developer-authored")
+    $vendorRows = @(& $renderRows $vendorDebts "generated-artifact")
 
 
     return [ordered]@{
         debtItemsContent = @(
-            "### First-Party Debt (Priority)",
+            "### Developer-Authored Debt (Priority)",
             "",
             $tableHeader,
-            $(if ($firstPartyRows.Count -gt 0) { $firstPartyRows -join "`n" } else { "| N/A | N/A | first-party | N/A | N/A | N/A | N/A | No first-party debt rows detected |" }),
+            $(if ($firstPartyRows.Count -gt 0) { $firstPartyRows -join "`n" } else { "| N/A | N/A | developer-authored | N/A | N/A | N/A | N/A | No developer-authored debt rows detected |" }),
             "",
-            "### Vendor/Generated Debt",
+            "### Generated Artifact Debt",
             "",
             $tableHeader,
-            $(if ($vendorRows.Count -gt 0) { $vendorRows -join "`n" } else { "| N/A | N/A | vendor/generated | N/A | N/A | N/A | N/A | No vendor/generated debt rows detected |" })
+            $(if ($vendorRows.Count -gt 0) { $vendorRows -join "`n" } else { "| N/A | N/A | generated-artifact | N/A | N/A | N/A | N/A | No generated artifact debt rows detected |" })
         ) -join "`n"
         debtTablePlaceholder = $debtTablePlaceholder
     }
@@ -163,11 +226,9 @@ function Update-AppDocDebtRegisterContent {
         $updated += $newline + $newline + $sections.debtItemsContent + $newline
     }
 
-    # $categoryResolver is already defined in the shared scope above; removed duplicate definition here.
-
     $categoryGroups = @(
         $Debts |
-            ForEach-Object { [pscustomobject]@{ category = (& $categoryResolver ([string]$_.type)) } } |
+            ForEach-Object { [pscustomobject]@{ category = (Resolve-AppDocDebtCategory -Type ([string]$_.type)) } } |
             Group-Object -Property category |
             Sort-Object Count -Descending
     )

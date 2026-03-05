@@ -1,0 +1,212 @@
+{
+  "artifact": "task-guides",
+  "architectureFingerprint": "no-api-surface",
+  "generatedAt": "2026-03-05T16:38:21-05:00",
+  "recordCount": 5,
+  "records": [
+    {
+      "artifact": "task-guides",
+      "source": "docs",
+      "name": "task-guide-summary",
+      "kind": "summary",
+      "confidence": 0.0,
+      "metadata": {
+        "debtCount": 0,
+        "buildCommandCount": 0,
+        "dependencyCount": 0,
+        "testCount": 0,
+        "endpointCount": 0
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "NotDetected",
+      "timestamp": "2026-03-04T15:08:56-05:00",
+      "confidenceNote": "Low-confidence signal from deterministic scan; review docs.",
+      "role": null,
+      "businessPurpose": "Purpose unclear from available evidence — review docs.",
+      "isGenerated": null,
+      "tier": null,
+      "dependencyKind": null,
+      "criticalPath": null,
+      "upgradeUrgency": null,
+      "requiredForDeployment": null,
+      "schemaSource": null,
+      "integrationTargets": null,
+      "relationships": null,
+      "operationalProfile": null,
+      "projectRole": null,
+      "usageFrequency": null,
+      "testDiagnosis": {
+        "coverageLevel": "none",
+        "discoveryMethod": "deterministic-scan",
+        "zeroTestReason": "scope-failure",
+        "underservedAreas": [
+          "core-domain"
+        ]
+      }
+    },
+    {
+      "artifact": "task-guides",
+      "source": "docs",
+      "name": "change-endpoint-safely",
+      "kind": "task-guide",
+      "confidence": 0.0,
+      "metadata": {
+        "category": "implementation",
+        "endpointEvidence": 0
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "NotDetected",
+      "timestamp": "2026-03-04T15:08:56-05:00",
+      "confidenceNote": "Low-confidence signal from deterministic scan; review docs.",
+      "role": null,
+      "businessPurpose": "Purpose unclear from available evidence — review docs.",
+      "isGenerated": null,
+      "tier": null,
+      "dependencyKind": null,
+      "criticalPath": null,
+      "upgradeUrgency": null,
+      "requiredForDeployment": null,
+      "schemaSource": null,
+      "integrationTargets": null,
+      "relationships": null,
+      "operationalProfile": null,
+      "projectRole": null,
+      "usageFrequency": null,
+      "testDiagnosis": {
+        "coverageLevel": "none",
+        "discoveryMethod": "deterministic-scan",
+        "zeroTestReason": "scope-failure",
+        "underservedAreas": [
+          "core-domain"
+        ]
+      }
+    },
+    {
+      "artifact": "task-guides",
+      "source": "docs",
+      "name": "debug-build-failure",
+      "kind": "task-guide",
+      "confidence": 0.0,
+      "metadata": {
+        "category": "operations",
+        "buildEvidence": 0
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "NotDetected",
+      "timestamp": "2026-03-04T15:08:56-05:00",
+      "confidenceNote": "Low-confidence signal from deterministic scan; review docs.",
+      "role": null,
+      "businessPurpose": "Purpose unclear from available evidence — review docs.",
+      "isGenerated": null,
+      "tier": null,
+      "dependencyKind": null,
+      "criticalPath": null,
+      "upgradeUrgency": null,
+      "requiredForDeployment": null,
+      "schemaSource": null,
+      "integrationTargets": null,
+      "relationships": null,
+      "operationalProfile": null,
+      "projectRole": null,
+      "usageFrequency": null,
+      "testDiagnosis": {
+        "coverageLevel": "none",
+        "discoveryMethod": "deterministic-scan",
+        "zeroTestReason": "scope-failure",
+        "underservedAreas": [
+          "core-domain"
+        ]
+      }
+    },
+    {
+      "artifact": "task-guides",
+      "source": "docs",
+      "name": "plan-debt-sprint",
+      "kind": "task-guide",
+      "confidence": 0.0,
+      "metadata": {
+        "category": "maintenance",
+        "debtEvidence": 0
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "NotDetected",
+      "timestamp": "2026-03-04T15:08:56-05:00",
+      "confidenceNote": "Low-confidence signal from deterministic scan; review docs.",
+      "role": null,
+      "businessPurpose": "Purpose unclear from available evidence — review docs.",
+      "isGenerated": null,
+      "tier": null,
+      "dependencyKind": null,
+      "criticalPath": null,
+      "upgradeUrgency": null,
+      "requiredForDeployment": null,
+      "schemaSource": null,
+      "integrationTargets": null,
+      "relationships": null,
+      "operationalProfile": null,
+      "projectRole": null,
+      "usageFrequency": null,
+      "testDiagnosis": {
+        "coverageLevel": "none",
+        "discoveryMethod": "deterministic-scan",
+        "zeroTestReason": "scope-failure",
+        "underservedAreas": [
+          "core-domain"
+        ]
+      }
+    },
+    {
+      "artifact": "task-guides",
+      "source": "docs",
+      "name": "triage-dependency-risk",
+      "kind": "task-guide",
+      "confidence": 0.0,
+      "metadata": {
+        "category": "risk",
+        "dependencyEvidence": 0
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "NotDetected",
+      "timestamp": "2026-03-04T15:08:56-05:00",
+      "confidenceNote": "Low-confidence signal from deterministic scan; review docs.",
+      "role": null,
+      "businessPurpose": "Purpose unclear from available evidence — review docs.",
+      "isGenerated": null,
+      "tier": null,
+      "dependencyKind": null,
+      "criticalPath": null,
+      "upgradeUrgency": null,
+      "requiredForDeployment": null,
+      "schemaSource": null,
+      "integrationTargets": null,
+      "relationships": null,
+      "operationalProfile": null,
+      "projectRole": null,
+      "usageFrequency": null,
+      "testDiagnosis": {
+        "coverageLevel": "none",
+        "discoveryMethod": "deterministic-scan",
+        "zeroTestReason": "scope-failure",
+        "underservedAreas": [
+          "core-domain"
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "enriched": true,
+    "enrichmentMode": "semantic-applied",
+    "enrichmentPrompt": ".github/prompts/appdoc.enrich.prompt.md",
+    "sourceEvidence": "task-guides.evidence.json",
+    "requiresSemanticEnrichment": true,
+    "semanticInputPath": ".\\docs\\evidence\\semantic\\input\\task-guides.semantic.input.json",
+    "semanticOutputPath": "",
+    "semanticOutputApplied": false,
+    "semanticAppliedAt": "2026-03-05T16:38:22-05:00"
+  }
+}

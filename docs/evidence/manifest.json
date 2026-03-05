@@ -1,0 +1,288 @@
+{
+  "generatedAt": "2026-03-05T16:38:35-05:00",
+  "artifacts": [
+    {
+      "artifact": "api-inventory",
+      "path": ".\\docs\\evidence\\api-inventory.evidence.json",
+      "recordCount": 0,
+      "updatedAt": "2026-03-04T15:08:47-05:00",
+      "metadata": {
+        "generator": "generate-api-inventory.ps1"
+      }
+    },
+    {
+      "artifact": "api-inventory.enriched",
+      "path": ".\\docs\\evidence\\api-inventory.evidence.enriched.json",
+      "recordCount": 0,
+      "updatedAt": "2026-03-05T16:38:21-05:00",
+      "metadata": {
+        "generator": "run-appdoc-enrich.ps1",
+        "mode": "schema-bootstrap"
+      }
+    },
+    {
+      "artifact": "build-cookbook",
+      "path": ".\\docs\\evidence\\build-cookbook.evidence.json",
+      "recordCount": 1,
+      "updatedAt": "2026-03-04T15:08:53-05:00",
+      "metadata": {
+        "generator": "generate-build-cookbook.ps1"
+      }
+    },
+    {
+      "artifact": "build-cookbook.enriched",
+      "path": ".\\docs\\evidence\\build-cookbook.evidence.enriched.json",
+      "recordCount": 1,
+      "updatedAt": "2026-03-05T16:38:21-05:00",
+      "metadata": {
+        "generator": "run-appdoc-enrich.ps1",
+        "mode": "schema-bootstrap"
+      }
+    },
+    {
+      "artifact": "config-catalog",
+      "path": ".\\docs\\evidence\\config-catalog.evidence.json",
+      "recordCount": 54,
+      "updatedAt": "2026-03-05T16:38:30-05:00",
+      "metadata": {
+        "generator": "generate-config-catalog.ps1"
+      }
+    },
+    {
+      "artifact": "config-catalog.enriched",
+      "path": ".\\docs\\evidence\\config-catalog.evidence.enriched.json",
+      "recordCount": 54,
+      "updatedAt": "2026-03-05T16:38:21-05:00",
+      "metadata": {
+        "generator": "run-appdoc-enrich.ps1",
+        "mode": "schema-bootstrap"
+      }
+    },
+    {
+      "artifact": "data-model",
+      "path": ".\\docs\\evidence\\data-model.evidence.json",
+      "recordCount": 0,
+      "updatedAt": "2026-03-05T16:38:33-05:00",
+      "metadata": {
+        "generator": "generate-data-model.ps1"
+      }
+    },
+    {
+      "artifact": "data-model.enriched",
+      "path": ".\\docs\\evidence\\data-model.evidence.enriched.json",
+      "recordCount": 0,
+      "updatedAt": "2026-03-05T16:38:21-05:00",
+      "metadata": {
+        "generator": "run-appdoc-enrich.ps1",
+        "mode": "schema-bootstrap"
+      }
+    },
+    {
+      "artifact": "debt-register",
+      "path": ".\\docs\\evidence\\debt-register.evidence.json",
+      "recordCount": 0,
+      "updatedAt": "2026-03-05T16:38:34-05:00",
+      "metadata": {
+        "generator": "generate-debt-register.ps1"
+      }
+    },
+    {
+      "artifact": "debt-register.enriched",
+      "path": ".\\docs\\evidence\\debt-register.evidence.enriched.json",
+      "recordCount": 0,
+      "updatedAt": "2026-03-05T16:38:21-05:00",
+      "metadata": {
+        "generator": "run-appdoc-enrich.ps1",
+        "mode": "schema-bootstrap"
+      }
+    },
+    {
+      "artifact": "dependencies-catalog",
+      "path": ".\\docs\\evidence\\dependencies-catalog.evidence.json",
+      "recordCount": 0,
+      "updatedAt": "2026-03-05T16:38:35-05:00",
+      "metadata": {
+        "generator": "generate-dependencies-catalog.ps1"
+      }
+    },
+    {
+      "artifact": "dependencies-catalog.enriched",
+      "path": ".\\docs\\evidence\\dependencies-catalog.evidence.enriched.json",
+      "recordCount": 0,
+      "updatedAt": "2026-03-05T16:38:21-05:00",
+      "metadata": {
+        "generator": "run-appdoc-enrich.ps1",
+        "mode": "schema-bootstrap"
+      }
+    },
+    {
+      "artifact": "overview",
+      "path": ".\\docs\\evidence\\overview.evidence.json",
+      "recordCount": 1,
+      "updatedAt": "2026-03-04T15:08:58-05:00",
+      "metadata": {
+        "generator": "generate-overview.ps1"
+      }
+    },
+    {
+      "artifact": "overview.enriched",
+      "path": ".\\docs\\evidence\\overview.evidence.enriched.json",
+      "recordCount": 1,
+      "updatedAt": "2026-03-05T16:38:21-05:00",
+      "metadata": {
+        "generator": "run-appdoc-enrich.ps1",
+        "mode": "schema-bootstrap"
+      }
+    },
+    {
+      "artifact": "start-here",
+      "path": ".\\docs\\evidence\\start-here.evidence.json",
+      "recordCount": 3,
+      "updatedAt": "2026-03-04T15:08:58-05:00",
+      "metadata": {
+        "generator": "generate-start-here.ps1"
+      }
+    },
+    {
+      "artifact": "start-here.enriched",
+      "path": ".\\docs\\evidence\\start-here.evidence.enriched.json",
+      "recordCount": 3,
+      "updatedAt": "2026-03-05T16:38:21-05:00",
+      "metadata": {
+        "generator": "run-appdoc-enrich.ps1",
+        "mode": "schema-bootstrap"
+      }
+    },
+    {
+      "artifact": "task-guides",
+      "path": ".\\docs\\evidence\\task-guides.evidence.json",
+      "recordCount": 5,
+      "updatedAt": "2026-03-04T15:08:56-05:00",
+      "metadata": {
+        "generator": "generate-task-guides.ps1"
+      }
+    },
+    {
+      "artifact": "task-guides.enriched",
+      "path": ".\\docs\\evidence\\task-guides.evidence.enriched.json",
+      "recordCount": 5,
+      "updatedAt": "2026-03-05T16:38:21-05:00",
+      "metadata": {
+        "generator": "run-appdoc-enrich.ps1",
+        "mode": "schema-bootstrap"
+      }
+    },
+    {
+      "artifact": "test-catalog",
+      "path": ".\\docs\\evidence\\test-catalog.evidence.json",
+      "recordCount": 0,
+      "updatedAt": "2026-03-04T15:08:54-05:00",
+      "metadata": {
+        "generator": "generate-test-catalog.ps1"
+      }
+    },
+    {
+      "artifact": "test-catalog.enriched",
+      "path": ".\\docs\\evidence\\test-catalog.evidence.enriched.json",
+      "recordCount": 0,
+      "updatedAt": "2026-03-05T16:38:21-05:00",
+      "metadata": {
+        "generator": "run-appdoc-enrich.ps1",
+        "mode": "schema-bootstrap"
+      }
+    }
+  ],
+  "markdownChecksums": [
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\api-inventory.appendix.md",
+      "sha256": "f4d9c7a00be8c335ea3bbc8736458b1dfafc1448ea6371dc67f3702c73d1058f"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\api-inventory.md",
+      "sha256": "ebfec5643d56617951df8b92faf250c8c9f3b3c7d36c35619f6a8327506d6b5e"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\appdoc-artifact-quality-audit.md",
+      "sha256": "d11cc0c3bdd87bdeb6be1bd07ca430aaf25da0373fa050728b957ef2940ef4d1"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\appdoc-remediation-plan.md",
+      "sha256": "421ea8c4de7fb9708b7232a96f96901f7ee133881e284f247d9868cc78f18ccc"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\build-cookbook.md",
+      "sha256": "4a90549b50229fa3407507c68922532418d8d06d13ddbb05f364a080509021bd"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\config-catalog.md",
+      "sha256": "2d42c3d69154d265eb76b8977b73cac89dd0152c8b162cd85e1ca1bc89436523"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\data-model.md",
+      "sha256": "c856c305ee77e95e0c5e60a9e78952317f01dcc461c28ec3e0f6d197ed9fd30b"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\debt-register.md",
+      "sha256": "d800ea36021d3075bf29f3e717dae6fc2533f4d0f8249bf1e271c8e9e1b804a6"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\dependencies-catalog.md",
+      "sha256": "a7894e89d705e51241e3041fb26b5c5d2814831331210791c0e4e4694db3e148"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\diagnostics-report.summary.md",
+      "sha256": "1c1dcf723635190948eaa2ddaaca9af77af81c893f2c5d587b3630d3f8064e04"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\implementation-checklist-v3.md",
+      "sha256": "85d494bc9dc2356d58a24f528d0e0fd19a02920d441c071f497f6ad3e4734fd2"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\index.md",
+      "sha256": "ca151596d2929e87146f74f2d1370feeff346ece7f9ec42dcc71c50daade4868"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\overview.md",
+      "sha256": "2cadfe1ee8a3fac0c42aab09eb54594207d417205d31e853e00f77bc3a0f1678"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\quality-report.summary.md",
+      "sha256": "d9e7c8b6347fa8227a6e426580b9af26df3ccd9a6691a15d30b1cfe1a30cbafb"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\start-here.md",
+      "sha256": "739ed6f83d67f756784bb6e4fec8d5dd14404ea0c9e813f7a77ca4a1a98d5f5a"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\task-guides.md",
+      "sha256": "51b47031a8a52842c6530e563b918dd3d9953a266fdf7312ef9b0b759c04b403"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\technical-implementation-plan.md",
+      "sha256": "74956d80302724df7fa2f79332ae78b4ba1a01c439dbb57846d02276d3e42847"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\test-catalog.md",
+      "sha256": "190244c232769c55ffaf0750dc60319a86667e1e3acb1a1be83aace447f2e8e5"
+    },
+    {
+      "path": "C:\\Github\\Appdoc\\docs\\validation-report.summary.md",
+      "sha256": "16817196cafc8ffcf0ba47fd8ce50cb2b2ec4d70f3f37c2b305c6ed99da419fa"
+    }
+  ],
+  "signoff": {
+    "status": "unsigned",
+    "required": true,
+    "signedBy": "",
+    "signedAt": ""
+  },
+  "determinism": {
+    "hashAlgorithm": "SHA256",
+    "excludeKeys": [
+      "generatedAt",
+      "updatedAt",
+      "timestamp"
+    ],
+    "contentHash": "7278f7a616f9734dddc59527021e7f72f205b4d24312b7ad254f1d31ad76904b"
+  }
+}

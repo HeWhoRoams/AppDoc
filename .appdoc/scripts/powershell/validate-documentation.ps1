@@ -1716,9 +1716,6 @@ if (@($metricDriftAnalysis.issues).Count -gt 0) {
 }
 $policyGates = $compositePolicyGate
 $policyGateScore = [double]$policyGates.score
-    $policyGates.score = [Math]::Max(0, ([double]$policyGates.score - (@($metricDriftAnalysis.issues).Count * 20)))
-    $policyGateScore = [double]$policyGates.score
-}
 
 foreach ($issue in @($allContradictionIssues)) {
     Write-AppDocDiagnostic -Category "DETECTION_PATTERN_MISMATCH" -Severity "Warning" -Message "Cross-artifact contradiction detected: $issue" -Component "validation" -FilePath $docsPath | Out-Null

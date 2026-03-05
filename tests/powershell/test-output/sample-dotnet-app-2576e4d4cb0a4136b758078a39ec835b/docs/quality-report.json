@@ -1,0 +1,150 @@
+{
+  "overall": {
+    "totalDocs": 10,
+    "lowQuality": 0,
+    "averageScore": 84.0,
+    "missingDocs": 0,
+    "highQuality": 7,
+    "mediumQuality": 3
+  },
+  "timestamp": "2026-02-17 14:11:55",
+  "documents": [
+    {
+      "exists": true,
+      "quality": "HIGH",
+      "listItems": 18,
+      "placeholders": [
+        "2x Deferred instruction"
+      ],
+      "score": 100,
+      "docType": "Start Here",
+      "codeBlocks": 0,
+      "issues": [],
+      "tableRows": 13
+    },
+    {
+      "exists": true,
+      "quality": "HIGH",
+      "listItems": 0,
+      "placeholders": [],
+      "score": 100,
+      "docType": "Overview",
+      "codeBlocks": 0,
+      "issues": [],
+      "tableRows": 7
+    },
+    {
+      "exists": true,
+      "quality": "HIGH",
+      "listItems": 0,
+      "placeholders": [],
+      "score": 90,
+      "docType": "API Inventory",
+      "codeBlocks": 0,
+      "issues": [
+        "API Endpoints table has no populated rows"
+      ],
+      "tableRows": 9
+    },
+    {
+      "exists": true,
+      "quality": "HIGH",
+      "listItems": 0,
+      "placeholders": [],
+      "score": 90,
+      "docType": "Data Model",
+      "codeBlocks": 0,
+      "issues": [
+        "Data Models table has no populated rows"
+      ],
+      "tableRows": 9
+    },
+    {
+      "exists": true,
+      "quality": "MEDIUM",
+      "listItems": 0,
+      "placeholders": [
+        "1x Template instruction remaining",
+        "1x Deferred instruction"
+      ],
+      "score": 60,
+      "docType": "Config Catalog",
+      "codeBlocks": 0,
+      "issues": [
+        "Environment Variables table has no populated rows"
+      ],
+      "tableRows": 15
+    },
+    {
+      "exists": true,
+      "quality": "HIGH",
+      "listItems": 0,
+      "placeholders": [
+        "1x Deferred instruction"
+      ],
+      "score": 95,
+      "docType": "Build Cookbook",
+      "codeBlocks": 0,
+      "issues": [],
+      "tableRows": 23
+    },
+    {
+      "exists": true,
+      "quality": "MEDIUM",
+      "listItems": 0,
+      "placeholders": [
+        "1x Template instruction remaining",
+        "2x Deferred instruction"
+      ],
+      "score": 40,
+      "docType": "Test Catalog",
+      "codeBlocks": 0,
+      "issues": [
+        "Test Suites table has no populated rows",
+        "Test Cases table has no populated rows"
+      ],
+      "tableRows": 11
+    },
+    {
+      "exists": true,
+      "quality": "MEDIUM",
+      "listItems": 0,
+      "placeholders": [
+        "1x Deferred instruction"
+      ],
+      "score": 75,
+      "docType": "Debt Register",
+      "codeBlocks": 0,
+      "issues": [
+        "Debt Items table has no populated rows"
+      ],
+      "tableRows": 9
+    },
+    {
+      "exists": true,
+      "quality": "HIGH",
+      "listItems": 0,
+      "placeholders": [],
+      "score": 90,
+      "docType": "Dependencies Catalog",
+      "codeBlocks": 0,
+      "issues": [
+        "Dependency summary table has no populated rows"
+      ],
+      "tableRows": 9
+    },
+    {
+      "exists": true,
+      "quality": "HIGH",
+      "listItems": 13,
+      "placeholders": [
+        "2x Deferred instruction"
+      ],
+      "score": 100,
+      "docType": "Task Guides",
+      "codeBlocks": 0,
+      "issues": [],
+      "tableRows": 7
+    }
+  ]
+}

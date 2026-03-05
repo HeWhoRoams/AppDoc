@@ -1,0 +1,256 @@
+{
+  "documents": [
+    {
+      "docType": "Start Here",
+      "issues": [],
+      "score": 100,
+      "codeBlocks": 0,
+      "tableRows": 13,
+      "quality": "HIGH",
+      "listItems": 21,
+      "exists": true,
+      "placeholders": []
+    },
+    {
+      "docType": "Overview",
+      "issues": [],
+      "score": 100,
+      "codeBlocks": 0,
+      "tableRows": 16,
+      "quality": "HIGH",
+      "listItems": 30,
+      "exists": true,
+      "placeholders": []
+    },
+    {
+      "docType": "API Inventory",
+      "issues": [],
+      "score": 100,
+      "codeBlocks": 0,
+      "tableRows": 9,
+      "quality": "HIGH",
+      "listItems": 0,
+      "exists": true,
+      "placeholders": []
+    },
+    {
+      "docType": "Data Model",
+      "issues": [],
+      "score": 100,
+      "codeBlocks": 0,
+      "tableRows": 9,
+      "quality": "HIGH",
+      "listItems": 0,
+      "exists": true,
+      "placeholders": []
+    },
+    {
+      "docType": "Config Catalog",
+      "issues": [],
+      "score": 100,
+      "codeBlocks": 0,
+      "tableRows": 66,
+      "quality": "HIGH",
+      "listItems": 4,
+      "exists": true,
+      "placeholders": []
+    },
+    {
+      "docType": "Build Cookbook",
+      "issues": [
+        "Build Steps table has no populated rows"
+      ],
+      "score": 90,
+      "codeBlocks": 0,
+      "tableRows": 12,
+      "quality": "HIGH",
+      "listItems": 1,
+      "exists": true,
+      "placeholders": []
+    },
+    {
+      "docType": "Test Catalog",
+      "issues": [
+        "Test Suites section missing or empty",
+        "Test Cases placeholder text remains"
+      ],
+      "score": 55,
+      "codeBlocks": 0,
+      "tableRows": 11,
+      "quality": "MEDIUM",
+      "listItems": 0,
+      "exists": true,
+      "placeholders": [
+        "2x Empty detection placeholder"
+      ]
+    },
+    {
+      "docType": "Debt Register",
+      "issues": [],
+      "score": 100,
+      "codeBlocks": 0,
+      "tableRows": 13,
+      "quality": "HIGH",
+      "listItems": 0,
+      "exists": true,
+      "placeholders": []
+    },
+    {
+      "docType": "Dependencies Catalog",
+      "issues": [
+        "Dependency summary table has no populated rows"
+      ],
+      "score": 90,
+      "codeBlocks": 0,
+      "tableRows": 21,
+      "quality": "HIGH",
+      "listItems": 0,
+      "exists": true,
+      "placeholders": []
+    },
+    {
+      "docType": "Task Guides",
+      "issues": [],
+      "score": 100,
+      "codeBlocks": 0,
+      "tableRows": 7,
+      "quality": "HIGH",
+      "listItems": 9,
+      "exists": true,
+      "placeholders": []
+    }
+  ],
+  "overall": {
+    "lowQuality": 0,
+    "mediumQuality": 1,
+    "missingDocs": 0,
+    "adjustedAverageScore": 86.0,
+    "highQuality": 9,
+    "averageScore": 93.5,
+    "hardPenaltyReasons": [],
+    "hardPenaltyApplied": false,
+    "totalDocs": 10
+  },
+  "status": "fail",
+  "timestamp": "2026-03-04 15:09:04",
+  "penaltyBreakdown": {
+    "totalPenaltyPoints": 32,
+    "categoryTotals": {
+      "contradiction": 0,
+      "duplicateRows": 16,
+      "misclassification": 0,
+      "staleProvenance": 16,
+      "verbosityOverflow": 0
+    },
+    "perArtifact": {
+      "start-here": {
+        "total": 8,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 8,
+        "verbosityOverflow": 0,
+        "reasons": [
+          "provenance-missing-generated"
+        ]
+      },
+      "overview": {
+        "total": 0,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": []
+      },
+      "api-inventory": {
+        "total": 0,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": []
+      },
+      "data-model": {
+        "total": 0,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": []
+      },
+      "config-catalog": {
+        "total": 8,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 8,
+        "verbosityOverflow": 0,
+        "reasons": [
+          "provenance-missing-generated"
+        ]
+      },
+      "build-cookbook": {
+        "total": 0,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": []
+      },
+      "test-catalog": {
+        "total": 0,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": []
+      },
+      "task-guides": {
+        "total": 0,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": []
+      },
+      "debt-register": {
+        "total": 0,
+        "contradiction": 0,
+        "duplicateRows": 0,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": []
+      },
+      "dependencies-catalog": {
+        "total": 16,
+        "contradiction": 0,
+        "duplicateRows": 16,
+        "misclassification": 0,
+        "staleProvenance": 0,
+        "verbosityOverflow": 0,
+        "reasons": [
+          "duplicate-rows:2"
+        ]
+      }
+    },
+    "artifactCount": 10
+  },
+  "provenance": {
+    "generatorVersion": "appdoc-run-all-generators/3.0.0",
+    "commitHash": "1a97947",
+    "generatedAt": "2026-03-04T15:09:09-05:00",
+    "profile": "default",
+    "scope": ".",
+    "confidenceInferenceFlags": [
+      "deterministic",
+      "evidence-backed"
+    ]
+  }
+}

@@ -1700,6 +1700,9 @@ if ($scriptFailures.Count -gt 0) {
 }
 
 Write-Host "`nAll generators completed." -ForegroundColor Green
+Write-Host "Next step: bootstrap enriched evidence with run-appdoc-enrich.ps1." -ForegroundColor Cyan
+Write-Host "  pwsh ./.appdoc/scripts/powershell/run-appdoc-enrich.ps1 -RootPath \"$RootPath\"" -ForegroundColor Gray
+Write-Host "After enrichment, run /appdoc.enhance for editorial polish." -ForegroundColor Cyan
 
 if (-not $DryRun) {
     Remove-Item -Path $runSessionPath -Force -ErrorAction SilentlyContinue

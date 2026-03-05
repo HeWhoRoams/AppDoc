@@ -1,0 +1,50 @@
+{
+  "artifact": "build-cookbook",
+  "architectureFingerprint": "no-api-surface",
+  "generatedAt": "2026-03-05T16:38:21-05:00",
+  "recordCount": 1,
+  "records": [
+    {
+      "artifact": "build-cookbook",
+      "source": ".github/workflows/appdoc-ci.yml",
+      "name": "GitHub Actions",
+      "kind": "cicd",
+      "confidence": 1.0,
+      "metadata": {
+        "details": "Workflow: appdoc-ci",
+        "file": "appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-03-04T15:08:53-05:00",
+      "confidenceNote": null,
+      "role": null,
+      "businessPurpose": "Purpose unclear from available evidence — review .github/workflows/appdoc-ci.yml.",
+      "isGenerated": null,
+      "tier": null,
+      "dependencyKind": null,
+      "criticalPath": null,
+      "upgradeUrgency": null,
+      "requiredForDeployment": null,
+      "schemaSource": null,
+      "integrationTargets": null,
+      "relationships": null,
+      "operationalProfile": null,
+      "projectRole": null,
+      "usageFrequency": null,
+      "testDiagnosis": null
+    }
+  ],
+  "metadata": {
+    "enriched": true,
+    "enrichmentMode": "semantic-applied",
+    "enrichmentPrompt": ".github/prompts/appdoc.enrich.prompt.md",
+    "sourceEvidence": "build-cookbook.evidence.json",
+    "requiresSemanticEnrichment": true,
+    "semanticInputPath": ".\\docs\\evidence\\semantic\\input\\build-cookbook.semantic.input.json",
+    "semanticOutputPath": "",
+    "semanticOutputApplied": false,
+    "semanticAppliedAt": "2026-03-05T16:38:22-05:00"
+  }
+}

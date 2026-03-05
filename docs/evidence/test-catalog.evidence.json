@@ -1,0 +1,28 @@
+{
+  "artifact": "test-catalog",
+  "generatedAt": "2026-03-04T15:08:54-05:00",
+  "recordCount": 0,
+  "records": [],
+  "metadata": {
+    "graphSchemaTarget": "appdoc-evidence-graph/v1",
+    "testCount": 0,
+    "suiteCount": 0,
+    "requiredSections": [
+      "Executive Summary",
+      "Test Suites"
+    ],
+    "generator": "generate-test-catalog.ps1",
+    "requiredEvidenceKeys": [
+      "testSuites"
+    ]
+  },
+  "determinism": {
+    "hashAlgorithm": "SHA256",
+    "excludeKeys": [
+      "generatedAt",
+      "updatedAt",
+      "timestamp"
+    ],
+    "contentHash": "db6cc8fd400941a1d687a70fe0e8943a42e898e5b979152c761c04f1971cd467"
+  }
+}

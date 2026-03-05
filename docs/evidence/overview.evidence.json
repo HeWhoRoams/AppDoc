@@ -1,0 +1,125 @@
+{
+  "artifact": "overview",
+  "generatedAt": "2026-03-04T15:08:58-05:00",
+  "recordCount": 1,
+  "records": [
+    {
+      "artifact": "overview",
+      "source": "repository",
+      "name": "system-purpose",
+      "kind": "summary",
+      "confidence": 1.0,
+      "metadata": {
+        "languageCount": 1,
+        "text": "This codebase contains 1 code file(s) across 1 language(s) (framework detected: ASP.NET Core). Full analysis available in linked documentation.",
+        "fileCount": 1
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-03-04T15:08:58-05:00"
+    }
+  ],
+  "metadata": {
+    "evidenceGraphEntityCount": 56,
+    "evidenceGraphPath": ".\\docs\\evidence\\evidence-graph.json",
+    "welcomeNarrativePassSources": {
+      "pass1": "deterministic",
+      "pass2": "deterministic",
+      "pass3": "deterministic"
+    },
+    "welcomeNarrativeIssues": [],
+    "generator": "generate-overview.ps1",
+    "requiredEvidenceKeys": [
+      "summary",
+      "technologies"
+    ],
+    "truthPackPath": "docs/evidence/overview-truth-pack.json",
+    "welcomeStyleGatePassed": false,
+    "welcomeSectionCoverageIssues": [],
+    "welcomeStyleGateIssues": [
+      "style-business-verb-coverage-low:1",
+      "style-what-it-does-purpose-verb-low:0"
+    ],
+    "narrativeReviewRequired": true,
+    "welcomeNarrativeProvider": "deterministic",
+    "welcomeNarrativeVerified": true,
+    "welcomeStyleGateMetrics": {
+      "textItemCount": 8,
+      "inventoryLeadCount": 0,
+      "countOnlySentenceCount": 0,
+      "businessVerbHits": 1,
+      "whatItDoesMetricLeadCount": 0,
+      "whatItDoesPurposeVerbHits": 0,
+      "numericDensity": 0.0729
+    },
+    "welcomeSectionCoveragePassed": true,
+    "evidenceGraphEdgeCount": 54,
+    "narrativeRunReport": {
+      "pipelineVersion": "1.1.0",
+      "startedAt": "2026-03-04T15:08:57-05:00",
+      "endedAt": "2026-03-04T15:08:57-05:00",
+      "durationMs": 101.0,
+      "model": "local-deterministic",
+      "executionMode": "local-deterministic",
+      "externalModelCalls": false,
+      "audience": "new_dev",
+      "styleProfile": "standard",
+      "passSources": {
+        "pass1": "deterministic",
+        "pass2": "deterministic",
+        "pass3": "deterministic"
+      },
+      "grounding": {
+        "passed": true,
+        "issues": []
+      },
+      "sectionCoverage": {
+        "passed": true,
+        "issues": []
+      },
+      "styleGate": {
+        "passed": false,
+        "issues": [
+          "style-business-verb-coverage-low:1",
+          "style-what-it-does-purpose-verb-low:0"
+        ],
+        "metrics": {
+          "textItemCount": 8,
+          "inventoryLeadCount": 0,
+          "countOnlySentenceCount": 0,
+          "businessVerbHits": 1,
+          "whatItDoesMetricLeadCount": 0,
+          "whatItDoesPurposeVerbHits": 0,
+          "numericDensity": 0.0729
+        }
+      },
+      "narrativeReviewRequired": true,
+      "autoPassWithoutHumanEdits": false
+    },
+    "contextPackPath": "docs/evidence/narrative-context-pack.json",
+    "requiredSections": [
+      "System Boundary",
+      "Runtime Path",
+      "Inputs→Processing→Outputs",
+      "External Systems",
+      "Confidence Notes"
+    ],
+    "narrativeArtifacts": {
+      "pass1": "docs/evidence/narrative/purpose_model.json",
+      "pass2": "docs/evidence/narrative/narrative_draft.md",
+      "pass3": "docs/evidence/narrative/review_notes.json",
+      "final": "docs/evidence/narrative/narrative_final.json",
+      "runReport": "docs/evidence/narrative-run-report.json"
+    }
+  },
+  "determinism": {
+    "hashAlgorithm": "SHA256",
+    "excludeKeys": [
+      "generatedAt",
+      "updatedAt",
+      "timestamp"
+    ],
+    "contentHash": "5b39ec105afad2d70ee1a598561f7a3d5c1d2e03fef952f591c892d7cabc7750"
+  }
+}

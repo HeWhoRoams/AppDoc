@@ -107,6 +107,66 @@ if (-not $hasDependencies -or -not $hasProjects) {
 $dependencies = @($depData.dependencies)
 $projects = @($depData.projects)
 
+function Set-AppDocFieldValue {
+    param(
+        [Parameter(Mandatory=$true)]
+        [object]$Target,
+        [Parameter(Mandatory=$true)]
+        [string]$Name,
+        $Value
+    )
+
+    if ($Target -is [System.Collections.IDictionary]) {
+        $Target[$Name] = $Value
+        return
+    }
+
+    $existing = $Target.PSObject.Properties[$Name]
+    if ($existing) {
+        $existing.Value = $Value
+    }
+    else {
+        Add-Member -InputObject $Target -MemberType NoteProperty -Name $Name -Value $Value -Force
+    }
+}
+
+$enrichedEvidencePath = Join-Path $RootPath "docs\evidence\dependencies-catalog.evidence.enriched.json"
+if (Test-Path $enrichedEvidencePath) {
+    try {
+        $enrichedPayload = Get-Content -Path $enrichedEvidencePath -Raw | ConvertFrom-Json -Depth 80
+        $enrichedRecords = @($enrichedPayload.records | Where-Object { $_ -and [string]$_.kind -eq 'dependency' })
+        if ($enrichedRecords.Count -gt 0) {
+            $lookup = @{}
+            foreach ($record in $enrichedRecords) {
+                $recordSource = [string]$record.source
+                $recordName = [string]$record.name
+                $lookupKey = ("{0}|{1}" -f $recordSource.ToLowerInvariant(), $recordName.ToLowerInvariant())
+                $lookup[$lookupKey] = $record
+            }
+
+            foreach ($dependency in $dependencies) {
+                $depSource = [string]$dependency.source
+                $depName = [string]$dependency.name
+                $lookupKey = ("{0}|{1}" -f $depSource.ToLowerInvariant(), $depName.ToLowerInvariant())
+                if ($lookup.ContainsKey($lookupKey)) {
+                    $record = $lookup[$lookupKey]
+                    Set-AppDocFieldValue -Target $dependency -Name 'dependencyKind' -Value $record.dependencyKind
+                    Set-AppDocFieldValue -Target $dependency -Name 'criticalPath' -Value $record.criticalPath
+                    Set-AppDocFieldValue -Target $dependency -Name 'upgradeUrgency' -Value $record.upgradeUrgency
+                    Set-AppDocFieldValue -Target $dependency -Name 'businessPurpose' -Value $record.businessPurpose
+                    Set-AppDocFieldValue -Target $dependency -Name 'confidence' -Value $record.confidence
+                    Set-AppDocFieldValue -Target $dependency -Name 'confidenceNote' -Value $record.confidenceNote
+                }
+            }
+
+            Write-Host "   Applied enriched dependency records: $($enrichedRecords.Count)" -ForegroundColor Gray
+        }
+    }
+    catch {
+        Write-Warning "Failed to apply enriched dependency evidence: $($_.Exception.Message)"
+    }
+}
+
 Write-Progress -Activity "Generating Dependencies Catalog" -Status "Populating template..." -PercentComplete 60
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocDependenciesCatalogContent -Content $content -Dependencies $dependencies -Projects $projects

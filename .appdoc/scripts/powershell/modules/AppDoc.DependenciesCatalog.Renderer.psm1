@@ -39,9 +39,78 @@ Dependency records in scope: none in this scan. The repository may be self-conta
     $projectRefsPlaceholder = "Project-reference edges in scope: none in this scan."
     $versionConflictsPlaceholder = "Version divergence signals in scope: none in this scan."
 
-    $nugetCount = (@($Dependencies | Where-Object { $_.type -eq 'NuGet Package' })).Count
-    $projectRefCount = (@($Dependencies | Where-Object { $_.type -eq 'Project Reference' })).Count
-    $assemblyRefCount = (@($Dependencies | Where-Object { $_.type -in @('GAC Assembly', 'Assembly Reference') })).Count
+    $getField = {
+        param($record, [string]$fieldName, $defaultValue = $null)
+
+        if ($null -eq $record) { return $defaultValue }
+
+        if ($record -is [System.Collections.IDictionary] -and $record.Contains($fieldName)) {
+            return $record[$fieldName]
+        }
+
+        $prop = $record.PSObject.Properties[$fieldName]
+        if ($prop) { return $prop.Value }
+
+        $metadata = $null
+        if ($record -is [System.Collections.IDictionary] -and $record.Contains('metadata')) {
+            $metadata = $record['metadata']
+        } elseif ($record.PSObject.Properties['metadata']) {
+            $metadata = $record.metadata
+        }
+
+        if ($null -ne $metadata) {
+            if ($metadata -is [System.Collections.IDictionary] -and $metadata.Contains($fieldName)) {
+                return $metadata[$fieldName]
+            }
+            $metadataProp = $metadata.PSObject.Properties[$fieldName]
+            if ($metadataProp) { return $metadataProp.Value }
+        }
+
+        return $defaultValue
+    }
+
+    $resolveDependencyKind = {
+        param($dependency)
+
+        $kind = [string](& $getField $dependency 'dependencyKind' '')
+        if (-not [string]::IsNullOrWhiteSpace($kind)) { return $kind.ToLowerInvariant() }
+
+        $type = [string](& $getField $dependency 'type' '')
+        if ($type -match '(?i)^nuget') { return 'nuget' }
+        if ($type -match '(?i)assembly|gac') { return 'assembly-reference' }
+        if ($type -match '(?i)npm') { return 'npm' }
+        if ($type -match '(?i)python|pip') { return 'python' }
+        if ($type -match '(?i)maven|gradle|java') { return 'maven' }
+        if ($type -match '(?i)project reference') { return 'project-reference' }
+        return 'system'
+    }
+
+    $normalizedDependencies = @(
+        $Dependencies | ForEach-Object {
+            $name = [string](& $getField $_ 'name' '')
+            $version = [string](& $getField $_ 'version' '')
+            $type = [string](& $getField $_ 'type' '')
+            $project = [string](& $getField $_ 'project' '')
+            $source = [string](& $getField $_ 'source' '')
+            $criticalPathRaw = & $getField $_ 'criticalPath' $null
+            $businessPurpose = [string](& $getField $_ 'businessPurpose' '')
+
+            [ordered]@{
+                name = $name
+                version = if ([string]::IsNullOrWhiteSpace($version)) { "Unspecified" } else { $version }
+                type = $type
+                project = $project
+                source = $source
+                dependencyKind = (& $resolveDependencyKind $_)
+                criticalPath = $criticalPathRaw
+                businessPurpose = $businessPurpose
+            }
+        }
+    )
+
+    $nugetCount = (@($normalizedDependencies | Where-Object { $_.dependencyKind -eq 'nuget' })).Count
+    $projectRefCount = (@($normalizedDependencies | Where-Object { $_.dependencyKind -eq 'project-reference' })).Count
+    $assemblyRefCount = (@($normalizedDependencies | Where-Object { $_.dependencyKind -eq 'assembly-reference' })).Count
 
     $summaryContent = if ($Dependencies.Count -gt 0) {
 @"
@@ -57,23 +126,57 @@ Dependency records in scope: none in this scan. The repository may be self-conta
         $summaryTablePlaceholder
     }
 
-    $nugetPackages = @($Dependencies | Where-Object { $_.type -eq 'NuGet Package' })
-    $npmPackages = @($Dependencies | Where-Object { [string]$_.type -match '(?i)npm' })
-    $pythonPackages = @($Dependencies | Where-Object { [string]$_.type -match '(?i)python|pip' })
-    $mavenPackages = @($Dependencies | Where-Object { [string]$_.type -match '(?i)maven|gradle|java' })
+    $nugetPackages = @($normalizedDependencies | Where-Object { $_.dependencyKind -eq 'nuget' })
+    $assemblyPackages = @($normalizedDependencies | Where-Object { $_.dependencyKind -eq 'assembly-reference' })
+    $npmPackages = @($normalizedDependencies | Where-Object { $_.dependencyKind -eq 'npm' })
+    $pythonPackages = @($normalizedDependencies | Where-Object { $_.dependencyKind -eq 'python' })
+    $mavenPackages = @($normalizedDependencies | Where-Object { $_.dependencyKind -eq 'maven' })
+
+    $resolveCriticalPath = {
+        param($name, $uniqueProjects, $explicitCriticalPath)
+
+        if ($null -ne $explicitCriticalPath -and -not [string]::IsNullOrWhiteSpace([string]$explicitCriticalPath)) {
+            return (if ([bool]$explicitCriticalPath) { "Yes" } else { "No" })
+        }
+
+        if (($name -match '(?i)(microsoft\.extensions|system|newtonsoft|entityframework|auth|spring|jackson|http|security|django|flask|fastapi|requests|sqlalchemy|react|angular|vue|express|axios|routing)') -or ($uniqueProjects.Count -ge 3)) {
+            return "Yes"
+        }
+        return "No"
+    }
 
     $nugetContent = if ($nugetPackages.Count -gt 0) {
         $rows = $nugetPackages | Group-Object -Property name | Sort-Object Name | ForEach-Object {
             $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
             $uniqueProjects = @($_.Group.project | Sort-Object -Unique)
             $usedBy = $uniqueProjects -join ', '
-            $criticalPath = if (($_.Name -match '(?i)(microsoft\.extensions|system|newtonsoft|entityframework|auth)') -or ($uniqueProjects.Count -ge 3)) { "Yes" } else { "No" }
-            "| ``$($_.Name)`` | $versions | $usedBy | NuGet package | $criticalPath |"
+            $explicitCriticalPath = ($_.Group | Select-Object -First 1).criticalPath
+            $criticalPath = & $resolveCriticalPath $_.Name $uniqueProjects $explicitCriticalPath
+            $purpose = ($_.Group | Select-Object -First 1).businessPurpose
+            if ([string]::IsNullOrWhiteSpace([string]$purpose)) { $purpose = "NuGet package" }
+            "| ``$($_.Name)`` | $versions | $usedBy | $purpose | $criticalPath |"
+        }
+
+        $assemblyRows = $assemblyPackages | Group-Object -Property name | Sort-Object Name | ForEach-Object {
+            $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
+            $uniqueProjects = @($_.Group.project | Sort-Object -Unique)
+            $usedBy = $uniqueProjects -join ', '
+            $explicitCriticalPath = ($_.Group | Select-Object -First 1).criticalPath
+            $criticalPath = & $resolveCriticalPath $_.Name $uniqueProjects $explicitCriticalPath
+            $purpose = ($_.Group | Select-Object -First 1).businessPurpose
+            if ([string]::IsNullOrWhiteSpace([string]$purpose)) { $purpose = "Assembly reference" }
+            "| ``$($_.Name)`` | $versions | $usedBy | $purpose | $criticalPath |"
         }
 @"
 | Package | Version | Used By | Purpose | Critical Path |
 |---------|---------|---------|---------|---------------|
 $($rows -join "`n")
+
+#### Assembly References
+
+| Package | Version | Used By | Purpose | Critical Path |
+|---------|---------|---------|---------|---------------|
+$(if ($assemblyRows.Count -gt 0) { $assemblyRows -join "`n" } else { "| N/A | N/A | N/A | Assembly references in scope: none in this scan. | N/A |" })
 
 **Total NuGet Packages**: $(($nugetPackages | Group-Object name).Count)
 "@
@@ -85,8 +188,12 @@ $($rows -join "`n")
         $rows = $npmPackages | Group-Object -Property name | Sort-Object Name | ForEach-Object {
             $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
             $usedBy = ($_.Group.project | Sort-Object -Unique) -join ', '
-            $criticalPath = if (($_.Name -match '(?i)(react|angular|vue|express|axios|auth|routing)') -or (@($_.Group.project | Sort-Object -Unique).Count -ge 2)) { "Yes" } else { "No" }
-            "| ``$($_.Name)`` | $versions | $usedBy | NPM package | $criticalPath |"
+            $uniqueProjects = @($_.Group.project | Sort-Object -Unique)
+            $explicitCriticalPath = ($_.Group | Select-Object -First 1).criticalPath
+            $criticalPath = & $resolveCriticalPath $_.Name $uniqueProjects $explicitCriticalPath
+            $purpose = ($_.Group | Select-Object -First 1).businessPurpose
+            if ([string]::IsNullOrWhiteSpace([string]$purpose)) { $purpose = "NPM package" }
+            "| ``$($_.Name)`` | $versions | $usedBy | $purpose | $criticalPath |"
         }
 @"
 | Package | Version | Used By | Purpose | Critical Path |
@@ -103,8 +210,11 @@ $($rows -join "`n")
             $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
             $uniqueProjects = ($_.Group.project | Sort-Object -Unique)
             $usedBy = $uniqueProjects -join ', '
-            $criticalPath = if (($_.Name -match '(?i)(django|flask|fastapi|requests|sqlalchemy|auth)') -or ($uniqueProjects.Count -ge 2)) { "Yes" } else { "No" }
-            "| ``$($_.Name)`` | $versions | $usedBy | Python package | $criticalPath |"
+            $explicitCriticalPath = ($_.Group | Select-Object -First 1).criticalPath
+            $criticalPath = & $resolveCriticalPath $_.Name $uniqueProjects $explicitCriticalPath
+            $purpose = ($_.Group | Select-Object -First 1).businessPurpose
+            if ([string]::IsNullOrWhiteSpace([string]$purpose)) { $purpose = "Python package" }
+            "| ``$($_.Name)`` | $versions | $usedBy | $purpose | $criticalPath |"
         }
 @"
 | Package | Version | Used By | Purpose | Critical Path |
@@ -121,9 +231,11 @@ $($rows -join "`n")
             $versions = ($_.Group.version | Sort-Object -Unique) -join ', '
             $uniqueProjects = @($_.Group.project | Sort-Object -Unique)
             $usedBy = $uniqueProjects -join ', '
-            # Maven/Gradle uses >= 2 projects for critical path, NuGet uses >= 3. Change to >= 3 for consistency, or adjust comment if keeping >= 2.
-            $criticalPath = if (($_.Name -match '(?i)(spring|jackson|http|security|hibernate)') -or ($uniqueProjects.Count -ge 3)) { "Yes" } else { "No" }
-            "| ``$($_.Name)`` | $versions | $usedBy | Maven/Gradle dependency | $criticalPath |"
+            $explicitCriticalPath = ($_.Group | Select-Object -First 1).criticalPath
+            $criticalPath = & $resolveCriticalPath $_.Name $uniqueProjects $explicitCriticalPath
+            $purpose = ($_.Group | Select-Object -First 1).businessPurpose
+            if ([string]::IsNullOrWhiteSpace([string]$purpose)) { $purpose = "Maven/Gradle dependency" }
+            "| ``$($_.Name)`` | $versions | $usedBy | $purpose | $criticalPath |"
         }
 @"
 | Package | Version | Used By | Purpose | Critical Path |
@@ -135,7 +247,7 @@ $($rows -join "`n")
         $mavenPlaceholder
     }
 
-    $projectRefs = @($Dependencies | Where-Object { $_.type -eq 'Project Reference' })
+    $projectRefs = @($normalizedDependencies | Where-Object { $_.dependencyKind -eq 'project-reference' })
     $projectRefsContent = if ($projectRefs.Count -gt 0) {
         $rows = $projectRefs | Group-Object -Property name | Sort-Object Name | ForEach-Object {
             $usedBy = ($_.Group.project | Sort-Object -Unique) -join ', '
@@ -153,7 +265,7 @@ $($rows -join "`n")
     }
 
     $versionConflicts = @(
-        $Dependencies | Where-Object { $_.type -eq 'NuGet Package' } | Group-Object -Property name |
+        $normalizedDependencies | Where-Object { $_.dependencyKind -eq 'nuget' } | Group-Object -Property name |
             Where-Object { ($_.Group.version | Sort-Object -Unique).Count -gt 1 }
     )
     $versionConflictsContent = if ($versionConflicts.Count -gt 0) {

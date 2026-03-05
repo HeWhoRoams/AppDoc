@@ -1,0 +1,28 @@
+{
+  "artifact": "dependencies-catalog",
+  "generatedAt": "2026-03-05T16:38:35-05:00",
+  "recordCount": 0,
+  "records": [],
+  "metadata": {
+    "requiredEvidenceKeys": [
+      "dependencies"
+    ],
+    "requiredSections": [
+      "Executive Summary",
+      "Dependency Summary"
+    ],
+    "graphSchemaTarget": "appdoc-evidence-graph/v1",
+    "generator": "generate-dependencies-catalog.ps1",
+    "dependencyCount": 0,
+    "projectCount": 0
+  },
+  "determinism": {
+    "hashAlgorithm": "SHA256",
+    "excludeKeys": [
+      "generatedAt",
+      "updatedAt",
+      "timestamp"
+    ],
+    "contentHash": "699efe1fa75243aefc0c7ceabf962969f018ea142f08b5fdc1807c7d5f51c488"
+  }
+}

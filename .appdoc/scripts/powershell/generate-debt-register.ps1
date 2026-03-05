@@ -73,6 +73,67 @@ if ($debtData -and $debtData.debts) {
     $debts = @()
 }
 
+function Set-AppDocFieldValue {
+    param(
+        [Parameter(Mandatory=$true)]
+        [object]$Target,
+        [Parameter(Mandatory=$true)]
+        [string]$Name,
+        $Value
+    )
+
+    if ($Target -is [System.Collections.IDictionary]) {
+        $Target[$Name] = $Value
+        return
+    }
+
+    $existing = $Target.PSObject.Properties[$Name]
+    if ($existing) {
+        $existing.Value = $Value
+    }
+    else {
+        Add-Member -InputObject $Target -MemberType NoteProperty -Name $Name -Value $Value -Force
+    }
+}
+
+$enrichedEvidencePath = Join-Path $RootPath "docs\evidence\debt-register.evidence.enriched.json"
+if (Test-Path $enrichedEvidencePath) {
+    try {
+        $enrichedPayload = Get-Content -Path $enrichedEvidencePath -Raw | ConvertFrom-Json -Depth 80
+        $enrichedRecords = @($enrichedPayload.records | Where-Object { $_ -and [string]$_.kind -in @('technical-debt', 'debt-item') })
+        if ($enrichedRecords.Count -gt 0) {
+            $lookup = @{}
+            foreach ($record in $enrichedRecords) {
+                $recordSource = [string]$record.source
+                $recordName = [string]$record.name
+                $recordLine = if ($record.metadata -and $record.metadata.line) { [string]$record.metadata.line } else { '' }
+                $lookupKey = ("{0}|{1}|{2}" -f $recordSource.ToLowerInvariant(), $recordName.ToLowerInvariant(), $recordLine)
+                $lookup[$lookupKey] = $record
+            }
+
+            foreach ($debt in $debts) {
+                $debtSource = if ($debt.filePath) { [string]$debt.filePath } else { [string]$debt.file }
+                $debtName = [string]$debt.type
+                $debtLine = [string]$debt.line
+                $lookupKey = ("{0}|{1}|{2}" -f $debtSource.ToLowerInvariant(), $debtName.ToLowerInvariant(), $debtLine)
+                if ($lookup.ContainsKey($lookupKey)) {
+                    $record = $lookup[$lookupKey]
+                    Set-AppDocFieldValue -Target $debt -Name 'role' -Value $record.role
+                    Set-AppDocFieldValue -Target $debt -Name 'businessPurpose' -Value $record.businessPurpose
+                    Set-AppDocFieldValue -Target $debt -Name 'isGenerated' -Value $record.isGenerated
+                    Set-AppDocFieldValue -Target $debt -Name 'confidence' -Value $record.confidence
+                    Set-AppDocFieldValue -Target $debt -Name 'confidenceNote' -Value $record.confidenceNote
+                }
+            }
+
+            Write-Host "   Applied enriched debt records: $($enrichedRecords.Count)" -ForegroundColor Gray
+        }
+    }
+    catch {
+        Write-Warning "Failed to apply enriched debt evidence: $($_.Exception.Message)"
+    }
+}
+
 Write-Progress -Activity "Generating Technical Debt Register" -Status "Populating template..." -PercentComplete 60
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocDebtRegisterContent -Content $content -Debts $debts

@@ -1,0 +1,36 @@
+{
+  "artifact": "overview",
+  "generatedAt": "2026-03-05T16:38:22-05:00",
+  "source": "overview.evidence.enriched.json",
+  "records": [
+    {
+      "source": "repository",
+      "name": "system-purpose",
+      "kind": "summary",
+      "confidence": 1.0,
+      "metadata": {
+        "languageCount": 1,
+        "text": "This codebase contains 1 code file(s) across 1 language(s) (framework detected: ASP.NET Core). Full analysis available in linked documentation.",
+        "fileCount": 1
+      },
+      "expectedFields": [
+        "confidenceNote",
+        "role",
+        "businessPurpose",
+        "isGenerated",
+        "tier",
+        "dependencyKind",
+        "criticalPath",
+        "upgradeUrgency",
+        "requiredForDeployment",
+        "schemaSource",
+        "integrationTargets",
+        "relationships",
+        "operationalProfile",
+        "projectRole",
+        "usageFrequency",
+        "testDiagnosis"
+      ]
+    }
+  ]
+}

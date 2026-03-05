@@ -10,3 +10,22 @@ PendingCount     : 9
 Time             : 00:00:04.1130373
 TestResult       : {@{Describe=C4ModelBuilder Module; Context=Get-ProjectFiles; Name=Should find projects from solution file; Result=Passed; Passed=True; Time=00:00:00.6099581; FailureMessage=; StackTrace=; ErrorRecord=; ParameterizedSuiteName=; Parameters=System.Collections.Specialized.OrderedDictionary}, @{Describe=C4ModelBuilder Module; Context=Get-ProjectFiles; Name=Should find .csproj files when given directory; Result=Passed; Passed=True; Time=00:00:00.0835582; FailureMessage=; StackTrace=; ErrorRecord=; ParameterizedSuiteName=; Parameters=System.Collections.Specialized.OrderedDictionary}, @{Describe=C4ModelBuilder Module; Context=Read-CsprojFile; Name=Should parse project file and extract metadata; Result=Passed; Passed=True; Time=00:00:00.1230502; FailureMessage=; StackTrace=; ErrorRecord=; ParameterizedSuiteName=; Parameters=System.Collections.Specialized.OrderedDictionary}, @{Describe=C4ModelBuilder Module; Context=Read-CsprojFile; Name=Should extract NuGet package references; Result=Passed; Passed=True; Time=00:00:00.0453131; FailureMessage=; StackTrace=; ErrorRecord=; ParameterizedSuiteName=; Parameters=System.Collections.Specialized.OrderedDictionary}…}
 
+Invoke-Pester: C:\Github\Appdoc\.tmp-logs\run-pester-safe.ps1:8:61
+Line |
+   8 |  … es = Invoke-Pester -Path 'tests/powershell' -PassThru -Output Detaile …
+     |                                                          ~~~~~~~
+     | Parameter cannot be processed because the parameter name 'Output' is
+     | ambiguous. Possible matches include: -OutputXml -OutputFile
+     | -OutputFormat.
+
+
+Invoke-Pester: C:\Github\Appdoc\.tmp-logs\run-pester-safe.ps1:8:75
+Line |
+   8 |  … ter -Path 'tests/powershell' -PassThru -OutputFormat Detailed | Tee-O …
+     |                                                         ~~~~~~~~
+     | Cannot validate argument on parameter 'OutputFormat'. The argument
+     | "Detailed" does not belong to the set "LegacyNUnitXml,NUnitXml"
+     | specified by the ValidateSet attribute. Supply an argument that is in
+     | the set and then try the command again.
+
+

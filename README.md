@@ -19,6 +19,9 @@ AppDoc provides automated documentation extraction, quality assessment, and impr
 Primary deterministic workflow:
 
 - `.appdoc/scripts/powershell/run-all-generators.ps1` — end-to-end deterministic pipeline
+- `.appdoc/scripts/powershell/run-appdoc-enrich.ps1` — bootstrap + semantic apply + enrichment gate orchestration
+- `.appdoc/scripts/powershell/run-appdoc-semantic-enrich.ps1` — file-driven semantic input/output apply for enriched evidence
+- `.appdoc/scripts/powershell/ci-enrichment-gate.ps1` — enrichment quality gate (Phase 2.5 checks)
 - `.appdoc/scripts/powershell/appdoc.diagnose.ps1` — environment/readiness diagnostics
 - `.appdoc/scripts/powershell/validate-documentation.ps1` — structured validation + scoring
 - `.appdoc/scripts/powershell/remediate-generated-docs.ps1` — post-generation cleanup + evidence traceability
@@ -37,7 +40,8 @@ Key generators in current workflow include:
 2. Open that repository in Visual Studio Code.
 3. Recommended: Generate workspace instructions or run an INIT command to have your AI investigate your codebase.
 4. Open the GitHub Copilot Chat and run `/appdoc.begin` to start the guided AppDoc workflow.
-5. Chat should prompt you to run `/appdoc.enhance` once that completes, otherwise run it.
+5. Run `pwsh ./.appdoc/scripts/powershell/run-appdoc-enrich.ps1 -RootPath <codebase-path>` to bootstrap evidence, apply semantic enrichment, and validate gate checks.
+6. Run `/appdoc.enhance` to apply editorial polish after enrichment.
 
 That's it — AppDoc will perform environment checks and walk you through analysis and generation.
 
@@ -68,6 +72,32 @@ Useful flags:
 - `-QualityThreshold <1-100>` — sets strict validation cutoff (default: `80`).
 - `-SkipDiagrams` — skips C4 diagram generation.
 Readability and narrative enhancements are handled directly in your IDE/chat AI session over local workspace context and generated evidence artifacts.
+
+Enrichment bootstrap command:
+
+`pwsh ./.appdoc/scripts/powershell/run-appdoc-enrich.ps1 -RootPath <codebase-path>`
+
+Strict gate mode (fails when enrichment checks do not pass):
+
+`pwsh ./.appdoc/scripts/powershell/run-appdoc-enrich.ps1 -RootPath <codebase-path> -StrictGate`
+
+By default, semantic apply runs before the gate and writes:
+
+- `docs/evidence/semantic/input/*.semantic.input.json` (records requiring semantic values)
+- `docs/evidence/semantic/output/*.semantic.output.json` (optional external semantic responses)
+- `docs/evidence/semantic/applied/*.semantic.applied.json` (post-apply snapshots)
+
+Use `-SkipSemanticApply` only when you intentionally want to gate existing enriched files as-is.
+
+Run gate standalone:
+
+`pwsh ./.appdoc/scripts/powershell/ci-enrichment-gate.ps1 -RootPath <codebase-path>`
+
+Recommended sequence:
+
+1. `run-all-generators.ps1`
+2. `run-appdoc-enrich.ps1`
+3. `/appdoc.enhance`
 
 Mermaid C4 diagrams can be generated directly with:
 

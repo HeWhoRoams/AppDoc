@@ -1,0 +1,35 @@
+{
+  "artifact": "build-cookbook",
+  "generatedAt": "2026-03-05T16:38:22-05:00",
+  "source": "build-cookbook.evidence.enriched.json",
+  "records": [
+    {
+      "source": ".github/workflows/appdoc-ci.yml",
+      "name": "GitHub Actions",
+      "kind": "cicd",
+      "confidence": 1.0,
+      "metadata": {
+        "details": "Workflow: appdoc-ci",
+        "file": "appdoc-ci.yml"
+      },
+      "expectedFields": [
+        "confidenceNote",
+        "role",
+        "businessPurpose",
+        "isGenerated",
+        "tier",
+        "dependencyKind",
+        "criticalPath",
+        "upgradeUrgency",
+        "requiredForDeployment",
+        "schemaSource",
+        "integrationTargets",
+        "relationships",
+        "operationalProfile",
+        "projectRole",
+        "usageFrequency",
+        "testDiagnosis"
+      ]
+    }
+  ]
+}

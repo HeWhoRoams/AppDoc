@@ -146,7 +146,7 @@ _No environment variables detected. System may use configuration files or defaul
             return "Controls the default PowerShell -ErrorAction for Copilot/automation commands."
         }
         # Generic fallback
-        return "Auto-generated: Controls $key behavior."
+        return "Purpose unclear from available evidence — review source usage."
     }
 
     # Parse settings.json for comments (if available)
@@ -166,14 +166,53 @@ _No environment variables detected. System may use configuration files or defaul
     }
 
     $configOptionsContent = if ($Configs.Count -gt 0) {
-        $isToolingConfig = {
+        $getField = {
+            param($record, [string]$fieldName, $defaultValue = $null)
+
+            if ($null -eq $record) { return $defaultValue }
+
+            if ($record -is [System.Collections.IDictionary] -and $record.Contains($fieldName)) {
+                return $record[$fieldName]
+            }
+
+            $prop = $record.PSObject.Properties[$fieldName]
+            if ($prop) { return $prop.Value }
+
+            $metadata = $null
+            if ($record -is [System.Collections.IDictionary] -and $record.Contains('metadata')) {
+                $metadata = $record['metadata']
+            } elseif ($record.PSObject.Properties['metadata']) {
+                $metadata = $record.metadata
+            }
+
+            if ($null -ne $metadata) {
+                if ($metadata -is [System.Collections.IDictionary] -and $metadata.Contains($fieldName)) {
+                    return $metadata[$fieldName]
+                }
+
+                $metadataProp = $metadata.PSObject.Properties[$fieldName]
+                if ($metadataProp) { return $metadataProp.Value }
+            }
+
+            return $defaultValue
+        }
+
+        $getTier = {
             param($cfg)
-            $src = [string]$cfg.source
-            $key = [string]$cfg.key
-            return (
-                $src -match '(?i)(\.vscode|tasks\.json|launch\.json|workflow|github|pipeline|ci|editorconfig|copilot)' -or
-                $key -match '(?i)(chat\.tools|copilot|pipeline|workflow|build|test)'
-            )
+
+            $explicitTier = [string](& $getField $cfg 'tier' '')
+            if (-not [string]::IsNullOrWhiteSpace($explicitTier)) {
+                return $explicitTier.ToLowerInvariant()
+            }
+
+            $src = [string](& $getField $cfg 'source' '')
+            $key = [string](& $getField $cfg 'key' (& $getField $cfg 'name' ''))
+
+            if ($src -match '(?i)(\.vscode|tasks\.json|launch\.json|workflow|github|pipeline|ci|editorconfig|copilot|\.csproj|packages\.config)') { return 'build-tooling' }
+            if ($src -match '(?i)(\.ya?ml|transform|appsettings\.[^.]+\.json|\.env\.[^.]+)') { return 'deployment' }
+            if ($key -match '(?i)(chat\.tools|copilot|pipeline|workflow|build|test|targetframework|outputtype)') { return 'build-tooling' }
+
+            return 'runtime'
         }
 
         $maskValue = {
@@ -187,33 +226,73 @@ _No environment variables detected. System may use configuration files or defaul
         }
 
         $renderRows = {
-            param([array]$rows, [bool]$isToolingConfig)
+            param([array]$rows, [string]$tier)
             foreach ($item in $rows) {
-                $key = Sanitize-AppDocConfigMarkdownCell -Value $item.key -MaxLength 120
-                $displayValue = & $maskValue $item.key $item.value
-                $type = Sanitize-AppDocConfigMarkdownCell -Value (Infer-AppDocConfigType $item.value) -MaxLength 40
-                $source = Sanitize-AppDocConfigMarkdownCell -Value $item.source -MaxLength 120
+                $rawKey = [string](& $getField $item 'key' (& $getField $item 'name' ''))
+                $rawValue = & $getField $item 'value' (& $getField $item 'default' '')
+                $rawSource = [string](& $getField $item 'source' (& $getField $item 'file' ''))
+                $rawType = [string](& $getField $item 'type' '')
+                $rawBusinessPurpose = [string](& $getField $item 'businessPurpose' '')
+                $rawRequired = & $getField $item 'required' $false
+                $rawRequiredForDeployment = & $getField $item 'requiredForDeployment' $null
+
+                $key = Sanitize-AppDocConfigMarkdownCell -Value $rawKey -MaxLength 120
+                $displayValue = & $maskValue $rawKey $rawValue
+                $inferredType = if ([string]::IsNullOrWhiteSpace($rawType)) { Infer-AppDocConfigType $rawValue } else { $rawType }
+                $type = Sanitize-AppDocConfigMarkdownCell -Value $inferredType -MaxLength 40
+                $source = Sanitize-AppDocConfigMarkdownCell -Value $rawSource -MaxLength 120
                 $parent = $null
                 if ($key -match '^(.*?)\.[^.]+$') { $parent = $Matches[1] }
-                $description = Synthesize-AppDocConfigDescription $key $parent $settingsComments
-                $required = if ($item.required) { "Yes" } else { "No" }
-                $whereUsed = if ($isToolingConfig) { "Tooling/workflow" } else { "Runtime path" }
-                $environmentReq = if ($source -match '(?i)\.env|appsettings\.[^.]+\.json|transform') { "Environment-specific" } else { "Shared default" }
+                $description = if (-not [string]::IsNullOrWhiteSpace($rawBusinessPurpose)) {
+                    Sanitize-AppDocConfigMarkdownCell -Value $rawBusinessPurpose -MaxLength 180
+                } else {
+                    Synthesize-AppDocConfigDescription $key $parent $settingsComments
+                }
+
+                $required = if ([string]::IsNullOrWhiteSpace([string]$rawRequiredForDeployment)) {
+                    if ([bool]$rawRequired) { "Yes" } else { "No" }
+                } else {
+                    if ([bool]$rawRequiredForDeployment) { "Yes" } else { "No" }
+                }
+
+                $whereUsed = switch ($tier) {
+                    'build-tooling' { 'Tooling/workflow' }
+                    'deployment' { 'Deployment/environment' }
+                    default { 'Runtime path' }
+                }
+
+                $environmentReq = switch ($tier) {
+                    'deployment' { 'Environment-specific' }
+                    'build-tooling' { 'Build pipeline' }
+                    default {
+                        if ($required -eq 'Yes') { 'Environment-specific' } else { 'Shared default' }
+                    }
+                }
                 "| $key | $type | $displayValue | $description | $required | $whereUsed | $environmentReq | $source |"
             }
         }
 
-        $runtimeConfigs = @($Configs | Where-Object { -not (& $isToolingConfig $_) })
-        $toolingConfigs = @($Configs | Where-Object { (& $isToolingConfig $_) })
+        $runtimeConfigs = @($Configs | Where-Object { (& $getTier $_) -eq 'runtime' })
+        $deploymentConfigs = @($Configs | Where-Object { (& $getTier $_) -eq 'deployment' })
+        $toolingConfigs = @($Configs | Where-Object { (& $getTier $_) -eq 'build-tooling' })
+        $unclassifiedConfigs = @($Configs | Where-Object { @('runtime', 'deployment', 'build-tooling') -notcontains (& $getTier $_) })
+        if ($unclassifiedConfigs.Count -gt 0) {
+            $runtimeConfigs = @($runtimeConfigs + $unclassifiedConfigs)
+        }
 
         $tableHeader = "| Name | Type | Default | Description | Required | Where Used | Environment Requirement | Source |`n|------|------|---------|-------------|----------|------------|--------------------------|--------|"
-        $runtimeRows = @(& $renderRows $runtimeConfigs $false)
-        $toolingRows = @(& $renderRows $toolingConfigs $true)
+        $runtimeRows = @(& $renderRows $runtimeConfigs 'runtime')
+        $deploymentRows = @(& $renderRows $deploymentConfigs 'deployment')
+        $toolingRows = @(& $renderRows $toolingConfigs 'build-tooling')
 
         @(
             "### Runtime Configuration (Priority)",
             "",
             $(if ($runtimeRows.Count -gt 0) { $tableHeader + "`n" + ($runtimeRows -join "`n") } else { "No runtime configuration entries detected." }),
+            "",
+            "### Deployment / Environment Configuration",
+            "",
+            $(if ($deploymentRows.Count -gt 0) { $tableHeader + "`n" + ($deploymentRows -join "`n") } else { "No deployment/environment configuration entries detected." }),
             "",
             "### Tooling and Workflow Configuration",
             "",
