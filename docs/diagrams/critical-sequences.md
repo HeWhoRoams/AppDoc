@@ -1,13 +1,12 @@
 # Critical Sequences
 
-_Generated: 2026-03-04 15:09:02_
+_Generated: 2026-03-11 15:01:53_
 
 ## What This View Explains
 
 This artifact captures the highest-signal runtime request journeys from deterministic evidence so teams can review end-to-end behavior quickly.
 
 No high-confidence request journeys were available for scenario rendering in this scan.
-Evidence was scanned (cfg-0001, cfg-0002, cfg-0003, cfg-0004, cfg-0005, cfg-0006, cfg-0007, cfg-0008, cfg-0009) but was insufficient for reconstructing high-confidence request journeys.
 
 ## Baseline Sequence
 
@@ -22,13 +21,5 @@ sequenceDiagram
 
 ## Evidence Refs
 
-- cfg-0001
-- cfg-0002
-- cfg-0003
-- cfg-0004
-- cfg-0005
-- cfg-0006
-- cfg-0007
-- cfg-0008
-- cfg-0009
+- No evidence references captured in this run.
 

@@ -136,7 +136,10 @@ Dependency records in scope: none in this scan. The repository may be self-conta
         param($name, $uniqueProjects, $explicitCriticalPath)
 
         if ($null -ne $explicitCriticalPath -and -not [string]::IsNullOrWhiteSpace([string]$explicitCriticalPath)) {
-            return (if ([bool]$explicitCriticalPath) { "Yes" } else { "No" })
+            if ([bool]$explicitCriticalPath) {
+                return "Yes"
+            }
+            return "No"
         }
 
         if (($name -match '(?i)(microsoft\.extensions|system|newtonsoft|entityframework|auth|spring|jackson|http|security|django|flask|fastapi|requests|sqlalchemy|react|angular|vue|express|axios|routing)') -or ($uniqueProjects.Count -ge 3)) {
@@ -359,15 +362,6 @@ function Update-AppDocDependenciesCatalogContent {
             }
         }
     }
-
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Overview\s*\r?\n\r?\n).*?(?=\r?\n##\s+Dependency Summary\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + "This catalog aggregates dependencies discovered from package manifests, project references, and assembly references. Use it to identify version drift, runtime coupling, and upgrade planning priorities." + "`r`n")
-        }
-    )
 
     $updated = [regex]::Replace(
         $updated,

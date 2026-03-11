@@ -1,12 +1,8 @@
 # Data Model Catalog
 
-## Executive Summary
+## Summary
 
 This document defines all data structures, entities, and their relationships within the system. It provides developers with a comprehensive understanding of the data architecture, including field types, constraints, validation rules, and data flow patterns. Use this as a reference for database design, API contract validation, and understanding system state management.
-
-## Overview
-
-This catalog is extracted from model/type declarations and grouped by domain, model size, and structural shape to support impact analysis and refactoring.
 
 ## Data Models
 

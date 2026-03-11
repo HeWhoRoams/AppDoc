@@ -374,15 +374,6 @@ function Update-AppDocConfigCatalogContent {
         }
     )
 
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Overview\s*\r?\n\r?\n).*?(?=\r?\n##\s+Configuration Sources\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + "This catalog is assembled from Web.config/App.config, project files, and pipeline YAML to show where runtime and deployment behavior are controlled." + "`r`n")
-        }
-    )
-
     $sectionFallbacks = [ordered]@{
         'Configuration Validation' = 'This run extracted configuration keys and sources but not a full validation matrix. Treat required-key checks, value-shape checks, and environment overrides as mandatory pre-release validation tasks.'
         'Configuration Management' = 'Configuration is distributed across application config files, transforms, project metadata, and pipeline settings. Manage changes with environment-specific promotion controls and explicit review for sensitive settings.'

@@ -1,6 +1,40 @@
 {
+  "determinism": {
+    "canonicalOrdering": [
+      "nodes:type,label,id",
+      "edges:from,to,type,label,id"
+    ],
+    "stableIdAlgorithm": "sha1(prefix|seed)[0:8]",
+    "hashAlgorithm": "SHA256",
+    "excludeKeys": [
+      "generatedAt",
+      "updatedAt",
+      "timestamp"
+    ],
+    "contentHash": "669db5ead7bc9bf797745c96b5dc4582d90b283145c702bd2ec760d6bf083cb1"
+  },
+  "generatedAt": "2026-03-11T15:01:53-04:00",
   "edges": [],
-  "generatedAt": "2026-03-04T15:09:02-05:00",
+  "metrics": {
+    "nodeCount": 10,
+    "edgeCount": 0,
+    "inboundEndpointCount": 0,
+    "outboundEndpointCount": 0,
+    "componentCount": 1,
+    "modelCount": 0,
+    "configCount": 9,
+    "dependencyCount": 0
+  },
+  "sources": {
+    "configEvidencePath": "docs/evidence/config-catalog.evidence.json",
+    "apiEvidencePath": "docs/evidence/api-inventory.evidence.json",
+    "modelEvidencePath": "docs/evidence/data-model.evidence.json",
+    "dependencyEvidencePath": "docs/evidence/dependencies-catalog.evidence.json"
+  },
+  "project": {
+    "name": "Appdoc",
+    "rootPath": "."
+  },
   "nodes": [
     {
       "id": "component_core_processing_6d28d771",
@@ -73,39 +107,5 @@
       "evidence_refs": "cfg-0009"
     }
   ],
-  "schemaVersion": "appdoc-graph/v1",
-  "metrics": {
-    "nodeCount": 10,
-    "edgeCount": 0,
-    "inboundEndpointCount": 0,
-    "outboundEndpointCount": 0,
-    "componentCount": 1,
-    "modelCount": 0,
-    "configCount": 9,
-    "dependencyCount": 0
-  },
-  "sources": {
-    "configEvidencePath": "docs/evidence/config-catalog.evidence.json",
-    "dependencyEvidencePath": "docs/evidence/dependencies-catalog.evidence.json",
-    "modelEvidencePath": "docs/evidence/data-model.evidence.json",
-    "apiEvidencePath": "docs/evidence/api-inventory.evidence.json"
-  },
-  "determinism": {
-    "canonicalOrdering": [
-      "nodes:type,label,id",
-      "edges:from,to,type,label,id"
-    ],
-    "stableIdAlgorithm": "sha1(prefix|seed)[0:8]",
-    "hashAlgorithm": "SHA256",
-    "excludeKeys": [
-      "generatedAt",
-      "updatedAt",
-      "timestamp"
-    ],
-    "contentHash": "669db5ead7bc9bf797745c96b5dc4582d90b283145c702bd2ec760d6bf083cb1"
-  },
-  "project": {
-    "name": "Appdoc",
-    "rootPath": "."
-  }
+  "schemaVersion": "appdoc-graph/v1"
 }

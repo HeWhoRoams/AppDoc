@@ -246,7 +246,9 @@ function ConvertTo-AppDocGraphV1 {
         [AllowNull()]
         [hashtable]$Project = $null,
         [AllowNull()]
-        [hashtable]$Sources = $null
+        [hashtable]$Sources = $null,
+        [AllowNull()]
+        [hashtable]$Extensions = $null
     )
 
     $nodeMap = @{}
@@ -331,6 +333,13 @@ function ConvertTo-AppDocGraphV1 {
                 "edges:from,to,type,label,id"
             )
             stableIdAlgorithm = "sha1(prefix|seed)[0:8]"
+        }
+    }
+
+    if ($Extensions) {
+        foreach ($key in $Extensions.Keys) {
+            if ([string]::IsNullOrWhiteSpace([string]$key)) { continue }
+            $graph[[string]$key] = $Extensions[$key]
         }
     }
 

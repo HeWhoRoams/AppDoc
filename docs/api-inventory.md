@@ -1,18 +1,10 @@
 # API Inventory
 
-**Generated**: 2026-03-04 15:08:47
+**Generated**: 2026-03-11 14:45:19
 
-## Plain Language Summary
+## Summary
 
 This artifact documents the detected API surface, including endpoint contracts and supporting evidence, so developers can understand how the system is called.
-
-## Executive Summary
-
-This document catalogs all API endpoints exposed by the system, including their HTTP methods, parameters, authentication requirements, and response formats. It serves as the primary reference for developers integrating with or consuming this API, and provides essential information for testing, monitoring, and troubleshooting API interactions.
-
-## Overview
-
-This inventory is extracted from controller/action evidence and is intended for implementation impact analysis, integration planning, and endpoint ownership review.
 
 ## API Endpoints
 
@@ -65,8 +57,8 @@ No outbound API dependency contract was extracted from route evidence in this ru
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 1a97947
-- Generated At: 2026-03-04T15:09:09-05:00
+- Commit Hash: eed63d1
+- Generated At: 2026-03-11T14:45:38-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

@@ -15,14 +15,12 @@ if (-not (Test-Path $docsPath)) {
 }
 
 $docFiles = @(
-    "start-here.md",
     "overview.md",
     "api-inventory.md",
     "data-model.md",
     "config-catalog.md",
     "build-cookbook.md",
     "test-catalog.md",
-    "task-guides.md",
     "debt-register.md",
     "dependencies-catalog.md"
 ) | ForEach-Object { Join-Path $docsPath $_ } | Where-Object { Test-Path $_ }
@@ -53,28 +51,26 @@ function Get-AppDocArtifactFromDocFile {
     }
 }
 
-function Get-AppDocPlainLanguageSummaryText {
+function Get-AppDocSummaryText {
     param(
         [Parameter(Mandatory=$true)]
         [string]$DocFileName
     )
 
     switch ($DocFileName.ToLowerInvariant()) {
-        'start-here.md' { return 'This guide gives a fast orientation path through the generated documentation so new maintainers can get productive quickly and safely.' }
         'overview.md' { return 'This page explains, in plain language, what the application appears to do, how requests and data move through it, and where to find deeper technical detail.' }
         'api-inventory.md' { return 'This artifact documents the detected API surface, including endpoint contracts and supporting evidence, so developers can understand how the system is called.' }
         'data-model.md' { return 'This artifact summarizes the main data structures detected in code and how those models support application behavior.' }
         'config-catalog.md' { return 'This artifact lists configuration inputs that can change runtime behavior, with sensitive values redacted and evidence references preserved.' }
         'build-cookbook.md' { return 'This artifact captures the commands and workflow needed to build, run, and troubleshoot the application in a repeatable way.' }
         'test-catalog.md' { return 'This artifact summarizes test entry points and execution patterns so maintainers can validate changes with predictable coverage.' }
-        'task-guides.md' { return 'This artifact provides practical maintenance playbooks that connect common engineering tasks to the generated technical evidence.' }
         'debt-register.md' { return 'This artifact captures detected risks and technical debt signals so teams can prioritize stabilization and modernization work.' }
         'dependencies-catalog.md' { return 'This artifact summarizes external packages and integrations that influence runtime behavior, maintenance risk, and upgrade planning.' }
         default { return 'This document was generated from deterministic extraction and provides grounded technical context for maintainers.' }
     }
 }
 
-function Set-AppDocPlainLanguageSummarySection {
+function Set-AppDocSummarySection {
     param(
         [Parameter(Mandatory=$true)]
         [string]$Markdown,
@@ -82,11 +78,14 @@ function Set-AppDocPlainLanguageSummarySection {
         [string]$DocFileName
     )
 
-    $summaryText = Get-AppDocPlainLanguageSummaryText -DocFileName $DocFileName
+    $summaryText = Get-AppDocSummaryText -DocFileName $DocFileName
     if ([string]::IsNullOrWhiteSpace($summaryText)) { return $Markdown }
 
-    $section = "## Plain Language Summary`r`n`r`n$summaryText`r`n"
-    $updated = [regex]::Replace($Markdown, '(?is)\r?\n##\s+Plain Language Summary\s*\r?\n.*?(?=\r?\n##\s+|\z)', "")
+    $section = "## Summary`r`n`r`n$summaryText`r`n"
+    $updated = [regex]::Replace($Markdown, '(?is)\r?\n##\s+Summary\s*\r?\n.*?(?=\r?\n##\s+|\z)', "")
+    $updated = [regex]::Replace($updated, '(?is)\r?\n##\s+Executive Summary\s*\r?\n.*?(?=\r?\n##\s+|\z)', "")
+    $updated = [regex]::Replace($updated, '(?is)\r?\n##\s+Plain Language Summary\s*\r?\n.*?(?=\r?\n##\s+|\z)', "")
+    $updated = [regex]::Replace($updated, '(?is)\r?\n##\s+Enhanced\s+[^\r\n]*?\s+Summary\s*\r?\n.*?(?=\r?\n##\s+|\z)', "")
 
     $generatedPattern = '(?im)^\*\*Generated\*\*:[^\r\n]*\r?\n'
     $generatedRegex = [regex]::new($generatedPattern)
@@ -131,7 +130,7 @@ function Add-AppDocEvidenceTraceabilitySection {
         return $Markdown
     }
 
-    $recordCount = if ($evidence.recordCount -ne $null) { [int]$evidence.recordCount } else { @($evidence.records).Count }
+    $recordCount = if ($null -ne $evidence.recordCount) { [int]$evidence.recordCount } else { @($evidence.records).Count }
     $generator = if ($evidence.metadata -and $evidence.metadata.generator) { [string]$evidence.metadata.generator } else { 'unknown' }
     $requiredKeys = if ($evidence.metadata -and $evidence.metadata.requiredEvidenceKeys) { @($evidence.metadata.requiredEvidenceKeys) -join ', ' } else { 'N/A' }
 
@@ -236,8 +235,12 @@ foreach ($file in $docFiles) {
         $content = Protect-AppDocSensitiveMarkdown -Markdown $content
     }
 
-    $content = Set-AppDocPlainLanguageSummarySection -Markdown $content -DocFileName $fileName
+    $content = Set-AppDocSummarySection -Markdown $content -DocFileName $fileName
     $content = Add-AppDocEvidenceTraceabilitySection -Markdown $content -RootPath $RootPath -DocFileName $fileName
+
+    if (Get-Command Normalize-AppDocSingleSummarySection -ErrorAction SilentlyContinue) {
+        $content = Normalize-AppDocSingleSummarySection -Content $content
+    }
 
     $content = [regex]::Replace($content, '(?im)^\s*\*\*Generated by AppDoc Framework\*\*\s*$', '**Generated by AppDoc Framework**')
     $content = [regex]::Replace($content, '(?s)(\r?\n){3,}', "`r`n`r`n")

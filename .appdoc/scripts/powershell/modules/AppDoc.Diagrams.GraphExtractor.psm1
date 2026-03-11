@@ -1031,7 +1031,7 @@ function Get-AppDocDiagramGraphData {
         return (ConvertTo-AppDocGraphV1 -RootPath $RootPath -Nodes $nodes -Edges $edges -Project @{
                 name = $projectName
                 rootPath = $RootPath
-            } -Sources $sources)
+        } -Sources $sources -Extensions @{ apiEntries = @($apiEntries) })
     }
 
     # Fallback when the normalizer module is unavailable.
@@ -1060,6 +1060,7 @@ function Get-AppDocDiagramGraphData {
             configCount = @($configRecords).Count
             dependencyCount = @($dependencyRecords).Count
         }
+        apiEntries = @($apiEntries)
         nodes = $sortedNodes
         edges = $sortedEdges
         sources = $sources

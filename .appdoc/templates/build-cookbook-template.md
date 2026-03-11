@@ -1,12 +1,8 @@
 # Build Cookbook
 
-## Executive Summary
+## Summary
 
 This document provides step-by-step instructions for building, testing, and deploying the system from source code. It includes all required dependencies, build commands, CI/CD integration details, and troubleshooting guidance. Use this to set up development environments, automate builds, or diagnose build failures.
-
-## Overview
-
-This cookbook is assembled from detected build commands and CI hints so teams can reproduce, troubleshoot, and standardize build execution.
 
 ## Prerequisites
 
@@ -41,6 +37,15 @@ Start with dependency restoration (e.g., `npm install`, `dotnet restore`, `pip i
 ## Example Build Scripts
 
 A curated script may not always be extracted automatically. For repeatable local execution, chain `restore -> build -> test` commands from this artifact into a repo-specific helper script.
+
+## Operational Checklist
+
+Use this checklist before deploying or after making significant build/dependency changes.
+
+| Task | Command / Action | Notes |
+|------|-----------------|-------|
+
+_Operational checklist populated from detected build and validation commands._
 
 
 ---

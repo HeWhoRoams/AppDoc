@@ -35,6 +35,231 @@ function ConvertTo-AppDocMermaidLabel {
     return $value
 }
 
+function ConvertTo-AppDocMermaidSequenceLabel {
+    [CmdletBinding()]
+    param(
+        [string]$Label
+    )
+
+    $value = ConvertTo-AppDocMermaidLabel -Label $Label
+    if ([string]::IsNullOrWhiteSpace($value)) { return '"Unknown"' }
+    $value = $value.Replace('{', '(').Replace('}', ')')
+    return ('"{0}"' -f $value)
+}
+
+function Test-AppDocDiagramGenericResponseLabel {
+    [CmdletBinding()]
+    param(
+        [string]$Label
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Label)) { return $true }
+    $normalized = ($Label -replace '\s+', '').Trim().ToLowerInvariant()
+    return ($normalized -in @(
+        'actionresult',
+        'iactionresult',
+        'task<actionresult>',
+        'task<iactionresult>',
+        'viewresult',
+        'partialviewresult',
+        'jsonresult',
+        'contentresult',
+        'redirectresult',
+        'redirecttoactionresult',
+        'httpresponsemessage',
+        'httpresponse',
+        'htmlview',
+        'filecontentresult',
+        'fileresult',
+        'string'
+    ))
+}
+
+function Get-AppDocScenarioPrimaryApiEntry {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [hashtable]$GraphData,
+        [AllowNull()]
+        [object]$Scenario
+    )
+
+    if ($null -eq $Scenario) { return $null }
+
+    $apiEntries = @(
+        Get-AppDocDiagramRendererValue -Object $GraphData -Name 'apiEntries' -Default @()
+    )
+    if ($apiEntries.Count -eq 0) { return $null }
+
+    $scenarioRefs = @(Get-AppDocScenarioEvidenceRefs -Scenario $Scenario)
+    if ($scenarioRefs.Count -gt 0) {
+        foreach ($entry in $apiEntries) {
+            if ($null -eq $entry) { continue }
+            $ref = [string](Get-AppDocDiagramRendererValue -Object $entry -Name 'ref' -Default '')
+            if (-not [string]::IsNullOrWhiteSpace($ref) -and $scenarioRefs -contains $ref) {
+                return $entry
+            }
+        }
+    }
+
+    $endpointId = [string](Get-AppDocDiagramRendererValue -Object $Scenario -Name 'endpointId' -Default '')
+    $nodeMap = Get-AppDocDiagramNodeMap -GraphData $GraphData
+    $endpointNode = if ($nodeMap.ContainsKey($endpointId)) { $nodeMap[$endpointId] } else { $null }
+    $endpointLabel = [string](Get-AppDocDiagramRendererValue -Object $endpointNode -Name 'label' -Default '')
+    if ([string]::IsNullOrWhiteSpace($endpointLabel)) { return $null }
+
+    foreach ($entry in $apiEntries) {
+        $label = [string](Get-AppDocDiagramRendererValue -Object $entry -Name 'label' -Default '')
+        if ($label -eq $endpointLabel) {
+            return $entry
+        }
+    }
+
+    return $null
+}
+
+function Get-AppDocScenarioActionName {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [object]$ApiEntry
+    )
+
+    if ($null -eq $ApiEntry) { return '' }
+    $record = Get-AppDocDiagramRendererValue -Object $ApiEntry -Name 'record' -Default $null
+    $metadata = Get-AppDocDiagramRendererValue -Object $record -Name 'metadata' -Default @{}
+    $action = [string](Get-AppDocDiagramRendererValue -Object $metadata -Name 'action' -Default '')
+    if (-not [string]::IsNullOrWhiteSpace($action)) { return $action.Trim() }
+
+    $path = [string](Get-AppDocDiagramRendererValue -Object $ApiEntry -Name 'path' -Default '')
+    if ([string]::IsNullOrWhiteSpace($path)) {
+        $path = [string](Get-AppDocDiagramRendererValue -Object $record -Name 'name' -Default '')
+    }
+    if ([string]::IsNullOrWhiteSpace($path)) { return '' }
+
+    $trimmed = $path.Trim('/')
+    if ([string]::IsNullOrWhiteSpace($trimmed)) { return '' }
+    $segments = @($trimmed -split '/')
+    if ($segments.Count -ge 2) {
+        return [string]$segments[$segments.Count - 1]
+    }
+    return [string]$trimmed
+}
+
+function Get-AppDocScenarioTitle {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [hashtable]$GraphData,
+        [AllowNull()]
+        [object]$Scenario,
+        [string]$FallbackTitle = ''
+    )
+
+    $apiEntry = Get-AppDocScenarioPrimaryApiEntry -GraphData $GraphData -Scenario $Scenario
+    if ($null -eq $apiEntry) {
+        return $FallbackTitle
+    }
+
+    $record = Get-AppDocDiagramRendererValue -Object $apiEntry -Name 'record' -Default $null
+    $metadata = Get-AppDocDiagramRendererValue -Object $record -Name 'metadata' -Default @{}
+    $method = [string](Get-AppDocDiagramRendererValue -Object $metadata -Name 'method' -Default '')
+    $controller = [string](Get-AppDocDiagramRendererValue -Object $metadata -Name 'controller' -Default '')
+    $action = Get-AppDocScenarioActionName -ApiEntry $apiEntry
+    $path = [string](Get-AppDocDiagramRendererValue -Object $apiEntry -Name 'path' -Default '')
+    if ([string]::IsNullOrWhiteSpace($path)) {
+        $path = [string](Get-AppDocDiagramRendererValue -Object $record -Name 'name' -Default $FallbackTitle)
+    }
+
+    $parts = @()
+    if (-not [string]::IsNullOrWhiteSpace($method)) {
+        $parts += $method.Trim().ToUpperInvariant()
+    }
+
+    $actionDisplay = ''
+    if (-not [string]::IsNullOrWhiteSpace($controller) -and -not [string]::IsNullOrWhiteSpace($action)) {
+        $actionDisplay = ('{0}.{1}' -f $controller.Trim(), $action.Trim())
+    }
+    elseif (-not [string]::IsNullOrWhiteSpace($controller)) {
+        $actionDisplay = $controller.Trim()
+    }
+    elseif (-not [string]::IsNullOrWhiteSpace($action)) {
+        $actionDisplay = $action.Trim()
+    }
+    if (-not [string]::IsNullOrWhiteSpace($actionDisplay)) {
+        $parts += $actionDisplay
+    }
+
+    $prefix = ($parts -join ' ')
+    if (-not [string]::IsNullOrWhiteSpace($prefix) -and -not [string]::IsNullOrWhiteSpace($path)) {
+        return ('{0} — {1}' -f $prefix, $path)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($prefix)) { return $prefix }
+    if (-not [string]::IsNullOrWhiteSpace($path)) { return $path }
+    return $FallbackTitle
+}
+
+function Get-AppDocApiEntryTitle {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [object]$ApiEntry
+    )
+
+    if ($null -eq $ApiEntry) { return '' }
+    $record = Get-AppDocDiagramRendererValue -Object $ApiEntry -Name 'record' -Default $null
+    $metadata = Get-AppDocDiagramRendererValue -Object $record -Name 'metadata' -Default @{}
+    $method = [string](Get-AppDocDiagramRendererValue -Object $metadata -Name 'method' -Default '')
+    $controller = [string](Get-AppDocDiagramRendererValue -Object $metadata -Name 'controller' -Default '')
+    $action = Get-AppDocScenarioActionName -ApiEntry $ApiEntry
+    $path = [string](Get-AppDocDiagramRendererValue -Object $ApiEntry -Name 'path' -Default '')
+    if ([string]::IsNullOrWhiteSpace($path)) {
+        $path = [string](Get-AppDocDiagramRendererValue -Object $record -Name 'name' -Default '')
+    }
+
+    $parts = @()
+    if (-not [string]::IsNullOrWhiteSpace($method)) { $parts += $method.Trim().ToUpperInvariant() }
+    if (-not [string]::IsNullOrWhiteSpace($controller) -and -not [string]::IsNullOrWhiteSpace($action)) {
+        $parts += ('{0}.{1}' -f $controller.Trim(), $action.Trim())
+    }
+    elseif (-not [string]::IsNullOrWhiteSpace($controller)) {
+        $parts += $controller.Trim()
+    }
+    elseif (-not [string]::IsNullOrWhiteSpace($action)) {
+        $parts += $action.Trim()
+    }
+
+    $prefix = ($parts -join ' ')
+    if (-not [string]::IsNullOrWhiteSpace($prefix) -and -not [string]::IsNullOrWhiteSpace($path)) {
+        return ('{0} — {1}' -f $prefix, $path)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($prefix)) { return $prefix }
+    return $path
+}
+
+function Test-AppDocScenarioInformative {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [object]$Scenario,
+        [Parameter(Mandatory=$true)]
+        [hashtable]$NodeMap
+    )
+
+    if ($null -eq $Scenario) { return $false }
+    if ($null -ne (Get-AppDocDiagramRendererValue -Object $Scenario -Name 'serviceEdge' -Default $null)) { return $true }
+    if ($null -ne (Get-AppDocDiagramRendererValue -Object $Scenario -Name 'outboundEdge' -Default $null)) { return $true }
+
+    $dataEdge = Get-AppDocDiagramRendererValue -Object $Scenario -Name 'dataEdge' -Default $null
+    if ($null -eq $dataEdge) { return $false }
+
+    $dataNodeId = [string](Get-AppDocDiagramRendererValue -Object $dataEdge -Name 'to' -Default '')
+    if ([string]::IsNullOrWhiteSpace($dataNodeId) -or -not $NodeMap.ContainsKey($dataNodeId)) { return $false }
+    $dataNode = $NodeMap[$dataNodeId]
+    $dataLabel = [string](Get-AppDocDiagramRendererValue -Object $dataNode -Name 'label' -Default '')
+    return (-not (Test-AppDocDiagramGenericResponseLabel -Label $dataLabel))
+}
+
 function Get-AppDocMermaidFlowCounts {
     [CmdletBinding()]
     param(
@@ -490,6 +715,14 @@ function Get-AppDocSequenceScenarios {
         $outboundByComponent[$from] += $edge
     }
 
+    $serviceByOutbound = @{}
+    foreach ($edge in @($edges | Where-Object { [string]$_.type -eq "calls" })) {
+        $from = [string](Get-AppDocDiagramRendererValue -Object $edge -Name "from" -Default "")
+        if ([string]::IsNullOrWhiteSpace($from)) { continue }
+        if (-not $serviceByOutbound.ContainsKey($from)) { $serviceByOutbound[$from] = @() }
+        $serviceByOutbound[$from] += $edge
+    }
+
     $dataByComponent = @{}
     foreach ($edge in @($edges | Where-Object { [string]$_.type -in @("returns","data") })) {
         $from = [string](Get-AppDocDiagramRendererValue -Object $edge -Name "from" -Default "")
@@ -531,7 +764,17 @@ function Get-AppDocSequenceScenarios {
 
         $outboundEdge = $null
         if ($outboundByComponent.ContainsKey($componentId)) {
-            $outboundEdge = @($outboundByComponent[$componentId] | Select-Object -First 1)[0]
+            $outboundCandidates = @($outboundByComponent[$componentId] | Where-Object { [string]$_.type -eq 'invoke' })
+            if ($outboundCandidates.Count -gt 0) {
+                $outboundEdge = @($outboundCandidates | Select-Object -First 1)[0]
+            }
+        }
+        $serviceEdge = $null
+        if ($outboundEdge) {
+            $outboundNodeId = [string](Get-AppDocDiagramRendererValue -Object $outboundEdge -Name 'to' -Default '')
+            if (-not [string]::IsNullOrWhiteSpace($outboundNodeId) -and $serviceByOutbound.ContainsKey($outboundNodeId)) {
+                $serviceEdge = @($serviceByOutbound[$outboundNodeId] | Select-Object -First 1)[0]
+            }
         }
         $dataEdge = $null
         if ($dataByComponent.ContainsKey($componentId)) {
@@ -540,7 +783,18 @@ function Get-AppDocSequenceScenarios {
 
         $score = 1
         if ($outboundEdge) { $score += 2 }
+        if ($serviceEdge) { $score += 2 }
         if ($dataEdge) { $score += 1 }
+        if ($dataEdge) {
+            $dataNodeId = [string](Get-AppDocDiagramRendererValue -Object $dataEdge -Name 'to' -Default '')
+            if (-not [string]::IsNullOrWhiteSpace($dataNodeId) -and $nodeMap.ContainsKey($dataNodeId)) {
+                $dataNode = $nodeMap[$dataNodeId]
+                $dataLabel = [string](Get-AppDocDiagramRendererValue -Object $dataNode -Name 'label' -Default '')
+                if (-not (Test-AppDocDiagramGenericResponseLabel -Label $dataLabel)) {
+                    $score += 2
+                }
+            }
+        }
         $evidenceRefsForRoute = @(
             Get-AppDocDiagramRendererValue -Object $route -Name "evidence_refs" -Default @()
         )
@@ -554,16 +808,56 @@ function Get-AppDocSequenceScenarios {
             routeEdge = $route
             dataEdge = $dataEdge
             outboundEdge = $outboundEdge
+            serviceEdge = $serviceEdge
             score = $score
             title = (ConvertTo-AppDocMermaidLabel -Label ([string](Get-AppDocDiagramRendererValue -Object $endpointNode -Name "label" -Default $endpointId)))
         }
     }
+
+    $scenarios = @(
+        $scenarios |
+            Where-Object { Test-AppDocScenarioInformative -Scenario $_ -NodeMap $nodeMap }
+    )
 
     return @(
         $scenarios |
             Sort-Object @{ Expression = { [int]$_.score }; Descending = $true }, @{ Expression = { [string]$_.title } } |
             Select-Object -First $maxScenarios
     )
+}
+
+function Get-AppDocScenarioEvidenceRefs {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [object]$Scenario
+    )
+
+    if ($null -eq $Scenario) { return @() }
+
+    $refs = New-Object System.Collections.Generic.HashSet[string]
+    $members = @(
+        (Get-AppDocDiagramRendererValue -Object $Scenario -Name 'requestEdge' -Default $null),
+        (Get-AppDocDiagramRendererValue -Object $Scenario -Name 'routeEdge' -Default $null),
+        (Get-AppDocDiagramRendererValue -Object $Scenario -Name 'dataEdge' -Default $null),
+        (Get-AppDocDiagramRendererValue -Object $Scenario -Name 'outboundEdge' -Default $null),
+        (Get-AppDocDiagramRendererValue -Object $Scenario -Name 'serviceEdge' -Default $null)
+    )
+
+    foreach ($member in $members) {
+        if ($null -eq $member) { continue }
+        $memberRefs = @(
+            Get-AppDocDiagramRendererValue -Object $member -Name 'evidence_refs' -Default @()
+        )
+        foreach ($ref in $memberRefs) {
+            $text = [string]$ref
+            if (-not [string]::IsNullOrWhiteSpace($text)) {
+                [void]$refs.Add($text)
+            }
+        }
+    }
+
+    return @($refs | Sort-Object)
 }
 
 function New-AppDocCriticalSequencesMarkdown {
@@ -577,7 +871,12 @@ function New-AppDocCriticalSequencesMarkdown {
 
     $nodeMap = Get-AppDocDiagramNodeMap -GraphData $GraphData
     $scenarios = Get-AppDocSequenceScenarios -GraphData $GraphData -Contract $Contract
-    $refs = Get-AppDocDiagramTopEvidenceRefs -GraphData $GraphData -Limit 16
+    $refs = @(
+        $scenarios |
+            ForEach-Object { Get-AppDocScenarioEvidenceRefs -Scenario $_ } |
+            Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } |
+            Select-Object -Unique
+    )
 
     $lines = @()
     $lines += "# Critical Sequences"
@@ -591,20 +890,36 @@ function New-AppDocCriticalSequencesMarkdown {
 
     if ($scenarios.Count -eq 0) {
         $lines += "No high-confidence request journeys were available for scenario rendering in this scan."
-        if ($refs.Count -gt 0) {
-            $lines += "Evidence was scanned (" + (($refs -join ", ")) + ") but was insufficient for reconstructing high-confidence request journeys."
+        $candidateEntries = @(
+            @(Get-AppDocDiagramRendererValue -Object $GraphData -Name 'apiEntries' -Default @()) |
+                Where-Object { [string](Get-AppDocDiagramRendererValue -Object $_ -Name 'direction' -Default '') -eq 'inbound' } |
+                Select-Object -First 5
+        )
+        if ($candidateEntries.Count -gt 0) {
+            $lines += "Candidate endpoints were detected, but their paths only resolved to generic controller/view response flows and did not include specific data-model transitions or outbound service hops, so they were suppressed as too trivial to be useful."
+            $lines += ""
+            $lines += "Suppressed examples:"
+            foreach ($entry in $candidateEntries) {
+                $hint = Get-AppDocApiEntryTitle -ApiEntry $entry
+                if (-not [string]::IsNullOrWhiteSpace($hint)) {
+                    $lines += ('- {0}' -f $hint)
+                }
+            }
+            $refs = @(
+                $candidateEntries |
+                    ForEach-Object { [string](Get-AppDocDiagramRendererValue -Object $_ -Name 'ref' -Default '') } |
+                    Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+            )
         }
         $lines += ""
-        $lines += "## Baseline Sequence"
+        $lines += "## Why Nothing Qualified"
         $lines += ""
-        $lines += '```mermaid'
-        $lines += "sequenceDiagram"
-        $lines += "    autonumber"
-        $lines += "    participant caller as Caller"
-        $lines += "    participant system as Application"
-        $lines += "    caller->>system: Request"
-        $lines += "    system-->>caller: Response"
-        $lines += '```'
+        $lines += "| Check | Result | Why it matters |"
+        $lines += "|---|---|---|"
+        $lines += "| Specific data transition | Not detected | Generic return types like `ActionResult` and `HTML View` do not reveal meaningful business-data movement. |"
+        $lines += "| Outbound/service hop | Not detected | Without a service or integration call, the flow is usually just controller routing plus a generic response. |"
+        $lines += "| End-to-end uniqueness | Low | Multiple endpoints collapsed to near-identical request → controller → generic response shapes. |"
+        $lines += "| Reader value | Too low | Rendering those flows would add visual noise without improving understanding of system behavior. |"
         $lines += ""
     }
     else {
@@ -614,11 +929,12 @@ function New-AppDocCriticalSequencesMarkdown {
             $actorNode = $nodeMap[[string]($scenario.actorId)]
             $endpointNode = $nodeMap[[string]($scenario.endpointId)]
             $componentNode = $nodeMap[[string]($scenario.componentId)]
-            $actorLabel = ConvertTo-AppDocMermaidLabel -Label ([string](Get-AppDocDiagramRendererValue -Object $actorNode -Name "label" -Default "Caller"))
-            $endpointLabel = ConvertTo-AppDocMermaidLabel -Label ([string](Get-AppDocDiagramRendererValue -Object $endpointNode -Name "label" -Default "Endpoint"))
-            $componentLabel = ConvertTo-AppDocMermaidLabel -Label ([string](Get-AppDocDiagramRendererValue -Object $componentNode -Name "label" -Default "Component"))
-            $sectionTitle = [string]($scenario.title)
+            $actorLabel = ConvertTo-AppDocMermaidSequenceLabel -Label ([string](Get-AppDocDiagramRendererValue -Object $actorNode -Name "label" -Default "Caller"))
+            $endpointLabel = ConvertTo-AppDocMermaidSequenceLabel -Label ([string](Get-AppDocDiagramRendererValue -Object $endpointNode -Name "label" -Default "Endpoint"))
+            $componentLabel = ConvertTo-AppDocMermaidSequenceLabel -Label ([string](Get-AppDocDiagramRendererValue -Object $componentNode -Name "label" -Default "Component"))
+            $sectionTitle = Get-AppDocScenarioTitle -GraphData $GraphData -Scenario $scenario -FallbackTitle ([string]$scenario.title)
             if ([string]::IsNullOrWhiteSpace($sectionTitle)) { $sectionTitle = "Scenario $scenarioIndex" }
+            $scenarioRefs = @(Get-AppDocScenarioEvidenceRefs -Scenario $scenario)
 
             $lines += ("## Scenario {0}: {1}" -f $scenarioIndex, $sectionTitle)
             $lines += ""
@@ -645,7 +961,7 @@ function New-AppDocCriticalSequencesMarkdown {
                 $dataTo = [string](Get-AppDocDiagramRendererValue -Object $scenario.dataEdge -Name "to" -Default "")
                 if ($nodeMap.ContainsKey($dataTo)) {
                     $dataNode = $nodeMap[$dataTo]
-                    $dataLabel = ConvertTo-AppDocMermaidLabel -Label ([string](Get-AppDocDiagramRendererValue -Object $dataNode -Name "label" -Default "Data Model"))
+                    $dataLabel = ConvertTo-AppDocMermaidSequenceLabel -Label ([string](Get-AppDocDiagramRendererValue -Object $dataNode -Name "label" -Default "Data Model"))
                     $dataEdgeType = [string](Get-AppDocDiagramRendererValue -Object $scenario.dataEdge -Name "type" -Default "data")
                     $dataEdgeLabel = [string](Get-AppDocDiagramRendererValue -Object $scenario.dataEdge -Name "label" -Default "")
                     $dataAction = ConvertTo-AppDocMermaidLabel -Label (Get-AppDocDiagramSemanticEdgeLabel -EdgeType $dataEdgeType -CurrentLabel $dataEdgeLabel)
@@ -659,13 +975,27 @@ function New-AppDocCriticalSequencesMarkdown {
                 $outboundTo = [string](Get-AppDocDiagramRendererValue -Object $scenario.outboundEdge -Name "to" -Default "")
                 if ($nodeMap.ContainsKey($outboundTo)) {
                     $outboundNode = $nodeMap[$outboundTo]
-                    $outboundLabel = ConvertTo-AppDocMermaidLabel -Label ([string](Get-AppDocDiagramRendererValue -Object $outboundNode -Name "label" -Default "External Integration"))
+                    $outboundLabel = ConvertTo-AppDocMermaidSequenceLabel -Label ([string](Get-AppDocDiagramRendererValue -Object $outboundNode -Name "label" -Default "Service Hop"))
                     $outboundEdgeType = [string](Get-AppDocDiagramRendererValue -Object $scenario.outboundEdge -Name "type" -Default "invoke")
                     $outboundEdgeLabel = [string](Get-AppDocDiagramRendererValue -Object $scenario.outboundEdge -Name "label" -Default "")
                     $outboundAction = ConvertTo-AppDocMermaidLabel -Label (Get-AppDocDiagramSemanticEdgeLabel -EdgeType $outboundEdgeType -CurrentLabel $outboundEdgeLabel)
                     if ([string]::IsNullOrWhiteSpace($outboundAction)) { $outboundAction = "Invokes" }
-                    $lines += ("    participant external as {0}" -f $outboundLabel)
-                    $lines += ("    component->>external: {0}" -f $outboundAction)
+                    $lines += ("    participant service as {0}" -f $outboundLabel)
+                    $lines += ("    component->>service: {0}" -f $outboundAction)
+                }
+            }
+
+            if ($scenario.serviceEdge) {
+                $serviceTo = [string](Get-AppDocDiagramRendererValue -Object $scenario.serviceEdge -Name "to" -Default "")
+                if ($nodeMap.ContainsKey($serviceTo)) {
+                    $serviceNode = $nodeMap[$serviceTo]
+                    $serviceLabel = ConvertTo-AppDocMermaidSequenceLabel -Label ([string](Get-AppDocDiagramRendererValue -Object $serviceNode -Name "label" -Default "External Integration"))
+                    $serviceEdgeType = [string](Get-AppDocDiagramRendererValue -Object $scenario.serviceEdge -Name "type" -Default "calls")
+                    $serviceEdgeLabel = [string](Get-AppDocDiagramRendererValue -Object $scenario.serviceEdge -Name "label" -Default "")
+                    $serviceAction = ConvertTo-AppDocMermaidLabel -Label (Get-AppDocDiagramSemanticEdgeLabel -EdgeType $serviceEdgeType -CurrentLabel $serviceEdgeLabel)
+                    if ([string]::IsNullOrWhiteSpace($serviceAction)) { $serviceAction = "Calls" }
+                    $lines += ("    participant external as {0}" -f $serviceLabel)
+                    $lines += ("    service->>external: {0}" -f $serviceAction)
                 }
             }
 
@@ -673,6 +1003,10 @@ function New-AppDocCriticalSequencesMarkdown {
             $lines += "    component-->>endpoint: Response"
             $lines += "    endpoint-->>actor: Response"
             $lines += '```'
+            if ($scenarioRefs.Count -gt 0) {
+                $lines += ""
+                $lines += "**Scenario Evidence:** " + ($scenarioRefs -join ", ")
+            }
             $lines += ""
         }
     }

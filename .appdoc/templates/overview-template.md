@@ -5,7 +5,7 @@
 
 Welcome to the System Overview. This document introduces the repository, its purpose, and guides you to key technical artifacts for deeper exploration. For detailed evidence and technical traceability, see API Inventory, Data Model, and supporting metadata files.
 
-## Executive Summary
+## Summary
 
 This document provides a high-level overview of the system's purpose, architecture, and key components. It serves as the entry point for understanding the codebase and navigating to detailed documentation.
 
@@ -32,21 +32,23 @@ _Technology stack not yet identified. Analyze package files and code._
 
 Configuration is primarily file-based (`Web.config`, transforms, and project/YAML settings). See [Configuration Catalog](config-catalog.md) for required keys, environment-sensitive values, and validation guidance.
 
-## Documentation Navigation
-
-This documentation set includes the following artifacts:
-
-- **[API Inventory](api-inventory.md)** - HTTP endpoints and API contracts
-- **[Data Model](data-model.md)** - Data structures and entities
-- **[Configuration Catalog](config-catalog.md)** - Configuration options and environment variables
-- **[Build Cookbook](build-cookbook.md)** - Build and deployment commands
-- **[Test Catalog](test-catalog.md)** - Test suites and coverage
-- **[Tech Debt Register](debt-register.md)** - Known issues and improvement opportunities
-- **[Dependencies Catalog](dependencies-catalog.md)** - External packages and libraries
-
 ## Getting Started
 
-Start with [Start Here](start-here.md), run the minimal commands from [Build Cookbook](build-cookbook.md), then use [Task Guides](task-guides.md) for common maintenance workflows.
+Begin with the **System Purpose** and **Architecture** sections above, then run the minimal restore and build commands from [Build Cookbook](build-cookbook.md). After a successful build, consult [API Inventory](api-inventory.md) for endpoint contracts and [Data Model](data-model.md) for data structures.
+
+## Documentation Map
+
+This documentation set covers the following areas. Start with the artifact most relevant to your current task.
+
+| Document | Purpose | Start Here When… |
+|---|---|---|
+| [API Inventory](api-inventory.md) | HTTP endpoints and API contracts | Integrating with or testing the API |
+| [Data Model](data-model.md) | Data structures and entities | Tracing data flow or modifying models |
+| [Configuration Catalog](config-catalog.md) | Configuration options and environment variables | Deploying or troubleshooting environment issues |
+| [Build Cookbook](build-cookbook.md) | Build and deployment commands | Setting up, building, or diagnosing failures |
+| [Test Catalog](test-catalog.md) | Test suites and coverage | Running tests or assessing coverage |
+| [Technical Debt Register](debt-register.md) | Known issues and improvement opportunities | Planning a refactoring or debt sprint |
+| [Dependencies Catalog](dependencies-catalog.md) | External packages and libraries | Assessing dependency risk or planning upgrades |
 
 ---
 

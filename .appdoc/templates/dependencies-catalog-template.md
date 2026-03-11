@@ -1,12 +1,8 @@
 # Dependencies Catalog
 
-## Executive Summary
+## Summary
 
 This document inventories all external dependencies, libraries, packages, and frameworks used by the system. It helps developers understand third-party code being used, manage security vulnerabilities, plan upgrades, and track licensing requirements.
-
-## Overview
-
-This catalog aggregates dependencies discovered from package manifests, project references, and assembly references. Use it to identify version drift, runtime coupling, and upgrade planning priorities.
 
 ## Dependency Summary
 

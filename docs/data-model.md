@@ -1,14 +1,10 @@
 # Data Model Catalog
 
-**Generated**: 2026-03-05 16:38:33
+**Generated**: 2026-03-11 14:45:21
 
-## Executive Summary
+## Summary
 
-This document defines all data structures, entities, and their relationships within the system. It provides developers with a comprehensive understanding of the data architecture, including field types, constraints, validation rules, and data flow patterns. Use this as a reference for database design, API contract validation, and understanding system state management.
-
-## Overview
-
-This catalog is extracted from model/type declarations and grouped by domain, model size, and structural shape to support impact analysis and refactoring.
+This artifact summarizes the main data structures detected in code and how those models support application behavior.
 
 ## Data Models
 
@@ -40,3 +36,23 @@ Historical schema evolution evidence is out of scope for this deterministic scan
 ## Example Instances
 
 Concrete example instances were not extracted automatically. Derive practical examples from representative controller actions and test fixtures that construct these models.
+## Evidence Traceability
+
+| Field | Value |
+|------|-------|
+| Evidence Artifact | evidence/data-model.evidence.json |
+| Record Count | 0 |
+| Generator | generate-data-model.ps1 |
+| Required Evidence Keys | models |
+| Grounding Mode | Deterministic extraction records |
+
+---
+
+## Provenance
+
+- Generator Version: appdoc-run-all-generators/3.0.0
+- Commit Hash: eed63d1
+- Generated At: 2026-03-11T14:45:38-04:00
+- Profile: default
+- Scope: .
+- Confidence/Inference Flags: deterministic, evidence-backed

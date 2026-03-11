@@ -248,7 +248,6 @@ function Update-AppDocDebtRegisterContent {
     $impactContent = "The current register contains $debtCount items, indicating $impactLevel remediation pressure on delivery speed and change safety. Prioritize hotspots in high-churn files to reduce regression risk fastest."
 
     $newline = Get-DetectedNewline -Text $updated
-    $updated = Update-MarkdownSection $updated "Overview" "\r?\n##\s+Debt Categories\b" "This register is built from extracted code-smell and maintainability signals and is intended to support prioritized remediation planning." $newline
     $updated = Update-MarkdownSection $updated "Debt Categories" "\r?\n##\s+Debt Items\b" $categoriesContent $newline
     $updated = Update-MarkdownSection $updated "Impact Assessment" "\r?\n##\s+Remediation Plan\b" $impactContent $newline
     $updated = Update-MarkdownSection $updated "Remediation Plan" "\r?\n##\s+Monitoring and Tracking\b" "Use a phased plan: isolate highest-risk files first, split oversized classes/methods in small slices, and add regression coverage around each refactor before broad cleanup." $newline

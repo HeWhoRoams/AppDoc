@@ -16,13 +16,13 @@ This appendix contains the full endpoint catalog and operational annotations use
 
 ---
 
-**Generated**: 2026-03-04 15:08:47
+**Generated**: 2026-03-11 14:45:19
 
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 1a97947
-- Generated At: 2026-03-04T15:09:09-05:00
+- Commit Hash: eed63d1
+- Generated At: 2026-03-11T14:45:38-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

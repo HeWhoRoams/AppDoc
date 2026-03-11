@@ -1,6 +1,6 @@
 {
   "artifact": "start-here",
-  "generatedAt": "2026-03-04T15:08:58-05:00",
+  "generatedAt": "2026-03-11T13:30:46-04:00",
   "recordCount": 3,
   "records": [
     {
@@ -15,7 +15,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-03-04T15:08:58-05:00"
+      "timestamp": "2026-03-11T13:30:46-04:00"
     },
     {
       "artifact": "start-here",
@@ -29,7 +29,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-03-04T15:08:58-05:00"
+      "timestamp": "2026-03-11T13:30:46-04:00"
     },
     {
       "artifact": "start-here",
@@ -38,13 +38,13 @@
       "kind": "summary",
       "confidence": 1.0,
       "metadata": {
-        "languages": [],
-        "count": 0
+        "count": 0,
+        "languages": []
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-03-04T15:08:58-05:00"
+      "timestamp": "2026-03-11T13:30:46-04:00"
     }
   ],
   "metadata": {
@@ -53,6 +53,7 @@
       "endpoints",
       "models"
     ],
+    "generator": "generate-start-here.ps1",
     "requiredSections": [
       "Who This Is For",
       "First 30 Minutes",
@@ -61,8 +62,7 @@
       "Role-Based Paths",
       "System Signals",
       "Evidence Traceability"
-    ],
-    "generator": "generate-start-here.ps1"
+    ]
   },
   "determinism": {
     "hashAlgorithm": "SHA256",

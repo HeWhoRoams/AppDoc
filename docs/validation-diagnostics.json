@@ -1,79 +1,126 @@
 {
-  "generatedAt": "2026-03-04T15:10:41-05:00",
+  "generatedAt": "2026-03-11T14:45:38-04:00",
   "summary": {
-    "total": 1,
+    "total": 7,
     "byCategory": {
+      "DETECTION_PATTERN_MISMATCH": 6,
       "INITIALIZATION": 1
     },
     "bySeverity": {
+      "Warning": 6,
       "Info": 1
     },
     "hasErrors": false,
-    "hasWarnings": false
+    "hasWarnings": true
   },
   "events": [
     {
-      "timestamp": "2026-03-04T15:10:39-05:00",
+      "timestamp": "2026-03-11T14:45:34-04:00",
       "category": "INITIALIZATION",
       "severity": "Info",
       "component": "orchestrator",
       "message": "Diagnostics initialized",
       "filePath": "",
       "details": {
-        "rootPath": "./",
-        "outputPath": "./docs"
+        "outputPath": "./docs",
+        "rootPath": "./"
       }
+    },
+    {
+      "timestamp": "2026-03-11T14:45:38-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: provenance-missing:overview.md",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-03-11T14:45:38-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: provenance-missing:api-inventory.md",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-03-11T14:45:38-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: provenance-missing:data-model.md",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-03-11T14:45:38-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: provenance-missing:config-catalog.md",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-03-11T14:45:38-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: provenance-missing:build-cookbook.md",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-03-11T14:45:38-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate warning: ",
+      "filePath": "./docs",
+      "details": {}
     }
   ],
   "metadata": {
     "validation": {
-      "timestamp": "2026-03-04T15:10:41-05:00",
+      "timestamp": "2026-03-11T14:45:38-04:00",
       "strict": false,
       "threshold": 80,
-      "status": "pass",
-      "overallScore": 92,
-      "overallScoreRaw": 94.9,
+      "status": "fail",
+      "overallScore": 89,
+      "overallScoreRaw": 91.8,
       "penaltyDeduction": 3.0,
       "metrics": {
         "validatorPassRate": 100.0,
         "artifactPresence": 100.0,
         "evidencePresence": 100.0,
         "semanticContractScore": 100.0,
-        "evidenceContractScore": 97.0,
+        "evidenceContractScore": 96.2,
         "apiCoverage": 100,
         "configCoverage": 100,
         "dataModelCoverage": 100,
         "redactionSafetyScore": 100,
-        "humanUsabilityScore": 97.5,
+        "humanUsabilityScore": 92.7,
         "claimGroundingScore": 100.0,
-        "documentationFreshnessScore": 80.0,
+        "documentationFreshnessScore": 87.5,
         "contradictionConsistencyScore": 100.0,
-        "taskGuideActionabilityScore": 83.3,
-        "taskGuideEvidenceCoverageScore": 50.0,
-        "taskGuideTimeToCompleteMinutes": 12.0,
+        "taskGuideActionabilityScore": 100.0,
+        "taskGuideEvidenceCoverageScore": 100.0,
+        "taskGuideTimeToCompleteMinutes": 0,
         "taskGuideTimeScore": 100.0,
         "metricDriftScore": 100.0,
-        "policyGateScore": 100.0
+        "policyGateScore": 0.0
       },
       "qualityPenaltyBreakdown": {
-        "totalPenaltyPoints": 32,
+        "totalPenaltyPoints": 24,
         "categoryTotals": {
           "contradiction": 0,
           "duplicateRows": 16,
           "misclassification": 0,
-          "staleProvenance": 16,
+          "staleProvenance": 8,
           "verbosityOverflow": 0
         },
         "perArtifact": {
-          "start-here": {
-            "total": 8,
-            "contradiction": 0,
-            "duplicateRows": 0,
-            "misclassification": 0,
-            "staleProvenance": 8,
-            "verbosityOverflow": 0,
-            "reasons": "provenance-missing-generated"
-          },
           "overview": {
             "total": 0,
             "contradiction": 0,
@@ -128,15 +175,6 @@
             "verbosityOverflow": 0,
             "reasons": null
           },
-          "task-guides": {
-            "total": 0,
-            "contradiction": 0,
-            "duplicateRows": 0,
-            "misclassification": 0,
-            "staleProvenance": 0,
-            "verbosityOverflow": 0,
-            "reasons": null
-          },
           "debt-register": {
             "total": 0,
             "contradiction": 0,
@@ -156,70 +194,53 @@
             "reasons": "duplicate-rows:2"
           }
         },
-        "artifactCount": 10
+        "artifactCount": 8
       },
       "missingArtifacts": null,
       "missingEvidenceArtifacts": null,
       "validators": [
         {
-          "message": "OK",
-          "script": "validate-start-here.ps1",
-          "passed": true
-        },
-        {
-          "message": "OK",
+          "passed": true,
           "script": "validate-overview.ps1",
-          "passed": true
+          "message": "OK"
         },
         {
-          "message": "OK",
+          "passed": true,
           "script": "validate-api-inventory.ps1",
-          "passed": true
+          "message": "OK"
         },
         {
-          "message": "OK",
+          "passed": true,
           "script": "validate-data-model.ps1",
-          "passed": true
+          "message": "OK"
         },
         {
-          "message": "OK",
+          "passed": true,
           "script": "validate-config-catalog.ps1",
-          "passed": true
+          "message": "OK"
         },
         {
-          "message": "OK",
+          "passed": true,
           "script": "validate-build-cookbook.ps1",
-          "passed": true
+          "message": "OK"
         },
         {
-          "message": "OK",
+          "passed": true,
           "script": "validate-test-catalog.ps1",
-          "passed": true
+          "message": "OK"
         },
         {
-          "message": "OK",
-          "script": "validate-task-guides.ps1",
-          "passed": true
-        },
-        {
-          "message": "OK",
+          "passed": true,
           "script": "validate-debt-register.ps1",
-          "passed": true
+          "message": "OK"
         },
         {
-          "message": "OK",
+          "passed": true,
           "script": "validate-dependencies-catalog.ps1",
-          "passed": true
+          "message": "OK"
         }
       ],
       "contractValidation": [
-        {
-          "artifact": "start-here",
-          "passed": true,
-          "score": 100,
-          "missingSections": null,
-          "bannedPatterns": null
-        },
         {
           "artifact": "overview",
           "passed": true,
@@ -263,13 +284,6 @@
           "bannedPatterns": null
         },
         {
-          "artifact": "task-guides",
-          "passed": true,
-          "score": 100,
-          "missingSections": null,
-          "bannedPatterns": null
-        },
-        {
           "artifact": "debt-register",
           "passed": true,
           "score": 100,
@@ -285,12 +299,6 @@
         }
       ],
       "evidenceContractValidation": [
-        {
-          "artifact": "start-here",
-          "passed": true,
-          "score": 100,
-          "issues": null
-        },
         {
           "artifact": "overview",
           "passed": false,
@@ -323,12 +331,6 @@
         },
         {
           "artifact": "test-catalog",
-          "passed": true,
-          "score": 100,
-          "issues": null
-        },
-        {
-          "artifact": "task-guides",
           "passed": true,
           "score": 100,
           "issues": null
@@ -376,25 +378,39 @@
             "modelCount": 0,
             "dependencyCount": 0
           },
-          "startHereApiCount": 0,
-          "startHereModelCount": 0,
           "testEvidenceCaseCount": 0,
           "dependencyEvidenceCount": 0
         }
       },
       "taskGuideOutcomes": {
-        "actionabilityScore": 83.3,
-        "evidenceCoverageScore": 50.0,
-        "estimatedCompletionMinutes": 12.0,
-        "taskCompletionTimeScore": 100.0,
+        "actionabilityScore": 100,
+        "evidenceCoverageScore": 100,
+        "estimatedCompletionMinutes": 0,
+        "taskCompletionTimeScore": 100,
         "issues": null
       },
       "policyGates": {
-        "score": 100.0,
-        "passed": true,
-        "blockingIssues": null,
-        "warnings": null
+        "blockingIssues": [
+          "provenance-missing:overview.md",
+          "provenance-missing:api-inventory.md",
+          "provenance-missing:data-model.md",
+          "provenance-missing:config-catalog.md",
+          "provenance-missing:build-cookbook.md"
+        ],
+        "score": 0.0,
+        "passed": false
       }
     }
+  },
+  "provenance": {
+    "generatorVersion": "appdoc-run-all-generators/3.0.0",
+    "commitHash": "eed63d1",
+    "generatedAt": "2026-03-11T14:45:38-04:00",
+    "profile": "default",
+    "scope": ".",
+    "confidenceInferenceFlags": [
+      "deterministic",
+      "evidence-backed"
+    ]
   }
 }

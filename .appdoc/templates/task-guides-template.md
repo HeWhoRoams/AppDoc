@@ -1,6 +1,6 @@
 # Task Guides
 
-## Executive Summary
+## Summary
 
 This document provides task-centric implementation and maintenance playbooks derived from deterministic evidence. It helps engineers complete common workflows safely while preserving architecture and operational quality.
 

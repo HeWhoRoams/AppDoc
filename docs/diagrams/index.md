@@ -2,8 +2,11 @@
 
 ## Layer L1 — System Scope
 
-- [C4 System Context](c4-context.md) — **When to use:** orient to external actors and system boundary.
-- [C4 Container](c4-container.md) — **When to use:** understand deployment/runtime container responsibilities.
+## Layer L1 — System Scope
+
+- C4 System Context (planned) — orient to external actors and system boundary.
+- C4 Container (planned) — understand deployment/runtime container responsibilities.
+
 
 ## Layer L2 — Runtime and Data Paths
 

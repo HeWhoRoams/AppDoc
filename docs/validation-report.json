@@ -378,5 +378,16 @@
     "passed": true,
     "blockingIssues": [],
     "warnings": []
+  },
+  "provenance": {
+    "generatorVersion": "appdoc-run-all-generators/3.0.0",
+    "commitHash": "eed63d1",
+    "generatedAt": "2026-03-11T14:45:38-04:00",
+    "profile": "default",
+    "scope": ".",
+    "confidenceInferenceFlags": [
+      "deterministic",
+      "evidence-backed"
+    ]
   }
 }

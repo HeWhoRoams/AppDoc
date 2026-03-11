@@ -1,20 +1,20 @@
 {
   "artifact": "dependencies-catalog",
-  "generatedAt": "2026-03-05T16:38:35-05:00",
+  "generatedAt": "2026-03-11T14:45:30-04:00",
   "recordCount": 0,
   "records": [],
   "metadata": {
+    "generator": "generate-dependencies-catalog.ps1",
+    "dependencyCount": 0,
+    "requiredSections": [
+      "Summary",
+      "Dependency Summary"
+    ],
+    "projectCount": 0,
     "requiredEvidenceKeys": [
       "dependencies"
     ],
-    "requiredSections": [
-      "Executive Summary",
-      "Dependency Summary"
-    ],
-    "graphSchemaTarget": "appdoc-evidence-graph/v1",
-    "generator": "generate-dependencies-catalog.ps1",
-    "dependencyCount": 0,
-    "projectCount": 0
+    "graphSchemaTarget": "appdoc-evidence-graph/v1"
   },
   "determinism": {
     "hashAlgorithm": "SHA256",
@@ -23,6 +23,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "699efe1fa75243aefc0c7ceabf962969f018ea142f08b5fdc1807c7d5f51c488"
+    "contentHash": "525c2f63b0ed11869462e41d59de73a8f300fa02026cd616d5eaf63bdd328412"
   }
 }

@@ -235,8 +235,124 @@ function Normalize-AppDocMarkdownStructure {
         '$1' + "`r`n" + '$2'
     )
 
+    # Normalize summary-style sections to exactly one Summary section.
+    if (Get-Command Normalize-AppDocSingleSummarySection -ErrorAction SilentlyContinue) {
+        $updated = Normalize-AppDocSingleSummarySection -Content $updated
+    }
+
     # Trim redundant blank lines introduced by cleanup.
     $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`r`n`r`n")
     return $updated
+}
+
+function Normalize-AppDocSingleSummarySection {
+    <#
+    .SYNOPSIS
+    Ensures markdown contains exactly one summary section titled 'Summary'.
+
+    .PARAMETER Content
+    The markdown content to normalize
+    #>
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Content
+    )
+
+    $updated = $Content
+    $sectionRegex = [regex]::new('(?ms)^##\s+(?<heading>[^\r\n]+)\s*\r?\n(?<body>.*?)(?=^##\s+|\z)')
+    $matches = @($sectionRegex.Matches($updated))
+    if ($matches.Count -eq 0) {
+        return $updated
+    }
+
+    $summaryCandidates = New-Object System.Collections.Generic.List[object]
+    for ($i = 0; $i -lt $matches.Count; $i++) {
+        $m = $matches[$i]
+        $headingRaw = [string]$m.Groups['heading'].Value
+        $headingNorm = ($headingRaw -replace '\s+', ' ').Trim().ToLowerInvariant()
+        $isOverviewAlias = ($headingNorm -eq 'overview' -and $i -le 2)
+        $isSummaryAlias = (
+            $headingNorm -eq 'executive summary' -or
+            $headingNorm -eq 'plain language summary' -or
+            $headingNorm -eq 'summary' -or
+            $headingNorm -match '^enhanced\s+.+\s+summary$' -or
+            $isOverviewAlias
+        )
+
+        if ($isSummaryAlias) {
+            $summaryCandidates.Add([ordered]@{
+                index = $i
+                heading = $headingNorm
+                full = $m.Value
+                body = ([string]$m.Groups['body'].Value).Trim()
+            }) | Out-Null
+        }
+    }
+
+    if ($summaryCandidates.Count -eq 0) {
+        return $updated
+    }
+
+    $preferredOrder = @(
+        'summary',
+        'executive summary',
+        'plain language summary'
+    )
+
+    $selected = $null
+    foreach ($preferred in $preferredOrder) {
+        $candidate = $summaryCandidates | Where-Object { $_.heading -eq $preferred -and -not [string]::IsNullOrWhiteSpace([string]$_.body) } | Select-Object -First 1
+        if ($candidate) {
+            $selected = $candidate
+            break
+        }
+    }
+
+    if (-not $selected) {
+        $selected = $summaryCandidates |
+            Where-Object { $_.heading -match '^enhanced\s+.+\s+summary$' -and -not [string]::IsNullOrWhiteSpace([string]$_.body) } |
+            Select-Object -First 1
+    }
+
+    if (-not $selected) {
+        $selected = $summaryCandidates | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_.body) } | Select-Object -First 1
+    }
+
+    if (-not $selected) {
+        $selected = $summaryCandidates | Select-Object -First 1
+    }
+
+    $summaryBody = ([string]$selected.body).Trim()
+    if ([string]::IsNullOrWhiteSpace($summaryBody)) {
+        $summaryBody = 'This section summarizes extracted findings for this artifact.'
+    }
+
+    foreach ($candidate in @($summaryCandidates | Sort-Object { $_.full.Length } -Descending)) {
+        $updated = $updated.Replace([string]$candidate.full, '')
+    }
+
+    $newSummary = "## Summary`r`n`r`n$summaryBody`r`n"
+    $generatedRegex = [regex]::new('(?im)^\*\*Generated\*\*:[^\r\n]*\r?\n')
+    if ($generatedRegex.IsMatch($updated)) {
+        $updated = $generatedRegex.Replace($updated, [System.Text.RegularExpressions.MatchEvaluator]{
+            param($m)
+            return ($m.Value + "`r`n" + $newSummary + "`r`n")
+        }, 1)
+    }
+    else {
+        $titleRegex = [regex]::new('(?im)^#\s+[^\r\n]+\r?\n')
+        if ($titleRegex.IsMatch($updated)) {
+            $updated = $titleRegex.Replace($updated, [System.Text.RegularExpressions.MatchEvaluator]{
+                param($m)
+                return ($m.Value + "`r`n" + $newSummary + "`r`n")
+            }, 1)
+        }
+        else {
+            $updated = $newSummary + "`r`n" + $updated
+        }
+    }
+
+    $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`r`n`r`n")
+    return $updated.TrimEnd() + "`r`n"
 }
 

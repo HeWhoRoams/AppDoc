@@ -1,4 +1,42 @@
 {
+  "generator_version": "generate-overview.ps1",
+  "section_evidence_defaults": {
+    "what_it_does": [
+      "ev-0001",
+      "ev-0002",
+      "ev-0003",
+      "ev-0004"
+    ],
+    "inputs": [
+      "ev-0001",
+      "ev-0002",
+      "ev-0003"
+    ],
+    "processing_steps": [
+      "ev-0055"
+    ],
+    "outputs": [
+      "ev-0055"
+    ],
+    "external_systems": [
+      "ev-0055"
+    ],
+    "confidence_notes": [
+      "ev-0001",
+      "ev-0002",
+      "ev-0003",
+      "ev-0004",
+      "ev-0055"
+    ]
+  },
+  "generated_at": "2026-03-11T14:45:31-04:00",
+  "run_id": "8123f1ba-e0e7-496c-9faa-4f86574066a8",
+  "constraints": {
+    "must_ground": true,
+    "no_invention": true,
+    "paragraph_level_evidence_preferred": true,
+    "section_level_evidence_allowed": true
+  },
   "project": {
     "name": "Appdoc",
     "root_path": ".",
@@ -514,15 +552,6 @@
     "config_count": 54,
     "dependency_count": 0
   },
-  "generator_version": "generate-overview.ps1",
-  "constraints": {
-    "must_ground": true,
-    "no_invention": true,
-    "paragraph_level_evidence_preferred": true,
-    "section_level_evidence_allowed": true
-  },
-  "run_id": "ee355ce8-6530-45ac-935c-033d785988dc",
-  "generated_at": "2026-03-04T15:08:57-05:00",
   "evidence_refs": [
     {
       "id": "ev-0001",
@@ -1094,34 +1123,5 @@
       ]
     }
   ],
-  "section_evidence_defaults": {
-    "what_it_does": [
-      "ev-0001",
-      "ev-0002",
-      "ev-0003",
-      "ev-0004"
-    ],
-    "inputs": [
-      "ev-0001",
-      "ev-0002",
-      "ev-0003"
-    ],
-    "processing_steps": [
-      "ev-0055"
-    ],
-    "outputs": [
-      "ev-0055"
-    ],
-    "external_systems": [
-      "ev-0055"
-    ],
-    "confidence_notes": [
-      "ev-0001",
-      "ev-0002",
-      "ev-0003",
-      "ev-0004",
-      "ev-0055"
-    ]
-  },
   "schema_version": "3.0.0"
 }

@@ -624,7 +624,6 @@ function Write-AppDocJsonCompanionSummaries {
         "evidence/narrative-context-pack.json",
         "evidence/narrative-run-report.json",
         "evidence/overview-truth-pack.json",
-        "diagnostics-report.json",
         "quality-report.json",
         "validation-report.json"
     )
@@ -1109,10 +1108,7 @@ $pipelinePhases = @(
             "generate-test-catalog.ps1",
             "generate-debt-register.ps1",
             "generate-dependencies-catalog.ps1",
-            "generate-task-guides.ps1",
-            "generate-overview.ps1",
-            "generate-start-here.ps1",
-            "generate-docs-index.ps1"
+            "generate-overview.ps1"
         )
     }
 )
@@ -1406,7 +1402,6 @@ Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Va
 }
 
 $documents = @(
-    @{ File = "start-here.md"; Type = "Start Here" }
     @{ File = "overview.md"; Type = "Overview" }
     @{ File = "api-inventory.md"; Type = "API Inventory" }
     @{ File = "data-model.md"; Type = "Data Model" }
@@ -1415,7 +1410,6 @@ $documents = @(
     @{ File = "test-catalog.md"; Type = "Test Catalog" }
     @{ File = "debt-register.md"; Type = "Debt Register" }
     @{ File = "dependencies-catalog.md"; Type = "Dependencies Catalog" }
-    @{ File = "task-guides.md"; Type = "Task Guides" }
 )
 
 foreach ($doc in $documents) {

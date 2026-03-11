@@ -7,50 +7,42 @@ function Get-AppDocArtifactContract {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
-        [ValidateSet("start-here","overview","api-inventory","data-model","config-catalog","build-cookbook","test-catalog","debt-register","dependencies-catalog","task-guides")]
+        [ValidateSet("overview","api-inventory","data-model","config-catalog","build-cookbook","test-catalog","debt-register","dependencies-catalog")]
         [string]$Artifact
     )
 
     $contracts = @{
-        "start-here" = @{
-            requiredSections = @("Who This Is For","First 30 Minutes","First 3 Files","Expected Outputs","Role-Based Paths","System Signals","Evidence Traceability")
-            requiredEvidenceKeys = @("summary","endpoints","models")
-        }
         "overview" = @{
-            requiredSections = @("System Boundary","Runtime Path","Inputs-Processing-Outputs","External Systems","Confidence Notes")
+            requiredSections = @("Summary","System Purpose","Getting Started","Documentation Map")
             requiredEvidenceKeys = @("summary","technologies")
         }
         "api-inventory" = @{
-            requiredSections = @("Executive Summary","API Endpoints")
+            requiredSections = @("Summary","API Endpoints")
             requiredEvidenceKeys = @("endpoints")
         }
         "data-model" = @{
-            requiredSections = @("Executive Summary","Data Models")
+            requiredSections = @("Summary","Data Models")
             requiredEvidenceKeys = @("models")
         }
         "config-catalog" = @{
-            requiredSections = @("Executive Summary","Configuration Options")
+            requiredSections = @("Summary","Configuration Options")
             requiredEvidenceKeys = @("configurations")
         }
         "build-cookbook" = @{
-            requiredSections = @("Executive Summary","Build Steps")
+            requiredSections = @("Summary","Build Steps")
             requiredEvidenceKeys = @("commands")
         }
         "test-catalog" = @{
-            requiredSections = @("Executive Summary","Test Suites")
+            requiredSections = @("Summary","Test Suites")
             requiredEvidenceKeys = @("testSuites")
         }
         "debt-register" = @{
-            requiredSections = @("Executive Summary","Debt Items")
+            requiredSections = @("Summary","Debt Items")
             requiredEvidenceKeys = @("debtItems")
         }
         "dependencies-catalog" = @{
-            requiredSections = @("Executive Summary","Dependency Summary")
+            requiredSections = @("Summary","Dependency Summary")
             requiredEvidenceKeys = @("dependencies")
-        }
-        "task-guides" = @{
-            requiredSections = @("Executive Summary","Task Guides","Operational Checklist")
-            requiredEvidenceKeys = @("tasks","summary")
         }
     }
 

@@ -1,14 +1,10 @@
 # Configuration Catalog
 
-**Generated**: 2026-03-05 16:38:30
+**Generated**: 2026-03-11 14:45:27
 
-## Executive Summary
+## Summary
 
-This document inventories all configuration options, environment variables, and settings that control system behavior. It enables operations teams to deploy and configure the system correctly across different environments, and helps developers understand which behaviors are configurable versus hardcoded. Reference this when troubleshooting environment-specific issues or planning new deployments.
-
-## Overview
-
-This catalog is assembled from Web.config/App.config, project files, and pipeline YAML to show where runtime and deployment behavior are controlled.
+This artifact lists configuration inputs that can change runtime behavior, with sensitive values redacted and evidence references preserved.
 
 ## Configuration Sources
 
@@ -117,3 +113,23 @@ Use least-privilege auto-approve rules for trusted automation paths only:
 - chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1
 
 Do not treat chat.tools.terminal.autoApprove.Write-Host as a required security control. Write-Host is a display/UI command and should remain optional.
+## Evidence Traceability
+
+| Field | Value |
+|------|-------|
+| Evidence Artifact | evidence/config-catalog.evidence.json |
+| Record Count | 54 |
+| Generator | generate-config-catalog.ps1 |
+| Required Evidence Keys | configurations |
+| Grounding Mode | Deterministic extraction records |
+
+---
+
+## Provenance
+
+- Generator Version: appdoc-run-all-generators/3.0.0
+- Commit Hash: eed63d1
+- Generated At: 2026-03-11T14:45:38-04:00
+- Profile: default
+- Scope: .
+- Confidence/Inference Flags: deterministic, evidence-backed

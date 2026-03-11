@@ -1,12 +1,8 @@
 # Technical Debt Register
 
-## Executive Summary
+## Summary
 
 This document tracks known technical debt items including code quality issues, architectural concerns, outdated dependencies, and areas requiring refactoring. It helps teams prioritize maintenance work, estimate refactoring effort, and communicate the long-term health of the codebase to stakeholders. Use this to plan sprint work, justify refactoring initiatives, or assess system maintainability.
-
-## Overview
-
-This register is built from extracted code-smell and maintainability signals and is intended to support prioritized remediation planning.
 
 ## Debt Categories
 

@@ -338,11 +338,21 @@ function Get-AppDocOverviewWelcomeMarkdown {
         "confidence_notes"
     )
 
+    $titleMap = @{
+        'what_it_does'      = 'What It Does'
+        'inputs'            = 'Inputs'
+        'processing_steps'  = 'Processing Steps'
+        'outputs'           = 'Outputs'
+        'external_systems'  = 'External Systems'
+        'confidence_notes'  = 'Confidence Notes'
+    }
+
     $lines = @("## Welcome")
     $allSectionRefIds = New-Object System.Collections.Generic.List[string]
     foreach ($sectionName in $sectionOrder) {
         $lines += ""
-        $lines += "### $sectionName"
+        $displayName = if ($titleMap.ContainsKey($sectionName)) { $titleMap[$sectionName] } else { $sectionName }
+        $lines += "### $displayName"
 
         $items = @()
         if ($WelcomeNarrative) {
@@ -374,7 +384,7 @@ function Get-AppDocOverviewWelcomeMarkdown {
     }
 
     $lines += ""
-    $lines += "### evidence_refs"
+    $lines += "### Evidence References"
     $lines += "| ID | Artifact | Kind | Name | Source |"
     $lines += "|---|---|---|---|---|"
 
@@ -568,7 +578,7 @@ function Update-AppDocOverviewContent {
     $updated = Set-AppDocOverviewSectionContent -Content $updated -SectionName "Architecture" -SectionContent $sections.architectureContent
     $updated = Set-AppDocOverviewSectionContent -Content $updated -SectionName "Key Components" -SectionContent $sections.keyComponentsContent
     $updated = Set-AppDocOverviewSectionContent -Content $updated -SectionName "Configuration" -SectionContent "Configuration is primarily file-based (`Web.config`, transforms, and project/YAML settings). Use [Configuration Catalog](config-catalog.md) for required keys, environment-sensitive values, and validation guidance."
-    $updated = Set-AppDocOverviewSectionContent -Content $updated -SectionName "Getting Started" -SectionContent "Start with [Start Here](start-here.md), then run the minimal command set from [Build Cookbook](build-cookbook.md). After first successful build/test, use [Task Guides](task-guides.md) to execute common maintenance flows safely."
+    $updated = Set-AppDocOverviewSectionContent -Content $updated -SectionName "Getting Started" -SectionContent "Run the restore and build commands from [Build Cookbook](build-cookbook.md), then consult [API Inventory](api-inventory.md) for endpoint contracts and [Data Model](data-model.md) for data structures. For environment setup, see [Configuration Catalog](config-catalog.md)."
 
     if ($null -ne $WelcomeNarrative) {
         $welcomeMarkdown = Get-AppDocOverviewWelcomeMarkdown -WelcomeNarrative $WelcomeNarrative
@@ -585,8 +595,8 @@ function Update-AppDocOverviewContent {
                 1
             )
         }
-        elseif ([regex]::IsMatch($updated, '(?im)^##\s+Executive Summary\b')) {
-            $executiveSummaryRegex = [regex]::new('(?im)^##\s+Executive Summary\b')
+        elseif ([regex]::IsMatch($updated, '(?im)^##\s+(Executive Summary|Summary)\b')) {
+            $executiveSummaryRegex = [regex]::new('(?im)^##\s+(Executive Summary|Summary)\b')
             $updated = $executiveSummaryRegex.Replace(
                 $updated,
                 [System.Text.RegularExpressions.MatchEvaluator]{

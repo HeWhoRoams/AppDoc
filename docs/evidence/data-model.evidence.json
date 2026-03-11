@@ -1,17 +1,17 @@
 {
   "artifact": "data-model",
-  "generatedAt": "2026-03-05T16:38:33-05:00",
+  "generatedAt": "2026-03-11T14:45:21-04:00",
   "recordCount": 0,
   "records": [],
   "metadata": {
-    "requiredSections": [
-      "Executive Summary",
-      "Data Models"
-    ],
+    "generator": "generate-data-model.ps1",
     "requiredEvidenceKeys": [
       "models"
     ],
-    "generator": "generate-data-model.ps1"
+    "requiredSections": [
+      "Summary",
+      "Data Models"
+    ]
   },
   "determinism": {
     "hashAlgorithm": "SHA256",
@@ -20,6 +20,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "c2bece8b4859aec0fd763bdd90dbade4da7e4d75eab2e38a68b6d4f8fb09937d"
+    "contentHash": "0aa44f8c620199c3cc9dc1197a8c325becf891e5d9ad8c2f30e2ca7019a68179"
   }
 }

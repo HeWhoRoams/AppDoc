@@ -1,34 +1,34 @@
 # System Overview
 
-**Generated**: 2026-03-04 15:08:58
+**Generated**: 2026-03-11 14:45:31
 
-## Plain Language Summary
+## Summary
 
 This page explains, in plain language, what the application appears to do, how requests and data move through it, and where to find deeper technical detail.
 
 ## Welcome
 
-### what_it_does
+### What It Does
 - This repository primarily defines tooling, automation, and configuration behavior rather than an exposed runtime API surface. (evidence: ev-0001, ev-0002, ev-0003, ev-0004)
 
-### inputs
+### Inputs
 - Runtime behavior is also influenced by environment and application configuration values loaded at startup. (evidence: ev-0001, ev-0002, ev-0003)
 
-### processing_steps
+### Processing Steps
 - Processing flow could not be inferred beyond repository-level summaries in this scan. (evidence: ev-0055)
 
-### outputs
+### Outputs
 - Output contracts are not strongly represented in current deterministic evidence. (evidence: ev-0055)
 
-### external_systems
+### External Systems
 - No clear external system integration evidence was detected. (evidence: ev-0055)
 
-### confidence_notes
+### Confidence Notes
 - Evidence coverage includes 0 endpoint records, 0 model records, 54 configuration records, and 0 dependency records. (evidence: ev-0001, ev-0002, ev-0003, ev-0004)
 - Canonical evidence graph captured 56 entities and 54 relationships for this run. (evidence: ev-0055)
 - Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55. (evidence: ev-0055)
 
-### evidence_refs
+### Evidence References
 | ID | Artifact | Kind | Name | Source |
 |---|---|---|---|---|
 | ev-0001 | config-catalog | configuration | chat.tools.fileOperations.autoApprove.list | .vscode/settings.json:chat.tools.fileOperations.autoApprove.list |
@@ -36,10 +36,6 @@ This page explains, in plain language, what the application appears to do, how r
 | ev-0003 | config-catalog | configuration | chat.tools.terminal.autoApprove.-ErrorAction | .vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction |
 | ev-0004 | config-catalog | configuration | chat.tools.terminal.autoApprove.-Json | .vscode/settings.json:chat.tools.terminal.autoApprove.-Json |
 | ev-0055 | overview | summary | system-purpose | repository |
-
-## Executive Summary
-
-This document provides a high-level overview of the system's purpose, architecture, and key components. It serves as the entry point for understanding the codebase and navigating to detailed documentation.
 
 ## System Purpose
 
@@ -65,44 +61,24 @@ _Technology stack not yet identified. Analyze package files and code._
 
 Configuration is primarily file-based (Web.config, transforms, and project/YAML settings). Use [Configuration Catalog](config-catalog.md) for required keys, environment-sensitive values, and validation guidance.
 
-## Documentation Navigation
-
-This documentation set includes the following artifacts:
-
-- **[API Inventory](api-inventory.md)** - HTTP endpoints and API contracts
-- **[Data Model](data-model.md)** - Data structures and entities
-- **[Configuration Catalog](config-catalog.md)** - Configuration options and environment variables
-- **[Build Cookbook](build-cookbook.md)** - Build and deployment commands
-- **[Test Catalog](test-catalog.md)** - Test suites and coverage
-- **[Tech Debt Register](debt-register.md)** - Known issues and improvement opportunities
-- **[Dependencies Catalog](dependencies-catalog.md)** - External packages and libraries
-
 ## Getting Started
 
-Start with [Start Here](start-here.md), then run the minimal command set from [Build Cookbook](build-cookbook.md). After first successful build/test, use [Task Guides](task-guides.md) to execute common maintenance flows safely.
+Run the restore and build commands from [Build Cookbook](build-cookbook.md), then consult [API Inventory](api-inventory.md) for endpoint contracts and [Data Model](data-model.md) for data structures. For environment setup, see [Configuration Catalog](config-catalog.md).
 
-## System Boundary
-- System scope is documented for this repository run and bounded to generated artifacts under docs/ and evidence/.
-- Architecture statement: no-api-surface.
+## Documentation Map
 
-## Runtime Path
-- Processing flow could not be inferred beyond repository-level summaries in this scan.
+This documentation set covers the following areas. Start with the artifact most relevant to your current task.
 
-## Inputs→Processing→Outputs
-- Inputs
-- Runtime behavior is also influenced by environment and application configuration values loaded at startup.
-- Processing
-- Processing flow could not be inferred beyond repository-level summaries in this scan.
-- Outputs
-- Output contracts are not strongly represented in current deterministic evidence.
+| Document | Purpose | Start Here When… |
+|---|---|---|
+| [API Inventory](api-inventory.md) | HTTP endpoints and API contracts | Integrating with or testing the API |
+| [Data Model](data-model.md) | Data structures and entities | Tracing data flow or modifying models |
+| [Configuration Catalog](config-catalog.md) | Configuration options and environment variables | Deploying or troubleshooting environment issues |
+| [Build Cookbook](build-cookbook.md) | Build and deployment commands | Setting up, building, or diagnosing failures |
+| [Test Catalog](test-catalog.md) | Test suites and coverage | Running tests or assessing coverage |
+| [Technical Debt Register](debt-register.md) | Known issues and improvement opportunities | Planning a refactoring or debt sprint |
+| [Dependencies Catalog](dependencies-catalog.md) | External packages and libraries | Assessing dependency risk or planning upgrades |
 
-## External Systems
-- No clear external system integration evidence was detected.
-
-## Confidence Notes
-- Evidence coverage includes 0 endpoint records, 0 model records, 54 configuration records, and 0 dependency records.
-- Canonical evidence graph captured 56 entities and 54 relationships for this run.
-- Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.
 ## Evidence Traceability
 
 | Field | Value |
@@ -112,14 +88,36 @@ Start with [Start Here](start-here.md), then run the minimal command set from [B
 | Generator | generate-overview.ps1 |
 | Required Evidence Keys | summary, technologies |
 | Grounding Mode | Deterministic extraction records |
-
 ---
+**Generated by AppDoc Framework**
+## System Boundary
+- System scope is documented for this repository run and bounded to generated artifacts under docs/ and evidence/.
+- Architecture statement: no-api-surface.
+
+## Runtime Path
+- Processing flow could not be inferred beyond repository-level summaries in this scan.
+
+## Inputs→Processing→Outputs
+- ### Inputs
+- Runtime behavior is also influenced by environment and application configuration values loaded at startup.
+- ### Processing
+- Processing flow could not be inferred beyond repository-level summaries in this scan.
+- ### Outputs
+- Output contracts are not strongly represented in current deterministic evidence.
+
+## External Systems
+- No clear external system integration evidence was detected.
+
+## Confidence Notes
+- Evidence coverage includes 0 endpoint records, 0 model records, 54 configuration records, and 0 dependency records.
+- Canonical evidence graph captured 56 entities and 54 relationships for this run.
+- Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.
 
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 1a97947
-- Generated At: 2026-03-04T15:09:09-05:00
+- Commit Hash: eed63d1
+- Generated At: 2026-03-11T14:45:38-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

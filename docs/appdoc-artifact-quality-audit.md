@@ -316,3 +316,12 @@ Phases 1–3 should be implemented in the generator scripts and are fully determ
 ---
 
 *This audit was performed by reviewing generated and enhanced artifact content directly against source evidence tables, cross-referenced with known code structure from static analysis results.*
+
+## Provenance
+
+- Generator Version: appdoc-run-all-generators/3.0.0
+- Commit Hash: eed63d1
+- Generated At: 2026-03-11T14:45:38-04:00
+- Profile: default
+- Scope: .
+- Confidence/Inference Flags: deterministic, evidence-backed

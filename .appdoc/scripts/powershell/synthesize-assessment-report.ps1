@@ -68,7 +68,7 @@ try {
 
 Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
 
-## Executive Summary
+## Summary
 
 This report assesses the current AppDoc documentation generation capabilities against high-quality AI-generated samples to identify improvement opportunities.
 

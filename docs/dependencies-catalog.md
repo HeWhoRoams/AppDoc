@@ -1,14 +1,10 @@
 # Dependencies Catalog
 
-**Generated**: 2026-03-05 16:38:35
+**Generated**: 2026-03-11 14:45:30
 
-## Executive Summary
+## Summary
 
-This document inventories all external dependencies, libraries, packages, and frameworks used by the system. It helps developers understand third-party code being used, manage security vulnerabilities, plan upgrades, and track licensing requirements.
-
-## Overview
-
-This catalog aggregates dependencies discovered from package manifests, project references, and assembly references. Use it to identify version drift, runtime coupling, and upgrade planning priorities.
+This artifact summarizes external packages and integrations that influence runtime behavior, maintenance risk, and upgrade planning.
 
 ## Dependency Summary
 
@@ -50,10 +46,28 @@ This artifact does not currently include automated CVE/advisory enrichment. Use 
 
 ## Licensing
 
-Document licenses for all dependencies and any licensing restrictions.
-
 _No license information extracted. Verify licenses for compliance._
 
 ## Upgrade Recommendations
 
 Focus upgrades on packages that appear in many projects, show version divergence, or sit on critical execution paths. Roll upgrades in small batches and validate build/test outputs after each change set.
+## Evidence Traceability
+
+| Field | Value |
+|------|-------|
+| Evidence Artifact | evidence/dependencies-catalog.evidence.json |
+| Record Count | 0 |
+| Generator | generate-dependencies-catalog.ps1 |
+| Required Evidence Keys | dependencies |
+| Grounding Mode | Deterministic extraction records |
+
+---
+
+## Provenance
+
+- Generator Version: appdoc-run-all-generators/3.0.0
+- Commit Hash: eed63d1
+- Generated At: 2026-03-11T14:45:38-04:00
+- Profile: default
+- Scope: .
+- Confidence/Inference Flags: deterministic, evidence-backed

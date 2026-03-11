@@ -1,17 +1,17 @@
 {
   "artifact": "debt-register",
-  "generatedAt": "2026-03-05T16:38:34-05:00",
+  "generatedAt": "2026-03-11T14:45:29-04:00",
   "recordCount": 0,
   "records": [],
   "metadata": {
-    "requiredSections": [
-      "Executive Summary",
-      "Debt Items"
-    ],
+    "debtCount": 0,
     "requiredEvidenceKeys": [
       "debtItems"
     ],
-    "debtCount": 0,
+    "requiredSections": [
+      "Summary",
+      "Debt Items"
+    ],
     "generator": "generate-debt-register.ps1"
   },
   "determinism": {
@@ -21,6 +21,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "7238e3e47dcf6753f129caeb8ac0c4b2941172f9c29ee442788c48286c048ed6"
+    "contentHash": "e64c3d4a8bc9d15f68fb917196e2cad74c566206b7458666c3734d82cb358d7d"
   }
 }

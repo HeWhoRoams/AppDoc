@@ -1,18 +1,10 @@
 # Test Catalog
 
-**Generated**: 2026-03-04 15:08:54
+**Generated**: 2026-03-11 14:45:29
 
-## Plain Language Summary
+## Summary
 
 This artifact summarizes test entry points and execution patterns so maintainers can validate changes with predictable coverage.
-
-## Executive Summary
-
-This document catalogs all test suites, test cases, and testing infrastructure for the system. It provides visibility into test coverage, identifies testing gaps, and guides developers in maintaining and expanding test coverage. Use this to understand testing scope, run specific test suites, or assess the impact of code changes on existing tests.
-
-## Overview
-
-Test metadata is extracted from discovered test files and method signatures. Use this catalog to understand suite intent and identify where coverage is concentrated.
 
 ## Test Environment Setup
 
@@ -58,8 +50,8 @@ No runnable test commands were inferred from discovered evidence. Verify test pr
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 1a97947
-- Generated At: 2026-03-04T15:09:09-05:00
+- Commit Hash: eed63d1
+- Generated At: 2026-03-11T14:45:38-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

@@ -1,12 +1,8 @@
 # Test Catalog
 
-## Executive Summary
+## Summary
 
 This document catalogs all test suites, test cases, and testing infrastructure for the system. It provides visibility into test coverage, identifies testing gaps, and guides developers in maintaining and expanding test coverage. Use this to understand testing scope, run specific test suites, or assess the impact of code changes on existing tests.
-
-## Overview
-
-Test metadata is extracted from discovered test files and method signatures. Use this catalog to understand suite intent and identify where coverage is concentrated.
 
 ## Test Environment Setup
 

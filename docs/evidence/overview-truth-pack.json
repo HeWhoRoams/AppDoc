@@ -69,6 +69,38 @@
       }
     ]
   },
+  "architecture": {
+    "primaryStyle": "no-api-surface",
+    "styles": [
+      "no-api-surface"
+    ],
+    "frameworks": [
+      "ASP.NET Core"
+    ],
+    "detectionWarning": "Framework detected without code scan hit; counts patched for consistency."
+  },
+  "rootPath": ".",
+  "counts": {
+    "codeFiles": 1,
+    "endpointRecords": 0,
+    "inboundEndpoints": 0,
+    "outboundEndpoints": 0,
+    "outboundMappedEndpoints": 0,
+    "modelRecords": 0,
+    "configurationRecords": 54,
+    "dependencyRecords": 0
+  },
+  "graph": {
+    "enabled": true,
+    "path": ".\\docs\\evidence\\evidence-graph.json",
+    "schemaVersion": "appdoc-evidence-graph/v1",
+    "graphVersion": "1.0.0",
+    "entityCount": 56,
+    "edgeCount": 54
+  },
+  "languageCount": {},
+  "projectName": "Appdoc",
+  "version": "1.2.0",
   "evidence_refs": [
     {
       "id": "ev-0001",
@@ -621,37 +653,5 @@
       }
     }
   ],
-  "projectName": "Appdoc",
-  "rootPath": ".",
-  "architecture": {
-    "primaryStyle": "no-api-surface",
-    "styles": [
-      "no-api-surface"
-    ],
-    "frameworks": [
-      "ASP.NET Core"
-    ],
-    "detectionWarning": "Framework detected without code scan hit; counts patched for consistency."
-  },
-  "graph": {
-    "enabled": true,
-    "path": ".\\docs\\evidence\\evidence-graph.json",
-    "schemaVersion": "appdoc-evidence-graph/v1",
-    "graphVersion": "1.0.0",
-    "entityCount": 56,
-    "edgeCount": 54
-  },
-  "languageCount": {},
-  "counts": {
-    "codeFiles": 1,
-    "endpointRecords": 0,
-    "inboundEndpoints": 0,
-    "outboundEndpoints": 0,
-    "outboundMappedEndpoints": 0,
-    "modelRecords": 0,
-    "configurationRecords": 54,
-    "dependencyRecords": 0
-  },
-  "version": "1.2.0",
-  "generatedAt": "2026-03-04T15:08:57-05:00"
+  "generatedAt": "2026-03-11T14:45:31-04:00"
 }

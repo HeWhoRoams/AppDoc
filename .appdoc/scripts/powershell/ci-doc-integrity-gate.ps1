@@ -155,7 +155,6 @@ if (-not (Test-Path $docsPath)) {
 $issues = New-Object System.Collections.Generic.List[object]
 $docFiles = @(
     "overview.md",
-    "start-here.md",
     "api-inventory.md",
     "data-model.md",
     "config-catalog.md",

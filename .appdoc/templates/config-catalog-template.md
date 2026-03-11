@@ -1,12 +1,8 @@
 # Configuration Catalog
 
-## Executive Summary
+## Summary
 
 This document inventories all configuration options, environment variables, and settings that control system behavior. It enables operations teams to deploy and configure the system correctly across different environments, and helps developers understand which behaviors are configurable versus hardcoded. Reference this when troubleshooting environment-specific issues or planning new deployments.
-
-## Overview
-
-This catalog is assembled from application configuration files, project files, and pipeline YAML to show where runtime and deployment behavior are controlled.
 
 ## Configuration Sources
 

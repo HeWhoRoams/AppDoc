@@ -197,8 +197,21 @@ foreach ($view in $requiredViews) {
         if ($file -in @("internal-flow.md","data-flow.md","data-lineage-core.md") -and $content -notmatch '(?im)^\s*flowchart\s+(LR|TD)\s*$') {
             $issues += "missing-flowchart-directive:$file"
         }
-        if ($file -eq "critical-sequences.md" -and $content -notmatch '(?im)^\s*sequenceDiagram\s*$') {
-            $issues += "missing-sequence-directive:$file"
+        if ($file -eq "critical-sequences.md") {
+            $hasSequenceDirective = ($content -match '(?im)^\s*sequenceDiagram\s*$')
+            $hasQualifiedEmptyState = ($content -match '(?im)^##\s+Why Nothing Qualified\s*$')
+            if ((-not $hasSequenceDirective) -and (-not $hasQualifiedEmptyState)) {
+                $issues += "missing-sequence-directive:$file"
+            }
+            $unsafeParticipantLabels = @(
+                [regex]::Matches($mermaid, '(?im)^\s*participant\s+\w+\s+as\s+(?!")(.*[\/{}].*)$') |
+                    ForEach-Object { [string]$_.Groups[1].Value.Trim() } |
+                    Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+                    Select-Object -Unique
+            )
+            if ($unsafeParticipantLabels.Count -gt 0) {
+                $issues += ("unsafe-sequence-participant-labels:{0}:{1}" -f $file, $unsafeParticipantLabels.Count)
+            }
         }
 
         $labels = Get-MermaidNodeLabels -Mermaid $mermaid

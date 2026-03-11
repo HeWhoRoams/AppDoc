@@ -1,34 +1,34 @@
 {
-  "generatedAt": "2026-03-04T15:09:09-05:00",
+  "generatedAt": "2026-03-11T14:45:38-04:00",
   "summary": {
-    "total": 11,
+    "total": 10,
     "byCategory": {
-      "INITIALIZATION": 1,
-      "DETECTION_PATTERN_MISMATCH": 9,
-      "ENVIRONMENT_ERROR": 1
+      "ENVIRONMENT_ERROR": 1,
+      "DETECTION_PATTERN_MISMATCH": 8,
+      "INITIALIZATION": 1
     },
     "bySeverity": {
-      "Info": 2,
-      "Warning": 9
+      "Warning": 8,
+      "Info": 2
     },
     "hasErrors": false,
     "hasWarnings": true
   },
   "events": [
     {
-      "timestamp": "2026-03-04T15:09:04-05:00",
+      "timestamp": "2026-03-11T14:45:34-04:00",
       "category": "INITIALIZATION",
       "severity": "Info",
       "component": "orchestrator",
       "message": "Diagnostics initialized",
       "filePath": "",
       "details": {
-        "rootPath": "./",
-        "outputPath": "./docs"
+        "outputPath": "./docs",
+        "rootPath": "./"
       }
     },
     {
-      "timestamp": "2026-03-04T15:09:09-05:00",
+      "timestamp": "2026-03-11T14:45:38-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -37,16 +37,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-04T15:09:09-05:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: provenance-missing:start-here.md",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-03-04T15:09:09-05:00",
+      "timestamp": "2026-03-11T14:45:38-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -55,7 +46,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-04T15:09:09-05:00",
+      "timestamp": "2026-03-11T14:45:38-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -64,7 +55,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-04T15:09:09-05:00",
+      "timestamp": "2026-03-11T14:45:38-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -73,7 +64,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-04T15:09:09-05:00",
+      "timestamp": "2026-03-11T14:45:38-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -82,16 +73,16 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-04T15:09:09-05:00",
+      "timestamp": "2026-03-11T14:45:38-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
-      "message": "Policy gate blocking issue: provenance-missing:validation-report.json",
+      "message": "Policy gate warning: ",
       "filePath": "./docs",
       "details": {}
     },
     {
-      "timestamp": "2026-03-04T15:09:09-05:00",
+      "timestamp": "2026-03-11T14:45:38-04:00",
       "category": "ENVIRONMENT_ERROR",
       "severity": "Info",
       "component": "Validation",
@@ -100,7 +91,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-04T15:09:09-05:00",
+      "timestamp": "2026-03-11T14:45:38-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "Narrative",
@@ -114,24 +105,26 @@
       }
     },
     {
-      "timestamp": "2026-03-04T15:09:09-05:00",
+      "timestamp": "2026-03-11T14:45:38-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "Validation",
       "message": "Validation is below threshold in soft mode",
       "filePath": "",
       "details": {
-        "averageScore": 86.0,
-        "threshold": 80,
-        "belowThreshold": 1
+        "belowThreshold": 1,
+        "averageScore": 89.0,
+        "threshold": 80
       }
     }
   ],
   "metadata": {
+    "narrativeRunReportPath": "./docs/evidence/narrative-run-report.json",
     "architecture": {
       "version": "1.1.0",
-      "generatedAt": "2026-03-04T15:08:46-05:00",
+      "generatedAt": "2026-03-11T14:45:17-04:00",
       "primaryStyle": "no-api-surface",
+      "primaryStyleLabel": "No API Surface",
       "styles": "no-api-surface",
       "apiSurfaceExpected": false,
       "confidence": 0.55,
@@ -152,48 +145,10 @@
         "sampledCodeFileCount": 1
       }
     },
-    "frameworks": null,
-    "scriptFailures": null,
-    "profile": "default",
-    "evidenceGraphPath": "./docs/evidence/evidence-graph.json",
-    "narrativeReviewRequired": true,
-    "validationGate": {
-      "passed": false,
-      "reason": "Structured validation gate failed (score and/or policy gates)",
-      "averageScore": 86.0,
-      "belowThreshold": 1,
-      "strict": false,
-      "qualityThreshold": 80,
-      "evaluatedDocuments": 10
-    },
-    "qualityThreshold": 80,
     "strictValidation": false,
+    "profile": "default",
     "outputPath": "./docs",
-    "evidenceGraphMetrics": {
-      "entityCount": 56,
-      "edgeCount": 54,
-      "entityTypeCount": {
-        "system": 1,
-        "endpoint_inbound": 0,
-        "data_model": 0,
-        "component": 1,
-        "endpoint_outbound": 0,
-        "config_key": 54,
-        "test_case": 0,
-        "dependency": 0
-      },
-      "inboundEndpointCount": 0,
-      "outboundEndpointCount": 0,
-      "componentCount": 1,
-      "modelCount": 0,
-      "configCount": 54,
-      "dependencyCount": 0,
-      "testCaseCount": 0
-    },
-    "narrativeReviewReasons": [
-      "style-business-verb-coverage-low:1",
-      "style-what-it-does-purpose-verb-low:0"
-    ],
+    "frameworks": null,
     "evidenceGraphIntegrity": {
       "passed": true,
       "issues": null,
@@ -205,14 +160,51 @@
         "outboundEndpointCount": 0
       }
     },
+    "scriptFailures": null,
+    "qualityThreshold": 80,
+    "evidenceGraphMetrics": {
+      "entityCount": 56,
+      "edgeCount": 54,
+      "entityTypeCount": {
+        "test_case": 0,
+        "endpoint_outbound": 0,
+        "config_key": 54,
+        "component": 1,
+        "dependency": 0,
+        "system": 1,
+        "data_model": 0,
+        "endpoint_inbound": 0
+      },
+      "inboundEndpointCount": 0,
+      "outboundEndpointCount": 0,
+      "componentCount": 1,
+      "modelCount": 0,
+      "configCount": 54,
+      "dependencyCount": 0,
+      "testCaseCount": 0
+    },
+    "narrativeReviewRequired": true,
     "localOnly": true,
-    "narrativeRunReportPath": "./docs/evidence/narrative-run-report.json",
-    "rootPath": "./"
+    "validationGate": {
+      "passed": false,
+      "reason": "Structured validation gate failed (score and/or policy gates)",
+      "averageScore": 89.0,
+      "belowThreshold": 1,
+      "strict": false,
+      "qualityThreshold": 80,
+      "evaluatedDocuments": 8
+    },
+    "rootPath": "./",
+    "evidenceGraphPath": "./docs/evidence/evidence-graph.json",
+    "narrativeReviewReasons": [
+      "style-business-verb-coverage-low:1",
+      "style-what-it-does-purpose-verb-low:0"
+    ]
   },
   "provenance": {
     "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "1a97947",
-    "generatedAt": "2026-03-04T15:09:09-05:00",
+    "commitHash": "eed63d1",
+    "generatedAt": "2026-03-11T14:45:38-04:00",
     "profile": "default",
     "scope": ".",
     "confidenceInferenceFlags": [

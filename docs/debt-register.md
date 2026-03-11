@@ -1,14 +1,10 @@
 # Technical Debt Register
 
-**Generated**: 2026-03-05 16:38:34
+**Generated**: 2026-03-11 14:45:29
 
-## Executive Summary
+## Summary
 
-This document tracks known technical debt items including code quality issues, architectural concerns, outdated dependencies, and areas requiring refactoring. It helps teams prioritize maintenance work, estimate refactoring effort, and communicate the long-term health of the codebase to stakeholders. Use this to plan sprint work, justify refactoring initiatives, or assess system maintainability.
-
-## Overview
-
-This register is built from extracted code-smell and maintainability signals and is intended to support prioritized remediation planning.
+This artifact captures detected risks and technical debt signals so teams can prioritize stabilization and modernization work.
 
 ## Debt Categories
 
@@ -39,3 +35,23 @@ Use a phased plan: isolate highest-risk files first, split oversized classes/met
 ## Monitoring and Tracking
 
 Track debt trendlines with recurring static-analysis runs and include debt deltas in release-readiness reviews to prevent re-accumulation.
+## Evidence Traceability
+
+| Field | Value |
+|------|-------|
+| Evidence Artifact | evidence/debt-register.evidence.json |
+| Record Count | 0 |
+| Generator | generate-debt-register.ps1 |
+| Required Evidence Keys | debtItems |
+| Grounding Mode | Deterministic extraction records |
+
+---
+
+## Provenance
+
+- Generator Version: appdoc-run-all-generators/3.0.0
+- Commit Hash: eed63d1
+- Generated At: 2026-03-11T14:45:38-04:00
+- Profile: default
+- Scope: .
+- Confidence/Inference Flags: deterministic, evidence-backed

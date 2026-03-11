@@ -147,6 +147,52 @@ function Infer-CriticalPath {
     return $false
 }
 
+function Infer-ModelRole {
+    param(
+        [string]$Source,
+        [string]$Name,
+        [object]$Metadata
+    )
+
+    $s = ($Source ?? '').ToLowerInvariant()
+    $n = ($Name ?? '').ToLowerInvariant()
+    $modelType = [string](Get-FieldValue -Record $Metadata -Name 'modelType' -Default '')
+    $t = $modelType.ToLowerInvariant()
+
+    if ($s -match '(?i)(?:^|[\\/])(generated|service references|connected services|reference\.cs|proxy|proxies)(?:[\\/]|$)' -or $n -match '(proxy|generated|reference)') {
+        return 'GeneratedProxy'
+    }
+
+    if ($s -match '(?i)(?:^|[\\/])viewmodels?(?:[\\/]|$)' -or $n -match 'viewmodel$') {
+        return 'ViewModel'
+    }
+
+    if ($s -match '(?i)(?:^|[\\/])entities(?:[\\/]|$)' -or $n -match '(entity|record)$') {
+        return 'Entity'
+    }
+
+    if ($s -match '(?i)(?:^|[\\/])(dto|dtos|contracts|models[\\/]api)(?:[\\/]|$)' -or $t -match 'dto' -or $n -match 'dto$') {
+        return 'DTO'
+    }
+
+    if ($s -match '(?i)(?:^|[\\/])(aggregates?|domain)(?:[\\/]|$)' -or $n -match 'aggregate$') {
+        return 'Aggregate'
+    }
+
+    return 'Unknown'
+}
+
+function Infer-IsGeneratedModel {
+    param(
+        [string]$Source,
+        [string]$Name
+    )
+
+    $s = ($Source ?? '').ToLowerInvariant()
+    $n = ($Name ?? '').ToLowerInvariant()
+    return ($s -match '(?i)(?:reference\.cs|\.designer\.cs|\.g\.cs|[\\/](generated|service references|connected services|proxy|proxies)[\\/])' -or $n -match '(proxy|generated|reference)')
+}
+
 function Build-TestDiagnosis {
     param(
         [string]$Status,
@@ -294,6 +340,16 @@ foreach ($file in $enrichedFiles) {
                 if ($null -eq (Get-FieldValue -Record $record -Name 'criticalPath' -Default $null)) {
                     $project = [string](Get-FieldValue -Record $metadata -Name 'project' -Default '')
                     Set-FieldValue -Record $record -Name 'criticalPath' -Value (Infer-CriticalPath -Name $name -Project $project -Kind $kind)
+                }
+            }
+
+            if ($kind -eq 'model') {
+                if ([string]::IsNullOrWhiteSpace([string](Get-FieldValue -Record $record -Name 'role' -Default ''))) {
+                    Set-FieldValue -Record $record -Name 'role' -Value (Infer-ModelRole -Source $source -Name $name -Metadata $metadata)
+                }
+
+                if ($null -eq (Get-FieldValue -Record $record -Name 'isGenerated' -Default $null)) {
+                    Set-FieldValue -Record $record -Name 'isGenerated' -Value (Infer-IsGeneratedModel -Source $source -Name $name)
                 }
             }
 

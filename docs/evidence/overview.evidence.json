@@ -1,6 +1,6 @@
 {
   "artifact": "overview",
-  "generatedAt": "2026-03-04T15:08:58-05:00",
+  "generatedAt": "2026-03-11T14:45:31-04:00",
   "recordCount": 1,
   "records": [
     {
@@ -10,40 +10,27 @@
       "kind": "summary",
       "confidence": 1.0,
       "metadata": {
-        "languageCount": 1,
+        "fileCount": 1,
         "text": "This codebase contains 1 code file(s) across 1 language(s) (framework detected: ASP.NET Core). Full analysis available in linked documentation.",
-        "fileCount": 1
+        "languageCount": 1
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-03-04T15:08:58-05:00"
+      "timestamp": "2026-03-11T14:45:31-04:00"
     }
   ],
   "metadata": {
-    "evidenceGraphEntityCount": 56,
-    "evidenceGraphPath": ".\\docs\\evidence\\evidence-graph.json",
     "welcomeNarrativePassSources": {
       "pass1": "deterministic",
       "pass2": "deterministic",
       "pass3": "deterministic"
     },
-    "welcomeNarrativeIssues": [],
-    "generator": "generate-overview.ps1",
-    "requiredEvidenceKeys": [
-      "summary",
-      "technologies"
-    ],
-    "truthPackPath": "docs/evidence/overview-truth-pack.json",
-    "welcomeStyleGatePassed": false,
-    "welcomeSectionCoverageIssues": [],
-    "welcomeStyleGateIssues": [
-      "style-business-verb-coverage-low:1",
-      "style-what-it-does-purpose-verb-low:0"
-    ],
+    "welcomeSectionCoveragePassed": true,
+    "contextPackPath": "docs/evidence/narrative-context-pack.json",
     "narrativeReviewRequired": true,
-    "welcomeNarrativeProvider": "deterministic",
-    "welcomeNarrativeVerified": true,
+    "evidenceGraphEdgeCount": 54,
+    "generator": "generate-overview.ps1",
     "welcomeStyleGateMetrics": {
       "textItemCount": 8,
       "inventoryLeadCount": 0,
@@ -53,13 +40,25 @@
       "whatItDoesPurposeVerbHits": 0,
       "numericDensity": 0.0729
     },
-    "welcomeSectionCoveragePassed": true,
-    "evidenceGraphEdgeCount": 54,
+    "narrativeArtifacts": {
+      "pass1": "docs/evidence/narrative/purpose_model.json",
+      "pass2": "docs/evidence/narrative/narrative_draft.md",
+      "pass3": "docs/evidence/narrative/review_notes.json",
+      "final": "docs/evidence/narrative/narrative_final.json",
+      "runReport": "docs/evidence/narrative-run-report.json"
+    },
+    "evidenceGraphPath": ".\\docs\\evidence\\evidence-graph.json",
+    "welcomeNarrativeVerified": true,
+    "truthPackPath": "docs/evidence/overview-truth-pack.json",
+    "welcomeStyleGateIssues": [
+      "style-business-verb-coverage-low:1",
+      "style-what-it-does-purpose-verb-low:0"
+    ],
     "narrativeRunReport": {
       "pipelineVersion": "1.1.0",
-      "startedAt": "2026-03-04T15:08:57-05:00",
-      "endedAt": "2026-03-04T15:08:57-05:00",
-      "durationMs": 101.0,
+      "startedAt": "2026-03-11T14:45:31-04:00",
+      "endedAt": "2026-03-11T14:45:31-04:00",
+      "durationMs": 46.0,
       "model": "local-deterministic",
       "executionMode": "local-deterministic",
       "externalModelCalls": false,
@@ -97,21 +96,21 @@
       "narrativeReviewRequired": true,
       "autoPassWithoutHumanEdits": false
     },
-    "contextPackPath": "docs/evidence/narrative-context-pack.json",
-    "requiredSections": [
-      "System Boundary",
-      "Runtime Path",
-      "Inputs→Processing→Outputs",
-      "External Systems",
-      "Confidence Notes"
+    "welcomeNarrativeIssues": [],
+    "welcomeSectionCoverageIssues": [],
+    "requiredEvidenceKeys": [
+      "summary",
+      "technologies"
     ],
-    "narrativeArtifacts": {
-      "pass1": "docs/evidence/narrative/purpose_model.json",
-      "pass2": "docs/evidence/narrative/narrative_draft.md",
-      "pass3": "docs/evidence/narrative/review_notes.json",
-      "final": "docs/evidence/narrative/narrative_final.json",
-      "runReport": "docs/evidence/narrative-run-report.json"
-    }
+    "requiredSections": [
+      "Summary",
+      "System Purpose",
+      "Getting Started",
+      "Documentation Map"
+    ],
+    "welcomeStyleGatePassed": false,
+    "welcomeNarrativeProvider": "deterministic",
+    "evidenceGraphEntityCount": 56
   },
   "determinism": {
     "hashAlgorithm": "SHA256",
@@ -120,6 +119,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "5b39ec105afad2d70ee1a598561f7a3d5c1d2e03fef952f591c892d7cabc7750"
+    "contentHash": "df6a7b5c6336fd10a571629cee87b01b5726853143dd0f611c246a55bc828599"
   }
 }

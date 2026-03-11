@@ -1,12 +1,8 @@
 # API Inventory
 
-## Executive Summary
+## Summary
 
 This document catalogs all API endpoints exposed by the system, including their HTTP methods, parameters, authentication requirements, and response formats. It serves as the primary reference for developers integrating with or consuming this API, and provides essential information for testing, monitoring, and troubleshooting API interactions.
-
-## Overview
-
-This inventory is extracted from controller/action evidence and is intended for implementation impact analysis, integration planning, and endpoint ownership review.
 
 ## API Endpoints
 

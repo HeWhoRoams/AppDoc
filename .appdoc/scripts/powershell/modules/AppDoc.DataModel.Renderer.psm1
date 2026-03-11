@@ -301,15 +301,6 @@ function Update-AppDocDataModelContent {
 
     $updated = [regex]::Replace(
         $updated,
-        '(?s)(##\s+Overview\s*\r?\n\r?\n).*?(?=\r?\n##\s+Data Models\b)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + "This catalog is extracted from model/type declarations and grouped by domain, model size, and structural shape to support impact analysis and refactoring." + "`r`n")
-        }
-    )
-
-    $updated = [regex]::Replace(
-        $updated,
         '(?s)(##\s+Validation Rules\s*\r?\n\r?\n).*?(?=\r?\n##\s+Indexes and Performance\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
