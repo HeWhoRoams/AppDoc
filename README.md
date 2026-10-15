@@ -26,19 +26,16 @@ Primary deterministic workflow:
 - `.appdoc/scripts/powershell/validate-documentation.ps1` — structured validation + scoring
 - `.appdoc/scripts/powershell/remediate-generated-docs.ps1` — post-generation cleanup + evidence traceability
 
-**Default one-command pipeline** (`run-all-generators.ps1`) — produces the 8 core artifacts, the C4/flow/lineage diagrams, and the quality/validation/diagnostics reports:
+**Default one-command pipeline** (`run-all-generators.ps1`) — produces the 11 core artifacts (8 content + 3 navigational), the C4/flow/lineage diagrams, and the quality/validation/diagnostics reports:
 
 - `generate-api-inventory.ps1`, `generate-data-model.ps1`, `generate-config-catalog.ps1`
 - `generate-build-cookbook.ps1`, `generate-test-catalog.ps1`
 - `generate-debt-register.ps1`, `generate-dependencies-catalog.ps1`
 - `generate-overview.ps1`
-- `generate-c4-mermaid-diagrams.ps1`
-
-**Available as separate generators** (not part of the default `run-all-generators.ps1` run — run them individually when needed):
-
 - `generate-start-here.ps1` — role-based onboarding artifact
-- `generate-docs-index.ps1` — landing-page documentation index
 - `generate-task-guides.ps1` — task-centric playbooks
+- `generate-docs-index.ps1` — landing-page documentation index (runs last, after all content artifacts)
+- `generate-c4-mermaid-diagrams.ps1`
 
 ## Quick Start
 
@@ -162,7 +159,7 @@ Open an issue with:
 
 ## Output Files
 
-The default `run-all-generators.ps1` pipeline produces the core artifacts, diagrams, and quality/validation/diagnostics reports below. **Start Here**, **Task Guides**, and **Documentation Index** are produced by separate generators (`generate-start-here.ps1`, `generate-task-guides.ps1`, `generate-docs-index.ps1`) that are not part of the default one-command run.
+The default `run-all-generators.ps1` pipeline produces the core artifacts, the **Start Here**, **Task Guides**, and **Documentation Index** navigational artifacts, the diagrams, and the quality/validation/diagnostics reports below. The Documentation Index runs last so it links every content artifact produced by the run.
 
 - **[Start Here](docs/start-here.md)** - Role-based onboarding and quick orientation
 - **[Overview](docs/overview.md)** - High-level system summary and documentation index

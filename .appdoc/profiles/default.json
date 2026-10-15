@@ -8,7 +8,10 @@
     "build-cookbook",
     "test-catalog",
     "debt-register",
-    "dependencies-catalog"
+    "dependencies-catalog",
+    "start-here",
+    "task-guides",
+    "docs-index"
   ],
   "api_grouping": "by-controller",
   "include_examples": true,

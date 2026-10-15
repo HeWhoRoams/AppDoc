@@ -1108,7 +1108,10 @@ $pipelinePhases = @(
             "generate-test-catalog.ps1",
             "generate-debt-register.ps1",
             "generate-dependencies-catalog.ps1",
-            "generate-overview.ps1"
+            "generate-overview.ps1",
+            "generate-start-here.ps1",
+            "generate-task-guides.ps1",
+            "generate-docs-index.ps1"
         )
     }
 )
@@ -1410,13 +1413,31 @@ $documents = @(
     @{ File = "test-catalog.md"; Type = "Test Catalog" }
     @{ File = "debt-register.md"; Type = "Debt Register" }
     @{ File = "dependencies-catalog.md"; Type = "Dependencies Catalog" }
+    # Navigational artifacts produced by the default pipeline. They are validated
+    # below (so the quality report reflects everything the pipeline produces) but
+    # are NOT scored in the pass/fail gate (Gated = $false). Reason: task-guides can
+    # be thin/empty on small codebases and index.md is a link list, so including them
+    # in the gate would add noise. The authoritative pass/fail boundary is
+    # validate-documentation.ps1's fixed 15-component composite, which is unchanged by
+    # producing these artifacts.
+    @{ File = "start-here.md"; Type = "Start Here"; Gated = $false }
+    @{ File = "task-guides.md"; Type = "Task Guides"; Gated = $false }
+    @{ File = "index.md"; Type = "Documentation Index"; Gated = $false }
 )
 
 foreach ($doc in $documents) {
     $filePath = Join-Path $docsPath $doc.File
     $result = Test-GeneratedDoc -FilePath $filePath -DocType $doc.Type -Expectations $validationExpectations
+    # Carry the gate flag through (Test-GeneratedDoc returns a plain hashtable).
+    # Contract artifacts default to Gated = $true; the 3 navigational ones are $false.
+    $result["gated"] = [bool]($doc.Gated ?? $true)
     $validationResults += $result
 }
+
+# Pass/fail gate anchor: only the contract artifacts (gated = $true) feed the inline
+# Test-AppDocValidationGate, matching validate-documentation.ps1's fixed composite.
+# The 3 navigational artifacts stay informational (reported above, excluded here).
+$gatedValidationResults = @($validationResults | Where-Object { [bool]$_.gated })
 
 # Display quality summary with color coding
 Write-Host "`nQuality Summary:" -ForegroundColor White
@@ -1601,7 +1622,7 @@ if (Test-Path $narrativeRunReportPath) {
 
 $validationGate = $null
 if (Get-Command Test-AppDocValidationGate -ErrorAction SilentlyContinue) {
-    $validationGate = Test-AppDocValidationGate -ValidationResults $validationResults -QualityThreshold $QualityThreshold -Strict:$StrictValidation
+    $validationGate = Test-AppDocValidationGate -ValidationResults $gatedValidationResults -QualityThreshold $QualityThreshold -Strict:$StrictValidation
 
     if ($structuredValidationResult) {
         $scorePass = ([double]$structuredValidationResult.overallScore -ge [double]$QualityThreshold)
