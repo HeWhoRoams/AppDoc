@@ -181,6 +181,8 @@ The following practical improvements were observed during the LmsConnect run and
 **Summary:** Replace regex-based parsing with Abstract Syntax Tree parsing for accurate code analysis.
 **Reference:** See `docs/technical-implementation-plan.md` for detailed architecture.
 
+**Status:** C# (Roslyn) AST parsing is **implemented and wired** into both `generate-api-inventory.ps1` (via `AppDoc.ApiInventory.Extractor`) and `generate-data-model.ps1` (via `AppDoc.DataModel.Extractor`), with an AST cache. The TypeScript AST parser is wired in but its compiler bridge is still pending (currently regex-based). The 95% accuracy-validation and parser-usage documentation remain open.
+
 **Implementation Details:**
 1. **C# AST Parsing:**
    - Integrate Roslyn compiler APIs via PowerShell
@@ -200,11 +202,12 @@ The following practical improvements were observed during the LmsConnect run and
    - Add `--no-cache` flag to force full re-parse
 
 **Definition of Done:**
-- [ ] `parse-csharp-ast.ps1` script created using Roslyn APIs
-- [ ] `parse-typescript-ast.ps1` script created using ts-morph
-- [ ] AST parsing integrated into `generate-api-inventory.ps1`
-- [ ] AST parsing integrated into `generate-data-model.ps1`
-- [ ] Cache mechanism implemented for performance
+- [x] `parse-csharp-ast.ps1` script created using Roslyn APIs (real Roslyn provider; regex fallback when `dotnet` is absent)
+- [x] `parse-typescript-ast.ps1` wrapper created and wired into the extractors (ts-morph / TypeScript compiler bridge still pending; current provider is regex-based)
+- [x] AST parsing integrated into `generate-api-inventory.ps1` (via `AppDoc.ApiInventory.Extractor`)
+- [x] AST parsing integrated into `generate-data-model.ps1` (via `AppDoc.DataModel.Extractor`)
+- [x] Cache mechanism implemented for performance (`docs/ast-csharp-cache.json` / `docs/ast-typescript-cache.json`, `-NoCache` flag)
+- [ ] TypeScript compiler bridge (ts-morph) active in `parse-typescript-ast.ps1`
 - [ ] Accuracy validation shows 95%+ improvement over regex
 - [ ] Documentation includes AST parser usage examples
 

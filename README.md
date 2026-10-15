@@ -26,13 +26,19 @@ Primary deterministic workflow:
 - `.appdoc/scripts/powershell/validate-documentation.ps1` — structured validation + scoring
 - `.appdoc/scripts/powershell/remediate-generated-docs.ps1` — post-generation cleanup + evidence traceability
 
-Key generators in current workflow include:
+**Default one-command pipeline** (`run-all-generators.ps1`) — produces the 8 core artifacts, the C4/flow/lineage diagrams, and the quality/validation/diagnostics reports:
 
-- `generate-overview.ps1`, `generate-start-here.ps1`, `generate-docs-index.ps1`
 - `generate-api-inventory.ps1`, `generate-data-model.ps1`, `generate-config-catalog.ps1`
-- `generate-build-cookbook.ps1`, `generate-test-catalog.ps1`, `generate-task-guides.ps1`
+- `generate-build-cookbook.ps1`, `generate-test-catalog.ps1`
 - `generate-debt-register.ps1`, `generate-dependencies-catalog.ps1`
+- `generate-overview.ps1`
 - `generate-c4-mermaid-diagrams.ps1`
+
+**Available as separate generators** (not part of the default `run-all-generators.ps1` run — run them individually when needed):
+
+- `generate-start-here.ps1` — role-based onboarding artifact
+- `generate-docs-index.ps1` — landing-page documentation index
+- `generate-task-guides.ps1` — task-centric playbooks
 
 ## Quick Start
 
@@ -117,15 +123,17 @@ Last updated: 2026-02-17
 
 ### Supported Frameworks
 
+> **Detection method:** C# / ASP.NET Core is the fully-supported, **AST-backed** path (Roslyn). The non-.NET frameworks below use **regex-based detection only** (no AST), so their coverage figures are **target/expected** values, not measured coverage.
+
 | Status | Language | Framework | Version Range | Coverage | Notes |
 |---|---|---|---|---:|---|
-| ✅ Full | C# | ASP.NET Core | 2.1+ | 90% | Controller/route detection, config extraction, model heuristics |
+| ✅ Full | C# | ASP.NET Core | 2.1+ | 90% | AST-backed; controller/route detection, config extraction, model heuristics |
 | ⚠️ Partial | C# | ASP.NET MVC 5 | 5.x | 75% | Action detection supported; some attribute edge cases remain |
-| ⚠️ Partial | JS/TS | Express.js | 4.x | 60% | Basic `app.METHOD` and router patterns; middleware chains limited |
-| ⚠️ Partial | Python | Flask | 2.x+ | 65% | `@app.route` and common blueprint patterns supported |
-| ⚠️ Partial | Python | FastAPI | 0.9+ | 70% | Decorator and response model heuristics supported |
-| ⚠️ Partial | Python | Django | 3.x+ | 55% | URL pattern extraction supported; deep viewset inference limited |
-| ⚠️ Partial | Java | Spring Boot | 2.x+ | 60% | `@*Mapping` and `@RequestMapping` scanning supported |
+| ⚠️ Partial | JS/TS | Express.js | 4.x | 60% | Regex-based; basic `app.METHOD` and router patterns; middleware chains limited |
+| ⚠️ Partial | Python | Flask | 2.x+ | 65% | Regex-based; `@app.route` and common blueprint patterns supported |
+| ⚠️ Partial | Python | FastAPI | 0.9+ | 70% | Regex-based; decorator and response model heuristics supported |
+| ⚠️ Partial | Python | Django | 3.x+ | 55% | Regex-based; URL pattern extraction supported; deep viewset inference limited |
+| ⚠️ Partial | Java | Spring Boot | 2.x+ | 60% | Regex-based; `@*Mapping` and `@RequestMapping` scanning supported |
 
 ### Unsupported or Planned
 
@@ -153,6 +161,9 @@ Open an issue with:
 
 
 ## Output Files
+
+The default `run-all-generators.ps1` pipeline produces the core artifacts, diagrams, and quality/validation/diagnostics reports below. **Start Here**, **Task Guides**, and **Documentation Index** are produced by separate generators (`generate-start-here.ps1`, `generate-task-guides.ps1`, `generate-docs-index.ps1`) that are not part of the default one-command run.
+
 - **[Start Here](docs/start-here.md)** - Role-based onboarding and quick orientation
 - **[Overview](docs/overview.md)** - High-level system summary and documentation index
 - **[API Inventory](docs/api-inventory.md)** - HTTP endpoints and API contracts
