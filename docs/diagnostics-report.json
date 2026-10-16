@@ -1,111 +1,34 @@
 {
-  "generatedAt": "2026-10-16T10:17:09-04:00",
+  "generatedAt": "2026-10-16T11:56:04-04:00",
   "summary": {
-    "total": 13,
+    "total": 4,
     "byCategory": {
       "ENVIRONMENT_ERROR": 1,
-      "DETECTION_PATTERN_MISMATCH": 10,
-      "INITIALIZATION": 1,
-      "PARSING_ERROR": 1
+      "DETECTION_PATTERN_MISMATCH": 2,
+      "INITIALIZATION": 1
     },
     "bySeverity": {
       "Info": 2,
-      "Warning": 11
+      "Warning": 2
     },
     "hasErrors": false,
     "hasWarnings": true
   },
   "events": [
     {
-      "timestamp": "2026-10-16T10:17:05-04:00",
+      "timestamp": "2026-10-16T11:56:00-04:00",
       "category": "INITIALIZATION",
       "severity": "Info",
       "component": "orchestrator",
       "message": "Diagnostics initialized",
       "filePath": "",
       "details": {
-        "outputPath": "./docs",
-        "rootPath": "./"
+        "rootPath": "./",
+        "outputPath": "./docs"
       }
     },
     {
-      "timestamp": "2026-10-16T10:17:06-04:00",
-      "category": "PARSING_ERROR",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Validator failed: validate-config-catalog.ps1",
-      "filePath": "./.appdoc/scripts/powershell/validate-config-catalog.ps1",
-      "details": {
-        "exception": "No config entries found in config-catalog.md — table may be missing or format changed. Validation failed."
-      }
-    },
-    {
-      "timestamp": "2026-10-16T10:17:07-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Banned placeholder pattern found (config-catalog)",
-      "filePath": "./docs/config-catalog.md",
-      "details": {
-        "pattern": "(?im)_No [^_]+ detected\\."
-      }
-    },
-    {
-      "timestamp": "2026-10-16T10:17:08-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: provenance-missing:overview.md",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-16T10:17:08-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: provenance-missing:api-inventory.md",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-16T10:17:08-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: provenance-missing:data-model.md",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-16T10:17:08-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: provenance-missing:config-catalog.md",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-16T10:17:08-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: provenance-missing:build-cookbook.md",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-16T10:17:08-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: config-options-table-empty",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-16T10:17:08-04:00",
+      "timestamp": "2026-10-16T11:56:03-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -114,7 +37,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-10-16T10:17:08-04:00",
+      "timestamp": "2026-10-16T11:56:04-04:00",
       "category": "ENVIRONMENT_ERROR",
       "severity": "Info",
       "component": "Validation",
@@ -123,7 +46,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-10-16T10:17:08-04:00",
+      "timestamp": "2026-10-16T11:56:04-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "Narrative",
@@ -135,46 +58,54 @@
           "style-what-it-does-purpose-verb-low:0"
         ]
       }
-    },
-    {
-      "timestamp": "2026-10-16T10:17:09-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "Validation",
-      "message": "Validation is below threshold in soft mode",
-      "filePath": "",
-      "details": {
-        "averageScore": 88.0,
-        "belowThreshold": 1,
-        "threshold": 80
-      }
     }
   ],
   "metadata": {
-    "strictValidation": false,
-    "rootPath": "./",
-    "validationGate": {
-      "passed": false,
-      "reason": "Structured validation gate failed (score and/or policy gates)",
-      "averageScore": 88.0,
-      "belowThreshold": 1,
-      "strict": false,
-      "qualityThreshold": 80,
-      "evaluatedDocuments": 8
+    "narrativeRunReportPath": "./docs/evidence/narrative-run-report.json",
+    "evidenceGraphMetrics": {
+      "entityCount": 56,
+      "edgeCount": 54,
+      "entityTypeCount": {
+        "test_case": 0,
+        "endpoint_outbound": 0,
+        "system": 1,
+        "data_model": 0,
+        "endpoint_inbound": 0,
+        "config_key": 54,
+        "component": 1,
+        "dependency": 0
+      },
+      "inboundEndpointCount": 0,
+      "outboundEndpointCount": 0,
+      "componentCount": 1,
+      "modelCount": 0,
+      "configCount": 54,
+      "dependencyCount": 0,
+      "testCaseCount": 0
     },
     "frameworks": null,
-    "qualityThreshold": 80,
+    "narrativeReviewRequired": true,
+    "localOnly": true,
+    "evidenceGraphIntegrity": {
+      "passed": true,
+      "issues": null,
+      "warnings": null,
+      "metrics": {
+        "entityCount": 56,
+        "edgeCount": 54,
+        "inboundEndpointCount": 0,
+        "outboundEndpointCount": 0
+      }
+    },
     "scriptFailures": null,
     "narrativeReviewReasons": [
       "style-business-verb-coverage-low:1",
       "style-what-it-does-purpose-verb-low:0"
     ],
-    "narrativeRunReportPath": "./docs/evidence/narrative-run-report.json",
-    "evidenceGraphPath": "./docs/evidence/evidence-graph.json",
-    "profile": "default",
+    "outputPath": "./docs",
     "architecture": {
       "version": "1.1.0",
-      "generatedAt": "2026-10-16T10:16:49-04:00",
+      "generatedAt": "2026-10-16T11:55:36-04:00",
       "primaryStyle": "no-api-surface",
       "primaryStyleLabel": "No API Surface",
       "styles": "no-api-surface",
@@ -197,46 +128,25 @@
         "sampledCodeFileCount": 0
       }
     },
-    "evidenceGraphMetrics": {
-      "entityCount": 56,
-      "edgeCount": 54,
-      "entityTypeCount": {
-        "data_model": 0,
-        "dependency": 0,
-        "system": 1,
-        "endpoint_outbound": 0,
-        "endpoint_inbound": 0,
-        "test_case": 0,
-        "component": 1,
-        "config_key": 54
-      },
-      "inboundEndpointCount": 0,
-      "outboundEndpointCount": 0,
-      "componentCount": 1,
-      "modelCount": 0,
-      "configCount": 54,
-      "dependencyCount": 0,
-      "testCaseCount": 0
-    },
-    "localOnly": true,
-    "outputPath": "./docs",
-    "narrativeReviewRequired": true,
-    "evidenceGraphIntegrity": {
+    "strictValidation": false,
+    "profile": "default",
+    "qualityThreshold": 80,
+    "evidenceGraphPath": "./docs/evidence/evidence-graph.json",
+    "validationGate": {
       "passed": true,
-      "issues": null,
-      "warnings": null,
-      "metrics": {
-        "entityCount": 56,
-        "edgeCount": 54,
-        "inboundEndpointCount": 0,
-        "outboundEndpointCount": 0
-      }
-    }
+      "reason": "Structured validation gate passed",
+      "averageScore": 96.0,
+      "belowThreshold": 0,
+      "strict": false,
+      "qualityThreshold": 80,
+      "evaluatedDocuments": 8
+    },
+    "rootPath": "./"
   },
   "provenance": {
     "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "26e9016",
-    "generatedAt": "2026-10-16T10:17:09-04:00",
+    "commitHash": "8b13f8a",
+    "generatedAt": "2026-10-16T11:56:04-04:00",
     "profile": "default",
     "scope": ".",
     "confidenceInferenceFlags": [

@@ -1,24 +1,24 @@
 {
-  "timestamp": "2026-03-04T15:10:41-05:00",
+  "timestamp": "2026-10-16T11:56:03-04:00",
   "strict": false,
   "threshold": 80,
   "status": "pass",
-  "overallScore": 92,
-  "overallScoreRaw": 94.9,
+  "overallScore": 96,
+  "overallScoreRaw": 98.6,
   "penaltyDeduction": 3.0,
   "metrics": {
     "validatorPassRate": 100.0,
     "artifactPresence": 100.0,
     "evidencePresence": 100.0,
     "semanticContractScore": 100.0,
-    "evidenceContractScore": 97.0,
+    "evidenceContractScore": 96.2,
     "apiCoverage": 100,
     "configCoverage": 100,
     "dataModelCoverage": 100,
     "redactionSafetyScore": 100,
-    "humanUsabilityScore": 97.5,
+    "humanUsabilityScore": 94.8,
     "claimGroundingScore": 100.0,
-    "documentationFreshnessScore": 80.0,
+    "documentationFreshnessScore": 87.5,
     "contradictionConsistencyScore": 100.0,
     "taskGuideActionabilityScore": 83.3,
     "taskGuideEvidenceCoverageScore": 50.0,
@@ -28,26 +28,15 @@
     "policyGateScore": 100.0
   },
   "qualityPenaltyBreakdown": {
-    "totalPenaltyPoints": 32,
+    "totalPenaltyPoints": 24,
     "categoryTotals": {
       "contradiction": 0,
       "duplicateRows": 16,
       "misclassification": 0,
-      "staleProvenance": 16,
+      "staleProvenance": 8,
       "verbosityOverflow": 0
     },
     "perArtifact": {
-      "start-here": {
-        "total": 8,
-        "contradiction": 0,
-        "duplicateRows": 0,
-        "misclassification": 0,
-        "staleProvenance": 8,
-        "verbosityOverflow": 0,
-        "reasons": [
-          "provenance-missing-generated"
-        ]
-      },
       "overview": {
         "total": 0,
         "contradiction": 0,
@@ -104,15 +93,6 @@
         "verbosityOverflow": 0,
         "reasons": []
       },
-      "task-guides": {
-        "total": 0,
-        "contradiction": 0,
-        "duplicateRows": 0,
-        "misclassification": 0,
-        "staleProvenance": 0,
-        "verbosityOverflow": 0,
-        "reasons": []
-      },
       "debt-register": {
         "total": 0,
         "contradiction": 0,
@@ -134,70 +114,53 @@
         ]
       }
     },
-    "artifactCount": 10
+    "artifactCount": 8
   },
   "missingArtifacts": [],
   "missingEvidenceArtifacts": [],
   "validators": [
     {
       "message": "OK",
-      "script": "validate-start-here.ps1",
-      "passed": true
+      "passed": true,
+      "script": "validate-overview.ps1"
     },
     {
       "message": "OK",
-      "script": "validate-overview.ps1",
-      "passed": true
+      "passed": true,
+      "script": "validate-api-inventory.ps1"
     },
     {
       "message": "OK",
-      "script": "validate-api-inventory.ps1",
-      "passed": true
+      "passed": true,
+      "script": "validate-data-model.ps1"
     },
     {
       "message": "OK",
-      "script": "validate-data-model.ps1",
-      "passed": true
+      "passed": true,
+      "script": "validate-config-catalog.ps1"
     },
     {
       "message": "OK",
-      "script": "validate-config-catalog.ps1",
-      "passed": true
+      "passed": true,
+      "script": "validate-build-cookbook.ps1"
     },
     {
       "message": "OK",
-      "script": "validate-build-cookbook.ps1",
-      "passed": true
+      "passed": true,
+      "script": "validate-test-catalog.ps1"
     },
     {
       "message": "OK",
-      "script": "validate-test-catalog.ps1",
-      "passed": true
+      "passed": true,
+      "script": "validate-debt-register.ps1"
     },
     {
       "message": "OK",
-      "script": "validate-task-guides.ps1",
-      "passed": true
-    },
-    {
-      "message": "OK",
-      "script": "validate-debt-register.ps1",
-      "passed": true
-    },
-    {
-      "message": "OK",
-      "script": "validate-dependencies-catalog.ps1",
-      "passed": true
+      "passed": true,
+      "script": "validate-dependencies-catalog.ps1"
     }
   ],
   "contractValidation": [
-    {
-      "artifact": "start-here",
-      "passed": true,
-      "score": 100,
-      "missingSections": [],
-      "bannedPatterns": []
-    },
     {
       "artifact": "overview",
       "passed": true,
@@ -241,13 +204,6 @@
       "bannedPatterns": []
     },
     {
-      "artifact": "task-guides",
-      "passed": true,
-      "score": 100,
-      "missingSections": [],
-      "bannedPatterns": []
-    },
-    {
       "artifact": "debt-register",
       "passed": true,
       "score": 100,
@@ -263,12 +219,6 @@
     }
   ],
   "evidenceContractValidation": [
-    {
-      "artifact": "start-here",
-      "passed": true,
-      "score": 100,
-      "issues": []
-    },
     {
       "artifact": "overview",
       "passed": false,
@@ -305,12 +255,6 @@
     },
     {
       "artifact": "test-catalog",
-      "passed": true,
-      "score": 100,
-      "issues": []
-    },
-    {
-      "artifact": "task-guides",
       "passed": true,
       "score": 100,
       "issues": []
@@ -374,15 +318,14 @@
     "issues": []
   },
   "policyGates": {
-    "score": 100.0,
-    "passed": true,
     "blockingIssues": [],
-    "warnings": []
+    "score": 100.0,
+    "passed": true
   },
   "provenance": {
     "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "26e9016",
-    "generatedAt": "2026-10-16T10:17:09-04:00",
+    "commitHash": "8b13f8a",
+    "generatedAt": "2026-10-16T11:56:04-04:00",
     "profile": "default",
     "scope": ".",
     "confidenceInferenceFlags": [

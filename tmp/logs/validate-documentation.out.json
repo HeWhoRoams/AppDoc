@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-03-11T14:45:38-04:00",
+  "timestamp": "2026-10-16T11:56:03-04:00",
   "strict": false,
   "threshold": 80,
-  "status": "fail",
-  "overallScore": 89,
-  "overallScoreRaw": 91.8,
+  "status": "pass",
+  "overallScore": 96,
+  "overallScoreRaw": 98.6,
   "penaltyDeduction": 3.0,
   "metrics": {
     "validatorPassRate": 100.0,
@@ -16,16 +16,16 @@
     "configCoverage": 100,
     "dataModelCoverage": 100,
     "redactionSafetyScore": 100,
-    "humanUsabilityScore": 92.7,
+    "humanUsabilityScore": 94.8,
     "claimGroundingScore": 100.0,
     "documentationFreshnessScore": 87.5,
     "contradictionConsistencyScore": 100.0,
-    "taskGuideActionabilityScore": 100.0,
-    "taskGuideEvidenceCoverageScore": 100.0,
-    "taskGuideTimeToCompleteMinutes": 0,
+    "taskGuideActionabilityScore": 83.3,
+    "taskGuideEvidenceCoverageScore": 50.0,
+    "taskGuideTimeToCompleteMinutes": 12.0,
     "taskGuideTimeScore": 100.0,
     "metricDriftScore": 100.0,
-    "policyGateScore": 0.0
+    "policyGateScore": 100.0
   },
   "qualityPenaltyBreakdown": {
     "totalPenaltyPoints": 24,
@@ -120,44 +120,44 @@
   "missingEvidenceArtifacts": [],
   "validators": [
     {
+      "message": "OK",
       "passed": true,
-      "script": "validate-overview.ps1",
-      "message": "OK"
+      "script": "validate-overview.ps1"
     },
     {
+      "message": "OK",
       "passed": true,
-      "script": "validate-api-inventory.ps1",
-      "message": "OK"
+      "script": "validate-api-inventory.ps1"
     },
     {
+      "message": "OK",
       "passed": true,
-      "script": "validate-data-model.ps1",
-      "message": "OK"
+      "script": "validate-data-model.ps1"
     },
     {
+      "message": "OK",
       "passed": true,
-      "script": "validate-config-catalog.ps1",
-      "message": "OK"
+      "script": "validate-config-catalog.ps1"
     },
     {
+      "message": "OK",
       "passed": true,
-      "script": "validate-build-cookbook.ps1",
-      "message": "OK"
+      "script": "validate-build-cookbook.ps1"
     },
     {
+      "message": "OK",
       "passed": true,
-      "script": "validate-test-catalog.ps1",
-      "message": "OK"
+      "script": "validate-test-catalog.ps1"
     },
     {
+      "message": "OK",
       "passed": true,
-      "script": "validate-debt-register.ps1",
-      "message": "OK"
+      "script": "validate-debt-register.ps1"
     },
     {
+      "message": "OK",
       "passed": true,
-      "script": "validate-dependencies-catalog.ps1",
-      "message": "OK"
+      "script": "validate-dependencies-catalog.ps1"
     }
   ],
   "contractValidation": [
@@ -304,26 +304,22 @@
         "modelCount": 0,
         "dependencyCount": 0
       },
+      "startHereApiCount": 0,
+      "startHereModelCount": 0,
       "testEvidenceCaseCount": 0,
       "dependencyEvidenceCount": 0
     }
   },
   "taskGuideOutcomes": {
-    "actionabilityScore": 100,
-    "evidenceCoverageScore": 100,
-    "estimatedCompletionMinutes": 0,
-    "taskCompletionTimeScore": 100,
+    "actionabilityScore": 83.3,
+    "evidenceCoverageScore": 50.0,
+    "estimatedCompletionMinutes": 12.0,
+    "taskCompletionTimeScore": 100.0,
     "issues": []
   },
   "policyGates": {
-    "blockingIssues": [
-      "provenance-missing:overview.md",
-      "provenance-missing:api-inventory.md",
-      "provenance-missing:data-model.md",
-      "provenance-missing:config-catalog.md",
-      "provenance-missing:build-cookbook.md"
-    ],
-    "score": 0.0,
-    "passed": false
+    "blockingIssues": [],
+    "score": 100.0,
+    "passed": true
   }
 }

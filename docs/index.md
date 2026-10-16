@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Generated**: 2026-10-16 10:17:01
+**Generated**: 2026-10-16 11:55:57
 
 ## Reader Paths
 
@@ -63,8 +63,8 @@ External and internal dependencies with version risks
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 26e9016
-- Generated At: 2026-10-16T10:17:09-04:00
+- Commit Hash: 8b13f8a
+- Generated At: 2026-10-16T11:56:04-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

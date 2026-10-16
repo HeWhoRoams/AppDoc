@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-10-16T10:17:01-04:00",
+  "generatedAt": "2026-10-16T11:55:57-04:00",
   "artifacts": [
     {
       "artifact": "api-inventory",
       "path": "/persistent/agent/workspace/AppDoc/docs/evidence/api-inventory.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-10-16T10:16:51-04:00",
+      "updatedAt": "2026-10-16T11:55:38-04:00",
       "metadata": {
         "generator": "generate-api-inventory.ps1"
       }
@@ -24,7 +24,7 @@
       "artifact": "build-cookbook",
       "path": "/persistent/agent/workspace/AppDoc/docs/evidence/build-cookbook.evidence.json",
       "recordCount": 1,
-      "updatedAt": "2026-10-16T10:16:57-04:00",
+      "updatedAt": "2026-10-16T11:55:54-04:00",
       "metadata": {
         "generator": "generate-build-cookbook.ps1"
       }
@@ -41,9 +41,9 @@
     },
     {
       "artifact": "config-catalog",
-      "path": ".\\docs\\evidence\\config-catalog.evidence.json",
+      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/config-catalog.evidence.json",
       "recordCount": 54,
-      "updatedAt": "2026-03-11T14:45:27-04:00",
+      "updatedAt": "2026-10-16T11:55:53-04:00",
       "metadata": {
         "generator": "generate-config-catalog.ps1"
       }
@@ -62,7 +62,7 @@
       "artifact": "data-model",
       "path": "/persistent/agent/workspace/AppDoc/docs/evidence/data-model.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-10-16T10:16:52-04:00",
+      "updatedAt": "2026-10-16T11:55:39-04:00",
       "metadata": {
         "generator": "generate-data-model.ps1"
       }
@@ -81,7 +81,7 @@
       "artifact": "debt-register",
       "path": "/persistent/agent/workspace/AppDoc/docs/evidence/debt-register.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-10-16T10:16:58-04:00",
+      "updatedAt": "2026-10-16T11:55:54-04:00",
       "metadata": {
         "generator": "generate-debt-register.ps1"
       }
@@ -100,7 +100,7 @@
       "artifact": "dependencies-catalog",
       "path": "/persistent/agent/workspace/AppDoc/docs/evidence/dependencies-catalog.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-10-16T10:16:59-04:00",
+      "updatedAt": "2026-10-16T11:55:55-04:00",
       "metadata": {
         "generator": "generate-dependencies-catalog.ps1"
       }
@@ -119,7 +119,7 @@
       "artifact": "overview",
       "path": "/persistent/agent/workspace/AppDoc/docs/evidence/overview.evidence.json",
       "recordCount": 1,
-      "updatedAt": "2026-10-16T10:17:00-04:00",
+      "updatedAt": "2026-10-16T11:55:56-04:00",
       "metadata": {
         "generator": "generate-overview.ps1"
       }
@@ -138,7 +138,7 @@
       "artifact": "start-here",
       "path": "/persistent/agent/workspace/AppDoc/docs/evidence/start-here.evidence.json",
       "recordCount": 3,
-      "updatedAt": "2026-10-16T10:17:01-04:00",
+      "updatedAt": "2026-10-16T11:55:56-04:00",
       "metadata": {
         "generator": "generate-start-here.ps1"
       }
@@ -157,7 +157,7 @@
       "artifact": "task-guides",
       "path": "/persistent/agent/workspace/AppDoc/docs/evidence/task-guides.evidence.json",
       "recordCount": 5,
-      "updatedAt": "2026-10-16T10:17:01-04:00",
+      "updatedAt": "2026-10-16T11:55:57-04:00",
       "metadata": {
         "generator": "generate-task-guides.ps1"
       }
@@ -176,7 +176,7 @@
       "artifact": "test-catalog",
       "path": "/persistent/agent/workspace/AppDoc/docs/evidence/test-catalog.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-10-16T10:16:57-04:00",
+      "updatedAt": "2026-10-16T11:55:54-04:00",
       "metadata": {
         "generator": "generate-test-catalog.ps1"
       }
@@ -195,51 +195,51 @@
   "markdownChecksums": [
     {
       "path": "docs/api-inventory.appendix.md",
-      "sha256": "6edde5d5181939a7f8e59a61401ec2d4bd36f9ebfd4cca6409faf5432447cc08"
+      "sha256": "2360cc3dc3c4ac98dc4915dcf12d40370a57cf234fad19b61c6e422b16b54d94"
     },
     {
       "path": "docs/api-inventory.md",
-      "sha256": "f8d4bfeaa738a8d2769a36a81fd9a385fcb1044705498bd9e29094dcfff82727"
+      "sha256": "7aa3c5e38c1a91ce62aa0fa61f32b58a0218e85fba6e85591eb74fd1e2582574"
     },
     {
       "path": "docs/appdoc-artifact-quality-audit.md",
-      "sha256": "fb1d6bf369414bd6c4fb65ad6f5886db593f7f0552a4a6d71c35c519d05d8463"
+      "sha256": "0df88ef71793fda1da1eaece5ab904dca6a738cdc04c70d4909a595a42d1948f"
     },
     {
       "path": "docs/appdoc-remediation-plan.md",
-      "sha256": "edfe0cdebae53bc8fc4f149620901918245b035f4986eb589b8a6d8c65d95b7a"
+      "sha256": "1145336b3b18e8b77a97f55cca18a3a66eae1a76b469e6762c5bd1190433974c"
     },
     {
       "path": "docs/build-cookbook.md",
-      "sha256": "7a20b71dd24289407e211f9bb74ebe182faea7cfef1ae2f16d78f46d69b3504d"
+      "sha256": "17e9fcefeea47932222dde85554c3058984f62e5a91624a20e6547ab323b7a8e"
     },
     {
       "path": "docs/config-catalog.md",
-      "sha256": "9a6abdad63c22698afd0a73de6d64e7d55348fb4818f33805cc53ca40a4270a9"
+      "sha256": "a8c2325f722c57291731c0333a86ee2dbba05deb79412984e224f2f6189de37d"
     },
     {
       "path": "docs/data-model.md",
-      "sha256": "ea11f81a5a7a865df85b9086799d317ad9c33df0da4c90126e7c9551e926c83b"
+      "sha256": "956911631a36836c04b85e777c8a64b9ae9145b48a65098dbd06f5ca062a6c48"
     },
     {
       "path": "docs/debt-register.md",
-      "sha256": "85eb43b1eea04e82d5ac6cedb64e9f940c9610244edc678756004a75cb677947"
+      "sha256": "4f12bfa1d782bd9e8c267512c7a6a9d80c3c45a4bdf1b81ecbb0d59e5375bc6d"
     },
     {
       "path": "docs/dependencies-catalog.md",
-      "sha256": "8810fae476fc8cbcc45c6871fed16e31d8a34dd8eb582e543b8a1bf7caff67f6"
+      "sha256": "3d8607cc26f2a99c9c22d81d31824f02df7808e25129afea05814e9863de5c3d"
     },
     {
       "path": "docs/implementation-checklist-v3.md",
-      "sha256": "74f983553d768d53282cc3b2f138290650b587d02f6236e7469f2e8e8f5a3971"
+      "sha256": "1fc3e06a0dff8df74a65dc3b7bd94051abe2ef7bf7a3e5587ecb346cafb28ca1"
     },
     {
       "path": "docs/index.md",
-      "sha256": "3a1b48b7c035847a2c8a2f3ce5c733455b446480104d785cda7518d747b13efb"
+      "sha256": "96e13ef813f53e17df59687426700978bb5c480438b6fccefdb523dfbaf94388"
     },
     {
       "path": "docs/overview.md",
-      "sha256": "0ff5ecbf73fbae56ae1952657284660eae6c5d1878e8f2dae8c409826a05d544"
+      "sha256": "82894c132bc8a155cadc3a8b919820b85d98b74673c4c6973fb07acecf7f0878"
     },
     {
       "path": "docs/quality-report.summary.md",
@@ -247,19 +247,19 @@
     },
     {
       "path": "docs/start-here.md",
-      "sha256": "1443910a54d4f8ec769e6584338be2184904f9e06db9516394e7ffa1c43f954f"
+      "sha256": "540a79c2a5a9dd830fabfb1f68467d3a74e351aa6025dcfcb814b2bb75cd8870"
     },
     {
       "path": "docs/task-guides.md",
-      "sha256": "d500d9d172eb0cd3dfcc76ea7859b0caff75c55a4e08beae3d8b4fc71dacf311"
+      "sha256": "02744b66bc5fbdef84adf494c01b8c9802df7f8330546d977e599dd73da1720a"
     },
     {
       "path": "docs/technical-implementation-plan.md",
-      "sha256": "5cd851fd87f574d5a7722fd89eb40ec03b2290d8cfe2de6924105d10855b6711"
+      "sha256": "3bd3f83849c4aca72d79341475d1121bc4967b19959ce2a527adb935ebdc3657"
     },
     {
       "path": "docs/test-catalog.md",
-      "sha256": "45a72547e5b5ff0be92394c838f42c8398d01a61b2c1cee0b643b755132abab1"
+      "sha256": "a9a751c963ddbce234f78259f8485b9ed3d97a5a0a49e85417aab06c8035d400"
     },
     {
       "path": "docs/validation-report.summary.md",
@@ -279,6 +279,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "5550e67c236d631879044d6cc2f57aa3291437da88e5db564ebc8a7e40b9077a"
+    "contentHash": "8615663f2f0854a2f699223bfe26d6ac63ba29d5d9b9b9ca001cbf03421f3a48"
   }
 }

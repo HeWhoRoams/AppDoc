@@ -1,27 +1,21 @@
 # C4 System Context
 
-**Generated**: 2026-10-16 10:18:30
+**Generated**: 2026-10-16 11:55:57
 
 ## Summary
 
-- System: SampleApp
-- External systems detected: 4
-- Scope: high-level system context
+- System: AppDoc (repository root)
+- External systems detected: 0
+- Note: no in-scope .NET solution file found; context reflects the repository itself
 
 ## Diagram
 
 ```mermaid
 C4Context
-title SampleApp - System Context
+title AppDoc - System Context
 Person(user, "User", "Primary caller of the system")
-System(sampleapp, "SampleApp", "Software system: SampleApp")
-Rel(user, sampleapp, "Uses")
-System_Ext(external_api, "External API", "Third-party REST API")
-Rel(sampleapp, external_api, "Integrates with")
-System_Ext(mq_rabbitmq, "RabbitMQ", "RabbitMQ message broker")
-Rel(sampleapp, mq_rabbitmq, "Integrates with")
-System_Ext(database_sql_server, "SQL Server", "SQL Server database system")
-Rel(sampleapp, database_sql_server, "Integrates with")
+System(appdoc, "AppDoc", "Software system: AppDoc (repository root; no in-scope .sln)")
+Rel(user, appdoc, "Uses")
 ```
 
 ---

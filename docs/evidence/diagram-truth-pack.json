@@ -1,21 +1,24 @@
 {
-  "edges": [],
-  "apiEntries": [],
-  "generatedAt": "2026-10-16T10:17:04-04:00",
-  "metrics": {
-    "nodeCount": 10,
-    "edgeCount": 0,
-    "inboundEndpointCount": 0,
-    "outboundEndpointCount": 0,
-    "componentCount": 1,
-    "modelCount": 0,
-    "configCount": 9,
-    "dependencyCount": 0
+  "schemaVersion": "appdoc-graph/v1",
+  "determinism": {
+    "canonicalOrdering": [
+      "nodes:type,label,id",
+      "edges:from,to,type,label,id"
+    ],
+    "stableIdAlgorithm": "sha1(prefix|seed)[0:8]",
+    "hashAlgorithm": "SHA256",
+    "excludeKeys": [
+      "generatedAt",
+      "updatedAt",
+      "timestamp"
+    ],
+    "contentHash": "cd5da9c00641fd095377a22e2f04dc8136514d4bdf90bb3a12742c954cd7cb9d"
   },
   "project": {
     "name": "AppDoc",
     "rootPath": "/persistent/agent/workspace/AppDoc"
   },
+  "generatedAt": "2026-10-16T11:55:59-04:00",
   "nodes": [
     {
       "id": "component_core_processing_6d28d771",
@@ -88,25 +91,22 @@
       "evidence_refs": "cfg-0009"
     }
   ],
-  "schemaVersion": "appdoc-graph/v1",
+  "edges": [],
   "sources": {
     "modelEvidencePath": "docs/evidence/data-model.evidence.json",
-    "configEvidencePath": "docs/evidence/config-catalog.evidence.json",
     "dependencyEvidencePath": "docs/evidence/dependencies-catalog.evidence.json",
+    "configEvidencePath": "docs/evidence/config-catalog.evidence.json",
     "apiEvidencePath": "docs/evidence/api-inventory.evidence.json"
   },
-  "determinism": {
-    "canonicalOrdering": [
-      "nodes:type,label,id",
-      "edges:from,to,type,label,id"
-    ],
-    "stableIdAlgorithm": "sha1(prefix|seed)[0:8]",
-    "hashAlgorithm": "SHA256",
-    "excludeKeys": [
-      "generatedAt",
-      "updatedAt",
-      "timestamp"
-    ],
-    "contentHash": "cd5da9c00641fd095377a22e2f04dc8136514d4bdf90bb3a12742c954cd7cb9d"
+  "apiEntries": [],
+  "metrics": {
+    "nodeCount": 10,
+    "edgeCount": 0,
+    "inboundEndpointCount": 0,
+    "outboundEndpointCount": 0,
+    "componentCount": 1,
+    "modelCount": 0,
+    "configCount": 9,
+    "dependencyCount": 0
   }
 }

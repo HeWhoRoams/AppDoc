@@ -1,32 +1,97 @@
 # Configuration Catalog
 
+**Generated**: 2026-10-16 11:55:53
+
 ## Summary
 
 This artifact lists configuration inputs that can change runtime behavior, with sensitive values redacted and evidence references preserved.
 
 ## Configuration Sources
 
-Configuration sources are discovered from repository-scoped config files and build/pipeline metadata.
+- **JSON Configuration**: 1 files
+- **YAML Configuration**: 1 files
 
 ## Configuration Options
 
-| Name | Type | Default | Description | Required | Source |
-|------|------|---------|-------------|----------|--------|
+### Runtime Configuration (Priority)
 
-_No configuration options detected. Check for config files (.env, appsettings.json, etc.)._
+No runtime configuration entries detected.
+
+### Deployment / Environment Configuration
+
+| Name | Type | Default | Description | Required | Where Used | Environment Requirement | Source |
+|------|------|---------|-------------|----------|------------|--------------------------|--------|
+| jobs.syntax-gate.runs-on | YAML Configuration | windows-latest | Purpose unclear from available evidence — review .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.runs-on. | No | Deployment/environment | Environment-specific | .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.runs-on |
+| jobs.syntax-gate.steps.shell | YAML Configuration | pwsh | Purpose unclear from available evidence — review .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps.shell. | No | Deployment/environment | Environment-specific | .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps.shell |
+| jobs.syntax-gate.steps[0] | YAML Configuration | uses: actions/checkout@v4 | Purpose unclear from available evidence — review .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[0]. | No | Deployment/environment | Environment-specific | .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[0] |
+| jobs.syntax-gate.steps[1] | YAML Configuration | name: Run PowerShell syntax gate | Purpose unclear from available evidence — review .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[1]. | No | Deployment/environment | Environment-specific | .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[1] |
+| jobs.syntax-gate.steps[2] | YAML Configuration | name: Run documentation integrity gate | Purpose unclear from available evidence — review .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[2]. | No | Deployment/environment | Environment-specific | .github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[2] |
+| name | YAML Configuration | appdoc-ci | Purpose unclear from available evidence — review .github/workflows/appdoc-ci.yml:yaml/name. | No | Deployment/environment | Environment-specific | .github/workflows/appdoc-ci.yml:yaml/name |
+| on.push.branches[0] | YAML Configuration | main | Purpose unclear from available evidence — review .github/workflows/appdoc-ci.yml:yaml/on.push.branches[0]. | No | Deployment/environment | Environment-specific | .github/workflows/appdoc-ci.yml:yaml/on.push.branches[0] |
+| on.push.branches[1] | YAML Configuration | master | Purpose unclear from available evidence — review .github/workflows/appdoc-ci.yml:yaml/on.push.branches[1]. | No | Deployment/environment | Environment-specific | .github/workflows/appdoc-ci.yml:yaml/on.push.branches[1] |
+
+### Tooling and Workflow Configuration
+
+| Name | Type | Default | Description | Required | Where Used | Environment Requirement | Source |
+|------|------|---------|-------------|----------|------------|--------------------------|--------|
+| chat.tools.fileOperations.autoApprove.list | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.fileOperations.autoApprove.list. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.fileOperations.autoApprove.list |
+| chat.tools.fileOperations.autoApprove.read | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.fileOperations.autoApprove.read. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.fileOperations.autoApprove.read |
+| chat.tools.terminal.autoApprove.-ErrorAction | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction |
+| chat.tools.terminal.autoApprove.-Json | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.-Json. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.-Json |
+| chat.tools.terminal.autoApprove.-RootPath | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.-RootPath. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.-RootPath |
+| chat.tools.terminal.autoApprove.-Verbose | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.-Verbose. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.-Verbose |
+| chat.tools.terminal.autoApprove..\.AppDoc\\scripts\\powershell\\*.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove../.AppDoc/scripts/powershell/*.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove../.AppDoc/scripts/powershell/*.ps1 |
+| chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1 |
+| chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1 |
+| chat.tools.terminal.autoApprove.**/analyze-codebase.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-codebase.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-codebase.ps1 |
+| chat.tools.terminal.autoApprove.**/analyze-repository.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-repository.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-repository.ps1 |
+| chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1 |
+| chat.tools.terminal.autoApprove.**/catalog-samples.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/catalog-samples.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/catalog-samples.ps1 |
+| chat.tools.terminal.autoApprove.**/extract-config.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/extract-config.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/extract-config.ps1 |
+| chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1 |
+| chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1 |
+| chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1 |
+| chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1 |
+| chat.tools.terminal.autoApprove.**/generate-data-model.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-data-model.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-data-model.ps1 |
+| chat.tools.terminal.autoApprove.**/generate-debt-register.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-debt-register.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-debt-register.ps1 |
+| chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1 |
+| chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1 |
+| chat.tools.terminal.autoApprove.**/generate-improvements.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-improvements.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-improvements.ps1 |
+| chat.tools.terminal.autoApprove.**/generate-overview.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-overview.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-overview.ps1 |
+| chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1 |
+| chat.tools.terminal.autoApprove.**/run-all-generators.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/run-all-generators.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/run-all-generators.ps1 |
+| chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1 |
+| chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1 |
+| chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1 |
+| chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1 |
+| chat.tools.terminal.autoApprove.**/validate-data-model.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-data-model.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-data-model.ps1 |
+| chat.tools.terminal.autoApprove.**/validate-debt-register.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-debt-register.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-debt-register.ps1 |
+| chat.tools.terminal.autoApprove.**/validate-overview.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-overview.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-overview.ps1 |
+| chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1 | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1 |
+| chat.tools.terminal.autoApprove.Copy-Item | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.Copy-Item. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.Copy-Item |
+| chat.tools.terminal.autoApprove.Get-ChildItem | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.Get-ChildItem. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.Get-ChildItem |
+| chat.tools.terminal.autoApprove.Get-Content | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.Get-Content. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.Get-Content |
+| chat.tools.terminal.autoApprove.git | JSON Configuration | false | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.git. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.git |
+| chat.tools.terminal.autoApprove.git fetch | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.git fetch. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.git fetch |
+| chat.tools.terminal.autoApprove.git status | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.git status. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.git status |
+| chat.tools.terminal.autoApprove.pwsh | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.pwsh. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.pwsh |
+| chat.tools.terminal.autoApprove.Remove-Item | JSON Configuration | false | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.Remove-Item. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.Remove-Item |
+| chat.tools.terminal.autoApprove.Set-ExecutionPolicy | JSON Configuration | false | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.Set-ExecutionPolicy. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.Set-ExecutionPolicy |
+| chat.tools.terminal.autoApprove.Test-Path | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.Test-Path. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.Test-Path |
+| chat.tools.terminal.autoApprove.Write-Host | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.Write-Host. | Yes | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.Write-Host |
+| github.copilot.chat.executions.enabled | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:github.copilot.chat.executions.enabled. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:github.copilot.chat.executions.enabled |
+
+Masking policy: secret-like keys are masked in defaults to reduce accidental leakage.
 
 ## Environment Variables
 
-Environment variables are listed when discovered in scoped configuration manifests and script usage.
-
 | Variable | Default | Description | Sensitive | Required |
 |----------|---------|-------------|-----------|----------|
-
-_No environment variables detected. System may use configuration files or defaults._
+|  |  | Environment variable | No | No |
 
 ## Configuration Validation
 
-This run extracts keys and sources but may not include a full validation matrix. Treat required-key checks, value-shape checks, and environment overrides as mandatory pre-release validation tasks.
+This run extracted configuration keys and sources but not a full validation matrix. Treat required-key checks, value-shape checks, and environment overrides as mandatory pre-release validation tasks.
 
 ## Configuration Management
 
@@ -34,37 +99,20 @@ Configuration is distributed across application config files, transforms, projec
 
 ## Security Considerations
 
-Trust model: auto-approve entries execute with local user privileges and should only target trusted scripts under repository-controlled paths. This workflow enforces repository scope filtering but does not provide cryptographic file-integrity attestation.
-
-Restrict `chat.tools.terminal.autoApprove.*` patterns to least privilege and trusted operators. Treat connection strings, credentials, tokens, and endpoint URLs as sensitive-by-default, and validate redaction before publishing artifacts.
+Trust model: auto-approve entries execute with local user privileges and should only target trusted scripts under validated repository paths. This workflow enforces repository scope filtering but does not provide cryptographic file-integrity attestation; protect repos and runners accordingly. Restrict auto-approve patterns to least privilege, avoid broad wildcards, and keep display-only commands such as Write-Host non-required from a security perspective.
 
 ## Example Configurations
 
-Environment-specific examples are intentionally curated to avoid accidental secret leakage. Build examples from non-sensitive templates and validate with required configuration criteria.
+Environment-specific examples are not emitted automatically to avoid accidental secret leakage. Build examples from non-sensitive templates and validate with the required configuration criteria below.
 
 ## Required configuration criteria
 
-Use least-privilege auto-approve rules for trusted automation paths only.
+Use least-privilege auto-approve rules for trusted automation paths only:
 
-- `chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1`
-- `chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1`
+- chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1
+- chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1
 
-### Why they are required
-
-- The assessment approvals enable automated report generation and synthesis during startup automation.
-- `chat.tools.terminal.autoApprove.Write-Host` is a display-only command and is not a required security control.
-
-### Consequences if missing
-
-- **Automation disabled/degraded — runtime dependency for startup hooks.** Required commands will pause for manual approval or skip blocked behaviors, causing unattended startup runs to fail.
-- **Startup/validation failures — operational outcome.** Blocked report generation or synthesis may cause downstream validation stages to fail or emit incomplete artifacts.
-- **Runtime errors/interruptions — execution path dependent.** If required startup-hook commands can’t execute, the orchestration path may terminate early or produce partial outputs.
-
-### Validation classification
-
-- **Deployment-time validation policy:** CI/deployment should fail when these keys are missing for environments requiring unattended startup hooks.
-- **Runtime dependency scope:** this requirement targets Copilot startup-hook automation; manual script execution can compensate with interactive approvals.
-
+Do not treat chat.tools.terminal.autoApprove.Write-Host as a required security control. Write-Host is a display/UI command and should remain optional.
 ## Evidence Traceability
 
 | Field | Value |
@@ -74,14 +122,14 @@ Use least-privilege auto-approve rules for trusted automation paths only.
 | Generator | generate-config-catalog.ps1 |
 | Required Evidence Keys | configurations |
 | Grounding Mode | Deterministic extraction records |
+
 ---
-**Generated by AppDoc Framework**
 
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 26e9016
-- Generated At: 2026-10-16T10:17:09-04:00
+- Commit Hash: 8b13f8a
+- Generated At: 2026-10-16T11:56:04-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

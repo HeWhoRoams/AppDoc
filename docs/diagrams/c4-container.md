@@ -1,33 +1,24 @@
 # C4 Container
 
-**Generated**: 2026-10-16 10:18:30
+**Generated**: 2026-10-16 11:55:57
 
 ## Summary
 
-- System: SampleApp
-- Containers detected: 2
+- System: AppDoc (repository root)
+- Containers detected: 0
 - Relationships detected: 0
-- External systems mapped: 4
+- Note: no in-scope .NET solution file found; no deployable containers detected
 
 ## Diagram
 
 ```mermaid
 C4Container
-title SampleApp - Container View
+title AppDoc - Container View
 Person(user, "User", "Primary caller of the system")
-System_Boundary(system_boundary, "SampleApp") {
-  Container(sampleapp_web, "SampleApp.Web", "ASP.NET Core", "WebApp implemented in ASP.NET Core")
-  Container(sampleapp_service, "SampleApp.Service", "Windows Service", "Service implemented in Windows Service")
+System_Boundary(system_boundary, "AppDoc") {
+  Container(no_containers, "No deployable containers detected", "N/A", "No in-scope solution file")
 }
-Rel(user, sampleapp_web, "Uses")
-System_Ext(ext_database, "Database", "Persistent data storage")
-Rel(sampleapp_web, ext_database, "Reads/Writes", "SQL")
-System_Ext(ext_external_api, "External API", "Third-party REST API")
-Rel(sampleapp_web, ext_external_api, "Calls", "HTTPS")
-System_Ext(ext_mq_rabbitmq, "RabbitMQ", "RabbitMQ message broker")
-Rel(sampleapp_web, ext_mq_rabbitmq, "Publishes/Subscribes", "AMQP")
-System_Ext(ext_database_sql_server, "SQL Server", "SQL Server database system")
-Rel(sampleapp_web, ext_database_sql_server, "Reads/Writes", "SQL")
+Rel(user, no_containers, "Inspects")
 ```
 
 ---

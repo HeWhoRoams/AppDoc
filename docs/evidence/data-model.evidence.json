@@ -1,17 +1,17 @@
 {
   "artifact": "data-model",
-  "generatedAt": "2026-10-16T10:16:52-04:00",
+  "generatedAt": "2026-10-16T11:55:39-04:00",
   "recordCount": 0,
   "records": [],
   "metadata": {
-    "generator": "generate-data-model.ps1",
     "requiredEvidenceKeys": [
       "models"
     ],
     "requiredSections": [
       "Summary",
       "Data Models"
-    ]
+    ],
+    "generator": "generate-data-model.ps1"
   },
   "determinism": {
     "hashAlgorithm": "SHA256",

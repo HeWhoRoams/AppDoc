@@ -1,6 +1,6 @@
 {
   "artifact": "build-cookbook",
-  "generatedAt": "2026-10-16T10:16:57-04:00",
+  "generatedAt": "2026-10-16T11:55:54-04:00",
   "recordCount": 1,
   "records": [
     {
@@ -10,26 +10,26 @@
       "kind": "cicd",
       "confidence": 1.0,
       "metadata": {
-        "details": "Workflow: appdoc-ci",
-        "file": "appdoc-ci.yml"
+        "file": "appdoc-ci.yml",
+        "details": "Workflow: appdoc-ci"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-16T10:16:57-04:00"
+      "timestamp": "2026-10-16T11:55:54-04:00"
     }
   ],
   "metadata": {
-    "commandCount": 0,
     "cicdCount": 1,
+    "requiredEvidenceKeys": [
+      "commands"
+    ],
     "requiredSections": [
       "Summary",
       "Build Steps"
     ],
+    "commandCount": 0,
     "generator": "generate-build-cookbook.ps1",
-    "requiredEvidenceKeys": [
-      "commands"
-    ],
     "prerequisiteCount": 0
   },
   "determinism": {
