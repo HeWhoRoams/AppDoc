@@ -1,22 +1,23 @@
 {
-  "generatedAt": "2026-03-11T14:45:38-04:00",
+  "generatedAt": "2026-10-16T10:17:09-04:00",
   "summary": {
-    "total": 10,
+    "total": 13,
     "byCategory": {
       "ENVIRONMENT_ERROR": 1,
-      "DETECTION_PATTERN_MISMATCH": 8,
-      "INITIALIZATION": 1
+      "DETECTION_PATTERN_MISMATCH": 10,
+      "INITIALIZATION": 1,
+      "PARSING_ERROR": 1
     },
     "bySeverity": {
-      "Warning": 8,
-      "Info": 2
+      "Info": 2,
+      "Warning": 11
     },
     "hasErrors": false,
     "hasWarnings": true
   },
   "events": [
     {
-      "timestamp": "2026-03-11T14:45:34-04:00",
+      "timestamp": "2026-10-16T10:17:05-04:00",
       "category": "INITIALIZATION",
       "severity": "Info",
       "component": "orchestrator",
@@ -28,7 +29,29 @@
       }
     },
     {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:06-04:00",
+      "category": "PARSING_ERROR",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Validator failed: validate-config-catalog.ps1",
+      "filePath": "./.appdoc/scripts/powershell/validate-config-catalog.ps1",
+      "details": {
+        "exception": "No config entries found in config-catalog.md — table may be missing or format changed. Validation failed."
+      }
+    },
+    {
+      "timestamp": "2026-10-16T10:17:07-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Banned placeholder pattern found (config-catalog)",
+      "filePath": "./docs/config-catalog.md",
+      "details": {
+        "pattern": "(?im)_No [^_]+ detected\\."
+      }
+    },
+    {
+      "timestamp": "2026-10-16T10:17:08-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -37,7 +60,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:08-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -46,7 +69,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:08-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -55,7 +78,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:08-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -64,7 +87,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:08-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -73,7 +96,16 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:08-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: config-options-table-empty",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-10-16T10:17:08-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -82,7 +114,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:08-04:00",
       "category": "ENVIRONMENT_ERROR",
       "severity": "Info",
       "component": "Validation",
@@ -91,7 +123,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:08-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "Narrative",
@@ -105,24 +137,44 @@
       }
     },
     {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:09-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "Validation",
       "message": "Validation is below threshold in soft mode",
       "filePath": "",
       "details": {
+        "averageScore": 88.0,
         "belowThreshold": 1,
-        "averageScore": 89.0,
         "threshold": 80
       }
     }
   ],
   "metadata": {
+    "strictValidation": false,
+    "rootPath": "./",
+    "validationGate": {
+      "passed": false,
+      "reason": "Structured validation gate failed (score and/or policy gates)",
+      "averageScore": 88.0,
+      "belowThreshold": 1,
+      "strict": false,
+      "qualityThreshold": 80,
+      "evaluatedDocuments": 8
+    },
+    "frameworks": null,
+    "qualityThreshold": 80,
+    "scriptFailures": null,
+    "narrativeReviewReasons": [
+      "style-business-verb-coverage-low:1",
+      "style-what-it-does-purpose-verb-low:0"
+    ],
     "narrativeRunReportPath": "./docs/evidence/narrative-run-report.json",
+    "evidenceGraphPath": "./docs/evidence/evidence-graph.json",
+    "profile": "default",
     "architecture": {
       "version": "1.1.0",
-      "generatedAt": "2026-03-11T14:45:17-04:00",
+      "generatedAt": "2026-10-16T10:16:49-04:00",
       "primaryStyle": "no-api-surface",
       "primaryStyleLabel": "No API Surface",
       "styles": "no-api-surface",
@@ -135,20 +187,40 @@
         "soapClient": 0
       },
       "evidence": {
-        "csFileCount": 1,
+        "csFileCount": 0,
         "svcFileCount": 0,
         "asmxFileCount": 0,
         "wsdlFileCount": 0,
         "svcMapFileCount": 0,
         "svcInfoFileCount": 0,
         "serviceReferenceFileCount": 0,
-        "sampledCodeFileCount": 1
+        "sampledCodeFileCount": 0
       }
     },
-    "strictValidation": false,
-    "profile": "default",
+    "evidenceGraphMetrics": {
+      "entityCount": 56,
+      "edgeCount": 54,
+      "entityTypeCount": {
+        "data_model": 0,
+        "dependency": 0,
+        "system": 1,
+        "endpoint_outbound": 0,
+        "endpoint_inbound": 0,
+        "test_case": 0,
+        "component": 1,
+        "config_key": 54
+      },
+      "inboundEndpointCount": 0,
+      "outboundEndpointCount": 0,
+      "componentCount": 1,
+      "modelCount": 0,
+      "configCount": 54,
+      "dependencyCount": 0,
+      "testCaseCount": 0
+    },
+    "localOnly": true,
     "outputPath": "./docs",
-    "frameworks": null,
+    "narrativeReviewRequired": true,
     "evidenceGraphIntegrity": {
       "passed": true,
       "issues": null,
@@ -159,52 +231,12 @@
         "inboundEndpointCount": 0,
         "outboundEndpointCount": 0
       }
-    },
-    "scriptFailures": null,
-    "qualityThreshold": 80,
-    "evidenceGraphMetrics": {
-      "entityCount": 56,
-      "edgeCount": 54,
-      "entityTypeCount": {
-        "test_case": 0,
-        "endpoint_outbound": 0,
-        "config_key": 54,
-        "component": 1,
-        "dependency": 0,
-        "system": 1,
-        "data_model": 0,
-        "endpoint_inbound": 0
-      },
-      "inboundEndpointCount": 0,
-      "outboundEndpointCount": 0,
-      "componentCount": 1,
-      "modelCount": 0,
-      "configCount": 54,
-      "dependencyCount": 0,
-      "testCaseCount": 0
-    },
-    "narrativeReviewRequired": true,
-    "localOnly": true,
-    "validationGate": {
-      "passed": false,
-      "reason": "Structured validation gate failed (score and/or policy gates)",
-      "averageScore": 89.0,
-      "belowThreshold": 1,
-      "strict": false,
-      "qualityThreshold": 80,
-      "evaluatedDocuments": 8
-    },
-    "rootPath": "./",
-    "evidenceGraphPath": "./docs/evidence/evidence-graph.json",
-    "narrativeReviewReasons": [
-      "style-business-verb-coverage-low:1",
-      "style-what-it-does-purpose-verb-low:0"
-    ]
+    }
   },
   "provenance": {
     "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "eed63d1",
-    "generatedAt": "2026-03-11T14:45:38-04:00",
+    "commitHash": "26e9016",
+    "generatedAt": "2026-10-16T10:17:09-04:00",
     "profile": "default",
     "scope": ".",
     "confidenceInferenceFlags": [

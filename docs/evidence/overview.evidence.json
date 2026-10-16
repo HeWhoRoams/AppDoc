@@ -1,6 +1,6 @@
 {
   "artifact": "overview",
-  "generatedAt": "2026-03-11T14:45:31-04:00",
+  "generatedAt": "2026-10-16T10:17:00-04:00",
   "recordCount": 1,
   "records": [
     {
@@ -17,48 +17,31 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-03-11T14:45:31-04:00"
+      "timestamp": "2026-10-16T10:17:00-04:00"
     }
   ],
   "metadata": {
-    "welcomeNarrativePassSources": {
-      "pass1": "deterministic",
-      "pass2": "deterministic",
-      "pass3": "deterministic"
-    },
-    "welcomeSectionCoveragePassed": true,
-    "contextPackPath": "docs/evidence/narrative-context-pack.json",
-    "narrativeReviewRequired": true,
-    "evidenceGraphEdgeCount": 54,
-    "generator": "generate-overview.ps1",
-    "welcomeStyleGateMetrics": {
-      "textItemCount": 8,
-      "inventoryLeadCount": 0,
-      "countOnlySentenceCount": 0,
-      "businessVerbHits": 1,
-      "whatItDoesMetricLeadCount": 0,
-      "whatItDoesPurposeVerbHits": 0,
-      "numericDensity": 0.0729
-    },
-    "narrativeArtifacts": {
-      "pass1": "docs/evidence/narrative/purpose_model.json",
-      "pass2": "docs/evidence/narrative/narrative_draft.md",
-      "pass3": "docs/evidence/narrative/review_notes.json",
-      "final": "docs/evidence/narrative/narrative_final.json",
-      "runReport": "docs/evidence/narrative-run-report.json"
-    },
-    "evidenceGraphPath": ".\\docs\\evidence\\evidence-graph.json",
-    "welcomeNarrativeVerified": true,
-    "truthPackPath": "docs/evidence/overview-truth-pack.json",
     "welcomeStyleGateIssues": [
       "style-business-verb-coverage-low:1",
       "style-what-it-does-purpose-verb-low:0"
     ],
+    "welcomeNarrativeIssues": [],
+    "truthPackPath": "docs/evidence/overview-truth-pack.json",
+    "requiredEvidenceKeys": [
+      "summary",
+      "technologies"
+    ],
+    "requiredSections": [
+      "Summary",
+      "System Purpose",
+      "Getting Started",
+      "Documentation Map"
+    ],
     "narrativeRunReport": {
       "pipelineVersion": "1.1.0",
-      "startedAt": "2026-03-11T14:45:31-04:00",
-      "endedAt": "2026-03-11T14:45:31-04:00",
-      "durationMs": 46.0,
+      "startedAt": "2026-10-16T10:17:00-04:00",
+      "endedAt": "2026-10-16T10:17:00-04:00",
+      "durationMs": 113.0,
       "model": "local-deterministic",
       "executionMode": "local-deterministic",
       "externalModelCalls": false,
@@ -96,21 +79,38 @@
       "narrativeReviewRequired": true,
       "autoPassWithoutHumanEdits": false
     },
-    "welcomeNarrativeIssues": [],
-    "welcomeSectionCoverageIssues": [],
-    "requiredEvidenceKeys": [
-      "summary",
-      "technologies"
-    ],
-    "requiredSections": [
-      "Summary",
-      "System Purpose",
-      "Getting Started",
-      "Documentation Map"
-    ],
     "welcomeStyleGatePassed": false,
+    "evidenceGraphPath": "/persistent/agent/workspace/AppDoc/docs/evidence/evidence-graph.json",
+    "welcomeNarrativePassSources": {
+      "pass1": "deterministic",
+      "pass2": "deterministic",
+      "pass3": "deterministic"
+    },
+    "narrativeReviewRequired": true,
+    "contextPackPath": "docs/evidence/narrative-context-pack.json",
+    "evidenceGraphEdgeCount": 54,
+    "narrativeArtifacts": {
+      "pass1": "docs/evidence/narrative/purpose_model.json",
+      "pass2": "docs/evidence/narrative/narrative_draft.md",
+      "pass3": "docs/evidence/narrative/review_notes.json",
+      "final": "docs/evidence/narrative/narrative_final.json",
+      "runReport": "docs/evidence/narrative-run-report.json"
+    },
+    "welcomeSectionCoverageIssues": [],
+    "evidenceGraphEntityCount": 56,
+    "welcomeSectionCoveragePassed": true,
+    "welcomeNarrativeVerified": true,
     "welcomeNarrativeProvider": "deterministic",
-    "evidenceGraphEntityCount": 56
+    "generator": "generate-overview.ps1",
+    "welcomeStyleGateMetrics": {
+      "textItemCount": 8,
+      "inventoryLeadCount": 0,
+      "countOnlySentenceCount": 0,
+      "businessVerbHits": 1,
+      "whatItDoesMetricLeadCount": 0,
+      "whatItDoesPurposeVerbHits": 0,
+      "numericDensity": 0.0729
+    }
   },
   "determinism": {
     "hashAlgorithm": "SHA256",
@@ -119,6 +119,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "df6a7b5c6336fd10a571629cee87b01b5726853143dd0f611c246a55bc828599"
+    "contentHash": "dede50ab42db1f261ecc7f7b011e9afa6db1356aea2f213402c32a5ff5b574c6"
   }
 }

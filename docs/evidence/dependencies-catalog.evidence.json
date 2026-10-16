@@ -1,15 +1,15 @@
 {
   "artifact": "dependencies-catalog",
-  "generatedAt": "2026-03-11T14:45:30-04:00",
+  "generatedAt": "2026-10-16T10:16:59-04:00",
   "recordCount": 0,
   "records": [],
   "metadata": {
-    "generator": "generate-dependencies-catalog.ps1",
-    "dependencyCount": 0,
     "requiredSections": [
       "Summary",
       "Dependency Summary"
     ],
+    "dependencyCount": 0,
+    "generator": "generate-dependencies-catalog.ps1",
     "projectCount": 0,
     "requiredEvidenceKeys": [
       "dependencies"

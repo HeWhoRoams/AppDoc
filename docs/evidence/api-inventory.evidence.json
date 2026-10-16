@@ -1,21 +1,21 @@
 {
   "artifact": "api-inventory",
-  "generatedAt": "2026-03-11T14:45:19-04:00",
+  "generatedAt": "2026-10-16T10:16:51-04:00",
   "recordCount": 0,
   "records": [],
   "metadata": {
-    "endpointCount": 0,
-    "outboundEndpointCount": 0,
     "inboundEndpointCount": 0,
+    "endpointCount": 0,
     "requiredSections": [
       "Summary",
       "API Endpoints"
     ],
-    "graphSchemaTarget": "appdoc-evidence-graph/v1",
+    "generator": "generate-api-inventory.ps1",
     "requiredEvidenceKeys": [
       "endpoints"
     ],
-    "generator": "generate-api-inventory.ps1"
+    "graphSchemaTarget": "appdoc-evidence-graph/v1",
+    "outboundEndpointCount": 0
   },
   "determinism": {
     "hashAlgorithm": "SHA256",

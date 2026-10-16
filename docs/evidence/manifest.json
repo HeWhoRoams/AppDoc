@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-03-11T14:45:31-04:00",
+  "generatedAt": "2026-10-16T10:17:01-04:00",
   "artifacts": [
     {
       "artifact": "api-inventory",
-      "path": ".\\docs\\evidence\\api-inventory.evidence.json",
+      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/api-inventory.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-03-11T14:45:19-04:00",
+      "updatedAt": "2026-10-16T10:16:51-04:00",
       "metadata": {
         "generator": "generate-api-inventory.ps1"
       }
@@ -22,9 +22,9 @@
     },
     {
       "artifact": "build-cookbook",
-      "path": ".\\docs\\evidence\\build-cookbook.evidence.json",
+      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/build-cookbook.evidence.json",
       "recordCount": 1,
-      "updatedAt": "2026-03-11T14:45:28-04:00",
+      "updatedAt": "2026-10-16T10:16:57-04:00",
       "metadata": {
         "generator": "generate-build-cookbook.ps1"
       }
@@ -60,9 +60,9 @@
     },
     {
       "artifact": "data-model",
-      "path": ".\\docs\\evidence\\data-model.evidence.json",
+      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/data-model.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-03-11T14:45:21-04:00",
+      "updatedAt": "2026-10-16T10:16:52-04:00",
       "metadata": {
         "generator": "generate-data-model.ps1"
       }
@@ -79,9 +79,9 @@
     },
     {
       "artifact": "debt-register",
-      "path": ".\\docs\\evidence\\debt-register.evidence.json",
+      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/debt-register.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-03-11T14:45:29-04:00",
+      "updatedAt": "2026-10-16T10:16:58-04:00",
       "metadata": {
         "generator": "generate-debt-register.ps1"
       }
@@ -98,9 +98,9 @@
     },
     {
       "artifact": "dependencies-catalog",
-      "path": ".\\docs\\evidence\\dependencies-catalog.evidence.json",
+      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/dependencies-catalog.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-03-11T14:45:30-04:00",
+      "updatedAt": "2026-10-16T10:16:59-04:00",
       "metadata": {
         "generator": "generate-dependencies-catalog.ps1"
       }
@@ -117,9 +117,9 @@
     },
     {
       "artifact": "overview",
-      "path": ".\\docs\\evidence\\overview.evidence.json",
+      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/overview.evidence.json",
       "recordCount": 1,
-      "updatedAt": "2026-03-11T14:45:31-04:00",
+      "updatedAt": "2026-10-16T10:17:00-04:00",
       "metadata": {
         "generator": "generate-overview.ps1"
       }
@@ -136,9 +136,9 @@
     },
     {
       "artifact": "start-here",
-      "path": ".\\docs\\evidence\\start-here.evidence.json",
+      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/start-here.evidence.json",
       "recordCount": 3,
-      "updatedAt": "2026-03-11T13:30:46-04:00",
+      "updatedAt": "2026-10-16T10:17:01-04:00",
       "metadata": {
         "generator": "generate-start-here.ps1"
       }
@@ -155,9 +155,9 @@
     },
     {
       "artifact": "task-guides",
-      "path": ".\\docs\\evidence\\task-guides.evidence.json",
+      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/task-guides.evidence.json",
       "recordCount": 5,
-      "updatedAt": "2026-03-11T13:30:44-04:00",
+      "updatedAt": "2026-10-16T10:17:01-04:00",
       "metadata": {
         "generator": "generate-task-guides.ps1"
       }
@@ -174,9 +174,9 @@
     },
     {
       "artifact": "test-catalog",
-      "path": ".\\docs\\evidence\\test-catalog.evidence.json",
+      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/test-catalog.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-03-11T14:45:29-04:00",
+      "updatedAt": "2026-10-16T10:16:57-04:00",
       "metadata": {
         "generator": "generate-test-catalog.ps1"
       }
@@ -194,63 +194,75 @@
   ],
   "markdownChecksums": [
     {
-      "path": "C:\\Github\\Appdoc\\docs\\api-inventory.appendix.md",
-      "sha256": "1faece61e4fb7881d302608d2eaea159c1c5dd0ad3e1a654134c44dbb4c84b31"
+      "path": "docs/api-inventory.appendix.md",
+      "sha256": "6edde5d5181939a7f8e59a61401ec2d4bd36f9ebfd4cca6409faf5432447cc08"
     },
     {
-      "path": "C:\\Github\\Appdoc\\docs\\api-inventory.md",
-      "sha256": "967e4eda8188f88cf013a537ae573edd0a56dba2e7bf270a5c3382c1ad6fa521"
+      "path": "docs/api-inventory.md",
+      "sha256": "f8d4bfeaa738a8d2769a36a81fd9a385fcb1044705498bd9e29094dcfff82727"
     },
     {
-      "path": "C:\\Github\\Appdoc\\docs\\appdoc-artifact-quality-audit.md",
-      "sha256": "cabcc0846f8cd207847ccc2d47fd071584ffa55593a7cac6598efb2ac7142315"
+      "path": "docs/appdoc-artifact-quality-audit.md",
+      "sha256": "fb1d6bf369414bd6c4fb65ad6f5886db593f7f0552a4a6d71c35c519d05d8463"
     },
     {
-      "path": "C:\\Github\\Appdoc\\docs\\appdoc-remediation-plan.md",
-      "sha256": "1984ba9c667d3b65376274c23254301bf0094a9233def33b314df516050e4d5c"
+      "path": "docs/appdoc-remediation-plan.md",
+      "sha256": "edfe0cdebae53bc8fc4f149620901918245b035f4986eb589b8a6d8c65d95b7a"
     },
     {
-      "path": "C:\\Github\\Appdoc\\docs\\build-cookbook.md",
-      "sha256": "c90989286019d6b07cf0cbe6b4e93cd5fe43cf199d390876e07b2a22ef915641"
+      "path": "docs/build-cookbook.md",
+      "sha256": "7a20b71dd24289407e211f9bb74ebe182faea7cfef1ae2f16d78f46d69b3504d"
     },
     {
-      "path": "C:\\Github\\Appdoc\\docs\\config-catalog.md",
-      "sha256": "b5b4e0eb75703191e6ab87f190157a01fe9155426ff4d513dc238f03d38e08a9"
+      "path": "docs/config-catalog.md",
+      "sha256": "9a6abdad63c22698afd0a73de6d64e7d55348fb4818f33805cc53ca40a4270a9"
     },
     {
-      "path": "C:\\Github\\Appdoc\\docs\\data-model.md",
-      "sha256": "5284d8f1ded9e0671c4e703b9d282444e2e189b8f7037598579211793561b34e"
+      "path": "docs/data-model.md",
+      "sha256": "ea11f81a5a7a865df85b9086799d317ad9c33df0da4c90126e7c9551e926c83b"
     },
     {
-      "path": "C:\\Github\\Appdoc\\docs\\debt-register.md",
-      "sha256": "34a26b244411a7ffc391e50818d50be0c7557d1bec3fc6f00a09c02db3b5a83d"
+      "path": "docs/debt-register.md",
+      "sha256": "85eb43b1eea04e82d5ac6cedb64e9f940c9610244edc678756004a75cb677947"
     },
     {
-      "path": "C:\\Github\\Appdoc\\docs\\dependencies-catalog.md",
-      "sha256": "2099e0b073b7f9bb706f9fa104a03cbeece8b276771ad9d8816cfc60195724f0"
+      "path": "docs/dependencies-catalog.md",
+      "sha256": "8810fae476fc8cbcc45c6871fed16e31d8a34dd8eb582e543b8a1bf7caff67f6"
     },
     {
-      "path": "C:\\Github\\Appdoc\\docs\\implementation-checklist-v3.md",
-      "sha256": "dbb849b32725b0f777669492c8b7d257513b84927ee86d992bea73bd32766425"
+      "path": "docs/implementation-checklist-v3.md",
+      "sha256": "74f983553d768d53282cc3b2f138290650b587d02f6236e7469f2e8e8f5a3971"
     },
     {
-      "path": "C:\\Github\\Appdoc\\docs\\overview.md",
-      "sha256": "25362cf65198e87f34a5593c8717acc30405132ead598a7843f4ebad905675fc"
+      "path": "docs/index.md",
+      "sha256": "3a1b48b7c035847a2c8a2f3ce5c733455b446480104d785cda7518d747b13efb"
     },
     {
-      "path": "C:\\Github\\Appdoc\\docs\\quality-report.summary.md",
+      "path": "docs/overview.md",
+      "sha256": "0ff5ecbf73fbae56ae1952657284660eae6c5d1878e8f2dae8c409826a05d544"
+    },
+    {
+      "path": "docs/quality-report.summary.md",
       "sha256": "d9e7c8b6347fa8227a6e426580b9af26df3ccd9a6691a15d30b1cfe1a30cbafb"
     },
     {
-      "path": "C:\\Github\\Appdoc\\docs\\technical-implementation-plan.md",
-      "sha256": "04b8756ed64b7fa8b1207e17dd4deebb977d2156905d8d79f07d72cb4faa9be6"
+      "path": "docs/start-here.md",
+      "sha256": "1443910a54d4f8ec769e6584338be2184904f9e06db9516394e7ffa1c43f954f"
     },
     {
-      "path": "C:\\Github\\Appdoc\\docs\\test-catalog.md",
-      "sha256": "71a41d527aee1d7cf66b04f4556038a27dca002c08cd738d1eb098135e0a4888"
+      "path": "docs/task-guides.md",
+      "sha256": "d500d9d172eb0cd3dfcc76ea7859b0caff75c55a4e08beae3d8b4fc71dacf311"
     },
     {
-      "path": "C:\\Github\\Appdoc\\docs\\validation-report.summary.md",
+      "path": "docs/technical-implementation-plan.md",
+      "sha256": "5cd851fd87f574d5a7722fd89eb40ec03b2290d8cfe2de6924105d10855b6711"
+    },
+    {
+      "path": "docs/test-catalog.md",
+      "sha256": "45a72547e5b5ff0be92394c838f42c8398d01a61b2c1cee0b643b755132abab1"
+    },
+    {
+      "path": "docs/validation-report.summary.md",
       "sha256": "16817196cafc8ffcf0ba47fd8ce50cb2b2ec4d70f3f37c2b305c6ed99da419fa"
     }
   ],
@@ -267,6 +279,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "ec755c06a5aacbef222a90458cdfe9de8aa20c9560713f0caddf3b509a4aa358"
+    "contentHash": "5550e67c236d631879044d6cc2f57aa3291437da88e5db564ebc8a7e40b9077a"
   }
 }

@@ -1,20 +1,20 @@
 {
   "artifact": "test-catalog",
-  "generatedAt": "2026-03-11T14:45:29-04:00",
+  "generatedAt": "2026-10-16T10:16:57-04:00",
   "recordCount": 0,
   "records": [],
   "metadata": {
-    "suiteCount": 0,
-    "generator": "generate-test-catalog.ps1",
-    "testCount": 0,
+    "graphSchemaTarget": "appdoc-evidence-graph/v1",
     "requiredSections": [
       "Summary",
       "Test Suites"
     ],
+    "generator": "generate-test-catalog.ps1",
     "requiredEvidenceKeys": [
       "testSuites"
     ],
-    "graphSchemaTarget": "appdoc-evidence-graph/v1"
+    "suiteCount": 0,
+    "testCount": 0
   },
   "determinism": {
     "hashAlgorithm": "SHA256",

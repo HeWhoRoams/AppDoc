@@ -1,6 +1,6 @@
 # C4 System Context
 
-**Generated**: 2026-02-20 22:34:41
+**Generated**: 2026-10-16 10:18:30
 
 ## Summary
 
@@ -16,12 +16,12 @@ title SampleApp - System Context
 Person(user, "User", "Primary caller of the system")
 System(sampleapp, "SampleApp", "Software system: SampleApp")
 Rel(user, sampleapp, "Uses")
-System_Ext(database_sql_server, "SQL Server", "SQL Server database system")
-Rel(sampleapp, database_sql_server, "Integrates with")
-System_Ext(mq_rabbitmq, "RabbitMQ", "RabbitMQ message broker")
-Rel(sampleapp, mq_rabbitmq, "Integrates with")
 System_Ext(external_api, "External API", "Third-party REST API")
 Rel(sampleapp, external_api, "Integrates with")
+System_Ext(mq_rabbitmq, "RabbitMQ", "RabbitMQ message broker")
+Rel(sampleapp, mq_rabbitmq, "Integrates with")
+System_Ext(database_sql_server, "SQL Server", "SQL Server database system")
+Rel(sampleapp, database_sql_server, "Integrates with")
 ```
 
 ---

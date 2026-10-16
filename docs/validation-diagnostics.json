@@ -1,21 +1,22 @@
 {
-  "generatedAt": "2026-03-11T14:45:38-04:00",
+  "generatedAt": "2026-10-16T10:17:08-04:00",
   "summary": {
-    "total": 7,
+    "total": 10,
     "byCategory": {
-      "DETECTION_PATTERN_MISMATCH": 6,
-      "INITIALIZATION": 1
+      "DETECTION_PATTERN_MISMATCH": 8,
+      "INITIALIZATION": 1,
+      "PARSING_ERROR": 1
     },
     "bySeverity": {
-      "Warning": 6,
-      "Info": 1
+      "Info": 1,
+      "Warning": 9
     },
     "hasErrors": false,
     "hasWarnings": true
   },
   "events": [
     {
-      "timestamp": "2026-03-11T14:45:34-04:00",
+      "timestamp": "2026-10-16T10:17:05-04:00",
       "category": "INITIALIZATION",
       "severity": "Info",
       "component": "orchestrator",
@@ -27,7 +28,29 @@
       }
     },
     {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:06-04:00",
+      "category": "PARSING_ERROR",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Validator failed: validate-config-catalog.ps1",
+      "filePath": "./.appdoc/scripts/powershell/validate-config-catalog.ps1",
+      "details": {
+        "exception": "No config entries found in config-catalog.md — table may be missing or format changed. Validation failed."
+      }
+    },
+    {
+      "timestamp": "2026-10-16T10:17:07-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Banned placeholder pattern found (config-catalog)",
+      "filePath": "./docs/config-catalog.md",
+      "details": {
+        "pattern": "(?im)_No [^_]+ detected\\."
+      }
+    },
+    {
+      "timestamp": "2026-10-16T10:17:08-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -36,7 +59,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:08-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -45,7 +68,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:08-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -54,7 +77,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:08-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -63,7 +86,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:08-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -72,7 +95,16 @@
       "details": {}
     },
     {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:08-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: config-options-table-empty",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-10-16T10:17:08-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -83,18 +115,18 @@
   ],
   "metadata": {
     "validation": {
-      "timestamp": "2026-03-11T14:45:38-04:00",
+      "timestamp": "2026-10-16T10:17:08-04:00",
       "strict": false,
       "threshold": 80,
       "status": "fail",
-      "overallScore": 89,
-      "overallScoreRaw": 91.8,
+      "overallScore": 88,
+      "overallScoreRaw": 90.8,
       "penaltyDeduction": 3.0,
       "metrics": {
-        "validatorPassRate": 100.0,
+        "validatorPassRate": 87.5,
         "artifactPresence": 100.0,
         "evidencePresence": 100.0,
-        "semanticContractScore": 100.0,
+        "semanticContractScore": 98.8,
         "evidenceContractScore": 96.2,
         "apiCoverage": 100,
         "configCoverage": 100,
@@ -104,9 +136,9 @@
         "claimGroundingScore": 100.0,
         "documentationFreshnessScore": 87.5,
         "contradictionConsistencyScore": 100.0,
-        "taskGuideActionabilityScore": 100.0,
-        "taskGuideEvidenceCoverageScore": 100.0,
-        "taskGuideTimeToCompleteMinutes": 0,
+        "taskGuideActionabilityScore": 83.3,
+        "taskGuideEvidenceCoverageScore": 50.0,
+        "taskGuideTimeToCompleteMinutes": 12.0,
         "taskGuideTimeScore": 100.0,
         "metricDriftScore": 100.0,
         "policyGateScore": 0.0
@@ -215,9 +247,9 @@
           "message": "OK"
         },
         {
-          "passed": true,
+          "passed": false,
           "script": "validate-config-catalog.ps1",
-          "message": "OK"
+          "message": "No config entries found in config-catalog.md — table may be missing or format changed. Validation failed."
         },
         {
           "passed": true,
@@ -264,10 +296,10 @@
         },
         {
           "artifact": "config-catalog",
-          "passed": true,
-          "score": 100,
+          "passed": false,
+          "score": 90,
           "missingSections": null,
-          "bannedPatterns": null
+          "bannedPatterns": "(?im)_No [^_]+ detected\\."
         },
         {
           "artifact": "build-cookbook",
@@ -378,15 +410,17 @@
             "modelCount": 0,
             "dependencyCount": 0
           },
+          "startHereApiCount": 0,
+          "startHereModelCount": 0,
           "testEvidenceCaseCount": 0,
           "dependencyEvidenceCount": 0
         }
       },
       "taskGuideOutcomes": {
-        "actionabilityScore": 100,
-        "evidenceCoverageScore": 100,
-        "estimatedCompletionMinutes": 0,
-        "taskCompletionTimeScore": 100,
+        "actionabilityScore": 83.3,
+        "evidenceCoverageScore": 50.0,
+        "estimatedCompletionMinutes": 12.0,
+        "taskCompletionTimeScore": 100.0,
         "issues": null
       },
       "policyGates": {
@@ -395,7 +429,8 @@
           "provenance-missing:api-inventory.md",
           "provenance-missing:data-model.md",
           "provenance-missing:config-catalog.md",
-          "provenance-missing:build-cookbook.md"
+          "provenance-missing:build-cookbook.md",
+          "config-options-table-empty"
         ],
         "score": 0.0,
         "passed": false
@@ -404,8 +439,8 @@
   },
   "provenance": {
     "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "eed63d1",
-    "generatedAt": "2026-03-11T14:45:38-04:00",
+    "commitHash": "26e9016",
+    "generatedAt": "2026-10-16T10:17:09-04:00",
     "profile": "default",
     "scope": ".",
     "confidenceInferenceFlags": [

@@ -1,6 +1,6 @@
 # Critical Sequences
 
-_Generated: 2026-03-11 15:01:53_
+_Generated: 2026-10-16 10:17:04_
 
 ## What This View Explains
 
@@ -8,16 +8,14 @@ This artifact captures the highest-signal runtime request journeys from determin
 
 No high-confidence request journeys were available for scenario rendering in this scan.
 
-## Baseline Sequence
+## Why Nothing Qualified
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant caller as Caller
-    participant system as Application
-    caller->>system: Request
-    system-->>caller: Response
-```
+| Check | Result | Why it matters |
+|---|---|---|
+| Specific data transition | Not detected | Generic return types like ActionResult and HTML View do not reveal meaningful business-data movement. |
+| Outbound/service hop | Not detected | Without a service or integration call, the flow is usually just controller routing plus a generic response. |
+| End-to-end uniqueness | Low | Multiple endpoints collapsed to near-identical request → controller → generic response shapes. |
+| Reader value | Too low | Rendering those flows would add visual noise without improving understanding of system behavior. |
 
 ## Evidence Refs
 

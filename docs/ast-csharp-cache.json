@@ -6,8 +6,8 @@
   "note": "Extracted using Microsoft.CodeAnalysis (Roslyn).",
   "provenance": {
     "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "eed63d1",
-    "generatedAt": "2026-03-11T14:45:38-04:00",
+    "commitHash": "26e9016",
+    "generatedAt": "2026-10-16T10:17:09-04:00",
     "profile": "default",
     "scope": ".",
     "confidenceInferenceFlags": [

@@ -1,6 +1,6 @@
 # System Overview
 
-**Generated**: 2026-03-11 14:45:31
+**Generated**: 2026-10-16 10:17:00
 
 ## Summary
 
@@ -43,9 +43,10 @@ Source inventory was not detected in this scan. Verify repository scope and reru
 
 ## Architecture
 
-- Primary architectural style appears to be no-api-surface. (evidence: ev-0055)
-- Detected framework signals: ASP.NET Core. (evidence: ev-0055)
+Generated C4 Mermaid diagrams:
 
+- [C4 Context](diagrams/c4-context.md)
+- [C4 Container](diagrams/c4-container.md)
 ## Key Components
 
 _Components not yet cataloged. Scan codebase for module structure._
@@ -116,8 +117,8 @@ This documentation set covers the following areas. Start with the artifact most 
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: eed63d1
-- Generated At: 2026-03-11T14:45:38-04:00
+- Commit Hash: 26e9016
+- Generated At: 2026-10-16T10:17:09-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

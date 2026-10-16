@@ -1,6 +1,6 @@
 # Data Model Catalog
 
-**Generated**: 2026-03-11 14:45:21
+**Generated**: 2026-10-16 10:16:52
 
 ## Summary
 
@@ -51,8 +51,8 @@ Concrete example instances were not extracted automatically. Derive practical ex
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: eed63d1
-- Generated At: 2026-03-11T14:45:38-04:00
+- Commit Hash: 26e9016
+- Generated At: 2026-10-16T10:17:09-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed
