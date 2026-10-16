@@ -7,7 +7,7 @@ function Get-AppDocArtifactContract {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
-        [ValidateSet("overview","api-inventory","data-model","config-catalog","build-cookbook","test-catalog","debt-register","dependencies-catalog")]
+        [ValidateSet("overview","api-inventory","data-model","config-catalog","build-cookbook","test-catalog","debt-register","dependencies-catalog","start-here","task-guides","index")]
         [string]$Artifact
     )
 
@@ -43,6 +43,18 @@ function Get-AppDocArtifactContract {
         "dependencies-catalog" = @{
             requiredSections = @("Summary","Dependency Summary")
             requiredEvidenceKeys = @("dependencies")
+        }
+        "start-here" = @{
+            requiredSections = @("Who This Is For","15-Minute Orientation","Role-Based Paths","System Signals")
+            requiredEvidenceKeys = @("summary","endpoints","models")
+        }
+        "task-guides" = @{
+            requiredSections = @("Executive Summary","Task Guides","Operational Checklist")
+            requiredEvidenceKeys = @("tasks","summary")
+        }
+        "index" = @{
+            requiredSections = @("Reader Paths")
+            requiredEvidenceKeys = @("artifacts")
         }
     }
 
