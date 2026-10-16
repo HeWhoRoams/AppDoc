@@ -6,42 +6,74 @@
     "includeFixtures": false,
     "includeTests": false,
     "excludePatterns": [
-      "(?:^|[\\/])\\.git(?:[\\/]|$)",
-      "(?:^|[\\/])node_modules(?:[\\/]|$)",
-      "(?:^|[\\/])bower_components(?:[\\/]|$)",
-      "(?:^|[\\/])bin(?:[\\/]|$)",
-      "(?:^|[\\/])obj(?:[\\/]|$)",
-      "(?:^|[\\/])target(?:[\\/]|$)",
-      "(?:^|[\\/])build(?:[\\/]|$)",
-      "(?:^|[\\/])dist(?:[\\/]|$)",
-      "(?:^|[\\/])__pycache__(?:[\\/]|$)",
-      "(?:^|[\\/])\\.venv(?:[\\/]|$)",
-      "(?:^|[\\/])\\.tox(?:[\\/]|$)",
-      "(?:^|[\\/])docuwriter(?:[\\/]|$)",
-      "(?:^|[\\/])generated-doc(?:[\\/]|$)",
-      "(?:^|[\\/])(?:test|tests|spec|specs)(?:[\\/]|$)",
-      "(?:^|[\\/])[^\\/]*(?:\.Tests?|Tests?|Testing)(?:[\\/]|$)",
-      "(?:^|[\\/])__tests__(?:[\\/]|$)",
-      "(?:^|[\\/])__mocks__(?:[\\/]|$)",
-      "(?:^|[\\/])(?:fixture|fixtures)(?:[\\/]|$)",
-      "(?:^|[\\/])(?:mock|mocks)(?:[\\/]|$)",
-      "(?:^|[\\/])(?:sample|samples|example|examples)(?:[\\/]|$)"
-    ],
-    "artifactProfiles": {
-      "default": {},
-      "overview": {},
-      "start-here": {},
-      "api-inventory": {},
-      "data-model": {},
-      "config-catalog": {},
-      "test-catalog": {
-        "includeTests": true,
-        "includeFixtures": false
-      },
-      "build-cookbook": {},
-      "dependencies-catalog": {},
-      "debt-register": {},
-      "dependency-graph": {}
+      "(?:^|\\\\)\\.git(?:\\\\|$)",
+      "(?:^|\\\\)node_modules(?:\\\\|$)",
+      "(?:^|\\\\)bower_components(?:\\\\|$)",
+      "(?:^|\\\\)bin(?:\\\\|$)",
+      "(?:^|\\\\)obj(?:\\\\|$)",
+      "(?:^|\\\\)target(?:\\\\|$)",
+      "(?:^|\\\\)build(?:\\\\|$)",
+      "(?:^|\\\\)dist(?:\\\\|$)",
+      "(?:^|\\\\)__pycache__(?:\\\\|$)",
+      "(?:^|\\\\)\\.venv(?:\\\\|$)",
+      "(?:^|\\\\)\\.tox(?:\\\\|$)",
+      "(?:^|\\\\)\\.appdoc(?:\\\\|$)",
+      "(?:^|\\\\)docuwriter(?:\\\\|$)",
+      "(?:^|\\\\)docs?(?:\\\\|$)",
+      "(?:^|\\\\)generated-doc(?:\\\\|$)",
+      "(?:^|\\\\)(?:test|tests|spec|specs)(?:\\\\|$)",
+      "(?:^|\\\\)[^\\\\]*(?:\\.Tests?|Tests?|Testing)(?:\\\\|$)",
+      "(?:^|\\\\)__tests__(?:\\\\|$)",
+      "(?:^|\\\\)__mocks__(?:\\\\|$)",
+      "(?:^|\\\\)(?:fixture|fixtures)(?:\\\\|$)",
+      "(?:^|\\\\)(?:mock|mocks)(?:\\\\|$)",
+      "(?:^|\\\\)(?:sample|samples|example|examples)(?:\\\\|$)"
+    ]
+  },
+  "artifactProfiles": {
+    "default": {},
+    "overview": {
+      "includeTests": false,
+      "includeFixtures": false
+    },
+    "start-here": {
+      "includeTests": false,
+      "includeFixtures": false
+    },
+    "api-inventory": {
+      "includeTests": false,
+      "includeFixtures": false
+    },
+    "data-model": {
+      "includeTests": false,
+      "includeFixtures": false
+    },
+    "config-catalog": {
+      "includeTests": false,
+      "includeFixtures": false,
+      "excludePatterns": [
+        "(?i)\\.properties$"
+      ]
+    },
+    "test-catalog": {
+      "includeTests": true,
+      "includeFixtures": false
+    },
+    "build-cookbook": {
+      "includeTests": false,
+      "includeFixtures": false
+    },
+    "dependencies-catalog": {
+      "includeTests": false,
+      "includeFixtures": false
+    },
+    "debt-register": {
+      "includeTests": false,
+      "includeFixtures": false
+    },
+    "dependency-graph": {
+      "includeTests": false,
+      "includeFixtures": false
     }
   }
 }

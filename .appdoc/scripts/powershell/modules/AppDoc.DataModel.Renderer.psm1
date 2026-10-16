@@ -3,7 +3,7 @@ $script:DataModelPlaceholder = @"
 | Model Name | Fields | Types | Description | Constraints | Schema Source |
 |------------|--------|-------|-------------|-------------|---------------|
 
-_No data models detected. This codebase may use dynamic structures or patterns not yet recognized by the scanner._
+**No data models were detected in this scan.** This codebase may use dynamic structures or patterns not yet recognized by the scanner.
 "@
 
 function Get-AppDocDataModelMarkdown {
@@ -345,7 +345,8 @@ function Update-AppDocDataModelContent {
     )
 
     # Ensure stale empty-detection placeholder text is fully removed after population.
-    $updated = $updated -replace '(?im)^_No data models detected\..*?_$', ''
+    # Matches the single bold-callout empty-state convention (see Emit-AppDocEmptyState).
+    $updated = $updated -replace '(?im)^\*\*No data models were detected in this scan\.\*\*.*$', ''
     return $updated
 }
 

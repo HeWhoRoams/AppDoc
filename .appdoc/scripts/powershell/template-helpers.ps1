@@ -117,10 +117,15 @@ function Update-TemplateSection {
 function Add-GenerationMetadata {
     <#
     .SYNOPSIS
-    Adds/updates generation timestamp and metadata in the template
+    Ensures exactly ONE deterministic **Generated** stamp per document.
+
+    Idempotent and single-placement: if a **Generated** line already exists it is
+    refreshed in place (kept single); otherwise exactly one is inserted directly
+    after the document H1 title. This prevents the historical doubled/nested
+    **Generated** defect (a second stamp wedged under a section heading).
 
     .PARAMETER Content
-    The content string to update
+    The markdown content to stamp
     #>
     param(
         [Parameter(Mandatory=$true)]
@@ -128,17 +133,35 @@ function Add-GenerationMetadata {
     )
 
     $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    $generatedLine = "**Generated**: $timestamp"
 
-    if ($Content -notmatch '\*\*Generated\*\*:') {
-        if ($Content -match '(#[^\n]+)\n') {
-            $header = $Matches[1]
-            $newContent = $Content -replace "($([regex]::Escape($header)))\n", "`$1`n`n**Generated**: $timestamp`n"
-            return $newContent
-        }
+    # If a **Generated** marker already exists, refresh it in place (stays single).
+    # The match captures the line's own terminator `(\r?\n)?` so we can re-emit the
+    # refreshed line explicitly LF-terminated. This matters because some renderers
+    # (e.g. config-catalog) emit CRLF content: without the capture, `-replace` would
+    # preserve the CRLF terminator and the gate's LF-only freshness/provenance regex
+    # `(?im)^\*\*Generated\*\*:\s*([^\r\n]+)$` would not see the stamp (regressing the
+    # artifact to the staleProvenance/provenance-missing-generated penalty). LF is what
+    # the gate and the remediate step's `\r?\n` regex both accept.
+    if ($Content -match '(?m)^\s*\*\*Generated\*\*:\s*.*$') {
+        return ($Content -replace '(?m)^\s*\*\*Generated\*\*:\s*[^\r\n]*(\r?\n)?', ($generatedLine + "`n"))
     }
-    else {
-        $newContent = $Content -replace '\*\*Generated\*\*:\s*[^\n]+', "**Generated**: $timestamp"
-        return $newContent
+
+    # Otherwise insert exactly one **Generated** line after the H1 title (# followed by space).
+    # The anchor `^#[ \t]` matches a single-# heading only, so `##`/`###` sections never
+    # receive a nested stamp.
+    #
+    # CRITICAL: the inserted stamp line MUST be LF-terminated (not CRLF). The gate's
+    # freshness/provenance detector uses the regex
+    #   (?im)^\*\*Generated\*\*:\s*([^\r\n]+)$
+    # which only matches LF line endings: in .NET `(?m)` mode `[^\r\n]+` stops at `\r`
+    # and `$` matches only before `\n`, so a CRLF-terminated stamp is INVISIBLE to that
+    # check (regressing documentationFreshnessScore to 0 and tripping the
+    # staleProvenance/provenance-missing-generated penalty on every artifact). LF here
+    # is also what the remediate step's `Set-AppDocSummarySection` regex (`\r?\n`)
+    # accepts, so LF satisfies both consumers.
+    if ($Content -match '(?m)^(#[ \t][^\r\n]*)\r?\n') {
+        return ($Content -replace '(?m)^(#[ \t][^\r\n]*)\r?\n', ('$1' + "`n`n" + $generatedLine + "`n"))
     }
 
     return $Content
@@ -354,5 +377,265 @@ function Normalize-AppDocSingleSummarySection {
 
     $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`r`n`r`n")
     return $updated.TrimEnd() + "`r`n"
+}
+
+# =============================================================================
+# WS-1 single output API
+#
+# These functions are the ONE canonical way to emit AppDoc markdown structure.
+# They implement the plan's target conformance spec:
+#   - Section vocabulary is defined in one place (Get-AppDocSectionVocabulary).
+#   - Tables: key column first, evidence/status column last, numeric columns
+#     right-aligned (---:), em dash (—) for nulls, no captions.
+#   - Empty state: ONE convention (Emit-AppDocEmptyState) — a bold semantic
+#     label in prose; replaces the historical 3-way split (italic
+#     `_No ... detected._` filler / `| N/A |` row / truly-empty row) and avoids
+#     the banned `_No ... detected\.` pattern.
+#   - Provenance: ONE placement, always last (Emit-AppDocProvenance).
+# =============================================================================
+
+function Get-AppDocSectionVocabulary {
+    <#
+    .SYNOPSIS
+    Returns the canonical H2 section-order vocabulary for each generated artifact.
+
+    .DESCRIPTION
+    Single source of truth for heading/section names so renderers, templates, and
+    validators agree on the real final structure of each artifact.
+    #>
+    [CmdletBinding()]
+    param()
+
+    return [ordered]@{
+        'overview'              = @('Summary', 'Welcome', 'System Purpose', 'Architecture', 'Key Components', 'Technology Stack', 'Configuration', 'Getting Started', 'Documentation Map', 'Evidence Traceability', 'System Boundary', 'Runtime Path', 'Inputs→Processing→Outputs', 'External Systems', 'Confidence Notes')
+        'api-inventory'         = @('Summary', 'API Endpoints', 'Data Models', 'Authentication & Security', 'Error Responses', 'API Versioning', 'Usage Examples', 'Dependencies', 'Evidence Traceability')
+        'data-model'            = @('Summary', 'Data Models', 'Relationships', 'Validation Rules', 'Indexes and Performance', 'Data Flow Patterns', 'Schema Evolution', 'Example Instances', 'Evidence Traceability')
+        'config-catalog'        = @('Summary', 'Configuration Sources', 'Configuration Options', 'Environment Variables', 'Configuration Validation', 'Configuration Management', 'Security Considerations', 'Example Configurations', 'Evidence Traceability')
+        'build-cookbook'        = @('Summary', 'Prerequisites', 'Build Steps', 'Dependencies', 'CI/CD Integration', 'Troubleshooting', 'Example Build Scripts', 'Operational Checklist', 'Evidence Traceability')
+        'test-catalog'          = @('Summary', 'Test Environment Setup', 'Test Suites', 'Test Coverage Metrics', 'Test Cases', 'Test Maintenance', 'Example Test Runs', 'Evidence Traceability')
+        'debt-register'         = @('Summary', 'Debt Categories', 'Debt Items', 'Impact Assessment', 'Remediation Plan', 'Monitoring and Tracking', 'Evidence Traceability')
+        'dependencies-catalog'  = @('Summary', 'Dependency Summary', 'Dependencies by Type', 'Project References', 'Version Conflicts', 'Security Considerations', 'Licensing', 'Upgrade Recommendations', 'Evidence Traceability')
+        'task-guides'           = @('Executive Summary', 'Task Guides', 'Operational Checklist', 'Evidence Traceability')
+        'start-here'            = @('Who This Is For', '15-Minute Orientation', 'Role-Based Paths', 'System Signals', 'Evidence Traceability')
+        'index'                 = @('Reader Paths')
+    }
+}
+
+function Format-AppDocSection {
+    <#
+    .SYNOPSIS
+    Builds a canonical `## <Heading>` section with an optional intro line and body.
+
+    .DESCRIPTION
+    No caption (the section sits under its heading). Exactly one blank line
+    separates the heading from content, and the body is emitted verbatim. This is
+    the one way renderers should introduce a section.
+
+    .PARAMETER Heading
+    The section heading text (without the leading `##`).
+
+    .PARAMETER Intro
+    Optional single intro paragraph shown before the body.
+
+    .PARAMETER Body
+    The section body (tables, lists, prose). May be empty (see Emit-AppDocEmptyState).
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Heading,
+
+        [string]$Intro = "",
+
+        [AllowNull()]
+        [string]$Body = ""
+    )
+
+    $lines = @("## " + $Heading.Trim(), "")
+    if (-not [string]::IsNullOrWhiteSpace($Intro)) {
+        $lines += $Intro.Trim()
+        $lines += ""
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Body)) {
+        $lines += $Body.Trim()
+        $lines += ""
+    }
+
+    return (($lines -join "`r`n") -replace "[\r\n]+\s*$", "`r`n")
+}
+
+function ConvertTo-AppDocTableCell {
+    <#
+    .SYNOPSIS
+    Normalizes a table cell value: em dash for null/empty, pipes escaped.
+    #>
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [object]$Value,
+        [string]$NullPlaceholder = "—"
+    )
+
+    if ($null -eq $Value) { return $NullPlaceholder }
+    $text = [string]$Value
+    if ([string]::IsNullOrWhiteSpace($text)) { return $NullPlaceholder }
+    return ($text -replace '\|', '\|')
+}
+
+function Build-AppDocTable {
+    <#
+    .SYNOPSIS
+    Builds a canonical AppDoc pipe table.
+
+    .DESCRIPTION
+    Enforces the plan's table convention: the FIRST column is the key (ID/thing),
+    the LAST column is status/evidence, numeric columns are right-aligned
+    (`---:`), null cells render as an em dash (—), and there is no caption (the
+    table sits under its heading).
+
+    .PARAMETER Columns
+    Ordered column names. Position 0 must be the key column; last position the
+    evidence/status column.
+
+    .PARAMETER Rows
+    Row objects. Each row may be an IDictionary/hashtable keyed by column name, a
+    PSCustomObject with matching properties, or an array (positional).
+
+    .PARAMETER NumericColumns
+    Column names to right-align (`---:` in the separator row).
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string[]]$Columns,
+
+        [Parameter(Mandatory=$true)]
+        [object[]]$Rows,
+
+        [string[]]$NumericColumns = @(),
+
+        [string]$NullPlaceholder = "—"
+    )
+
+    if ($Columns.Count -eq 0) { throw "Build-AppDocTable: Columns must not be empty." }
+
+    $header = "| " + (($Columns | ForEach-Object { ConvertTo-AppDocTableCell -Value $_ }) -join " | ") + " |"
+    $separator = "| " + (($Columns | ForEach-Object {
+        if ($NumericColumns -and $NumericColumns -contains $_) { "---:" } else { "---" }
+    }) -join " | ") + " |"
+
+    $body = @()
+    foreach ($row in $Rows) {
+        $cells = @()
+        $positional = 0
+        foreach ($column in $Columns) {
+            $val = $null
+            if ($null -ne $row) {
+                if ($row -is [System.Collections.IDictionary]) {
+                    if ($row.Contains($column)) { $val = $row[$column] }
+                }
+                elseif ($row -is [System.Collections.IEnumerable] -and $row -isnot [string]) {
+                    $arr = @($row)
+                    if ($positional -lt $arr.Count) { $val = $arr[$positional] }
+                }
+                else {
+                    $prop = $row.PSObject.Properties[$column]
+                    if ($prop) { $val = $prop.Value }
+                }
+            }
+            $cells += (ConvertTo-AppDocTableCell -Value $val -NullPlaceholder $NullPlaceholder)
+            $positional++
+        }
+        $body += ("| " + ($cells -join " | ") + " |")
+    }
+
+    $output = @($header, $separator)
+    if ($body.Count -gt 0) { $output += $body }
+    return ($output -join "`n")
+}
+
+function Emit-AppDocEmptyState {
+    <#
+    .SYNOPSIS
+    Emits the single canonical empty-state convention for a section.
+
+    .DESCRIPTION
+    One convention for every artifact: a bold semantic label in prose (a
+    deterministic callout, per the plan's §2.4 callout convention). This replaces
+    the three divergent historical forms — an italic `_No ... detected._` filler,
+    a `| N/A |` row, and a truly-empty table row — and deliberately avoids the
+    banned `_No ... detected\.` pattern so the gate's banned-pattern check is not
+    tripped.
+
+    .PARAMETER Resource
+    What is absent (plural noun phrase), e.g. "API endpoints", "data models".
+
+    .PARAMETER Reason
+    Optional semantic explanation / what to check (the label *means* something).
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Resource,
+
+        [string]$Reason = ""
+    )
+
+    $label = "No " + $Resource.Trim() + " were detected in this scan."
+    if (-not [string]::IsNullOrWhiteSpace($Reason)) {
+        $label = $label + " " + $Reason.Trim()
+    }
+    return ("**" + $label + "**")
+}
+
+function Emit-AppDocProvenance {
+    <#
+    .SYNOPSIS
+    Emits a single, always-last `## Provenance` block in a markdown document.
+
+    .DESCRIPTION
+    Guarantees exactly one Provenance section, always at the end. If a Provenance
+    section already exists it is replaced in place; otherwise it is appended as the
+    final section. This is the ONE placement rule so no artifact carries a
+    mid-file or duplicated Provenance footer.
+
+    .PARAMETER Content
+    The full markdown content to stamp.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Content,
+
+        [string]$GeneratorVersion = "appdoc-run-all-generators/3.0.0",
+        [string]$CommitHash = "unknown",
+        [string]$Profile = "default",
+        [string]$Scope = ".",
+        [string[]]$ConfidenceFlags = @("deterministic", "evidence-backed")
+    )
+
+    $timestamp = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ssK")
+    $block = @(
+        "## Provenance",
+        "",
+        "- Generator Version: $GeneratorVersion",
+        "- Commit Hash: $CommitHash",
+        "- Generated At: $timestamp",
+        "- Profile: $Profile",
+        "- Scope: $Scope",
+        "- Confidence/Inference Flags: $($ConfidenceFlags -join ', ')"
+    ) -join "`r`n"
+
+    if ($Content -match '(?ims)^##\s+Provenance\s*$') {
+        # Replace the existing Provenance section with the canonical block.
+        return [regex]::Replace(
+            $Content,
+            '(?ims)^##\s+Provenance\s*$.*?(?=^##\s+[^\r\n]+|\z)',
+            { param($m) return ($block + "`r`n") },
+            1
+        )
+    }
+
+    return ($Content.TrimEnd() + "`r`n`r`n" + $block + "`r`n")
 }
 

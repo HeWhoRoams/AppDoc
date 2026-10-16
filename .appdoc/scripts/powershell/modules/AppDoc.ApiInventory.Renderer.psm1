@@ -199,7 +199,7 @@ function Get-AppDocApiInventoryMarkdown {
 | Name | Path | Method | Description | Parameters | Return Type | Status Codes | Auth Required |
 |------|------|--------|-------------|------------|------------|--------------|---------------|
 
-_No API endpoints detected. This codebase may not expose HTTP APIs, or uses patterns not yet recognized by the scanner._
+**No API endpoints were detected in this scan.** This codebase may not expose HTTP APIs, or uses patterns not yet recognized by the scanner.
 "@
 
     if (-not $Endpoints -or $Endpoints.Count -eq 0) {

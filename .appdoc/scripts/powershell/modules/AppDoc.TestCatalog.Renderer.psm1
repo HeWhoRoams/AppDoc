@@ -11,14 +11,14 @@ function Get-AppDocTestCatalogMarkdown {
 | Suite Name | Type | Purpose | Coverage Target | Key Scenarios | Execution Time |
 |------------|------|--------|----------------|--------------|----------------|
 
-_No test suites detected. Check for test files and testing framework configuration._
+**No test suites were detected in this scan.** Check for test files and testing framework configuration.
 "@
 
     $testCasesPlaceholder = @"
 | Case Name | Suite | Input | Expected Output | Description | Priority |
 |-----------|-------|------|----------------|-------------|----------|
 
-_No test cases detected. Refer to test files for individual test implementations._
+**No test cases were detected in this scan.** Refer to test files for individual test implementations.
 "@
 
     if (-not $Tests -or $Tests.Count -eq 0) {

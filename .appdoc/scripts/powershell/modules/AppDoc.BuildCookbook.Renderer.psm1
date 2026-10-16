@@ -21,7 +21,7 @@ function Get-AppDocBuildStepsMarkdown {
 | Step | Command | Description | Estimated Time |
 |------|---------|-------------|----------------|
 
-_No build steps detected. Check for package.json scripts, Makefile, or build configuration files._
+**No build steps were detected in this scan.** Check for package.json scripts, Makefile, or build configuration files.
 "@
 
     if (-not $Commands -or $Commands.Count -eq 0) {

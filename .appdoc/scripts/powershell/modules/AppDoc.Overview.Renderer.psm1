@@ -329,13 +329,16 @@ function Get-AppDocOverviewWelcomeMarkdown {
         [object]$WelcomeNarrative = $null
     )
 
+    # WS-1 dedup: `external_systems` and `confidence_notes` are also emitted as
+    # standalone H2 sections (`## External Systems`, `## Confidence Notes`) which the
+    # overview validator requires. Rendering them again as Welcome H3 subsections
+    # produced duplicated sections in overview.md. They are now owned by the H2
+    # sections; Welcome keeps only the orientation-specific subsections.
     $sectionOrder = @(
         "what_it_does",
         "inputs",
         "processing_steps",
-        "outputs",
-        "external_systems",
-        "confidence_notes"
+        "outputs"
     )
 
     $titleMap = @{
@@ -343,8 +346,6 @@ function Get-AppDocOverviewWelcomeMarkdown {
         'inputs'            = 'Inputs'
         'processing_steps'  = 'Processing Steps'
         'outputs'           = 'Outputs'
-        'external_systems'  = 'External Systems'
-        'confidence_notes'  = 'Confidence Notes'
     }
 
     $lines = @("## Welcome")

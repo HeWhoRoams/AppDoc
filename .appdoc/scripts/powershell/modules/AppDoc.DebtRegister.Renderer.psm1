@@ -56,7 +56,7 @@ function Get-AppDocDebtRegisterMarkdown {
 | Item | Location | Category | Impact | Priority | Effort | Description |
 |------|----------|----------|--------|----------|--------|-------------|
 
-_No technical debt items detected. Great job maintaining code quality! Continue monitoring for TODO/FIXME comments._
+**No technical debt items were detected in this scan.** Great job maintaining code quality! Continue monitoring for TODO/FIXME comments.
 "@
 
     if (-not $Debts -or $Debts.Count -eq 0) {

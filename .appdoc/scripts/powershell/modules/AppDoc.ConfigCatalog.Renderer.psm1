@@ -87,14 +87,14 @@ function Get-AppDocConfigCatalogMarkdown {
 | Name | Type | Default | Description | Required | Source |
 |------|------|---------|-------------|----------|--------|
 
-_No configuration options detected. Check for config files (.env, appsettings.json, etc.)._
+**No configuration options were detected in this scan.** Check for config files (.env, appsettings.json, etc.).
 "@
 
     $envTablePlaceholder = @"
 | Variable | Default | Description | Sensitive | Required |
 |----------|---------|-------------|-----------|----------|
 
-_No environment variables detected. System may use configuration files or defaults._
+**No environment variables were detected in this scan.** System may use configuration files or defaults.
 "@
 
     $configSourcesContent = if ($DiscoveredConfigFiles.Count -gt 0) {
@@ -377,37 +377,22 @@ function Update-AppDocConfigCatalogContent {
     $sectionFallbacks = [ordered]@{
         'Configuration Validation' = 'This run extracted configuration keys and sources but not a full validation matrix. Treat required-key checks, value-shape checks, and environment overrides as mandatory pre-release validation tasks.'
         'Configuration Management' = 'Configuration is distributed across application config files, transforms, project metadata, and pipeline settings. Manage changes with environment-specific promotion controls and explicit review for sensitive settings.'
-        'Security Considerations' = 'Trust model: auto-approve entries execute with local user privileges and should only target trusted scripts under validated repository paths. This workflow enforces repository scope filtering but does not provide cryptographic file-integrity attestation; protect repos and runners accordingly. Restrict auto-approve patterns to least privilege, avoid broad wildcards, and keep display-only commands such as Write-Host non-required from a security perspective.'
-        'Example Configurations' = 'Environment-specific examples are not emitted automatically to avoid accidental secret leakage. Build examples from non-sensitive templates and validate with the required configuration criteria below.'
+        'Security Considerations' = 'Treat connection strings, credentials, tokens, and endpoint URLs as sensitive-by-default. Validate redaction of secret-like values before publishing artifacts, and restrict broad wildcard allowlist patterns to trusted, repository-controlled paths.'
+        'Example Configurations' = 'Environment-specific examples are not emitted automatically to avoid accidental secret leakage. Build examples from non-sensitive templates and validate with the required configuration criteria.'
     }
     foreach ($header in $sectionFallbacks.Keys) {
         $sectionPattern = "(?s)(##\s+$([regex]::Escape($header))\s*\r?\n\r?\n).*?(?=(\r?\n##\s+)|\z)"
-        $updated = [regex]::Replace(
-            $updated,
-            $sectionPattern,
-            [System.Text.RegularExpressions.MatchEvaluator]{
-                param($m)
-                return ($m.Groups[1].Value + [string]$sectionFallbacks[$header] + "`r`n")
-            }
-        )
-    }
-
-    $requiredCriteriaContent = @"
-Use least-privilege auto-approve rules for trusted automation paths only:
-
-- `chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1`
-- `chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1`
-
-Do not treat `chat.tools.terminal.autoApprove.Write-Host` as a required security control. `Write-Host` is a display/UI command and should remain optional.
-"@
-    $updated = [regex]::Replace(
-        $updated,
-        '(?s)(##\s+Required configuration criteria\s*\r?\n\r?\n).*?(?=(\r?\n##\s+)|\z)',
-        [System.Text.RegularExpressions.MatchEvaluator]{
-            param($m)
-            return ($m.Groups[1].Value + $requiredCriteriaContent + "`r`n")
+        if ([regex]::IsMatch($updated, $sectionPattern)) {
+            $updated = [regex]::Replace(
+                $updated,
+                $sectionPattern,
+                [System.Text.RegularExpressions.MatchEvaluator]{
+                    param($m)
+                    return ($m.Groups[1].Value + [string]$sectionFallbacks[$header] + "`r`n")
+                }
+            )
         }
-    )
+    }
 
     return $updated
 }

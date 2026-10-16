@@ -1,5 +1,6 @@
 # System Overview
 
+**Generated**: [GENERATED_AT]
 
 ## Welcome
 
@@ -49,6 +50,20 @@ This documentation set covers the following areas. Start with the artifact most 
 | [Test Catalog](test-catalog.md) | Test suites and coverage | Running tests or assessing coverage |
 | [Technical Debt Register](debt-register.md) | Known issues and improvement opportunities | Planning a refactoring or debt sprint |
 | [Dependencies Catalog](dependencies-catalog.md) | External packages and libraries | Assessing dependency risk or planning upgrades |
+
+<!-- MANUAL_SECTION_START: overview-notes -->
+<!-- Add project-specific notes here - this section is preserved during regeneration. -->
+<!-- MANUAL_SECTION_END: overview-notes -->
+
+## Evidence Traceability
+
+| Field | Value |
+|------|-------|
+| Evidence Artifact | evidence/overview.evidence.json |
+| Record Count | — |
+| Generator | generate-overview.ps1 |
+| Required Evidence Keys | summary, technologies |
+| Grounding Mode | Deterministic extraction records |
 
 ---
 
