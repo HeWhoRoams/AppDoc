@@ -264,11 +264,15 @@ function Get-AppDocConfigSourceFiles {
         }
     }
 
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "config-catalog" -Include $Include)
-    }
+    # Discover config source files cross-platform. Configuration legitimately lives in
+    # hidden (dot) directories -- e.g. .github/workflows/*.yml (CI pipeline config) and
+    # .vscode/settings.json -- so -Force is required; on non-Windows hosts Get-ChildItem
+    # skips dot-directories otherwise and the config catalog would come up empty even
+    # though in-scope config sources exist. The scope policy still applies (tests/,
+    # fixtures/, .appdoc/, docs/ and other excluded paths are filtered below), so this
+    # only surfaces real, in-scope configuration.
+    $files = @(Get-ChildItem -Path $RootPath -Recurse -File -Force -Include $Include -ErrorAction SilentlyContinue)
 
-    $files = @(Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $Include -ErrorAction SilentlyContinue)
     if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {
         return @(
             $files | Where-Object {

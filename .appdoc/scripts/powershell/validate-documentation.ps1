@@ -1797,6 +1797,35 @@ $result = [ordered]@{
 $jsonOutPath = Join-Path $RootPath "tmp\logs\validate-documentation.out.json"
 $result | ConvertTo-Json -Depth 20 | Out-File -FilePath $jsonOutPath -Encoding UTF8
 
+# Write the CANONICAL validation report to docs/validation-report.json. This is the
+# authoritative, committed validation result (referenced by the prompts, the
+# provenance policy gate, and the companion-summary generator). It must be rewritten
+# on every run so the three committed reports (quality-report.json, validation-report.json,
+# diagnostics-report.json) come from the SAME run and agree. The provenance block below
+# is self-contained (computed here) so the canonical report is internally consistent
+# regardless of whether the root-level provenance footer is applied by the orchestrator.
+$reportCommitHash = "unknown"
+try {
+    $reportCommitHash = (& git -C $RootPath rev-parse --short HEAD 2>$null | Out-String).Trim()
+    if ([string]::IsNullOrWhiteSpace($reportCommitHash)) { $reportCommitHash = "unknown" }
+}
+catch {
+    $reportCommitHash = "unknown"
+}
+$reportProvenance = [ordered]@{
+    generatorVersion = "appdoc-validate-documentation/3.0.0"
+    commitHash = $reportCommitHash
+    generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
+    profile = "default"
+    scope = "."
+    confidenceInferenceFlags = @("deterministic", "evidence-backed")
+}
+$canonicalReport = [ordered]@{}
+foreach ($key in $result.Keys) { $canonicalReport[$key] = $result[$key] }
+$canonicalReport["provenance"] = $reportProvenance
+$canonicalReportPath = Join-Path $docsPath "validation-report.json"
+$canonicalReport | ConvertTo-Json -Depth 20 | Out-File -FilePath $canonicalReportPath -Encoding UTF8
+
 if (Get-Command Export-AppDocDiagnostics -ErrorAction SilentlyContinue) {
     Export-AppDocDiagnostics -Path (Join-Path $docsPath "validation-diagnostics.json") -AdditionalData @{ validation = $result } | Out-Null
 }

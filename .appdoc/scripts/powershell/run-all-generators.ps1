@@ -1514,6 +1514,21 @@ $reportData = @{
     penaltyBreakdown = @{}
 }
 
+# Stamp root provenance on the generated artifacts BEFORE structured validation runs.
+# The provenance-missing policy gate requires every critical artifact to carry a
+# Provenance footer (Generator Version / Commit Hash / Generated At / Profile / Scope /
+# Confidence-flags). Stamping happens here, right after generation, so the validation
+# gate can verify it. The trailing re-application further down refreshes the timestamp
+# to the final run moment for the committed reports (idempotent; content is identical).
+try {
+    $provenanceProfileEarly = if ($activeProfile) { [string]$activeProfile.profile } else { [string]$Profile }
+    Set-AppDocRootProvenance -RootPath $RootPath -DocsPath $docsPath -Profile $provenanceProfileEarly
+    Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Root artifact provenance applied pre-validation" -Component "Generation" -FilePath $docsPath
+}
+catch {
+    Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to apply pre-validation provenance" -Component "Generation" -Details @{ exception = $_.Exception.Message }
+}
+
 $structuredValidationPath = Join-Path $PSScriptRoot "validate-documentation.ps1"
 $structuredValidationResult = $null
 if (Test-Path $structuredValidationPath) {

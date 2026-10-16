@@ -37,6 +37,12 @@ param(
 
 $modulesPath = Join-Path $PSScriptRoot "modules"
 Import-Module (Join-Path $modulesPath "C4ModelBuilder.psm1") -Force
+# Scope policy module (optional, but required for scope-aware .sln discovery so the
+# generator never models a test-fixture solution that lives under tests/ or fixtures/).
+$scopeModulePath = Join-Path $modulesPath "AppDoc.Scope.psm1"
+if (Test-Path $scopeModulePath) {
+    Import-Module $scopeModulePath -Force -ErrorAction SilentlyContinue
+}
 
 function ConvertTo-MermaidNodeId {
     param([string]$Text)
@@ -435,26 +441,66 @@ if ($CodebasePath -like "*.sln") {
     $solutionFile = $CodebasePath
 }
 else {
-    $slnFiles = Get-ChildItem -Path $CodebasePath -Filter "*.sln" -File -Recurse -ErrorAction SilentlyContinue
+    # Discover candidate solution files, then honor the scope policy so the C4 model
+    # never picks up a test-fixture .sln (e.g. tests/.../SampleApp.sln) and models an
+    # unrelated system. When the Scope module is available, keep only in-scope paths;
+    # otherwise fall back to the raw list.
+    $candidateSlnFiles = Get-ChildItem -Path $CodebasePath -Filter "*.sln" -File -Recurse -Force -ErrorAction SilentlyContinue
+    if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {
+        $slnFiles = @(
+            $candidateSlnFiles | Where-Object {
+                Test-AppDocPathIncluded -Path $_.FullName -RootPath $CodebasePath -Artifact "default"
+            }
+        )
+    }
+    else {
+        $slnFiles = @($candidateSlnFiles)
+    }
+
+    # Honest target name (the actual repository) used when no in-scope solution exists,
+    # so the placeholder models the real target instead of a generic or fixture system.
+    $targetSystemName = Split-Path -Path $CodebasePath -Leaf
+    if ([string]::IsNullOrWhiteSpace($targetSystemName) -or $targetSystemName -match '^[\\/:]$') {
+        $targetSystemName = "System"
+    }
+
     if ($slnFiles.Count -eq 0) {
-        Write-Warning "No solution file found in: $CodebasePath. Generating placeholder Mermaid diagrams."
+        Write-Warning ("No in-scope solution file found in: {0}. Generating an honest, repo-named C4 placeholder (no test-fixture solution will be modeled)." -f $CodebasePath)
+        $systemId = ConvertTo-MermaidNodeId -Text $targetSystemName
         $generatedFiles = @()
         if ($DiagramLevels -in @('Context', 'All')) {
             $contextOutput = Join-Path $diagramsPath "c4-context.md"
-            Save-MermaidMarkdown -FilePath $contextOutput -Title "C4 System Context" -Mermaid "C4Context`ntitle System Context`nPerson(user, `"User`", `"Primary caller`")`nSystem(system, `"System`", `"Application boundary`")`nRel(user, system, `"Uses`")" -Summary @(
-                "System detection unavailable (no solution file found)",
+            $contextMermaid = @"
+C4Context
+title $targetSystemName - System Context
+Person(user, "User", "Primary caller of the system")
+System($systemId, "$targetSystemName", "Software system: $targetSystemName (repository root; no in-scope .sln)")
+Rel(user, $systemId, "Uses")
+"@
+            Save-MermaidMarkdown -FilePath $contextOutput -Title "C4 System Context" -Mermaid $contextMermaid -Summary @(
+                "System: $targetSystemName (repository root)",
                 "External systems detected: 0",
-                "Scope: high-level system context"
+                "Note: no in-scope .NET solution file found; context reflects the repository itself"
             )
             $generatedFiles += "[C4 Context](diagrams/c4-context.md)"
         }
 
         if ($DiagramLevels -in @('Container', 'All')) {
             $containerOutput = Join-Path $diagramsPath "c4-container.md"
-            Save-MermaidMarkdown -FilePath $containerOutput -Title "C4 Container" -Mermaid "C4Container`ntitle Container View`nPerson(user, `"User`", `"Primary caller`")`nContainer(no_containers, `"No deployable containers detected`", `"N/A`", `"Detection fallback`")`nRel(user, no_containers, `"Inspects`")" -Summary @(
-                "System detection unavailable (no solution file found)",
+            $containerMermaid = @"
+C4Container
+title $targetSystemName - Container View
+Person(user, "User", "Primary caller of the system")
+System_Boundary(system_boundary, "$targetSystemName") {
+  Container(no_containers, "No deployable containers detected", "N/A", "No in-scope solution file")
+}
+Rel(user, no_containers, "Inspects")
+"@
+            Save-MermaidMarkdown -FilePath $containerOutput -Title "C4 Container" -Mermaid $containerMermaid -Summary @(
+                "System: $targetSystemName (repository root)",
                 "Containers detected: 0",
-                "Relationships detected: 0"
+                "Relationships detected: 0",
+                "Note: no in-scope .NET solution file found; no deployable containers detected"
             )
             $generatedFiles += "[C4 Container](diagrams/c4-container.md)"
         }
@@ -464,17 +510,17 @@ else {
             Update-OverviewArchitectureSection -OverviewPath $overviewPath -References $generatedFiles
         }
 
-        Write-Host "✓ Mermaid C4 placeholder diagram generation complete" -ForegroundColor Green
+        Write-Host "✓ Mermaid C4 placeholder diagram generation complete (honest no-solution output)" -ForegroundColor Green
         exit 0
     }
 
     if ($slnFiles.Count -gt 1) {
-        Write-Warning ("Multiple solution files found in $CodebasePath. The following .sln files were detected:")
+        Write-Warning ("Multiple in-scope solution files found in $CodebasePath. The following .sln files were detected:")
         $slnFiles | ForEach-Object { Write-Warning ("  - " + $_.FullName) }
-        Write-Warning ("Using the first solution file: $($slnFiles[0].FullName)")
+        Write-Warning ("Using the first in-scope solution file: $($slnFiles[0].FullName)")
     }
     $solutionFile = $slnFiles[0].FullName
-    Write-Host "Found solution: $($slnFiles[0].Name)" -ForegroundColor Green
+    Write-Host "Found in-scope solution: $($slnFiles[0].Name)" -ForegroundColor Green
 }
 
 $generatedFiles = @()
