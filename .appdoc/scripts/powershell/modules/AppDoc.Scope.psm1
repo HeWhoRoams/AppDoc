@@ -55,8 +55,7 @@ function Get-AppDocDefaultScopePolicy {
                 '(?:^|\\)__tests__(?:\\|$)',
                 '(?:^|\\)__mocks__(?:\\|$)',
                 '(?:^|\\)(?:fixture|fixtures)(?:\\|$)',
-                '(?:^|\\)(?:mock|mocks)(?:\\|$)',
-                '(?:^|\\)(?:sample|samples|example|examples)(?:\\|$)'
+                '(?:^|\\)(?:mock|mocks)(?:\\|$)'
             )
         }
         artifactProfiles = [ordered]@{

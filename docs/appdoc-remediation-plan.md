@@ -25,7 +25,7 @@ Every finding in the quality audit maps to a stage, a prompt instruction, or an 
 | Integration surfaces undocumented (SAP, Blackboard, WCF) | Med | Stage 2 — `integrationTargets` array; Stage 4 adds integration narrative |
 | Architecture fingerprint vs polish terminology mismatch | Med | Stage 4 — fingerprint read required; style contract constrains vocabulary |
 | Active vs legacy endpoint guidance absent | Med | Stage 2 — enricher assesses usage patterns; Stage 4 flags low-usage clients |
-| Cross-project roles unexplained (WorkbenchTesting etc.) | Low | Stage 2 — `projectRole` field per project; Stage 4 adds Project Map callout |
+| Cross-project roles unexplained (an internal test-harness project, etc.) | Low | Stage 2 — `projectRole` field per project; Stage 4 adds Project Map callout |
 | Inter-entity relationships absent from data-model | Med | Stage 2 — `relationships` array; Stage 4 writes domain narrative from it |
 | Schema/ORM linkage absent (`.edmx`, SQL scripts) | Med | Stage 2 — enricher surfaces schema files; Stage 3 lists them in data-model |
 | Operational service pattern undocumented (batch/queue) | Low-Med | Stage 2 — `operationalProfile` field; Stage 4 adds Operational Note |
@@ -394,7 +394,7 @@ vague integration mention in existing prose.
 
 If the enriched evidence contains projectRole fields for multiple projects,
 add a Project Map callout: one row per project with its role and purpose sentence.
-This makes CMich.WorkbenchTesting and similar projects visible and explained.
+This makes an internal test-harness project and similar projects visible and explained.
 
 If architecture fingerprint confidence is below 0.80, add a callout:
 "Architecture Confidence: [Low/Medium]" and include the confidenceNote from
@@ -478,7 +478,7 @@ scheduled), add an "Operational Note" callout in the relevant artifact:
   Pattern: <batch|queue|scheduled>
   Trigger: <what starts it>
   Notes: <operational behaviour>
-This applies to services like ProcessingService in LmsConnect — operators and
+This applies to services like ProcessingService in the CMS content-connector app — operators and
 on-call developers need to know how to reason about these components.
 
 [STYLE CONTRACT]
@@ -542,10 +542,10 @@ Add `role`, `businessPurpose`, `isGenerated`, `tier`, `confidence`, `confidenceN
 **Phase 2 — `appdoc.enrich.prompt.md`** *(new prompt, no code change)*  
 Write the enrichment prompt from the contract above. Test against all four existing repos before any code changes. The validation target for each repo:
 
-- academichistory: `SmtpServer` config key gets `tier: runtime`; zero tests get `testDiagnosis.zeroTestReason`; SAP library gets an `integrationTargets` entry.
-- LmsConnect-master: ProcessingService gets `operationalProfile`; Blackboard integration gets an `integrationTargets` entry; NHibernate entity classes get `role: Entity`.
-- CMich.CoreApi-master: All `RFCHelper_*` classes get `isGenerated: true`; fingerprint token `soap-client` written to enriched file header; `cmu-r3msl01.hosts.secure-24.net` hostname resolved in config.
-- DegreeAudit: `.edmx` file path written to at least one model's `schemaSource`; `EvaluationEngine.cs` gets `role: developer-authored` debt with high-severity business purpose; ViewModels separated from entities by `role`.
+- the academic-history module: `SmtpServer` config key gets `tier: runtime`; zero tests get `testDiagnosis.zeroTestReason`; SAP library gets an `integrationTargets` entry.
+- the CMS content-connector app: ProcessingService gets `operationalProfile`; Blackboard integration gets an `integrationTargets` entry; NHibernate entity classes get `role: Entity`.
+- the C# Core API app: All `RFCHelper_*` classes get `isGenerated: true`; fingerprint token `soap-client` written to enriched file header; the internal ERP/SAP hostname resolved in config.
+- the legacy C# MVC 5 app: `.edmx` file path written to at least one model's `schemaSource`; `EvaluationEngine.cs` gets `role: developer-authored` debt with high-severity business purpose; ViewModels separated from entities by `role`.
 
 **Phase 2.5 — Enricher validation gate** *(do not proceed to Phase 3 until all pass)*  
 Run the enricher output through this checklist for each repo:
@@ -603,15 +603,15 @@ Document the `appdoc.enrich` step in `README.md` alongside `appdoc.begin` and `a
 
 ## The Standard This Produces
 
-`CMich.CoreApi-master/docs/data-model.md` after this pipeline:
+`the-csharp-core-api-app/docs/data-model.md` after this pipeline:
 
-> **CMich.CoreApi** proxies 101 SAP RFC functions through a typed .NET façade. It has no user-facing features and no inbound endpoints — it is consumed by other services as a library.
+> **The C# Core API app** proxies 101 SAP RFC functions through a typed .NET façade. It has no user-facing features and no inbound endpoints — it is consumed by other services as a library.
 >
 > The codebase contains 27 developer-authored domain classes. The remaining 792 classes are auto-generated SAP RFC proxies catalogued separately below.
 
 Then a clean table of 27 classes, each with a `Role` column and a `Business Purpose` sentence written from source evidence — not a 819-row undifferentiated list.
 
-`DegreeAudit/docs/debt-register.md` after this pipeline, top of page:
+`the-legacy-csharp-mvc5-app/docs/debt-register.md` after this pipeline, top of page:
 
 > **Top Risk**
 > `EvaluationEngine.cs` (2,818 lines) contains the full degree audit rule engine in a single class with no unit tests. Any change here carries full-blast production risk.
@@ -627,8 +627,8 @@ That is the standard. The pipeline architecture above is what makes it repeatabl
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 8b13f8a
-- Generated At: 2026-10-16T11:56:04-04:00
+- Commit Hash: 85946f7
+- Generated At: 2026-10-17T18:41:14-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

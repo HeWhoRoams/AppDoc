@@ -4,7 +4,17 @@ param(
     [switch]$Strict,
     [ValidateRange(1,100)]
     [int]$Threshold = 80,
-    [switch]$Json
+    [switch]$Json,
+    # --- PRISTINE GATE (Deliverable B) — OPT-IN, default OFF ------------------
+    # -PristineGate OFF (DEFAULT): report-only — the pristine check is a DEPTH
+    #   measurement that NEVER blocks; pristineGate.enabled=false.
+    # -PristineGate ON (OPT-IN): the pristine check becomes a real gate that BLOCKS
+    #   the run when any section is EMPTY (emptyCount>0) OR pristine subScore < floor.
+    #   OWNER_REQUIRED cells are EXCLUDED (pending /appdoc.enhance, not failures).
+    # -PristineFloor: the floor the pristine sub-score must meet (default 80).
+    [switch]$PristineGate,
+    [ValidateRange(1,100)]
+    [int]$PristineFloor = 80
 )
 
 $diagnosticsModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagnostics.psm1"
@@ -40,6 +50,28 @@ Import-Module $validationCoreModule -Force -ErrorAction Stop
 
 if (Test-Path $architectureModule) {
     Import-Module $architectureModule -Force -ErrorAction Stop
+}
+
+$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
+if (Test-Path $helpersPath) { . $helpersPath }
+
+# Epistemic-tagging library (deterministic claim-status resolution + coverage).
+# Used by the conformance gate's three discipline sub-checks. Absent on older
+# checkouts is non-fatal: the sub-checks degrade to 0 and are reported.
+$epistemicModule = Join-Path $PSScriptRoot "modules\AppDoc.Epistemic.psm1"
+if (Test-Path $epistemicModule) {
+    Import-Module $epistemicModule -Force -ErrorAction SilentlyContinue
+}
+
+# Pristine-check library (Step 1b). Pure, deterministic per-section rubric that
+# scores the 20 composed sections against the HELP_DESK benchmark. It is imported
+# here to add a NON-BLOCKING, ADDITIVE `pristine` sub-score to the scorecard
+# (reported in docs/validation-report.json). It NEVER changes status (pass/fail)
+# or overallScore — the structural conformance composite below is untouched.
+$pristineModule = Join-Path $PSScriptRoot "modules\AppDoc.Pristine.psm1"
+$hasPristine = $false
+if (Test-Path $pristineModule) {
+    try { Import-Module $pristineModule -Force -ErrorAction SilentlyContinue; $hasPristine = (Get-Command Get-AppDocPristineAssessment -ErrorAction SilentlyContinue) -ne $null } catch { $hasPristine = $false }
 }
 
 $docsPath = Join-Path $RootPath "docs"
@@ -621,6 +653,176 @@ function Get-CodeRouteCount {
     return $count
 }
 
+# --- Framework-aware classic-ASP coverage (per-framework calibration) -----------
+# The composite's configCoverage/dataModelCoverage components were C#-calibrated
+# (appsettings.json keys / C# model classes) and score ~0 against a classic-ASP
+# target whose config + data-model artifacts are genuinely populated. These helpers
+# measure the classic-ASP artifacts as a documented/expected ratio (mirroring the
+# apiCoverage convention: min(documented,expected)/expected, 100 when expected==0).
+# They are only invoked when framework-detection.json reports Classic ASP /
+# ASP.NET Web Forms; every other framework keeps the C# path unchanged.
+
+function Get-AppDocIsClassicAspTarget {
+    param([string]$RootPath)
+    $fwPath = Join-Path $RootPath "docs\framework-detection.json"
+    if (-not (Test-Path $fwPath)) { return $false }
+    try { $fw = Get-Content $fwPath -Raw | ConvertFrom-Json -Depth 10 } catch { return $false }
+    $frameworks = @()
+    if ($fw -is [System.Collections.IEnumerable] -and $fw -isnot [string]) {
+        $frameworks = @($fw | ForEach-Object { [string]$_.framework } | Where-Object { $_ })
+    } else { $frameworks = @([string]$fw.framework) | Where-Object { $_ } }
+    return (($frameworks -contains "Classic ASP") -or ($frameworks -contains "ASP.NET Web Forms"))
+}
+
+function Test-AppDocClassicAspConnValue {
+    # Mirror of the datamodel extractor's Normalize-ConnValue so the gate's
+    # connection identity matches what data-model.md actually documents.
+    param([string]$Raw)
+    $dq = [char]34; $sq = [char]39
+    $v = if ([string]::IsNullOrWhiteSpace($Raw)) { "" } else { $Raw.Trim() }
+    while ($v.Length -ge 2) {
+        $first = $v.Substring(0, 1); $last = $v.Substring($v.Length - 1, 1)
+        if (($first -eq $dq -or $first -eq $sq) -and ($last -eq $first)) { $v = $v.Substring(1, $v.Length - 2) } else { break }
+    }
+    while ($v.Length -gt 0 -and ($v.Substring($v.Length - 1, 1) -eq $dq -or $v.Substring($v.Length - 1, 1) -eq $sq)) { $v = $v.Substring(0, $v.Length - 1) }
+    while ($v.Length -gt 0 -and ($v.Substring(0, 1) -eq $dq -or $v.Substring(0, 1) -eq $sq)) { $v = $v.Substring(1) }
+    $v = $v.Trim()
+    if ($v -match ' & ' -or $v -match '^\s*&' -or $v -match '"\s*&' -or $v -match '\s*&\s*$') { return "dynamic" }
+    if ($v.Length -gt 60) { return "dynamic" }
+    if ([string]::IsNullOrWhiteSpace($v)) { return "unknown" }
+    return $v
+}
+
+# Classic-ASP config surface = distinct config keys in the source's configuration
+# files: (a) <add key=...> / <add name=...> under appSettings/connectionStrings in
+# *.config files, and (b) Key=Value option names in *.ini files. Documented set =
+# the expected keys represented in docs/config-catalog.md.
+function Get-ClassicAspConfigCoverage {
+    param([string]$RootPath, [string]$ConfigDocPath)
+    $expected = New-Object System.Collections.Generic.HashSet[string]
+    # (a) .NET config files
+    $configFiles = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.config" -File -ErrorAction SilentlyContinue)
+    foreach ($f in $configFiles) {
+        $c = Get-Content $f.FullName -Raw -ErrorAction SilentlyContinue
+        if (-not $c) { continue }
+        foreach ($m in [regex]::Matches($c, '(?is)<appSettings>.*?</appSettings>')) {
+            foreach ($k in [regex]::Matches($m.Value, '(?i)<add\s+[^>]*\bkey\s*=\s*"([^"]+)"')) { [void]$expected.Add($k.Groups[1].Value.ToLowerInvariant()) }
+        }
+        foreach ($m in [regex]::Matches($c, '(?is)<connectionStrings>.*?</connectionStrings>')) {
+            foreach ($k in [regex]::Matches($m.Value, '(?i)<add\s+[^>]*\bname\s*=\s*"([^"]+)"')) { [void]$expected.Add($k.Groups[1].Value.ToLowerInvariant()) }
+        }
+    }
+    # (b) INI option names
+    $iniFiles = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.ini" -File -ErrorAction SilentlyContinue)
+    foreach ($f in $iniFiles) {
+        $c = Get-Content $f.FullName -Raw -ErrorAction SilentlyContinue
+        if (-not $c) { continue }
+        foreach ($line in ($c -split "`r?`n")) {
+            if ($line -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*') { [void]$expected.Add($Matches[1].ToLowerInvariant()) }
+        }
+    }
+    $expectedCount = $expected.Count
+    $calibration = [ordered]@{ artifact = "config-catalog.md"; framework = "classic-asp"; expectedCount = $expectedCount; documentedCount = 0; score = 100.0; samples = @() }
+    if ($expectedCount -eq 0) { $script:ClassicAspCalibration.config = $calibration; return 100 }
+    $doc = if (Test-Path $ConfigDocPath) { Get-Content $ConfigDocPath -Raw } else { "" }
+    $documented = 0; $missing = @()
+    foreach ($key in @($expected)) {
+        if ($doc -and $doc -match [regex]::Escape($key)) { $documented++ } else { $missing += $key }
+    }
+    $score = [Math]::Round(([Math]::Min($documented, $expectedCount) / [Math]::Max(1, $expectedCount)) * 100, 1)
+    $calibration.documentedCount = $documented
+    $calibration.score = $score
+    $calibration.samples = @($missing | Select-Object -First 8)
+    $script:ClassicAspCalibration.config = $calibration
+    return $score
+}
+
+# Classic-ASP data-model surface = distinct data objects detected from ADO/SQL
+# signals (same signals as generate-classic-asp-datamodel.ps1): distinct DBs
+# (provider/server/catalog connection identity), tables/views (SELECT/INSERT/
+# UPDATE/DELETE targets), stored procedures (EXEC call sites). Documented set =
+# those objects present in docs/data-model.md.
+function Get-ClassicAspDataModelCoverage {
+    param([string]$RootPath, [string]$ModelDocPath)
+    $dbs = New-Object System.Collections.Generic.HashSet[string]
+    $objects = New-Object System.Collections.Generic.HashSet[string]
+    $procs = New-Object System.Collections.Generic.HashSet[string]
+    $kwProcs = @("select","insert","update","delete","set","if","end","open","close","waitfor","print","return")
+    $rootPrefix = $RootPath.TrimEnd('\', '/')
+
+    $aspFiles = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp" -File -ErrorAction SilentlyContinue)
+    $incFiles = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.inc" -File -ErrorAction SilentlyContinue)
+    $htmSignal = @()
+    $htmAll = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.htm","*.html" -File -ErrorAction SilentlyContinue)
+    foreach ($h in $htmAll) {
+        $hc = Get-Content $h.FullName -Raw -ErrorAction SilentlyContinue
+        if ($hc -match 'Data Source|Initial Catalog|(?i)\bSELECT\s|(?i)\bINSERT\s+INTO|(?i)\bEXEC(UTE)?\s') { $htmSignal += $h.FullName }
+    }
+
+    $script:ProcessCoverageFile = {
+        param([string]$FullPath, $DbSet, $ObjSet, $ProcSet, $Kw)
+        $content = Get-Content $FullPath -Raw -ErrorAction SilentlyContinue
+        if ($null -eq $content) { return }
+        foreach ($line in ($content -split "`r?`n")) {
+            if ($line -notmatch '(?i)Data Source\s*=') { continue }
+            $provM = [regex]::Match($line, '(?i)Provider\s*=\s*([A-Za-z0-9._]+)')
+            $catM  = [regex]::Match($line, '(?i)Initial Catalog\s*=\s*([^;&"]+)')
+            $srcM  = [regex]::Match($line, '(?i)Data Source\s*=\s*([^;&"]+)')
+            $provider = if ($provM.Success) { $provM.Groups[1].Value } else { "unknown" }
+            $catalog = if ($catM.Success) { $catM.Groups[1].Value } else { "" }
+            $server  = if ($srcM.Success) { $srcM.Groups[1].Value } else { "" }
+            if ([string]::IsNullOrWhiteSpace($catalog) -and $line -match '(?i)Initial Catalog\s*=\s*["&]') { $catalog = "dynamic" }
+            if ([string]::IsNullOrWhiteSpace($server)  -and $line -match '(?i)Data Source\s*=\s*["&]')     { $server  = "dynamic" }
+            $catalog = Test-AppDocClassicAspConnValue -Raw $catalog
+            $server  = Test-AppDocClassicAspConnValue -Raw $server
+            [void]$DbSet.Add(("{0}|{1}|{2}" -f $provider, $server, $catalog).ToLowerInvariant())
+        }
+        foreach ($m in [regex]::Matches($content, '(?is)\bSELECT\b[^;]{0,500}?\bFROM\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
+            $n = $m.Groups[1].Value.Trim(); if ($n.Length -ge 2) { [void]$ObjSet.Add($n.ToLowerInvariant()) }
+        }
+        foreach ($m in [regex]::Matches($content, '(?i)\bINSERT\s+INTO\s+([A-Za-z_][A-Za-z0-9_.$]*)'))   { $n = $m.Groups[1].Value.Trim(); if ($n.Length -ge 2) { [void]$ObjSet.Add($n.ToLowerInvariant()) } }
+        foreach ($m in [regex]::Matches($content, '(?i)\bUPDATE\s+([A-Za-z_][A-Za-z0-9_.$]*)\s+(SET|FROM)')) { $n = $m.Groups[1].Value.Trim(); if ($n.Length -ge 2) { [void]$ObjSet.Add($n.ToLowerInvariant()) } }
+        foreach ($m in [regex]::Matches($content, '(?i)\bDELETE\s+FROM\s+([A-Za-z_][A-Za-z0-9_.$]*)'))   { $n = $m.Groups[1].Value.Trim(); if ($n.Length -ge 2) { [void]$ObjSet.Add($n.ToLowerInvariant()) } }
+        foreach ($m in [regex]::Matches($content, '(?i)\bEXEC(UTE)?\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
+            $p = $m.Groups[2].Value.Trim(); if ($p.Length -ge 2 -and ($Kw -notcontains $p.ToLowerInvariant())) { [void]$ProcSet.Add($p.ToLowerInvariant()) }
+        }
+    }
+    foreach ($f in $aspFiles) { & $script:ProcessCoverageFile $f.FullName $dbs $objects $procs $kwProcs }
+    foreach ($f in $incFiles) { & $script:ProcessCoverageFile $f.FullName $dbs $objects $procs $kwProcs }
+    foreach ($p in $htmSignal) { & $script:ProcessCoverageFile $p $dbs $objects $procs $kwProcs }
+
+    $expectedCount = ($dbs.Count + $objects.Count + $procs.Count)
+    $calibration = [ordered]@{ artifact = "data-model.md"; framework = "classic-asp"; expectedCount = $expectedCount; dbCount = $dbs.Count; tableCount = $objects.Count; procCount = $procs.Count; documentedCount = 0; score = 100.0; samples = @() }
+    if ($expectedCount -eq 0) { $script:ClassicAspCalibration.dataModel = $calibration; return 100 }
+
+    # Documented set: parse data-model.md rows (db-XXX / obj-XXX / proc-XXX).
+    $docDbs = New-Object System.Collections.Generic.HashSet[string]
+    $docObjs = New-Object System.Collections.Generic.HashSet[string]
+    $docProcs = New-Object System.Collections.Generic.HashSet[string]
+    if (Test-Path $ModelDocPath) {
+        $doc = Get-Content $ModelDocPath -Raw
+        foreach ($line in ($doc -split "`r?`n")) {
+            if ($line -match '^\|\s*(db-|obj-|proc-)\d+\s*\|') {
+                $cells = @($line -split '\|' | ForEach-Object { $_.Trim() })
+                # cells[1]=id  cells[2]=provider|db  cells[3]=server|object  cells[4]=catalog|type
+                if ($cells[1] -match '^db-')   { [void]$docDbs.Add(("{0}|{1}|{2}" -f $cells[2], $cells[3], $cells[4]).ToLowerInvariant()) }
+                elseif ($cells[1] -match '^obj-') { [void]$docObjs.Add($cells[3].ToLowerInvariant()) }
+                elseif ($cells[1] -match '^proc-') { [void]$docProcs.Add($cells[3].ToLowerInvariant()) }
+            }
+        }
+    }
+    $documented = 0; $missing = @()
+    foreach ($k in @($dbs))   { if ($docDbs.Contains($k)) { $documented++ } else { $missing += ("db:" + $k) } }
+    foreach ($k in @($objects)) { if ($docObjs.Contains($k)) { $documented++ } else { $missing += ("table:" + $k) } }
+    foreach ($k in @($procs)) { if ($docProcs.Contains($k)) { $documented++ } else { $missing += ("proc:" + $k) } }
+    $score = [Math]::Round(([Math]::Min($documented, $expectedCount) / [Math]::Max(1, $expectedCount)) * 100, 1)
+    $calibration.documentedCount = $documented
+    $calibration.score = $score
+    $calibration.samples = @($missing | Select-Object -First 8)
+    $script:ClassicAspCalibration.dataModel = $calibration
+    return $score
+}
+
 function Get-ConfigKeyCoverage {
     param([string]$RootPath, [string]$ConfigDocPath)
     if (-not (Test-Path $ConfigDocPath)) { return 100 }
@@ -714,7 +916,7 @@ function Get-RedactionSafetyScore {
     return [Math]::Max(0, (100 - ($unredacted * 10)))
 }
 
-function Get-HumanUsabilityScore {
+function Get-ConformanceScore {
     param([string]$DocsPath)
 
     $docNames = @(
@@ -765,6 +967,128 @@ function Get-HumanUsabilityScore {
     return [Math]::Round((($summaryScore + $linkScore + $placeholderScore + $densityScore) / 4), 1)
 }
 
+# --- Conformance gate: three discipline sub-checks ---------------------------
+# Each returns 0..100 and is averaged into the overall composite (18 components).
+
+# (a) Section-spine coverage: the generated docs must collectively cover the
+#     benchmark's 20-section spine. Matched by heading text (numbering/prefix
+#     tolerant) across the content + register/appendix artifacts.
+function Get-SectionSpineCoverageScore {
+    param([string]$DocsPath)
+
+    $spine = @(
+        "Application Index",
+        "Coverage and Executive Overview",
+        "Architecture",
+        "Functional Inventory",
+        "Roles and Access Model",
+        "UI Catalog",
+        "Help Desk Workflows",
+        "Data and Integrations",
+        "External Call Register",
+        "Stored-procedure data dictionary",
+        "Troubleshooting Matrix",
+        "Security and Operational Risks",
+        "Ownership and Maintenance",
+        "Architecture and Data-Flow Diagrams",
+        "Glossary",
+        "Evidence Register",
+        "Open Questions and Documentation Gaps",
+        "Recommendations",
+        "Operations Runbook",
+        "Verification Appendix"
+    )
+
+    # The composed 20-section unified master is the CANONICAL spine source; the
+    # per-artifact files remain in the set for backward compatibility (they never
+    # hurt the score — a title is found if it appears in ANY of the files).
+    $files = @(
+        "application-documentation.md",
+        "overview.md",
+        "index.md",
+        "start-here.md",
+        "api-inventory.md",
+        "data-model.md",
+        "config-catalog.md",
+        "build-cookbook.md",
+        "test-catalog.md",
+        "debt-register.md",
+        "dependencies-catalog.md",
+        "task-guides.md",
+        "architecture-diagram.md",
+        "evidence-register.md",
+        "verification-appendix.md"
+    ) | ForEach-Object { Join-Path $DocsPath $_ } | Where-Object { Test-Path $_ }
+
+    if ($files.Count -eq 0) { return 0 }
+
+    $allText = ($files | ForEach-Object { Get-Content $_ -Raw } | Where-Object { $_ }) -join "`n"
+
+    $found = 0
+    foreach ($title in $spine) {
+        # Match the title as a heading (## / ### / #) with optional numbering or
+        # a letter-suffix (e.g. "8A"), tolerant of case.
+        $pattern = ('(?im)^#{1,6}\s+(?:\d{1,2}[A-Za-z]?\s*[.:]\s*)?' + [regex]::Escape($title) + '\b')
+        if ($allText -match $pattern) { $found++ }
+    }
+
+    return [Math]::Round((($found / [Math]::Max(1, $spine.Count)) * 100), 1)
+}
+
+# (b) Epistemic coverage: across the 4 content artifacts + the evidence register,
+#     what fraction of countable claims carry a valid epistemic tag.
+function Get-EpistemicCoverageScore {
+    param([string]$DocsPath)
+
+    if (-not (Get-Command Get-EpistemicCoverage -ErrorAction SilentlyContinue)) { return 0 }
+
+    $artifacts = @(
+        "api-inventory.md",
+        "data-model.md",
+        "build-cookbook.md",
+        "test-catalog.md",
+        "evidence-register.md"
+    ) | ForEach-Object { Join-Path $DocsPath $_ } | Where-Object { Test-Path $_ }
+
+    if ($artifacts.Count -eq 0) { return 0 }
+
+    $cov = Get-EpistemicCoverage -Artifacts $artifacts
+    return [Math]::Round([double]$cov.coveragePercent, 1)
+}
+
+# (c) Re-verifiability: for every "Verified" claim in the verification appendix,
+#     its Command must not be "N/A". Score = (verified-with-command / total
+#     verified) * 100. Zero verified claims => 100 (vacuous; flagged as a warning).
+function Get-ReVerifiabilityScore {
+    param([string]$DocsPath)
+
+    $appendixPath = Join-Path $DocsPath "verification-appendix.md"
+    if (-not (Test-Path $appendixPath)) { return 100 }
+
+    $content = Get-Content $appendixPath -Raw
+    if ([string]::IsNullOrWhiteSpace($content)) { return 100 }
+
+    $verifiedCount = 0
+    $withCommand = 0
+    foreach ($line in ($content -split "`r?`n")) {
+        # Only the data rows of the appendix table (Claim | Status | Command).
+        if ($line -notmatch '^\s*\|.*\|\s*$') { continue }
+        $cells = (($line.Trim() -replace '^\|', '' -replace '\|\s*$', '') -split '\|' | ForEach-Object { $_.Trim() })
+        if ($cells.Count -lt 3) { continue }
+        if (($cells -join ',') -match '^[\s:-]*$') { continue }   # separator row
+        $status = $cells[1]
+        $cmd = $cells[2]
+        if ($status -notmatch '^(Verified|Partly verified)$') { continue }
+        if ($status -eq 'Verified') {
+            $verifiedCount++
+            if ($cmd -notmatch 'N/A') { $withCommand++ }
+        }
+    }
+
+    if ($verifiedCount -eq 0) { return 100 }
+    return [Math]::Round((($withCommand / $verifiedCount) * 100), 1)
+}
+
 function Get-ClaimGroundingScore {
     param([string]$DocsPath)
 
@@ -813,7 +1137,7 @@ function Get-DocumentationFreshnessScore {
     $freshCount = 0
     foreach ($doc in $existing) {
         $content = Get-Content $doc -Raw
-        $m = [regex]::Match($content, '(?im)^\*\*Generated\*\*:\s*([^\r\n]+)$')
+        $m = [regex]::Match($content, '(?im)^\*\*Generated\*\*:\s*([^\r\n]+)')
         if (-not $m.Success) { continue }
 
         try {
@@ -1105,14 +1429,29 @@ function Get-QualityPenaltyBreakdown {
 
         $rows = @([regex]::Matches($content, '(?im)^\|[^\r\n]+\|\s*$') | ForEach-Object { [string]$_.Value.Trim() })
         if ($rows.Count -gt 2) {
-            $dataRows = @($rows | Select-Object -Skip 2)
+            # Count duplicate DATA rows only. A document can hold MULTIPLE tables
+            # (each with its own header + separator row), so a header/separator row
+            # that repeats across tables is NOT a duplicated data row — it is a
+            # structural artifact of multi-table layout. Exclude every table
+            # header (a row immediately followed by a separator row) and every
+            # separator row before grouping. Genuinely duplicated DATA rows are
+            # still detected and penalized (this only removes the header/separator
+            # false positive, not the duplicate-row check itself).
+            $sepRowRe = [regex]'^\|(?:\s*:?-{2,}:?\s*\|)+$'
+            $dataRows = @()
+            for ($ri = 0; $ri -lt $rows.Count; $ri++) {
+                $row = $rows[$ri]
+                if ($sepRowRe.IsMatch($row)) { continue }
+                if ($ri -lt $rows.Count - 1 -and $sepRowRe.IsMatch($rows[$ri + 1])) { continue }
+                $dataRows += $row
+            }
             $dupeCount = @($dataRows | Group-Object | Where-Object { $_.Count -gt 1 }).Count
             if ($dupeCount -gt 0) {
                 Add-AppDocPenalty -Artifact $artifact -Category "duplicateRows" -Points ($dupeCount * 8) -Reason "duplicate-rows:$dupeCount"
             }
         }
 
-        $generatedMatch = [regex]::Match($content, '(?im)^\*\*Generated\*\*:\s*([^\r\n]+)$')
+        $generatedMatch = [regex]::Match($content, '(?im)^\*\*Generated\*\*:\s*([^\r\n]+)')
         if (-not $generatedMatch.Success) {
             Add-AppDocPenalty -Artifact $artifact -Category "staleProvenance" -Points 8 -Reason "provenance-missing-generated"
         }
@@ -1161,6 +1500,32 @@ function Get-QualityPenaltyBreakdown {
     }
 }
 
+# Read the composed unified master's canonical count markers (the table that
+# generate-unified-master.ps1 emits under "## Coverage and Executive Overview"):
+#   | API endpoints documented | N | ... |
+#   | Database object records (models) | N | ... |
+# Returns @{ endpointCount; modelCount; present } — present is $false when the
+# composed doc is absent/unparseable (backward-compat path keeps the per-artifact
+# references in that case).
+function Get-AppDocUnifiedMasterCounts {
+    param([string]$DocsPath)
+    $masterPath = Join-Path $DocsPath "application-documentation.md"
+    $result = [ordered]@{ endpointCount = $null; modelCount = $null; present = $false }
+    if (-not (Test-Path $masterPath)) { return $result }
+    try {
+        $master = Get-Content $masterPath -Raw
+        $mApi = [regex]::Match($master, '(?im)^\|\s*API endpoints documented\s*\|\s*(\d+)\s*\|')
+        $mModel = [regex]::Match($master, '(?im)^\|\s*Database object records \(models\)\s*\|\s*(\d+)\s*\|')
+        if ($mApi.Success -and $mModel.Success) {
+            $result.endpointCount = [int]$mApi.Groups[1].Value
+            $result.modelCount    = [int]$mModel.Groups[1].Value
+            $result.present       = $true
+        }
+    }
+    catch { $result.present = $false }
+    return $result
+}
+
 function Get-CrossArtifactMetricDriftAnalysis {
     param(
         [string]$DocsPath
@@ -1204,6 +1569,31 @@ function Get-CrossArtifactMetricDriftAnalysis {
         testCaseCount = $canonicalTestCaseCount
     }
 
+    # --- Composed unified master = canonical count source (WS-3) --------------
+    # The 20-section master (application-documentation.md) is the canonical count
+    # reference: it reports the real classic-ASP counts. Cross-check it against the
+    # machine-evidence canonical (they should agree); a mismatch is a real drift.
+    # When the master is present it SUPERSEDES the C#-centric start-here.md stub as
+    # the count source, so that stub's 0-count is no longer flagged as a false
+    # positive (the stub is only compared below when the master is absent, for
+    # backward compatibility). No thresholds are changed and no legitimate check is
+    # removed — the machine-evidence canonical is still the ground truth we check.
+    $masterCounts = Get-AppDocUnifiedMasterCounts -DocsPath $DocsPath
+    $signals.unifiedMaster = [ordered]@{
+        endpointCount = $masterCounts.endpointCount
+        modelCount    = $masterCounts.modelCount
+        present       = [bool]$masterCounts.present
+    }
+    $masterIsCanonical = [bool]$masterCounts.present
+    if ($masterIsCanonical) {
+        if ([int]$masterCounts.endpointCount -ne $canonicalEndpointCount) {
+            $issues += ("cross-artifact-metric-drift:unified-master-endpoint-count:{0}/{1}" -f $masterCounts.endpointCount, $canonicalEndpointCount)
+        }
+        if ([int]$masterCounts.modelCount -ne $canonicalModelCount) {
+            $issues += ("cross-artifact-metric-drift:unified-master-model-count:{0}/{1}" -f $masterCounts.modelCount, $canonicalModelCount)
+        }
+    }
+
     $overviewTruthPath = Join-Path $DocsPath "evidence\overview-truth-pack.json"
     if (Test-Path $overviewTruthPath) {
         try {
@@ -1228,7 +1618,11 @@ function Get-CrossArtifactMetricDriftAnalysis {
     }
 
     $startHerePath = Join-Path $DocsPath "start-here.md"
-    if (Test-Path $startHerePath) {
+    # The start-here.md count markers are the CANONICAL count reference ONLY when
+    # the composed unified master is absent (backward compatibility). When the
+    # master is present it supersedes the C#-centric stub, so the stub's 0-count
+    # is no longer flagged as a false positive.
+    if ((Test-Path $startHerePath) -and (-not $masterIsCanonical)) {
         try {
             $startHere = Get-Content $startHerePath -Raw
             $mApi = [regex]::Match($startHere, '(?im)^-\s+API endpoints documented:\s*\*\*(\d+)\*\*')
@@ -1398,23 +1792,6 @@ function Get-TaskGuideOutcomeMetrics {
         issues = $issues
     }
 }
-
-function Get-MarkdownSectionBlock {
-    param(
-        [string]$Content,
-        [string]$SectionName
-    )
-
-    if (-not $Content) { return "" }
-    $pattern = "(?is)^##\s+" + [regex]::Escape($SectionName) + "\s*$\r?\n(.*?)(?=^##\s+|\z)"
-    $match = [regex]::Match($Content, $pattern, [System.Text.RegularExpressions.RegexOptions]::Multiline)
-    if ($match.Success) {
-        return [string]$match.Groups[1].Value
-    }
-
-    return ""
-}
-
 function Get-MarkdownTableDataRows {
     param([string]$SectionContent)
 
@@ -1669,10 +2046,24 @@ function Get-PolicyGateAnalysis {
 $apiDocCount = Get-DocRouteCount -ApiDocPath (Join-Path $docsPath "api-inventory.md")
 $apiCodeCount = Get-CodeRouteCount -RootPath $RootPath
 $apiCoverage = if ($apiCodeCount -eq 0) { if ($apiDocCount -eq 0) { 100 } else { 0 } } else { [Math]::Round(([Math]::Min($apiDocCount, $apiCodeCount) / $apiCodeCount) * 100, 1) }
-$configCoverage = Get-ConfigKeyCoverage -RootPath $RootPath -ConfigDocPath (Join-Path $docsPath "config-catalog.md")
-$dataCoverage = Get-DataModelCoverage -RootPath $RootPath -ModelDocPath (Join-Path $docsPath "data-model.md")
+# Framework-aware calibration: for Classic ASP / ASP.NET Web Forms, config + data-model
+# coverage measure the classic-ASP artifacts (config-file keys; ADO/SQL data objects)
+# as a documented/expected ratio. All other frameworks keep the C#-calibrated scorers.
+$script:ClassicAspCalibration = [ordered]@{ config = $null; dataModel = $null }
+$isClassicAspTarget = Get-AppDocIsClassicAspTarget -RootPath $RootPath
+if ($isClassicAspTarget) {
+    $configCoverage = Get-ClassicAspConfigCoverage -RootPath $RootPath -ConfigDocPath (Join-Path $docsPath "config-catalog.md")
+    $dataCoverage = Get-ClassicAspDataModelCoverage -RootPath $RootPath -ModelDocPath (Join-Path $docsPath "data-model.md")
+} else {
+    $configCoverage = Get-ConfigKeyCoverage -RootPath $RootPath -ConfigDocPath (Join-Path $docsPath "config-catalog.md")
+    $dataCoverage = Get-DataModelCoverage -RootPath $RootPath -ModelDocPath (Join-Path $docsPath "data-model.md")
+}
 $redactionSafetyScore = Get-RedactionSafetyScore -ConfigDocPath (Join-Path $docsPath "config-catalog.md")
-$humanUsabilityScore = Get-HumanUsabilityScore -DocsPath $docsPath
+$conformanceScore = Get-ConformanceScore -DocsPath $docsPath
+# Discipline-layer sub-checks (added by the conformance gate). Each 0..100.
+$sectionSpineCoverageScore = Get-SectionSpineCoverageScore -DocsPath $docsPath
+$epistemicCoverageScore = Get-EpistemicCoverageScore -DocsPath $docsPath
+$reVerifiabilityScore = Get-ReVerifiabilityScore -DocsPath $docsPath
 $claimGroundingScore = Get-ClaimGroundingScore -DocsPath $docsPath
 $documentationFreshnessScore = Get-DocumentationFreshnessScore -DocsPath $docsPath
 $contradictionAnalysis = Get-ContradictionAnalysis -DocsPath $docsPath -EvidenceRoot $evidenceRoot
@@ -1732,14 +2123,22 @@ $evidenceContractScore = if ($evidenceValues.Count -gt 0) { [Math]::Round((($evi
 
 $validatorPassRate = [Math]::Round(((@($validatorResults | Where-Object { $_.passed }).Count / [Math]::Max(1, $validatorResults.Count)) * 100), 1)
 $artifactPresence = [Math]::Round(((($artifactFiles.Count - $missing.Count) / [Math]::Max(1, $artifactFiles.Count)) * 100), 1)
-$overallScoreRaw = [Math]::Round((($validatorPassRate + $artifactPresence + $evidencePresence + $semanticContractScore + $evidenceContractScore + $apiCoverage + $configCoverage + $dataCoverage + $redactionSafetyScore + $humanUsabilityScore + $claimGroundingScore + $documentationFreshnessScore + $contradictionConsistencyScore + $metricDriftScore + $policyGateScore) / 15), 1)
+$overallScoreRaw = [Math]::Round((($validatorPassRate + $artifactPresence + $evidencePresence + $semanticContractScore + $evidenceContractScore + $apiCoverage + $configCoverage + $dataCoverage + $redactionSafetyScore + $conformanceScore + $sectionSpineCoverageScore + $epistemicCoverageScore + $reVerifiabilityScore + $claimGroundingScore + $documentationFreshnessScore + $contradictionConsistencyScore + $metricDriftScore + $policyGateScore) / 18), 1)
+
+# Flag a vacuously-true re-verifiability score (no Verified claims to re-run).
+if ($reVerifiabilityScore -ge 100 -and (Test-Path (Join-Path $docsPath "verification-appendix.md"))) {
+    $appendixContent = Get-Content (Join-Path $docsPath "verification-appendix.md") -Raw
+    if ($appendixContent -notmatch '(?m)\| Verified \|') {
+        Write-AppDocDiagnostic -Category "DETECTION_PATTERN_MISMATCH" -Severity "Warning" -Message "Re-verifiability is vacuously 100: the Verification Appendix contains no 'Verified' rows to re-run." -Component "validation" -FilePath (Join-Path $docsPath "verification-appendix.md") | Out-Null
+    }
+}
 
 $qualityPenaltyBreakdown = Get-QualityPenaltyBreakdown -DocsPath $docsPath -Contradictions $allContradictionIssues
 $penaltyDeduction = [Math]::Round([Math]::Min(45, ($qualityPenaltyBreakdown.totalPenaltyPoints / [Math]::Max(1, $qualityPenaltyBreakdown.artifactCount))), 1)
 $overallScore = [Math]::Max(0, [Math]::Round(($overallScoreRaw - $penaltyDeduction), 1))
 
 $hasBlockingIssues = (@($policyGates.blockingIssues).Count -gt 0)
-$weakCoverage = ($evidencePresence -lt 70 -or $semanticContractScore -lt 65 -or $evidenceContractScore -lt 65 -or $claimGroundingScore -lt 50)
+$weakCoverage = ($evidencePresence -lt 70 -or $semanticContractScore -lt 65 -or $evidenceContractScore -lt 65 -or $claimGroundingScore -lt 50 -or $sectionSpineCoverageScore -lt 50 -or $epistemicCoverageScore -lt 50 -or $reVerifiabilityScore -lt 50)
 $validationStatus = if ($hasBlockingIssues -or $overallScore -lt $Threshold) {
     "fail"
 }
@@ -1768,7 +2167,10 @@ $result = [ordered]@{
         configCoverage = $configCoverage
         dataModelCoverage = $dataCoverage
         redactionSafetyScore = $redactionSafetyScore
-        humanUsabilityScore = $humanUsabilityScore
+        conformanceScore = $conformanceScore
+        sectionSpineCoverageScore = $sectionSpineCoverageScore
+        epistemicCoverageScore = $epistemicCoverageScore
+        reVerifiabilityScore = $reVerifiabilityScore
         claimGroundingScore = $claimGroundingScore
         documentationFreshnessScore = $documentationFreshnessScore
         contradictionConsistencyScore = $contradictionConsistencyScore
@@ -1790,12 +2192,132 @@ $result = [ordered]@{
     metricDrift = $metricDriftAnalysis
     taskGuideOutcomes = $taskGuideOutcomes
     policyGates = $policyGates
+    coverageCalibration = [ordered]@{
+        path = if ($isClassicAspTarget) { "classic-asp" } else { "csharp-default" }
+        framework = if ($isClassicAspTarget) { "Classic ASP" } else { "csharp" }
+        note = if ($isClassicAspTarget) { "config + data-model coverage measured against classic-ASP source artifacts (config-file keys; ADO/SQL data objects) as documented/expected ratios." } else { "config + data-model coverage measured with the C#-calibrated scorers (appsettings/config keys; model classes)." }
+        config = $script:ClassicAspCalibration.config
+        dataModel = $script:ClassicAspCalibration.dataModel
+    }
+}
+
+# --- PRISTINE CHECK (Step 1b) — DEPTH measurement + OPT-IN gate --------------
+# A per-section DEPTH measurement of the 20 composed sections against the
+# HELP_DESK benchmark. It is computed here (pure, deterministic function of the
+# composed doc + evidence artifacts) and added to the scorecard PURELY for
+# reporting: it is added to $result AFTER status (line ~2131) and overallScore
+# (line ~2127) are computed and frozen above, so the DEPTH measurement CANNOT
+# change the structural conformance status (pass/fail) or overallScore.
+#
+# MODES (Deliverable A): the pristine check has two EXPLICIT modes.
+#   REPORT-ONLY (DEFAULT, -PristineGate OFF): the sub-score is purely additive —
+#       pristine.blocking=false, pristineGate.mode='report-only', enabled=false,
+#       blocked=false. NEVER changes status or overallScore.
+#   BLOCKING (OPT-IN, -PristineGate ON): the pristine check becomes a real gate
+#       that BLOCKS the run when emptyCount>0 OR subScore<floor (-PristineFloor).
+#       OWNER_REQUIRED cells are EXCLUDED (pending /appdoc.enhance, not failures).
+#       The decision is the PURE FUNCTION Test-AppDocPristineGate (unit-testable).
+#       When it blocks, status flips to 'blocked' (a NEW additive blocking
+#       condition); overallScore is UNCHANGED (structural conformance untouched).
+# If the pristine module is absent or errors, the fields are honest records so the
+# scorecard shape stays stable and the check is never silently skipped.
+if ($hasPristine) {
+    try {
+        $pristineAssessment = Get-AppDocPristineAssessment -DocsPath $docsPath
+        # pristine.blocking is MODE-EXPLICIT: false in report-only (DEFAULT), true in
+        # blocking (OPT-IN). It reflects the mode, not a per-run outcome.
+        $result['pristine'] = [ordered]@{
+            blocking       = [bool]$PristineGate
+            mode           = if ($PristineGate) { 'blocking' } else { 'report-only' }
+            additive       = $true
+            note           = if ($PristineGate) { 'Per-section depth measurement vs the HELP_DESK benchmark (Step 1b). MODE=blocking (OPT-IN, -PristineGate): the pristine gate may block the run (see pristineGate). overallScore is still untouched.' } else { 'Per-section depth measurement vs the HELP_DESK benchmark (Step 1b). MODE=report-only (DEFAULT): NON-BLOCKING — does not change status or overallScore.' }
+            subScore       = $pristineAssessment.subScore
+            counts         = [ordered]@{
+                PASS           = [int]$pristineAssessment.counts.PASS
+                WEAK           = [int]$pristineAssessment.counts.WEAK
+                EMPTY          = [int]$pristineAssessment.counts.EMPTY
+                OWNER_REQUIRED = [int]$pristineAssessment.counts.OWNER_REQUIRED
+                NA             = [int]$pristineAssessment.counts.NA
+                scored         = [int]$pristineAssessment.scoredCount
+                total          = [int]$pristineAssessment.totalSections
+            }
+            naSections     = @($pristineAssessment.records | Where-Object { [bool]$_.frameworkNA } | ForEach-Object { [string]$_.section })
+            reVerifiable   = [bool]$pristineAssessment.reVerifiable
+            sections       = @($pristineAssessment.records | ForEach-Object {
+                [ordered]@{
+                    section      = [string]$_.section
+                    status       = [string]$_.status
+                    reason       = [string]$_.reason
+                    rowCount     = [int]$_.rowCount
+                    sourceSupport= [int]$_.sourceSupport
+                    benchmarkRef = [string]$_.benchmarkRef
+                    ownerPending = [bool]$_.ownerPending
+                    frameworkNA  = [bool]$_.frameworkNA
+                }
+            })
+            report         = 'docs/pristine-report.md'
+            evidence       = 'docs/evidence/pristine.evidence.json'
+            determinismHash= [string]$pristineAssessment.determinismHash
+        }
+
+        # --- PRISTINE GATE decision (Deliverable B) — ADDITIVE, OPT-IN ---------
+        # The gate decision is a PURE FUNCTION (Test-AppDocPristineGate) so it is
+        # unit-testable without a real target. OWNER_REQUIRED is EXCLUDED (it is
+        # passed in but the function never uses it to block). N/A is already
+        # excluded from subScore. The gate is ADDITIVE: it NEVER changes overallScore
+        # (the structural conformance composite); it only MAY flip status to 'blocked'
+        # when enabled (blocking mode) AND a violation exists.
+        $pristineGateMode    = if ($PristineGate) { 'blocking' } else { 'report-only' }
+        $pristineGateEnabled = [bool]$PristineGate
+        # Precompute the gate inputs into plain typed vars (the pure decision fn takes
+        # primitives). OWNER_REQUIRED is passed in but the fn NEVER uses it to block.
+        $pgEmpty = [int]$pristineAssessment.counts.EMPTY
+        $pgSub   = [double]$pristineAssessment.subScore
+        $pgOwner = [int]$pristineAssessment.counts.OWNER_REQUIRED
+        $pristineGateDec = Test-AppDocPristineGate -EmptyCount $pgEmpty -SubScore $pgSub -Floor $PristineFloor -OwnerRequiredCount $pgOwner -Enabled $pristineGateEnabled
+        $result['pristineGate'] = [ordered]@{
+            mode           = $pristineGateMode
+            enabled        = $pristineGateEnabled
+            floor          = [int]$PristineFloor
+            emptyCount     = [int]$pgEmpty
+            subScore       = [double]$pgSub
+            floorMet       = [bool]$pristineGateDec.floorMet
+            blocked        = [bool]$pristineGateDec.blocked
+            blockingIssues = @($pristineGateDec.blockingIssues)
+            note           = if ($pristineGateEnabled) { 'BLOCKING mode (OPT-IN, -PristineGate): the run is blocked when emptyCount>0 OR subScore<floor; OWNER_REQUIRED is excluded (pending /appdoc.enhance, not a failure).' } else { 'REPORT-ONLY mode (DEFAULT): depth measurement, never blocks — pristineGate.blocked=false; status/overallScore unchanged.' }
+        }
+        # BLOCK path (additive): when blocking mode AND a violation, flip the run's
+        # status to 'blocked' (a NEW blocking condition). overallScore is UNCHANGED —
+        # the structural conformance composite + pass/fail logic above are untouched.
+        if ($pristineGateEnabled -and $pristineGateDec.blocked) {
+            $result['status'] = 'blocked'
+            $pgIssues = (@($pristineGateDec.blockingIssues) -join '; ')
+            Write-AppDocDiagnostic -Category "DETECTION_PATTERN_MISMATCH" -Severity "Error" -Message "Pristine gate BLOCKED the run (mode=blocking): $pgIssues" -Component "validation" -FilePath $docsPath | Out-Null
+        }
+    } catch {
+        $result['pristine'] = [ordered]@{ blocking = [bool]$PristineGate; mode = if ($PristineGate) { 'blocking' } else { 'report-only' }; additive = $true; error = [string]$_.Exception.Message }
+        $result['pristineGate'] = [ordered]@{ mode = if ($PristineGate) { 'blocking' } else { 'report-only' }; enabled = [bool]$PristineGate; floor = [int]$PristineFloor; error = [string]$_.Exception.Message }
+    }
+} else {
+    $result['pristine'] = [ordered]@{ blocking = [bool]$PristineGate; mode = if ($PristineGate) { 'blocking' } else { 'report-only' }; additive = $true; error = 'AppDoc.Pristine.psm1 not present' }
+    $result['pristineGate'] = [ordered]@{ mode = if ($PristineGate) { 'blocking' } else { 'report-only' }; enabled = [bool]$PristineGate; floor = [int]$PristineFloor; error = 'AppDoc.Pristine.psm1 not present' }
 }
 
 
-# Write only the JSON payload to the output file, suppressing any console/table output
+# Write only the JSON payload to the output file, suppressing any console/table output.
+# Ensure the scratch dir exists (fresh checkouts may not have tmp/logs) and guard
+# the write so a failure to log the temp file can never block the canonical report.
 $jsonOutPath = Join-Path $RootPath "tmp\logs\validate-documentation.out.json"
-$result | ConvertTo-Json -Depth 20 | Out-File -FilePath $jsonOutPath -Encoding UTF8
+$jsonOutDir = Split-Path $jsonOutPath -Parent
+if (-not (Test-Path $jsonOutDir)) {
+    try { New-Item -Path $jsonOutDir -ItemType Directory -Force | Out-Null } catch { }
+}
+try {
+    $result | ConvertTo-Json -Depth 20 | Out-File -FilePath $jsonOutPath -Encoding UTF8
+}
+catch {
+    Write-Warning ("Could not write scratch validation log {0}: {1}" -f $jsonOutPath, $_.Exception.Message)
+}
 
 # Write the CANONICAL validation report to docs/validation-report.json. This is the
 # authoritative, committed validation result (referenced by the prompts, the

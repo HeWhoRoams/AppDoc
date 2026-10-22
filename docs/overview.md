@@ -1,6 +1,5 @@
 # System Overview
-
-**Generated**: 2026-10-16 11:55:56
+**Generated**: 2026-10-17 18:40:56
 
 ## Summary
 
@@ -9,24 +8,19 @@ This page explains, in plain language, what the application appears to do, how r
 ## Welcome
 
 ### What It Does
-- This repository primarily defines tooling, automation, and configuration behavior rather than an exposed runtime API surface. (evidence: ev-0001, ev-0002, ev-0003, ev-0004)
+- At a high level, the application orchestrates Core Processing capabilities through its core services and workflows.
+- This application appears to support Core Processing workflows and expose that behavior through its service interfaces.
+- Its business behavior is centered on application records such as and, Help Desk Audit Trail, Help Desk Tickets, and Help Desk usp Get Monthly Metrics.
 
 ### Inputs
 - Runtime behavior is also influenced by environment and application configuration values loaded at startup. (evidence: ev-0001, ev-0002, ev-0003)
 
 ### Processing Steps
-- Processing flow could not be inferred beyond repository-level summaries in this scan. (evidence: ev-0055)
+- Processing logic is organized around components such as Core Processing, where requests are validated and routed through domain logic.
+- Core processing includes mapping request data into internal models and returning structured results for consumers.
 
 ### Outputs
-- Output contracts are not strongly represented in current deterministic evidence. (evidence: ev-0055)
-
-### External Systems
-- No clear external system integration evidence was detected. (evidence: ev-0055)
-
-### Confidence Notes
-- Evidence coverage includes 0 endpoint records, 0 model records, 54 configuration records, and 0 dependency records. (evidence: ev-0001, ev-0002, ev-0003, ev-0004)
-- Canonical evidence graph captured 56 entities and 54 relationships for this run. (evidence: ev-0055)
-- Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55. (evidence: ev-0055)
+- Output contracts are not strongly represented in current deterministic evidence. (evidence: ev-0111)
 
 ### Evidence References
 | ID | Artifact | Kind | Name | Source |
@@ -35,7 +29,7 @@ This page explains, in plain language, what the application appears to do, how r
 | ev-0002 | config-catalog | configuration | chat.tools.fileOperations.autoApprove.read | .vscode/settings.json:chat.tools.fileOperations.autoApprove.read |
 | ev-0003 | config-catalog | configuration | chat.tools.terminal.autoApprove.-ErrorAction | .vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction |
 | ev-0004 | config-catalog | configuration | chat.tools.terminal.autoApprove.-Json | .vscode/settings.json:chat.tools.terminal.autoApprove.-Json |
-| ev-0055 | overview | summary | system-purpose | repository |
+| ev-0111 | overview | summary | system-purpose | repository |
 
 ## System Purpose
 
@@ -80,6 +74,10 @@ This documentation set covers the following areas. Start with the artifact most 
 | [Technical Debt Register](debt-register.md) | Known issues and improvement opportunities | Planning a refactoring or debt sprint |
 | [Dependencies Catalog](dependencies-catalog.md) | External packages and libraries | Assessing dependency risk or planning upgrades |
 
+<!-- MANUAL_SECTION_START: overview-notes -->
+<!-- Add project-specific notes here - this section is preserved during regeneration. -->
+<!-- MANUAL_SECTION_END: overview-notes -->
+
 ## Evidence Traceability
 
 | Field | Value |
@@ -96,13 +94,15 @@ This documentation set covers the following areas. Start with the artifact most 
 - Architecture statement: no-api-surface.
 
 ## Runtime Path
-- Processing flow could not be inferred beyond repository-level summaries in this scan.
+- Processing logic is organized around components such as Core Processing, where requests are validated and routed through domain logic.
+- Core processing includes mapping request data into internal models and returning structured results for consumers.
 
 ## Inputs→Processing→Outputs
 - ### Inputs
 - Runtime behavior is also influenced by environment and application configuration values loaded at startup.
 - ### Processing
-- Processing flow could not be inferred beyond repository-level summaries in this scan.
+- Processing logic is organized around components such as Core Processing, where requests are validated and routed through domain logic.
+- Core processing includes mapping request data into internal models and returning structured results for consumers.
 - ### Outputs
 - Output contracts are not strongly represented in current deterministic evidence.
 
@@ -110,15 +110,15 @@ This documentation set covers the following areas. Start with the artifact most 
 - No clear external system integration evidence was detected.
 
 ## Confidence Notes
-- Evidence coverage includes 0 endpoint records, 0 model records, 54 configuration records, and 0 dependency records.
-- Canonical evidence graph captured 56 entities and 54 relationships for this run.
+- Evidence coverage includes 5 endpoint records, 4 model records, 54 configuration records, and 0 dependency records.
+- Canonical evidence graph captured 70 entities and 68 relationships for this run.
 - Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.
 
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 8b13f8a
-- Generated At: 2026-10-16T11:56:04-04:00
+- Commit Hash: 85946f7
+- Generated At: 2026-10-17T18:41:14-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

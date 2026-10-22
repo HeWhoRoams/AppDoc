@@ -2,10 +2,6 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
     [Parameter(Mandatory=$false)]
-    [switch]$IncludeAssessment,
-    [Parameter(Mandatory=$false)]
-    [string]$SampleDir,
-    [Parameter(Mandatory=$false)]
     [switch]$SkipDiagrams,
     [Parameter(Mandatory=$false)]
     [switch]$DryRun,
@@ -17,7 +13,20 @@ param(
     [Parameter(Mandatory=$false)]
     [string]$Profile = "default",
     [Parameter(Mandatory=$false)]
-    [switch]$SkipSyntaxGate
+    [switch]$SkipSyntaxGate,
+    # --- PRISTINE GATE (Deliverable B) — OPT-IN, default OFF ------------------
+    # -PristineGate OFF (DEFAULT): report-only — the pristine check is a DEPTH
+    #   measurement that NEVER blocks; status/overallScore unchanged.
+    # -PristineGate ON (OPT-IN): the pristine check becomes a real gate that BLOCKS
+    #   the run when any section is EMPTY (emptyCount>0) OR pristine subScore < floor.
+    #   OWNER_REQUIRED cells are EXCLUDED (pending /appdoc.enhance, not failures).
+    # Passed through to validate-documentation.ps1, which records the decision in
+    # validation-report.json as `pristineGate`.
+    [Parameter(Mandatory=$false)]
+    [switch]$PristineGate,
+    [Parameter(Mandatory=$false)]
+    [ValidateRange(1,100)]
+    [int]$PristineFloor = 80
 )
 
 <#
@@ -30,12 +39,6 @@ param(
 
 .PARAMETER RootPath
     Root path of the project to analyze.
-
-.PARAMETER IncludeAssessment
-    Include sample quality assessment in the workflow.
-
-.PARAMETER SampleDir
-    Directory containing sample outputs for assessment. Required if IncludeAssessment is used.
 
 .PARAMETER SkipDiagrams
     Skip C4 architecture diagram generation.
@@ -52,9 +55,19 @@ param(
 .PARAMETER Profile
     Documentation profile name or path used to configure generation behavior.
 
+.PARAMETER PristineGate
+    OPT-IN (default OFF): make the PRISTINE CHECK a real gate that BLOCKS the run
+    when any section is EMPTY (emptyCount>0) OR the pristine sub-score < -PristineFloor.
+    OWNER_REQUIRED cells are EXCLUDED (pending /appdoc.enhance, not failures). When
+    OFF (default), the pristine check is report-only (a non-blocking DEPTH measurement;
+    status/overallScore are unchanged). The decision is recorded in
+    docs/validation-report.json as `pristineGate`.
+
+.PARAMETER PristineFloor
+    The floor the pristine sub-score must meet when -PristineGate is ON (default 80).
+
 .EXAMPLE
     .\run-all-generators.ps1 -RootPath "c:\myproject"
-    .\run-all-generators.ps1 -RootPath "c:\myproject" -IncludeAssessment -SampleDir "AppDoc.ai_samples"
     .\run-all-generators.ps1 -RootPath "c:\myproject" -SkipDiagrams
 #>
 
@@ -522,6 +535,94 @@ function Write-AppDocCanonicalMetrics {
     $metricsPath = Join-Path $evidencePath "metrics-canonical.json"
     $payload | ConvertTo-Json -Depth 20 | Out-File -FilePath $metricsPath -Encoding UTF8
     return $metricsPath
+}
+
+# --- Overview truth-pack -> canonical re-alignment -----------------------------
+# The overview generator (generate-overview.ps1) runs EARLIER in the Generation phase
+# than the classic-ASP endpoint/datamodel generators and than this canonical-metrics
+# write. Its truth-pack counts are therefore computed from the per-artifact evidence
+# files as they exist at THAT point. For frameworks whose endpoint/model evidence is
+# populated AFTER generate-overview runs (notably Classic ASP), the truth pack is
+# frozen at 0 endpoints / 0 models while the canonical metrics (computed here, after
+# the evidence is complete) reflect the real counts -> a cross-artifact metric drift
+# (overview-endpoint-count:0/N / overview-model-count:0/M).
+#
+# The canonical metrics are the ground-truth count source. This re-alignment makes the
+# overview-truth-pack counts mirror the canonical totals, using the SAME mapping that
+# generate-overview.ps1 applies when the canonical is present (its alignment block),
+# but executed at the correct pipeline point (after the canonical metrics exist).
+# It is a surgical no-op: it only rewrites the truth pack when a count actually
+# disagrees with the canonical, so already-consistent frameworks are byte-untouched.
+# It does NOT change the canonical metrics, the gate check, or any threshold.
+function Realign-AppDocOverviewTruthPackToCanonical {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$RootPath,
+        [Parameter(Mandatory=$true)]
+        [string]$DocsPath
+    )
+
+    $evidencePath = Join-Path $DocsPath "evidence"
+    $canonicalPath = Join-Path $evidencePath "metrics-canonical.json"
+    $truthPackPath = Join-Path $evidencePath "overview-truth-pack.json"
+
+    if (-not (Test-Path $canonicalPath)) { return $false }
+    if (-not (Test-Path $truthPackPath)) { return $false }
+
+    $canonical = Get-Content $canonicalPath -Raw | ConvertFrom-Json -Depth 80
+    $totals = Get-AppDocValidationObjectValue -Object $canonical -Name "totals" -Default @{}
+    if (-not $totals) { return $false }
+
+    $canonicalEndpoint   = [int](Get-AppDocValidationObjectValue -Object $totals -Name "endpointCount" -Default 0)
+    $canonicalInbound    = [int](Get-AppDocValidationObjectValue -Object $totals -Name "inboundEndpointCount" -Default 0)
+    $canonicalOutbound   = [int](Get-AppDocValidationObjectValue -Object $totals -Name "outboundEndpointCount" -Default 0)
+    $canonicalModel      = [int](Get-AppDocValidationObjectValue -Object $totals -Name "modelCount" -Default 0)
+    $canonicalDependency = [int](Get-AppDocValidationObjectValue -Object $totals -Name "dependencyCount" -Default 0)
+
+    $truthPack = Get-Content $truthPackPath -Raw | ConvertFrom-Json -Depth 80
+    $counts = Get-AppDocValidationObjectValue -Object $truthPack -Name "counts" -Default @{}
+    if (-not $counts) {
+        $counts = [ordered]@{}
+        $truthPack | Add-Member -NotePropertyName "counts" -NotePropertyValue $counts
+    }
+
+    # Current truth-pack counts (-1 sentinel so a missing key is treated as "differ").
+    $currentEndpoint   = [int](Get-AppDocValidationObjectValue -Object $counts -Name "endpointRecords" -Default -1)
+    $currentInbound    = [int](Get-AppDocValidationObjectValue -Object $counts -Name "inboundEndpoints" -Default -1)
+    $currentOutbound   = [int](Get-AppDocValidationObjectValue -Object $counts -Name "outboundEndpoints" -Default -1)
+    $currentModel      = [int](Get-AppDocValidationObjectValue -Object $counts -Name "modelRecords" -Default -1)
+    $currentDependency = [int](Get-AppDocValidationObjectValue -Object $counts -Name "dependencyRecords" -Default -1)
+
+    $needsAlign = ($currentEndpoint   -ne $canonicalEndpoint) -or
+                  ($currentInbound    -ne $canonicalInbound) -or
+                  ($currentOutbound   -ne $canonicalOutbound) -or
+                  ($currentModel      -ne $canonicalModel) -or
+                  ($currentDependency -ne $canonicalDependency)
+    if (-not $needsAlign) { return $false }
+
+    # Align the overview truth-pack counts to the canonical totals (ground-truth source).
+    $truthPack.counts.endpointRecords   = [int]$canonicalEndpoint
+    $truthPack.counts.inboundEndpoints  = [int]$canonicalInbound
+    $truthPack.counts.outboundEndpoints = [int]$canonicalOutbound
+    $truthPack.counts.modelRecords      = [int]$canonicalModel
+    $truthPack.counts.dependencyRecords = [int]$canonicalDependency
+
+    $truthPack | ConvertTo-Json -Depth 50 | Out-File -FilePath $truthPackPath -Encoding UTF8
+
+    # Keep the canonical's informational crossCheck (a snapshot of the truth pack taken
+    # earlier, before this realign) consistent with the now-aligned truth pack. This is a
+    # display-only field (not scored by the gate); the totals remain the ground truth.
+    if ($canonical.PSObject.Properties["crossChecks"]) {
+        $cc = $canonical.crossChecks
+        if ($cc -and $cc.PSObject.Properties["overviewTruthPack"]) {
+            $cc.overviewTruthPack.endpointCount   = [int]$canonicalEndpoint
+            $cc.overviewTruthPack.modelCount      = [int]$canonicalModel
+            $cc.overviewTruthPack.dependencyCount = [int]$canonicalDependency
+            $canonical | ConvertTo-Json -Depth 20 | Out-File -FilePath $canonicalPath -Encoding UTF8
+        }
+    }
+
+    return $true
 }
 
 function Get-AppDocGitCommitHash {
@@ -1111,7 +1212,20 @@ $pipelinePhases = @(
             "generate-overview.ps1",
             "generate-start-here.ps1",
             "generate-task-guides.ps1",
-            "generate-docs-index.ps1"
+            "generate-docs-index.ps1",
+            "generate-evidence-register.ps1",
+            "generate-verification-appendix.ps1",
+            "generate-classic-asp-endpoints.ps1",
+            "generate-classic-asp-datamodel.ps1",
+            "generate-classic-asp-platform.ps1",
+            "generate-classic-asp-failures.ps1",
+            "generate-classic-asp-procdict.ps1",
+            "generate-classic-asp-security.ps1",
+            "generate-external-calls.ps1",
+            "generate-classic-asp-extcalls.ps1",
+            "generate-source-docs.ps1",
+            "generate-git-ownership.ps1",
+            "generate-unified-master.ps1"
         )
     }
 )
@@ -1232,52 +1346,6 @@ if (-not $SkipDiagrams) {
     }
 }
 
-# Run assessment if requested
-if ($IncludeAssessment) {
-    if (-not $SampleDir) {
-        Write-Error "SampleDir parameter is required when using -IncludeAssessment"
-        exit 1
-    }
-
-    Write-Host "Running quality assessment..."
-
-    $assessmentScripts = @(
-        "catalog-samples.ps1",
-        "analyze-capability-gaps.ps1",
-        "generate-improvements.ps1",
-        "calculate-quality-metrics.ps1",
-        "synthesize-assessment-report.ps1"
-    )
-
-    foreach ($script in $assessmentScripts) {
-        $scriptPath = Join-Path $PSScriptRoot $script
-        if (Test-Path $scriptPath) {
-            Write-Host "Running assessment script $script..."
-            if ($DryRun) {
-                Write-Host "[DryRun] Would execute assessment script $script" -ForegroundColor Gray
-                Add-AppDocDiagnostic -Category "NOT_FOUND" -Severity "Info" -Message "Dry run skipped assessment script" -Component "Assessment" -FilePath $scriptPath -Details @{ script = $script }
-                continue
-            }
-
-            try {
-                switch ($script) {
-                    "catalog-samples.ps1" { & $scriptPath -SampleDir $SampleDir }
-                    "analyze-capability-gaps.ps1" { & $scriptPath -SampleDir $SampleDir -CurrentDocsDir $docsPath }
-                    "generate-improvements.ps1" { & $scriptPath }
-                    "calculate-quality-metrics.ps1" { & $scriptPath }
-                    "synthesize-assessment-report.ps1" { & $scriptPath }
-                }
-            } catch {
-                Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to run assessment script: $script" -Component "Assessment" -FilePath $scriptPath -Details @{ exception = $_.Exception.Message }
-                Write-Warning "Failed to run assessment script $script`: $_"
-            }
-        } else {
-            Add-AppDocDiagnostic -Category "IO_ERROR" -Severity "Warning" -Message "Assessment script not found: $script" -Component "Assessment" -FilePath $scriptPath
-            Write-Warning "Assessment script $script not found"
-        }
-    }
-}
-
 if ($DryRun) {
     Write-Host "`nDry-run completed. No generation or validation output files were written." -ForegroundColor Yellow
     if (Get-Command Get-AppDocDiagnosticsSummary -ErrorAction SilentlyContinue) {
@@ -1356,6 +1424,44 @@ try {
 catch {
     Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to generate canonical metrics" -Component "Generation" -Details @{ exception = $_.Exception.Message }
     Write-Warning ("Failed to generate canonical metrics: {0}" -f $_.Exception.Message)
+}
+
+# Re-align the overview truth-pack counts to the canonical metrics now that they exist.
+# (generate-overview.ps1 ran earlier, before classic-ASP endpoint/model evidence was
+# populated, so its counts can be stale; the canonical metrics are the ground-truth
+# count source. This is a no-op when they already agree.)
+if (Test-Path $canonicalMetricsPath) {
+    try {
+        $realignedOverview = Realign-AppDocOverviewTruthPackToCanonical -RootPath $RootPath -DocsPath $docsPath
+        if ($realignedOverview) {
+            Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Overview truth-pack re-aligned to canonical metrics" -Component "Generation" -FilePath (Join-Path $docsPath "evidence\overview-truth-pack.json")
+            Write-Host "📄 Overview truth-pack counts re-aligned to canonical metrics." -ForegroundColor Cyan
+        }
+    }
+    catch {
+        Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to re-align overview truth-pack to canonical" -Details @{ exception = $_.Exception.Message }
+        Write-Warning ("Failed to re-align overview truth-pack to canonical: {0}" -f $_.Exception.Message)
+    }
+
+    # start-here.md carries "API endpoints documented: N" / "Data models documented: M"
+    # signal lines. generate-start-here.ps1 ran earlier (before the classic-ASP
+    # endpoint/model evidence was populated), so on classic-ASP targets those lines are
+    # stale at 0 while the canonical + evidence hold the real counts. Now that the
+    # evidence and canonical metrics are complete, re-run the start-here generator so its
+    # counts reflect the populated evidence (it derives counts from the same evidence
+    # records the gate cross-checks, so this makes start-here consistent and is a
+    # no-op when the counts already agree).
+    $startHereGenerator = Join-Path $PSScriptRoot "generate-start-here.ps1"
+    if (Test-Path $startHereGenerator) {
+        try {
+            & $startHereGenerator -RootPath $RootPath
+            Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Start-here re-generated with populated classic-ASP evidence" -Component "Generation" -FilePath (Join-Path $docsPath "start-here.md")
+        }
+        catch {
+            Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to re-generate start-here" -Details @{ exception = $_.Exception.Message }
+            Write-Warning ("Failed to re-generate start-here: {0}" -f $_.Exception.Message)
+        }
+    }
 }
 
 $integrityGateScriptPath = Join-Path $PSScriptRoot "ci-doc-integrity-gate.ps1"
@@ -1529,15 +1635,40 @@ catch {
     Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to apply pre-validation provenance" -Component "Generation" -Details @{ exception = $_.Exception.Message }
 }
 
+# --- LAST GENERATOR: branded MD -> styled-HTML report -------------------------
+# Runs after all content + evidence + verification artifacts exist (and after the
+# early provenance stamp) and before structured validation, so report.html always
+# reflects the latest content. Failure is non-fatal (HTML is a presentation layer;
+# it must not block the deterministic docs or the conformance gate).
+$htmlReportScriptPath = Join-Path $PSScriptRoot "generate-html-report.ps1"
+if (Test-Path $htmlReportScriptPath) {
+    if ($DryRun) {
+        Write-Host "[DryRun] Would execute generate-html-report.ps1" -ForegroundColor Gray
+        Add-AppDocDiagnostic -Category "NOT_FOUND" -Severity "Info" -Message "Dry run skipped HTML report generation" -Component "Generation" -FilePath $htmlReportScriptPath
+    }
+    else {
+        try {
+            & $htmlReportScriptPath -RootPath $RootPath
+        }
+        catch {
+            Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to generate HTML report: $_" -Component "Generation" -FilePath $htmlReportScriptPath -Details @{ exception = $_.Exception.Message }
+            Write-Warning "Failed to generate HTML report: $_"
+        }
+    }
+}
+else {
+    Write-Verbose "HTML report generator not found (optional feature): $htmlReportScriptPath"
+}
+
 $structuredValidationPath = Join-Path $PSScriptRoot "validate-documentation.ps1"
 $structuredValidationResult = $null
 if (Test-Path $structuredValidationPath) {
     try {
         $structuredValidationOutput = if ($StrictValidation) {
-            & $structuredValidationPath -RootPath $RootPath -Strict -Threshold $QualityThreshold -Json
+            & $structuredValidationPath -RootPath $RootPath -Strict -Threshold $QualityThreshold -Json -PristineGate:$PristineGate -PristineFloor $PristineFloor
         }
         else {
-            & $structuredValidationPath -RootPath $RootPath -Threshold $QualityThreshold -Json
+            & $structuredValidationPath -RootPath $RootPath -Threshold $QualityThreshold -Json -PristineGate:$PristineGate -PristineFloor $PristineFloor
         }
 
         $structuredValidationText = ($structuredValidationOutput | Out-String).Trim()
@@ -1547,28 +1678,14 @@ if (Test-Path $structuredValidationPath) {
             # Fallback: use last opening brace if no regex match (to match intended 'last brace' behavior)
             $jsonStartIndex = if ($jsonStarts.Count -gt 0) { $jsonStarts[$jsonStarts.Count - 1].Index } else { $structuredValidationText.LastIndexOf('{') }
             if ($jsonStartIndex -ge 0) {
-                # Scan forward to find the matching closing brace
-                $depth = 0
-                $found = $false
-                for ($i = $jsonStartIndex; $i -lt $structuredValidationText.Length; $i++) {
-                    $char = $structuredValidationText[$i]
-                    if ($char -eq '{') { $depth++ }
-                    elseif ($char -eq '}') { $depth-- }
-                    if ($depth -eq 0 -and $i -gt $jsonStartIndex) {
-                        $structuredValidationJson = $structuredValidationText.Substring($jsonStartIndex, $i - $jsonStartIndex + 1)
-                        $found = $true
-                        break
-                    }
-                }
-                if ($found) {
-                    $structuredValidationResult = $structuredValidationJson | ConvertFrom-Json
-                    # Only log diagnostic if we actually parsed a result
-                    if ($structuredValidationResult) {
-                        Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Structured validation completed" -Component "Validation"
-                    }
-                } else {
-                    throw "Structured validation did not produce a parseable JSON payload."
-                }
+                # The -Json switch emits the verdict object as the TRAILING success-stream
+                # output (any progress prose precedes it). So the verdict JSON runs from the
+                # last '{'-line to the end of the string — no brace matching needed. (The
+                # former brace-depth counter was brittle: it mis-counted braces inside string
+                # literals. Trailing-substring is robust and byte-identical on real output.)
+                $structuredValidationJson = $structuredValidationText.Substring($jsonStartIndex)
+                $structuredValidationResult = $structuredValidationJson | ConvertFrom-Json
+                Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Structured validation completed" -Component "Validation"
             } else {
                 throw "Structured validation did not produce a parseable JSON payload."
             }
@@ -1577,6 +1694,36 @@ if (Test-Path $structuredValidationPath) {
     catch {
         Add-AppDocDiagnostic -Category "DETECTION_PATTERN_MISMATCH" -Severity "Warning" -Message "Structured validation reported issues" -Component "Validation" -Details @{ exception = $_.Exception.Message }
     }
+}
+
+# --- PRISTINE CHECK report (Step 1b) -----------------------------------------
+# Non-blocking, additive: runs AFTER the pipeline + gate (so it reads the composed
+# doc + the gate scorecard) and writes docs/pristine-report.md + the machine record
+# docs/evidence/pristine.evidence.json. It is a DEPTH measurement of the 20 composed
+# sections vs the HELP_DESK benchmark. The additive `pristine` sub-score is folded
+# into docs/validation-report.json by validate-documentation.ps1 itself (after
+# status/overallScore are frozen), so emitting the human-readable report here cannot
+# change status (pass/fail) or overallScore. Failure is non-fatal (the report is a
+# presentation/depth layer; it must not block the deterministic docs or the gate).
+$pristineReportScriptPath = Join-Path $PSScriptRoot "generate-pristine-report.ps1"
+if (Test-Path $pristineReportScriptPath) {
+    if ($DryRun) {
+        Write-Host "[DryRun] Would execute generate-pristine-report.ps1" -ForegroundColor Gray
+        Add-AppDocDiagnostic -Category "NOT_FOUND" -Severity "Info" -Message "Dry run skipped pristine report generation" -Component "Validation" -FilePath $pristineReportScriptPath
+    }
+    else {
+        try {
+            & $pristineReportScriptPath -RootPath $RootPath
+            Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Pristine check report generated (non-blocking depth measurement)" -Component "Validation" -FilePath $pristineReportScriptPath
+        }
+        catch {
+            Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to generate pristine report: $_" -Component "Validation" -FilePath $pristineReportScriptPath
+            Write-Warning "Failed to generate pristine report: $_"
+        }
+    }
+}
+else {
+    Write-Verbose "Pristine report generator not found (optional feature): $pristineReportScriptPath"
 }
 
 if ($structuredValidationResult) {
@@ -1645,10 +1792,20 @@ if (Get-Command Test-AppDocValidationGate -ErrorAction SilentlyContinue) {
         if ($null -ne $structuredValidationResult.policyGates -and $null -ne $structuredValidationResult.policyGates.passed) {
             $policyPass = [bool]$structuredValidationResult.policyGates.passed
         }
-        $structuredPass = ($scorePass -and $policyPass)
+        # Pristine gate (Deliverable B, OPT-IN): when -PristineGate is ON (blocking mode)
+        # and the pure decision blocked the run (pristineGate.blocked=true), the
+        # structured pass must FAIL so the run's gate reflects the block. This is
+        # ADDITIVE — the pristine gate is a separate condition layered on top; in the
+        # DEFAULT (report-only, gate OFF) pristineGate.blocked=false so this is $true and
+        # the structural conformance pass/fail is UNCHANGED.
+        $pristineGatePass = $true
+        if ($null -ne $structuredValidationResult.pristineGate -and $null -ne $structuredValidationResult.pristineGate.blocked) {
+            $pristineGatePass = -not [bool]$structuredValidationResult.pristineGate.blocked
+        }
+        $structuredPass = ($scorePass -and $policyPass -and $pristineGatePass)
         $validationGate = [ordered]@{
             passed = $structuredPass
-            reason = if ($structuredPass) { "Structured validation gate passed" } else { "Structured validation gate failed (score and/or policy gates)" }
+            reason = if ($structuredPass) { "Structured validation gate passed" } elseif (-not $pristineGatePass) { "Pristine gate blocked the run (mode=blocking, OPT-IN -PristineGate)" } else { "Structured validation gate failed (score and/or policy gates)" }
             averageScore = [double]$structuredValidationResult.overallScore
             belowThreshold = if ($structuredPass) { 0 } else { 1 }
             strict = $StrictValidation.IsPresent
@@ -1739,5 +1896,17 @@ if (-not $DryRun) {
 }
 
 if ($StrictValidation -and $validationGate -and -not $validationGate.passed) {
+    exit 1
+}
+
+# Pristine gate block (Deliverable B, OPT-IN): when -PristineGate is ON (blocking mode)
+# and the pure decision blocked the run, exit 1 — the pristine gate is a NEW, ADDITIVE,
+# opt-in blocking condition layered on top of the structural conformance pass/fail.
+# Default (report-only, gate OFF) NEVER reaches here (pristineGate.blocked=false).
+if ($PristineGate -and $structuredValidationResult -and $structuredValidationResult.pristineGate -and [bool]$structuredValidationResult.pristineGate.blocked) {
+    Write-Host "`n🚫 Pristine gate BLOCKED the run (mode=blocking; OPT-IN -PristineGate)." -ForegroundColor Red
+    $pgIssueSummary = (@($structuredValidationResult.pristineGate.blockingIssues) -join "; ")
+    Write-Host "   Reason: $pgIssueSummary" -ForegroundColor DarkYellow
+    Write-Host "   The pristine gate is a DEPTH gate: it does not change overallScore (structural conformance untouched)." -ForegroundColor Gray
     exit 1
 }

@@ -13,9 +13,12 @@ function Get-AppDocFrameworkMatrix {
         @{ language = "C#"; framework = "WCF Services"; supportLevel = "partial"; coveragePercent = 70; versionRange = ".NET Framework"; detectionSignals = @("[ServiceContract]", "[OperationContract]", "*.svc") },
         @{ language = "C#"; framework = "ASMX Web Services"; supportLevel = "partial"; coveragePercent = 65; versionRange = ".NET Framework"; detectionSignals = @("[WebMethod]", "*.asmx") },
         @{ language = "C#"; framework = "SOAP Client Integrations"; supportLevel = "partial"; coveragePercent = 60; versionRange = ".NET Framework"; detectionSignals = @("Service References", "*.svcmap", "*.wsdl") },
+        @{ language = "ASP (VBScript/JScript)"; framework = "Classic ASP"; supportLevel = "partial"; coveragePercent = 55; versionRange = "IIS / .NET Framework"; detectionSignals = @("*.asp", "*.aspx", "global.asa", "<!-- #include", "ADODB.Connection", "Provider=SQLOLEDB") },
+        @{ language = "C#"; framework = "ASP.NET Web Forms"; supportLevel = "partial"; coveragePercent = 60; versionRange = ".NET Framework"; detectionSignals = @("*.aspx", "*.aspx.cs", "System.Web.UI.Page") },
         @{ language = "JavaScript/TypeScript"; framework = "Express.js"; supportLevel = "partial"; coveragePercent = 60; versionRange = "4.x"; detectionSignals = @("package.json:express", "app.get(", "router.") },
-        @{ language = "Python"; framework = "Flask"; supportLevel = "partial"; coveragePercent = 65; versionRange = "2.x+"; detectionSignals = @("requirements.txt:flask", "@app.route") },
-        @{ language = "Python"; framework = "FastAPI"; supportLevel = "partial"; coveragePercent = 70; versionRange = "0.9+"; detectionSignals = @("requirements.txt:fastapi", "@router.get") },
+        @{ language = "Python"; framework = "Flask"; supportLevel = "partial"; coveragePercent = 65; versionRange = "2.x+"; detectionSignals = @("requirements.txt:flask", "@app.route", "app = Flask(", "create_app") },
+        @{ language = "Python"; framework = "FastAPI"; supportLevel = "partial"; coveragePercent = 70; versionRange = "0.9+"; detectionSignals = @("requirements.txt:fastapi", "@router.get", "@app.get") },
+        @{ language = "Python"; framework = "Python"; supportLevel = "partial"; coveragePercent = 40; versionRange = "3.x+"; detectionSignals = @("*.py", "requirements.txt", "pyproject.toml") },
         @{ language = "Python"; framework = "Django"; supportLevel = "partial"; coveragePercent = 55; versionRange = "3.x+"; detectionSignals = @("requirements.txt:django", "urls.py", "path(") },
         @{ language = "Java"; framework = "Spring Boot"; supportLevel = "partial"; coveragePercent = 60; versionRange = "2.x+"; detectionSignals = @("pom.xml:spring-boot", "@RestController") }
     )
@@ -112,6 +115,51 @@ function Get-AppDocDetectedFrameworks {
         }
     }
 
+    # Classic ASP / ASP.NET Web Forms detection (no .cs/.csproj gate -- these apps are
+    # server-script .asp/.aspx pages, not C# projects). Probe file presence first (cheap),
+    # then bound the content scan so a large tree stays fast.
+    $aspExcl = '([\\/](fixtures|node_modules|bin|obj|dist|build|__pycache__|\.venv|target)[\\/])'
+    $aspFiles = @(Get-ChildItem -Path $RootPath -Recurse -Filter "*.asp" -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch $aspExcl })
+    $aspxFiles = @(Get-ChildItem -Path $RootPath -Recurse -Filter "*.aspx" -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch $aspExcl })
+    $aspxCsFiles = @(Get-ChildItem -Path $RootPath -Recurse -Filter "*.aspx.cs" -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch $aspExcl })
+    $hasGlobalAsa = $null -ne (Get-ChildItem -Path $RootPath -Recurse -Filter "global.asa" -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch $aspExcl } | Select-Object -First 1)
+    $hasWebConfig = $null -ne (Get-ChildItem -Path $RootPath -Recurse -Filter "web.config" -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch $aspExcl } | Select-Object -First 1)
+
+    if ($aspFiles.Count -gt 0 -or $aspxFiles.Count -gt 0 -or $hasGlobalAsa -or $aspxCsFiles.Count -gt 0) {
+        # Classic ASP content signal: server-side VBScript/JScript + ADO + #include pages.
+        $hasClassicAspContent = $false
+        $classicSample = @($aspFiles | Select-Object -First 40)
+        if ($classicSample.Count -eq 0 -and $aspxFiles.Count -gt 0) { $classicSample = @($aspxFiles | Select-Object -First 40) }
+        foreach ($file in $classicSample) {
+            $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
+            if ($content -match 'Server\.CreateObject|ADODB\.(Connection|Recordset)|<!--\s*#include|Provider\s*=\s*SQLOLEDB|Data Source\s*=|LANGUAGE\s*=\s*VBSCRIPT') {
+                $hasClassicAspContent = $true
+                break
+            }
+        }
+        if (($aspFiles.Count -gt 0 -or $aspxFiles.Count -gt 0) -and ($hasClassicAspContent -or $hasGlobalAsa -or $hasWebConfig)) {
+            $record = $matrix | Where-Object { $_.framework -eq "Classic ASP" } | Select-Object -First 1
+            if ($record) { [void]$detections.Add($record) }
+        }
+
+        # ASP.NET Web Forms: .aspx with code-behind (.aspx.cs) or Page directive, and NOT
+        # classic server-script (the single .aspx here is VBScript/ADODB classic ASP, so this
+        # must stay false for it).
+        $hasWebFormsContent = $false
+        $webFormsSample = @($aspxFiles | Select-Object -First 40)
+        foreach ($file in $webFormsSample) {
+            $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
+            if ($content -match 'System\.Web\.UI\.Page|Inherits\s*=|CodeBehind\s*=') {
+                $hasWebFormsContent = $true
+                break
+            }
+        }
+        if ($aspxCsFiles.Count -gt 0 -or (($hasWebFormsContent) -and (-not $hasClassicAspContent))) {
+            $record = $matrix | Where-Object { $_.framework -eq "ASP.NET Web Forms" } | Select-Object -First 1
+            if ($record) { [void]$detections.Add($record) }
+        }
+    }
+
     if (Get-Command Get-AppDocArchitectureFingerprint -ErrorAction SilentlyContinue) {
         $fingerprint = Get-AppDocArchitectureFingerprint -RootPath $RootPath
         $styles = @($fingerprint.styles)
@@ -143,11 +191,20 @@ function Get-AppDocDetectedFrameworks {
 
     if ($requirements.Count -gt 0 -or $pyFiles.Count -gt 0) {
         $reqText = ($requirements -join "`n")
-        if ($reqText -match '(?im)^\s*flask' -or ($pyFiles | Where-Object { (Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue) -match '@app\.route' } | Select-Object -First 1)) {
+        # Flask: requirements.txt lists flask, OR a .py file carries a Flask web-app
+        # signal -- @app.route / @<blueprint>.route (any blueprint name), a Flask
+        # instance (app = Flask(...) / app = Flask()), or a create_app() application
+        # factory. (Flask apps routinely use blueprints, so @app.route alone misses
+        # real apps like FlaskCrud that route via @app_bp.route.)
+        $hasFlaskSignal = ($pyFiles | Where-Object { (Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue) -match '@\w+\.route|=\s*Flask\(|\bcreate_app\b' } | Select-Object -First 1)
+        if ($reqText -match '(?im)^\s*flask' -or $hasFlaskSignal) {
             $record = $matrix | Where-Object { $_.framework -eq "Flask" } | Select-Object -First 1
             [void]$detections.Add($record)
         }
-        if ($reqText -match '(?im)^\s*fastapi' -or ($pyFiles | Where-Object { (Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue) -match '@router\.(get|post|put|delete|patch)' } | Select-Object -First 1)) {
+        # FastAPI: requirements.txt lists fastapi, OR a .py file carries a FastAPI
+        # signal -- @app.get/post/... or @router.get/post/... route handlers.
+        $hasFastApiSignal = ($pyFiles | Where-Object { (Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue) -match '@(app|router)\.(get|post|put|delete|patch|options|head|trace)\b' } | Select-Object -First 1)
+        if ($reqText -match '(?im)^\s*fastapi' -or $hasFastApiSignal) {
             $record = $matrix | Where-Object { $_.framework -eq "FastAPI" } | Select-Object -First 1
             [void]$detections.Add($record)
         }
@@ -157,8 +214,16 @@ function Get-AppDocDetectedFrameworks {
             $record = $matrix | Where-Object { $_.framework -eq "Django" } | Select-Object -First 1
             [void]$detections.Add($record)
         }
+        # Generic Python fallback (ADDITIVE): if the target is a Python codebase (it
+        # has .py files) but NO specific web framework was recognized above, emit a
+        # generic "Python" record so the report is never left at "Unknown / not
+        # detected" for a real Python app. It never fires on a non-Python target
+        # (pyFiles is empty), so C# / classic-ASP / Node / Java targets are unchanged.
+        if ($detections.Count -eq 0 -and $pyFiles.Count -gt 0) {
+            $record = $matrix | Where-Object { $_.framework -eq "Python" } | Select-Object -First 1
+            if ($record) { [void]$detections.Add($record) }
+        }
     }
-
     if ((Test-Path $pomPath) -or $javaFiles.Count -gt 0) {
         $pomContent = if (Test-Path $pomPath) { Get-Content $pomPath -Raw -ErrorAction SilentlyContinue } else { "" }
         $hasSpring = $pomContent -match 'spring-boot|spring-web' -or ($javaFiles | Where-Object { (Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue) -match '@RestController|@RequestMapping' } | Select-Object -First 1)

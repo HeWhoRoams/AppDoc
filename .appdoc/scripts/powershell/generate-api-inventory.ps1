@@ -161,6 +161,38 @@ function Write-AppDocApiInventoryAppendix {
         $directionValue.ToLowerInvariant() -eq "outbound"
     })
 
+    # Optional enrichment projection (Finding B): when the semantic enrichment stage
+    # has produced the api-inventory enriched evidence, project each endpoint's
+    # businessPurpose into the full per-endpoint catalog (the appendix table), mirroring
+    # how generate-data-model.ps1 / generate-config-catalog.ps1 project businessPurpose
+    # into their .md tables. Grounded values (the enrichment's llm-provenance
+    # businessPurpose) are shown verbatim; un-grounded endpoints keep the deterministic
+    # honest "Purpose unclear from available evidence" fallback (never fabricated). When
+    # the enriched evidence is absent (enrichment OFF) this whole projection is a NO-OP
+    # and the appendix stays byte-identical to the deterministic-only output.
+    $enrichedApiPath = Join-Path $RootPath "docs\evidence\api-inventory.evidence.enriched.json"
+    $hasEnrichedApi = $false
+    $apiBusinessPurposeLookup = @{}
+    if (Test-Path $enrichedApiPath) {
+        try {
+            $enrichedApiPayload = Get-Content -Path $enrichedApiPath -Raw | ConvertFrom-Json -Depth 80
+            $enrichedApiRecords = @($enrichedApiPayload.records | Where-Object { $_ -and -not [string]::IsNullOrWhiteSpace([string]$_.businessPurpose) })
+            foreach ($record in $enrichedApiRecords) {
+                $bpKey = ("{0}|{1}" -f ([string]$record.source).ToLowerInvariant(), ([string]$record.name).ToLowerInvariant())
+                if (-not $apiBusinessPurposeLookup.ContainsKey($bpKey)) {
+                    $apiBusinessPurposeLookup[$bpKey] = [string]$record.businessPurpose
+                }
+            }
+            if ($apiBusinessPurposeLookup.Count -gt 0) {
+                $hasEnrichedApi = $true
+                Write-Host "   Projecting enriched endpoint businessPurpose: $($apiBusinessPurposeLookup.Count)" -ForegroundColor Gray
+            }
+        }
+        catch {
+            Write-Warning "Failed to read enriched api-inventory evidence: $($_.Exception.Message)"
+        }
+    }
+
     $toRows = {
         param([array]$Rows)
         foreach ($row in @($Rows | Sort-Object @{ Expression = { [string]$_.controller } }, @{ Expression = { [string]$_.path } }, @{ Expression = { [string]$_.method } })) {
@@ -173,26 +205,45 @@ function Write-AppDocApiInventoryAppendix {
             $timeoutRetry = Get-AppDocApiTimeoutRetryHint -Direction $direction -SourceType $sourceType
             $idempotency = Get-AppDocApiIdempotencyHint -Method ([string]$row.method) -Direction $direction
             $confidence = Get-AppDocApiConfidence -SourceType $sourceType
-            "| ``$name`` | ``$path`` | $([string]$row.method) | $operationIntent | $authBoundary | $timeoutRetry | $idempotency | $confidence |"
+            $businessPurpose = "—"
+            if ($hasEnrichedApi -and $row.filePath -and $row.path) {
+                $bpKey = ("{0}|{1}" -f ([string]$row.filePath).ToLowerInvariant(), ([string]$row.path).ToLowerInvariant())
+                if ($apiBusinessPurposeLookup.ContainsKey($bpKey)) {
+                    $businessPurpose = Format-AppDocMarkdownCell -Value $apiBusinessPurposeLookup[$bpKey] -MaxLength 140
+                }
+            }
+            if ($hasEnrichedApi) {
+                "| ``$name`` | ``$path`` | $([string]$row.method) | $businessPurpose | $operationIntent | $authBoundary | $timeoutRetry | $idempotency | $confidence |"
+            }
+            else {
+                "| ``$name`` | ``$path`` | $([string]$row.method) | $operationIntent | $authBoundary | $timeoutRetry | $idempotency | $confidence |"
+            }
         }
     }
 
     $inboundRows = @(& $toRows $inbound)
     $outboundRows = @(& $toRows $outbound)
-    $appendixHeader = "| Name | Path | Method | Operation Intent | Auth Boundary | Timeout/Retry | Idempotency | Confidence |`n|------|------|--------|------------------|---------------|---------------|-------------|------------|"
+    if ($hasEnrichedApi) {
+        $appendixHeader = "| Name | Path | Method | Business Purpose | Operation Intent | Auth Boundary | Timeout/Retry | Idempotency | Confidence |`n|------|------|--------|------------------|------------------|---------------|---------------|-------------|------------|"
+        $naRow = "| N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | medium |"
+    }
+    else {
+        $appendixHeader = "| Name | Path | Method | Operation Intent | Auth Boundary | Timeout/Retry | Idempotency | Confidence |`n|------|------|--------|------------------|---------------|---------------|-------------|------------|"
+        $naRow = "| N/A | N/A | N/A | N/A | N/A | N/A | N/A | medium |"
+    }
 
     $inboundContent = if ($inboundRows.Count -gt 0) {
         "$appendixHeader`n$($inboundRows -join "`n")"
     }
     else {
-        "$appendixHeader`n| N/A | N/A | N/A | N/A | N/A | N/A | N/A | medium |"
+        "$appendixHeader`n$naRow"
     }
 
     $outboundContent = if ($outboundRows.Count -gt 0) {
         "$appendixHeader`n$($outboundRows -join "`n")"
     }
     else {
-        "$appendixHeader`n| N/A | N/A | N/A | N/A | N/A | N/A | N/A | medium |"
+        "$appendixHeader`n$naRow"
     }
 
     $appendixContent = @(

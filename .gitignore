@@ -1,7 +1,4 @@
 
-# Exclude test/example repositories
-LmsConnect-master/
-
 # Node modules
 node_modules/
 
@@ -22,3 +19,9 @@ Thumbs.db
 .github/prompts/speckit.*
 .specify/
 specs/
+
+# AppDoc test-run artifacts + runtime temp (generated, not source)
+tests/test-output/
+tests/powershell/test-output/
+.appdoc/tmp/
+tmp/

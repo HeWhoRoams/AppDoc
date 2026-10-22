@@ -6,6 +6,9 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
+if (Test-Path $helpersPath) { . $helpersPath }
+
 $evidenceGraphModulePath = Join-Path $PSScriptRoot "modules\AppDoc.EvidenceGraph.psm1"
 if (Test-Path $evidenceGraphModulePath) {
     try {
@@ -63,20 +66,6 @@ function Get-ObjectPropertyValue {
     }
     return $Default
 }
-
-function Get-MarkdownSectionBlock {
-    param(
-        [string]$Content,
-        [string]$SectionHeader
-    )
-
-    if (-not $Content) { return "" }
-    $pattern = "(?ms)^##\s+" + [regex]::Escape($SectionHeader) + "\s*$\r?\n(.*?)(?=^##\s+[^\r\n]+|\z)"
-    $match = [regex]::Match($Content, $pattern)
-    if ($match.Success) { return $match.Groups[1].Value }
-    return ""
-}
-
 function Test-NoTableHeaderContamination {
     param(
         [string]$Content
@@ -198,7 +187,7 @@ foreach ($docPath in $docFiles) {
 $overviewPath = Join-Path $docsPath "overview.md"
 if (Test-Path $overviewPath) {
     $overviewContent = Get-Content -Path $overviewPath -Raw
-    $welcomeBlock = Get-MarkdownSectionBlock -Content $overviewContent -SectionHeader "Welcome"
+    $welcomeBlock = Get-MarkdownSectionBlock -Content $overviewContent -SectionName "Welcome"
     if ($welcomeBlock) {
         $referencedIds = @(
             [regex]::Matches($welcomeBlock, '(?i)\bev-\d{4}\b') |

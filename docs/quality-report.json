@@ -1,20 +1,20 @@
 {
-  "timestamp": "2026-10-16 11:56:00",
   "overall": {
-    "hardPenaltyApplied": false,
-    "hardPenaltyReasons": [],
-    "averageScore": 86.4,
+    "mediumQuality": 1,
     "totalDocs": 11,
-    "adjustedAverageScore": 96.0,
-    "missingDocs": 0,
-    "lowQuality": 1,
+    "hardPenaltyReasons": [],
+    "averageScore": 85.9,
+    "hardPenaltyApplied": false,
     "highQuality": 9,
-    "mediumQuality": 1
+    "adjustedAverageScore": 89.0,
+    "lowQuality": 1,
+    "missingDocs": 0
   },
+  "timestamp": "2026-10-17 18:41:04",
+  "status": "fail",
   "documents": [
     {
       "placeholders": [],
-      "score": 15,
       "issues": [
         "Welcome subsection missing: what_it_does",
         "Welcome subsection missing: processing_steps",
@@ -22,151 +22,154 @@
         "Welcome subsection missing: confidence_notes",
         "Welcome subsection missing: evidence_refs"
       ],
+      "codeBlocks": 0,
+      "listItems": 24,
       "gated": true,
-      "quality": "LOW",
-      "docType": "Overview",
-      "exists": true,
-      "listItems": 23,
+      "score": 15,
       "tableRows": 25,
-      "codeBlocks": 0
+      "docType": "Overview",
+      "quality": "LOW",
+      "exists": true
     },
     {
       "placeholders": [],
-      "score": 100,
-      "issues": [],
+      "issues": [
+        "API Endpoints table has no populated rows"
+      ],
+      "codeBlocks": 0,
+      "listItems": 6,
       "gated": true,
-      "quality": "HIGH",
-      "docType": "API Inventory",
-      "exists": true,
-      "listItems": 0,
-      "tableRows": 9,
-      "codeBlocks": 0
-    },
-    {
-      "placeholders": [],
-      "score": 100,
-      "issues": [],
-      "gated": true,
-      "quality": "HIGH",
-      "docType": "Data Model",
-      "exists": true,
-      "listItems": 0,
-      "tableRows": 9,
-      "codeBlocks": 0
-    },
-    {
-      "placeholders": [],
-      "score": 100,
-      "issues": [],
-      "gated": true,
-      "quality": "HIGH",
-      "docType": "Config Catalog",
-      "exists": true,
-      "listItems": 4,
-      "tableRows": 68,
-      "codeBlocks": 0
-    },
-    {
-      "placeholders": [],
       "score": 90,
+      "tableRows": 9,
+      "docType": "API Inventory",
+      "quality": "HIGH",
+      "exists": true
+    },
+    {
+      "placeholders": [],
+      "issues": [
+        "Data Models table has no populated rows"
+      ],
+      "codeBlocks": 0,
+      "listItems": 6,
+      "gated": true,
+      "score": 90,
+      "tableRows": 9,
+      "docType": "Data Model",
+      "quality": "HIGH",
+      "exists": true
+    },
+    {
+      "placeholders": [],
+      "issues": [],
+      "codeBlocks": 0,
+      "listItems": 8,
+      "gated": true,
+      "score": 100,
+      "tableRows": 124,
+      "docType": "Config Catalog",
+      "quality": "HIGH",
+      "exists": true
+    },
+    {
+      "placeholders": [],
       "issues": [
         "Build Steps table has no populated rows"
       ],
-      "gated": true,
-      "quality": "HIGH",
-      "docType": "Build Cookbook",
-      "exists": true,
-      "listItems": 1,
-      "tableRows": 14,
-      "codeBlocks": 0
-    },
-    {
-      "placeholders": [
-        "2x Empty detection placeholder"
-      ],
-      "score": 55,
-      "issues": [
-        "Test Suites section missing or empty",
-        "Test Cases placeholder text remains"
-      ],
-      "gated": true,
-      "quality": "MEDIUM",
-      "docType": "Test Catalog",
-      "exists": true,
+      "codeBlocks": 0,
       "listItems": 0,
-      "tableRows": 11,
-      "codeBlocks": 0
-    },
-    {
-      "placeholders": [],
-      "score": 100,
-      "issues": [],
       "gated": true,
-      "quality": "HIGH",
-      "docType": "Debt Register",
-      "exists": true,
-      "listItems": 0,
-      "tableRows": 13,
-      "codeBlocks": 0
-    },
-    {
-      "placeholders": [],
       "score": 90,
+      "tableRows": 7,
+      "docType": "Build Cookbook",
+      "quality": "HIGH",
+      "exists": true
+    },
+    {
+      "placeholders": [],
+      "issues": [
+        "Test Suites table has no populated rows",
+        "Test Cases table has no populated rows"
+      ],
+      "codeBlocks": 0,
+      "listItems": 0,
+      "gated": true,
+      "score": 70,
+      "tableRows": 7,
+      "docType": "Test Catalog",
+      "quality": "MEDIUM",
+      "exists": true
+    },
+    {
+      "placeholders": [],
+      "issues": [],
+      "codeBlocks": 0,
+      "listItems": 6,
+      "gated": true,
+      "score": 100,
+      "tableRows": 13,
+      "docType": "Debt Register",
+      "quality": "HIGH",
+      "exists": true
+    },
+    {
+      "placeholders": [],
       "issues": [
         "Dependency summary table has no populated rows"
       ],
+      "codeBlocks": 0,
+      "listItems": 6,
       "gated": true,
-      "quality": "HIGH",
-      "docType": "Dependencies Catalog",
-      "exists": true,
-      "listItems": 0,
+      "score": 90,
       "tableRows": 21,
-      "codeBlocks": 0
+      "docType": "Dependencies Catalog",
+      "quality": "HIGH",
+      "exists": true
     },
     {
       "placeholders": [],
-      "score": 100,
       "issues": [],
-      "gated": false,
-      "quality": "HIGH",
-      "docType": "Start Here",
-      "exists": true,
+      "codeBlocks": 0,
       "listItems": 24,
+      "gated": false,
+      "score": 100,
       "tableRows": 6,
-      "codeBlocks": 0
+      "docType": "Start Here",
+      "quality": "HIGH",
+      "exists": true
     },
     {
       "placeholders": [],
-      "score": 100,
       "issues": [],
+      "codeBlocks": 0,
+      "listItems": 15,
       "gated": false,
-      "quality": "HIGH",
-      "docType": "Task Guides",
-      "exists": true,
-      "listItems": 9,
+      "score": 100,
       "tableRows": 8,
-      "codeBlocks": 0
+      "docType": "Task Guides",
+      "quality": "HIGH",
+      "exists": true
     },
     {
       "placeholders": [],
-      "score": 100,
       "issues": [],
-      "gated": false,
-      "quality": "HIGH",
-      "docType": "Documentation Index",
-      "exists": true,
+      "codeBlocks": 0,
       "listItems": 12,
+      "gated": false,
+      "score": 100,
       "tableRows": 0,
-      "codeBlocks": 0
+      "docType": "Documentation Index",
+      "quality": "HIGH",
+      "exists": true
     }
   ],
   "penaltyBreakdown": {
-    "totalPenaltyPoints": 24,
+    "totalPenaltyPoints": 16,
     "categoryTotals": {
       "contradiction": 0,
       "duplicateRows": 16,
       "misclassification": 0,
-      "staleProvenance": 8,
+      "staleProvenance": 0,
       "verbosityOverflow": 0
     },
     "perArtifact": {
@@ -198,15 +201,13 @@
         "reasons": []
       },
       "config-catalog": {
-        "total": 8,
+        "total": 0,
         "contradiction": 0,
         "duplicateRows": 0,
         "misclassification": 0,
-        "staleProvenance": 8,
+        "staleProvenance": 0,
         "verbosityOverflow": 0,
-        "reasons": [
-          "provenance-missing-generated"
-        ]
+        "reasons": []
       },
       "build-cookbook": {
         "total": 0,
@@ -249,11 +250,10 @@
     },
     "artifactCount": 8
   },
-  "status": "pass",
   "provenance": {
     "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "8b13f8a",
-    "generatedAt": "2026-10-16T11:56:04-04:00",
+    "commitHash": "85946f7",
+    "generatedAt": "2026-10-17T18:41:14-04:00",
     "profile": "default",
     "scope": ".",
     "confidenceInferenceFlags": [

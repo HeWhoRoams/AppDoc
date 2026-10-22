@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-10-16T11:56:04-04:00",
+  "generatedAt": "2026-10-17T18:41:14-04:00",
   "summary": {
-    "total": 4,
+    "total": 13,
     "byCategory": {
+      "DETECTION_PATTERN_MISMATCH": 11,
       "ENVIRONMENT_ERROR": 1,
-      "DETECTION_PATTERN_MISMATCH": 2,
       "INITIALIZATION": 1
     },
     "bySeverity": {
       "Info": 2,
-      "Warning": 2
+      "Warning": 11
     },
     "hasErrors": false,
     "hasWarnings": true
   },
   "events": [
     {
-      "timestamp": "2026-10-16T11:56:00-04:00",
+      "timestamp": "2026-10-17T18:41:06-04:00",
       "category": "INITIALIZATION",
       "severity": "Info",
       "component": "orchestrator",
@@ -28,7 +28,79 @@
       }
     },
     {
-      "timestamp": "2026-10-16T11:56:03-04:00",
+      "timestamp": "2026-10-17T18:41:14-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Cross-artifact metric drift detected: cross-artifact-metric-drift:unified-master-endpoint-count:5/0",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-10-17T18:41:14-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Cross-artifact metric drift detected: cross-artifact-metric-drift:unified-master-model-count:4/0",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-10-17T18:41:14-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Cross-artifact metric drift detected: cross-artifact-metric-drift:overview-endpoint-count:5/0",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-10-17T18:41:14-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Cross-artifact metric drift detected: cross-artifact-metric-drift:overview-model-count:4/0",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-10-17T18:41:14-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: cross-artifact-metric-drift:unified-master-endpoint-count:5/0",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-10-17T18:41:14-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: cross-artifact-metric-drift:unified-master-model-count:4/0",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-10-17T18:41:14-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: cross-artifact-metric-drift:overview-endpoint-count:5/0",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-10-17T18:41:14-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "validation",
+      "message": "Policy gate blocking issue: cross-artifact-metric-drift:overview-model-count:4/0",
+      "filePath": "./docs",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-10-17T18:41:14-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -37,7 +109,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-10-16T11:56:04-04:00",
+      "timestamp": "2026-10-17T18:41:14-04:00",
       "category": "ENVIRONMENT_ERROR",
       "severity": "Info",
       "component": "Validation",
@@ -46,7 +118,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-10-16T11:56:04-04:00",
+      "timestamp": "2026-10-17T18:41:14-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "Narrative",
@@ -54,58 +126,64 @@
       "filePath": "./docs/evidence/narrative-run-report.json",
       "details": {
         "reasons": [
-          "style-business-verb-coverage-low:1",
-          "style-what-it-does-purpose-verb-low:0"
+          "missing-refs:what_it_does:1",
+          "missing-refs:what_it_does:2",
+          "missing-refs:what_it_does:3",
+          "missing-refs:processing_steps:1",
+          "missing-refs:processing_steps:2"
         ]
+      }
+    },
+    {
+      "timestamp": "2026-10-17T18:41:14-04:00",
+      "category": "DETECTION_PATTERN_MISMATCH",
+      "severity": "Warning",
+      "component": "Validation",
+      "message": "Validation is below threshold in soft mode",
+      "filePath": "",
+      "details": {
+        "belowThreshold": 1,
+        "threshold": 80,
+        "averageScore": 89.0
       }
     }
   ],
   "metadata": {
-    "narrativeRunReportPath": "./docs/evidence/narrative-run-report.json",
+    "strictValidation": false,
+    "profile": "default",
     "evidenceGraphMetrics": {
-      "entityCount": 56,
-      "edgeCount": 54,
+      "entityCount": 112,
+      "edgeCount": 110,
       "entityTypeCount": {
+        "config_key": 110,
         "test_case": 0,
-        "endpoint_outbound": 0,
-        "system": 1,
-        "data_model": 0,
-        "endpoint_inbound": 0,
-        "config_key": 54,
         "component": 1,
-        "dependency": 0
+        "endpoint_outbound": 0,
+        "dependency": 0,
+        "system": 1,
+        "endpoint_inbound": 0,
+        "data_model": 0
       },
       "inboundEndpointCount": 0,
       "outboundEndpointCount": 0,
       "componentCount": 1,
       "modelCount": 0,
-      "configCount": 54,
+      "configCount": 110,
       "dependencyCount": 0,
       "testCaseCount": 0
     },
-    "frameworks": null,
-    "narrativeReviewRequired": true,
-    "localOnly": true,
-    "evidenceGraphIntegrity": {
-      "passed": true,
-      "issues": null,
-      "warnings": null,
-      "metrics": {
-        "entityCount": 56,
-        "edgeCount": 54,
-        "inboundEndpointCount": 0,
-        "outboundEndpointCount": 0
-      }
-    },
-    "scriptFailures": null,
-    "narrativeReviewReasons": [
-      "style-business-verb-coverage-low:1",
-      "style-what-it-does-purpose-verb-low:0"
-    ],
     "outputPath": "./docs",
+    "rootPath": "./",
+    "frameworks": [
+      "ASP.NET Core",
+      "ASP.NET MVC 5",
+      "Flask",
+      "Spring Boot"
+    ],
+    "qualityThreshold": 80,
     "architecture": {
       "version": "1.1.0",
-      "generatedAt": "2026-10-16T11:55:36-04:00",
+      "generatedAt": "2026-10-17T18:40:17-04:00",
       "primaryStyle": "no-api-surface",
       "primaryStyleLabel": "No API Surface",
       "styles": "no-api-surface",
@@ -128,25 +206,43 @@
         "sampledCodeFileCount": 0
       }
     },
-    "strictValidation": false,
-    "profile": "default",
-    "qualityThreshold": 80,
-    "evidenceGraphPath": "./docs/evidence/evidence-graph.json",
     "validationGate": {
-      "passed": true,
-      "reason": "Structured validation gate passed",
-      "averageScore": 96.0,
-      "belowThreshold": 0,
+      "passed": false,
+      "reason": "Structured validation gate failed (score and/or policy gates)",
+      "averageScore": 89.0,
+      "belowThreshold": 1,
       "strict": false,
       "qualityThreshold": 80,
       "evaluatedDocuments": 8
     },
-    "rootPath": "./"
+    "narrativeReviewRequired": true,
+    "localOnly": true,
+    "evidenceGraphIntegrity": {
+      "passed": true,
+      "issues": null,
+      "warnings": null,
+      "metrics": {
+        "entityCount": 112,
+        "edgeCount": 110,
+        "inboundEndpointCount": 0,
+        "outboundEndpointCount": 0
+      }
+    },
+    "narrativeReviewReasons": [
+      "missing-refs:what_it_does:1",
+      "missing-refs:what_it_does:2",
+      "missing-refs:what_it_does:3",
+      "missing-refs:processing_steps:1",
+      "missing-refs:processing_steps:2"
+    ],
+    "narrativeRunReportPath": "./docs/evidence/narrative-run-report.json",
+    "evidenceGraphPath": "./docs/evidence/evidence-graph.json",
+    "scriptFailures": null
   },
   "provenance": {
     "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "8b13f8a",
-    "generatedAt": "2026-10-16T11:56:04-04:00",
+    "commitHash": "85946f7",
+    "generatedAt": "2026-10-17T18:41:14-04:00",
     "profile": "default",
     "scope": ".",
     "confidenceInferenceFlags": [

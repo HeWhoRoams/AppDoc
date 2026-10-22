@@ -78,26 +78,6 @@ function Get-AppDocOverviewDeterministicPass1 {
     }
 }
 
-function Test-AppDocOverviewPass1Shape {
-    [CmdletBinding()]
-    param([AllowNull()][object]$Pass1Result)
-
-    if (-not $Pass1Result) { return $false }
-    $map = Get-AppDocOverviewPipelineValue -Object $Pass1Result -Name "section_evidence_map" -Default $null
-    $outline = Get-AppDocOverviewPipelineValue -Object $Pass1Result -Name "outline" -Default $null
-    if (-not $map -or -not $outline) { return $false }
-
-    foreach ($section in @("what_it_does","inputs","processing_steps","outputs","external_systems","confidence_notes")) {
-        $mapVal = Get-AppDocOverviewPipelineValue -Object $map -Name $section -Default $null
-        $outlineVal = Get-AppDocOverviewPipelineValue -Object $outline -Name $section -Default ""
-        if ($null -eq $mapVal -or [string]::IsNullOrWhiteSpace([string]$outlineVal)) {
-            return $false
-        }
-    }
-
-    return $true
-}
-
 function Test-AppDocOverviewSectionEvidenceCoverage {
     [CmdletBinding()]
     param(

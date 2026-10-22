@@ -5,46 +5,10 @@ param(
     [switch]$Json
 )
 
-# Define fallback functions in case module is not available
-function Get-AppDocSourceFiles {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$RootPath,
-        [string[]]$Include = @("*.*")
-    )
-    
-    # Exclude test, fixture, mock, and example files by default. Override $ExcludePattern to customize exclusions.
-    $ExcludePattern = $script:ExcludePattern
-    if (-not $ExcludePattern) {
-        $ExcludePattern = '(?i)(\\node_modules\\|\\bin\\|\\obj\\|\\dist\\|\\build\\|\\docs\\|\\\.git\\|\\test\\|\\tests\\|\\spec\\|\\specs\\|\\__tests__\\|\\fixture\\|\\fixtures\\|\\mock\\|\\mocks\\|\\sample\\|\\samples\\|\\example\\|\\examples\\)'
-    }
-    return @(
-        $files | Where-Object {
-            $normalized = $_.FullName -replace '/', '\'
-            $normalized -notmatch $ExcludePattern
-        }
-    )
-}
-
-function Get-AppDocRelativePath {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$RootPath,
-        [Parameter(Mandatory=$true)]
-        [string]$Path
-    )
-    
-    $rootPathNormalized = $RootPath.TrimEnd('\', '/')
-    $pathNormalized = $Path.TrimEnd('\', '/')
-    
-    if ($pathNormalized.StartsWith($rootPathNormalized)) {
-        $relative = $pathNormalized.Substring($rootPathNormalized.Length)
-        return $relative.TrimStart('\', '/')
-    }
-    return $Path
-}
-
-# Try to import the module to override with full implementations if present
+# Import the scope module for its working Get-AppDocSourceFiles / Get-AppDocRelativePath.
+# (This mirrors parse-csharp-ast.ps1. A previous revision defined broken local fallbacks
+# here that referenced an undefined `$files` and shadowed the module's implementations, so
+# the parser produced 0 records when invoked from within the generic extractor session.)
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
 if (Test-Path $scopeModule) { 
     Import-Module $scopeModule -Force -ErrorAction Stop 
@@ -158,8 +122,19 @@ foreach ($file in $tsFiles) {
         }
     }
 
-    $expressRoutes = [regex]::Matches($content, '(?<handler>(?:app|router|\w+Router|\w+Routes))\.(?<verb>get|post|put|delete|patch)\s*\(\s*["''](?<path>[^"'']+)["'']\s*,\s*(?:async\s+)?(?:function\s*)?\((?<params>[^)]*)\)', 'IgnoreCase')
-    foreach ($route in $expressRoutes) {
+    # Inline handler pattern: matches router.get('/path', (req, res) => { ... }) or router.get('/path', async function(req, res) { ... })
+    # The function-parameter list is captured as the `params` group; the match ends at the closing paren of the param list.
+    $expressPatternInline = '(?<handler>(?:app|router|\w+Router|\w+Routes))\.(?<verb>get|post|put|delete|patch)\s*\(\s*["''](?<path>[^"'']+)["'']\s*,\s*(?:async\s+)?(?:function\s*)?\((?<params>[^)]*)\)'
+    $expressRoutesInline = [regex]::Matches($content, $expressPatternInline, 'IgnoreCase')
+    # Controller-idiom pattern: matches router.get('/path', handlerFn) or router.get('/path', mw1, handlerFn) or router.post('/path', upload.single("image"), handlerFn)
+    # The args group captures everything after the path string up to (but not including) the closing paren of the router.method() call.
+    # The negative lookahead (?!\s*(?:async|function)\b) prevents double-matching inline handlers.
+    # \w+ at the start requires the first arg to be an identifier (not a paren or async/function keyword).
+    # (?:[^()]|\([^()]*\))* handles one level of nested calls (e.g. upload.single("image")).
+    $expressPatternCtrl = '(?<handler>(?:app|router|\w+Router|\w+Routes))\.(?<verb>get|post|put|delete|patch)\s*\(\s*["''](?<path>[^"'']+)["'']\s*,\s*(?<args>(?!\s*(?:async|function)\b)\w+(?:[^()]|\([^()]*\))*)\)'
+    $expressRoutesCtrl = [regex]::Matches($content, $expressPatternCtrl, 'IgnoreCase')
+
+    foreach ($route in $expressRoutesInline) {
         $lineNumber = Get-LineNumber -Content $content -Index $route.Index
         $paramList = @()
         if ($route.Groups['params'].Value) {
@@ -183,6 +158,33 @@ foreach ($file in $tsFiles) {
                 parameters = $paramList
                 auth = "None"
                 description = "AST extracted endpoint"
+            }
+            provider = $provider
+            confidence = if ($pendingProvider) { 0.84 } else { 0.62 }
+        }
+    }
+
+    foreach ($route in $expressRoutesCtrl) {
+        $lineNumber = Get-LineNumber -Content $content -Index $route.Index
+        $argsStr = $route.Groups['args'].Value
+        # The last argument is the actual handler/controller function (e.g. `register` in `authLimiter, register`)
+        $argParts = [regex]::Split($argsStr, ',\s*(?=[^,]*$)')
+        $controllerFn = $argParts[$argParts.Length - 1].Trim()
+
+        $records += [ordered]@{
+            file = $relativePath
+            kind = "endpoint"
+            name = "$($route.Groups['handler'].Value).$($route.Groups['verb'].Value.ToUpper())"
+            lineNumber = $lineNumber
+            metadata = @{
+                language = "TypeScript"
+                method = $route.Groups['verb'].Value.ToUpper()
+                path = $route.Groups['path'].Value
+                controller = $controllerFn
+                returnType = "application/json"
+                parameters = @()
+                auth = "None"
+                description = "AST extracted endpoint (controller idiom)"
             }
             provider = $provider
             confidence = if ($pendingProvider) { 0.84 } else { 0.62 }

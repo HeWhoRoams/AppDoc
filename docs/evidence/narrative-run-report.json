@@ -1,8 +1,8 @@
 {
   "pipelineVersion": "1.1.0",
-  "startedAt": "2026-10-16T11:55:56-04:00",
-  "endedAt": "2026-10-16T11:55:56-04:00",
-  "durationMs": 71.0,
+  "startedAt": "2026-10-17T18:40:56-04:00",
+  "endedAt": "2026-10-17T18:40:56-04:00",
+  "durationMs": 79.0,
   "model": "local-deterministic",
   "executionMode": "local-deterministic",
   "externalModelCalls": false,
@@ -14,27 +14,30 @@
     "pass3": "deterministic"
   },
   "grounding": {
-    "passed": true,
-    "issues": []
+    "passed": false,
+    "issues": [
+      "missing-refs:what_it_does:1",
+      "missing-refs:what_it_does:2",
+      "missing-refs:what_it_does:3",
+      "missing-refs:processing_steps:1",
+      "missing-refs:processing_steps:2"
+    ]
   },
   "sectionCoverage": {
     "passed": true,
     "issues": []
   },
   "styleGate": {
-    "passed": false,
-    "issues": [
-      "style-business-verb-coverage-low:1",
-      "style-what-it-does-purpose-verb-low:0"
-    ],
+    "passed": true,
+    "issues": [],
     "metrics": {
-      "textItemCount": 8,
+      "textItemCount": 11,
       "inventoryLeadCount": 0,
       "countOnlySentenceCount": 0,
-      "businessVerbHits": 1,
+      "businessVerbHits": 9,
       "whatItDoesMetricLeadCount": 0,
-      "whatItDoesPurposeVerbHits": 0,
-      "numericDensity": 0.0729
+      "whatItDoesPurposeVerbHits": 7,
+      "numericDensity": 0.044
     }
   },
   "narrativeReviewRequired": true,

@@ -20,3 +20,136 @@ jobs:
         shell: pwsh
         run: |
           ./.appdoc/scripts/powershell/ci-doc-integrity-gate.ps1 -RootPath .
+
+  golden-test:
+    runs-on: ubuntu-latest
+    name: Golden-file regression (framework-agnostic)
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PowerShell
+        uses: actions/setup-pwsh@v3
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
+          }
+          "Pester $(Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version"
+      - name: Run golden-file regression test
+        shell: pwsh
+        run: |
+          Invoke-Pester -Path ./tests/powershell/test-golden-classic-asp.ps1 -Output Detailed
+
+  golden-test-csharp:
+    runs-on: ubuntu-latest
+    name: Golden-file regression (C# / ASP.NET Web Forms)
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PowerShell
+        uses: actions/setup-pwsh@v3
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
+          }
+          "Pester $(Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version"
+      - name: Run C# Web Forms golden-file regression test
+        shell: pwsh
+        run: |
+          Invoke-Pester -Path ./tests/powershell/test-golden-csharp-webforms.ps1 -Output Detailed
+
+  golden-test-csharp-core:
+    runs-on: ubuntu-latest
+    name: Golden-file regression (C# / ASP.NET Core Web API)
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PowerShell
+        uses: actions/setup-pwsh@v3
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
+          }
+          "Pester $(Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version"
+      - name: Run C# ASP.NET Core Web API golden-file regression test
+        shell: pwsh
+        run: |
+          Invoke-Pester -Path ./tests/powershell/test-golden-csharp-core-api.ps1 -Output Detailed
+
+  golden-test-node:
+    runs-on: ubuntu-latest
+    name: Golden-file regression (Node / Express + TypeScript)
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PowerShell
+        uses: actions/setup-pwsh@v3
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
+          }
+          "Pester $(Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version"
+      - name: Run Node / Express (TypeScript) golden-file regression test
+        shell: pwsh
+        run: |
+          Invoke-Pester -Path ./tests/powershell/test-golden-node-express.ps1 -Output Detailed
+
+  golden-test-python:
+    runs-on: ubuntu-latest
+    name: Golden-file regression (Python / Flask)
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PowerShell
+        uses: actions/setup-pwsh@v3
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
+          }
+          "Pester $(Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version"
+      - name: Run Python / Flask golden-file regression test
+        shell: pwsh
+        run: |
+          Invoke-Pester -Path ./tests/powershell/test-golden-python-flask.ps1 -Output Detailed
+
+  golden-test-java:
+    runs-on: ubuntu-latest
+    name: Golden-file regression (Java / Spring Boot)
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PowerShell
+        uses: actions/setup-pwsh@v3
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
+          }
+          "Pester $(Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version"
+      - name: Run Java / Spring Boot golden-file regression test
+        shell: pwsh
+        run: |
+          Invoke-Pester -Path ./tests/powershell/test-golden-java-spring.ps1 -Output Detailed
+
+  pristine-gate-test:
+    runs-on: ubuntu-latest
+    name: Pristine gate decision function (unit test)
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PowerShell
+        uses: actions/setup-pwsh@v3
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
+          }
+          "Pester $(Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version"
+      - name: Run the pristine gate decision-function unit test
+        shell: pwsh
+        run: |
+          Invoke-Pester -Path ./tests/powershell/test-pristine-gate.ps1 -Output Detailed

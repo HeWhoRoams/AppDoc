@@ -66,8 +66,15 @@ else {
     Write-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "PowerShell version check passed" -Component "diagnose" -Details @{ version = $PSVersionTable.PSVersion.ToString() } | Out-Null
 }
 
+# Mirror template-helpers.ps1's co-location fallback (Initialize-TemplateFile):
+# target <RootPath>/.appdoc/templates first, then the tool-adjacent AppDoc/.appdoc/templates.
+# The tool repo is separate from the target, so the target-only check below would raise a
+# false TEMPLATE_ERROR whenever the tool ships its own templates.
+$scriptRoot = Split-Path $PSScriptRoot -Parent
+$appDocRoot = if ($scriptRoot) { Split-Path $scriptRoot -Parent } else { $null }
 $templateDirs = @(
-    (Join-Path $RootPath ".appdoc\templates")
+    (Join-Path $RootPath ".appdoc\templates"),
+    $(if ($appDocRoot) { Join-Path $appDocRoot "templates" })
 )
 
 $templateOk = $false

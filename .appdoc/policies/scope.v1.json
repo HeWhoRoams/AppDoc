@@ -26,8 +26,7 @@
       "(?:^|\\\\)__tests__(?:\\\\|$)",
       "(?:^|\\\\)__mocks__(?:\\\\|$)",
       "(?:^|\\\\)(?:fixture|fixtures)(?:\\\\|$)",
-      "(?:^|\\\\)(?:mock|mocks)(?:\\\\|$)",
-      "(?:^|\\\\)(?:sample|samples|example|examples)(?:\\\\|$)"
+      "(?:^|\\\\)(?:mock|mocks)(?:\\\\|$)"
     ]
   },
   "artifactProfiles": {
@@ -52,7 +51,7 @@
       "includeTests": false,
       "includeFixtures": false,
       "excludePatterns": [
-        "(?i)\\.properties$"
+        "(?i)(?:^|\\\\)(?!application(?:-[A-Za-z0-9_-]+)?\\.properties$)[A-Za-z0-9_-]+\\.properties$"
       ]
     },
     "test-catalog": {

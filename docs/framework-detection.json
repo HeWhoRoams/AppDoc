@@ -1,23 +1,91 @@
-{
-  "versionRange": "2.1+",
-  "coveragePercent": 90,
-  "detectionSignals": [
-    "*.csproj",
-    "[ApiController]",
-    "MapControllers"
-  ],
-  "supportLevel": "full",
-  "language": "C#",
-  "framework": "ASP.NET Core",
-  "provenance": {
-    "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "8b13f8a",
-    "generatedAt": "2026-10-16T11:56:04-04:00",
-    "profile": "default",
-    "scope": ".",
-    "confidenceInferenceFlags": [
-      "deterministic",
-      "evidence-backed"
-    ]
+[
+  {
+    "language": "C#",
+    "versionRange": "2.1+",
+    "framework": "ASP.NET Core",
+    "detectionSignals": [
+      "*.csproj",
+      "[ApiController]",
+      "MapControllers"
+    ],
+    "coveragePercent": 90,
+    "supportLevel": "full",
+    "provenance": {
+      "generatorVersion": "appdoc-run-all-generators/3.0.0",
+      "commitHash": "85946f7",
+      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "profile": "default",
+      "scope": ".",
+      "confidenceInferenceFlags": [
+        "deterministic",
+        "evidence-backed"
+      ]
+    }
+  },
+  {
+    "language": "C#",
+    "versionRange": "5.x",
+    "framework": "ASP.NET MVC 5",
+    "detectionSignals": [
+      "System.Web.Mvc",
+      "*Controller.cs"
+    ],
+    "coveragePercent": 75,
+    "supportLevel": "partial",
+    "provenance": {
+      "generatorVersion": "appdoc-run-all-generators/3.0.0",
+      "commitHash": "85946f7",
+      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "profile": "default",
+      "scope": ".",
+      "confidenceInferenceFlags": [
+        "deterministic",
+        "evidence-backed"
+      ]
+    }
+  },
+  {
+    "language": "Python",
+    "versionRange": "2.x+",
+    "framework": "Flask",
+    "detectionSignals": [
+      "requirements.txt:flask",
+      "@app.route"
+    ],
+    "coveragePercent": 65,
+    "supportLevel": "partial",
+    "provenance": {
+      "generatorVersion": "appdoc-run-all-generators/3.0.0",
+      "commitHash": "85946f7",
+      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "profile": "default",
+      "scope": ".",
+      "confidenceInferenceFlags": [
+        "deterministic",
+        "evidence-backed"
+      ]
+    }
+  },
+  {
+    "language": "Java",
+    "versionRange": "2.x+",
+    "framework": "Spring Boot",
+    "detectionSignals": [
+      "pom.xml:spring-boot",
+      "@RestController"
+    ],
+    "coveragePercent": 60,
+    "supportLevel": "partial",
+    "provenance": {
+      "generatorVersion": "appdoc-run-all-generators/3.0.0",
+      "commitHash": "85946f7",
+      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "profile": "default",
+      "scope": ".",
+      "confidenceInferenceFlags": [
+        "deterministic",
+        "evidence-backed"
+      ]
+    }
   }
-}
+]

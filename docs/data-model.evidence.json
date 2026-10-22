@@ -1,0 +1,116 @@
+[
+  {
+    "id": "db-001",
+    "kind": "database",
+    "name": "FIXTURE-SERVER/FIXTURE_DB",
+    "provider": "SQLOLEDB",
+    "server": "FIXTURE-SERVER",
+    "catalog": "FIXTURE_DB",
+    "files": [
+      "tests/fixtures/classic-asp-sample/new-ticket.asp",
+      "tests/fixtures/classic-asp-sample/search-ticket.asp",
+      "tests/fixtures/classic-asp-sample/common/helpers.inc"
+    ],
+    "status": "Verified",
+    "provenance": {
+      "generatorVersion": "appdoc-run-all-generators/3.0.0",
+      "commitHash": "85946f7",
+      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "profile": "default",
+      "scope": ".",
+      "confidenceInferenceFlags": [
+        "deterministic",
+        "evidence-backed"
+      ]
+    }
+  },
+  {
+    "id": "obj-001",
+    "kind": "model",
+    "name": "HelpDesk.AuditTrail",
+    "type": "table/view",
+    "db": "HelpDesk",
+    "files": [
+      "tests/fixtures/classic-asp-sample/audit-log.asp"
+    ],
+    "status": "Verified",
+    "provenance": {
+      "generatorVersion": "appdoc-run-all-generators/3.0.0",
+      "commitHash": "85946f7",
+      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "profile": "default",
+      "scope": ".",
+      "confidenceInferenceFlags": [
+        "deterministic",
+        "evidence-backed"
+      ]
+    }
+  },
+  {
+    "id": "obj-002",
+    "kind": "model",
+    "name": "HelpDesk.Tickets",
+    "type": "table/view",
+    "db": "HelpDesk",
+    "files": [
+      "tests/fixtures/classic-asp-sample/index.asp",
+      "tests/fixtures/classic-asp-sample/search-ticket.asp"
+    ],
+    "status": "Verified",
+    "provenance": {
+      "generatorVersion": "appdoc-run-all-generators/3.0.0",
+      "commitHash": "85946f7",
+      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "profile": "default",
+      "scope": ".",
+      "confidenceInferenceFlags": [
+        "deterministic",
+        "evidence-backed"
+      ]
+    }
+  },
+  {
+    "id": "proc-001",
+    "kind": "model",
+    "name": "and",
+    "type": "proc",
+    "db": "",
+    "files": [
+      "tests/fixtures/classic-asp-sample/admin-report.asp"
+    ],
+    "status": "Verified",
+    "provenance": {
+      "generatorVersion": "appdoc-run-all-generators/3.0.0",
+      "commitHash": "85946f7",
+      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "profile": "default",
+      "scope": ".",
+      "confidenceInferenceFlags": [
+        "deterministic",
+        "evidence-backed"
+      ]
+    }
+  },
+  {
+    "id": "proc-002",
+    "kind": "model",
+    "name": "HelpDesk.usp_GetMonthlyMetrics",
+    "type": "proc",
+    "db": "HelpDesk",
+    "files": [
+      "tests/fixtures/classic-asp-sample/admin-report.asp"
+    ],
+    "status": "Verified",
+    "provenance": {
+      "generatorVersion": "appdoc-run-all-generators/3.0.0",
+      "commitHash": "85946f7",
+      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "profile": "default",
+      "scope": ".",
+      "confidenceInferenceFlags": [
+        "deterministic",
+        "evidence-backed"
+      ]
+    }
+  }
+]

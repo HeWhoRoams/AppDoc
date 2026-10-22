@@ -205,7 +205,16 @@ function Test-AppDocDataModelCandidate {
     if ($path -match '(?i)(^|[\\/])(Service References|Connected Services|Web References)([\\/]|$)') { return $false }
     if ($path -match '(?i)(^|[\\/])Reference\.cs$') { return $false }
     if ($path -match '(?i)(^|[\\/])(ui|views?|components?|pages?)([\\/]|$)' -and $propertyCount -eq 0) { return $false }
-    if ($propertyCount -eq 0 -and $type -in @("class", "record", "entity")) { return $false }
+    # Zero-property rejection (ADDITIVE, ORM-scoped): a C#/TS `class`/`record`/`entity`
+    # /`interface` with no properties is still rejected (unchanged). A Python ORM-mapped
+    # class (db.Model / __tablename__ / db.Column / new Schema) is a real model even with
+    # zero extracted properties, because its columns are bare `name = db.Column(...)`
+    # declarations with no PEP-484 annotation. Only the .py branch sets `ormMapped`,
+    # so C#/.NET and TS models are unaffected by this relaxation.
+    if ($propertyCount -eq 0 -and $type -in @("class","record","entity")) {
+        $isOrmMapped = ($Model -is [System.Collections.IDictionary] -and $Model.Contains('ormMapped') -and [bool]$Model.ormMapped)
+        if (-not $isOrmMapped) { return $false }
+    }
 
     return $true
 }
@@ -285,7 +294,19 @@ function Get-AppDocDataModelData {
         $astModelCount += Add-AppDocAstModels -AstPayload $astCSharp -Models ([ref]$workingModels) -RootPath $RootPath
         $astModelCount += Add-AppDocAstModels -AstPayload $astTs -Models ([ref]$workingModels) -RootPath $RootPath
 
-        $modelFiles = Get-AppDocDataModelSourceFiles -RootPath $RootPath -Include @("*.ts","*.js","*.cs","*.py") | Where-Object { $_.Name -match "model|entity|schema|type" }
+        # NOTE: .java files are detected by CONTENT (class + field scan below), NOT by
+        # the filename heuristic that gates the ts/js/cs/py branches -- Java has no
+        # filename convention for entities and no AST parser in the cache map, so an
+        # entity in Ticket.java would be silently dropped by the name filter. The
+        # class-level + candidate filters (Test-AppDocDataModelCandidate) keep the
+        # result to real models (controllers/services/repositories and empty classes
+        # are still excluded there).
+        # .py is likewise gated by CONTENT (the ORM/class scan below), NOT by filename:
+        # SQLAlchemy models are routinely named user.py / person.py / natural_person.py
+        # (no "model/entity/schema/type" token), so the name filter alone would drop
+        # them. The class-level + candidate filters keep the result to real models.
+        $modelFiles = Get-AppDocDataModelSourceFiles -RootPath $RootPath -Include @("*.ts","*.js","*.cs","*.py","*.java") |
+            Where-Object { $_.Name -match "model|entity|schema|type" -or $_.Extension -eq ".java" -or $_.Extension -eq ".py" }
         $potentialModelFileCount = $modelFiles.Count
 
         foreach ($file in $modelFiles) {
@@ -372,28 +393,168 @@ function Get-AppDocDataModelData {
             }
 
             if ($file.Extension -eq '.py') {
-                $pyClasses = [regex]::Matches($content, "class\s+(\w+)(?:\([^)]*\))?:\s*([\s\S]+?)(?=\nclass\s|\Z)")
-                foreach ($match in $pyClasses) {
-                    $classBody = $match.Groups[2].Value
-                    $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
-                    $relativePath = Get-AppDocDataModelRelativePath -RootPath $RootPath -Path $file.FullName
+                # Python / SQLAlchemy ORM extraction (ADDITIVE -- .py branch only).
+                # A Python class is a data model when it has >= 1 top-level (class-member-
+                # indented) data field: a PEP-484 annotated field (name: Type -- dataclass /
+                # Pydantic / fixture case) OR a SQLAlchemy ORM declaration
+                # (name = db.Column(...) / db.relationship(...)). Fields sit at the class's
+                # member indent; method bodies and their params/locals are deeper (or are
+                # `def` lines), so they are not counted -- this is what keeps plain helper
+                # classes (Config / DTO / Service / Format / Factory) OUT of the result.
+                # The class is flagged `ormMapped` when it declares __tablename__ / db.Model /
+                # db.Column, so a zero-property ORM class still passes the candidate filter
+                # (an ORM class with __tablename__ is a real model even when its columns carry
+                # no PEP-484 annotation).
+                $pyLines = $content -split "`n"
+                $relativePath = Get-AppDocDataModelRelativePath -RootPath $RootPath -Path $file.FullName
+                $pyLineCount = $pyLines.Count
+                for ($i = 0; $i -lt $pyLineCount; $i++) {
+                    $line = $pyLines[$i]
+                    if ($line -notmatch '^(\s*)class\s+(\w+)\s*(\([^)]*\))?\s*:') { continue }
+                    $clsName = $Matches[2]
+                    $clsIndent = $Matches[1].Length
+                    # Class body: lines after the header until the next non-blank line whose
+                    # indentation is <= the class header's indentation.
+                    $bodyLines = @()
+                    $j = $i + 1
+                    while ($j -lt $pyLineCount) {
+                        $bl = $pyLines[$j]
+                        if ($bl -match '^(\s*)') { $bLead = $Matches[1].Length } else { $bLead = 0 }
+                        if ($bl.Trim() -and $bLead -le $clsIndent) { break }
+                        $bodyLines += ,@($bLead, $bl)
+                        $j++
+                    }
+                    # Member (field) indent = minimum indent among non-blank body lines.
+                    $memberIndent = -1
+                    foreach ($bl in $bodyLines) {
+                        if ($bl[1].Trim()) { if ($memberIndent -lt 0 -or $bl[0] -lt $memberIndent) { $memberIndent = $bl[0] } }
+                    }
                     $properties = @()
-                    $propMatches = [regex]::Matches($classBody, "(\w+)\s*:\s*([\w\[\],\s]+)\s*=?")
-                    foreach ($prop in $propMatches | Select-Object -First 20) {
-                        $propName = $prop.Groups[1].Value
-                        if ($propName -notin @('self', 'cls', 'return')) {
-                            $properties += "${propName}: $($prop.Groups[2].Value.Trim())"
+                    $ormMapped = $false
+                    $seenProp = @{}
+                    foreach ($bl in $bodyLines) {
+                        $bLead = $bl[0]; $bText = $bl[1].Trim()
+                        if (-not $bText) { continue }
+                        if ($bLead -ne $memberIndent) { continue }
+                        if ($bText -match '^@') { continue }
+                        if ($bText -match '^def\s') { continue }
+                        if ($bText -match '^\s*(\w+)\s*=\s*db\.Column\s*\((.*)\)\s*$') {
+                            $fname = $Matches[1]; $inner = $Matches[2]
+                            if (-not $seenProp.ContainsKey($fname)) {
+                                $seenProp[$fname] = $true
+                                $ormMapped = $true
+                                $first = $inner
+                                $depth = 0; $cut = -1
+                                for ($k = 0; $k -lt $inner.Length; $k++) {
+                                    $c = $inner[$k]
+                                    if ($c -eq '(') { $depth++ } elseif ($c -eq ')') { $depth-- }
+                                    elseif ($c -eq ',' -and $depth -eq 0) { $cut = $k; break }
+                                }
+                                if ($cut -ge 0) { $first = $inner.Substring(0, $cut) }
+                                $first = $first.Trim() -replace '^db\.', ''
+                                $meta = @()
+                                if ($inner -match 'primary_key\s*=\s*True') { $meta += 'primary_key' }
+                                if ($inner -match "ForeignKey\(\s*['`"]([^'`"]+)['`"]\s*\)") { $meta += ("FK: " + $Matches[1]) }
+                                $typeStr = $first
+                                if ($meta.Count -gt 0) { $typeStr += (" (" + ($meta -join ', ') + ")") }
+                                $properties += ("${fname}: $typeStr".Trim())
+                            }
+                            continue
+                        }
+                        if ($bText -match '^\s*(\w+)\s*=\s*db\.relationship\s*\((.*)\)\s*$') {
+                            $fname = $Matches[1]; $inner = $Matches[2].Trim()
+                            if (-not $seenProp.ContainsKey($fname)) {
+                                $seenProp[$fname] = $true
+                                $ormMapped = $true
+                                $target = $inner
+                                if ($inner -match "^['`"]([^'`"]+)['`"]") { $target = $Matches[1] } else { $target = (($inner -split ',')[0]).Trim() }
+                                $properties += ("${fname}: relationship($target)".Trim())
+                            }
+                            continue
+                        }
+                        if ($bText -match '^__tablename__\s*=') { $ormMapped = $true; continue }
+                        if ($bText -match '^(\w+)\s*:\s*([\w\[\],\.)]+)') {
+                            $fname = $Matches[1]
+                            if ($fname -in @('self', 'cls', 'return')) { continue }
+                            $ftype = $Matches[2].Trim()
+                            if (-not $seenProp.ContainsKey($fname)) {
+                                $seenProp[$fname] = $true
+                                $properties += ("${fname}: $ftype".Trim())
+                            }
                         }
                     }
-                    $workingModels += @{
-                        type = 'class'
-                        name = $match.Groups[1].Value
-                        file = $file.Name
-                        filePath = $relativePath
-                        lineNumber = $lineNumber
-                        properties = $properties
-                        example = $null
-                        sourceType = "regex"
+                    if ($properties.Count -gt 0 -or $ormMapped) {
+                        $workingModels += @{
+                            type = 'class'
+                            name = $clsName
+                            file = $file.Name
+                            filePath = $relativePath
+                            lineNumber = ($i + 1)
+                            properties = $properties
+                            example = $null
+                            sourceType = "regex"
+                            ormMapped = $ormMapped
+                        }
+                    }
+                    $i = $j - 1
+                }
+            }
+
+            if ($file.Extension -eq '.java') {
+                $lines = $content -split "`n"
+                $relativePath = Get-AppDocDataModelRelativePath -RootPath $RootPath -Path $file.FullName
+                for ($i = 0; $i -lt $lines.Count; $i++) {
+                    $line = $lines[$i]
+                    if ($line -match '^(\s*)(?:public|protected|private|abstract|final|static)\s+(class|interface|enum)\s+(\w+)(?:\s+extends\s.*)?') {
+                        $declKind = $Matches[2]
+                        $className = $Matches[3]
+                        $properties = @()
+                        $seenFields = @{}
+                        $annotationStack = @()
+                        $inClass = $false
+                        $depth = 0
+                        for ($j = $i; $j -lt [Math]::Min($i + 2000, $lines.Count); $j++) {
+                            $cl = $lines[$j]
+                            $depth += ($cl.ToCharArray() | Where-Object { $_ -eq '{' }).Count
+                            $depth -= ($cl.ToCharArray() | Where-Object { $_ -eq '}' }).Count
+                            if ($depth -gt 0) { $inClass = $true }
+                            if ($inClass -and $depth -eq 0) { break }
+                            if ($inClass -and $depth -eq 1) {
+                                $trimmed = $cl.Trim()
+                                if ($trimmed -match '^@') {
+                                    $annotationStack += $trimmed
+                                    continue
+                                }
+                                if ($trimmed -match '^((?:public|private|protected|static|final|transient|volatile)\s+)+([\w<>[\]]+(?:\s*<[^;]*?>)?(?:\[\s*\])*)\s+(\w+)\s*(=.*)?;') {
+                                    $fieldType = $Matches[2].Trim()
+                                    $fieldName = $Matches[3]
+                                    if (-not $seenFields.ContainsKey($fieldName)) {
+                                        $colName = $null
+                                        $stack = @($annotationStack)
+                                        $annotationStack = @()
+                                        foreach ($ann in $stack) {
+                                            $colMatch = [regex]::Match($ann, '@Column\s*\(\s*(?:name\s*=\s*)?["'']([^"'']+)["'']')
+                                            if ($colMatch.Success) { $colName = $colMatch.Groups[1].Value; break }
+                                        }
+                                        $displayName = if ($colName) { $colName } else { $fieldName }
+                                        $properties += "${displayName}: $fieldType"
+                                        $seenFields[$fieldName] = $true
+                                    }
+                                } else {
+                                    $annotationStack = @()
+                                }
+                            }
+                        }
+                        $workingModels += @{
+                            type = if ($declKind -eq 'interface') { 'interface' } elseif ($declKind -eq 'enum') { 'enum' } else { 'class' }
+                            name = $className
+                            file = $file.Name
+                            filePath = $relativePath
+                            lineNumber = ($i + 1)
+                            properties = $properties
+                            example = $null
+                            sourceType = "regex"
+                        }
                     }
                 }
             }

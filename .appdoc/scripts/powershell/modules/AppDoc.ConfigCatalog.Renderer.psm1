@@ -75,12 +75,12 @@ function Get-AppDocConfigCatalogTemplateContent {
 function Get-AppDocConfigCatalogMarkdown {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)]
-        [array]$Configs,
-        [Parameter(Mandatory=$true)]
-        [array]$DiscoveredConfigFiles,
-        [Parameter(Mandatory=$true)]
-        [array]$EnvVars
+        [AllowEmptyCollection()]
+        [array]$Configs = @(),
+        [AllowEmptyCollection()]
+        [array]$DiscoveredConfigFiles = @(),
+        [AllowEmptyCollection()]
+        [array]$EnvVars = @()
     )
 
     $configTablePlaceholder = @"
@@ -335,12 +335,12 @@ function Update-AppDocConfigCatalogContent {
     param(
         [Parameter(Mandatory=$true)]
         [string]$Content,
-        [Parameter(Mandatory=$true)]
-        [array]$Configs,
-        [Parameter(Mandatory=$true)]
-        [array]$DiscoveredConfigFiles,
-        [Parameter(Mandatory=$true)]
-        [array]$EnvVars
+        [AllowEmptyCollection()]
+        [array]$Configs = @(),
+        [AllowEmptyCollection()]
+        [array]$DiscoveredConfigFiles = @(),
+        [AllowEmptyCollection()]
+        [array]$EnvVars = @()
     )
 
     $sections = Get-AppDocConfigCatalogMarkdown -Configs $Configs -DiscoveredConfigFiles $DiscoveredConfigFiles -EnvVars $EnvVars

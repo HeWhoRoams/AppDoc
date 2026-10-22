@@ -13,14 +13,7 @@
     "task-guides",
     "docs-index"
   ],
-  "api_grouping": "by-controller",
-  "include_examples": true,
-  "diagram_types": [
-    "architecture"
-  ],
-  "enhancement_mode": "optional",
   "validation": {
-    "strict_default": false,
     "threshold": 80
   }
 }

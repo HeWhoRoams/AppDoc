@@ -539,11 +539,20 @@ function Add-AppDocRegexEndpointsToInventory {
         }
 
         # Express.js / Router
-        $pattern = '(?<handler>(?:app|router|\w+Router|\w+Routes))\.(get|post|put|delete|patch)\s*\([' + "'" + '"' + ']([^' + "'" + '"' + ']+)[' + "'" + '"' + ']\s*,\s*(?:async\s+)?(?:function\s*)?\(([^)]*)\)'
+        # Inline handler pattern: matches router.get('/path', (req, res) => { ... }) / async function.
+        # Group 2 = verb, Group 3 = path, Group 4 = function param list.
+        $pattern = '(?<handler>(?:app|router|\w+Router|\w+Routes))\.(?<verb>get|post|put|delete|patch)\s*\([' + "'" + '"' + '](?<path>[^' + "'" + '"' + ']+)[' + "'" + '"' + ']\s*,\s*(?:async\s+)?(?:function\s*)?\((?<params>[^)]*)\)'
         $expressRoutes = [regex]::Matches($content, $pattern)
+        # Controller-idiom pattern: matches router.get('/path', handlerFn) / router.get('/path', mw1, handlerFn) /
+        # router.post('/path', upload.single("image"), handlerFn). Group 4 = the args after the path string.
+        # The leading \w+ and negative lookahead (?!...) keep it mutually exclusive with the inline-handler pattern
+        # (which requires a paren or async/function keyword right after the comma), so routes are never double-counted.
+        $patternCtrl = '(?<handler>(?:app|router|\w+Router|\w+Routes))\.(?<verb>get|post|put|delete|patch)\s*\([' + "'" + '"' + '](?<path>[^' + "'" + '"' + ']*)[' + "'" + '"' + ']\s*,\s*(?<args>(?!\s*(?:async|function)\b)\w+(?:[^()]|\([^()]*\))*)\)'
+        $expressRoutesCtrl = [regex]::Matches($content, $patternCtrl)
+
         foreach ($match in $expressRoutes) {
-            $method = $match.Groups[2].Value.ToUpper()
-            $path = $match.Groups[3].Value
+            $method = $match.Groups['verb'].Value.ToUpper()
+            $path = $match.Groups['path'].Value
             $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
             $methodContext = $content.Substring([Math]::Max(0, $match.Index), [Math]::Min(500, $content.Length - $match.Index))
 
@@ -582,45 +591,28 @@ function Add-AppDocRegexEndpointsToInventory {
             $added++
         }
 
-        # ASP.NET Core attributes
-        $aspPattern = '\[Http(Get|Post|Put|Delete|Patch)(?:\([' + "'" + '"' + ']([^' + "'" + '"' + ']+)[' + "'" + '"' + ']\))?\]\s*(?:\[\w+\]\s*)*public\s+(?:async\s+)?(?:Task<)?([^>\s]+)\>?\s+(\w+)\s*\(([^)]*)\)'
-        $aspRoutes = [regex]::Matches($content, $aspPattern)
-        foreach ($match in $aspRoutes) {
-            $method = $match.Groups[1].Value.ToUpper()
-            $path = if ($match.Groups[2].Success) { $match.Groups[2].Value } else { "" }
-            $returnType = $match.Groups[3].Value
-            $methodName = $match.Groups[4].Value
+        foreach ($match in $expressRoutesCtrl) {
+            $method = $match.Groups['verb'].Value.ToUpper()
+            $path = $match.Groups['path'].Value
             $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
-            $paramString = $match.Groups[5].Value
+            $methodContext = $content.Substring([Math]::Max(0, $match.Index), [Math]::Min(500, $content.Length - $match.Index))
+            $argsStr = $match.Groups['args'].Value
 
+            $pathParams = [regex]::Matches($path, ':([^\s/]+)')
             $allParams = @()
-            if ($paramString.Trim()) {
-                $paramParts = $paramString -split ','
-                foreach ($part in $paramParts) {
-                    if ($part -match '(?:^|\s)([\w<>?\[\]]+)\s+(\w+)') {
-                        $paramType = $Matches[1]
-                        $paramName = $Matches[2]
-                        $source = "body"
-                        if ($part -match '\[FromQuery\]') { $source = "query" }
-                        elseif ($part -match '\[FromRoute\]|\[FromPath\]') { $source = "path" }
-                        elseif ($part -match '\[FromHeader\]') { $source = "header" }
-                        $allParams += "${paramName}: ${paramType} ($source)"
-                    }
-                }
-            }
+            foreach ($p in $pathParams) { $allParams += "$($p.Groups[1].Value): string (path)" }
+            $allParams = @($allParams | Select-Object -Unique)
 
-            $methodContext = $content.Substring([Math]::Max(0, $match.Index - 200), [Math]::Min(400, $content.Length - [Math]::Max(0, $match.Index - 200)))
-            $auth = if ($methodContext -match '\[Authorize(?:\([^)]+\))?\]') { "Required (Authorization)" } elseif ($methodContext -match 'ApiKey|RequireApiKey') { "API Key" } else { "None" }
+            # The last argument is the actual controller function (e.g. `register` in `authLimiter, register`).
+            $argParts = [regex]::Split($argsStr, ',\s*(?=[^,]*$)')
+            $controllerFn = $argParts[$argParts.Length - 1].Trim()
 
-            $description = "API endpoint"
-            $lookBehind = $content.Substring([Math]::Max(0, $match.Index - 500), [Math]::Min(500, $match.Index))
-            if ($lookBehind -match '///\s*<summary>\s*([\s\S]+?)</summary>') {
-                $description = $Matches[1].Trim() -replace '///\s*', '' -replace '<[^>]+>', '' -replace '\s+', ' '
-            }
-
-            if (-not $path) {
-                $controllerName = if ($file.Name -match '(\w+)Controller') { $Matches[1] } else { "api" }
-                $path = "/$controllerName/$methodName"
+            $returnType = if ($methodContext -match 'res\.json\s*\(') { "application/json" } elseif ($methodContext -match 'res\.send\s*\(') { "text/plain" } else { "void" }
+            $auth = if ($methodContext -match 'authenticate|requireAuth|isAuthenticated|verifyToken') { "Required (JWT/Token)" } elseif ($methodContext -match 'apiKey|api_key') { "API Key" } else { "None" }
+            $description = "API endpoint (controller idiom)"
+            $lookBehind = $content.Substring([Math]::Max(0, $match.Index - 300), [Math]::Min(300, $match.Index))
+            if ($lookBehind -match '(?://|/\*\*)\s*(.{10,100})\s*(?:\*/)?\s*$') {
+                $description = $Matches[1].Trim() -replace '^[@*\s]+', '' -replace '\s+', ' '
             }
 
             $Inventory.endpoints += @{
@@ -634,11 +626,169 @@ function Add-AppDocRegexEndpointsToInventory {
                 auth = $auth
                 description = $description
                 example = $null
-                controller = if ($file.Name -match '(\w+)Controller') { $Matches[1] } else { "Other" }
+                controller = $controllerFn
                 schema = if ($allParams.Count -gt 0) { "See parameters" } else { "N/A" }
                 sourceType = "regex"
             }
             $added++
+        }
+
+        # ASP.NET Core attributes
+        # CORE (file has [ApiController]): modern pattern tolerating [HttpXxx] with ANY
+        #   arguments (Name = nameof(...), Order = N, ...) + controller-level [Route(...)]
+        #   composition + class-level [Authorize] propagation (the modern .NET Core idiom
+        #   the legacy pattern silently dropped). Gated on [ApiController] so the proven
+        #   MVC 5 / Web Forms surface (which never uses [ApiController]) is byte-identical.
+        # NON-CORE: the proven legacy pattern + behavior, kept byte-identical.
+        $coreApiController = [bool]([regex]::IsMatch($content, '\[ApiController\]'))
+        if ($coreApiController) {
+            # NEW Core pattern. g1=verb g2=args(bounded to the single attribute) g3=return
+            # g4=method g5=params. Identical to the parse-csharp-ast.ps1 Core pattern so
+            # the two extractors stay in lock-step.
+            $aspPattern = '\[Http(Get|Post|Put|Delete|Patch)(?:\(((?:[^()]|\((?:[^()]*)\))*)\))?\]\s*(?:\[[^\]]+\]\s*)*public\s+(?:async\s+)?(?:Task<)?([^>\s]+)\>?\s+(\w+)\s*\(([^)]*)\)'
+            # Controller-level [Route] template + class-level [Authorize]: read the region
+            # directly above the controller class declaration.
+            $coreClassDecl = [regex]::Match($content, '\bclass\s+([A-Za-z_]\w*Controller)\b')
+            $coreRouteTemplate = ''
+            $coreClassAuthorize = $false
+            if ($coreClassDecl.Success) {
+                $coreRegionStart = [Math]::Max(0, $coreClassDecl.Index - 600)
+                $coreRegion = $content.Substring($coreRegionStart, $coreClassDecl.Index - $coreRegionStart)
+                $coreRouteM = [regex]::Match($coreRegion, '\bRoute\s*\(\s*[' + "'" + '"' + ']([^' + "'" + '"' + ']+)[' + "'" + '"' + ']')
+                if ($coreRouteM.Success) { $coreRouteTemplate = $coreRouteM.Groups[1].Value }
+                $coreClassAuthorize = [bool]([regex]::IsMatch($coreRegion, '\[Authorize\b'))
+            }
+            $aspRoutes = [regex]::Matches($content, $aspPattern)
+            foreach ($match in $aspRoutes) {
+                $method = $match.Groups[1].Value.ToUpper()
+                $returnType = $match.Groups[3].Value
+                $methodName = $match.Groups[4].Value
+                $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
+                $paramString = $match.Groups[5].Value
+
+                $allParams = @()
+                if ($paramString.Trim()) {
+                    $paramParts = $paramString -split ','
+                    foreach ($part in $paramParts) {
+                        if ($part -match '(?:^|\s)([\w<>?\[\]]+)\s+(\w+)') {
+                            $paramType = $Matches[1]
+                            $paramName = $Matches[2]
+                            $source = "body"
+                            if ($part -match '\[FromQuery\]') { $source = "query" }
+                            elseif ($part -match '\[FromRoute\]|\[FromPath\]') { $source = "path" }
+                            elseif ($part -match '\[FromHeader\]') { $source = "header" }
+                            $allParams += "${paramName}: ${paramType} ($source)"
+                        }
+                    }
+                }
+
+                $controllerName = if ($file.Name -match '(\w+)Controller') { $Matches[1] } else { "Other" }
+                # first quoted string literal in the args = the route path (empty if none)
+                $coreMethodArgs = if ($match.Groups[2].Success) { $match.Groups[2].Value } else { '' }
+                $coreMethodPath = ''
+                if ($coreMethodArgs -match '[' + "'" + '"' + ']([^' + "'" + '"' + ']+)[' + "'" + '"' + ']') { $coreMethodPath = $Matches[1] }
+                # Gap 3: compose the controller-level [Route] template (resolve [controller]/[action]).
+                # Gap 2: a bare-verb (no path) method composes to the conventional segment.
+                $composedTemplate = $coreRouteTemplate -replace '\[controller\]', $controllerName -replace '\[action\]', $methodName
+                $routeSegment = if ($coreMethodPath) { $coreMethodPath } else { $methodName }
+                if ($composedTemplate) {
+                    $path = '/' + ($composedTemplate.Trim('/') + '/' + $routeSegment.Trim('/')).TrimStart('/')
+                }
+                else {
+                    $path = if ($coreMethodPath) { '/' + $coreMethodPath.TrimStart('/') } else { '/' + $controllerName + '/' + $methodName }
+                }
+                $path = ($path -replace '/{2,}', '/')
+                if ($path.Length -gt 1 -and $path.EndsWith('/')) { $path = $path.TrimEnd('/') }
+                # Gap 4: class-level [Authorize] propagates unless a method-level
+                # [AllowAnonymous] (this method's attribute block) overrides it.
+                $coreAboveStart = [Math]::Max(0, $match.Index - 400)
+                $coreAbove = $content.Substring($coreAboveStart, $match.Index - $coreAboveStart)
+                $coreAllowAnonymous = [bool]([regex]::IsMatch($coreAbove, '\[AllowAnonymous\b'))
+                $coreMethodAuthorize = [bool]([regex]::IsMatch($match.Value, '\[Authorize\b'))
+                $auth = if ($coreAllowAnonymous) { "None" } elseif ($coreClassAuthorize -or $coreMethodAuthorize) { "Required (Authorization)" } else { "None" }
+
+                $description = "API endpoint"
+                $lookBehind = $content.Substring([Math]::Max(0, $match.Index - 500), [Math]::Min(500, $match.Index))
+                if ($lookBehind -match '///\s*<summary>\s*([\s\S]+?)</summary>') {
+                    $description = $Matches[1].Trim() -replace '///\s*', '' -replace '<[^>]+>', '' -replace '\s+', ' '
+                }
+
+                $Inventory.endpoints += @{
+                    method = $method
+                    path = $path
+                    file = $file.Name
+                    filePath = $relativePath
+                    lineNumber = $lineNumber
+                    parameters = if ($allParams.Count -gt 0) { $allParams -join ', ' } else { "None" }
+                    returnType = $returnType
+                    auth = $auth
+                    description = $description
+                    example = $null
+                    controller = $controllerName
+                    schema = if ($allParams.Count -gt 0) { "See parameters" } else { "N/A" }
+                    sourceType = "regex"
+                }
+                $added++
+            }
+        }
+        else {
+            $aspPattern = '\[Http(Get|Post|Put|Delete|Patch)(?:\([' + "'" + '"' + ']([^' + "'" + '"' + ']+)[' + "'" + '"' + ']\))?\]\s*(?:\[\w+\]\s*)*public\s+(?:async\s+)?(?:Task<)?([^>\s]+)\>?\s+(\w+)\s*\(([^)]*)\)'
+            $aspRoutes = [regex]::Matches($content, $aspPattern)
+            foreach ($match in $aspRoutes) {
+                $method = $match.Groups[1].Value.ToUpper()
+                $path = if ($match.Groups[2].Success) { $match.Groups[2].Value } else { "" }
+                $returnType = $match.Groups[3].Value
+                $methodName = $match.Groups[4].Value
+                $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
+                $paramString = $match.Groups[5].Value
+
+                $allParams = @()
+                if ($paramString.Trim()) {
+                    $paramParts = $paramString -split ','
+                    foreach ($part in $paramParts) {
+                        if ($part -match '(?:^|\s)([\w<>?\[\]]+)\s+(\w+)') {
+                            $paramType = $Matches[1]
+                            $paramName = $Matches[2]
+                            $source = "body"
+                            if ($part -match '\[FromQuery\]') { $source = "query" }
+                            elseif ($part -match '\[FromRoute\]|\[FromPath\]') { $source = "path" }
+                            elseif ($part -match '\[FromHeader\]') { $source = "header" }
+                            $allParams += "${paramName}: ${paramType} ($source)"
+                        }
+                    }
+                }
+
+                $methodContext = $content.Substring([Math]::Max(0, $match.Index - 200), [Math]::Min(400, $content.Length - [Math]::Max(0, $match.Index - 200)))
+                $auth = if ($methodContext -match '\[Authorize(?:\([^)]+\))?\]') { "Required (Authorization)" } elseif ($methodContext -match 'ApiKey|RequireApiKey') { "API Key" } else { "None" }
+
+                $description = "API endpoint"
+                $lookBehind = $content.Substring([Math]::Max(0, $match.Index - 500), [Math]::Min(500, $match.Index))
+                if ($lookBehind -match '///\s*<summary>\s*([\s\S]+?)</summary>') {
+                    $description = $Matches[1].Trim() -replace '///\s*', '' -replace '<[^>]+>', '' -replace '\s+', ' '
+                }
+
+                if (-not $path) {
+                    $controllerName = if ($file.Name -match '(\w+)Controller') { $Matches[1] } else { "api" }
+                    $path = "/$controllerName/$methodName"
+                }
+
+                $Inventory.endpoints += @{
+                    method = $method
+                    path = $path
+                    file = $file.Name
+                    filePath = $relativePath
+                    lineNumber = $lineNumber
+                    parameters = if ($allParams.Count -gt 0) { $allParams -join ', ' } else { "None" }
+                    returnType = $returnType
+                    auth = $auth
+                    description = $description
+                    example = $null
+                    controller = if ($file.Name -match '(\w+)Controller') { $Matches[1] } else { "Other" }
+                    schema = if ($allParams.Count -gt 0) { "See parameters" } else { "N/A" }
+                    sourceType = "regex"
+                }
+                $added++
+            }
         }
 
         # ASP.NET MVC 5 routes
@@ -698,6 +848,109 @@ function Add-AppDocRegexEndpointsToInventory {
                 sourceType = "regex"
             }
             $added++
+        }
+
+        # ASP.NET MVC 5 convention-routed actions (NO [Http*] verb attribute)
+        # Enumerates public action methods that are routed by MVC 5 convention
+        # (/{area}/{controller}/{action}) and therefore have no [HttpGet]/[HttpPost]
+        # attribute. The "ASP.NET Core attributes" and "ASP.NET MVC 5 routes" branches
+        # above only fire on [Http*]-attributed methods, so this branch captures the
+        # convention-routed surface and never re-emits an attribute-routed action.
+        # Deterministic: files are visited in sorted order and matches are sorted by
+        # index within each file; overloads of the same (controller, action) collapse.
+        if ($file.Extension -eq ".cs" -and (($file.Name -match 'Controller\.cs$') -or ($relativePath -match '/Controllers/'))) {
+            $convControllerName = if ($file.Name -match '(\w+)Controller\.cs$') { $Matches[1] } else { [System.IO.Path]::GetFileNameWithoutExtension($file.Name) }
+            $convArea = $null
+            if ($relativePath -match 'Areas/(\w+)/Controllers/') { $convArea = $Matches[1] }
+            if (-not $convArea -and ($content -match '(?m)^\s*namespace\s+[\w\.]*Areas\.(\w+)\.Controllers')) { $convArea = $Matches[1] }
+
+            $convResultTypes = 'ActionResult|ViewResult|JsonResult|ContentResult|FileResult|RedirectResult|HttpStatusCodeResult|RedirectToRouteResult|RedirectToActionResult|PartialViewResult|EmptyResult|JsonArrayResult|Json|Content|File|PartialView'
+            $convPattern = "(?m)^[ \t]*public[ \t]+(?:(?:virtual|override|new|async|sealed|static)[ \t]+)*(?:Task<?[ \t]*)?($convResultTypes)(?:<[^>\n]+>)?[ \t]*([A-Za-z_]\w*)[ \t]*\(([^)\n]*)\)"
+            $convContentLines = $content -split "`n"
+            $convSeen = @{}
+            foreach ($cm in ([regex]::Matches($content, $convPattern) | Sort-Object { [int]$_.Index })) {
+                $convAction = [string]$cm.Groups[2].Value
+                # skip constructors and non-action member names
+                if ($convAction -eq $convControllerName -or $convAction -eq ($convControllerName + 'Controller')) { continue }
+
+                # Attribute block for THIS method = the contiguous [ ... ] lines directly
+                # above the signature (walk back line by line while each line is an
+                # attribute). This is robust to C# route-template braces like
+                # [Route("Assign/{auditPeriod}/...")] (which would defeat a brace-based
+                # window) and to a preceding sibling's attributes (the walk stops at the
+                # first non-attribute line). Any action the [Http*] branches already
+                # captured has [Http*] here and is excluded (no double-counting);
+                # [NonAction] members are skipped.
+                $convLineIdx = ($content.Substring(0, $cm.Index) -split "`n").Count - 1
+                $convAttrs = @()
+                $convScan = $convLineIdx - 1
+                while ($convScan -ge 0) {
+                    $prevLine = ([string]$convContentLines[$convScan]).Trim()
+                    if ($prevLine -match '^\[.*\]$') { $convAttrs += $prevLine; $convScan-- } else { break }
+                }
+                $convAttrJoined = $convAttrs -join "`n"
+                # An action is CONVENTION-routed only if it carries NO routing
+                # attribute at all:
+                #  - [Http*]  -> captured by the attribute branches above (dedup);
+                #  - [Route]  -> attribute-routed via an explicit template
+                #                (e.g. [Route("Dashboard/{auditPeriod}/...")]); the
+                #                conventional /{area}/{controller}/{action} route does
+                #                NOT apply to it, so a convention path would be wrong.
+                # Either present => this action is already attribute-routed, so skip.
+                $convHasHttp = $convAttrJoined -match '\[Http(Get|Post|Put|Delete|Patch)\b'
+                $convHasRoute = $convAttrJoined -match '\[Route\b'
+                if ($convHasHttp -or $convHasRoute) { continue }
+                if ($convAttrJoined -match '\[NonAction\b') { continue }
+                $convAuth = if ($convAttrJoined -match '\[Authorize\b') { "Required (Authorization)" } else { "None" }
+
+                if ($convSeen.ContainsKey($convControllerName + '|' + $convAction)) { continue }
+                $convSeen[$convControllerName + '|' + $convAction] = $true
+
+                $convLineNumber = ($content.Substring(0, $cm.Index) -split "`n").Count
+                # verb inference: GET for Index/Get*, POST for Create*/Save*/Update*/Delete*/Post*, else GET
+                $convVerb = "GET"
+                if ($convAction -match '^(Create|Save|Update|Delete|Remove|Post)') { $convVerb = "POST" }
+                elseif ($convAction -match '^Get') { $convVerb = "GET" }
+                elseif ($convAction -ne 'Index') { $convVerb = "GET" }
+
+                $convRouteSegments = @()
+                if ($convArea) { $convRouteSegments += $convArea }
+                $convRouteSegments += $convControllerName
+                $convRouteSegments += $convAction
+                $convPath = '/' + ($convRouteSegments -join '/')
+
+                $convParamString = [string]$cm.Groups[3].Value
+                $convAllParams = @()
+                if ($convParamString.Trim()) {
+                    foreach ($convPart in ($convParamString -split ',')) {
+                        if ($convPart -match '(?:^|\s)([\w<>?\[\]]+)\s+(\w+)') {
+                            $convAllParams += "$($Matches[2]): $($Matches[1])"
+                        }
+                    }
+                }
+
+                $convReturnType = [string]$cm.Groups[1].Value
+                $convReturnTypeLabel = if ($convReturnType -match 'JsonResult') { "application/json" } elseif ($convReturnType -match 'ContentResult') { "text/plain" } elseif ($convReturnType -match 'FileResult') { "file download" } else { "HTML View" }
+
+                $Inventory.endpoints += @{
+                    method = $convVerb
+                    path = $convPath
+                    file = $file.Name
+                    filePath = $relativePath
+                    lineNumber = $convLineNumber
+                    parameters = if ($convAllParams.Count -gt 0) { $convAllParams -join ', ' } else { "None" }
+                    returnType = $convReturnTypeLabel
+                    auth = $convAuth
+                    description = "MVC5 convention route (derived from /{area}/{controller}/{action})"
+                    example = $null
+                    controller = $convControllerName
+                    actionName = $convAction
+                    routeSource = "inferred-convention"
+                    schema = if ($convAllParams.Count -gt 0) { "See parameters" } else { "N/A" }
+                    sourceType = "mvc-convention"
+                }
+                $added++
+            }
         }
 
         # WCF / ASMX service operations

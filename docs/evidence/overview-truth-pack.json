@@ -1,107 +1,38 @@
 {
+  "counts": {
+    "codeFiles": 1,
+    "endpointRecords": 5,
+    "inboundEndpoints": 5,
+    "outboundEndpoints": 0,
+    "outboundMappedEndpoints": 0,
+    "modelRecords": 4,
+    "configurationRecords": 54,
+    "dependencyRecords": 0
+  },
   "graph": {
     "enabled": true,
     "path": "/persistent/agent/workspace/AppDoc/docs/evidence/evidence-graph.json",
     "schemaVersion": "appdoc-evidence-graph/v1",
     "graphVersion": "1.0.0",
-    "entityCount": 56,
-    "edgeCount": 54
+    "entityCount": 70,
+    "edgeCount": 68
   },
-  "projectName": "AppDoc",
   "rootPath": "/persistent/agent/workspace/AppDoc",
+  "generatedAt": "2026-10-17T18:40:56-04:00",
   "architecture": {
     "primaryStyle": "no-api-surface",
     "styles": [
       "no-api-surface"
     ],
     "frameworks": [
-      "ASP.NET Core"
+      "ASP.NET Core",
+      "ASP.NET MVC 5",
+      "Flask",
+      "Spring Boot"
     ],
     "detectionWarning": "Framework detected without code scan hit; counts patched for consistency."
   },
-  "generatedAt": "2026-10-16T11:55:56-04:00",
-  "counts": {
-    "codeFiles": 1,
-    "endpointRecords": 0,
-    "inboundEndpoints": 0,
-    "outboundEndpoints": 0,
-    "outboundMappedEndpoints": 0,
-    "modelRecords": 0,
-    "configurationRecords": 54,
-    "dependencyRecords": 0
-  },
   "languageCount": {},
-  "version": "1.2.0",
-  "facts": {
-    "what_it_does": [
-      {
-        "text": "This repository primarily defines tooling, automation, and configuration behavior rather than an exposed runtime API surface.",
-        "evidence_refs": [
-          "ev-0001",
-          "ev-0002",
-          "ev-0003",
-          "ev-0004"
-        ]
-      }
-    ],
-    "inputs": [
-      {
-        "text": "Runtime behavior is also influenced by environment and application configuration values loaded at startup.",
-        "evidence_refs": [
-          "ev-0001",
-          "ev-0002",
-          "ev-0003"
-        ]
-      }
-    ],
-    "processing_steps": [
-      {
-        "text": "Processing flow could not be inferred beyond repository-level summaries in this scan.",
-        "evidence_refs": [
-          "ev-0055"
-        ]
-      }
-    ],
-    "outputs": [
-      {
-        "text": "Output contracts are not strongly represented in current deterministic evidence.",
-        "evidence_refs": [
-          "ev-0055"
-        ]
-      }
-    ],
-    "external_systems": [
-      {
-        "text": "No clear external system integration evidence was detected.",
-        "evidence_refs": [
-          "ev-0055"
-        ]
-      }
-    ],
-    "confidence_notes": [
-      {
-        "text": "Evidence coverage includes 0 endpoint records, 0 model records, 54 configuration records, and 0 dependency records.",
-        "evidence_refs": [
-          "ev-0001",
-          "ev-0002",
-          "ev-0003",
-          "ev-0004"
-        ]
-      },
-      {
-        "text": "Canonical evidence graph captured 56 entities and 54 relationships for this run.",
-        "evidence_refs": [
-          "ev-0055"
-        ]
-      },
-      {
-        "text": "Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.",
-        "evidence_refs": [
-          "ev-0055"
-        ]
-      }
-    ]
-  },
   "evidence_refs": [
     {
       "id": "ev-0001",
@@ -567,6 +498,496 @@
       "id": "ev-0047",
       "artifact": "config-catalog",
       "kind": "configuration",
+      "name": "itsm.base-url",
+      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/itsm.base-url",
+      "metadata": {
+        "required": true
+      }
+    },
+    {
+      "id": "ev-0048",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp-core.name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.name",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0049",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp-core.runs-on",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.runs-on",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0050",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp-core.steps.shell",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps.shell",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0051",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp-core.steps.uses",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps.uses",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0052",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp-core.steps[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[0]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0053",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp-core.steps[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[1]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0054",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp-core.steps[2]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[2]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0055",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp-core.steps[3]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[3]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0056",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp.name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.name",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0057",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp.runs-on",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.runs-on",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0058",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp.steps.shell",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps.shell",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0059",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp.steps.uses",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps.uses",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0060",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp.steps[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[0]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0061",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp.steps[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[1]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0062",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp.steps[2]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[2]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0063",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-csharp.steps[3]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[3]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0064",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-java.name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.name",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0065",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-java.runs-on",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.runs-on",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0066",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-java.steps.shell",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps.shell",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0067",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-java.steps.uses",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps.uses",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0068",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-java.steps[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[0]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0069",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-java.steps[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[1]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0070",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-java.steps[2]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[2]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0071",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-java.steps[3]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[3]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0072",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-node.name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.name",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0073",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-node.runs-on",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.runs-on",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0074",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-node.steps.shell",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps.shell",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0075",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-node.steps.uses",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps.uses",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0076",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-node.steps[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[0]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0077",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-node.steps[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[1]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0078",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-node.steps[2]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[2]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0079",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-node.steps[3]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[3]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0080",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-python.name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.name",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0081",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-python.runs-on",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.runs-on",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0082",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-python.steps.shell",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps.shell",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0083",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-python.steps.uses",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps.uses",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0084",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-python.steps[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[0]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0085",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-python.steps[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[1]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0086",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-python.steps[2]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[2]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0087",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test-python.steps[3]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[3]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0088",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test.name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.name",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0089",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test.runs-on",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.runs-on",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0090",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test.steps.shell",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps.shell",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0091",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test.steps.uses",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps.uses",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0092",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test.steps[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[0]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0093",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test.steps[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[1]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0094",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test.steps[2]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[2]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0095",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.golden-test.steps[3]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[3]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0096",
+      "artifact": "config-catalog",
+      "kind": "configuration",
       "name": "jobs.syntax-gate.runs-on",
       "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.runs-on",
       "metadata": {
@@ -574,7 +995,7 @@
       }
     },
     {
-      "id": "ev-0048",
+      "id": "ev-0097",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.syntax-gate.steps.shell",
@@ -584,7 +1005,7 @@
       }
     },
     {
-      "id": "ev-0049",
+      "id": "ev-0098",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.syntax-gate.steps[0]",
@@ -594,7 +1015,7 @@
       }
     },
     {
-      "id": "ev-0050",
+      "id": "ev-0099",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.syntax-gate.steps[1]",
@@ -604,7 +1025,7 @@
       }
     },
     {
-      "id": "ev-0051",
+      "id": "ev-0100",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.syntax-gate.steps[2]",
@@ -614,7 +1035,17 @@
       }
     },
     {
-      "id": "ev-0052",
+      "id": "ev-0101",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "logging.level.com.acme",
+      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/logging.level.com.acme",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0102",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "name",
@@ -624,7 +1055,7 @@
       }
     },
     {
-      "id": "ev-0053",
+      "id": "ev-0103",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "on.push.branches[0]",
@@ -634,7 +1065,7 @@
       }
     },
     {
-      "id": "ev-0054",
+      "id": "ev-0104",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "on.push.branches[1]",
@@ -644,14 +1075,151 @@
       }
     },
     {
-      "id": "ev-0055",
+      "id": "ev-0105",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "server.port",
+      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/server.port",
+      "metadata": {
+        "required": true
+      }
+    },
+    {
+      "id": "ev-0106",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "spring.application.name",
+      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.application.name",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0107",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "spring.datasource.password",
+      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.datasource.password",
+      "metadata": {
+        "required": true
+      }
+    },
+    {
+      "id": "ev-0108",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "spring.datasource.url",
+      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.datasource.url",
+      "metadata": {
+        "required": true
+      }
+    },
+    {
+      "id": "ev-0109",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "spring.datasource.username",
+      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.datasource.username",
+      "metadata": {
+        "required": true
+      }
+    },
+    {
+      "id": "ev-0110",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "spring.jpa.hibernate.ddl-auto",
+      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.jpa.hibernate.ddl-auto",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0111",
       "artifact": "overview",
       "kind": "summary",
       "name": "system-purpose",
       "source": "repository",
       "metadata": {
-        "text": "This codebase contains 1 code file(s) across 1 language(s) (framework detected: ASP.NET Core). Full analysis available in linked documentation."
+        "text": "This codebase contains 1 code file(s) across 1 language(s) (framework detected: Classic ASP). Full analysis available in linked documentation."
       }
     }
-  ]
+  ],
+  "projectName": "AppDoc",
+  "facts": {
+    "what_it_does": [
+      {
+        "text": "At a high level, the application orchestrates Core Processing capabilities through its core services and workflows.",
+        "evidence_refs": []
+      },
+      {
+        "text": "This application appears to support Core Processing workflows and expose that behavior through its service interfaces.",
+        "evidence_refs": []
+      },
+      {
+        "text": "Its business behavior is centered on application records such as and, Help Desk Audit Trail, Help Desk Tickets, and Help Desk usp Get Monthly Metrics.",
+        "evidence_refs": []
+      }
+    ],
+    "inputs": [
+      {
+        "text": "Runtime behavior is also influenced by environment and application configuration values loaded at startup.",
+        "evidence_refs": [
+          "ev-0001",
+          "ev-0002",
+          "ev-0003"
+        ]
+      }
+    ],
+    "processing_steps": [
+      {
+        "text": "Processing logic is organized around components such as Core Processing, where requests are validated and routed through domain logic.",
+        "evidence_refs": []
+      },
+      {
+        "text": "Core processing includes mapping request data into internal models and returning structured results for consumers.",
+        "evidence_refs": []
+      }
+    ],
+    "outputs": [
+      {
+        "text": "Output contracts are not strongly represented in current deterministic evidence.",
+        "evidence_refs": [
+          "ev-0111"
+        ]
+      }
+    ],
+    "external_systems": [
+      {
+        "text": "No clear external system integration evidence was detected.",
+        "evidence_refs": [
+          "ev-0111"
+        ]
+      }
+    ],
+    "confidence_notes": [
+      {
+        "text": "Evidence coverage includes 5 endpoint records, 4 model records, 54 configuration records, and 0 dependency records.",
+        "evidence_refs": [
+          "ev-0001",
+          "ev-0002",
+          "ev-0003",
+          "ev-0004"
+        ]
+      },
+      {
+        "text": "Canonical evidence graph captured 70 entities and 68 relationships for this run.",
+        "evidence_refs": [
+          "ev-0111"
+        ]
+      },
+      {
+        "text": "Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.",
+        "evidence_refs": [
+          "ev-0111"
+        ]
+      }
+    ]
+  },
+  "version": "1.2.0"
 }

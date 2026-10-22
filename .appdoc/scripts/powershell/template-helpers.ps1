@@ -421,49 +421,6 @@ function Get-AppDocSectionVocabulary {
     }
 }
 
-function Format-AppDocSection {
-    <#
-    .SYNOPSIS
-    Builds a canonical `## <Heading>` section with an optional intro line and body.
-
-    .DESCRIPTION
-    No caption (the section sits under its heading). Exactly one blank line
-    separates the heading from content, and the body is emitted verbatim. This is
-    the one way renderers should introduce a section.
-
-    .PARAMETER Heading
-    The section heading text (without the leading `##`).
-
-    .PARAMETER Intro
-    Optional single intro paragraph shown before the body.
-
-    .PARAMETER Body
-    The section body (tables, lists, prose). May be empty (see Emit-AppDocEmptyState).
-    #>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$Heading,
-
-        [string]$Intro = "",
-
-        [AllowNull()]
-        [string]$Body = ""
-    )
-
-    $lines = @("## " + $Heading.Trim(), "")
-    if (-not [string]::IsNullOrWhiteSpace($Intro)) {
-        $lines += $Intro.Trim()
-        $lines += ""
-    }
-    if (-not [string]::IsNullOrWhiteSpace($Body)) {
-        $lines += $Body.Trim()
-        $lines += ""
-    }
-
-    return (($lines -join "`r`n") -replace "[\r\n]+\s*$", "`r`n")
-}
-
 function ConvertTo-AppDocTableCell {
     <#
     .SYNOPSIS
@@ -639,3 +596,74 @@ function Emit-AppDocProvenance {
     return ($Content.TrimEnd() + "`r`n`r`n" + $block + "`r`n")
 }
 
+
+# --- Classic-ASP shared helpers (hoisted from generate-classic-asp-*.ps1, ponytail F12) ---
+# These were copy-pasted identically across the classic-ASP generators. Hoisted here so
+# every classic-ASP generator consumes one definition. Behavior is byte-for-byte the same
+# as the former local copies (verified: identical modulo formatting).
+
+function Get-ClassicAspFrameworkApplicable {
+    param([string]$RootPath)
+    $fwPath = Join-Path $RootPath "docs\framework-detection.json"
+    if (-not (Test-Path $fwPath)) { return $false }
+    try { $fw = Get-Content $fwPath -Raw | ConvertFrom-Json -Depth 10 } catch { return $false }
+    $frameworks = @()
+    if ($fw -is [System.Collections.IEnumerable] -and $fw -isnot [string]) {
+        $frameworks = @($fw | ForEach-Object { [string]$_.framework } | Where-Object { $_ })
+    } else { $frameworks = @([string]$fw.framework) | Where-Object { $_ } }
+    return (($frameworks -contains "Classic ASP") -or ($frameworks -contains "ASP.NET Web Forms"))
+}
+
+function Get-RelativePath { param([string]$FullPath, [string]$Base) $rel = $FullPath.Replace($Base, ""); $rel = $rel.TrimStart('\', '/'); return ($rel -replace '\\', '/') }
+
+function Test-AppDocArtifactIsClassicAspPlaceholder {
+    param([string]$Path)
+    if (-not (Test-Path $Path)) { return $false }
+    $content = Get-Content $Path -Raw -ErrorAction SilentlyContinue
+    if ($null -eq $content) { return $false }
+    return ($content -match 'Not applicable for this framework')
+}
+
+# --- Markdown section extractor (collapsed from ci-doc-integrity-gate.ps1 +
+#     validate-documentation.ps1, ponytail F13). Behaviorally identical to both
+#     former copies on all real docs (verified byte-identical across 6 (doc,header)
+#     pairs on the e2e + classic-asp canary targets); the case-insensitive regex is
+#     the superset. Callers use -SectionName.
+function Get-MarkdownSectionBlock {
+    param(
+        [string]$Content,
+        [string]$SectionName
+    )
+
+    if (-not $Content) { return "" }
+    $pattern = "(?is)^##\s+" + [regex]::Escape($SectionName) + "\s*$\r?\n(.*?)(?=^##\s+|\z)"
+    $match = [regex]::Match($Content, $pattern, [System.Text.RegularExpressions.RegexOptions]::Multiline)
+    if ($match.Success) {
+        return [string]$match.Groups[1].Value
+    }
+
+    return ""
+}
+
+
+# --- Markdown cell helpers (hoisted from the table-row generators, ponytail F14).
+# Copy-pasted identically across generate-external-calls.ps1, generate-classic-asp-*.ps1,
+# generate-evidence-register.ps1, and generate-verification-appendix.ps1. One canonical
+# definition here; each generator consumes the shared copy (verified byte-identical bodies).
+
+function Md-Clean {
+    param([string]$v)
+    $v = [string]$v
+    $v = $v -replace '\|', '/'
+    $v = $v -replace '[\r\n\t]+', ' '
+    return $v.Trim()
+}
+
+function Md-Back { param([string]$x) return ('`' + $x + '`') }
+
+function Esc-MdCell {
+    param([string]$Text)
+    if ($null -eq $Text) { $Text = '' }
+    $Text = $Text -replace '[|]', '\|' -replace "`r", '' -replace "`n", ' '
+    return $Text.Trim()
+}

@@ -1,0 +1,19 @@
+{
+  "artifact": "MOCK-LLM-ENRICHMENT",
+  "generatedAt": "2026-01-01T00:00:00Z",
+  "note": "HAND-CRAFTED MOCK LLM OUTPUT (deterministic test fixture; NOT a real LLM). One record (the Ticket model of the csharp-webforms-sample fixture) exercising all four quarantine properties at once: (1) VERIFIED-FACT LOCK — schemaSource is a Verified source-grounded fact (Ticket.cs); the mock ATTEMPTS to override it to WRONG-PATH -> must be REFUSED, value kept. (2) HEURISTIC OVERRIDE — the deterministic layer fills role=Entity via Infer-ModelRole (heuristic); the mock overrides it to DTO -> must be APPLIED and tagged 'llm' (LLM wins over heuristic). (3) OPEN FILL — businessPurpose/operationalProfile filled by the mock -> applied, tagged 'llm'. (4) NO-FABRICATION — usageFrequency/projectRole/relationships left null -> stay 'open' (never invented).",
+  "records": [
+    {
+      "source": "Ticket.cs",
+      "name": "Ticket",
+      "kind": "model",
+      "role": "DTO",
+      "businessPurpose": "Core domain entity representing a single help-desk support ticket.",
+      "schemaSource": "WRONG-PATH-SHOULD-BE-REFUSED.cs",
+      "operationalProfile": "Read via the ticket-list query; updated on status change.",
+      "usageFrequency": null,
+      "projectRole": null,
+      "relationships": null
+    }
+  ]
+}

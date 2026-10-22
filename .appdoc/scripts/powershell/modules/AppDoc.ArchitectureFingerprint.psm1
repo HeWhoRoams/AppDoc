@@ -10,10 +10,24 @@ function Get-AppDocArchitectureFingerprint {
         [string]$RootPath
     )
 
+    # F2 fix: match the exclusion patterns against the path RELATIVE to RootPath
+    # (mirroring AppDoc.Scope.psm1 Test-AppDocPathIncluded), not the absolute
+    # FullName. A target root nested under an excluded ancestor (e.g. .../tests/
+    # or .../fixtures/) no longer excludes every candidate file; only a
+    # tests//fixtures/... SUBDIR INSIDE the target is still excluded. A leading
+    # "/" is prepended to the relative path so the separator-anchored patterns
+    # also match top-level dirs (e.g. relative "tests/foo.ts" -> "/tests/foo.ts").
+    # Only the matching basis changes; the pattern set is preserved verbatim.
+    try { $resolvedRootFp = (Resolve-Path -Path $RootPath -ErrorAction Stop).Path } catch { $resolvedRootFp = $RootPath }
     $allFiles = @(
         Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -ErrorAction SilentlyContinue |
             Where-Object {
-                $_.FullName -notmatch '(?i)([\\/]\.git[\\/]|[\\/]node_modules[\\/]|[\\/]bin[\\/]|[\\/]obj[\\/]|[\\/]dist[\\/]|[\\/]build[\\/]|[\\/]docs?[\\/]|[\\/](test|tests|spec|specs)[\\/]|[\\/]__tests__[\\/]|[\\/](fixture|fixtures|mock|mocks|sample|samples|example|examples)[\\/])'
+                try {
+                    $relFp = "/" + ([System.IO.Path]::GetRelativePath($resolvedRootFp, $_.FullName) -replace '\\', '/')
+                } catch {
+                    $relFp = $_.FullName
+                }
+                $relFp -notmatch '(?i)([\\/]\.git[\\/]|[\\/]node_modules[\\/]|[\\/]bin[\\/]|[\\/]obj[\\/]|[\\/]dist[\\/]|[\\/]build[\\/]|[\\/]docs?[\\/]|[\\/](test|tests|spec|specs)[\\/]|[\\/]__tests__[\\/]|[\\/](fixture|fixtures|mock|mocks)[\\/])'
             }
     )
 
@@ -42,7 +56,7 @@ function Get-AppDocArchitectureFingerprint {
 
         $restSignalCount += ([regex]::Matches(
             $content,
-            '\[ApiController\]|\[Route\(|\[(HttpGet|HttpPost|HttpPut|HttpDelete|HttpPatch)|Map(Get|Post|Put|Delete|Patch)\(|MapControllers\(|app\.(get|post|put|delete|patch)\s*\(',
+            '\[ApiController\]|\[Route\(|\[(HttpGet|HttpPost|HttpPut|HttpDelete|HttpPatch)|Map(Get|Post|Put|Delete|Patch)\(|MapControllers\(|app\.(get|post|put|delete|patch)\s*\(|@\w+\.route\(|@\w+\.(get|post|put|delete|patch)\s*\(|@RestController\b|@(Get|Post|Put|Delete|Patch|Request)Mapping\b',
             'IgnoreCase'
         )).Count
 

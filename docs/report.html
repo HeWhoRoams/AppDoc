@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Application Documentation</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --primary: #6a0032;
+  --primary-dark: #4d0024;
+  --accent: #ffc82e;
+  --accent-soft: #fff3cd;
+  --ink: #231f20;
+  --ink-soft: #5a5556;
+  --line: #e3dede;
+  --bg: #faf8f8;
+  --card: #ffffff;
+  --code-bg: #f4f0f1;
+  --pre-bg: #2b2326;
+  --pre-fg: #f3ecec;
+  --row-alt: #f7f4f5;
+  --sidebar-w: 320px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+body { margin: 0; font-family: "", "Segoe UI", system-ui, sans-serif; font-size: 15.5px; line-height: 1.65; color: var(--ink); background: var(--bg); }
+h1, h2, h3, h4 { font-family: "", "", sans-serif; font-weight: 700; line-height: 1.2; color: var(--primary); }
+header.masthead { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 14px; background: var(--primary); color: #fff; padding: 12px 24px; border-bottom: 4px solid var(--accent); }
+header.masthead .logo { width: 40px; height: 40px; flex: 0 0 auto; background: #fff; border-radius: 50%; display: grid; place-items: center; }
+header.masthead .logo svg { width: 30px; height: 30px; }
+header.masthead h1 { margin: 0; font-size: 24px; color: #fff; letter-spacing: .3px; }
+header.masthead .sub { font-size: 12.5px; color: var(--accent); font-family: "", sans-serif; text-transform: uppercase; letter-spacing: 1.5px; }
+header.masthead .spacer { flex: 1; }
+header.masthead a.totop { color: #fff; text-decoration: none; font-size: 13px; border: 1px solid rgba(255,255,255,.4); padding: 5px 12px; border-radius: 4px; }
+header.masthead a.totop:hover { background: rgba(255,255,255,.12); }
+.layout { display: flex; align-items: flex-start; }
+nav.toc { width: var(--sidebar-w); flex: 0 0 auto; position: sticky; top: 72px; max-height: calc(100vh - 72px); overflow-y: auto; padding: 20px 18px 40px 22px; border-right: 1px solid var(--line); background: var(--card); font-size: 13.5px; }
+nav.toc .toc-title { font-family: "", sans-serif; font-size: 15px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--ink-soft); margin: 0 0 8px; }
+nav.toc ul { list-style: none; margin: 0; padding: 0; }
+nav.toc ul ul { padding-left: 14px; }
+nav.toc li { margin: 3px 0; }
+nav.toc a { color: var(--ink); text-decoration: none; display: block; padding: 3px 8px; border-radius: 4px; border-left: 3px solid transparent; }
+nav.toc a:hover { background: var(--code-bg); color: var(--primary); }
+nav.toc a.active { background: var(--accent-soft); color: var(--primary); border-left-color: var(--primary); font-weight: 500; }
+main { flex: 1; min-width: 0; padding: 34px 48px 90px; max-width: 1080px; }
+main h1 { font-size: 34px; margin: 0 0 6px; }
+main h2 { font-size: 27px; margin: 46px 0 14px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); }
+main h3 { font-size: 21px; margin: 30px 0 10px; }
+main h4 { font-size: 17px; margin: 22px 0 8px; }
+main p { margin: 10px 0; }
+main a { color: var(--primary); }
+main a:hover { color: var(--primary-dark); }
+main strong { color: var(--primary-dark); }
+main hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
+main blockquote { margin: 16px 0; padding: 12px 18px; background: var(--accent-soft); border-left: 4px solid var(--accent); border-radius: 0 6px 6px 0; color: var(--ink); }
+main blockquote p { margin: 6px 0; }
+main code { font-family: "", Consolas, monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 4px; color: var(--primary-dark); }
+main pre { background: var(--pre-bg); color: var(--pre-fg); padding: 16px 18px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+main pre code { background: none; color: inherit; padding: 0; }
+.tablewrap { overflow-x: auto; margin: 16px 0; }
+main table { border-collapse: collapse; width: 100%; background: var(--card); font-size: 13.5px; box-shadow: 0 1px 3px rgba(35,31,32,.08); border-radius: 8px; overflow: hidden; }
+main th { background: var(--primary); color: #fff; font-family: "", sans-serif; font-size: 14.5px; letter-spacing: .5px; text-align: left; padding: 9px 12px; }
+main td { padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+main tbody tr:nth-child(even) { background: var(--row-alt); }
+main tbody tr:hover { background: var(--accent-soft); }
+main td code, main th code { white-space: nowrap; }
+div.mermaid, pre.mermaid { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 18px; margin: 18px 0; text-align: center; overflow-x: auto; color: var(--ink); }
+footer { margin-top: 60px; padding-top: 18px; border-top: 2px solid var(--accent); color: var(--ink-soft); font-size: 13px; }
+@media (max-width: 900px) { .layout { flex-direction: column; } nav.toc { position: static; width: 100%; max-height: 300px; border-right: 0; border-bottom: 1px solid var(--line); } main { padding: 24px 20px 60px; } }
+@media print { header.masthead, nav.toc { display: none; } main { max-width: none; padding: 0; } }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <span class="logo" aria-hidden="true">
+<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g><polygon fill="#6a0032" points="6.24,43.23 47.06,43.23 45.82,45.98 5,45.98"/><polygon fill="#ffc82e" points="35.23,19.01 40.43,19.01 40.01,20.15 35.81,20.15 29.42,34.59 28.28,34.65"/><polygon fill="#ffc82e" points="38.23,26.11 51.14,26.11 55,17.85 54.17,17.24 50.56,25.01 38.72,25.01"/><polygon fill="#ffc82e" points="48.7,29.76 49.77,29.76 45.97,38.35 37.62,42 18.03,42 13.75,38.8 14.16,37.91 18.19,40.86 36.98,40.86 45.42,37.28"/><polygon fill="#ffc82e" points="8.29,28.99 7.78,30.05 16.33,30.05 16.8,28.99"/><polygon fill="#ffc82e" points="9.03,33.99 8.52,35.05 14.07,35.05 14.55,33.99"/><polygon fill="#ffc82e" points="47.18,45.06 48.28,45.06 47.05,47.81 6.35,47.81 6.85,46.71 46.44,46.71"/><polygon fill="#ffc82e" points="12.94,20.27 12.44,21.32 20.32,21.32 20.8,20.27"/><polygon fill="#6a0032" points="14.54,33.99 20.35,33.99 20.66,33.29 7.51,33.29 8.38,31.37 15.73,31.37 16.79,28.99 25.52,28.99 25.89,28.16 6.79,28.16 8.01,25.46 18.39,25.46 20.76,20.27 24.67,20.27 25.04,19.47 11.39,19.47 12.13,17.88 21.8,17.88 22.63,16.02 30.02,12.19 48.61,12.19 53.81,16.02 49.94,24.32 36.99,24.32 39.67,18.31 34.59,18.31 27.61,34.1 32.52,34.1 35.35,27.94 48.55,27.93 44.79,36.57 36.35,40.16 18.41,40.16 13.41,36.43"/></g></svg>
+  </span>
+  <div>
+    <h1>Application Documentation</h1>
+    <div class="sub">Generated by AppDoc</div>
+  </div>
+  <span class="spacer"></span>
+  <a class="totop" href="#top">Back to top</a>
+</header>
+<div class="layout" id="top">
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title">Contents</div>
+<ul><li><a data-target="application-index" href="#application-index">Application Index</a><ul><li><a data-target="table-of-contents" href="#table-of-contents">Table of contents</a></li><li><a data-target="quick-cross-reference-primary-entry-points-" href="#quick-cross-reference-primary-entry-points-">Quick cross-reference (primary entry points)</a></li></ul><li><a data-target="coverage-and-executive-overview" href="#coverage-and-executive-overview">Coverage and Executive Overview</a><ul><li><a data-target="what-was-inspected" href="#what-was-inspected">What was inspected</a></li><li><a data-target="purpose-and-users" href="#purpose-and-users">Purpose and users</a></li><li><a data-target="system-boundary" href="#system-boundary">System boundary</a></li></ul><li><a data-target="architecture" href="#architecture">Architecture</a><ul><li><a data-target="3-1-components" href="#3-1-components">3.1 Components</a></li><li><a data-target="3-2-architecture-diagram" href="#3-2-architecture-diagram">3.2 Architecture diagram</a></li><li><a data-target="3-3-authentication-authorization" href="#3-3-authentication-authorization">3.3 Authentication / Authorization</a></li></ul><li><a data-target="functional-inventory" href="#functional-inventory">Functional Inventory</a><li><a data-target="roles-and-access-model" href="#roles-and-access-model">Roles and Access Model</a><ul><li><a data-target="5-1-observed-role-concepts" href="#5-1-observed-role-concepts">5.1 Observed role concepts</a></li><li><a data-target="role-capability-matrix" href="#role-capability-matrix">Role-capability matrix</a></li></ul><li><a data-target="ui-catalog" href="#ui-catalog">UI Catalog</a><li><a data-target="help-desk-workflows" href="#help-desk-workflows">Help Desk Workflows</a><li><a data-target="data-and-integrations" href="#data-and-integrations">Data and Integrations</a><ul><li><a data-target="databases-connection-string-inventory-status-verified-redacted-" href="#databases-connection-string-inventory-status-verified-redacted-">Databases (connection-string inventory) — status Verified (redacted)</a></li><li><a data-target="entities-tables-views-representative-status-verified" href="#entities-tables-views-representative-status-verified">Entities (tables/views, representative) — status Verified</a></li></ul><li><a data-target="external-call-register" href="#external-call-register">External Call Register</a><ul><li><a data-target="9-1-database-connections" href="#9-1-database-connections">9.1 Database connections</a></li><li><a data-target="9-2-stored-procedure-register" href="#9-2-stored-procedure-register">9.2 Stored-procedure register</a></li><li><a data-target="9-3-direct-sql-tables-views" href="#9-3-direct-sql-tables-views">9.3 Direct SQL tables / views</a></li><li><a data-target="9-4-http-xml-endpoints" href="#9-4-http-xml-endpoints">9.4 HTTP / XML endpoints</a></li><li><a data-target="9-5-email-com-file-system-boundaries" href="#9-5-email-com-file-system-boundaries">9.5 Email / COM / file-system boundaries</a></li><li><a data-target="9-6-failure-observability" href="#9-6-failure-observability">9.6 Failure / observability</a></li></ul><li><a data-target="stored-procedure-data-dictionary" href="#stored-procedure-data-dictionary">Stored-procedure data dictionary</a><li><a data-target="troubleshooting-matrix" href="#troubleshooting-matrix">Troubleshooting Matrix</a><li><a data-target="security-and-operational-risks" href="#security-and-operational-risks">Security and Operational Risks</a><ul><li><a data-target="unknowns-that-must-not-be-treated-as-controls" href="#unknowns-that-must-not-be-treated-as-controls">Unknowns that must not be treated as controls</a></li></ul><li><a data-target="ownership-and-maintenance" href="#ownership-and-maintenance">Ownership and Maintenance</a><li><a data-target="architecture-and-data-flow-diagrams" href="#architecture-and-data-flow-diagrams">Architecture and Data-Flow Diagrams</a><ul><li><a data-target="data-flow" href="#data-flow">Data flow</a></li><li><a data-target="c4-context" href="#c4-context">C4 context</a></li></ul><li><a data-target="glossary" href="#glossary">Glossary</a><li><a data-target="evidence-register" href="#evidence-register">Evidence Register</a><li><a data-target="open-questions-and-documentation-gaps" href="#open-questions-and-documentation-gaps">Open Questions and Documentation Gaps</a><li><a data-target="recommendations" href="#recommendations">Recommendations</a><li><a data-target="operations-runbook" href="#operations-runbook">Operations Runbook</a><ul><li><a data-target="platform-requirements" href="#platform-requirements">Platform requirements</a></li><li><a data-target="deployment-deployment-steps" href="#deployment-deployment-steps">Deployment / deployment steps</a></li><li><a data-target="sql-server-instances" href="#sql-server-instances">SQL Server instances</a></li><li><a data-target="failure-responses-observed-" href="#failure-responses-observed-">Failure responses (observed)</a></li><li><a data-target="rollback-deployment-procedures" href="#rollback-deployment-procedures">Rollback / deployment procedures</a></li></ul><li><a data-target="verification-appendix" href="#verification-appendix">Verification Appendix</a><li><a data-target="provenance" href="#provenance">Provenance</a></ul>
+  </nav>
+  <main>
+<!-- source: application-documentation.md -->
+<h1 id="application-documentation">Application Documentation</h1>
+<p><strong>Evidence date</strong>: 10/16/2026 23:43:08   <strong>Framework</strong>: ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot   <strong>Composed from</strong>: 11 per-artifact files + machine evidence (deterministic, no LLM).</p>
+<blockquote><p><strong>Handling note</strong>: Secret material is redacted. Values shown as <code>@@HELPWEB_...@@</code> are opaque sanitized tokens and MUST NOT be reconstructed, resolved, or used to connect to any system. Connection strings below are shown in <em>shape only</em> (provider / catalog / source), never with live credentials.</p></blockquote>
+<p><strong>Epistemic status legend</strong>: Verified — supported by a located source file + searchable value. Inferred — a reasonable interpretation not confirmed by a concrete file+line. Partly verified — a file reference exists but the confirmable line/value is absent. Unknown — the repository does not establish the claim.</p>
+<h2 id="application-index">Application Index</h2>
+<p>Auto-generated table of contents for this document, plus a quick cross-reference to the primary entry points extracted from the API inventory.</p>
+<h3 id="table-of-contents">Table of contents</h3>
+<ol><li><a href="#application-index">Application Index</a></li><li><a href="#coverage-and-executive-overview">Coverage and Executive Overview</a></li><li><a href="#architecture">Architecture</a></li><li><a href="#functional-inventory">Functional Inventory</a></li><li><a href="#roles-and-access-model">Roles and Access Model</a></li><li><a href="#ui-catalog">UI Catalog</a></li><li><a href="#help-desk-workflows">Help Desk Workflows</a></li><li><a href="#data-and-integrations">Data and Integrations</a></li><li><a href="#external-call-register">External Call Register</a></li><li><a href="#stored-procedure-data-dictionary">Stored-procedure data dictionary</a></li><li><a href="#troubleshooting-matrix">Troubleshooting Matrix</a></li><li><a href="#security-and-operational-risks">Security and Operational Risks</a></li><li><a href="#ownership-and-maintenance">Ownership and Maintenance</a></li><li><a href="#architecture-and-data-flow-diagrams">Architecture and Data-Flow Diagrams</a></li><li><a href="#glossary">Glossary</a></li><li><a href="#evidence-register">Evidence Register</a></li><li><a href="#open-questions-and-documentation-gaps">Open Questions and Documentation Gaps</a></li><li><a href="#recommendations">Recommendations</a></li><li><a href="#operations-runbook">Operations Runbook</a></li><li><a href="#verification-appendix">Verification Appendix</a></li></ol>
+<h3 id="quick-cross-reference-primary-entry-points-">Quick cross-reference (primary entry points)</h3>
+<div class="tablewrap"><table><thead><tr><th>#</th><th>Feature (Inferred)</th><th>Entry point</th><th>Method</th><th>Status</th></tr></thead><tbody><tr><td>—</td><td>none extracted</td><td>—</td><td>—</td><td>Unknown</td></tr></tbody></table></div>
+<p><em>Top 10 of 5 request-addressable entry points (see Functional Inventory for the capped detail table).</em></p>
+<h2 id="coverage-and-executive-overview">Coverage and Executive Overview</h2>
+<h3 id="what-was-inspected">What was inspected</h3>
+<p>The inspected unit is the application tree under the repository root: 5 request-addressable entry points and the data / integration surfaces the extractors detected for this framework (ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot). The System Overview narrative (overview.md) reports the following as the high-level shape:</p>
+<p><em>From System Overview:</em></p>
+<ul><li>At a high level, the application orchestrates Core Processing capabilities through its core services and workflows. _(Inferred — overview narrative)_</li><li>This application appears to support Core Processing workflows and expose that behavior through its service interfaces. _(Inferred — overview narrative)_</li><li>Its business behavior is centered on application records such as and, Help Desk Audit Trail, Help Desk Tickets, and Help Desk usp Get Monthly Metrics. _(Inferred — overview narrative)_</li></ul>
+<h3 id="purpose-and-users">Purpose and users</h3>
+<div class="tablewrap"><table><thead><tr><th>Aspect</th><th>Statement</th><th>Status</th></tr></thead><tbody><tr><td>Purpose</td><td>Not detected for this framework — purpose is not extractable from the available artifacts for a non-classic-ASP codebase; owner-required.</td><td>Unknown</td></tr><tr><td>Primary users</td><td>Not detected for this framework — no user-role signals extracted.</td><td>Unknown</td></tr><tr><td>Interpretation basis</td><td>The classic-ASP help-desk interpretation (FrontCounter/HelpWeb/portal naming) does not apply to this framework.</td><td>N/A</td></tr></tbody></table></div>
+<h3 id="system-boundary">System boundary</h3>
+<p>The boundary is stated as concrete, countable extents extracted from the machine evidence (not narrative):</p>
+<div class="tablewrap"><table><thead><tr><th>Boundary extent</th><th>Value</th><th>Status</th></tr></thead><tbody><tr><td>Request-addressable entry points (endpoints)</td><td>5</td><td>Verified</td></tr><tr><td>Database objects (models)</td><td>4</td><td>Verified</td></tr><tr><td>Distinct databases (connection strings)</td><td>0</td><td>Verified</td></tr><tr><td>SQL Server instances</td><td>0</td><td>Verified</td></tr><tr><td>Tables and views referenced</td><td>0</td><td>Verified</td></tr><tr><td>Stored procedures called</td><td>0</td><td>Verified</td></tr><tr><td>Test/failure-surface records</td><td>0</td><td>Verified</td></tr></tbody></table></div>
+<p>Canonical count markers (for cross-artifact metric consistency):</p>
+<div class="tablewrap"><table><thead><tr><th>Metric</th><th>Value</th><th>Status</th></tr></thead><tbody><tr><td>API endpoints documented</td><td>5</td><td>Verified</td></tr><tr><td>Database object records (models)</td><td>4</td><td>Verified</td></tr></tbody></table></div>
+<h2 id="architecture">Architecture</h2>
+<h3 id="3-1-components">3.1 Components</h3>
+<p>Components are projected from two deterministic sources: the build-cookbook code inventory (file-type distribution) and the API inventory grouped by top-level subsystem directory.</p>
+<p><strong>Code inventory (file types)</strong> — status Verified:</p>
+<p><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP code-inventory (file-type distribution from .asp/.aspx/.inc scanning) does not apply to this framework)</em> — status: N/A (not applicable to the detected framework).</p>
+<p><strong>Subsystems (entry points grouped by top-level directory)</strong> — status Verified (counts) / Inferred (naming):</p>
+<div class="tablewrap"><table><thead><tr><th>Subsystem (dir)</th><th>Entry points</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+<h3 id="3-2-architecture-diagram">3.2 Architecture diagram</h3>
+<pre class="mermaid">
+C4Context
+title AppDoc - System Context
+Person(user, "User", "Primary caller of the system")
+System(appdoc, "AppDoc", "Software system: AppDoc (repository root; no in-scope .sln)")
+Rel(user, appdoc, "Uses")
+</pre>
+<h3 id="3-3-authentication-authorization">3.3 Authentication / Authorization</h3>
+<div class="tablewrap"><table><thead><tr><th>Concern</th><th>Observed</th><th>Status</th></tr></thead><tbody><tr><td>Model</td><td><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (per-page session/cookie + ADO credential model does not apply to this framework)</em></td><td>Unknown</td></tr><tr><td>Detail</td><td>Authentication and authorization behavior is summarized when explicit markers are extracted. For authoritative enforcement details, review controller attributes, middleware, and configuration policy in source.</td><td>Inferred</td></tr></tbody></table></div>
+<h2 id="functional-inventory">Functional Inventory</h2>
+<p>Each request-addressable entry point is one feature. The detail table is capped to the first 60 by subsystem order; the full set of 5 entry points lives in <a href="api-inventory.md">API Inventory</a>. Status: Verified for entry presence, Inferred for the feature purpose/name.</p>
+<div class="tablewrap"><table><thead><tr><th>ID</th><th>Feature (Inferred)</th><th>Entry point</th><th>Inputs (form/query fields)</th><th>Dependencies</th><th>Status</th></tr></thead><tbody><tr><td>—</td><td>none extracted</td><td>—</td><td>—</td><td>—</td><td>Unknown</td></tr></tbody></table></div>
+<p><em>Showing 5 of 5 total entry points.</em></p>
+<h2 id="roles-and-access-model">Roles and Access Model</h2>
+<p>A deterministic scan locates the concrete role / privilege / authorization <strong>tokens</strong> in the classic-ASP source (grep-verifiable), with the first file:line where each was observed. The capability matrix below is <strong>owner-required</strong> — the authoritative role→capability mapping lives in database objects and is data-driven, so no cell is inferred beyond what a single token proves.</p>
+<h3 id="5-1-observed-role-concepts">5.1 Observed role concepts</h3>
+<div class="tablewrap"><table><thead><tr><th>Role / concept</th><th>Observed capability</th><th>Where observed (file:line)</th><th>Status</th></tr></thead><tbody></tbody></table></div>
+<p><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP role-token scan (AlwaysAdmin/GID/ACD help-desk tokens) does not apply to this framework)</em> — status: N/A (no role/authorization tokens located for this framework).</p>
+<h3 id="role-capability-matrix">Role-capability matrix</h3>
+<p><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP help-desk role-capability matrix does not apply to this framework)</em> — status: N/A (owner-required for a framework-appropriate role matrix).</p>
+<p><em>Role model not detected for this framework — the classic-ASP role/privilege concepts are N/A; a framework-appropriate role matrix would be owner-required.</em></p>
+<h2 id="ui-catalog">UI Catalog</h2>
+<p>Each entry point that carries form/query input fields is a screen. Controls (form/query fields) are Verified from the extraction; <strong>States</strong> (loading / empty / error / validated) are Unknown because the runtime was not observed. Capped to the first 40 screens with inputs; the full set is in <a href="api-inventory.md">API Inventory</a>.</p>
+<div class="tablewrap"><table><thead><tr><th>Screen (Inferred)</th><th>Entry point</th><th>Visible controls/data (fields)</th><th>States</th><th>Roles/evidence</th></tr></thead><tbody><tr><td>—</td><td>none with fields extracted</td><td>—</td><td>Unknown</td><td>Unknown</td></tr></tbody></table></div>
+<p><em>Showing 0 screens with extracted input fields.</em></p>
+<h2 id="help-desk-workflows">Help Desk Workflows</h2>
+<blockquote><p>Operator workflow skeletons are projected from the verified endpoint + stored-procedure flow. Deep operator narrative, evidence-retention policy, and escalation authorization are NOT source-derivable and are produced by the /appdoc.enhance semantic layer; cells below marked Unknown are owner-required. Every step cites a real source file:line; the verification <em>methods</em> and stored-procedure contracts are Verified, while the business policy / authorization / escalation steps remain Unknown.</p></blockquote>
+<p><strong>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP help-desk operator workflows (user-lookup / password-reset / AD-repair / extension / FrontCounter / queue-status skeletons derived from the verified endpoint + stored-procedure flow) do not apply to this framework)</strong></p>
+<p>No framework-specific operator workflows were detected for this codebase. Skeleton operator workflows for the detected framework would be produced by the <code>/appdoc.enhance</code> semantic layer; none are composed here (not fabricated).</p>
+<h2 id="data-and-integrations">Data and Integrations</h2>
+<p>The data layer and integration surfaces (databases, tables/views, stored procedures, and any detected data stores) are projected from the data-model evidence for this framework (ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot). <strong>Sensitivity</strong> is Inferred (not confirmed). The full register of detected external data integrations is in <a href="#external-call-register">External Call Register</a>.</p>
+<h3 id="databases-connection-string-inventory-status-verified-redacted-">Databases (connection-string inventory) — status Verified (redacted)</h3>
+<div class="tablewrap"><table><thead><tr><th>ID</th><th>Provider</th><th>Server</th><th>Database</th><th>Connection-string shape</th><th>Status</th></tr></thead><tbody><tr><td>—</td><td>not detected</td><td>—</td><td>—</td><td>—</td><td>Unknown</td></tr></tbody></table></div>
+<p><em>Showing 0 of 0 databases.</em></p>
+<h3 id="entities-tables-views-representative-status-verified">Entities (tables/views, representative) — status Verified</h3>
+<div class="tablewrap"><table><thead><tr><th>ID</th><th>DB</th><th>Object</th><th>Type</th><th>Sensitivity</th><th>Referenced from</th><th>Status</th></tr></thead><tbody><tr><td>—</td><td>not detected</td><td>—</td><td>—</td><td>Unknown</td><td>—</td><td>Unknown</td></tr></tbody></table></div>
+<p><em>Showing 0 of 0 tables/views.</em></p>
+<h2 id="external-call-register">External Call Register</h2>
+<p>Deterministic register of every external call the application makes. The largest and most reliable section of this document.</p>
+<h3 id="9-1-database-connections">9.1 Database connections</h3>
+<div class="tablewrap"><table><thead><tr><th>ID</th><th>Provider</th><th>Server</th><th>Database</th><th>Connection-string shape</th><th>Files referencing</th><th>Status</th></tr></thead><tbody><tr><td>—</td><td>not detected</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Unknown</td></tr></tbody></table></div>
+<p><em>Showing 0 of 0 connection strings.</em></p>
+<h3 id="9-2-stored-procedure-register">9.2 Stored-procedure register</h3>
+<div class="tablewrap"><table><thead><tr><th>ID</th><th>Procedure</th><th>Call-site file(s)</th><th>Effect</th><th>Status</th></tr></thead><tbody><tr><td>—</td><td>not detected</td><td>—</td><td>Unknown</td><td>Unknown</td></tr></tbody></table></div>
+<p><em>Showing 0 of 0 stored procedures.</em></p>
+<h3 id="9-3-direct-sql-tables-views">9.3 Direct SQL tables / views</h3>
+<p>Referenced tables and views are the direct-SQL surface (see 8.2 for sensitivity). Representative set:</p>
+<div class="tablewrap"><table><thead><tr><th>ID</th><th>DB</th><th>Object</th><th>Type</th><th>Referenced from</th><th>Status</th></tr></thead><tbody><tr><td>—</td><td>not detected</td><td>—</td><td>—</td><td>—</td><td>Unknown</td></tr></tbody></table></div>
+<p><em>Showing 0 of 0 tables/views.</em></p>
+<h3 id="9-4-http-xml-endpoints">9.4 HTTP / XML endpoints</h3>
+<p><em>Not detected in this codebase.</em> No outbound HTTP/XML call sites were extracted in the available evidence for this framework. <em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP outbound HTTP/XML register (ITSM API / Bomgar remote-support via ServerXMLHTTP / FreeThreadedDOMDocument) does not apply to this framework)</em></p>
+<h3 id="9-5-email-com-file-system-boundaries">9.5 Email / COM / file-system boundaries</h3>
+<p><em>Not detected in this codebase.</em> No email / COM / file-system boundaries were extracted in the available evidence for this framework. <em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP send_mail / ADO / UNC boundary register does not apply to this framework)</em></p>
+<h3 id="9-6-failure-observability">9.6 Failure / observability</h3>
+<p>From the test-catalog failure surface:</p>
+<div class="tablewrap"><table><thead><tr><th>Signal</th><th>Count</th><th>Files (sample)</th><th>Status</th></tr></thead><tbody><tr><td>Auto-refresh timers (auto-refresh)</td><td>0</td><td>see test-catalog</td><td>Verified</td></tr></tbody></table></div>
+<h2 id="stored-procedure-data-dictionary">Stored-procedure data dictionary</h2>
+<p><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the stored-procedure data dictionary is produced only for classic-ASP codebases from in-source contract blocks; this target has no classic-ASP signal, so no contract ladders were extracted)</em></p>
+<div class="tablewrap"><table><thead><tr><th>Procedure</th><th>Parameters observed</th><th>Return / output</th><th>Source file (call site)</th><th>Status</th></tr></thead><tbody><tr><td>—</td><td>—</td><td>—</td><td>—</td><td>Unknown</td></tr></tbody></table></div>
+<p><em>Parameter/return details are Unknown where not present in the evidence.</em></p>
+<h2 id="troubleshooting-matrix">Troubleshooting Matrix</h2>
+<p>Projected from the test-catalog known-failure-mode records. Each row is a real per-file failure pattern: <strong>Symptom</strong> = the observed failure pattern + file, <strong>Evidence-supported check</strong> = a grep-verifiable command referencing that file, <strong>Known response / restriction</strong> = the observed behavior, <strong>Escalate-when</strong> = Unknown (not extracted). Scratch / copy / old / test / bak files are excluded and identical rows are deduped.</p>
+<div class="tablewrap"><table><thead><tr><th>Symptom</th><th>Evidence-supported check (Inferred)</th><th>Known response / restriction (observed, Verified)</th><th>Escalate-when</th></tr></thead><tbody><tr><td>—</td><td>not detected</td><td>—</td><td>Unknown</td></tr></tbody></table></div>
+<p><em>Showing 0 of 0 distinct non-scratch failure-mode/timer records (identical rows deduped; full set in <a href="test-catalog.md">test-catalog</a>).</em></p>
+<h2 id="security-and-operational-risks">Security and Operational Risks</h2>
+<p>Projected from the test-catalog security findings and the data-model connection-string inventory. Credential values are <strong>redacted</strong> (shown only as opaque sanitized tokens).</p>
+<div class="tablewrap"><table><thead><tr><th>Risk</th><th>Evidence</th><th>Status</th></tr></thead><tbody><tr><td>Errors swallowed silently</td><td><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the <code>On Error Resume Next</code> (VBScript) silent-swallowing pattern is classic-ASP-specific; not detected in this framework)</em></td><td>N/A</td></tr><tr><td>Silent redirect on DB failure hides root cause</td><td><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the <code>Response.Redirect</code>-after-query-failure pattern is classic-ASP-specific; not detected in this framework)</em></td><td>N/A</td></tr><tr><td>ADO/recordset errors inspected at runtime</td><td><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the <code>parseError</code> ADO error-inspection pattern is classic-ASP-specific; not detected in this framework)</em></td><td>N/A</td></tr><tr><td>Hardcoded connection strings (credential-exposure)</td><td><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the hardcoded ADO connection-string pattern is classic-ASP-specific; not detected in this framework)</em></td><td>N/A</td></tr><tr><td>Multiple distinct SQL Server hosts referenced</td><td><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the multi-host SQL Server instance inventory is classic-ASP-specific; not detected in this framework)</em></td><td>N/A</td></tr></tbody></table></div>
+<h3 id="unknowns-that-must-not-be-treated-as-controls">Unknowns that must not be treated as controls</h3>
+<p>The following are <strong>Unknown</strong> — their absence from the repo does NOT mean they are absent in production, and they must not be read as security controls (or the lack thereof):</p>
+<ul><li>Runtime authentication enforcement strength (Unknown)</li><li>Input validation / injection protection beyond the observed usage (Unknown)</li><li>Transport security (TLS/HTTPS) configuration (Unknown)</li><li>Credential rotation / secrets-management practice (Unknown)</li></ul>
+<h2 id="ownership-and-maintenance">Ownership and Maintenance</h2>
+<p>Ownership and maintenance information is <strong>not extractable</strong> from the codebase (no owners, no on-call, no SLO metadata in the evidence). Every cell below is Unknown / owner-required. This is an honest placeholder, not a fabrication.</p>
+<div class="tablewrap"><table><thead><tr><th>Aspect</th><th>Owner</th><th>Contact</th><th>SLO / target</th><th>Notes</th><th>Status</th></tr></thead><tbody><tr><td>Application ownership</td><td>Unknown</td><td>Unknown</td><td>Unknown</td><td>owner-required</td><td>Unknown</td></tr><tr><td>Help-desk operator team</td><td>Unknown</td><td>Unknown</td><td>Unknown</td><td>owner-required</td><td>Unknown</td></tr><tr><td>IT administrator team</td><td>Unknown</td><td>Unknown</td><td>Unknown</td><td>owner-required</td><td>Unknown</td></tr><tr><td>On-call / escalation</td><td>Unknown</td><td>Unknown</td><td>Unknown</td><td>owner-required</td><td>Unknown</td></tr><tr><td>Data/DBA owner</td><td>Unknown</td><td>Unknown</td><td>Unknown</td><td>owner-required</td><td>Unknown</td></tr><tr><td>SLO / availability target</td><td>Unknown</td><td>Unknown</td><td>Unknown</td><td>owner-required</td><td>Unknown</td></tr><tr><td>Change/release process</td><td>Unknown</td><td>Unknown</td><td>Unknown</td><td>owner-required</td><td>Unknown</td></tr></tbody></table></div>
+<p><em>This table is a structure placeholder. All cells are Unknown / owner-required — ownership data was not present in the inspected codebase.</em></p>
+<h2 id="architecture-and-data-flow-diagrams">Architecture and Data-Flow Diagrams</h2>
+<blockquote><p>These diagrams represent <strong>observed calls</strong> extracted from the codebase, not production topology. They are deterministic projections of the evidence graph.</p></blockquote>
+<h3 id="data-flow">Data flow</h3>
+<pre class="mermaid">
+flowchart LR
+    %% Solid edges: runtime request/data flow. Dashed edges: structural/config/dependency links.
+    subgraph inputs["Input Boundary"]
+        actor_user_calling_system_16ed03d7["User / Calling System"]
+        config_github_copilot_chat_ex_3233c7ea["github.copilot.chat.executions.enabled"]
+        config_jobs_syntax_gate_runs_1cc1bd48["jobs.syntax-gate.runs-on"]
+        config_jobs_syntax_gate_steps_b0ed346a["jobs.syntax-gate.steps.shell"]
+        config_jobs_syntax_gate_steps_c21bece1["jobs.syntax-gate.steps(0)"]
+        config_jobs_syntax_gate_steps_f955e977["jobs.syntax-gate.steps(1)"]
+        config_jobs_syntax_gate_steps_fea78b6a["jobs.syntax-gate.steps(2)"]
+        config_name_6ae99955["name"]
+        config_on_push_branches_0_2a450bbd["on.push.branches(0)"]
+        config_on_push_branches_1_81342622["on.push.branches(1)"]
+        inbound_tests_fixtures_classic_70fe47d5["tests/fixtures/classic-asp-sample/admin-report.asp"]
+        inbound_tests_fixtures_classic_001b8f19["tests/fixtures/classic-asp-sample/audit-log.asp"]
+        inbound_tests_fixtures_classic_bb5ccbaf["tests/fixtures/classic-asp-sample/index.asp"]
+        inbound_tests_fixtures_classic_898febc4["tests/fixtures/classic-asp-sample/new-ticket.asp"]
+        inbound_tests_fixtures_classic_b06933c3["tests/fixtures/classic-asp-sample/search-ticket.asp"]
+    end
+    subgraph processing["Core Transformations"]
+        component_core_processing_6d28d771["Core Processing"]
+    end
+    subgraph data["Data Stores and Models"]
+        data_and_cffa50a3["and"]
+        data_helpdesk_audittrail_9267afc4["HelpDesk.AuditTrail"]
+        data_helpdesk_tickets_1005e0b3["HelpDesk.Tickets"]
+        data_helpdesk_usp_getmonthl_741ce4e0["HelpDesk.usp_GetMonthlyMetrics"]
+    end
+    actor_user_calling_system_16ed03d7 --&gt;|initiates| inbound_tests_fixtures_classic_001b8f19
+    actor_user_calling_system_16ed03d7 --&gt;|initiates| inbound_tests_fixtures_classic_70fe47d5
+    actor_user_calling_system_16ed03d7 --&gt;|initiates| inbound_tests_fixtures_classic_898febc4
+    actor_user_calling_system_16ed03d7 --&gt;|initiates| inbound_tests_fixtures_classic_b06933c3
+    actor_user_calling_system_16ed03d7 --&gt;|initiates| inbound_tests_fixtures_classic_bb5ccbaf
+    component_core_processing_6d28d771 --&gt;|reads/writes| data_and_cffa50a3
+    component_core_processing_6d28d771 --&gt;|reads/writes| data_helpdesk_audittrail_9267afc4
+    component_core_processing_6d28d771 --&gt;|reads/writes| data_helpdesk_tickets_1005e0b3
+    component_core_processing_6d28d771 --&gt;|reads/writes| data_helpdesk_usp_getmonthl_741ce4e0
+    inbound_tests_fixtures_classic_001b8f19 --&gt;|routes to| component_core_processing_6d28d771
+    inbound_tests_fixtures_classic_70fe47d5 --&gt;|routes to| component_core_processing_6d28d771
+    inbound_tests_fixtures_classic_898febc4 --&gt;|routes to| component_core_processing_6d28d771
+    inbound_tests_fixtures_classic_b06933c3 --&gt;|routes to| component_core_processing_6d28d771
+    inbound_tests_fixtures_classic_bb5ccbaf --&gt;|routes to| component_core_processing_6d28d771
+    class actor_user_calling_system_16ed03d7 actor
+    class component_core_processing_6d28d771 component
+    class config_github_copilot_chat_ex_3233c7ea config
+    class config_jobs_syntax_gate_runs_1cc1bd48 config
+    class config_jobs_syntax_gate_steps_b0ed346a config
+    class config_jobs_syntax_gate_steps_c21bece1 config
+    class config_jobs_syntax_gate_steps_f955e977 config
+    class config_jobs_syntax_gate_steps_fea78b6a config
+    class config_name_6ae99955 config
+    class config_on_push_branches_0_2a450bbd config
+    class config_on_push_branches_1_81342622 config
+    class data_and_cffa50a3 data
+    class data_helpdesk_audittrail_9267afc4 data
+    class data_helpdesk_tickets_1005e0b3 data
+    class data_helpdesk_usp_getmonthl_741ce4e0 data
+    class inbound_tests_fixtures_classic_70fe47d5 inbound
+    class inbound_tests_fixtures_classic_001b8f19 inbound
+    class inbound_tests_fixtures_classic_bb5ccbaf inbound
+    class inbound_tests_fixtures_classic_898febc4 inbound
+    class inbound_tests_fixtures_classic_b06933c3 inbound
+classDef actor fill:#0f172a,stroke:#0f172a,color:#ffffff,stroke-width:1px
+classDef inbound fill:#dcfce7,stroke:#166534,color:#166534,stroke-width:1px
+classDef outbound fill:#ffedd5,stroke:#9a3412,color:#9a3412,stroke-width:1px
+classDef component fill:#dbeafe,stroke:#1d4ed8,color:#1d4ed8,stroke-width:1px
+classDef data fill:#fef9c3,stroke:#854d0e,color:#854d0e,stroke-width:1px
+classDef config fill:#f5f3ff,stroke:#5b21b6,color:#5b21b6,stroke-width:1px
+classDef external fill:#fee2e2,stroke:#991b1b,color:#991b1b,stroke-width:1px
+classDef dependency fill:#ede9fe,stroke:#4338ca,color:#4338ca,stroke-width:1px
+</pre>
+<h3 id="c4-context">C4 context</h3>
+<pre class="mermaid">
+C4Context
+title AppDoc - System Context
+Person(user, "User", "Primary caller of the system")
+System(appdoc, "AppDoc", "Software system: AppDoc (repository root; no in-scope .sln)")
+Rel(user, appdoc, "Uses")
+</pre>
+<h2 id="glossary">Glossary</h2>
+<p>Recurring domain tokens and technical terms observed in the extracted evidence. Meanings are Inferred from context; they are not confirmed definitions.</p>
+<div class="tablewrap"><table><thead><tr><th>Term</th><th>Observed meaning</th><th>Basis</th><th>Status</th></tr></thead><tbody><tr><td>—</td><td><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP domain glossary (GID/ACD/Peregrine/SQLOLEDB/HDEMP/Bradford/Resnet) does not apply to this framework)</em></td><td>N/A</td></tr></tbody></table></div>
+<h2 id="evidence-register">Evidence Register</h2>
+<p>The full evidence register (section §14 in the benchmark) is reproduced below, projected verbatim from vidence-register.md.</p>
+<p><strong>Status model:</strong> <code>Verified</code> — directly supported by inspected source (file + line or a searchable value). <code>Inferred</code> — a reasonable interpretation not confirmed by runtime. <code>Partly verified</code> — a file reference exists but the confirmable line/value is absent. <code>Unknown</code> — the repository does not establish the claim.</p>
+<p><strong>Records:</strong> 64 across 10 evidence files.</p>
+<p>Framework detected: <strong>ASP.NET Core ASP.NET MVC 5 Flask Spring Boot</strong> (C# C# Python Java); support level: full partial partial partial; extraction coverage: System.Object[]%.</p>
+<div class="tablewrap"><table><thead><tr><th>Finding</th><th>Status</th><th>Supporting Artifact</th><th>Limitation</th></tr></thead><tbody><tr><td>GitHub Actions</td><td>Partly verified</td><td>appdoc-ci.yml</td><td>File reference present; line/value not confirmed</td></tr><tr><td>chat.tools.fileOperations.autoApprove.list</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.fileOperations.autoApprove.read</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.-ErrorAction</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.-Json</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.-RootPath</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.-Verbose</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove..\.AppDoc\\scripts\\powershell\\*.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/analyze-codebase.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/analyze-repository.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/catalog-samples.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/extract-config.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-data-model.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-debt-register.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-improvements.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-overview.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/run-all-generators.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/validate-data-model.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/validate-debt-register.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/validate-overview.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.Copy-Item</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.Get-ChildItem</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.Get-Content</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.git</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.git fetch</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.git status</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.pwsh</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.Remove-Item</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.Set-ExecutionPolicy</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.Test-Path</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>chat.tools.terminal.autoApprove.Write-Host</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>github.copilot.chat.executions.enabled</td><td>Verified</td><td>.vscode/settings.json</td><td>Runtime behavior not executed</td></tr><tr><td>jobs.syntax-gate.runs-on</td><td>Verified</td><td>.github/workflows/appdoc-ci.yml</td><td>Runtime behavior not executed</td></tr><tr><td>jobs.syntax-gate.steps.shell</td><td>Verified</td><td>.github/workflows/appdoc-ci.yml</td><td>Runtime behavior not executed</td></tr><tr><td>jobs.syntax-gate.steps[0]</td><td>Verified</td><td>.github/workflows/appdoc-ci.yml</td><td>Runtime behavior not executed</td></tr><tr><td>jobs.syntax-gate.steps[1]</td><td>Verified</td><td>.github/workflows/appdoc-ci.yml</td><td>Runtime behavior not executed</td></tr><tr><td>jobs.syntax-gate.steps[2]</td><td>Verified</td><td>.github/workflows/appdoc-ci.yml</td><td>Runtime behavior not executed</td></tr><tr><td>name</td><td>Verified</td><td>.github/workflows/appdoc-ci.yml</td><td>Runtime behavior not executed</td></tr><tr><td>on.push.branches[0]</td><td>Verified</td><td>.github/workflows/appdoc-ci.yml</td><td>Runtime behavior not executed</td></tr><tr><td>on.push.branches[1]</td><td>Verified</td><td>.github/workflows/appdoc-ci.yml</td><td>Runtime behavior not executed</td></tr><tr><td>system-purpose</td><td>Inferred</td><td>repository</td><td>Interpretation not confirmed by runtime</td></tr><tr><td>api-inventory</td><td>Unknown</td><td>docs</td><td>Not established by repository</td></tr><tr><td>data-model</td><td>Unknown</td><td>docs</td><td>Not established by repository</td></tr><tr><td>source-files</td><td>Inferred</td><td>repository</td><td>Interpretation not confirmed by runtime</td></tr><tr><td>task-guide-summary</td><td>Inferred</td><td>docs</td><td>Interpretation not confirmed by runtime</td></tr><tr><td>change-endpoint-safely</td><td>Unknown</td><td>docs</td><td>Not established by repository</td></tr><tr><td>debug-build-failure</td><td>Unknown</td><td>docs</td><td>Not established by repository</td></tr><tr><td>plan-debt-sprint</td><td>Unknown</td><td>docs</td><td>Not established by repository</td></tr><tr><td>triage-dependency-risk</td><td>Unknown</td><td>docs</td><td>Not established by repository</td></tr></tbody></table></div>
+<p><strong>Status breakdown:</strong> Verified (54), Inferred (3), Partly verified (1), Unknown (6)</p>
+<blockquote><p><strong>Limitation note:</strong> Every row is source-level. A <code>Verified</code> row proves the cited file/line exists; it does not prove runtime behavior, production configuration, or database procedure logic. Re-runnable commands for each <code>Verified</code> claim are in the Verification Appendix.</p></blockquote>
+<h2 id="open-questions-and-documentation-gaps">Open Questions and Documentation Gaps</h2>
+<p>Automatically assembled from every Unknown / owner-required placeholder emitted by the other sections. These are the deterministic gaps of this composition.</p>
+<ol><li>§3.3 — No centralized authn/authz policy was extracted; per-page checks observed but not exhaustively mapped (owner/ runtime required to confirm enforcement guarantees).</li><li>§5 — Which roles exist at runtime and what each is authorized to do (role-capability matrix) is Unknown; owner-required.</li><li>§6 — UI screen <em>states</em> (loading/empty/error/validated) are Unknown; runtime was not observed.</li><li>§7 — Operator-workflow policy/authorization/escalation cells and evidence-retention policy are Unknown (owner-required); the deterministic skeletons cite the verified endpoint + stored-procedure flow only (see /appdoc.enhance).</li><li>§10 — Stored-procedure parameter signatures and return-code ladders are Unknown (not in the evidence); not fabricated.</li><li>§11 — Escalation points / on-call paths are Unknown (not extracted).</li><li>§12 — Runtime security controls (auth strength, input validation, TLS, credential rotation) are Unknown; must not be treated as verified controls.</li><li>§13 — Ownership and maintenance (owners, on-call, SLOs, change process) are all Unknown / owner-required.</li></ol>
+<p>Additional structural gaps not captured above:</p>
+<ul><li>Runtime behavior (session timeout, real-world latency, actual DB state) was not observed — all <em>states/timing</em> remain Unknown.</li><li>Production topology (the diagrams show observed calls, not the live system).</li></ul>
+<h2 id="recommendations">Recommendations</h2>
+<p>A small set of recommendations derived ONLY from the Verified findings above (no specifics fabricated beyond what the findings support). Each is tagged Recommendation.</p>
+<div class="tablewrap"><table><thead><tr><th>#</th><th>Recommendation</th><th>Basis (Verified finding)</th><th>Status</th></tr></thead><tbody><tr><td>1</td><td>Add centralized authentication/authorization and input validation where not already present (none extracted today). (no centralized policy extracted)</td><td>—</td><td>Recommendation</td></tr><tr><td>2</td><td>Add logging and alerting for error paths (failure-response behavior not extracted in this framework). (no framework-specific failure-response evidence extracted)</td><td>—</td><td>Recommendation</td></tr></tbody></table></div>
+<h2 id="operations-runbook">Operations Runbook</h2>
+<p>Projected from the build-cookbook (platform requirements, SQL servers, session behavior) and the test-catalog (failure responses). Deployment/rollback procedures are Unknown (no deploy tooling extracted).</p>
+<h3 id="platform-requirements">Platform requirements</h3>
+<div class="tablewrap"><table><thead><tr><th>Component</th><th>Version / shape</th><th>Evidence</th><th>Status</th></tr></thead><tbody><tr><td>—</td><td><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP platform requirement (IIS / IIS-hosted Classic ASP) does not apply to this framework)</em></td><td>N/A</td></tr></tbody></table></div>
+<h3 id="deployment-deployment-steps">Deployment / deployment steps</h3>
+<div class="tablewrap"><table><thead><tr><th>Step</th><th>Action</th><th>Evidence</th><th>Status</th></tr></thead><tbody><tr><td>—</td><td><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP IIS deployment steps (copy .asp tree to virtual directory, enable Classic ASP app pool) do not apply to this framework)</em></td><td>N/A</td></tr></tbody></table></div>
+<h3 id="sql-server-instances">SQL Server instances</h3>
+<div class="tablewrap"><table><thead><tr><th>ID</th><th>Server</th><th>Databases</th><th>Files</th><th>Status</th></tr></thead><tbody><tr><td>—</td><td><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the ADO/SQL-Server instance inventory does not apply to this framework)</em></td><td>N/A</td></tr></tbody></table></div>
+<h3 id="failure-responses-observed-">Failure responses (observed)</h3>
+<div class="tablewrap"><table><thead><tr><th>Failure</th><th>Observed response</th><th>Status</th></tr></thead><tbody><tr><td>DB query failure</td><td><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the <code>Response.Redirect</code>-on-query-failure response is classic-ASP-specific; not detected in this framework)</em></td><td>N/A</td></tr><tr><td>ADO/recordset error</td><td><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the <code>parseError</code> ADO error-inspection response is classic-ASP-specific; not detected in this framework)</em></td><td>N/A</td></tr><tr><td>Auto-refresh expiry</td><td><em>Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the auto-refresh timer behavior is classic-ASP-specific; not detected in this framework)</em></td><td>N/A</td></tr></tbody></table></div>
+<h3 id="rollback-deployment-procedures">Rollback / deployment procedures</h3>
+<div class="tablewrap"><table><thead><tr><th>Procedure</th><th>Detail</th><th>Status</th></tr></thead><tbody><tr><td>Rollback</td><td>Unknown — no deploy/rollback tooling extracted from the codebase.</td><td>Unknown</td></tr><tr><td>Blue/green</td><td>Unknown — no deploy abstraction extracted.</td><td>Unknown</td></tr></tbody></table></div>
+<h2 id="verification-appendix">Verification Appendix</h2>
+<p>The re-runnable verification appendix (section §18 in the benchmark, 174 re-runnable commands) is reproduced below, projected verbatim from erification-appendix.md.</p>
+<p>This appendix lists the exact, re-runnable PowerShell commands used to verify each <code>Verified</code> claim in the Evidence Register. All commands are run <strong>from the repository root</strong> (<code>/persistent/agent/workspace/AppDoc</code>). A non-empty <code>Select-String</code> result proves the cited source-level fact.</p>
+<p><strong>Verified claims:</strong> 54  |  <strong>Re-runnable commands:</strong> 19  |  <strong>Insufficient detail (downgraded):</strong> 35</p>
+<div class="tablewrap"><table><thead><tr><th>Claim</th><th>Status</th><th>Command</th></tr></thead><tbody><tr><td>chat.tools.fileOperations.autoApprove.list  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.fileOperations\.autoApprove\.list'</td></tr><tr><td>chat.tools.fileOperations.autoApprove.read  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.fileOperations\.autoApprove\.read'</td></tr><tr><td>chat.tools.terminal.autoApprove.-ErrorAction  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.-ErrorAction'</td></tr><tr><td>chat.tools.terminal.autoApprove.-Json  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.-Json'</td></tr><tr><td>chat.tools.terminal.autoApprove.-RootPath  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.-RootPath'</td></tr><tr><td>chat.tools.terminal.autoApprove.-Verbose  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.-Verbose'</td></tr><tr><td>chat.tools.terminal.autoApprove..\.AppDoc\\scripts\\powershell\\*.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/analyze-codebase.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/analyze-repository.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/catalog-samples.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/extract-config.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-data-model.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-debt-register.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-improvements.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-overview.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/run-all-generators.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/validate-data-model.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/validate-debt-register.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/validate-overview.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.Copy-Item  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.Copy-Item'</td></tr><tr><td>chat.tools.terminal.autoApprove.Get-ChildItem  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.Get-ChildItem'</td></tr><tr><td>chat.tools.terminal.autoApprove.Get-Content  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.Get-Content'</td></tr><tr><td>chat.tools.terminal.autoApprove.git  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.git'</td></tr><tr><td>chat.tools.terminal.autoApprove.git fetch  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.git status  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>chat.tools.terminal.autoApprove.pwsh  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.pwsh'</td></tr><tr><td>chat.tools.terminal.autoApprove.Remove-Item  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.Remove-Item'</td></tr><tr><td>chat.tools.terminal.autoApprove.Set-ExecutionPolicy  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.Set-ExecutionPolicy'</td></tr><tr><td>chat.tools.terminal.autoApprove.Test-Path  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.Test-Path'</td></tr><tr><td>chat.tools.terminal.autoApprove.Write-Host  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.Write-Host'</td></tr><tr><td>github.copilot.chat.executions.enabled  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.vscode/settings.json' -Pattern 'github\.copilot\.chat\.executions\.enabled'</td></tr><tr><td>jobs.syntax-gate.runs-on  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.github/workflows/appdoc-ci.yml' -Pattern 'jobs\.syntax-gate\.runs-on'</td></tr><tr><td>jobs.syntax-gate.steps.shell  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.github/workflows/appdoc-ci.yml' -Pattern 'jobs\.syntax-gate\.steps\.shell'</td></tr><tr><td>jobs.syntax-gate.steps[0]  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>jobs.syntax-gate.steps[1]  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>jobs.syntax-gate.steps[2]  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>name  [config-catalog]</td><td>Verified</td><td>Select-String -Path '.github/workflows/appdoc-ci.yml' -SimpleMatch 'name'</td></tr><tr><td>on.push.branches[0]  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr><tr><td>on.push.branches[1]  [config-catalog]</td><td>Partly verified</td><td>N/A — insufficient evidence detail</td></tr></tbody></table></div>
+<p><strong>Scope note:</strong> These commands verify <em>source-level</em> facts only. They do not verify runtime behavior, production configuration, or database procedure logic. A row marked <code>Partly verified</code> has a command field of <code>N/A — insufficient evidence detail</code> because the deterministic extractor recorded a file reference but not a confirmable searchable token.</p>
+<hr>
+<p><em>Composed deterministically by generate-unified-master.ps1. No LLM, no network, no randomness. Secrets redacted.</em></p>
+<h2 id="provenance">Provenance</h2>
+<ul><li>Generator Version: appdoc-run-all-generators/3.0.0</li><li>Commit Hash: 85946f7</li><li>Generated At: 2026-10-17T18:41:04-04:00</li><li>Profile: default</li><li>Scope: .</li><li>Confidence/Inference Flags: deterministic, evidence-backed</li></ul>
+<footer>Generated by AppDoc &middot; 2026-10-17 18:41:06 &middot; composed unified master rendered (20-section application-documentation.md).</footer>
+  </main>
+</div>
+<script>
+// Render Mermaid diagrams (themed to the report palette)
+if (window.mermaid) {
+  mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: {
+    primaryColor: '#fff3cd', primaryBorderColor: '#6a0032', primaryTextColor: '#231f20',
+    lineColor: '#6a0032', secondaryColor: '#f4f0f1', tertiaryColor: '#ffffff',
+    actorBkg: '#6a0032', actorTextColor: '#ffffff', actorBorder: '#4d0024',
+    signalColor: '#231f20', signalTextColor: '#231f20',
+    noteBkgColor: '#fff3cd', noteBorderColor: '#ffc82e',
+  }});
+}
+// Highlight the active TOC entry while scrolling
+const tocLinks = Array.from(document.querySelectorAll('nav.toc a[href^="#"]'));
+const targets = tocLinks
+  .map(a => document.getElementById(a.getAttribute('href').slice(1)))
+  .filter(Boolean);
+const observer = new IntersectionObserver(entries => {
+  for (const e of entries) {
+    if (e.isIntersecting) {
+      tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+    }
+  }
+}, { rootMargin: '-80px 0px -70% 0px' });
+targets.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

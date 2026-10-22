@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-10-16T11:56:03-04:00",
+  "timestamp": "2026-10-17T18:41:14-04:00",
   "strict": false,
   "threshold": 80,
-  "status": "pass",
-  "overallScore": 96,
-  "overallScoreRaw": 98.6,
-  "penaltyDeduction": 3.0,
+  "status": "fail",
+  "overallScore": 89,
+  "overallScoreRaw": 91.2,
+  "penaltyDeduction": 2.0,
   "metrics": {
     "validatorPassRate": 100.0,
     "artifactPresence": 100.0,
@@ -16,24 +16,27 @@
     "configCoverage": 100,
     "dataModelCoverage": 100,
     "redactionSafetyScore": 100,
-    "humanUsabilityScore": 94.8,
+    "conformanceScore": 92.7,
+    "sectionSpineCoverageScore": 100.0,
+    "epistemicCoverageScore": 97.0,
+    "reVerifiabilityScore": 100.0,
     "claimGroundingScore": 100.0,
-    "documentationFreshnessScore": 87.5,
+    "documentationFreshnessScore": 100.0,
     "contradictionConsistencyScore": 100.0,
     "taskGuideActionabilityScore": 83.3,
     "taskGuideEvidenceCoverageScore": 50.0,
     "taskGuideTimeToCompleteMinutes": 12.0,
     "taskGuideTimeScore": 100.0,
-    "metricDriftScore": 100.0,
-    "policyGateScore": 100.0
+    "metricDriftScore": 0.0,
+    "policyGateScore": 55.0
   },
   "qualityPenaltyBreakdown": {
-    "totalPenaltyPoints": 24,
+    "totalPenaltyPoints": 16,
     "categoryTotals": {
       "contradiction": 0,
       "duplicateRows": 16,
       "misclassification": 0,
-      "staleProvenance": 8,
+      "staleProvenance": 0,
       "verbosityOverflow": 0
     },
     "perArtifact": {
@@ -65,15 +68,13 @@
         "reasons": []
       },
       "config-catalog": {
-        "total": 8,
+        "total": 0,
         "contradiction": 0,
         "duplicateRows": 0,
         "misclassification": 0,
-        "staleProvenance": 8,
+        "staleProvenance": 0,
         "verbosityOverflow": 0,
-        "reasons": [
-          "provenance-missing-generated"
-        ]
+        "reasons": []
       },
       "build-cookbook": {
         "total": 0,
@@ -120,44 +121,44 @@
   "missingEvidenceArtifacts": [],
   "validators": [
     {
-      "message": "OK",
+      "script": "validate-overview.ps1",
       "passed": true,
-      "script": "validate-overview.ps1"
+      "message": "OK"
     },
     {
-      "message": "OK",
+      "script": "validate-api-inventory.ps1",
       "passed": true,
-      "script": "validate-api-inventory.ps1"
+      "message": "OK"
     },
     {
-      "message": "OK",
+      "script": "validate-data-model.ps1",
       "passed": true,
-      "script": "validate-data-model.ps1"
+      "message": "OK"
     },
     {
-      "message": "OK",
+      "script": "validate-config-catalog.ps1",
       "passed": true,
-      "script": "validate-config-catalog.ps1"
+      "message": "OK"
     },
     {
-      "message": "OK",
+      "script": "validate-build-cookbook.ps1",
       "passed": true,
-      "script": "validate-build-cookbook.ps1"
+      "message": "OK"
     },
     {
-      "message": "OK",
+      "script": "validate-test-catalog.ps1",
       "passed": true,
-      "script": "validate-test-catalog.ps1"
+      "message": "OK"
     },
     {
-      "message": "OK",
+      "script": "validate-debt-register.ps1",
       "passed": true,
-      "script": "validate-debt-register.ps1"
+      "message": "OK"
     },
     {
-      "message": "OK",
+      "script": "validate-dependencies-catalog.ps1",
       "passed": true,
-      "script": "validate-dependencies-catalog.ps1"
+      "message": "OK"
     }
   ],
   "contractValidation": [
@@ -280,7 +281,10 @@
     "signals": {
       "primaryStyle": "no-api-surface",
       "frameworkHints": [
-        "ASP.NET Core"
+        "ASP.NET Core",
+        "ASP.NET MVC 5",
+        "Flask",
+        "Spring Boot"
       ],
       "apiInventoryRestRows": 0,
       "apiInventorySoapRows": 0,
@@ -289,9 +293,14 @@
     }
   },
   "metricDrift": {
-    "score": 100.0,
-    "passed": true,
-    "issues": [],
+    "score": 0.0,
+    "passed": false,
+    "issues": [
+      "cross-artifact-metric-drift:unified-master-endpoint-count:5/0",
+      "cross-artifact-metric-drift:unified-master-model-count:4/0",
+      "cross-artifact-metric-drift:overview-endpoint-count:5/0",
+      "cross-artifact-metric-drift:overview-model-count:4/0"
+    ],
     "signals": {
       "canonical": {
         "endpointCount": 0,
@@ -299,13 +308,16 @@
         "dependencyCount": 0,
         "testCaseCount": 0
       },
+      "unifiedMaster": {
+        "endpointCount": 5,
+        "modelCount": 4,
+        "present": true
+      },
       "overviewTruthPack": {
-        "endpointCount": 0,
-        "modelCount": 0,
+        "endpointCount": 5,
+        "modelCount": 4,
         "dependencyCount": 0
       },
-      "startHereApiCount": 0,
-      "startHereModelCount": 0,
       "testEvidenceCaseCount": 0,
       "dependencyEvidenceCount": 0
     }
@@ -318,14 +330,26 @@
     "issues": []
   },
   "policyGates": {
-    "blockingIssues": [],
-    "score": 100.0,
-    "passed": true
+    "blockingIssues": [
+      "cross-artifact-metric-drift:unified-master-endpoint-count:5/0",
+      "cross-artifact-metric-drift:unified-master-model-count:4/0",
+      "cross-artifact-metric-drift:overview-endpoint-count:5/0",
+      "cross-artifact-metric-drift:overview-model-count:4/0"
+    ],
+    "score": 55,
+    "passed": false
+  },
+  "coverageCalibration": {
+    "path": "csharp-default",
+    "framework": "csharp",
+    "note": "config + data-model coverage measured with the C#-calibrated scorers (appsettings/config keys; model classes).",
+    "config": null,
+    "dataModel": null
   },
   "provenance": {
     "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "8b13f8a",
-    "generatedAt": "2026-10-16T11:56:04-04:00",
+    "commitHash": "85946f7",
+    "generatedAt": "2026-10-17T18:41:14-04:00",
     "profile": "default",
     "scope": ".",
     "confidenceInferenceFlags": [

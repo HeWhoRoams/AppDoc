@@ -8,7 +8,9 @@ param(
     [Parameter(Mandatory=$false)]
     [switch]$SkipGate,
     [Parameter(Mandatory=$false)]
-    [switch]$SkipSemanticApply
+    [switch]$SkipSemanticApply,
+    [Parameter(Mandatory=$false)]
+    [switch]$SkipReRender
 )
 
 $evidenceModulePath = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
@@ -163,12 +165,13 @@ if (-not $DryRun) {
             throw "Semantic enrichment script not found: $semanticApplyScript"
         }
 
+        # A .ps1 child that `throw`s (e.g. the fail-closed secret-redaction gate) propagates
+        # the terminating error to this caller under $ErrorActionPreference=Stop. We do NOT
+        # rely on $LASTEXITCODE here -- it is only updated by native executables, not .ps1
+        # calls, so reading it would observe a STALE value (a prior native cmd like git can
+        # leave it non-zero) and false-alarm. Natural throw-propagation is the correct,
+        # fail-closed signal; the caller (run-appdoc-build.ps1) catches it and reports it.
         & $semanticApplyScript -RootPath $RootPath
-        $semanticInvocationSucceeded = $?
-        $semanticExitCode = if ($null -ne $LASTEXITCODE) { [int]$LASTEXITCODE } else { 0 }
-        if ((-not $semanticInvocationSucceeded) -or $semanticExitCode -ne 0) {
-            throw "Semantic enrichment apply failed (exit code $semanticExitCode)."
-        }
     }
 
     $gatePassed = $true
@@ -214,7 +217,16 @@ if (-not $DryRun) {
         "generate-dependencies-catalog.ps1"
     )
 
+    if ($SkipReRender) {
+        # Opt-in substrate only: write the redacted input envelope + applied snapshot
+        # under docs/evidence/semantic/, but do NOT re-render the 4 .md catalogs. This
+        # keeps the gate-able deterministic core (the .md artifacts) byte-identical to
+        # today even when enrichment is ON, so the quarantine stage cannot regress the
+        # gate. (Re-rendering is the only step that would touch gate-scored artifacts.)
+        Write-Host "  -SkipReRender: skipping catalog re-render (deterministic .md core untouched)." -ForegroundColor Gray
+    }
     foreach ($renderScript in $renderScripts) {
+        if ($SkipReRender) { break }
         $renderPath = Join-Path $PSScriptRoot $renderScript
         if (-not (Test-Path $renderPath)) {
             Write-Warning "Render script not found: $renderScript"

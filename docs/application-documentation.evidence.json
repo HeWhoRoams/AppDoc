@@ -1,0 +1,187 @@
+{
+  "artifact": "application-documentation",
+  "generatedAt": "10/16/2026 23:43:08",
+  "applicable": true,
+  "framework": "ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot",
+  "source": "generate-unified-master.ps1",
+  "counts": {
+    "endpointCount": 5,
+    "modelCount": 4,
+    "databaseCount": 0,
+    "tableCount": 0,
+    "procedureCount": 0,
+    "sqlServerInstances": 0,
+    "testCaseCount": 0
+  },
+  "sections": [
+    {
+      "section": "Application Index",
+      "status": "populated",
+      "sources": [
+        "api-inventory"
+      ]
+    },
+    {
+      "section": "Coverage and Executive Overview",
+      "status": "populated",
+      "sources": [
+        "overview",
+        "api-inventory",
+        "data-model",
+        "build-cookbook"
+      ]
+    },
+    {
+      "section": "Architecture",
+      "status": "populated",
+      "sources": [
+        "build-cookbook",
+        "api-inventory",
+        "diagrams/c4-context.md"
+      ]
+    },
+    {
+      "section": "Functional Inventory",
+      "status": "populated",
+      "sources": [
+        "api-inventory"
+      ]
+    },
+    {
+      "section": "Roles and Access Model",
+      "status": "placeholder",
+      "sources": [
+        "api-inventory",
+        "data-model",
+        "overview"
+      ]
+    },
+    {
+      "section": "UI Catalog",
+      "status": "populated",
+      "sources": [
+        "api-inventory"
+      ]
+    },
+    {
+      "section": "Help Desk Workflows",
+      "status": "placeholder",
+      "sources": [
+        "api-inventory",
+        "data-model",
+        "procdict",
+        "extcalls"
+      ]
+    },
+    {
+      "section": "Data and Integrations",
+      "status": "populated",
+      "sources": [
+        "data-model"
+      ]
+    },
+    {
+      "section": "External Call Register",
+      "status": "populated",
+      "sources": [
+        "data-model",
+        "test-catalog",
+        "api-inventory",
+        "extcalls"
+      ]
+    },
+    {
+      "section": "Stored-procedure data dictionary",
+      "status": "placeholder",
+      "sources": [
+        "data-model"
+      ]
+    },
+    {
+      "section": "Troubleshooting Matrix",
+      "status": "populated",
+      "sources": [
+        "test-catalog"
+      ]
+    },
+    {
+      "section": "Security and Operational Risks",
+      "status": "populated",
+      "sources": [
+        "test-catalog",
+        "data-model"
+      ]
+    },
+    {
+      "section": "Ownership and Maintenance",
+      "status": "placeholder",
+      "sources": []
+    },
+    {
+      "section": "Architecture and Data-Flow Diagrams",
+      "status": "populated",
+      "sources": [
+        "diagrams/data-flow.md",
+        "diagrams/c4-context.md"
+      ]
+    },
+    {
+      "section": "Glossary",
+      "status": "populated",
+      "sources": [
+        "api-inventory",
+        "data-model",
+        "build-cookbook",
+        "test-catalog"
+      ]
+    },
+    {
+      "section": "Evidence Register",
+      "status": "populated",
+      "sources": [
+        "evidence-register.md"
+      ]
+    },
+    {
+      "section": "Open Questions and Documentation Gaps",
+      "status": "populated",
+      "sources": [
+        "auto-fed from sections 3,5,6,7,10,11,12,13"
+      ]
+    },
+    {
+      "section": "Recommendations",
+      "status": "populated",
+      "sources": [
+        "test-catalog",
+        "data-model"
+      ]
+    },
+    {
+      "section": "Operations Runbook",
+      "status": "populated",
+      "sources": [
+        "build-cookbook",
+        "test-catalog"
+      ]
+    },
+    {
+      "section": "Verification Appendix",
+      "status": "populated",
+      "sources": [
+        "verification-appendix.md"
+      ]
+    }
+  ],
+  "provenance": {
+    "generatorVersion": "appdoc-run-all-generators/3.0.0",
+    "commitHash": "85946f7",
+    "generatedAt": "2026-10-17T18:41:14-04:00",
+    "profile": "default",
+    "scope": ".",
+    "confidenceInferenceFlags": [
+      "deterministic",
+      "evidence-backed"
+    ]
+  }
+}

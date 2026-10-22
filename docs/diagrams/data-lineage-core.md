@@ -1,6 +1,6 @@
 # Data Lineage (Core)
 
-_Generated: 2026-10-16 11:55:59_
+_Generated: 2026-10-17 18:41:01_
 
 ## What This View Explains
 
@@ -13,28 +13,35 @@ flowchart LR
     %% Solid edges: runtime request/data flow. Dashed edges: structural/config/dependency links.
     subgraph inputs["Input Boundary"]
         config_github_copilot_chat_ex_3233c7ea["github.copilot.chat.executions.enabled"]
-        config_jobs_syntax_gate_runs_1cc1bd48["jobs.syntax-gate.runs-on"]
-        config_jobs_syntax_gate_steps_b0ed346a["jobs.syntax-gate.steps.shell"]
-        config_jobs_syntax_gate_steps_c21bece1["jobs.syntax-gate.steps(0)"]
-        config_jobs_syntax_gate_steps_f955e977["jobs.syntax-gate.steps(1)"]
-        config_jobs_syntax_gate_steps_fea78b6a["jobs.syntax-gate.steps(2)"]
-        config_name_6ae99955["name"]
-        config_on_push_branches_0_2a450bbd["on.push.branches(0)"]
-        config_on_push_branches_1_81342622["on.push.branches(1)"]
+        config_itsm_base_url_386a0b40["itsm.base-url"]
+        config_jobs_golden_test_cshar_a550e61a["jobs.golden-test-csharp-core.name"]
+        config_jobs_golden_test_cshar_56738826["jobs.golden-test-csharp-core.runs-on"]
+        config_jobs_golden_test_cshar_86c8eb3e["jobs.golden-test-csharp-core.steps.shell"]
+        config_jobs_golden_test_cshar_7ca31392["jobs.golden-test-csharp-core.steps.uses"]
+        config_jobs_golden_test_cshar_8a0b4f2d["jobs.golden-test-csharp-core.steps(0)"]
+        config_jobs_golden_test_cshar_3e4d8917["jobs.golden-test-csharp-core.steps(1)"]
+        config_jobs_golden_test_cshar_e6aa6fbd["jobs.golden-test-csharp-core.steps(2)"]
+        config_jobs_golden_test_cshar_b2b231cf["jobs.golden-test-csharp-core.steps(3)"]
+        config_jobs_golden_test_cshar_3b25b092["jobs.golden-test-csharp.name"]
+        config_jobs_golden_test_cshar_b895bb4e["jobs.golden-test-csharp.runs-on"]
     end
     subgraph processing["Core Transformations"]
         component_core_processing_6d28d771["Core Processing"]
     end
+    config_itsm_base_url_386a0b40 -.->|configures| component_core_processing_6d28d771
     class component_core_processing_6d28d771 component
     class config_github_copilot_chat_ex_3233c7ea config
-    class config_jobs_syntax_gate_runs_1cc1bd48 config
-    class config_jobs_syntax_gate_steps_b0ed346a config
-    class config_jobs_syntax_gate_steps_c21bece1 config
-    class config_jobs_syntax_gate_steps_f955e977 config
-    class config_jobs_syntax_gate_steps_fea78b6a config
-    class config_name_6ae99955 config
-    class config_on_push_branches_0_2a450bbd config
-    class config_on_push_branches_1_81342622 config
+    class config_itsm_base_url_386a0b40 config
+    class config_jobs_golden_test_cshar_a550e61a config
+    class config_jobs_golden_test_cshar_56738826 config
+    class config_jobs_golden_test_cshar_86c8eb3e config
+    class config_jobs_golden_test_cshar_7ca31392 config
+    class config_jobs_golden_test_cshar_8a0b4f2d config
+    class config_jobs_golden_test_cshar_3e4d8917 config
+    class config_jobs_golden_test_cshar_e6aa6fbd config
+    class config_jobs_golden_test_cshar_b2b231cf config
+    class config_jobs_golden_test_cshar_3b25b092 config
+    class config_jobs_golden_test_cshar_b895bb4e config
 classDef actor fill:#0f172a,stroke:#0f172a,color:#ffffff,stroke-width:1px
 classDef inbound fill:#dcfce7,stroke:#166534,color:#166534,stroke-width:1px
 classDef outbound fill:#ffedd5,stroke:#9a3412,color:#9a3412,stroke-width:1px
@@ -49,7 +56,7 @@ classDef dependency fill:#ede9fe,stroke:#4338ca,color:#4338ca,stroke-width:1px
 
 - Solid arrows represent deterministic code-evidenced relationships.
 - Nodes are filtered and ordered for readability; full detail remains in evidence artifacts.
-- Coverage snapshot: 10 nodes, 0 edges, 0 inbound interfaces, 0 outbound integrations.
+- Coverage snapshot: 13 nodes, 1 edges, 0 inbound interfaces, 0 outbound integrations.
 
 ## Evidence Refs
 
@@ -62,4 +69,7 @@ classDef dependency fill:#ede9fe,stroke:#4338ca,color:#4338ca,stroke-width:1px
 - cfg-0007
 - cfg-0008
 - cfg-0009
+- cfg-0010
+- cfg-0011
+- cfg-0012
 

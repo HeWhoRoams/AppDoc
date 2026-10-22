@@ -117,9 +117,9 @@ Validation fails if provenance is missing.
 ## 9. Verification Matrix
 
 Run full workflow and validation after each phase for:
-- `C:\Github\DegreeAudit`
-- `C:\Github\CMich.CoreApi-master`
-- `C:\Github\LmsConnect-master`
+- `C:\Github\legacy-csharp-mvc5-app`
+- `C:\Github\csharp-core-api-app`
+- `C:\Github\cms-content-connector-app`
 
 Required outcomes per phase:
 - No architecture contradiction warnings.
@@ -151,8 +151,8 @@ Required outcomes per phase:
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 8b13f8a
-- Generated At: 2026-10-16T11:56:04-04:00
+- Commit Hash: 85946f7
+- Generated At: 2026-10-17T18:41:14-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

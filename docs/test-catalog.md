@@ -1,40 +1,19 @@
 # Test Catalog
 
-**Generated**: 2026-10-16 11:55:54
+**Generated**: 2026-10-17 18:40:58
 
 ## Summary
 
 This artifact summarizes test entry points and execution patterns so maintainers can validate changes with predictable coverage.
 
-## Test Environment Setup
-
-No dedicated environment bootstrap script was extracted. Use the build and restore commands in [Build Cookbook](build-cookbook.md), then execute targeted suites from this catalog.
-
 ## Test Suites
 
-| Suite Name | Type | Purpose | Coverage Target | Key Scenarios | Execution Time |
-|------------|------|--------|----------------|--------------|----------------|
-
-_No test suites detected. Check for test files and testing framework configuration._
-
-## Test Coverage Metrics
-
-No tests were detected in this scan. Validate test project scope and framework discovery settings.
+No test suites were extracted for this framework.
 
 ## Test Cases
 
-| Case Name | Suite | Input | Expected Output | Description | Priority |
-|-----------|-------|------|----------------|-------------|----------|
+No test cases were extracted for this framework.
 
-_No test cases detected. Refer to test files for individual test implementations._
-
-## Test Maintenance
-
-Prioritize maintenance for suites tied to frequently changed business rules and high-churn components. Keep suite names and test intent aligned with current behavior to preserve debugging value.
-
-## Example Test Runs
-
-No runnable test commands were inferred from discovered evidence. Verify test projects and build scripts before relying on this artifact.
 ## Evidence Traceability
 
 | Field | Value |
@@ -44,14 +23,13 @@ No runnable test commands were inferred from discovered evidence. Verify test pr
 | Generator | generate-test-catalog.ps1 |
 | Required Evidence Keys | testSuites |
 | Grounding Mode | Deterministic extraction records |
-
 ---
 
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 8b13f8a
-- Generated At: 2026-10-16T11:56:04-04:00
+- Commit Hash: 85946f7
+- Generated At: 2026-10-17T18:41:14-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

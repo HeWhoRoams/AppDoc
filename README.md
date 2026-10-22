@@ -1,151 +1,87 @@
-﻿# appdoc
-
+﻿# AppDoc
 
 ## Overview
 
-AppDoc provides automated documentation extraction, quality assessment, and improvement tools for codebases. The toolkit is implemented in PowerShell and outputs comprehensive reports and recommendations based on analysis of your codebase and generated documentation.
+AppDoc is a **local-first, deterministic PowerShell 7 documentation auto-generator** for legacy and unknown codebases. It scans a codebase and emits an **evidence-traceable documentation set**: a single cohesive 20-section master document, the per-artifact catalogs, a machine-readable evidence layer, and a self-contained themed HTML report.
 
-**Note:** The current workflow is local-first. Deterministic scripts generate technical artifacts, and readability enhancements are performed directly in your IDE chat session.
+Every claim is **source-grounded** (a `file:line` citation, not an inference). Claims it cannot ground are **honestly tagged** — `Verified` / `Inferred` / `Unknown` / `Partly-verified` — rather than fabricated. The tool's aim is onboarding documentation for codebases nobody fully understands.
+
+Two things set it apart:
+
+- **Deterministic core.** The accuracy layer is a single command with no LLM involved. Re-runnable, byte-stable, and gate-able.
+- **A quarantined AI layer.** Owner-required narrative is filled by the *surrounding* LLM session under a fail-closed quarantine that refuses anything it cannot keep grounded. AppDoc holds **no API key, no provider, and makes no network LLM call** — the LLM is the session running the skill.
 
 ## Prerequisites
 
-- **PowerShell 7+** (required for all scripts)
-- **Windows OS** (tested)
-- **VS Code + GitHub Copilot Chat** (for `/appdoc.begin`, `/appdoc.enhance`, `/appdoc.diagrams` commands)
-- **Target codebase path** where `docs/` output can be written
+- **PowerShell 7+** (`pwsh`) — required for all scripts. Runs on **Linux and Windows** (AppDoc is actively run on Linux).
+- **Target codebase path** where the `docs/` output can be written. Work on a **scratch copy** of a real target so you never clobber its committed `docs/`.
+- **(Optional)** An AI/LLM session for the enrichment layer. No provider or key is required by AppDoc.
 
-## Core Scripts
+## How it works
 
-Primary deterministic workflow:
+AppDoc is a **skill / AI workflow** you invoke from inside an existing AI/LLM session. It runs in two layers:
 
-- `.appdoc/scripts/powershell/run-all-generators.ps1` — end-to-end deterministic pipeline
-- `.appdoc/scripts/powershell/run-appdoc-enrich.ps1` — bootstrap + semantic apply + enrichment gate orchestration
-- `.appdoc/scripts/powershell/run-appdoc-semantic-enrich.ps1` — file-driven semantic input/output apply for enriched evidence
-- `.appdoc/scripts/powershell/ci-enrichment-gate.ps1` — enrichment quality gate (Phase 2.5 checks)
-- `.appdoc/scripts/powershell/appdoc.diagnose.ps1` — environment/readiness diagnostics
-- `.appdoc/scripts/powershell/validate-documentation.ps1` — structured validation + scoring
-- `.appdoc/scripts/powershell/remediate-generated-docs.ps1` — post-generation cleanup + evidence traceability
+### Layer 1 — the deterministic core (the gate-able source of truth)
 
-**Default one-command pipeline** (`run-all-generators.ps1`) — produces the 11 core artifacts (8 content + 3 navigational), the C4/flow/lineage diagrams, and the quality/validation/diagnostics reports:
+One command, no LLM. It orchestrates the extraction pipeline (framework detection → architecture fingerprint → evidence extractors → the 20-section composer → themed HTML → pristine + conformance gate). This is the default and the accuracy core.
 
-- `generate-api-inventory.ps1`, `generate-data-model.ps1`, `generate-config-catalog.ps1`
-- `generate-build-cookbook.ps1`, `generate-test-catalog.ps1`
-- `generate-debt-register.ps1`, `generate-dependencies-catalog.ps1`
-- `generate-overview.ps1`
-- `generate-start-here.ps1` — role-based onboarding artifact
-- `generate-task-guides.ps1` — task-centric playbooks
-- `generate-docs-index.ps1` — landing-page documentation index (runs last, after all content artifacts)
-- `generate-c4-mermaid-diagrams.ps1`
+### Layer 2 — the semantic enrichment layer (optional, opt-in)
+
+Fills the owner-required narrative cells (purpose, data flows, ownership) that source parsing alone can't produce, using the **surrounding** LLM session. It runs under a **fail-closed quarantine**:
+
+- **Per-field provenance tags** — every applied field is marked `llm`, `deterministic`, or `open`.
+- **A tiered Verified-fact lock** — the LLM may fill only `null` / `Unknown` / low-confidence heuristic fields, and can **never** override a Verified, source-grounded fact (an attempted override is refused and logged).
+- **No-fabrication** — fields left un-provided stay `Unknown`.
+- **An input-hash cache** — re-runs skip unchanged records.
+
+It is **OFF by default** and no-ops to deterministic-only output when not enabled. The layer's contract is documented in the AI prompts under `.github/prompts/` (`appdoc.begin`, `appdoc.enrich`, `appdoc.enhance`, `appdoc.diagrams`).
 
 ## Quick Start
 
-1. Download or clone the `AppDoc` repo into the root of the codebase you want documented.
-2. Open that repository in Visual Studio Code.
-3. Recommended: Generate workspace instructions or run an INIT command to have your AI investigate your codebase.
-4. Open the GitHub Copilot Chat and run `/appdoc.begin` to start the guided AppDoc workflow.
-5. Run `pwsh ./.appdoc/scripts/powershell/run-appdoc-enrich.ps1 -RootPath <codebase-path>` to bootstrap evidence, apply semantic enrichment, and validate gate checks.
-6. Run `/appdoc.enhance` to apply editorial polish after enrichment.
+The one-command entry point:
 
-That's it — AppDoc will perform environment checks and walk you through analysis and generation.
+```bash
+pwsh ./.appdoc/scripts/powershell/run-appdoc-build.ps1 -Path <repo>
+```
 
-## Architecture Diagrams
+That single command produces the complete docs package from a clean output directory. It takes an **optional** `<repo>/.appdoc/config.json` — no config file means default behavior.
 
-AppDoc now generates **Mermaid C4 diagrams** in Markdown format under `docs/diagrams/`.
+To apply the optional enrichment layer, run the same command with `-EnableSemanticEnrich`; the deterministic pipeline then emits a redacted pending-field envelope for the surrounding LLM session to fill, and a re-run applies that output under the quarantine. See `SKILL.md` for the full enrichment protocol.
 
-- `docs/diagrams/c4-context.md`
-- `docs/diagrams/c4-container.md`
-- `docs/diagrams/internal-flow.md`
-- `docs/diagrams/data-flow.md`
-- `docs/diagrams/critical-sequences.md`
-- `docs/diagrams/data-lineage-core.md` (plus partition files when needed)
-- `docs/diagrams/index.md`
+## Core Scripts
 
-Use `/appdoc.diagrams` to AI-enhance those Mermaid diagrams in place.
+The underlying pieces `run-appdoc-build.ps1` orchestrates (each verified to exist):
 
-## Script Execution Modes
-
-You can run deterministic generation directly with:
-
-`pwsh ./.appdoc/scripts/powershell/run-all-generators.ps1 -RootPath <codebase-path>`
-
-Useful flags:
-
-- `-DryRun` — previews which scripts and phases would run without generating artifacts.
-- `-StrictValidation` — fails the run when generated artifacts score below threshold.
-- `-QualityThreshold <1-100>` — sets strict validation cutoff (default: `80`).
-- `-SkipDiagrams` — skips C4 diagram generation.
-Readability and narrative enhancements are handled directly in your IDE/chat AI session over local workspace context and generated evidence artifacts.
-
-Enrichment bootstrap command:
-
-`pwsh ./.appdoc/scripts/powershell/run-appdoc-enrich.ps1 -RootPath <codebase-path>`
-
-Strict gate mode (fails when enrichment checks do not pass):
-
-`pwsh ./.appdoc/scripts/powershell/run-appdoc-enrich.ps1 -RootPath <codebase-path> -StrictGate`
-
-By default, semantic apply runs before the gate and writes:
-
-- `docs/evidence/semantic/input/*.semantic.input.json` (records requiring semantic values)
-- `docs/evidence/semantic/output/*.semantic.output.json` (optional external semantic responses)
-- `docs/evidence/semantic/applied/*.semantic.applied.json` (post-apply snapshots)
-
-Use `-SkipSemanticApply` only when you intentionally want to gate existing enriched files as-is.
-
-Run gate standalone:
-
-`pwsh ./.appdoc/scripts/powershell/ci-enrichment-gate.ps1 -RootPath <codebase-path>`
-
-Recommended sequence:
-
-1. `run-all-generators.ps1`
-2. `run-appdoc-enrich.ps1`
-3. `/appdoc.enhance`
-
-Mermaid C4 diagrams can be generated directly with:
-
-`pwsh ./.appdoc/scripts/powershell/generate-c4-mermaid-diagrams.ps1 -RootPath <codebase-path> -OutputPath <codebase-path>/docs -DiagramLevels All`
-
-To AI-enhance generated Mermaid diagrams in place, run `/appdoc.diagrams` in Copilot Chat.
-
-Diagnostics and validation commands:
-
-- `pwsh ./.appdoc/scripts/powershell/appdoc.diagnose.ps1 -RootPath <codebase-path> -Fix`
-- `pwsh ./.appdoc/scripts/powershell/validate-documentation.ps1 -RootPath <codebase-path>`
-- `pwsh ./.appdoc/scripts/powershell/validate-documentation.ps1 -RootPath <codebase-path> -Strict -Threshold 80`
-
-## Framework Support Matrix
-
-Last updated: 2026-02-17
-
-### Supported Frameworks
-
-> **Detection method:** C# / ASP.NET Core is the fully-supported, **AST-backed** path (Roslyn). The non-.NET frameworks below use **regex-based detection only** (no AST), so their coverage figures are **target/expected** values, not measured coverage.
-
-| Status | Language | Framework | Version Range | Coverage | Notes |
-|---|---|---|---|---:|---|
-| ✅ Full | C# | ASP.NET Core | 2.1+ | 90% | AST-backed; controller/route detection, config extraction, model heuristics |
-| ⚠️ Partial | C# | ASP.NET MVC 5 | 5.x | 75% | Action detection supported; some attribute edge cases remain |
-| ⚠️ Partial | JS/TS | Express.js | 4.x | 60% | Regex-based; basic `app.METHOD` and router patterns; middleware chains limited |
-| ⚠️ Partial | Python | Flask | 2.x+ | 65% | Regex-based; `@app.route` and common blueprint patterns supported |
-| ⚠️ Partial | Python | FastAPI | 0.9+ | 70% | Regex-based; decorator and response model heuristics supported |
-| ⚠️ Partial | Python | Django | 3.x+ | 55% | Regex-based; URL pattern extraction supported; deep viewset inference limited |
-| ⚠️ Partial | Java | Spring Boot | 2.x+ | 60% | Regex-based; `@*Mapping` and `@RequestMapping` scanning supported |
-
-### Unsupported or Planned
-
-| Status | Framework | Planned |
+| Script | Purpose | Verified flags |
 |---|---|---|
-| ❌ Not supported | Ruby on Rails | Planned (TBD) |
-| ❌ Not supported | Go (Gin/Echo) | Planned (TBD) |
-| ❌ Not supported | PHP (Laravel) | Planned (TBD) |
+| `run-appdoc-build.ps1` | The one-command build (config → generators → composer/pristine/validate → themed HTML → redaction sweep) | `-Path` (required), `-Profile`, `-QualityThreshold` (default `80`), `-SkipDiagrams`, `-SkipSyntaxGate`, `-StrictValidation`, `-EnableSemanticEnrich` |
+| `run-all-generators.ps1` | The end-to-end deterministic generation pipeline | `-RootPath` (required), `-Profile`, `-QualityThreshold` (default `80`), `-PristineFloor` (default `80`), `-SkipDiagrams`, `-SkipSyntaxGate`, `-StrictValidation`, `-PristineGate`, `-DryRun` |
+| `validate-documentation.ps1` | The authoritative validation gate (composite score + blocking policy checks) | `-RootPath` (required), `-Threshold` (default `80`), `-Strict`, `-Json`, `-PristineGate`, `-PristineFloor` |
+| `ci-enrichment-gate.ps1` | Enrichment quality gate (Phase 2.5 checks) | `-RootPath` (default cwd), `-Strict`, `-Json` |
+| `appdoc.diagnose.ps1` | Environment / readiness diagnostics | `-RootPath` (required), `-Fix`, `-Json` |
+| `generate-html-report.ps1` | Renders the composed docs to a self-contained themed `report.html` | `-RootPath` (required), `-ThemePath` |
+| `run-appdoc-enrich.ps1` | Bootstrap + semantic apply + enrichment-gate orchestration | `-RootPath` (required), `-StrictGate`, `-SkipGate`, `-SkipSemanticApply`, `-SkipReRender`, `-DryRun` |
 
-### Detection Signals
+Note: pass/fail is **not** just the score. `validate-documentation.ps1` applies blocking **policy** checks (e.g. `provenance-missing`) that can force a failing status even when the composite score is at or above the threshold. Read the diagnostics, not just the number.
 
-- C#: `*.csproj`, `*.sln`, `[ApiController]`, `[HttpGet]`, `MapControllers`
-- JS/TS: `package.json` dependencies (`express`) and `app.get` / `router.get` patterns
-- Python: `requirements.txt` / `pyproject.toml` deps (`flask`, `fastapi`, `django`), route decorators, `urls.py`
-- Java: `pom.xml` Spring dependencies, `@RestController`, `@RequestMapping`
+## Framework Support
+
+These framework classes are **proven on real third-party targets with golden-test CI**. Each has a golden regression suite in `tests/powershell/`:
+
+| Framework class | Extraction path | Golden test |
+|---|---|---|
+| Classic ASP / ASP.NET Web Forms | Regex (classic-ASP extractors) | `test-golden-classic-asp.ps1`, `test-golden-csharp-webforms.ps1` |
+| C# ASP.NET Core | **AST-backed** (Roslyn) with a regex fallback | `test-golden-csharp-core-api.ps1` |
+| Python Flask | Regex | `test-golden-python-flask.ps1` |
+| Node/Express (TypeScript) | Regex | `test-golden-node-express.ps1` |
+| Java Spring | Regex | `test-golden-java-spring.ps1` |
+
+C# **ASP.NET MVC 5** is additionally proven on a real convention-routed target (plain `public ActionResult X()` actions routed by convention, no `[Http*]` attributes).
+
+**Honest caveats:**
+
+- **C# / ASP.NET Core is the genuinely AST-backed path** (Roslyn, with a regex fallback provider when `dotnet` is absent). The other classes are **regex-based**.
+- **Detection depth is uneven and the coverage matrix is calibrated per framework, not a single percentage.** A detector recognizing a framework is not the same as its extractors producing real records — each class is proven per-framework against its own fixture. The untested long tail (Django, Go, Ruby, Rust, microservice/polyglot) is a low-confidence claim until it earns a fixture + golden.
 
 ### Requesting New Framework Support
 
@@ -156,41 +92,56 @@ Open an issue with:
 3. Expected artifacts (API inventory, data model, config catalog, etc.)
 4. Known route/config/model patterns used in your codebase
 
+## Security / secret handling
 
-## Output Files
+Per [ADR 0001](docs/adr/0001-redaction-externalize-per-target-secrets.md), AppDoc ships **shape-patterns only** (high-entropy / base64 / named-key / URI-credential). It **never** carries a specific target's live secret *values* in source — a reusable tool does not bake one test target's credentials into its git history.
 
-The default `run-all-generators.ps1` pipeline produces the core artifacts, the **Start Here**, **Task Guides**, and **Documentation Index** navigational artifacts, the diagrams, and the quality/validation/diagnostics reports below. The Documentation Index runs last so it links every content artifact produced by the run.
+Generated docs **highlight** that a secret exists (key name + location) but **never document its value** — the value renders as `[REDACTED]` while the key is retained.
 
-- **[Start Here](docs/start-here.md)** - Role-based onboarding and quick orientation
-- **[Overview](docs/overview.md)** - High-level system summary and documentation index
-- **[API Inventory](docs/api-inventory.md)** - HTTP endpoints and API contracts
-- **[Data Model](docs/data-model.md)** - Data structures and entities
-- **[Configuration Catalog](docs/config-catalog.md)** - Configuration options and environment variables
-- **[Build Cookbook](docs/build-cookbook.md)** - Build and deployment commands
-- **[Test Catalog](docs/test-catalog.md)** - Test suites and coverage
-- **[Task Guides](docs/task-guides.md)** - Task-centric implementation and operations playbooks
-- **[Tech Debt Register](docs/debt-register.md)** - Known issues and improvement opportunities
-- **[Dependencies Catalog](docs/dependencies-catalog.md)** - External packages and libraries
-- **[Documentation Index](docs/index.md)** - Landing page linking all generated artifacts
-- **[C4 Context Diagram](docs/diagrams/c4-context.md)** - Mermaid C4 system context
-- **[C4 Container Diagram](docs/diagrams/c4-container.md)** - Mermaid C4 container view
-- **[Internal Flow Diagram](docs/diagrams/internal-flow.md)** - Request-to-processing runtime flow
-- **[Data Flow Diagram](docs/diagrams/data-flow.md)** - Input/transform/output data movement
-- **[Critical Sequences](docs/diagrams/critical-sequences.md)** - High-signal end-to-end request journeys
-- **[Data Lineage Core](docs/diagrams/data-lineage-core.md)** - Partitioned lineage view for readability
-- **[Diagram Index](docs/diagrams/index.md)** - Guided architecture reading order
-- **[Quality Report](docs/quality-report.json)** - Generator quality scoring output
-- **[Validation Report](docs/validation-report.json)** - Deterministic validation metrics
-- **[Diagnostics Report](docs/diagnostics-report.json)** - Environment/runtime diagnostics
-- **[Evidence Manifest](docs/evidence/manifest.json)** - Traceability index for artifact evidence records
+Per-target secret values are **operator-supplied**, not hardcoded, through:
+
+- the target's `.appdoc/config.json` `redactionPatterns[]` (what the one-command build consumes), or
+- a CLI `-RedactionPatterns` flag on the generator / enrichment scripts (`generate-source-docs.ps1`, `run-appdoc-semantic-enrich.ps1`).
+
+A fail-closed gate (`Test-AppDocSemanticRedactionGate`) blocks the enrichment stage if a real secret value would survive into the LLM-facing input envelope — a secret never reaches the surrounding session.
+
+## Verification
+
+- **`validate-documentation.ps1`** — the authoritative gate: a composite score plus blocking policy checks. A run can score at or above threshold and still fail on a blocking policy issue.
+- **Six golden regression suites** — 132 assertions across the six framework classes. They lock each framework's recorded output to its committed baseline and guard against extractor regressions.
+- **The 18-proof semantic-quarantine harness** (`tests/powershell/test-semantic-quarantine.ps1`) — a self-contained, fail-closed proof of the redaction + quarantine layer using its own fixture secrets. Run it as a plain script, **not** Pester:
+
+```bash
+pwsh -NoProfile -File tests/powershell/test-semantic-quarantine.ps1
+```
+
+A **passing gate is a floor, not a ceiling** — it proves the output is non-empty and source-grounded, not that every extractor caught its full surface.
+
+## Output
+
+The build writes to the target's `docs/` (a stable, committed home — see Docs-as-code below). The real artifacts:
+
+- **`application-documentation.md`** — the unified 20-section master document.
+- **Per-artifact catalogs** — the `.md` files (`api-inventory.md`, `data-model.md`, `config-catalog.md`, `build-cookbook.md`, `overview.md`, `start-here.md`, `task-guides.md`, `index.md`, plus framework-specific `extcalls.md` / `security.md` / `procdict.md` and `evidence-register.md` / `verification-appendix.md`).
+- **`evidence/`** — the machine-readable evidence layer (`*.evidence.json` per artifact, incl. `git-ownership.evidence.json`, plus `semantic/` when enrichment is enabled).
+- **`diagrams/`** — Mermaid C4 + flow/lineage diagrams.
+- **`report.html`** — the self-contained themed HTML render (CMU maroon/gold default).
+- **`validation-report.json`** — the gate verdict + score.
+- **`pristine-report.md`** — the per-section source-groundedness (pristine) report.
+
+Every `docs/**/*.md` / `.json` carries a `## Provenance` footer recording the generation run.
+
+## Docs-as-code
+
+Per [ADR 0002](docs/adr/0002-generated-docs-as-code.md), generated documentation is treated as **code**: it lives in a stable, non-wiped `docs/` home, is committed to git, and is kept in sync with the source it describes. The long-term sync mechanism is a **commit hook** that regenerates the documentation on code change and commits the diff. A build creates `docs/` only if absent and overwrites generated artifacts in place — it preserves hand-authored material (ADRs, the glossary, plans) and appends a provenance footer rather than wiping the directory.
 
 ## Troubleshooting
 
-- Ensure all required scripts and modules are present in `.appdoc/scripts/powershell/`
-- Use PowerShell 7+ for compatibility
-- Check file paths for documentation output
-- Review error messages for missing files or permissions
-- Run `pwsh ./.appdoc/scripts/powershell/appdoc.diagnose.ps1 -RootPath <codebase-path> -Fix` to validate environment and script readiness
+- Use **PowerShell 7+** (`pwsh`) for compatibility.
+- Ensure all required scripts and modules are present in `.appdoc/scripts/powershell/`.
+- Run `pwsh ./.appdoc/scripts/powershell/appdoc.diagnose.ps1 -RootPath <codebase-path> -Fix` to validate environment and script readiness.
+- Check file paths for documentation output and review error messages for missing files or permissions.
+- If a gate passes but a framework's surface looks thin, read the per-surface coverage metric (e.g. `apiCoverage`) as the real signal — a passing gate is a floor, not a ceiling.
 
 ## Contributing
 
@@ -201,6 +152,8 @@ Contributions are welcome! Please:
 3. Make your changes
 4. Submit a pull request
 
+The gate is the accuracy device — never lower the quality threshold or weaken a policy gate to make output pass.
+
 ## License
 
 License file is not currently included in this repository. Add a `LICENSE` file before external distribution.
@@ -210,4 +163,3 @@ License file is not currently included in this repository. Add a `LICENSE` file 
 For support, please open an issue on GitHub.
 
 ---
-

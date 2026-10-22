@@ -163,7 +163,7 @@ This roadmap outlines planned enhancements to transform AppDoc from a solid .NET
 
 ## Audit Suggestions From Recent Run
 
-The following practical improvements were observed during the LmsConnect run and are recommended to be added to the roadmap as actionable items.
+The following practical improvements were observed during the CMS content-connector app run and are recommended to be added to the roadmap as actionable items.
 
 - AST migration pilot (C# Roslyn for `data-model` extraction): **Complexity/Effort:** High — **Benefit/Reward:** High
 - CI preflight & generator linting (syntax checks + unit tests for parsing patterns): **Complexity/Effort:** Low-Medium — **Benefit/Reward:** High

@@ -1,24 +1,4 @@
 {
-  "schemaVersion": "appdoc-graph/v1",
-  "determinism": {
-    "canonicalOrdering": [
-      "nodes:type,label,id",
-      "edges:from,to,type,label,id"
-    ],
-    "stableIdAlgorithm": "sha1(prefix|seed)[0:8]",
-    "hashAlgorithm": "SHA256",
-    "excludeKeys": [
-      "generatedAt",
-      "updatedAt",
-      "timestamp"
-    ],
-    "contentHash": "cd5da9c00641fd095377a22e2f04dc8136514d4bdf90bb3a12742c954cd7cb9d"
-  },
-  "project": {
-    "name": "AppDoc",
-    "rootPath": "/persistent/agent/workspace/AppDoc"
-  },
-  "generatedAt": "2026-10-16T11:55:59-04:00",
   "nodes": [
     {
       "id": "component_core_processing_6d28d771",
@@ -35,78 +15,128 @@
       "evidence_refs": "cfg-0001"
     },
     {
-      "id": "config_jobs_syntax_gate_runs_1cc1bd48",
+      "id": "config_itsm_base_url_386a0b40",
       "type": "config",
-      "label": "jobs.syntax-gate.runs-on",
-      "group": "config-workflow",
+      "label": "itsm.base-url",
+      "group": "config-runtime",
       "evidence_refs": "cfg-0002"
     },
     {
-      "id": "config_jobs_syntax_gate_steps_b0ed346a",
+      "id": "config_jobs_golden_test_cshar_a550e61a",
       "type": "config",
-      "label": "jobs.syntax-gate.steps.shell",
+      "label": "jobs.golden-test-csharp-core.name",
       "group": "config-workflow",
       "evidence_refs": "cfg-0003"
     },
     {
-      "id": "config_jobs_syntax_gate_steps_c21bece1",
+      "id": "config_jobs_golden_test_cshar_56738826",
       "type": "config",
-      "label": "jobs.syntax-gate.steps[0]",
+      "label": "jobs.golden-test-csharp-core.runs-on",
       "group": "config-workflow",
       "evidence_refs": "cfg-0004"
     },
     {
-      "id": "config_jobs_syntax_gate_steps_f955e977",
+      "id": "config_jobs_golden_test_cshar_86c8eb3e",
       "type": "config",
-      "label": "jobs.syntax-gate.steps[1]",
+      "label": "jobs.golden-test-csharp-core.steps.shell",
       "group": "config-workflow",
       "evidence_refs": "cfg-0005"
     },
     {
-      "id": "config_jobs_syntax_gate_steps_fea78b6a",
+      "id": "config_jobs_golden_test_cshar_7ca31392",
       "type": "config",
-      "label": "jobs.syntax-gate.steps[2]",
+      "label": "jobs.golden-test-csharp-core.steps.uses",
       "group": "config-workflow",
       "evidence_refs": "cfg-0006"
     },
     {
-      "id": "config_name_6ae99955",
+      "id": "config_jobs_golden_test_cshar_8a0b4f2d",
       "type": "config",
-      "label": "name",
+      "label": "jobs.golden-test-csharp-core.steps[0]",
       "group": "config-workflow",
       "evidence_refs": "cfg-0007"
     },
     {
-      "id": "config_on_push_branches_0_2a450bbd",
+      "id": "config_jobs_golden_test_cshar_3e4d8917",
       "type": "config",
-      "label": "on.push.branches[0]",
+      "label": "jobs.golden-test-csharp-core.steps[1]",
       "group": "config-workflow",
       "evidence_refs": "cfg-0008"
     },
     {
-      "id": "config_on_push_branches_1_81342622",
+      "id": "config_jobs_golden_test_cshar_e6aa6fbd",
       "type": "config",
-      "label": "on.push.branches[1]",
+      "label": "jobs.golden-test-csharp-core.steps[2]",
       "group": "config-workflow",
       "evidence_refs": "cfg-0009"
+    },
+    {
+      "id": "config_jobs_golden_test_cshar_b2b231cf",
+      "type": "config",
+      "label": "jobs.golden-test-csharp-core.steps[3]",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0010"
+    },
+    {
+      "id": "config_jobs_golden_test_cshar_3b25b092",
+      "type": "config",
+      "label": "jobs.golden-test-csharp.name",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0011"
+    },
+    {
+      "id": "config_jobs_golden_test_cshar_b895bb4e",
+      "type": "config",
+      "label": "jobs.golden-test-csharp.runs-on",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0012"
     }
   ],
-  "edges": [],
-  "sources": {
-    "modelEvidencePath": "docs/evidence/data-model.evidence.json",
-    "dependencyEvidencePath": "docs/evidence/dependencies-catalog.evidence.json",
-    "configEvidencePath": "docs/evidence/config-catalog.evidence.json",
-    "apiEvidencePath": "docs/evidence/api-inventory.evidence.json"
+  "project": {
+    "name": "AppDoc",
+    "rootPath": "/persistent/agent/workspace/AppDoc"
   },
+  "generatedAt": "2026-10-17T18:41:01-04:00",
   "apiEntries": [],
+  "edges": [
+    {
+      "id": "edge_config_itsm_base_url_3_3e5fb38a",
+      "from": "config_itsm_base_url_386a0b40",
+      "to": "component_core_processing_6d28d771",
+      "type": "configures",
+      "label": "configures",
+      "evidence_refs": "cfg-0002"
+    }
+  ],
   "metrics": {
-    "nodeCount": 10,
-    "edgeCount": 0,
+    "nodeCount": 13,
+    "edgeCount": 1,
     "inboundEndpointCount": 0,
     "outboundEndpointCount": 0,
     "componentCount": 1,
     "modelCount": 0,
-    "configCount": 9,
+    "configCount": 12,
     "dependencyCount": 0
-  }
+  },
+  "determinism": {
+    "canonicalOrdering": [
+      "nodes:type,label,id",
+      "edges:from,to,type,label,id"
+    ],
+    "stableIdAlgorithm": "sha1(prefix|seed)[0:8]",
+    "hashAlgorithm": "SHA256",
+    "excludeKeys": [
+      "generatedAt",
+      "updatedAt",
+      "timestamp"
+    ],
+    "contentHash": "7729706963eac40aa3f6aae6b654be0d43dedb724ba985793d893601cb3342d1"
+  },
+  "sources": {
+    "apiEvidencePath": "docs/evidence/api-inventory.evidence.json",
+    "configEvidencePath": "docs/evidence/config-catalog.evidence.json",
+    "modelEvidencePath": "docs/evidence/data-model.evidence.json",
+    "dependencyEvidencePath": "docs/evidence/dependencies-catalog.evidence.json"
+  },
+  "schemaVersion": "appdoc-graph/v1"
 }

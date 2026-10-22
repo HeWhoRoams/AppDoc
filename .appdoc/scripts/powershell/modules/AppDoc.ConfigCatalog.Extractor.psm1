@@ -72,6 +72,42 @@ function Test-AppDocSecretLikeValue {
     return $false
 }
 
+function Get-AppDocConfigUriCredPatterns {
+    <#
+    .SYNOPSIS
+        Returns the URI-credential redaction patterns used by the LAYER-1 deterministic
+        config-catalog path. Single source of truth: imports them from the LAYER-2 semantic
+        module (AppDoc.SemanticRedaction, Get-AppDocSemanticUriCredentialPatterns) so the
+        `user:pass@` / `://:pass@` regexes CANNOT drift between the two layers. Fallback to
+        the identical inline regexes (kept byte-identical to the semantic module) if the
+        module is unavailable (defensive -- the config extractor must never fail to load).
+        These are VALUE-SCOPED: the caller applies them to a config VALUE only, never to a
+        key name / source path (a legit path or key name never matches `user:pass@`).
+    #>
+    [CmdletBinding()]
+    param()
+
+    $semanticModule = Join-Path $PSScriptRoot "AppDoc.SemanticRedaction.psm1"
+    if (Test-Path $semanticModule) {
+        try {
+            if (-not (Get-Command Get-AppDocSemanticUriCredentialPatterns -ErrorAction SilentlyContinue)) {
+                Import-Module $semanticModule -Force -ErrorAction Stop
+            }
+            $pats = @(Get-AppDocSemanticUriCredentialPatterns)
+            if ($pats.Count -gt 0) { return $pats }
+        }
+        catch {
+            Write-Verbose "Get-AppDocConfigUriCredPatterns: semantic module import failed; using fallback patterns: $($_.Exception.Message)"
+        }
+    }
+
+    # Fallback (byte-identical to the semantic module's FIX A / A2).
+    return @(
+        '(?i)\b[A-Za-z0-9._%-]{2,}:[^@\s/]{4,}@',
+        '(?i)://:[^@\s]{4,}@[^/\s]*'
+    )
+}
+
 function Protect-AppDocConfigValue {
     [CmdletBinding()]
     param(
@@ -89,6 +125,47 @@ function Protect-AppDocConfigValue {
 
     if (Test-AppDocSensitiveConfigKey -Key $Key -Type $Type) { return "[REDACTED]" }
     if (Test-AppDocSecretLikeValue -Key $Key -Value $text) { return "[REDACTED]" }
+
+    # BUG C (embedded KEY=VALUE redaction, value-scoped): the named-key + URI-cred redaction above
+    # still leaks a sensitive credential EMBEDDED inside a config VALUE as an inline `KEY=***
+    # assignment -- the canonical case is a YAML environment LIST entry (docker-compose
+    # `environment:` `- MYSQL_PASSWORD=petclinic`) that flattens to a NON-sensitive key name
+    # (`services.mysql.environment[3]`) whose VALUE carries the raw secret. Reuse the SAME named-key
+    # logic (Test-AppDocSensitiveConfigKey) on the embedded uppercase-underscore key and redact only
+    # its value (>=4 chars), preserving the key name (config stays readable + joinable).
+    # VALUE-SCOPED: only a key passing the sensitive-key test is touched, so a non-secret
+    # `MYSQL_USER=petclinic` / `MYSQL_DATABASE=petclinic` / `JAVA_HOME=/usr/...` and a bare conn URL
+    # with no embedded `KEY=*** pass through unchanged (no over-redaction).
+    $embeddedSecretPattern = "\b([A-Z][A-Z0-9_]*)\s*=\s*([^\s;`"']+)"
+    $text = [regex]::Replace($text, $embeddedSecretPattern, {
+        param($m)
+        $embeddedKey = $m.Groups[1].Value
+        $embeddedVal = $m.Groups[2].Value
+        if ((Test-AppDocSensitiveConfigKey -Key $embeddedKey -Type $null) -and ($embeddedVal.Length -ge 4)) {
+            return ($embeddedKey + '=[REDACTED]')
+        }
+        return $m.Value
+    })
+    $text = [regex]::Replace($text, '\[REDACTED\](?:\s*\[REDACTED\])+', '[REDACTED]')
+
+    # Finding 1 (URI-credential redaction gap, value-scoped): the LAYER-1 deterministic
+    # config-catalog path previously redacted only NAMED-KEYS (Test-AppDocSensitiveConfigKey)
+    # and HIGH-ENTROPY whole values (Test-AppDocSecretLikeValue) -- it did NOT apply the
+    # URI-credential patterns, so a real `user:pass@` conn-string (Node `MONGODB_URI`, Python
+    # `SQLALCHEMY_DATABASE_URI`, Java `jdbc:`) leaked verbatim into config-catalog.md + the
+    # evidence metadata.value. Apply the SAME patterns the LAYER-2 semantic gate uses (single
+    # source of truth -> the two layers stay in sync) to the VALUE only: redact the embedded
+    # `user:pass@` / `://:pass@` credential portion and PRESERVE the scheme/host/DB
+    # (`mongodb+srv://username:***@cluster...` -> `mongodb+srv://[REDACTED]cluster...`).
+    # VALUE-SCOPED BY CONSTRUCTION: a legit config KEY NAME (`SmtpHost`, `MONGODB_URI`) and a
+    # legit source path (`app/configs/config.py:6`) never match the `user:pass@` shape, so the
+    # no-over-redaction invariant holds (a key name / path passes through unchanged).
+    foreach ($uriCredPattern in (Get-AppDocConfigUriCredPatterns)) {
+        $text = [regex]::Replace($text, $uriCredPattern, '[REDACTED]')
+    }
+    # Collapse repeated [REDACTED] runs created by overlapping A/A2 matches.
+    $text = [regex]::Replace($text, '\[REDACTED\](?:\s*\[REDACTED\])+', '[REDACTED]')
+
     return $text
 }
 
@@ -232,8 +309,8 @@ function Convert-AppDocConfigKeyToEnvVarName {
 function Get-AppDocDerivedEnvironmentVariables {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)]
-        [array]$Configs,
+        [AllowEmptyCollection()]
+        [array]$Configs = @(),
         [int]$MaxCount = 80
     )
 
@@ -582,6 +659,82 @@ function Get-AppDocConfigCatalogData {
                 }
                 catch {
                     Write-Verbose "Could not parse JSON in $($file.Name): $($_.Exception.Message)"
+                }
+            }
+        }
+    }
+
+    # --- Python config discovery (Finding 3) -----------------------------------------
+    # The non-Python $configPatterns whitelist above has NO Python patterns, so a Flask /
+    # Django `app/configs/config.py` (the file holding SECRET_KEY / SQLALCHEMY_DATABASE_URI)
+    # is never discovered and the catalog comes up empty (-> the Finding-2 crash). Add
+    # Python config discovery here: leaf `config.py` / `settings.py` + any `*.py` under a
+    # `config`/`configs` package dir (e.g. app/configs/dev.py), parsing top-level and
+    # class-body ALL-CAPS constants (Class.X = '...' / X = '...'). A `*.env` file inside the
+    # app package is already discovered by the existing `.env*` pattern above (no change).
+    # Every extracted value flows through Protect-AppDocConfigValue (named-key + URI-cred
+    # redaction) so secrets never leak; a legit non-secret value (e.g. sqlite:///database.db)
+    # renders as-is. Scope-aware: the scope policy excludes tests//fixtures//docs//
+    # node_modules//sample, so this only surfaces real, in-scope Python configuration.
+    if (-not (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue)) {
+        $scopeModulePathPy = Join-Path $PSScriptRoot "AppDoc.Scope.psm1"
+        if (Test-Path $scopeModulePathPy) { Import-Module $scopeModulePathPy -Force -ErrorAction SilentlyContinue }
+    }
+
+    $pyConfigFiles = @(
+        Get-ChildItem -Path $RootPath -Recurse -File -Force -Filter '*.py' -ErrorAction SilentlyContinue | Where-Object {
+            $parentLeaf = Split-Path $_.DirectoryName -Leaf
+            ($parentLeaf -in @('config','configs')) -or ($_.Name -in @('config.py','settings.py'))
+        }
+    )
+    if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {
+        $pyConfigFiles = @(
+            $pyConfigFiles | Where-Object {
+                Test-AppDocPathIncluded -Path $_.FullName -RootPath $RootPath -Artifact "config-catalog"
+            }
+        )
+    }
+
+    foreach ($pyFile in $pyConfigFiles) {
+        $pyContent = Get-Content $pyFile.FullName -Raw -ErrorAction SilentlyContinue
+        if (-not $pyContent) { continue }
+
+        $pyRelativePath = Get-AppDocConfigRelativePath -RootPath $RootPath -Path $pyFile.FullName
+        $discoveredConfigFiles += @{
+            path = $pyRelativePath
+            type = "Python Configuration"
+        }
+
+        $pyLines = $pyContent -split "`n"
+        $pyLineNum = 0
+        foreach ($pyLine in $pyLines) {
+            $pyLineNum++
+            # ALL-CAPS constant assignment (top-level or class-body), with an optional
+            # `Class.` prefix. Requires >=4 alnum/underscore chars so ordinary code lines
+            # (def foo, x = 1, import os) never match. Example:
+            #   SECRET_KEY = '123'
+            #   SQLALCHEMY_DATABASE_URI = 'sqlite:///database.db'
+            #   Config.DEBUG = True
+            if ($pyLine -match '^\s*(?:[A-Za-z_][A-Za-z0-9_]*\s*\.\s*)?([A-Z][A-Z0-9_]{2,})\s*=\s*(.+)$') {
+                $pyKey = Sanitize-AppDocConfigKey -Key $Matches[1].Trim()
+                $pyRawValue = $Matches[2].Trim()
+                # Strip surrounding matching quotes to get a clean value (e.g. 'sqlite:///database.db'
+                # -> sqlite:///database.db). Substring-based (not a \1 backreference: a backslash is
+                # not a PS-string escape, so a "\\1" regex backref silently becomes a literal).
+                if ($pyRawValue.Length -ge 2) {
+                    $pyFirst = $pyRawValue.Substring(0, 1)
+                    $pyLast  = $pyRawValue.Substring($pyRawValue.Length - 1, 1)
+                    if ((($pyFirst -eq "'") -or ($pyFirst -eq '"')) -and ($pyFirst -eq $pyLast)) {
+                        $pyRawValue = $pyRawValue.Substring(1, $pyRawValue.Length - 2)
+                    }
+                }
+                $configs += @{
+                    key = $pyKey
+                    value = Protect-AppDocConfigValue -Key $pyKey -Value $pyRawValue -Type "Python Configuration"
+                    file = $pyRelativePath
+                    type = "Python Configuration"
+                    source = "$pyRelativePath`:py/$pyLineNum"
+                    required = Test-AppDocRequiredConfig -Key $pyKey -Value $pyRawValue -Type "Python Configuration"
                 }
             }
         }

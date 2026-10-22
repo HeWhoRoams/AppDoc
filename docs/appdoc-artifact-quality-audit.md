@@ -1,7 +1,7 @@
 # AppDoc Artifact Quality Audit
 
 **Date**: 2026-03-05
-**Repos Audited**: academichistory, LmsConnect-master, CMich.CoreApi-master, DegreeAudit
+**Repos Audited**: an academic-history module, a CMS content-connector app, a C# Core API app, a legacy C# MVC 5 app
 **Auditor**: GitHub Copilot (AI-assisted critical review)
 
 ---
@@ -24,7 +24,7 @@
 
 ---
 
-## 1. academichistory
+## 1. an academic-history module
 
 ### Artifact Scores
 
@@ -57,7 +57,7 @@
 
 ---
 
-## 2. LmsConnect-master
+## 2. a CMS content-connector app
 
 ### Artifact Scores
 
@@ -90,7 +90,7 @@
 
 ---
 
-## 3. CMich.CoreApi-master
+## 3. a C# Core API app
 
 ### Artifact Scores
 
@@ -118,12 +118,12 @@
 ### Gaps
 - No documentation of the SAP RFC infrastructure design pattern (ERPConnect40, RFC helpers) — the single most important architectural concept in the repo.
 - No guidance on which of the 101 SOAP clients are actively used vs. legacy.
-- External host names (`cmu-r3msl01.hosts.secure-24.net`, `it-penguin.central.cmich.local`) are mentioned in overview but not explained in context.
+- External host names (an internal ERP/SAP host, an internal CMIT host) are mentioned in overview but not explained in context.
 - The architecture fingerprint says `soap-client` but the enhancement summary still references "API responses" as if this were an inbound REST service — a subtle inaccuracy.
 
 ---
 
-## 4. DegreeAudit
+## 4. a legacy C# MVC 5 app
 
 ### Artifact Scores
 
@@ -151,7 +151,7 @@
 
 ### Gaps
 - The EF data model and SQL schema are not connected — the repo has an `.edmx` file and SQL scripts, but the data-model artifact doesn't reference them.
-- The `CMich.WorkbenchTesting` project is not explained anywhere.
+- An internal test-harness project is not explained anywhere.
 - No documentation of the degree audit evaluation algorithm logic despite `EvaluationEngine.cs` being the core of the system.
 
 ---
@@ -177,12 +177,12 @@
 | **Template prose dominates** | overview, all enhancements | Medium |
 | "This application appears to support X and Y..." and evidence reference IDs `(ev-0001)` are not stripped or reframed in the enhancement pass. | | |
 | **No domain-semantic layer** | data-model (all repos) | High |
-| Field counts and class names are listed but there is no classification of models by role (ViewModel, Entity, DTO, generated proxy). CMich.CoreApi's RFC wrappers and DegreeAudit's ViewModels need different treatment. | | |
-| **Debt register doesn't distinguish generated code** | debt-register (CMich.CoreApi, DegreeAudit) | High |
+| Field counts and class names are listed but there is no classification of models by role (ViewModel, Entity, DTO, generated proxy). the C# Core API app's RFC wrappers and the legacy C# MVC 5 app's ViewModels need different treatment. | | |
+| **Debt register doesn't distinguish generated code** | debt-register (C# Core API app, legacy C# MVC 5 app) | High |
 | Auto-generated SAP RFC helpers and large ViewModelFactory/Conversion classes are flagged as debt identically to real developer debt. | | |
 | **Enhancement depth is shallow** | All enhancements | Medium |
 | Every enhancement added the same 3-bullet summary + cross-links + 1 verification note. No repo-specific narrative, no business context, no operational guidance. | | |
-| **Test catalog gaps not explained** | test-catalog (academichistory) | Medium |
+| **Test catalog gaps not explained** | test-catalog (academic-history module) | Medium |
 | Zero tests found with no commentary on whether this is a discovery failure or genuine gap. | | |
 | **Dependency criticality not prioritized** | dependencies-catalog (all repos) | Low-Medium |
 | `Critical Path: Yes/No` exists in the table but is uniformly under-utilized; most packages marked `No` without rationale. | | |
@@ -221,7 +221,7 @@ The following plan addresses the systemic gaps **deterministically and at the wo
 - Add a `Role` column to the data model tables.
 - Generated/proxy models should be in a collapsed appendix section.
 
-**Expected gain**: Data model signal/noise from ~4.5 → ~7.5; eliminates RFC wrapper noise in CMich.CoreApi.
+**Expected gain**: Data model signal/noise from ~4.5 → ~7.5; eliminates RFC wrapper noise in the C# Core API app.
 
 ---
 
@@ -235,7 +235,7 @@ The following plan addresses the systemic gaps **deterministically and at the wo
 - Add a `Debt Source Type` column: `developer-authored` | `generated-artifact` | `third-party`
 - Report debt counts separately: "Developer-authored debt: N, Generated artifact debt: M"
 
-**Expected gain**: Debt register accuracy/signal from ~5.5 → ~8.0 for CMich.CoreApi; reduces false positives across all repos.
+**Expected gain**: Debt register accuracy/signal from ~5.5 → ~8.0 for the C# Core API app; reduces false positives across all repos.
 
 ---
 
@@ -283,14 +283,14 @@ The following plan addresses the systemic gaps **deterministically and at the wo
 
 | Repo | Avg Accuracy | Avg Readability | Avg Completeness | Avg Signal/Noise | **Overall** |
 |------|-------------|-----------------|------------------|------------------|-------------|
-| academichistory | 7.1 | 7.1 | 6.3 | 6.4 | **6.7** |
-| LmsConnect-master | 6.9 | 6.6 | 6.6 | 6.3 | **6.6** |
-| CMich.CoreApi-master | 6.3 | 5.6 | 6.5 | 5.0 | **5.9** |
-| DegreeAudit | 7.1 | 6.4 | 6.6 | 5.9 | **6.5** |
+| academic-history module | 7.1 | 7.1 | 6.3 | 6.4 | **6.7** |
+| CMS content-connector app | 6.9 | 6.6 | 6.6 | 6.3 | **6.6** |
+| C# Core API app | 6.3 | 5.6 | 6.5 | 5.0 | **5.9** |
+| legacy C# MVC 5 app | 7.1 | 6.4 | 6.6 | 5.9 | **6.5** |
 
 **Notes**:
-- **academichistory** scores highest because of its small, well-scoped surface — fewer endpoints and models mean less noise and more accurate summaries.
-- **CMich.CoreApi-master** scores lowest due to the generated RFC proxy problem inflating both the data model and debt register with low-signal content.
+- **the academic-history module** scores highest because of its small, well-scoped surface — fewer endpoints and models mean less noise and more accurate summaries.
+- **the C# Core API app** scores lowest due to the generated RFC proxy problem inflating both the data model and debt register with low-signal content.
 - All repos share the same config-catalog noise problem, which is the single highest-impact fix available.
 
 ---
@@ -320,8 +320,8 @@ Phases 1–3 should be implemented in the generator scripts and are fully determ
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 8b13f8a
-- Generated At: 2026-10-16T11:56:04-04:00
+- Commit Hash: 85946f7
+- Generated At: 2026-10-17T18:41:14-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

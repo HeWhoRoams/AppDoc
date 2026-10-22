@@ -65,29 +65,6 @@ function Get-AppDocOverviewEvidenceRefMap {
     return $map
 }
 
-function ConvertFrom-AppDocOverviewJson {
-    [CmdletBinding()]
-    param(
-        [string]$RawText
-    )
-
-    if ([string]::IsNullOrWhiteSpace($RawText)) {
-        return $null
-    }
-
-    $text = $RawText.Trim()
-    $text = [regex]::Replace($text, '^\s*```(?:json)?\s*', '', 'IgnoreCase')
-    $text = [regex]::Replace($text, '\s*```\s*$', '', 'IgnoreCase')
-    $text = $text.Trim()
-
-    try {
-        return ($text | ConvertFrom-Json -Depth 50)
-    }
-    catch {
-        return $null
-    }
-}
-
 function Get-AppDocOverviewDeterministicWelcomeNarrative {
     [CmdletBinding()]
     param(

@@ -1,6 +1,6 @@
 {
   "artifact": "task-guides",
-  "generatedAt": "2026-10-16T11:55:57-04:00",
+  "generatedAt": "2026-10-17T18:40:57-04:00",
   "recordCount": 5,
   "records": [
     {
@@ -11,15 +11,15 @@
       "confidence": 0.0,
       "metadata": {
         "endpointCount": 0,
+        "debtCount": 0,
         "buildCommandCount": 0,
-        "dependencyCount": 0,
         "testCount": 0,
-        "debtCount": 0
+        "dependencyCount": 0
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "NotDetected",
-      "timestamp": "2026-10-16T11:55:57-04:00"
+      "timestamp": "2026-10-17T18:40:57-04:00"
     },
     {
       "artifact": "task-guides",
@@ -28,13 +28,13 @@
       "kind": "task-guide",
       "confidence": 0.0,
       "metadata": {
-        "category": "implementation",
-        "endpointEvidence": 0
+        "endpointEvidence": 0,
+        "category": "implementation"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "NotDetected",
-      "timestamp": "2026-10-16T11:55:57-04:00"
+      "timestamp": "2026-10-17T18:40:57-04:00"
     },
     {
       "artifact": "task-guides",
@@ -43,13 +43,13 @@
       "kind": "task-guide",
       "confidence": 0.0,
       "metadata": {
-        "category": "operations",
-        "buildEvidence": 0
+        "buildEvidence": 0,
+        "category": "operations"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "NotDetected",
-      "timestamp": "2026-10-16T11:55:57-04:00"
+      "timestamp": "2026-10-17T18:40:57-04:00"
     },
     {
       "artifact": "task-guides",
@@ -58,13 +58,13 @@
       "kind": "task-guide",
       "confidence": 0.0,
       "metadata": {
-        "category": "maintenance",
-        "debtEvidence": 0
+        "debtEvidence": 0,
+        "category": "maintenance"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "NotDetected",
-      "timestamp": "2026-10-16T11:55:57-04:00"
+      "timestamp": "2026-10-17T18:40:57-04:00"
     },
     {
       "artifact": "task-guides",
@@ -73,13 +73,13 @@
       "kind": "task-guide",
       "confidence": 0.0,
       "metadata": {
-        "category": "risk",
-        "dependencyEvidence": 0
+        "dependencyEvidence": 0,
+        "category": "risk"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "NotDetected",
-      "timestamp": "2026-10-16T11:55:57-04:00"
+      "timestamp": "2026-10-17T18:40:57-04:00"
     }
   ],
   "metadata": {

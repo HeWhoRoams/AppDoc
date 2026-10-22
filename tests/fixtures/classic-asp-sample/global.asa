@@ -1,0 +1,15 @@
+<%
+' global.asa - application-level session setup.
+Sub Application_OnStart()
+    Application("AppName") = "HelpDesk"
+End Sub
+
+Sub Session_OnStart()
+    Session("CurrentUser") = "anonymous"
+    Session("LoginAttemptCount") = 0
+End Sub
+
+Sub Session_OnEnd()
+    ' cleanup
+End Sub
+%>

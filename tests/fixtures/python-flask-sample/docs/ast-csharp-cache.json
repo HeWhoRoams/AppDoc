@@ -1,0 +1,7 @@
+{
+  "generatedAt": "2026-10-21T01:33:43-04:00",
+  "provider": "regex-fallback",
+  "providerReady": false,
+  "records": [],
+  "note": "dotnet SDK not available; using regex fallback."
+}

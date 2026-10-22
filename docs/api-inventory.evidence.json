@@ -1,0 +1,115 @@
+[
+  {
+    "id": "ep-0001",
+    "file": "tests/fixtures/classic-asp-sample/admin-report.asp",
+    "method": "GET",
+    "fields": [],
+    "deps": [],
+    "status": "Verified",
+    "provenance": {
+      "generatorVersion": "appdoc-run-all-generators/3.0.0",
+      "commitHash": "85946f7",
+      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "profile": "default",
+      "scope": ".",
+      "confidenceInferenceFlags": [
+        "deterministic",
+        "evidence-backed"
+      ]
+    }
+  },
+  {
+    "id": "ep-0002",
+    "file": "tests/fixtures/classic-asp-sample/audit-log.asp",
+    "method": "GET",
+    "fields": [],
+    "deps": [],
+    "status": "Verified",
+    "provenance": {
+      "generatorVersion": "appdoc-run-all-generators/3.0.0",
+      "commitHash": "85946f7",
+      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "profile": "default",
+      "scope": ".",
+      "confidenceInferenceFlags": [
+        "deterministic",
+        "evidence-backed"
+      ]
+    }
+  },
+  {
+    "id": "ep-0003",
+    "file": "tests/fixtures/classic-asp-sample/index.asp",
+    "method": "GET",
+    "fields": [],
+    "deps": [
+      "ADO:ADODB",
+      "ADO:SQLOLEDB",
+      "common/helpers.inc"
+    ],
+    "status": "Verified",
+    "provenance": {
+      "generatorVersion": "appdoc-run-all-generators/3.0.0",
+      "commitHash": "85946f7",
+      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "profile": "default",
+      "scope": ".",
+      "confidenceInferenceFlags": [
+        "deterministic",
+        "evidence-backed"
+      ]
+    }
+  },
+  {
+    "id": "ep-0004",
+    "file": "tests/fixtures/classic-asp-sample/new-ticket.asp",
+    "method": "POST",
+    "fields": [
+      "action",
+      "CustomerName",
+      "Status",
+      "Subject",
+      "TicketId"
+    ],
+    "deps": [
+      "ADO:ADODB",
+      "ADO:SQLOLEDB"
+    ],
+    "status": "Verified",
+    "provenance": {
+      "generatorVersion": "appdoc-run-all-generators/3.0.0",
+      "commitHash": "85946f7",
+      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "profile": "default",
+      "scope": ".",
+      "confidenceInferenceFlags": [
+        "deterministic",
+        "evidence-backed"
+      ]
+    }
+  },
+  {
+    "id": "ep-0005",
+    "file": "tests/fixtures/classic-asp-sample/search-ticket.asp",
+    "method": "GET",
+    "fields": [
+      "id"
+    ],
+    "deps": [
+      "ADO:ADODB",
+      "ADO:SQLOLEDB"
+    ],
+    "status": "Verified",
+    "provenance": {
+      "generatorVersion": "appdoc-run-all-generators/3.0.0",
+      "commitHash": "85946f7",
+      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "profile": "default",
+      "scope": ".",
+      "confidenceInferenceFlags": [
+        "deterministic",
+        "evidence-backed"
+      ]
+    }
+  }
+]

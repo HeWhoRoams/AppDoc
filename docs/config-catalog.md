@@ -1,6 +1,5 @@
 # Configuration Catalog
-
-**Generated**: 2026-10-16 11:55:53
+**Generated**: 2026-10-17 18:40:50
 
 ## Summary
 
@@ -9,7 +8,7 @@ This artifact lists configuration inputs that can change runtime behavior, with 
 ## Configuration Sources
 
 - **JSON Configuration**: 1 files
-- **YAML Configuration**: 1 files
+- **YAML Configuration**: 2 files
 
 ## Configuration Options
 
@@ -29,11 +28,67 @@ No runtime configuration entries detected.
 | name | YAML Configuration | appdoc-ci | Purpose unclear from available evidence — review .github/workflows/appdoc-ci.yml:yaml/name. | No | Deployment/environment | Environment-specific | .github/workflows/appdoc-ci.yml:yaml/name |
 | on.push.branches[0] | YAML Configuration | main | Purpose unclear from available evidence — review .github/workflows/appdoc-ci.yml:yaml/on.push.branches[0]. | No | Deployment/environment | Environment-specific | .github/workflows/appdoc-ci.yml:yaml/on.push.branches[0] |
 | on.push.branches[1] | YAML Configuration | master | Purpose unclear from available evidence — review .github/workflows/appdoc-ci.yml:yaml/on.push.branches[1]. | No | Deployment/environment | Environment-specific | .github/workflows/appdoc-ci.yml:yaml/on.push.branches[1] |
+| itsm.base-url | YAML Configuration | https://itsm.acme.internal | Purpose unclear from available evidence — review source usage. | Yes | Deployment/environment | Environment-specific | .tmp-java-golden-verify/src/main/resources/application.yml:yaml/itsm.base-url |
+| logging.level.com.acme | YAML Configuration | INFO | Purpose unclear from available evidence — review source usage. | No | Deployment/environment | Environment-specific | .tmp-java-golden-verify/src/main/resources/application.yml:yaml/logging.level.com.acme |
+| server.port | YAML Configuration | 8080 | Purpose unclear from available evidence — review source usage. | Yes | Deployment/environment | Environment-specific | .tmp-java-golden-verify/src/main/resources/application.yml:yaml/server.port |
+| spring.application.name | YAML Configuration | tickets-service | Purpose unclear from available evidence — review source usage. | No | Deployment/environment | Environment-specific | .tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.application.name |
+| spring.datasource.password | YAML Configuration | ***masked*** | Purpose unclear from available evidence — review source usage. | Yes | Deployment/environment | Environment-specific | .tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.datasource.password |
+| spring.datasource.url | YAML Configuration | jdbc:mysql://db-host.internal:3306/tickets | Purpose unclear from available evidence — review source usage. | Yes | Deployment/environment | Environment-specific | .tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.datasource.url |
+| spring.datasource.username | YAML Configuration | tickets_user | Purpose unclear from available evidence — review source usage. | Yes | Deployment/environment | Environment-specific | .tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.datasource.username |
+| spring.jpa.hibernate.ddl-auto | YAML Configuration | update | Purpose unclear from available evidence — review source usage. | No | Deployment/environment | Environment-specific | .tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.jpa.hibernate.ddl-auto |
 
 ### Tooling and Workflow Configuration
 
 | Name | Type | Default | Description | Required | Where Used | Environment Requirement | Source |
 |------|------|---------|-------------|----------|------------|--------------------------|--------|
+| jobs.golden-test-csharp-core.name | YAML Configuration | Golden-file regression (C# / ASP.NET Core Web API) | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.name |
+| jobs.golden-test-csharp-core.runs-on | YAML Configuration | ubuntu-latest | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.runs-on |
+| jobs.golden-test-csharp-core.steps.shell | YAML Configuration | pwsh | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps.shell |
+| jobs.golden-test-csharp-core.steps.uses | YAML Configuration | actions/setup-pwsh@v3 | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps.uses |
+| jobs.golden-test-csharp-core.steps[0] | YAML Configuration | uses: actions/checkout@v4 | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[0] |
+| jobs.golden-test-csharp-core.steps[1] | YAML Configuration | name: Setup PowerShell | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[1] |
+| jobs.golden-test-csharp-core.steps[2] | YAML Configuration | name: Install Pester | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[2] |
+| jobs.golden-test-csharp-core.steps[3] | YAML Configuration | name: Run C# ASP.NET Core Web API golden-file regression test | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[3] |
+| jobs.golden-test-csharp.name | YAML Configuration | Golden-file regression (C# / ASP.NET Web Forms) | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.name |
+| jobs.golden-test-csharp.runs-on | YAML Configuration | ubuntu-latest | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.runs-on |
+| jobs.golden-test-csharp.steps.shell | YAML Configuration | pwsh | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps.shell |
+| jobs.golden-test-csharp.steps.uses | YAML Configuration | actions/setup-pwsh@v3 | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps.uses |
+| jobs.golden-test-csharp.steps[0] | YAML Configuration | uses: actions/checkout@v4 | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[0] |
+| jobs.golden-test-csharp.steps[1] | YAML Configuration | name: Setup PowerShell | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[1] |
+| jobs.golden-test-csharp.steps[2] | YAML Configuration | name: Install Pester | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[2] |
+| jobs.golden-test-csharp.steps[3] | YAML Configuration | name: Run C# Web Forms golden-file regression test | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[3] |
+| jobs.golden-test-java.name | YAML Configuration | Golden-file regression (Java / Spring Boot) | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.name |
+| jobs.golden-test-java.runs-on | YAML Configuration | ubuntu-latest | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.runs-on |
+| jobs.golden-test-java.steps.shell | YAML Configuration | pwsh | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps.shell |
+| jobs.golden-test-java.steps.uses | YAML Configuration | actions/setup-pwsh@v3 | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps.uses |
+| jobs.golden-test-java.steps[0] | YAML Configuration | uses: actions/checkout@v4 | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[0] |
+| jobs.golden-test-java.steps[1] | YAML Configuration | name: Setup PowerShell | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[1] |
+| jobs.golden-test-java.steps[2] | YAML Configuration | name: Install Pester | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[2] |
+| jobs.golden-test-java.steps[3] | YAML Configuration | name: Run Java / Spring Boot golden-file regression test | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[3] |
+| jobs.golden-test-node.name | YAML Configuration | Golden-file regression (Node / Express + TypeScript) | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.name |
+| jobs.golden-test-node.runs-on | YAML Configuration | ubuntu-latest | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.runs-on |
+| jobs.golden-test-node.steps.shell | YAML Configuration | pwsh | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps.shell |
+| jobs.golden-test-node.steps.uses | YAML Configuration | actions/setup-pwsh@v3 | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps.uses |
+| jobs.golden-test-node.steps[0] | YAML Configuration | uses: actions/checkout@v4 | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[0] |
+| jobs.golden-test-node.steps[1] | YAML Configuration | name: Setup PowerShell | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[1] |
+| jobs.golden-test-node.steps[2] | YAML Configuration | name: Install Pester | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[2] |
+| jobs.golden-test-node.steps[3] | YAML Configuration | name: Run Node / Express (TypeScript) golden-file regression test | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[3] |
+| jobs.golden-test-python.name | YAML Configuration | Golden-file regression (Python / Flask) | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.name |
+| jobs.golden-test-python.runs-on | YAML Configuration | ubuntu-latest | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.runs-on |
+| jobs.golden-test-python.steps.shell | YAML Configuration | pwsh | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps.shell |
+| jobs.golden-test-python.steps.uses | YAML Configuration | actions/setup-pwsh@v3 | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps.uses |
+| jobs.golden-test-python.steps[0] | YAML Configuration | uses: actions/checkout@v4 | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[0] |
+| jobs.golden-test-python.steps[1] | YAML Configuration | name: Setup PowerShell | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[1] |
+| jobs.golden-test-python.steps[2] | YAML Configuration | name: Install Pester | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[2] |
+| jobs.golden-test-python.steps[3] | YAML Configuration | name: Run Python / Flask golden-file regression test | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[3] |
+| jobs.golden-test.name | YAML Configuration | Golden-file regression (framework-agnostic) | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.name |
+| jobs.golden-test.runs-on | YAML Configuration | ubuntu-latest | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.runs-on |
+| jobs.golden-test.steps.shell | YAML Configuration | pwsh | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps.shell |
+| jobs.golden-test.steps.uses | YAML Configuration | actions/setup-pwsh@v3 | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps.uses |
+| jobs.golden-test.steps[0] | YAML Configuration | uses: actions/checkout@v4 | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[0] |
+| jobs.golden-test.steps[1] | YAML Configuration | name: Setup PowerShell | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[1] |
+| jobs.golden-test.steps[2] | YAML Configuration | name: Install Pester | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[2] |
+| jobs.golden-test.steps[3] | YAML Configuration | name: Run golden-file regression test | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[3] |
 | chat.tools.fileOperations.autoApprove.list | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.fileOperations.autoApprove.list. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.fileOperations.autoApprove.list |
 | chat.tools.fileOperations.autoApprove.read | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.fileOperations.autoApprove.read. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.fileOperations.autoApprove.read |
 | chat.tools.terminal.autoApprove.-ErrorAction | JSON Configuration | true | Purpose unclear from available evidence — review .vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction. | No | Tooling/workflow | Build pipeline | .vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction |
@@ -99,37 +154,28 @@ Configuration is distributed across application config files, transforms, projec
 
 ## Security Considerations
 
-Trust model: auto-approve entries execute with local user privileges and should only target trusted scripts under validated repository paths. This workflow enforces repository scope filtering but does not provide cryptographic file-integrity attestation; protect repos and runners accordingly. Restrict auto-approve patterns to least privilege, avoid broad wildcards, and keep display-only commands such as Write-Host non-required from a security perspective.
+Treat connection strings, credentials, tokens, and endpoint URLs as sensitive-by-default. Validate redaction of secret-like values before publishing artifacts, and restrict broad wildcard allowlist patterns to trusted, repository-controlled paths.
 
 ## Example Configurations
 
-Environment-specific examples are not emitted automatically to avoid accidental secret leakage. Build examples from non-sensitive templates and validate with the required configuration criteria below.
+Environment-specific examples are not emitted automatically to avoid accidental secret leakage. Build examples from non-sensitive templates and validate with the required configuration criteria.
 
-## Required configuration criteria
-
-Use least-privilege auto-approve rules for trusted automation paths only:
-
-- chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1
-- chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1
-
-Do not treat chat.tools.terminal.autoApprove.Write-Host as a required security control. Write-Host is a display/UI command and should remain optional.
 ## Evidence Traceability
 
 | Field | Value |
 |------|-------|
 | Evidence Artifact | evidence/config-catalog.evidence.json |
-| Record Count | 54 |
+| Record Count | 110 |
 | Generator | generate-config-catalog.ps1 |
 | Required Evidence Keys | configurations |
 | Grounding Mode | Deterministic extraction records |
-
 ---
-
+**Generated by AppDoc Framework**
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 8b13f8a
-- Generated At: 2026-10-16T11:56:04-04:00
+- Commit Hash: 85946f7
+- Generated At: 2026-10-17T18:41:14-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

@@ -1,0 +1,26 @@
+# Spring Boot application configuration (tickets-service).
+# NOTE: the database password below is a placeholder used by the AppDoc golden
+# test to prove secret redaction — it must never survive into any generated artifact.
+
+spring:
+  application:
+    name: tickets-service
+  datasource:
+    url: jdbc:mysql://db-host.internal:3306/tickets
+    username: tickets_user
+    password: FakeP@ss123
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+server:
+  port: 8080
+
+# External ITSM system (outbound integration boundary).
+itsm:
+  base-url: https://itsm.acme.internal
+
+# Logging level surfaced for config-catalog coverage (non-secret).
+logging:
+  level:
+    com.acme: INFO

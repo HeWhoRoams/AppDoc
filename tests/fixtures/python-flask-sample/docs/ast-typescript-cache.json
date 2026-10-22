@@ -1,0 +1,8 @@
+{
+  "generatedAt": "2026-10-21T01:33:43-04:00",
+  "provider": "regex-fallback",
+  "providerReady": true,
+  "records": [],
+  "note": "TypeScript Compiler API integration pending. Current output uses fallback parser contract. Known limitation: brace-balancing loop does not skip braces inside strings/comments.",
+  "pendingProvider": "typescript-compiler-bridge-pending"
+}
