@@ -20,6 +20,34 @@ AppDoc is CMU-first: the default theme is the CMU maroon/gold theme with the CMU
 
 To brand for another organization, copy `.appdoc/templates/html/theme.json`, change colors/fonts/masthead, set `logoSvg` to `none` or your own SVG, and point `themeFile` at it.
 
+### Target-specific narrative: overlays and opaque tokens
+
+AppDoc ships no knowledge of any particular application. Narrative it cannot derive from
+source (business purpose, workflow steps, domain glossary, escalation contacts) belongs to the
+target, in **overlay** files:
+
+- Convention: `<target>/.appdoc/overlays/<section-slug>.md`, where the slug is the section title
+  in lower case with non-alphanumerics replaced by `-` (e.g. `operational-workflows.md`,
+  `glossary.md`, `roles-and-access-model.md`).
+- Or an explicit map: `"overlays": { "Operational Workflows": "docs-src/workflows.md" }` (paths
+  relative to the target root).
+- Each overlay is appended to the end of its section under **Operator-supplied context**, tagged
+  `Operator-supplied` (never `Verified`), with its headings demoted so the 20-section spine stays
+  intact. The final redaction sweep applies to it. Applied overlays are listed in
+  `application-documentation.evidence.json` (`overlays`).
+
+`opaqueTokenPattern` (regex, default none): if the target's source was pre-sanitized with
+placeholder tokens (for example `@@APP_[A-Z0-9_]+@@`), values matching the pattern are kept verbatim
+instead of being redacted, and the generated docs explain that they are opaque placeholders. With no
+pattern configured, every secret value is redacted.
+
+```json
+{
+  "opaqueTokenPattern": "@@APP_[A-Z0-9_]+@@",
+  "overlays": { "Operational Workflows": ".appdoc/overlays/operational-workflows.md" }
+}
+```
+
 ### Operator redaction overrides (`.appdoc/config.json`, optional)
 
 Two additive lists, applied on top of the built-in extractors and the semantic gate:

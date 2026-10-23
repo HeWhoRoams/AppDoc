@@ -35,6 +35,8 @@ $script:AppDocConfigDefaults = [ordered]@{
     themeFile                = ''                # explicit theme .json path (overrides 'theme' when set)
     redactionPatterns        = @()               # extra secret VALUES, matched literally
     redactionRegexes         = @()               # extra regular expressions; every match is redacted
+    opaqueTokenPattern       = ''                # regex for sanitized placeholder tokens kept verbatim (default: none)
+    overlays                 = @{}               # section title -> overlay .md path (default: .appdoc/overlays/<slug>.md)
     pristineFloor            = 80                # pristine gate floor (1..100)
     outputDir                = 'docs'            # docs output dir name under the target root
     minCommitsForOwnership   = 2                 # git history depth floor for real ownership (default 2)
@@ -118,6 +120,16 @@ function Get-AppDocConfig {
             }
             if ($raw.PSObject.Properties['redactionRegexes']) {
                 $config['redactionRegexes'] = @($raw.redactionRegexes | ForEach-Object { [string]$_ } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+            }
+            if ($raw.PSObject.Properties['opaqueTokenPattern'] -and $raw.opaqueTokenPattern) {
+                $otp = [string]$raw.opaqueTokenPattern
+                try { [void][regex]::new($otp) } catch { throw "opaqueTokenPattern is not a valid regular expression: $otp" }
+                $config['opaqueTokenPattern'] = $otp
+            }
+            if ($raw.PSObject.Properties['overlays'] -and $raw.overlays) {
+                $ov = @{}
+                foreach ($prop in $raw.overlays.PSObject.Properties) { $ov[[string]$prop.Name] = [string]$prop.Value }
+                $config['overlays'] = $ov
             }
             if ($raw.PSObject.Properties['pristineFloor'] -and $raw.pristineFloor) { $config['pristineFloor'] = [int]$raw.pristineFloor }
             if ($raw.PSObject.Properties['outputDir'] -and $raw.outputDir) { $config['outputDir'] = [string]$raw.outputDir }

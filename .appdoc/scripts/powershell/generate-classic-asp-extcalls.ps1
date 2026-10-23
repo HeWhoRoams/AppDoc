@@ -13,8 +13,8 @@
 #            (b) stored-proc EMAIL calls: EXEC ... send_mail @address,@Subject,@MSG.
 #            (c) distinct COM objects instantiated via Server.CreateObject(...)
 #                / CreateObject(...) (object name + occurrence count + sample file).
-#            (d) file-system / UNC boundaries: @@HELPWEB_UNC_* tokens and \\ UNC
-#                paths (referenced as opaque/redacted, NEVER resolved).
+#            (d) file-system / UNC boundaries: literal \\server\share paths
+#                (counted and cited by file; the paths themselves are not printed).
 #
 # The ADO boundary (ADODB.Connection/Command/Recordset) is referenced as a
 # boundary CLASS (the DB boundary; the full register is in section 9.1) rather
@@ -22,9 +22,7 @@
 #
 # REDACTION RULE (non-negotiable): a REAL secret value (API key / Authorization
 # header literal / embedded credential) is NEVER printed. It is emitted as
-# [REDACTED]. URLs are shown as-is (they are destinations, not credentials);
-# the sanitized @@HELPWEB_...@@ tokens are already opaque and are referenced
-# as-is and never resolved.
+# [REDACTED]. URLs are shown as-is (they are destinations, not credentials).
 #
 # Deterministic: no LLM, no randomness, no network. Framework-gated: only runs
 # when framework-detection.json reports Classic ASP or ASP.NET Web Forms.
@@ -62,7 +60,7 @@ function Is-ScratchFile {
 }
 
 # Sanitize a string before it is written: redact any real Authorization/Apikey
-# header value and any bearer/token credential. @@HELPWEB_ tokens pass through.
+# header value and any bearer/token credential.
 # Defense-in-depth: even if a real value is captured, it is redacted here.
 function Sanitize-Text {
     param([string]$t)
@@ -162,7 +160,8 @@ $authHeaderRe = '(?i)setRequestHeader\s*\(?\s*"Authorization"'
 $apiKeyRe     = '(?i)Apikey\s+[A-Za-z0-9][A-Za-z0-9\-_.]{6,}'
 $sendMailRe   = [regex]'(?i)\bsend_mail\b'
 $createObjRe  = [regex]'(?i)CreateObject\s*\(?\s*"?([^",)\s]+)"?'
-$uncTokenRe   = [regex]'@@HELPWEB_UNC'
+# A literal UNC path inside a string: "\\server\share..." (2+ backslashes, a host, a share).
+$uncTokenRe   = [regex]'\\\\[A-Za-z0-9_.$-]+\\[A-Za-z0-9_.$-]+'
 
 # ---- Accumulators -----------------------------------------------------------
 $endpointHits = New-Object System.Collections.Generic.List[object]   # @{file; line; url; mech; behavior}
@@ -209,10 +208,6 @@ foreach ($f in $allFiles) {
             if ($L -match '(?i)\.load\b') { $beh = 'loads remote XML document' }
             elseif ($L -match '(?i)\.open\b') { $beh = 'outbound HTTP request' }
             else { $beh = 'outbound HTTP/XML request (call site)' }
-            # URL-path hint (Inferred)
-            if ($url -match '(?i)/command\.ns') { $beh += '; Bomgar remote-support API (parses XML, renders rep names)' }
-            elseif ($url -match '(?i)CreateUserFromContact') { $beh += '; ITSM account creation' }
-            elseif ($url -match '(?i)/api/analysis/|getReport') { $beh += '; ITSM report fetch (analysis)' }
             if ($hasAuthHeader -or $hasApiKey) { $beh += '; sends hardcoded Authorization header (Apikey [REDACTED])' }
             $endpointHits.Add([pscustomobject]@{ file=$rel; line=($i + 1); url=$url; mech=$mech; behavior=$beh })
         }
@@ -296,9 +291,9 @@ foreach ($h in ($sendMailHits | Sort-Object @{Expression = { $_.file } }, @{Expr
     if ($seenMailFile.ContainsKey($h.file)) { continue }
     $seenMailFile[$h.file] = $true
     $boundaryRows.Add([pscustomobject]@{
-        id=''; btype='Email (stored procedure)'; call='`EXEC Peregrine.Peregrine.send_mail @address, @Subject, @MSG`';
+        id=''; btype='Email (stored procedure)'; call=(Md-Back (Sanitize-Text ([string]$h.snippet)));
         evidence=(Md-Back $h.file) + " line " + $h.line;
-        behavior='Sends Talisma reset-request email; recipient list is hardcoded in source'; status='Verified'
+        behavior='Sends email through a stored-procedure `send_mail` call'; status='Verified'
     })
 }
 # (2) ADO boundary class (DB boundary; register in 9.1)
@@ -312,9 +307,9 @@ if ($adoCount -gt 0) {
 # (3) file-system / UNC boundary
 if ($uncCount -gt 0) {
     $boundaryRows.Add([pscustomobject]@{
-        id=''; btype='File-system / UNC'; call='`@@HELPWEB_UNC_*@@` tokens + `\\` UNC paths';
-        evidence=("$uncCount token occurrences across $($uncFiles.Count) files; e.g. " + (Md-Back $uncFiles[0]));
-        behavior='UNC file-share boundary; values are opaque sanitized tokens (never resolved)'; status='Verified'
+        id=''; btype='File-system / UNC'; call='`\\server\share` UNC paths (not printed)';
+        evidence=("$uncCount UNC path occurrences across $($uncFiles.Count) files; e.g. " + (Md-Back $uncFiles[0]));
+        behavior='UNC file-share boundary'; status='Verified'
     })
 }
 $bIdx = 1
@@ -323,12 +318,12 @@ foreach ($br in $boundaryRows) { $br.id = "BND-$($bIdx.ToString('00'))"; $bIdx++
 # ---- Render markdown --------------------------------------------------------
 $generatedLine = "**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))"
 $generatedIso  = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ssK')
-$summaryText = "This artifact lists the external-call boundaries actually present in the classic-ASP source, each with its file:line evidence and epistemic status. **HTTP/XML endpoints** are the outbound URL + XML-HTTP mechanism sites (ITSM API, Bomgar remote-support, ACD/status cross-application links). **Email/COM/file boundaries** are the stored-proc email, ADO database boundary (class), and UNC/file-system boundary. Every REAL secret value (API key / Authorization header / embedded credential) is **redacted** and emitted as ``[REDACTED]``; the sanitized ``@@HELPWEB_...@@`` tokens are already opaque and are referenced as-is. Status ``Verified`` means the call site is present in the current source, not that the target is reachable in production (that is Unknown)."
+$summaryText = "This artifact lists the external-call boundaries actually present in the classic-ASP source, each with its file:line evidence and epistemic status. **HTTP/XML endpoints** are the outbound URL + XML-HTTP mechanism sites. **Email/COM/file boundaries** are stored-procedure email calls, the ADO database boundary (class), and UNC/file-system paths. Every REAL secret value (API key / Authorization header / embedded credential) is **redacted** and emitted as ``[REDACTED]``. Status ``Verified`` means the call site is present in the current source, not that the target is reachable in production (that is Unknown)."
 
 $lines = New-Object System.Collections.Generic.List[string]
 $lines.Add("# External Call Register"); $lines.Add(""); $lines.Add($generatedLine); $lines.Add("")
 $lines.Add("## Summary"); $lines.Add(""); $lines.Add($summaryText); $lines.Add("")
-$totalsLine = "Totals: **$($endpointRows.Count)** HTTP/XML endpoint site(s), **$($boundaryRows.Count)** Email/COM/file boundary row(s), **$($comCounts.Count)** distinct COM object type(s) (top $($comShow.Count) shown); $adoCount ADO boundary instantiation(s) across $($adoFiles.Count) file(s), $uncCount `@@HELPWEB_UNC` token occurrence(s), $($apiKeyFiles.Count) file(s) with a hardcoded Authorization header (Apikey [REDACTED])."
+$totalsLine = "Totals: **$($endpointRows.Count)** HTTP/XML endpoint site(s), **$($boundaryRows.Count)** Email/COM/file boundary row(s), **$($comCounts.Count)** distinct COM object type(s) (top $($comShow.Count) shown); $adoCount ADO boundary instantiation(s) across $($adoFiles.Count) file(s), $uncCount UNC path occurrence(s), $($apiKeyFiles.Count) file(s) with a hardcoded Authorization header (Apikey [REDACTED])."
 $lines.Add($totalsLine); $lines.Add("")
 $lines.Add("## Contents"); $lines.Add("")
 $lines.Add("- [HTTP/XML Endpoints](#httpxml-endpoints) — outbound URL + XML-HTTP mechanism sites")
@@ -349,7 +344,7 @@ if ($endpointRows.Count -eq 0) { $lines.Add("| — | none detected | — | — |
 $lines.Add("")
 
 $lines.Add("## Email/COM/File Boundaries"); $lines.Add("")
-$lines.Add("Non-HTTP external boundaries: the stored-proc email call, the ADO database boundary (class — full register in section 9.1), and the UNC/file-system boundary. `@@HELPWEB_...@@` tokens are opaque and never resolved."); $lines.Add("")
+$lines.Add("Non-HTTP external boundaries: stored-procedure email calls, the ADO database boundary (class — full register in section 9.1), and UNC/file-system paths."); $lines.Add("")
 $lines.Add("| ID | Boundary type | Observed call | Source file:line | Behavior | Status |")
 $lines.Add("|----|---------------|---------------|------------------|----------|--------|")
 foreach ($br in $boundaryRows) {

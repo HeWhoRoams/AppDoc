@@ -69,7 +69,7 @@ function Get-ClassicAspSourceFileCount {
     # Path-dir exclusions (mirror the framework detector $aspExcl EXACTLY so the
     # guard's "source presence" matches what the detector itself counted). NOTE:
     # fixtures is excluded but test/tests is NOT — real classic-ASP apps ship live
-    # test/ pages (helpweb has test/), so excluding tests would silently drop content.
+    # test/ pages (real classic-ASP sites often ship a test/ folder), so excluding tests would silently drop content.
     $pathExcl  = '(?i)([\\/](fixtures|node_modules|bin|obj|dist|build|__pycache__|\.venv|target)[\\/])'
     # Basename scratch globs (mirror generate-unified-master.ps1 $scratchRe):
     # *_copy*, copy_*, *_old*, *_test*, testing*, *bak*

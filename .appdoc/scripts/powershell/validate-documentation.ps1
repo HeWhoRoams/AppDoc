@@ -771,7 +771,7 @@ function Get-ClassicAspDataModelCoverage {
     $dbs = New-Object System.Collections.Generic.HashSet[string]
     $objects = New-Object System.Collections.Generic.HashSet[string]
     $procs = New-Object System.Collections.Generic.HashSet[string]
-    $kwProcs = @("select","insert","update","delete","set","if","end","open","close","waitfor","print","return")
+    $kwProcs = @("select","insert","update","delete","set","if","end","open","close","waitfor","print","return","and","or","the","a","an","to","of","on","via","with")
     $rootPrefix = $RootPath.TrimEnd('\', '/')
 
     $aspFiles = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp" -File -ErrorAction SilentlyContinue)
@@ -801,6 +801,9 @@ function Get-ClassicAspDataModelCoverage {
             $server  = Test-AppDocClassicAspConnValue -Raw $server
             [void]$DbSet.Add(("{0}|{1}|{2}" -f $provider, $server, $catalog).ToLowerInvariant())
         }
+        # Same rule as generate-classic-asp-datamodel.ps1: SQL is read from code only
+        # (VBScript comment lines are blanked), so prose cannot become a procedure name.
+        $content = [regex]::Replace($content, "(?im)^[ \t]*(?:'|REM\b)[^\r\n]*", '')
         foreach ($m in [regex]::Matches($content, '(?is)\bSELECT\b[^;]{0,500}?\bFROM\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
             $n = $m.Groups[1].Value.Trim(); if ($n.Length -ge 2) { [void]$ObjSet.Add($n.ToLowerInvariant()) }
         }
@@ -1007,7 +1010,7 @@ function Get-SectionSpineCoverageScore {
         "Functional Inventory",
         "Roles and Access Model",
         "UI Catalog",
-        "Help Desk Workflows",
+        "Operational Workflows",
         "Data and Integrations",
         "External Call Register",
         "Stored-procedure data dictionary",
@@ -1048,12 +1051,25 @@ function Get-SectionSpineCoverageScore {
 
     $allText = ($files | ForEach-Object { Get-Content $_ -Raw } | Where-Object { $_ }) -join "`n"
 
+    # Section renamed in 1.1.0 ("Help Desk Workflows" -> "Operational Workflows"). For one
+    # release the old heading still counts, with a deprecation warning, so committed
+    # outputs built by 1.0.x do not fail at once. Remove in 1.2.0.
+    $deprecatedSpineAliases = @{ "Operational Workflows" = "Help Desk Workflows" }
+
     $found = 0
     foreach ($title in $spine) {
         # Match the title as a heading (## / ### / #) with optional numbering or
         # a letter-suffix (e.g. "8A"), tolerant of case.
         $pattern = ('(?im)^#{1,6}\s+(?:\d{1,2}[A-Za-z]?\s*[.:]\s*)?' + [regex]::Escape($title) + '\b')
-        if ($allText -match $pattern) { $found++ }
+        if ($allText -match $pattern) { $found++; continue }
+        if ($deprecatedSpineAliases.ContainsKey($title)) {
+            $old = $deprecatedSpineAliases[$title]
+            $oldPattern = ('(?im)^#{1,6}\s+(?:\d{1,2}[A-Za-z]?\s*[.:]\s*)?' + [regex]::Escape($old) + '\b')
+            if ($allText -match $oldPattern) {
+                $found++
+                Write-Warning "Section heading '$old' is deprecated; rebuild to get '$title'. The old heading is accepted until AppDoc 1.2.0."
+            }
+        }
     }
 
     return [Math]::Round((($found / [Math]::Max(1, $spine.Count)) * 100), 1)

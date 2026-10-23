@@ -3,7 +3,7 @@
 # Purpose: verify the pipeline's STRUCTURAL invariants on a small, deterministic,
 # fast classic-ASP fixture (AppDoc/tests/fixtures/classic-asp-sample). This is NOT
 # an exact byte-match golden file (too brittle) and NOT a re-run of the 16k-file
-# helpweb target (too slow for CI). It runs the real run-all-generators pipeline on
+# real target (too slow for CI). It runs the real run-all-generators pipeline on
 # the fixture in a fresh temp copy and asserts the expected docs land with the right
 # structure: all 20 spine headings, the 5 .asp endpoints, the fixture DB/table/proc,
 # the web.config appSettings key, the evidence/verification rows, the themed HTML,
@@ -43,7 +43,7 @@ Describe "Golden-file structural regression: classic-ASP pipeline" {
             "Functional Inventory"
             "Roles and Access Model"
             "UI Catalog"
-            "Help Desk Workflows"
+            "Operational Workflows"
             "Data and Integrations"
             "External Call Register"
             "Stored-procedure data dictionary"

@@ -17,14 +17,13 @@
 #                diagnostic visibility,
 #            (f) string-built SQL (SQL assembled by string concatenation,
 #                FixSQL-style, not parameterized),
-#            (g) ADO connection strings with embedded credentials (count; the
-#                sanitized @@HELPWEB_...@@ tokens are referenced as-is and are
-#                never resolved).
+#            (g) ADO connection strings with embedded credentials (count only).
 #
 # REDACTION RULE (non-negotiable): every finding is documented with file:line,
 # severity, and status, but a REAL secret value (password / API key / GID /
-# credential) is NEVER printed — it is emitted as [REDACTED]. The sanitized
-# @@HELPWEB_...@@ tokens are already opaque and are referenced as-is.
+# credential) is NEVER printed — it is emitted as [REDACTED]. A target may declare an
+# opaque-token pattern (config `opaqueTokenPattern`) for already-sanitized placeholders,
+# which are referenced as-is.
 #
 # Deterministic: no LLM, no randomness, no network. Framework-gated: only runs
 # when framework-detection.json reports Classic ASP or ASP.NET Web Forms.
@@ -36,6 +35,18 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+
+# Optional per-target opaque-token convention (config `opaqueTokenPattern`): values
+# matching it are already-sanitized placeholders and are kept verbatim. Default: none,
+# so every secret value is redacted.
+$opaqueTokenPattern = ''
+$cfgModule = Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Config.psm1'
+if (Test-Path $cfgModule) {
+    Import-Module $cfgModule -Force -ErrorAction Stop
+    $appDocCfg = Get-AppDocConfig -RootPath $RootPath
+    if ($appDocCfg -and $appDocCfg.values.opaqueTokenPattern) { $opaqueTokenPattern = [string]$appDocCfg.values.opaqueTokenPattern }
+}
+$opaqueNote = if ($opaqueTokenPattern) { " Values matching the target's opaque-token pattern (``$opaqueTokenPattern``) are sanitized placeholders and are referenced as-is." } else { '' }
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
 if (Test-Path $helpersPath) { . $helpersPath }
 function Write-NotApplicablePlaceholder {
@@ -46,12 +57,13 @@ function Write-NotApplicablePlaceholder {
     $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
 }
 # Return a value wrapped in literal markdown backticks (for inline code spans).
-# Redact: any non-empty secret value becomes [REDACTED]; @@HELPWEB_ tokens pass through.
+# Redact: any non-empty secret value becomes [REDACTED]; values matching the target's
+# configured opaque-token pattern (if any) pass through unchanged.
 function Redact-Value {
     param([string]$v)
     $t = ([string]$v).Trim()
     if ([string]::IsNullOrWhiteSpace($t)) { return "[REDACTED]" }
-    if ($t -match '^@@HELPWEB_') { return $t }
+    if ($opaqueTokenPattern -and $t -match $opaqueTokenPattern) { return $t }
     return "[REDACTED]"
 }
 
@@ -117,7 +129,7 @@ foreach ($list in @($incFiles, $aspFiles)) {
             $idNum = ($findings.Count + 1)
             $fid = "SEC-$( $idNum.ToString('000') )"
             $ev = (Md-Back $rel) + " line " + ($i + 1)
-            Add-Finding -Id $fid -Finding "A hardcoded ITSM API authorization header is present (an Apikey credential is sent on an outbound ITSM request)." -Evidence $ev -Severity "Critical" -Secret "apikey=[REDACTED]" -Status "Verified"
+            Add-Finding -Id $fid -Finding "A hardcoded authorization header is present (a credential is sent on an outbound HTTP request)." -Evidence $ev -Severity "Critical" -Secret "apikey=[REDACTED]" -Status "Verified"
         }
 
         # ---- (c) per-user debug backdoor that dumps raw SQL --------------------
@@ -243,7 +255,7 @@ $generatedIso = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ssK')
 $critCount = @($findings | Where-Object { $_.severity -eq "Critical" }).Count
 $highCount = @($findings | Where-Object { $_.severity -eq "High" }).Count
 $medCount  = @($findings | Where-Object { $_.severity -eq "Medium" }).Count
-$summaryText = "This artifact lists the security findings actually present in the classic-ASP source, each with its file:line evidence, severity, and epistemic status. Every REAL secret value (password, API key, operator Global ID, credential) is **redacted** and emitted as ``[REDACTED]``; the sanitized ``@@HELPWEB_...@@`` tokens are already opaque and are referenced as-is. Severity reflects the blast radius of the exposure, not runtime reachability (which is Unknown)."
+$summaryText = "This artifact lists the security findings actually present in the classic-ASP source, each with its file:line evidence, severity, and epistemic status. Every REAL secret value (password, API key, credential) is **redacted** and emitted as ``[REDACTED]``.$opaqueNote Severity reflects the blast radius of the exposure, not runtime reachability (which is Unknown)."
 
 $lines = New-Object System.Collections.Generic.List[string]
 $lines.Add("# Security and Operational Risks"); $lines.Add(""); $lines.Add($generatedLine); $lines.Add("")

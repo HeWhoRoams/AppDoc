@@ -10,7 +10,7 @@
 #
 # Deterministic: no LLM, no randomness, no network. Framework-gated: only runs when
 # framework-detection.json reports Classic ASP or ASP.NET Web Forms. Sanitized
-# @@HELPWEB_...@@ tokens are treated as opaque values (structure is parsed, values ignored).
+# Connection-string values are never printed (structure is parsed, values ignored).
 #
 
 param(
@@ -203,25 +203,30 @@ function Process-DataModelFile {
         if (-not ($script:dbs[$key].files -contains $rel)) { $script:dbs[$key].files.Add($rel) }
     }
 
+    # SQL is only read from CODE: VBScript comment lines (' ... / REM ...) are blanked
+    # first (keeping line numbers), so prose such as "runs a stored procedure via EXEC and
+    # streams the result" can never be read as a procedure named "and".
+    $codeContent = [regex]::Replace($content, "(?im)^[ \t]*(?:'|REM\b)[^\r\n]*", '')
+
     # (b) SQL objects.
-    foreach ($m in [regex]::Matches($content, '(?is)\bSELECT\b[^;]{0,500}?\bFROM\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
+    foreach ($m in [regex]::Matches($codeContent, '(?is)\bSELECT\b[^;]{0,500}?\bFROM\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
         Add-SqlObject -Name $m.Groups[1].Value -Type "table/view" -RelPath $rel
     }
-    foreach ($m in [regex]::Matches($content, '(?i)\bINSERT\s+INTO\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
+    foreach ($m in [regex]::Matches($codeContent, '(?i)\bINSERT\s+INTO\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
         Add-SqlObject -Name $m.Groups[1].Value -Type "table" -RelPath $rel
     }
-    foreach ($m in [regex]::Matches($content, '(?i)\bUPDATE\s+([A-Za-z_][A-Za-z0-9_.$]*)\s+(SET|FROM)')) {
+    foreach ($m in [regex]::Matches($codeContent, '(?i)\bUPDATE\s+([A-Za-z_][A-Za-z0-9_.$]*)\s+(SET|FROM)')) {
         Add-SqlObject -Name $m.Groups[1].Value -Type "table" -RelPath $rel
     }
     # DELETE FROM x
-    foreach ($m in [regex]::Matches($content, '(?i)\bDELETE\s+FROM\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
+    foreach ($m in [regex]::Matches($codeContent, '(?i)\bDELETE\s+FROM\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
         Add-SqlObject -Name $m.Groups[1].Value -Type "table/view" -RelPath $rel
     }
 
     # (c) Stored procedures via EXEC/EXECUTE.
-    foreach ($m in [regex]::Matches($content, '(?i)\bEXEC(UTE)?\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
+    foreach ($m in [regex]::Matches($codeContent, '(?i)\bEXEC(UTE)?\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
         $procName = $m.Groups[2].Value
-        if ($procName -match '(?i)^(SELECT|INSERT|UPDATE|DELETE|SET|IF|END|OPEN|CLOSE|WAITFOR|PRINT|RETURN)$') { continue }
+        if ($procName -match '(?i)^(SELECT|INSERT|UPDATE|DELETE|SET|IF|END|OPEN|CLOSE|WAITFOR|PRINT|RETURN|AND|OR|THE|A|AN|TO|OF|ON|VIA|WITH)$') { continue }
         Add-Proc -Name $procName -RelPath $rel
     }
 

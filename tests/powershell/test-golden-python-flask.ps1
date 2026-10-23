@@ -70,7 +70,7 @@ Describe "Golden-file structural regression: Python / Flask pipeline" {
             "Functional Inventory"
             "Roles and Access Model"
             "UI Catalog"
-            "Help Desk Workflows"
+            "Operational Workflows"
             "Data and Integrations"
             "External Call Register"
             "Stored-procedure data dictionary"

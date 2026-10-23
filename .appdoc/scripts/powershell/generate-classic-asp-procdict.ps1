@@ -8,7 +8,7 @@
 #            (a) in-source stored-procedure CONTRACT blocks: the VB comment
 #                ladders that live in the .inc/.asp files documenting a
 #                procedure's Parameters and Return Codes (e.g.
-#                "Procedure: HelpDesk_ExtendAccount" / "Parameters:" /
+#                "Procedure: usp_ExtendAccount" / "Parameters:" /
 #                "Return Codes:").
 #            (b) stored-procedure CALL-SITES already discovered by
 #                generate-classic-asp-datamodel.ps1 (the EXEC / .Execute /
@@ -21,7 +21,7 @@
 #
 # Deterministic: no LLM, no randomness, no network. Framework-gated: only runs
 # when framework-detection.json reports Classic ASP or ASP.NET Web Forms.
-# Sanitized @@HELPWEB_...@@ tokens are treated as opaque values.
+# Connection-string values are treated as opaque and never printed.
 #
 
 param(

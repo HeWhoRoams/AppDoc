@@ -4,7 +4,7 @@
 #
 #          HONEST-UNKNOWN GUARANTEE (the hard bar):
 #            - NON-GIT DIR (no .git): isGitRepo=$false. Git is NEVER invoked. Every
-#              owner field degrades to 'Unknown'. (helpweb-scratch-src has no .git.)
+#              owner field degrades to 'Unknown'. (A scratch copy without .git is the usual case.)
 #            - SHALLOW HISTORY (commitCount < $MinCommitsForOwnership, default 2):
 #              historySufficient=$false. A single / squashed commit's author is NOT
 #              meaningful ownership, so every owner field degrades to 'Unknown'.
@@ -28,7 +28,7 @@ $script:AppDocGitOwnershipCodeExts = @('.cs', '.cshtml', '.aspx', '.aspx.cs', '.
 
 # --- git presence (GUARDED: never invoke git on a non-git dir) ---------------
 # Returns $true only if the target actually looks like a git work-tree: a .git dir/file
-# exists AND `git rev-parse --is-inside-work-tree` confirms it. A non-git dir (helpweb)
+# exists AND `git rev-parse --is-inside-work-tree` confirms it. A non-git dir
 # short-circuits to $false WITHOUT calling git at all.
 function Test-AppDocGitRepo {
     [CmdletBinding()]
