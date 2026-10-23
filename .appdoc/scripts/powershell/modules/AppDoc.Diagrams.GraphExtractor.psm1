@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 function Get-AppDocDiagramValue {
     [CmdletBinding()]
     param(
@@ -820,7 +823,7 @@ function Get-AppDocDiagramGraphData {
     }
 
     $limits = Get-AppDocDiagramValue -Object $Contract -Name "limits" -Default @{}
-    $evidenceRoot = Join-Path $RootPath (Join-Path "docs" "evidence")
+    $evidenceRoot = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
     $projectName = Split-Path $RootPath -Leaf
 
     $apiPayload = Get-AppDocDiagramEvidencePayload -EvidenceRoot $evidenceRoot -Artifact "api-inventory"
@@ -1078,7 +1081,7 @@ function Write-AppDocDiagramTruthPack {
         [hashtable]$GraphData
     )
 
-    $evidenceDir = Join-Path $RootPath (Join-Path "docs" "evidence")
+    $evidenceDir = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
     if (-not (Test-Path $evidenceDir)) {
         New-Item -Path $evidenceDir -ItemType Directory -Force | Out-Null
     }

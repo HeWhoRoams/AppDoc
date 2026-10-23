@@ -6,6 +6,10 @@ param(
     [switch]$Json
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # Import the scope module for its working Get-AppDocSourceFiles / Get-AppDocRelativePath.
 # (This mirrors parse-csharp-ast.ps1. A previous revision defined broken local fallbacks
 # here that referenced an undefined `$files` and shadowed the module's implementations, so
@@ -18,7 +22,7 @@ else {
     Write-Warning "AppDoc.Scope module not found at '$scopeModule'. Using fallback implementations."
 }
 
-$cachePath = Join-Path $RootPath "docs\ast-typescript-cache.json"
+$cachePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "ast-typescript-cache.json"
 if (-not $NoCache -and (Test-Path $cachePath)) {
     $cached = Get-Content $cachePath -Raw
     if ($Json) { $cached } else { Write-Output $cached }

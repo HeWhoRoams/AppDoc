@@ -24,9 +24,13 @@ param(
     [string]$ThemePath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) { Write-Error "docs directory not found: $docsPath"; exit 1 }
 
 $defaultThemePath = Join-Path $PSScriptRoot "..\..\templates\html\theme.json"

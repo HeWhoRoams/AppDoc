@@ -15,6 +15,10 @@ param(
 )
 
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # Import template helpers with explicit error handling
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
 if (-not (Test-Path $helpersPath)) {
@@ -72,7 +76,7 @@ if (-not (Test-Path $RootPath)) {
 }
 
 # Initialize template
-$outputPath = Join-Path (Join-Path $RootPath 'docs') 'build-cookbook.md'
+$outputPath = Join-Path ((Get-AppDocDocsPath -RootPath $RootPath)) 'build-cookbook.md'
 $initialized = Initialize-TemplateFile -TemplateName "build-cookbook-template.md" -OutputPath $outputPath -RootPath $RootPath
 
 if (-not $initialized) {

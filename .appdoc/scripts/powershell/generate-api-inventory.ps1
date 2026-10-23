@@ -11,6 +11,10 @@ param(
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
 if (Test-Path $helpersPath) {
     . $helpersPath
@@ -148,7 +152,7 @@ function Write-AppDocApiInventoryAppendix {
         [array]$Endpoints
     )
 
-    $appendixPath = Join-Path $RootPath "docs\api-inventory.appendix.md"
+    $appendixPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "api-inventory.appendix.md"
     $appendixDir = Split-Path $appendixPath -Parent
     if (-not (Test-Path $appendixDir)) {
         New-Item -ItemType Directory -Path $appendixDir -Force | Out-Null
@@ -171,7 +175,7 @@ function Write-AppDocApiInventoryAppendix {
     # honest "Purpose unclear from available evidence" fallback (never fabricated). When
     # the enriched evidence is absent (enrichment OFF) this whole projection is a NO-OP
     # and the appendix stays byte-identical to the deterministic-only output.
-    $enrichedApiPath = Join-Path $RootPath "docs\evidence\api-inventory.evidence.enriched.json"
+    $enrichedApiPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\api-inventory.evidence.enriched.json"
     $hasEnrichedApi = $false
     $apiBusinessPurposeLookup = @{}
     if (Test-Path $enrichedApiPath) {
@@ -276,7 +280,7 @@ if (-not (Test-Path $RootPath)) {
     exit 1
 }
 
-$outputPath = Join-Path $RootPath "docs\api-inventory.md"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "api-inventory.md"
 $initialized = Initialize-TemplateFile -TemplateName "api-inventory-template.md" -OutputPath $outputPath -RootPath $RootPath
 if (-not $initialized) {
     Write-Error "Failed to initialize template"
@@ -339,7 +343,7 @@ $outboundCount = @($endpoints | Where-Object { $_.direction -eq "outbound" }).Co
 $canonicalEndpointCount = [int]$endpoints.Count
 $canonicalInboundCount = [int]$inboundCount
 $canonicalOutboundCount = [int]$outboundCount
-$canonicalMetricsPath = Join-Path $RootPath "docs\evidence\metrics-canonical.json"
+$canonicalMetricsPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\metrics-canonical.json"
 if (Test-Path $canonicalMetricsPath) {
     try {
         $canonical = Get-Content $canonicalMetricsPath -Raw | ConvertFrom-Json -Depth 40

@@ -16,6 +16,10 @@ param(
     [switch]$Json
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
@@ -118,12 +122,12 @@ function Get-DiagramSnapshot {
         }
     }
 
-    $truthPackPath = Join-Path $TargetRoot (Join-Path "docs" (Join-Path "evidence" "diagram-truth-pack.json"))
+    $truthPackPath = Join-Path (Get-AppDocDocsPath -RootPath $TargetRoot) (Join-Path "evidence" "diagram-truth-pack.json")
     if (-not (Test-Path $truthPackPath)) {
         throw "Missing diagram truth pack after generation: $truthPackPath"
     }
 
-    $diagramsPath = Join-Path $TargetRoot (Join-Path "docs" "diagrams")
+    $diagramsPath = Join-Path (Get-AppDocDocsPath -RootPath $TargetRoot) "diagrams"
     if (-not (Test-Path $diagramsPath)) {
         throw "Missing diagrams directory after generation: $diagramsPath"
     }

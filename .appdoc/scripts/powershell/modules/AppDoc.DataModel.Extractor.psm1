@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 function Invoke-AppDocDataModelAstParserScript {
     [CmdletBinding()]
     param(
@@ -35,7 +38,7 @@ function Invoke-AppDocDataModelAstParserScript {
         Write-Verbose "Unknown AST parser script: $ScriptName. No cache file mapping found."
         return $null
     }
-    $cachePath = Join-Path $RootPath (Join-Path "docs" $cacheFile)
+    $cachePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) $cacheFile
     if (-not (Test-Path $cachePath)) {
         return $null
     }

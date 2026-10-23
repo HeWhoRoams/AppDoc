@@ -15,6 +15,10 @@ param(
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 Write-Host "📑 Generating Documentation Index..." -ForegroundColor Cyan
 
 # Validate root path
@@ -25,7 +29,7 @@ if (-not (Test-Path $RootPath)) {
 
 Write-Progress -Activity "Generating Documentation Index" -Status "Reviewing artifacts..." -PercentComplete 0
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 $artifacts = @(
     @{ File = "start-here.md"; Title = "Start Here"; Description = "Role-based onboarding and broad-to-deep reading paths" },
     @{ File = "overview.md"; Title = "System Overview"; Description = "High-level codebase summary" },

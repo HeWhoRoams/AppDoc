@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # AppDoc.SourceDocs Module
 # ============================================================================
 # PURPOSE: deterministic SOURCE-OF-TRUTH discovery + citation extraction.
@@ -183,7 +186,7 @@ function Get-AppDocSourceDocsGeneratedDocDirs {
         'ast-typescript-cache.json'
     )
     $topDirs = @(Get-ChildItem -Path $rootFull -Directory -Force -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -eq 'docs' -or $_.Name -eq 'doc' } |
+        Where-Object { $_.Name -eq 'docs' -or $_.Name -eq 'doc' -or $_.Name -eq (Get-AppDocDocsDirName -RootPath $rootFull) } |
         Sort-Object { $_.Name })
     foreach ($d in $topDirs) {
         $isGen = $false

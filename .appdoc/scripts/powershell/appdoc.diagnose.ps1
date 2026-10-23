@@ -6,6 +6,10 @@ param(
     [switch]$Json
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $diagnosticsModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagnostics.psm1"
 $frameworkModule = Join-Path $PSScriptRoot "modules\AppDoc.FrameworkDetection.psm1"
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
@@ -42,7 +46,7 @@ if (-not (Test-Path $RootPath)) {
     exit 1
 }
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if ($Fix -and -not (Test-Path $docsPath)) {
     try {
         New-Item -Path $docsPath -ItemType Directory -Force -ErrorAction Stop | Out-Null

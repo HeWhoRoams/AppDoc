@@ -18,6 +18,10 @@ param(
     [switch]$DisableRedactionGate
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
@@ -31,7 +35,7 @@ if (-not (Test-Path $RootPath)) {
     throw "Root path does not exist: $RootPath"
 }
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 $evidenceDir = Join-Path $docsPath "evidence"
 if (-not (Test-Path $evidenceDir)) {
     throw "Evidence directory not found: $evidenceDir"
@@ -316,6 +320,7 @@ $updatedFiles = 0
 $globalRefusals = @()
 $cacheHitCount = 0
 $cacheMissCount = 0
+$cacheSupersededCount = 0
 $gateBlockedFiles = @()
 
 foreach ($file in $enrichedFiles) {
@@ -435,11 +440,20 @@ foreach ($file in $enrichedFiles) {
             $llmResult = $null
             if ($null -ne $recInputHash -and $cache.ContainsKey($recInputHash)) {
                 $cacheState = 'hit'
-                $cacheHitCount++
                 $cached = $cache[$recInputHash]
                 if ($null -ne (Get-FieldValue -Record $cached -Name 'llmResult' -Default $null)) {
                     $llmResult = To-Hashtable -InputObject (Get-FieldValue -Record $cached -Name 'llmResult' -Default $null)
                 }
+                # A corrected output file for the SAME input supersedes the cached result:
+                # the cache must never hide an edit the LLM session (or a reviewer) made.
+                if ($outputLookup.ContainsKey($key)) {
+                    $currentOut = To-Hashtable -InputObject $outputLookup[$key]
+                    if ((Get-AppDocCanonicalJson -Obj $currentOut) -ne (Get-AppDocCanonicalJson -Obj $llmResult)) {
+                        $cacheState = 'superseded'
+                        $llmResult = $currentOut
+                    }
+                }
+                if ($cacheState -eq 'hit') { $cacheHitCount++ } else { $cacheSupersededCount++ }
             }
             else {
                 $cacheState = 'miss'
@@ -571,7 +585,7 @@ foreach ($file in $enrichedFiles) {
             }
 
             # (3) persist the cache for a MISS where a fresh LLM result was applied
-            if (($cacheState -eq 'miss') -and ($null -ne $llmResult) -and ($null -ne $recInputHash)) {
+            if (($cacheState -in @('miss', 'superseded')) -and ($null -ne $llmResult) -and ($null -ne $recInputHash)) {
                 $cache[$recInputHash] = [ordered]@{
                     artifact = $artifact
                     key = $key
@@ -617,6 +631,7 @@ foreach ($file in $enrichedFiles) {
         path = ($cachePath.Replace($RootPath, '.').TrimStart('\').Replace('\','/'))
         hitRecords = $cacheHitCount
         missRecords = $cacheMissCount
+        supersededRecords = $cacheSupersededCount
     }
     $meta['quarantine'] = [ordered]@{
         refusals = (@($globalRefusals | Where-Object { ([string](Get-FieldValue -Record $_ -Name 'artifact' -Default '') -eq $artifact) }).Count)
@@ -679,6 +694,7 @@ $pendingPayload = [ordered]@{
     pendingFieldCount = $pending.Count
     cacheHits = $cacheHitCount
     cacheMisses = $cacheMissCount
+    cacheSuperseded = $cacheSupersededCount
     verifiedFactLockRefusals = $globalRefusals.Count
     pending = $pending
 }
@@ -692,7 +708,7 @@ Write-Host ("Enriched files updated: {0}" -f $updatedFiles) -ForegroundColor Gra
 Write-Host ("Pending semantic fields: {0}" -f $pending.Count) -ForegroundColor Gray
 $gateColor = if ($gateBlockedFiles.Count -gt 0) { 'Red' } else { 'Gray' }
 Write-Host ("Secret-redaction gate: {0} file(s) blocked" -f $gateBlockedFiles.Count) -ForegroundColor $gateColor
-Write-Host ("Input-hash cache: {0} hit(s), {1} miss(es)" -f $cacheHitCount, $cacheMissCount) -ForegroundColor Gray
+Write-Host ("Input-hash cache: {0} hit(s), {1} miss(es), {2} superseded by a corrected output" -f $cacheHitCount, $cacheMissCount, $cacheSupersededCount) -ForegroundColor Gray
 Write-Host ("Verified-fact-lock refusals: {0}" -f $globalRefusals.Count) -ForegroundColor Gray
 if ($pending.Count -gt 0) {
     Write-Host ("Pending report: {0}" -f $pendingPath) -ForegroundColor Gray

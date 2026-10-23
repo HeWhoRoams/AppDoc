@@ -26,6 +26,10 @@ param(
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
 
 # --- Import the epistemic module for consistent status tagging (optional) ------
@@ -37,7 +41,7 @@ if (Test-Path $epistemicModule) {
 
 function Test-FrameworkApplicable {
     param([string]$RootPath)
-    $fwPath = Join-Path $RootPath "docs\framework-detection.json"
+    $fwPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "framework-detection.json"
     if (-not (Test-Path $fwPath)) { return $false }
     try { $fw = Get-Content $fwPath -Raw | ConvertFrom-Json -Depth 10 } catch { return $false }
     $frameworks = @()
@@ -209,7 +213,7 @@ function Humanize-FileName {
 }
 
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) { Write-Error "docs directory not found: $docsPath"; exit 1 }
 
 Write-Host "🧩 Composing unified master document (application-documentation.md)..." -ForegroundColor Cyan
@@ -228,7 +232,7 @@ Write-Host ("  Framework target: {0}" -f $(if ($isClassicAspTarget) { "Classic A
 # generic label when unreadable/absent so the doc is never blank on this line.
 function Get-FrameworkLabel {
     param([string]$RootPath)
-    $fwPath = Join-Path $RootPath "docs\framework-detection.json"
+    $fwPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "framework-detection.json"
     if (-not (Test-Path $fwPath)) { return "Unknown / not detected" }
     try { $fw = Get-Content $fwPath -Raw | ConvertFrom-Json -Depth 10 } catch { return "Unknown / not detected" }
     $names = @()

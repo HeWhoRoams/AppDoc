@@ -4,9 +4,13 @@ param(
     [string]$RootPath = "."
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 Write-Host "📊 Generating Documentation Assessment Report..." -ForegroundColor Cyan
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) {
     Write-Warning "Docs directory not found at: $docsPath"
     exit 1

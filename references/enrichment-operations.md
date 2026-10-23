@@ -73,4 +73,4 @@ opt-in re-renderers on the scratch copy: `generate-config-catalog.ps1`, `generat
 - **No-fabrication:** a field you left null stays `open`/null — never invented.
 - **Fail-closed redaction:** the input you received contains 0 real secrets; if a secret would
   survive into the input, the stage is **blocked** (it does not proceed silently).
-- **Input-hash cache:** re-runs skip unchanged records (deterministic + cost-safe).
+- **Input-hash cache:** re-runs skip unchanged records (deterministic + cost-safe). Editing an output file and re-running re-applies it (`cacheState = superseded`); the cache never hides a corrected output.

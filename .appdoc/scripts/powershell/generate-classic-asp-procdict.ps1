@@ -29,6 +29,10 @@ param(
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
 if (Test-Path $helpersPath) { . $helpersPath }
@@ -104,8 +108,8 @@ function Parse-ProcBlock {
 }
 
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
-$outputPath  = Join-Path $RootPath "docs\procdict.md"
-$evidencePath = Join-Path $RootPath "docs\procdict.evidence.json"
+$outputPath  = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "procdict.md"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "procdict.evidence.json"
 
 Write-Host "📚 Generating Classic ASP stored-procedure data dictionary..." -ForegroundColor Cyan
 if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
@@ -119,8 +123,8 @@ $rootPrefix = $RootPath.TrimEnd('\', '/')
 
 # --- load the call-site inventory produced by the datamodel extractor -----------
 $callSiteMap = @{}   # lowercased proc base-name -> @files
-$dmEvFlat = Join-Path $RootPath "docs\data-model.evidence.json"
-$dmEvCanon = Join-Path $RootPath "docs\evidence\data-model.evidence.json"
+$dmEvFlat = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "data-model.evidence.json"
+$dmEvCanon = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\data-model.evidence.json"
 $dmRecords = @()
 foreach ($cand in @($dmEvFlat, $dmEvCanon)) {
     if (Test-Path $cand) {
@@ -313,7 +317,7 @@ foreach ($u in $undocRows) {
 $evidence | ConvertTo-Json -Depth 14 | Out-File -FilePath $evidencePath -Encoding UTF8
 
 # --- Canonical evidence (docs/evidence/procdict.evidence.json) -------------------
-$canonDir = Join-Path $RootPath "docs\evidence"
+$canonDir = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
 if (-not (Test-Path $canonDir)) { New-Item -ItemType Directory -Path $canonDir -Force | Out-Null }
 $canonPath = Join-Path $canonDir "procdict.evidence.json"
 $canon = [ordered]@{

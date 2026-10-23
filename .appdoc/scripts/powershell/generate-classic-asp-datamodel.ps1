@@ -18,6 +18,10 @@ param(
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
 if (Test-Path $helpersPath) { . $helpersPath }
@@ -99,8 +103,8 @@ function Get-ClassicAspSourceFileCount {
 # marker was populated by another framework's generator (e.g. the C# AST path) and
 # must not be clobbered.
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
-$outputPath = Join-Path $RootPath "docs\data-model.md"
-$evidencePath = Join-Path $RootPath "docs\data-model.evidence.json"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "data-model.md"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "data-model.evidence.json"
 
 Write-Host "🗄️  Generating Classic ASP data model..." -ForegroundColor Cyan
 if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {

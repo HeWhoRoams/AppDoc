@@ -18,6 +18,10 @@ param(
     [int]$PristineFloor = 80
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $diagnosticsModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagnostics.psm1"
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
 $contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
@@ -76,7 +80,7 @@ if (Test-Path $pristineModule) {
     try { Import-Module $pristineModule -Force -ErrorAction SilentlyContinue; $hasPristine = (Get-Command Get-AppDocPristineAssessment -ErrorAction SilentlyContinue) -ne $null } catch { $hasPristine = $false }
 }
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) {
     Write-Error "docs directory not found: $docsPath"
     exit 1
@@ -643,7 +647,7 @@ function Get-DocRouteCount {
     $parent = Split-Path $ApiDocPath -Parent
     $evidencePath = $null
     while ($parent -and -not $evidencePath) {
-        $candidate = Join-Path $parent "docs\evidence\api-inventory.evidence.json"
+        $candidate = Join-Path (Join-Path (Join-Path $parent (Get-AppDocDocsDirName -RootPath $parent)) "evidence") "api-inventory.evidence.json"
         if (Test-Path $candidate) { $evidencePath = $candidate; break }
         $parent = Split-Path $parent -Parent
     }
@@ -688,7 +692,7 @@ function Get-CodeRouteCount {
 
 function Get-AppDocIsClassicAspTarget {
     param([string]$RootPath)
-    $fwPath = Join-Path $RootPath "docs\framework-detection.json"
+    $fwPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "framework-detection.json"
     if (-not (Test-Path $fwPath)) { return $false }
     try { $fw = Get-Content $fwPath -Raw | ConvertFrom-Json -Depth 10 } catch { return $false }
     $frameworks = @()
@@ -877,7 +881,7 @@ function Get-DataModelCoverage {
     if (-not (Test-Path $ModelDocPath)) { return 100 }
 
     $modelNames = @()
-    $evidencePath = Join-Path $RootPath "docs\evidence\data-model.evidence.json"
+    $evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\data-model.evidence.json"
     if (Test-Path $evidencePath) {
         try {
             $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json
@@ -2313,8 +2317,8 @@ if ($hasPristine) {
                     frameworkNA  = [bool]$_.frameworkNA
                 }
             })
-            report         = 'docs/pristine-report.md'
-            evidence       = 'docs/evidence/pristine.evidence.json'
+            report         = "$(Get-AppDocDocsDirName -RootPath $RootPath)/pristine-report.md"
+            evidence       = "$(Get-AppDocDocsDirName -RootPath $RootPath)/evidence/pristine.evidence.json"
             determinismHash= [string]$pristineAssessment.determinismHash
         }
 

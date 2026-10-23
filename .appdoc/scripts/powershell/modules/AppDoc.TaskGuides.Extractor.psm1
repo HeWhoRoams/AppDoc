@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 function Get-AppDocTaskGuideEvidenceRecords {
     [CmdletBinding()]
     param(
@@ -28,7 +31,7 @@ function Get-AppDocTaskGuidesData {
         [string]$RootPath
     )
 
-    $docsPath = Join-Path $RootPath "docs"
+    $docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
     $evidenceRoot = Join-Path $docsPath "evidence"
 
     $apiRecords = Get-AppDocTaskGuideEvidenceRecords -EvidenceRoot $evidenceRoot -Artifact "api-inventory"

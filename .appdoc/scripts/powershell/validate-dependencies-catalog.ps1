@@ -4,6 +4,10 @@ param(
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
@@ -137,7 +141,7 @@ function Get-DependencyGraphAlignedEntityCount {
 
 Write-Progress -Activity "Validating Dependencies Catalog" -Status "Checking catalog..." -PercentComplete 0
 
-$catalogPath = Join-Path $RootPath "docs" "dependencies-catalog.md"
+$catalogPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "dependencies-catalog.md"
 if (-not (Test-Path $catalogPath)) {
     Write-Error "Dependencies catalog file not found at $catalogPath"
     exit 1
@@ -152,7 +156,7 @@ if ($content -notmatch '(?im)^#\s+Dependencies Catalog\b') {
 $issues = @()
 $warnings = @()
 
-$canonicalPath = Join-Path (Join-Path (Join-Path $RootPath "docs") "evidence") "metrics-canonical.json"
+$canonicalPath = Join-Path (Join-Path ((Get-AppDocDocsPath -RootPath $RootPath)) "evidence") "metrics-canonical.json"
 $canonicalDependencyCount = $null
 if (Test-Path $canonicalPath) {
     try {
@@ -166,7 +170,7 @@ if (Test-Path $canonicalPath) {
     }
 }
 
-$evidencePath = Join-Path $RootPath "docs" "evidence" "dependencies-catalog.evidence.json"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence" "dependencies-catalog.evidence.json"
 $dependencyCount = 0
 $expectedGraphDependencyCount = 0
 if (Test-Path $evidencePath) {
@@ -206,7 +210,7 @@ else {
     $issues += "dependencies-evidence-missing"
 }
 
-$graphPath = Join-Path $RootPath "docs" "evidence" "evidence-graph.json"
+$graphPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence" "evidence-graph.json"
 $graphDependencyCount = -1
 if (Test-Path $graphPath) {
     try {

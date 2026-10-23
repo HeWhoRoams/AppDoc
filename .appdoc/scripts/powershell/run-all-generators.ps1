@@ -30,6 +30,10 @@ param(
     [int]$PristineFloor = 80
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 <#
 .SYNOPSIS
     Runs all documentation generators with optional quality assessment.
@@ -184,7 +188,7 @@ function Get-AppDocValidationExpectations {
         [object]$ArchitectureFingerprint = $null
     )
 
-    $docsPath = Join-Path $RootPath "docs"
+    $docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
     $overviewTruthPath = Join-Path $docsPath "evidence\overview-truth-pack.json"
     $apiEvidencePath = Join-Path $docsPath "evidence\api-inventory.evidence.json"
     $modelEvidencePath = Join-Path $docsPath "evidence\data-model.evidence.json"
@@ -502,10 +506,10 @@ function Write-AppDocCanonicalMetrics {
         schemaVersion = "appdoc-metrics-canonical/v1"
         generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
         source = [ordered]@{
-            endpoint = "docs/evidence/api-inventory.evidence.json"
-            model = "docs/evidence/data-model.evidence.json"
-            dependency = "docs/evidence/dependencies-catalog.evidence.json"
-            test = "docs/evidence/test-catalog.evidence.json"
+            endpoint = "$(Get-AppDocDocsDirName -RootPath $RootPath)/evidence/api-inventory.evidence.json"
+            model = "$(Get-AppDocDocsDirName -RootPath $RootPath)/evidence/data-model.evidence.json"
+            dependency = "$(Get-AppDocDocsDirName -RootPath $RootPath)/evidence/dependencies-catalog.evidence.json"
+            test = "$(Get-AppDocDocsDirName -RootPath $RootPath)/evidence/test-catalog.evidence.json"
         }
         totals = [ordered]@{
             endpointCount = [int]$endpointCount
@@ -1009,7 +1013,7 @@ function Get-AppDocFrameworkNames {
             Select-Object -Unique
     )
 }
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) {
     New-Item -Path $docsPath -ItemType Directory -Force | Out-Null
 }

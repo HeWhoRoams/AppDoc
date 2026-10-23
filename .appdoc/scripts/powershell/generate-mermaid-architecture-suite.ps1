@@ -6,6 +6,10 @@ param(
     [switch]$SkipC4
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $contractModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagrams.Contract.psm1"
 $extractorModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagrams.GraphExtractor.psm1"
 $rendererModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagrams.Renderer.psm1"
@@ -33,7 +37,7 @@ if (-not (Test-Path $RootPath)) {
 
 Write-Host "🧱 Generating deterministic architecture diagram suite..." -ForegroundColor Cyan
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) {
     New-Item -Path $docsPath -ItemType Directory -Force | Out-Null
 }

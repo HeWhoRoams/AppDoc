@@ -8,6 +8,10 @@ param(
     [switch]$Json
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
@@ -66,7 +70,7 @@ if (-not (Test-Path $RootPath)) {
     throw "Root path does not exist: $RootPath"
 }
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 $evidencePath = Join-Path $docsPath "evidence"
 if (-not (Test-Path $evidencePath)) {
     throw "Evidence directory not found: $evidencePath"

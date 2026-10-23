@@ -49,6 +49,10 @@ param(
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
 
 $extractorModule = Join-Path $PSScriptRoot "modules\AppDoc.ExternalCall.Extractor.psm1"
@@ -57,8 +61,8 @@ Import-Module $extractorModule -Force -ErrorAction Stop
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
 if (Test-Path $helpersPath) { . $helpersPath }
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
-$outputPath   = Join-Path $RootPath "docs\extcalls.md"
-$evidencePath = Join-Path $RootPath "docs\extcalls.evidence.json"
+$outputPath   = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "extcalls.md"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "extcalls.evidence.json"
 
 Write-Host "🌐 Generating generic external-call register (outbound HTTP for non-ASP frameworks)..." -ForegroundColor Cyan
 
@@ -155,7 +159,7 @@ $md | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 $evidence | ConvertTo-Json -Depth 14 | Out-File -FilePath $evidencePath -Encoding UTF8
 
 # --- Canonical evidence (docs/evidence/extcalls.evidence.json) ------------------
-$canonDir = Join-Path $RootPath "docs\evidence"
+$canonDir = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
 if (-not (Test-Path $canonDir)) { New-Item -ItemType Directory -Path $canonDir -Force | Out-Null }
 $canonPath = Join-Path $canonDir "extcalls.evidence.json"
 $recArr = @($evidence | ForEach-Object { $_ })

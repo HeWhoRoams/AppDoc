@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # AppDoc.Overview.Pipeline Module
 # Purpose: Execute a persisted, multi-pass narrative workflow on top of deterministic context.
 
@@ -287,7 +290,7 @@ function Write-AppDocOverviewNarrativeArtifacts {
         [object]$RunReport
     )
 
-    $artifactDir = Join-Path $RootPath (Join-Path "docs" (Join-Path "evidence" "narrative"))
+    $artifactDir = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) (Join-Path "evidence" "narrative")
     if (-not (Test-Path $artifactDir)) {
         New-Item -Path $artifactDir -ItemType Directory -Force | Out-Null
     }
@@ -296,7 +299,7 @@ function Write-AppDocOverviewNarrativeArtifacts {
     $pass2Path = Join-Path $artifactDir "narrative_draft.md"
     $pass3Path = Join-Path $artifactDir "review_notes.json"
     $finalPath = Join-Path $artifactDir "narrative_final.json"
-    $runReportPath = Join-Path $RootPath (Join-Path "docs" (Join-Path "evidence" "narrative-run-report.json"))
+    $runReportPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) (Join-Path "evidence" "narrative-run-report.json")
 
     $compactPass1 = [ordered]@{
         outline = (Get-AppDocOverviewPipelineValue -Object $Pass1Result -Name "outline" -Default @{})

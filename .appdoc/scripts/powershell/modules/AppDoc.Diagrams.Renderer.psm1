@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 function Get-AppDocDiagramRendererValue {
     [CmdletBinding()]
     param(
@@ -1254,7 +1257,7 @@ function Write-AppDocDiagramSuite {
         [hashtable]$Contract
     )
 
-    $docsPath = Join-Path $RootPath "docs"
+    $docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
     $diagramsPath = Join-Path $docsPath "diagrams"
     if (-not (Test-Path $diagramsPath)) {
         New-Item -Path $diagramsPath -ItemType Directory -Force | Out-Null

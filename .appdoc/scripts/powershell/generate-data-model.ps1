@@ -12,6 +12,10 @@ param(
     [int]$MaxDetailedModels = 120
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
 if (Test-Path $helpersPath) {
     . $helpersPath
@@ -49,7 +53,7 @@ if (-not (Test-Path $RootPath)) {
     exit 1
 }
 
-$outputPath = Join-Path $RootPath "docs\data-model.md"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "data-model.md"
 $initialized = Initialize-TemplateFile -TemplateName "data-model-template.md" -OutputPath $outputPath -RootPath $RootPath
 if (-not $initialized) {
     Write-Error "Failed to initialize template"
@@ -83,7 +87,7 @@ function Set-AppDocFieldValue {
     }
 }
 
-$enrichedEvidencePath = Join-Path $RootPath "docs\evidence\data-model.evidence.enriched.json"
+$enrichedEvidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\data-model.evidence.enriched.json"
 if (Test-Path $enrichedEvidencePath) {
     try {
         $enrichedPayload = Get-Content -Path $enrichedEvidencePath -Raw | ConvertFrom-Json -Depth 80

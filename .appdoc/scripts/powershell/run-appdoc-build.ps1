@@ -46,6 +46,10 @@ param(
     [switch]$AllowGateFail
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
 $scriptDir   = $PSScriptRoot
 $orchestrator = Join-Path $scriptDir "run-all-generators.ps1"
@@ -54,7 +58,7 @@ $configModule = Join-Path $scriptDir "modules/AppDoc.Config.psm1"
 
 if (-not (Test-Path $Path)) { Write-Error "Target path does not exist: $Path"; exit 1 }
 $RootPath = (Resolve-Path -LiteralPath $Path).Path
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host " AppDoc build  (single command)" -ForegroundColor Cyan

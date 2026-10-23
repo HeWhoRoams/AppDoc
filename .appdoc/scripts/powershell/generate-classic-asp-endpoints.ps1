@@ -18,6 +18,10 @@ param(
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
 
 # --- Shared template helpers (optional; we do not strictly depend on them) -------
@@ -89,8 +93,8 @@ if (-not (Test-Path $RootPath)) {
     exit 1
 }
 
-$outputPath = Join-Path $RootPath "docs\api-inventory.md"
-$evidencePath = Join-Path $RootPath "docs\api-inventory.evidence.json"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "api-inventory.md"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "api-inventory.evidence.json"
 
 Write-Host "📡 Generating Classic ASP endpoint inventory..." -ForegroundColor Cyan
 

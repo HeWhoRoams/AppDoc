@@ -17,6 +17,10 @@ param(
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
 if (Test-Path $helpersPath) { . $helpersPath }
@@ -49,8 +53,8 @@ function Trim-Quotes {
 }
 
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
-$outputPath = Join-Path $RootPath "docs\build-cookbook.md"
-$evidencePath = Join-Path $RootPath "docs\build-cookbook.evidence.json"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "build-cookbook.md"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "build-cookbook.evidence.json"
 
 Write-Host "🖥️  Generating Classic ASP platform/deployment inventory..." -ForegroundColor Cyan
 if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {

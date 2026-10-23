@@ -4,6 +4,10 @@ param(
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.SecretPolicy.psm1') -Force -ErrorAction Stop
 $credentialKeyPattern = '(?i)(' + (Get-AppDocCredentialKeywordPattern) + ')'
 
@@ -12,7 +16,7 @@ if (Test-Path $helpersPath) {
     . $helpersPath
 }
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) {
     Write-Error "docs directory not found: $docsPath"
     exit 1
@@ -124,7 +128,7 @@ function Add-AppDocEvidenceTraceabilitySection {
     $artifact = Get-AppDocArtifactFromDocFile -DocFileName $DocFileName
     if (-not $artifact) { return $Markdown }
 
-    $evidencePath = Join-Path (Join-Path (Join-Path $RootPath 'docs') 'evidence') ("{0}.evidence.json" -f $artifact)
+    $evidencePath = Join-Path (Join-Path ((Get-AppDocDocsPath -RootPath $RootPath)) 'evidence') ("{0}.evidence.json" -f $artifact)
     if (-not (Test-Path $evidencePath)) { return $Markdown }
 
     try {

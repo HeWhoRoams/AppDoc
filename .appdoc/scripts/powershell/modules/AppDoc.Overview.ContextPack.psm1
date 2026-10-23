@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # AppDoc.Overview.ContextPack Module
 # Purpose: Build a versioned, normalized narrative context pack from deterministic overview truth data.
 
@@ -321,7 +324,7 @@ function Write-AppDocOverviewContextPack {
         [hashtable]$ContextPack
     )
 
-    $evidenceDir = Join-Path $RootPath "docs" "evidence"
+    $evidenceDir = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
     if (-not (Test-Path $evidenceDir)) {
         New-Item -Path $evidenceDir -ItemType Directory -Force | Out-Null
     }

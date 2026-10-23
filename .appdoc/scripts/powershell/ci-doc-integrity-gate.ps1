@@ -4,6 +4,10 @@ param(
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
@@ -136,7 +140,7 @@ if (-not (Test-Path $RootPath)) {
     throw "Root path does not exist: $RootPath"
 }
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) {
     Write-Host "Integrity gate skipped: docs directory not found at $docsPath" -ForegroundColor Yellow
     exit 0

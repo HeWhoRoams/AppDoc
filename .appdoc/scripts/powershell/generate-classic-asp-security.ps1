@@ -34,6 +34,10 @@ param(
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
 
 # Optional per-target opaque-token convention (config `opaqueTokenPattern`): values
@@ -68,8 +72,8 @@ function Redact-Value {
 }
 
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
-$outputPath  = Join-Path $RootPath "docs\security.md"
-$evidencePath = Join-Path $RootPath "docs\security.evidence.json"
+$outputPath  = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "security.md"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "security.evidence.json"
 
 Write-Host "🔒 Generating Classic ASP security findings..." -ForegroundColor Cyan
 if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
@@ -323,7 +327,7 @@ $evidence.Add([ordered]@{ kind="operational-unknown"; finding="Runtime security 
 $evidence | ConvertTo-Json -Depth 14 | Out-File -FilePath $evidencePath -Encoding UTF8
 
 # ---- Canonical evidence (docs/evidence/security.evidence.json) ------------------
-$canonDir = Join-Path $RootPath "docs\evidence"
+$canonDir = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
 if (-not (Test-Path $canonDir)) { New-Item -ItemType Directory -Path $canonDir -Force | Out-Null }
 $canonPath = Join-Path $canonDir "security.evidence.json"
 $recArr = @($evidence | ForEach-Object { $_ })

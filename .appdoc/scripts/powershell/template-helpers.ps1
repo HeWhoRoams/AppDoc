@@ -1,4 +1,6 @@
 #requires -Version 7.2
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 #
 # template-helpers.ps1
 #
@@ -605,7 +607,7 @@ function Emit-AppDocProvenance {
 
 function Get-ClassicAspFrameworkApplicable {
     param([string]$RootPath)
-    $fwPath = Join-Path $RootPath "docs\framework-detection.json"
+    $fwPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "framework-detection.json"
     if (-not (Test-Path $fwPath)) { return $false }
     try { $fw = Get-Content $fwPath -Raw | ConvertFrom-Json -Depth 10 } catch { return $false }
     $frameworks = @()

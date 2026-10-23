@@ -10,6 +10,10 @@ param(
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 function Get-AppDocOverviewGeneratorValue {
     param(
         [AllowNull()]
@@ -196,7 +200,7 @@ if (-not (Test-Path $RootPath)) {
     exit 1
 }
 
-$outputPath = Join-Path $RootPath "docs\overview.md"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "overview.md"
 $initialized = Initialize-TemplateFile -TemplateName "overview-template.md" -OutputPath $outputPath -RootPath $RootPath
 if (-not $initialized) {
     Write-Error "Failed to initialize template"
@@ -218,7 +222,7 @@ if ($null -eq $truthPack) {
     Write-Warning "Get-AppDocOverviewTruthPackData returned null. Using empty truth pack."
     $truthPack = @{}
 } else {
-    $canonicalMetricsPath = Join-Path $RootPath "docs\evidence\metrics-canonical.json"
+    $canonicalMetricsPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\metrics-canonical.json"
     if (Test-Path $canonicalMetricsPath) {
         try {
             $canonical = Get-Content $canonicalMetricsPath -Raw | ConvertFrom-Json -Depth 50

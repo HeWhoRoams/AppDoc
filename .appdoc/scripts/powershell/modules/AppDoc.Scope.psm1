@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # Cross-version Windows OS detection
 if ($null -eq $script:IsWindowsOS) {
     $script:IsWindowsOS = $false
@@ -356,6 +359,13 @@ function Test-AppDocPathIncluded {
                 $normalized = $pathNorm.Substring($rootNorm.Length).TrimStart([char[]]@(92, 47)) -replace '/', '\'
             }
         }
+    }
+
+    # AppDoc's own output folder (config outputDir; default docs) is never target source.
+    if ($RootPath -and -not $IncludeDocs) {
+        $outDir = (Get-AppDocDocsDirName -RootPath $RootPath) -replace '/', '\'
+        $normForOut = $normalized.TrimStart('\')
+        if ($normForOut -eq $outDir -or $normForOut.StartsWith($outDir + '\', [System.StringComparison]::OrdinalIgnoreCase)) { return $false }
     }
 
     $policy = Get-AppDocScopePolicy -RootPath $RootPath

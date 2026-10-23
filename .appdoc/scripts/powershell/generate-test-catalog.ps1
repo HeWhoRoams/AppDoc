@@ -12,6 +12,10 @@ param(
     [int]$MaxTestCases = 50
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
 if (Test-Path $helpersPath) {
     . $helpersPath
@@ -49,7 +53,7 @@ if (-not (Test-Path $RootPath)) {
     exit 1
 }
 
-$outputPath = Join-Path $RootPath "docs\test-catalog.md"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "test-catalog.md"
 $initialized = Initialize-TemplateFile -TemplateName "test-catalog-template.md" -OutputPath $outputPath -RootPath $RootPath
 if (-not $initialized) {
     Write-Error "Failed to initialize template"

@@ -2,6 +2,8 @@
 
 Optional per-target file: `<target>/.appdoc/config.json`. No config file means built-in defaults (CMU maroon/gold theme, `docs` output directory, enrichment off).
 
+`outputDir` (default `docs`) is the folder, inside the target, that receives the whole package; every generator and validator honours it and it is excluded from source scanning. A value that points outside the target is ignored with a warning. (Prose inside some generated documents still names `docs/` when describing where an artifact lives.)
+
 `schemaVersion: appdoc-config/v1`. Drives: `theme` (default CMU `#6a0032`/`#ffc82e`, swappable via
 `themeFile`), `redactionPatterns[]` and `redactionRegexes[]` (operator redaction, below),
 `pristineFloor` (default 80), `minCommitsForOwnership` (default 2), `outputDir` (default `docs`).
@@ -13,8 +15,8 @@ redaction settings.
 
 AppDoc is CMU-first: the default theme is the CMU maroon/gold theme with the CMU mark in the report masthead. Everything is configurable:
 
-- `theme` — a theme name (`cmu` default, `navy-teal`, or `<name>` for `.appdoc/templates/html/<name>.json`) or an absolute path.
-- `themeFile` — explicit path to a theme `.json` (overrides `theme`).
+- `theme` — a bundled theme name (`cmu` default, `navy-teal`, or `<name>` for `.appdoc/templates/html/<name>.json`), or a path to a theme `.json` (absolute, or relative to the target root). An unknown name logs a warning and uses the default.
+- `themeFile` — explicit path to a theme `.json` (absolute or relative to the target root; overrides `theme`). A file that does not exist stops the build with an error.
 - Inside a theme file, `masthead.logoSvg` controls the logo: `inline:cmu` (built-in CMU mark; also the default when the key is absent), `none` (no logo), or `file:<path>` / `<path>.svg` (inline that SVG; relative paths resolve against the theme file's folder).
 - `masthead.title` / `masthead.sub` set the report header text; `colors` and `fonts` restyle the report.
 - `assets` — `inline` (default) makes `report.html` fully self-contained: the vendored Mermaid library is inlined and fonts fall back to the system font stack, so the report works offline and when emailed (about 3.5 MB). `cdn` loads Mermaid (`mermaid.cdn`) and Google Fonts (`fonts.googleFontsUrl`) from the network instead (smaller file, needs internet).

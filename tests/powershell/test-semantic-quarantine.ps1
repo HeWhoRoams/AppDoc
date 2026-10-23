@@ -101,6 +101,20 @@ Write-Host "`n=== PROOF 5: input-hash cache (HIT on unchanged, MISS on changed) 
 & $enrich -RootPath $target -SkipGate -SkipReRender *> $null
 $ticket2 = @(Read-Records -Path $applied)[0]
 Assert ($ticket2.cacheState -eq 'hit')                      "2nd apply: Ticket input-hash cache HIT (skips the LLM call)"
+# PROOF 5b: a corrected output for the SAME input supersedes the cache (never hidden).
+$outFile = Join-Path $outDir "data-model.semantic.output.json"
+$outDoc = Get-Content $outFile -Raw | ConvertFrom-Json -AsHashtable -Depth 100
+$outRecs = @(if ($outDoc -is [System.Collections.IDictionary] -and $outDoc.ContainsKey('records')) { $outDoc.records } else { $outDoc })
+$corrected = 'Corrected purpose (proof 5b).'
+$outRecs[0]['businessPurpose'] = $corrected
+if ($outDoc -is [System.Collections.IDictionary] -and $outDoc.ContainsKey('records')) { $outDoc.records = @($outRecs) } else { $outDoc = @($outRecs) }
+$outDoc | ConvertTo-Json -Depth 100 | Out-File $outFile -Encoding UTF8
+& $enrich -RootPath $target -SkipGate -SkipReRender *> $null
+$ticket2b = @(Read-Records -Path $applied)[0]
+Assert ($ticket2b.cacheState -eq 'superseded')              "corrected output, same input: cache SUPERSEDED (the edit is not hidden)"
+Assert ($ticket2b.businessPurpose -eq $corrected)           "the corrected businessPurpose is applied"
+& $enrich -RootPath $target -SkipGate -SkipReRender *> $null
+Assert ((@(Read-Records -Path $applied)[0]).cacheState -eq 'hit') "next apply with no further edit: cache HIT again (cache updated)"
 # change the extracted input metadata -> the Ticket record must be a cache MISS.
 $dmEv = Join-Path $target "docs\evidence\data-model.evidence.json"
 $d = Get-Content $dmEv -Raw | ConvertFrom-Json -AsHashtable -Depth 100
@@ -158,7 +172,7 @@ Remove-Item $work -Recurse -Force -ErrorAction SilentlyContinue
 
 Write-Host "`n========================================" -ForegroundColor Cyan
 if ($failures.Count -eq 0) {
-    Write-Host "ALL SEMANTIC-QUARANTINE PROOFS PASSED (1b/2/3/4/5/6)" -ForegroundColor Green
+    Write-Host "ALL SEMANTIC-QUARANTINE PROOFS PASSED (1b/2/3/4/5/5b/6)" -ForegroundColor Green
     exit 0
 } else {
     Write-Host ("{0} PROOF(S) FAILED:" -f $failures.Count) -ForegroundColor Red

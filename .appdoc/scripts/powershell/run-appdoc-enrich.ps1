@@ -14,6 +14,10 @@ param(
     [switch]$SkipReRender
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $evidenceModulePath = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
 if (-not (Test-Path $evidenceModulePath)) {
     Write-Error "Required module not found: $evidenceModulePath"
@@ -26,7 +30,7 @@ if (-not (Test-Path $RootPath)) {
     exit 1
 }
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 $evidenceDir = Join-Path $docsPath "evidence"
 if (-not (Test-Path $evidenceDir)) {
     Write-Error "Evidence directory not found: $evidenceDir"

@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 function Invoke-AppDocApiAstParserScript {
     [CmdletBinding()]
     param(
@@ -23,7 +26,7 @@ function Invoke-AppDocApiAstParserScript {
     }
 
     $cacheFile = if ($ScriptName -eq "parse-csharp-ast.ps1") { "ast-csharp-cache.json" } else { "ast-typescript-cache.json" }
-    $cachePath = Join-Path $RootPath (Join-Path "docs" $cacheFile)
+    $cachePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) $cacheFile
     if (-not (Test-Path $cachePath)) {
         return $null
     }

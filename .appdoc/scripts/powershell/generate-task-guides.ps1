@@ -4,6 +4,10 @@ param(
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
 if (Test-Path $helpersPath) {
     . $helpersPath
@@ -44,7 +48,7 @@ if (-not (Get-Command Initialize-TemplateFile -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
-$outputPath = Join-Path $RootPath "docs\task-guides.md"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "task-guides.md"
 $initialized = Initialize-TemplateFile -TemplateName "task-guides-template.md" -OutputPath $outputPath -RootPath $RootPath
 if (-not $initialized) {
     Write-Error "Failed to initialize task-guides template"

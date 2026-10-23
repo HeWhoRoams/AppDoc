@@ -8,6 +8,10 @@ param(
     [switch]$Json
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $contractModule = Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Diagrams.Contract.psm1'
 $normalizerModule = Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Diagrams.Normalizer.psm1'
 if (-not (Test-Path $contractModule)) {
@@ -137,8 +141,8 @@ if ($null -eq $contract -or $contract.Count -eq 0) {
     Write-Error "Diagram contract is null or empty. Cannot proceed."
     exit 1
 }
-$diagramsPath = Join-Path $RootPath (Join-Path "docs" "diagrams")
-$truthPackPath = Join-Path $RootPath (Join-Path "docs" (Join-Path "evidence" "diagram-truth-pack.json"))
+$diagramsPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "diagrams"
+$truthPackPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) (Join-Path "evidence" "diagram-truth-pack.json")
 
 $issues = @()
 $details = @()

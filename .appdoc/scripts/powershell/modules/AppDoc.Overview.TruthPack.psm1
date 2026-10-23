@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # AppDoc.Overview.TruthPack Module
 # Purpose: Build deterministic overview truth data used by narrative rendering.
 
@@ -60,7 +63,7 @@ function Get-AppDocOverviewEvidenceGraphData {
         [string]$RootPath
     )
 
-    $graphPath = Join-Path $RootPath (Join-Path "docs" (Join-Path "evidence" "evidence-graph.json"))
+    $graphPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) (Join-Path "evidence" "evidence-graph.json")
     $graph = Read-AppDocOverviewJsonFile -Path $graphPath
     if (-not $graph) {
         # The pipeline writes evidence-graph.json only after all generators ran. Build the
@@ -78,14 +81,14 @@ function Get-AppDocOverviewEvidenceGraphData {
     if (-not $graph) {
         return [ordered]@{
             exists = $false
-            path = 'docs/evidence/evidence-graph.json'
+            path = "$(Get-AppDocDocsDirName -RootPath $RootPath)/evidence/evidence-graph.json"
             graph = $null
         }
     }
 
     return [ordered]@{
         exists = $true
-        path = 'docs/evidence/evidence-graph.json'
+        path = "$(Get-AppDocDocsDirName -RootPath $RootPath)/evidence/evidence-graph.json"
         graph = $graph
     }
 }
@@ -149,7 +152,7 @@ function Get-AppDocOverviewEvidenceRecords {
 
     $records = @()
     foreach ($artifact in @($Artifacts | Where-Object { $_ })) {
-        $evidencePath = Join-Path $RootPath (Join-Path "docs" (Join-Path "evidence" ("{0}.evidence.json" -f [string]$artifact)))
+        $evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) (Join-Path "evidence" ("{0}.evidence.json" -f [string]$artifact))
         $payload = Read-AppDocOverviewJsonFile -Path $evidencePath
         if (-not $payload -or -not $payload.records) { continue }
 
@@ -437,7 +440,7 @@ function Get-AppDocOverviewTruthPackData {
         [object]$OverviewData = $null
     )
 
-    $docsPath = Join-Path $RootPath "docs"
+    $docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
     $projectName = Split-Path $RootPath -Leaf
 
     $frameworkDetectionPath = Join-Path $docsPath "framework-detection.json"
@@ -817,7 +820,7 @@ function Write-AppDocOverviewTruthPack {
         [hashtable]$TruthPack
     )
 
-    $evidenceDir = Join-Path $RootPath (Join-Path "docs" "evidence")
+    $evidenceDir = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
     if (-not (Test-Path $evidenceDir)) {
         New-Item -Path $evidenceDir -ItemType Directory -Force | Out-Null
     }

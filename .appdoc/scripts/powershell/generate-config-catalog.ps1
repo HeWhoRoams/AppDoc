@@ -11,6 +11,10 @@ param(
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
 if (Test-Path $helpersPath) {
     . $helpersPath
@@ -44,7 +48,7 @@ if (-not (Test-Path $RootPath)) {
     exit 1
 }
 
-$outputPath = Join-Path $RootPath "docs\config-catalog.md"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "config-catalog.md"
 $initialized = Initialize-TemplateFile -TemplateName "config-catalog-template.md" -OutputPath $outputPath -RootPath $RootPath
 if (-not $initialized) {
     Write-Error "Failed to initialize template"
@@ -104,7 +108,7 @@ function Set-AppDocFieldValue {
     }
 }
 
-$enrichedEvidencePath = Join-Path $RootPath "docs\evidence\config-catalog.evidence.enriched.json"
+$enrichedEvidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\config-catalog.evidence.enriched.json"
 if (Test-Path $enrichedEvidencePath) {
     try {
         $enrichedPayload = Get-Content -Path $enrichedEvidencePath -Raw | ConvertFrom-Json -Depth 80

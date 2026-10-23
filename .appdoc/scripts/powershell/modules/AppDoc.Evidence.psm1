@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # AppDoc.Evidence Module
 # Purpose: Write normalized deterministic evidence artifacts and manifest entries.
 
@@ -19,7 +22,7 @@ function Get-AppDocEvidenceDirectory {
         [string]$RootPath
     )
 
-    return (Join-Path (Join-Path $RootPath "docs") "evidence")
+    return (Join-Path ((Get-AppDocDocsPath -RootPath $RootPath)) "evidence")
 }
 
 function Get-AppDocEvidenceFilePath {
@@ -184,7 +187,7 @@ function Update-AppDocEvidenceManifest {
     $manifest.artifacts = @($filtered + $entry | Sort-Object { [string]$_.artifact })
     $manifest.generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
 
-    $docsPath = Join-Path $RootPath "docs"
+    $docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
     $markdownChecksums = @()
     if (Test-Path $docsPath) {
         foreach ($md in @(Get-ChildItem -Path $docsPath -Filter "*.md" -File -ErrorAction SilentlyContinue | Sort-Object Name)) {
