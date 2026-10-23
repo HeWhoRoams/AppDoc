@@ -32,8 +32,10 @@ if (-not (Test-Path $epistemicModule)) {
     exit 1
 }
 Import-Module $epistemicModule -Force -ErrorAction Stop
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 if (-not (Test-Path $RootPath)) {
     Write-Error "Root path does not exist: $RootPath"

@@ -41,16 +41,12 @@ if (Test-Path $epistemicModule) {
 }
 
 function Test-FrameworkApplicable {
+    # Thin wrapper; single definition in modules/AppDoc.ClassicAsp.psm1.
     param([string]$RootPath)
-    $fwPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "framework-detection.json"
-    if (-not (Test-Path $fwPath)) { return $false }
-    try { $fw = Get-Content $fwPath -Raw | ConvertFrom-Json -Depth 10 } catch { return $false }
-    $frameworks = @()
-    if ($fw -is [System.Collections.IEnumerable] -and $fw -isnot [string]) {
-        $frameworks = @($fw | ForEach-Object { [string]$_.framework } | Where-Object { $_ })
+    if (-not (Get-Command Test-AppDocClassicAspTarget -ErrorAction SilentlyContinue)) {
+        Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
     }
-    else { $frameworks = @([string]$fw.framework) | Where-Object { $_ } }
-    return (($frameworks -contains "Classic ASP") -or ($frameworks -contains "ASP.NET Web Forms"))
+    return (Test-AppDocClassicAspTarget -RootPath $RootPath)
 }
 
 # --- Per-target config: opaque-token convention + operator overlays ------------
@@ -1330,7 +1326,8 @@ $out.Add("|---------|--------------------------------------|--------------------
 $failShow = if ($failTab) { @($failTab.Rows | Where-Object { $_.Count -ge 4 }) } else { @() }
 # Scratch / copy / old / test / bak files are excluded. Per the iteration spec the filter
 # globs apply to the file BASENAME (e.g. calls/testingx.asp -> testingx.asp matches testing*).
-$scratchRe = '(?i).*_copy.*|.*copy_.*|.*_old.*|.*_test.*|^testing.*|.*bak.*'
+# Scratch/backup copies: single definition in AppDoc.Scope (Test-AppDocScratchFile).
+if (-not (Get-Command Test-AppDocScratchFile -ErrorAction SilentlyContinue)) { Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Scope.psm1') -ErrorAction Stop }
 $seenFail = @{}
 $failRows = New-Object System.Collections.Generic.List[string]   # display-ready rows
 $scratchExcluded = 0
@@ -1339,7 +1336,7 @@ foreach ($r in $failShow) {
     $file = Format-AppDocCell $r[1]; $pattern = Format-AppDocCell $r[2]; $obs = Format-AppDocCell $r[3]
     if (-not $file -or $file -eq '—') { continue }
     $basename = ($file -split '/')[-1]
-    if ($basename -match $scratchRe) { $scratchExcluded++; continue }
+    if (Test-AppDocScratchFile -Path $basename) { $scratchExcluded++; continue }
     $key = "$file|$pattern"
     if ($seenFail.ContainsKey($key)) { continue }   # dedupe identical (file,pattern)
     $seenFail[$key] = $true

@@ -33,11 +33,14 @@ passing build from a failing one without parsing `validation-report.json` themse
    | Code | Meaning |
    |---|---|
    | 0 | Gate passed (`pass`, or `pass-with-weak-coverage` without `-StrictValidation`), or `-AllowGateFail` was given |
-   | 1 | Tool error: bad path, missing module, no or unreadable `validation-report.json` |
+   | 1 | Tool error: bad path, missing module, a generator that crashed, or no or unreadable `validation-report.json` |
    | 2 | Gate failed: the docs were written but did not pass the gate |
    | 3 | Fail-closed stop: the final redaction sweep could not run, or the semantic secret-redaction gate blocked |
 
-4. `-AllowGateFail` exists for exploratory runs. It logs the failed status and exits 0. It is never
+4. **A generator that crashes is also a tool error (exit 1).** The orchestrator records it in
+   `diagnostics-report.json` (`metadata.scriptFailures`); the build reads that list and exits 1 even
+   when the gate passes, because the artifact the generator owns is missing or stale.
+5. `-AllowGateFail` exists for exploratory runs. It logs the failed status and exits 0. It is never
    used in CI.
 
 ## Consequences

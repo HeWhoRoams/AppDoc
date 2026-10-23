@@ -39,16 +39,17 @@ param(
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
+# Shared classic-ASP helpers (single definition; see modules/AppDoc.ClassicAsp.psm1).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+# Test-AppDocScratchFile lives in the Scope module; import it here rather than relying on
+# an earlier generator having loaded it into the session.
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Scope.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
-function Write-NotApplicablePlaceholder {
-    param([string]$OutputPath, [string]$Title)
-    $dir = Split-Path $OutputPath -Parent
-    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    $body = "# $Title`n`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`n`n## Summary`n`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP external-call signal, so no content was extracted.`n`n---"
-    $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
-}
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 # Join-Row: build a markdown table row from cleaned cells (no -f formatting).
 function Join-Row {
     param([string[]]$Cells)
@@ -58,11 +59,6 @@ function Join-Row {
 }
 
 # Scratch / copy / old / test / bak files are excluded by BASENAME.
-function Test-ScratchFile {
-    param([string]$Path)
-    $name = Split-Path $Path -Leaf
-    return ($name -match '(?i).*_copy.*|.*copy_.*|.*_old.*|.*_test.*|^testing.*|.*bak.*')
-}
 
 # Sanitize a string before it is written: redact any real Authorization/Apikey
 # header value and any bearer/token credential.
@@ -87,18 +83,12 @@ function ConvertTo-SafeText {
 # api-inventory no-clobber guard.
 # Classic-ASP SOURCE PRESENCE: the real signal this generator OWNS extcalls.md is the
 # presence of TRUE classic-ASP source (*.asp / *.inc), not the framework label and not
-# *.aspx. This mirrors generate-classic-asp-endpoints.ps1's Get-ClassicAspSourceFileCount
+# *.aspx. This mirrors generate-classic-asp-endpoints.ps1's Get-AppDocClassicAspSourceFileCount
 # EXACTLY (which counts only *.asp/*.inc, not *.aspx). Web Forms is a C# framework that
 # is "framework-applicable" and ships *.aspx + *.cs code-behind files: on such a target
 # there are 0 true classic-ASP (*.asp/*.inc) files, so the generic extractor (which reads
 # *.cs) is the real owner of extcalls.md and this generator must yield. We apply the same
 # scratch basename exclusions this generator already uses.
-function Get-ClassicAspSourceFileCount {
-    param([string]$RootPath)
-    $files = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp","*.inc" -File -ErrorAction SilentlyContinue |
-        Where-Object { -not (Test-ScratchFile $_.FullName) })
-    return $files.Count
-}
 
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
 $outputPath   = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "extcalls.md"
@@ -120,7 +110,7 @@ if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
         exit 0
     }
     Write-Host "  Framework not Classic ASP - writing placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "External Call Register"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "External Call Register" -Signal 'classic-ASP external-call'
     @() | ConvertTo-Json -Depth 5 | Out-File -FilePath $evidencePath -Encoding UTF8
     exit 0
 }
@@ -133,7 +123,7 @@ if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
 # already populated. When classic-ASP source is absent we yield: leave a non-
 # placeholder artifact (written by the generic path) intact; only write our own
 # placeholder when no prior owner populated it.
-$classicAspSourceCount = Get-ClassicAspSourceFileCount -RootPath $RootPath
+$classicAspSourceCount = Get-AppDocClassicAspSourceFileCount -RootPath $RootPath
 if ($classicAspSourceCount -eq 0) {
     $artifactExists    = Test-Path $outputPath
     $isPriorOwnerOwned = $artifactExists -and (-not (Test-AppDocArtifactIsClassicAspPlaceholder -Path $outputPath))
@@ -143,7 +133,7 @@ if ($classicAspSourceCount -eq 0) {
         exit 0
     }
     Write-Host "  No classic-ASP source found and no prior owner artifact - writing N-A placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "External Call Register"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "External Call Register" -Signal 'classic-ASP external-call'
     @() | ConvertTo-Json -Depth 5 | Out-File -FilePath $evidencePath -Encoding UTF8
     exit 0
 }
@@ -151,7 +141,7 @@ if ($classicAspSourceCount -eq 0) {
 $rootPrefix = $RootPath.TrimEnd('\', '/')
 # Collect classic-ASP source files (asp/aspx/inc), EXCLUDING scratch by basename, sorted for determinism.
 $allFiles = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp","*.aspx","*.inc" -File -ErrorAction SilentlyContinue |
-    Where-Object { -not (Test-ScratchFile $_.FullName) } |
+    Where-Object { -not (Test-AppDocScratchFile $_.FullName) } |
     Sort-Object FullName)
 # Scratch set (for the "also present in N copy/test file(s)" note), same scoping.
 $allFilesInclScratch = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp","*.aspx","*.inc" -File -ErrorAction SilentlyContinue | Sort-Object FullName)
@@ -255,7 +245,7 @@ foreach ($f in $allFiles) {
 # Count scratch-file hits per URL so a primary row can note duplicate copies.
 $scratchUrlCounts = @{}
 foreach ($f in $allFilesInclScratch) {
-    if (-not (Test-ScratchFile $f.FullName)) { continue }
+    if (-not (Test-AppDocScratchFile $f.FullName)) { continue }
     $content = Get-Content $f.FullName -Raw -ErrorAction SilentlyContinue
     if ([string]::IsNullOrWhiteSpace($content)) { continue }
     foreach ($m in $quotedUrlRe.Matches($content)) {

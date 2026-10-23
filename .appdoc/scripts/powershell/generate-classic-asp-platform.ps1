@@ -22,9 +22,14 @@ param(
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
+# Shared classic-ASP helpers (single definition; see modules/AppDoc.ClassicAsp.psm1).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 # --- Evidence + Contracts modules (canonical evidence + manifest) ----------------
 $contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
@@ -32,25 +37,6 @@ $evidenceModule  = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
 if ((Test-Path $contractsModule) -and (Test-Path $evidenceModule)) {
     Import-Module $contractsModule -Force -ErrorAction SilentlyContinue
     Import-Module $evidenceModule  -Force -ErrorAction SilentlyContinue
-}
-function Write-NotApplicablePlaceholder {
-    param([string]$OutputPath, [string]$Title)
-    $dir = Split-Path $OutputPath -Parent
-    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    $body = "# $Title`n`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`n`n## Summary`n`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP signal, so no content was extracted.`n`n## Build Steps`n`nNo build steps were extracted for this framework.`n`n## Dependencies`n`nNo build dependencies were extracted for this framework.`n`n---"
-    $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
-}
-function Remove-SurroundingQuotes {
-    param([string]$Text)
-    if ([string]::IsNullOrWhiteSpace($Text)) { return "" }
-    $t = $Text.Trim()
-    while ($t.Length -ge 2) {
-        $first = $t.Substring(0, 1); $last = $t.Substring($t.Length - 1, 1)
-        if (($first -eq "`"" -and $last -eq "`"") -or ($first -eq "'" -and $last -eq "'")) { $t = $t.Substring(1, $t.Length - 2) } else { break }
-    }
-    while ($t.Length -gt 0 -and $t.Substring($t.Length - 1, 1) -in @("`"", "'")) { $t = $t.Substring(0, $t.Length - 1) }
-    while ($t.Length -gt 0 -and $t.Substring(0, 1) -in @("`"", "'")) { $t = $t.Substring(1) }
-    return $t.Trim()
 }
 
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
@@ -60,7 +46,7 @@ $evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "build-cookbo
 Write-Host "🖥️  Generating Classic ASP platform/deployment inventory..." -ForegroundColor Cyan
 if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
     Write-Host "  Framework not Classic ASP - writing placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "Build Cookbook"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "Build Cookbook" -ExtraSections ([ordered]@{ 'Build Steps' = 'No build steps were extracted for this framework.'; 'Dependencies' = 'No build dependencies were extracted for this framework.' })
     @() | ConvertTo-Json -Depth 5 | Out-File -FilePath $evidencePath -Encoding UTF8
     exit 0
 }

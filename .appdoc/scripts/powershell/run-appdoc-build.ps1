@@ -314,6 +314,25 @@ $pristineSub = if ($vr.PSObject.Properties['pristine']) { $vr.pristine.subScore 
 Write-Host ("   gate status={0}  overallScore={1}  pristine sub-score={2}" -f $vr.status, $vr.overallScore, $pristineSub) -ForegroundColor Green
 Write-Host "==========================================" -ForegroundColor Cyan
 
+# A generator that crashed is a tool error even when the gate passes: the docs it should have
+# written are missing or stale, and the gate cannot always tell. (This used to be a warning only.)
+$diagPath = Join-Path $docsPath 'diagnostics-report.json'
+if (Test-Path -LiteralPath $diagPath) {
+    try {
+        $diag = Get-Content -LiteralPath $diagPath -Raw | ConvertFrom-Json -Depth 20
+        $failedScripts = @($diag.metadata.scriptFailures | Where-Object { $_ })
+    }
+    catch {
+        Write-Error "diagnostics-report.json is unreadable: $($_.Exception.Message)" -ErrorAction Continue
+        exit 1
+    }
+    if ($failedScripts.Count -gt 0) {
+        foreach ($f in $failedScripts) { Write-Warning ("Generator failed: {0} ({1})" -f $f.script, (([string]$f.error) -split "`n")[0]) }
+        Write-Error "$($failedScripts.Count) generator(s) failed; the output is incomplete (exit 1)." -ErrorAction Continue
+        exit 1
+    }
+}
+
 $gatePassed = ($vr.status -eq 'pass') -or ((-not $StrictValidation) -and $vr.status -eq 'pass-with-weak-coverage')
 if (-not $gatePassed) {
     if ($AllowGateFail) {

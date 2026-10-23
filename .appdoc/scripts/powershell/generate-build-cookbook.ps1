@@ -21,11 +21,10 @@ param(
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 # Import template helpers with explicit error handling
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (-not (Test-Path $helpersPath)) {
-    Write-Error "Required helpers file not found: $helpersPath"
-    exit 1
-}
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: generators use its functions further down, so a missing file must stop here
+# rather than fail later with an unrelated "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
 . $helpersPath
 if (-not (Get-Command Format-AppDocMarkdownStructure -ErrorAction SilentlyContinue)) {
     Write-Error "Failed to import Format-AppDocMarkdownStructure from $helpersPath. File may be corrupt or missing required functions."

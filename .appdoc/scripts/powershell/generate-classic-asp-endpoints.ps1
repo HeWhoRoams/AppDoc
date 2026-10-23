@@ -23,13 +23,16 @@ param(
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
+# Shared classic-ASP helpers (single definition; see modules/AppDoc.ClassicAsp.psm1).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
 
-# --- Shared template helpers (optional; we do not strictly depend on them) -------
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) {
-    . $helpersPath
-}
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: generators use its functions further down, so a missing file must stop here
+# rather than fail later with an unrelated "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 # --- Evidence + Contracts modules (canonical evidence + manifest) ----------------
 # Imported defensively: the canonical write below only runs if both are available,
@@ -42,23 +45,6 @@ if ((Test-Path $contractsModule) -and (Test-Path $evidenceModule)) {
 }
 
 # --- Framework gate -------------------------------------------------------------
-function Write-NotApplicablePlaceholder {
-    param([string]$OutputPath, [string]$Title)
-    $dir = Split-Path $OutputPath -Parent
-    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    $body = @(
-        "# $Title",
-        "",
-        "**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))",
-        "",
-        "## Summary",
-        "",
-        "Not applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP signal, so no content was extracted.",
-        "",
-        "---"
-    ) -join "`n"
-    $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
-}
 
 # --- Classic-ASP source-presence guard (shared-artifact ownership) --------------
 # The framework gate above passes for BOTH 'Classic ASP' and 'ASP.NET Web Forms'
@@ -69,21 +55,6 @@ function Write-NotApplicablePlaceholder {
 # framework label. We count classic-ASP source files using the same exclusions the
 # generators apply (path dirs + basename scratch globs) and, when the count is 0,
 # yield to the prior owner instead of overwriting.
-function Get-ClassicAspSourceFileCount {
-    param([string]$RootPath)
-    # Path-dir exclusions (mirror the framework detector $aspExcl EXACTLY so the
-    # guard's "source presence" matches what the detector itself counted). NOTE:
-    # fixtures is excluded but test/tests is NOT — real classic-ASP apps ship live
-    # test/ pages (real classic-ASP sites often ship a test/ folder), so excluding tests would silently drop content.
-    $pathExcl  = '(?i)([\\/](fixtures|node_modules|bin|obj|dist|build|__pycache__|\.venv|target)[\\/])'
-    # Basename scratch globs (mirror generate-unified-master.ps1 $scratchRe):
-    # *_copy*, copy_*, *_old*, *_test*, testing*, *bak*
-    $scratchRe = '(?i).*_copy.*|.*copy_.*|.*_old.*|.*_test.*|^testing.*|.*bak.*'
-    $files = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp","*.inc" -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.FullName -notmatch $pathExcl } |
-        Where-Object { $_.Name -notmatch $scratchRe })
-    return $files.Count
-}
 
 # The N-A placeholder this generator emits; its presence marks the artifact as
 # "not owned by (or already claimed by) the classic-ASP layer." A file WITHOUT this
@@ -116,7 +87,7 @@ if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
         exit 0
     }
     Write-Host "  Framework not Classic ASP / Web Forms - writing placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "API Inventory"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "API Inventory"
     $placeholder = @() | ConvertTo-Json -Depth 5
     $placeholder | Out-File -FilePath $evidencePath -Encoding UTF8
     Write-Host "✅ Placeholder written: $outputPath" -ForegroundColor Green
@@ -132,7 +103,7 @@ if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
 # docs/api-inventory.md with an empty classic-ASP table. When classic-ASP source
 # is absent we yield: leave a non-placeholder artifact (written by the C# path)
 # intact, and only write the N-A placeholder when no prior owner populated it.
-$classicAspSourceCount = Get-ClassicAspSourceFileCount -RootPath $RootPath
+$classicAspSourceCount = Get-AppDocClassicAspSourceFileCount -RootPath $RootPath
 if ($classicAspSourceCount -eq 0) {
     $artifactExists    = Test-Path $outputPath
     $isPriorOwnerOwned = $artifactExists -and (-not (Test-AppDocArtifactIsClassicAspPlaceholder -Path $outputPath))
@@ -142,7 +113,7 @@ if ($classicAspSourceCount -eq 0) {
         exit 0
     }
     Write-Host "  No classic-ASP source found and no prior owner artifact - writing N-A placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "API Inventory"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "API Inventory"
     $placeholder = @() | ConvertTo-Json -Depth 5
     $placeholder | Out-File -FilePath $evidencePath -Encoding UTF8
     Write-Host "✅ Placeholder written: $outputPath" -ForegroundColor Green
@@ -392,6 +363,30 @@ $mdParts.Add("- Confidence/Inference Flags: deterministic, evidence-backed")
 $md = ($mdParts -join "`n")
 
 $md | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
+
+# --- Appendix (docs/api-inventory.appendix.md) -------------------------------------
+# The inventory above links to this appendix, and the gate requires it. When the classic-
+# ASP layer owns api-inventory the generic generator does not run, so the appendix is
+# written here from the same page entries (previously a stale generic "N/A" appendix was
+# left behind instead).
+$appendixPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) 'api-inventory.appendix.md'
+$appendixRows = foreach ($e in $entries) {
+    $m = [string]$e.method
+    $intent = switch ($m) { 'GET' { 'Read/query page' } 'POST' { 'Form submission' } 'GET/POST' { 'Page with form post-back' } default { 'Page request' } }
+    $idem = switch ($m) { 'GET' { 'Idempotent' } 'POST' { 'Non-idempotent' } 'GET/POST' { 'Non-idempotent on POST' } default { 'Unknown' } }
+    "| ``$([string]$e.file)`` | ``/$([string]$e.file)`` | $m | $intent | Public/internal boundary not explicit | Server-side timeout applies; retry expected at caller | $idem | medium |"
+}
+$appendixHeader = "| Name | Path | Method | Operation Intent | Auth Boundary | Timeout/Retry | Idempotency | Confidence |`n|------|------|--------|------------------|---------------|---------------|-------------|------------|"
+$naRow = '| N/A | N/A | N/A | N/A | N/A | N/A | N/A | medium |'
+$inboundBlock = if (@($appendixRows).Count -gt 0) { "$appendixHeader`n$(@($appendixRows) -join "`n")" } else { "$appendixHeader`n$naRow" }
+$appendixText = @(
+    '# API Inventory Appendix', '',
+    'This appendix contains the full endpoint catalog and operational annotations used for architecture and reliability review. Classic-ASP pages are the endpoints; outbound calls are documented in the external-calls artifact.', '',
+    '## Inbound Endpoints', '', $inboundBlock, '',
+    '## Outbound Integrations', '', "$appendixHeader`n$naRow", '',
+    '---', '', $generatedLine
+) -join "`n"
+$appendixText | Out-File -FilePath $appendixPath -Encoding UTF8 -NoNewline
 
 # --- Emit flat machine-readable evidence ----------------------------------------
 $evidenceRecords = @($entries | ForEach-Object {

@@ -120,24 +120,11 @@ function ConvertTo-AppDocEvidenceGraphId {
 }
 
 function Get-AppDocEvidenceGraphRelativePath {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$RootPath,
-        [Parameter(Mandatory=$true)]
-        [string]$Path
-    )
-
-    if (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue) {
-        return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-    }
-
-    $rootNorm = $RootPath.TrimEnd('\', '/')
-    $pathNorm = $Path.TrimEnd('\', '/')
-    if ($pathNorm.StartsWith($rootNorm, [System.StringComparison]::OrdinalIgnoreCase)) {
-        return $pathNorm.Substring($rootNorm.Length).TrimStart('\', '/').Replace('\', '/')
-    }
-    return $pathNorm.Replace('\', '/')
+    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
+    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
+    param([string]$RootPath, [string]$Path)
+    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
+    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
 }
 
 function Get-AppDocEvidenceGraphArtifactPayload {
@@ -537,7 +524,8 @@ function Get-AppDocEvidenceGraphData {
                 @{ Expression = { [string]$_.id } }
     )
 
-    $countByType = @{}
+    # Ordered (contract entity-type order) so the rendered summary is stable across processes.
+    $countByType = [ordered]@{}
     foreach ($type in @($contract.entityTypes)) {
         $countByType[$type] = @($entities | Where-Object { [string]$_.type -eq $type }).Count
     }

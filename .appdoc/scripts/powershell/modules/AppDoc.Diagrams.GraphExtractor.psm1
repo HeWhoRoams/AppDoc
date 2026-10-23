@@ -527,24 +527,11 @@ function ConvertTo-AppDocDiagramRecordRef {
 }
 
 function Get-AppDocDiagramRelativePath {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$RootPath,
-        [Parameter(Mandatory=$true)]
-        [string]$FullPath
-    )
-
-    try {
-        return [System.IO.Path]::GetRelativePath($RootPath, $FullPath)
-    }
-    catch {
-        $root = $RootPath.TrimEnd('\','/')
-        if ($FullPath.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) {
-            return $FullPath.Substring($root.Length).TrimStart('\','/')
-        }
-        return $FullPath
-    }
+    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
+    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
+    param([string]$RootPath, [string]$FullPath)
+    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
+    return (Get-AppDocRelativePath -RootPath $RootPath -Path $FullPath)
 }
 
 function Get-AppDocDiagramConfigGroup {

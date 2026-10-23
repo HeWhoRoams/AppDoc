@@ -47,7 +47,7 @@ foreach ($fileName in $configFiles) {
                         type = "json_config"
                     }
                 }
-            } catch {}
+            } catch { Write-Warning ("JSON config file could not be parsed: {0}" -f $_.Exception.Message) }
         }
     }
 }

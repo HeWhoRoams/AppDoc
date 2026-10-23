@@ -23,9 +23,14 @@ param(
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
+# Shared classic-ASP helpers (single definition; see modules/AppDoc.ClassicAsp.psm1).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 # --- Evidence + Contracts modules (canonical evidence + manifest) ----------------
 $contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
@@ -35,22 +40,6 @@ if ((Test-Path $contractsModule) -and (Test-Path $evidenceModule)) {
     Import-Module $evidenceModule  -Force -ErrorAction SilentlyContinue
 }
 
-function Remove-SurroundingQuotes {
-    param([string]$Text)
-    if ([string]::IsNullOrWhiteSpace($Text)) { return "" }
-    $t = $Text.Trim()
-    while ($t.Length -ge 2) {
-        $first = $t.Substring(0, 1)
-        $last = $t.Substring($t.Length - 1, 1)
-        if (($first -eq "`"" -and $last -eq "`"") -or ($first -eq "'" -and $last -eq "'")) { $t = $t.Substring(1, $t.Length - 2) }
-        else { break }
-    }
-    # Also strip a dangling quote at either end (connection strings end with a single
-    # double-quote that is not paired with an opening one in the segment).
-    while ($t.Length -gt 0 -and $t.Substring($t.Length - 1, 1) -in @("`"", "'")) { $t = $t.Substring(0, $t.Length - 1) }
-    while ($t.Length -gt 0 -and $t.Substring(0, 1) -in @("`"", "'")) { $t = $t.Substring(1) }
-    return $t.Trim()
-}
 # Connection-string values are often built with VBScript string concatenation
 # (Data Source=" & dbHost & "), so a literal value may not be present. Detect and
 # mark those as dynamic rather than leaking raw concatenation tokens into the doc.
@@ -66,13 +55,6 @@ function ConvertTo-NormalizedConnValue {
     if ([string]::IsNullOrWhiteSpace($v)) { return "unknown" }
     return $v
 }
-function Write-NotApplicablePlaceholder {
-    param([string]$OutputPath, [string]$Title)
-    $dir = Split-Path $OutputPath -Parent
-    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    $body = "# $Title`n`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`n`n## Summary`n`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP signal, so no content was extracted.`n`n---"
-    $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
-}
 
 # --- Classic-ASP source-presence guard (shared-artifact ownership) --------------
 # The framework gate above passes for BOTH 'Classic ASP' and 'ASP.NET Web Forms'
@@ -83,21 +65,6 @@ function Write-NotApplicablePlaceholder {
 # framework label. We count classic-ASP source files using the same exclusions the
 # generators apply (path dirs + basename scratch globs) and, when the count is 0,
 # yield to the prior owner instead of overwriting.
-function Get-ClassicAspSourceFileCount {
-    param([string]$RootPath)
-    # Path-dir exclusions (mirror the framework detector $aspExcl EXACTLY so the
-    # guard's "source presence" matches what the detector itself counted). NOTE:
-    # fixtures is excluded but test/tests is NOT — real classic-ASP apps ship live
-    # test/ pages (the classic-ASP test target has test/), so excluding tests would silently drop content.
-    $pathExcl  = '(?i)([\\/](fixtures|node_modules|bin|obj|dist|build|__pycache__|\.venv|target)[\\/])'
-    # Basename scratch globs (mirror generate-unified-master.ps1 $scratchRe):
-    # *_copy*, copy_*, *_old*, *_test*, testing*, *bak*
-    $scratchRe = '(?i).*_copy.*|.*copy_.*|.*_old.*|.*_test.*|^testing.*|.*bak.*'
-    $files = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp","*.inc" -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.FullName -notmatch $pathExcl } |
-        Where-Object { $_.Name -notmatch $scratchRe })
-    return $files.Count
-}
 
 # The N-A placeholder this generator emits; its presence marks the artifact as
 # "not owned by (or already claimed by) the classic-ASP layer." A file WITHOUT this
@@ -125,7 +92,7 @@ if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
         exit 0
     }
     Write-Host "  Framework not Classic ASP / Web Forms - writing placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "Data Model"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "Data Model"
     @() | ConvertTo-Json -Depth 5 | Out-File -FilePath $evidencePath -Encoding UTF8
     exit 0
 }
@@ -139,7 +106,7 @@ if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
 # docs/data-model.md with an empty classic-ASP table. When classic-ASP source is
 # absent we yield: leave a non-placeholder artifact (written by the C# path) intact,
 # and only write the N-A placeholder when no prior owner populated it.
-$classicAspSourceCount = Get-ClassicAspSourceFileCount -RootPath $RootPath
+$classicAspSourceCount = Get-AppDocClassicAspSourceFileCount -RootPath $RootPath
 if ($classicAspSourceCount -eq 0) {
     $artifactExists    = Test-Path $outputPath
     $isPriorOwnerOwned = $artifactExists -and (-not (Test-AppDocArtifactIsClassicAspPlaceholder -Path $outputPath))
@@ -149,7 +116,7 @@ if ($classicAspSourceCount -eq 0) {
         exit 0
     }
     Write-Host "  No classic-ASP source found and no prior owner artifact - writing N-A placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "Data Model"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "Data Model"
     @() | ConvertTo-Json -Depth 5 | Out-File -FilePath $evidencePath -Encoding UTF8
     Write-Host "✅ Placeholder written: $outputPath" -ForegroundColor Green
     exit 0

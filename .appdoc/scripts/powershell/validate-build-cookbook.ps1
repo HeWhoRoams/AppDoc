@@ -34,7 +34,7 @@ if (Test-Path $evidencePath) {
         $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json
         $commandCount = @($evidence.records | Where-Object { [string]$_.kind -in @("build-command", "command") }).Count
     }
-    catch { }
+    catch { Write-Warning ("build-cookbook evidence could not be read; counting 0 commands: {0}" -f $_.Exception.Message) }
 }
 
 if ($commandCount -le 0) {

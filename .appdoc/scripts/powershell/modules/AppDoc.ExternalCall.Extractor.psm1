@@ -53,19 +53,11 @@
 #
 
 function Get-AppDocExternalCallRelativePath {
-    [CmdletBinding()]
-    param(
-        [string]$RootPath,
-        [string]$Path
-    )
-
-    if (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue) {
-        return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-    }
-    if (-not $RootPath) { return $Path }
-    $rel = $Path.Replace($RootPath, "")
-    $rel = $rel.TrimStart('\', '/')
-    return ($rel -replace '\\', '/')
+    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
+    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
+    param([string]$RootPath, [string]$Path)
+    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
+    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
 }
 
 function Get-AppDocExternalCallScopedFiles {

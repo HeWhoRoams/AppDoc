@@ -219,7 +219,7 @@ function Get-AppDocValidationExpectations {
             $apiPayload = Get-Content $apiEvidencePath -Raw | ConvertFrom-Json -Depth 50
             $apiCount = @($apiPayload.records | Where-Object { $_ -and [string]$_.kind -eq "endpoint" }).Count
         }
-        catch {}
+        catch { Write-Warning ("api-inventory evidence could not be read for the integrity check: {0}" -f $_.Exception.Message) }
     }
 
     if ($modelCount -eq 0 -and (Test-Path $modelEvidencePath)) {
@@ -227,7 +227,7 @@ function Get-AppDocValidationExpectations {
             $modelPayload = Get-Content $modelEvidencePath -Raw | ConvertFrom-Json -Depth 50
             $modelCount = @($modelPayload.records | Where-Object { $_ -and [string]$_.kind -eq "model" }).Count
         }
-        catch {}
+        catch { Write-Warning ("data-model evidence could not be read for the integrity check: {0}" -f $_.Exception.Message) }
     }
 
     if ($dependencyCount -eq 0 -and (Test-Path $dependencyEvidencePath)) {
@@ -235,7 +235,7 @@ function Get-AppDocValidationExpectations {
             $dependencyPayload = Get-Content $dependencyEvidencePath -Raw | ConvertFrom-Json -Depth 50
             $dependencyCount = @($dependencyPayload.records | Where-Object { $_ -and [string]$_.kind -eq "dependency" }).Count
         }
-        catch {}
+        catch { Write-Warning ("dependencies evidence could not be read for the integrity check: {0}" -f $_.Exception.Message) }
     }
 
     if (Test-Path $testEvidencePath) {
@@ -243,7 +243,7 @@ function Get-AppDocValidationExpectations {
             $testPayload = Get-Content $testEvidencePath -Raw | ConvertFrom-Json -Depth 50
             $testRecordCount = @($testPayload.records | Where-Object { $_ -and [string]$_.kind -in @("test-case","test-suite") }).Count
         }
-        catch {}
+        catch { Write-Warning ("test evidence could not be read for the integrity check: {0}" -f $_.Exception.Message) }
     }
 
     if (Test-Path $debtEvidencePath) {
@@ -251,7 +251,7 @@ function Get-AppDocValidationExpectations {
             $debtPayload = Get-Content $debtEvidencePath -Raw | ConvertFrom-Json -Depth 50
             $debtRecordCount = @($debtPayload.records | Where-Object { $_ -and [string]$_.kind -in @("technical-debt","debt-item") }).Count
         }
-        catch {}
+        catch { Write-Warning ("debt-register evidence could not be read for the integrity check: {0}" -f $_.Exception.Message) }
     }
 
     $primaryStyle = ""
@@ -1147,6 +1147,11 @@ $pipelinePhases = @(
     },
     @{
         Name = "Generation"
+        # Order matters: every EVIDENCE producer (generic and framework-specific) runs
+        # before the generators that SUMMARISE evidence (overview, start-here, task guides,
+        # docs index, evidence register, verification appendix, composer). Previously the
+        # classic-ASP producers ran after overview/start-here, which then had to be
+        # re-aligned and re-run.
         Scripts = @(
             "generate-api-inventory.ps1",
             "generate-data-model.ps1",
@@ -1155,10 +1160,6 @@ $pipelinePhases = @(
             "generate-test-catalog.ps1",
             "generate-debt-register.ps1",
             "generate-dependencies-catalog.ps1",
-            "generate-overview.ps1",
-            "generate-start-here.ps1",
-            "generate-task-guides.ps1",
-            "generate-docs-index.ps1",
             "generate-classic-asp-endpoints.ps1",
             "generate-classic-asp-datamodel.ps1",
             "generate-classic-asp-platform.ps1",
@@ -1167,6 +1168,10 @@ $pipelinePhases = @(
             "generate-classic-asp-security.ps1",
             "generate-external-calls.ps1",
             "generate-classic-asp-extcalls.ps1",
+            "generate-overview.ps1",
+            "generate-start-here.ps1",
+            "generate-task-guides.ps1",
+            "generate-docs-index.ps1",
             "generate-source-docs.ps1",
             "generate-git-ownership.ps1",
             # The evidence register and verification appendix summarise EVERY evidence
@@ -1178,7 +1183,15 @@ $pipelinePhases = @(
         )
     }
 )
-$scriptFailures = @()
+
+# Explicit owner for the two artifacts both a generic and a classic-ASP generator can
+# write (api-inventory, data-model): the classic-ASP generator owns them when the target
+# is Classic ASP / Web Forms AND has classic-ASP source files; otherwise the generic one
+# does. (The generators keep their own yield checks so each still works when run alone.)
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+$classicAspOwnsShared = (Test-AppDocClassicAspTarget -RootPath $RootPath) -and ((Get-AppDocClassicAspSourceFileCount -RootPath $RootPath) -gt 0)
+$skipScripts = if ($classicAspOwnsShared) { @('generate-api-inventory.ps1', 'generate-data-model.ps1', 'generate-build-cookbook.ps1') } else { @('generate-classic-asp-endpoints.ps1', 'generate-classic-asp-datamodel.ps1', 'generate-classic-asp-platform.ps1') }
+Write-Host ("Shared-artifact owner: {0} (api-inventory, data-model, build-cookbook)" -f $(if ($classicAspOwnsShared) { 'classic-ASP generators' } else { 'generic generators' })) -ForegroundColor Gray
 
 foreach ($phase in $pipelinePhases) {
     Write-Host "`n[$($phase.Name)]" -ForegroundColor Cyan
@@ -1193,6 +1206,11 @@ foreach ($phase in $pipelinePhases) {
         if ($DryRun) {
             Write-Host "[DryRun] Would execute $script" -ForegroundColor Gray
             Add-AppDocDiagnostic -Category "NOT_FOUND" -Severity "Info" -Message "Dry run skipped script execution" -Component $phase.Name -FilePath $scriptPath -Details @{ script = $script }
+            continue
+        }
+
+        if ($skipScripts -contains $script) {
+            Write-Host "Skipping $script (another generator owns this artifact for this target)." -ForegroundColor Gray
             continue
         }
 
@@ -1375,15 +1393,15 @@ catch {
     Write-Warning ("Failed to generate canonical metrics: {0}" -f $_.Exception.Message)
 }
 
-# Re-align the overview truth-pack counts to the canonical metrics now that they exist.
-# (generate-overview.ps1 ran earlier, before classic-ASP endpoint/model evidence was
-# populated, so its counts can be stale; the canonical metrics are the ground-truth
-# count source. This is a no-op when they already agree.)
+# Invariant check: the overview truth-pack counts must agree with the canonical metrics.
+# With every evidence producer running before generate-overview.ps1 this is a no-op; if
+# it ever has to re-align, an evidence producer has been moved after the overview, so it
+# is reported as a warning.
 if (Test-Path $canonicalMetricsPath) {
     try {
         $realignedOverview = Sync-AppDocOverviewTruthPackToCanonical -RootPath $RootPath -DocsPath $docsPath
         if ($realignedOverview) {
-            Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Overview truth-pack re-aligned to canonical metrics" -Component "Generation" -FilePath (Join-Path $docsPath "evidence\overview-truth-pack.json")
+            Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Warning" -Message "Overview truth-pack had to be re-aligned to canonical metrics (an evidence producer ran after the overview)" -Component "Generation" -FilePath (Join-Path $docsPath "evidence\overview-truth-pack.json")
             Write-Host "📄 Overview truth-pack counts re-aligned to canonical metrics." -ForegroundColor Cyan
         }
     }
@@ -1392,25 +1410,8 @@ if (Test-Path $canonicalMetricsPath) {
         Write-Warning ("Failed to re-align overview truth-pack to canonical: {0}" -f $_.Exception.Message)
     }
 
-    # start-here.md carries "API endpoints documented: N" / "Data models documented: M"
-    # signal lines. generate-start-here.ps1 ran earlier (before the classic-ASP
-    # endpoint/model evidence was populated), so on classic-ASP targets those lines are
-    # stale at 0 while the canonical + evidence hold the real counts. Now that the
-    # evidence and canonical metrics are complete, re-run the start-here generator so its
-    # counts reflect the populated evidence (it derives counts from the same evidence
-    # records the gate cross-checks, so this makes start-here consistent and is a
-    # no-op when the counts already agree).
-    $startHereGenerator = Join-Path $PSScriptRoot "generate-start-here.ps1"
-    if (Test-Path $startHereGenerator) {
-        try {
-            & $startHereGenerator -RootPath $RootPath
-            Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Start-here re-generated with populated classic-ASP evidence" -Component "Generation" -FilePath (Join-Path $docsPath "start-here.md")
-        }
-        catch {
-            Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to re-generate start-here" -Details @{ exception = $_.Exception.Message }
-            Write-Warning ("Failed to re-generate start-here: {0}" -f $_.Exception.Message)
-        }
-    }
+    # (start-here used to be re-run here because it ran before the classic-ASP evidence
+    # producers; the Generation phase order now runs every evidence producer first.)
 }
 
 $integrityGateScriptPath = Join-Path $PSScriptRoot "ci-doc-integrity-gate.ps1"

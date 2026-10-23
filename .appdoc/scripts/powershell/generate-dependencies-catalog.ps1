@@ -15,10 +15,11 @@ param(
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) {
-    . $helpersPath
-}
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: generators use its functions further down, so a missing file must stop here
+# rather than fail later with an unrelated "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
 if (-not (Test-Path $scopeModule)) { Write-Error "Required module not found: $scopeModule"; exit 1 }
@@ -113,28 +114,8 @@ if (-not $hasDependencies -or -not $hasProjects) {
 $dependencies = @($depData.dependencies)
 $projects = @($depData.projects)
 
-function Set-AppDocFieldValue {
-    param(
-        [Parameter(Mandatory=$true)]
-        [object]$Target,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        $Value
-    )
-
-    if ($Target -is [System.Collections.IDictionary]) {
-        $Target[$Name] = $Value
-        return
-    }
-
-    $existing = $Target.PSObject.Properties[$Name]
-    if ($existing) {
-        $existing.Value = $Value
-    }
-    else {
-        Add-Member -InputObject $Target -MemberType NoteProperty -Name $Name -Value $Value -Force
-    }
-}
+# Set-AppDocFieldValue: shared definition in modules/AppDoc.Determinism.psm1.
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Determinism.psm1') -ErrorAction Stop
 
 $enrichedEvidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\dependencies-catalog.evidence.enriched.json"
 if (Test-Path $enrichedEvidencePath) {
@@ -176,9 +157,6 @@ if (Test-Path $enrichedEvidencePath) {
 Write-Progress -Activity "Generating Dependencies Catalog" -Status "Populating template..." -PercentComplete 60
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocDependenciesCatalogContent -Content $content -Dependencies $dependencies -Projects $projects
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (-not (Test-Path $helpersPath)) { Write-Error "Required helpers not found: $helpersPath"; exit 1 }
-. $helpersPath
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 

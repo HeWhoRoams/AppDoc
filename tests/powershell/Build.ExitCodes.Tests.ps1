@@ -1,5 +1,6 @@
 # Regression test (ADR 0003): run-appdoc-build.ps1 exit codes.
-#   0 = gate passed (or -AllowGateFail), 2 = gate failed, 3 = fail-closed redaction stop.
+#   0 = gate passed (or -AllowGateFail), 1 = a generator crashed, 2 = gate failed,
+#   3 = fail-closed redaction stop.
 
 BeforeAll {
     $script:repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
@@ -30,6 +31,16 @@ BeforeAll {
     $target2 = Join-Path $script:tmp 'proj2'
     Copy-Item -Path $fixture -Destination $target2 -Recurse
     $script:codeNoRedaction = Invoke-Build -SkillRoot $script:brokenSkill -Target $target2 -ExtraArgs @('-SkipDiagrams')
+
+    # A copy of the skill where one generator throws must report a tool error, even with -AllowGateFail.
+    $script:crashSkill = Join-Path $script:tmp 'skill-crash'
+    New-Item -ItemType Directory -Force -Path $script:crashSkill | Out-Null
+    Copy-Item -Path (Join-Path $script:repoRoot '.appdoc') -Destination $script:crashSkill -Recurse
+    $crashing = Join-Path (Join-Path (Join-Path (Join-Path $script:crashSkill '.appdoc') 'scripts') 'powershell') 'generate-debt-register.ps1'
+    Set-Content -LiteralPath $crashing -Value "param([string]`$RootPath)`nthrow 'simulated generator crash'" -Encoding utf8
+    $target3 = Join-Path $script:tmp 'proj3'
+    Copy-Item -Path $fixture -Destination $target3 -Recurse
+    $script:codeCrash = Invoke-Build -SkillRoot $script:crashSkill -Target $target3 -ExtraArgs @('-SkipDiagrams', '-AllowGateFail')
 }
 
 AfterAll {
@@ -41,4 +52,5 @@ Describe 'run-appdoc-build.ps1 exit codes' {
     It 'exits 2 when the gate fails' { $script:codeFail | Should -Be 2 }
     It 'exits 0 for a failed gate when -AllowGateFail is given' { $script:codeAllowed | Should -Be 0 }
     It 'exits 3 when the redaction module cannot be loaded (fail-closed)' { $script:codeNoRedaction | Should -Be 3 }
+    It 'exits 1 when a generator crashes, even with -AllowGateFail' { $script:codeCrash | Should -Be 1 }
 }

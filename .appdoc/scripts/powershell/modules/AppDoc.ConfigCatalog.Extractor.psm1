@@ -255,26 +255,11 @@ function ConvertFrom-AppDocYamlFallback {
 }
 
 function Get-AppDocConfigRelativePath {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$RootPath,
-        [Parameter(Mandatory=$true)]
-        [string]$Path
-    )
-
-    if (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue) {
-        return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-    }
-
-    try {
-        $rootFull = (Resolve-Path $RootPath).Path
-        $pathFull = (Resolve-Path $Path).Path
-        return [System.IO.Path]::GetRelativePath($rootFull, $pathFull).Replace('\', '/')
-    }
-    catch {
-        return $Path.Replace($RootPath, "").TrimStart([char[]]@(92, 47))
-    }
+    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
+    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
+    param([string]$RootPath, [string]$Path)
+    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
+    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
 }
 
 function ConvertTo-AppDocSafeConfigKey {

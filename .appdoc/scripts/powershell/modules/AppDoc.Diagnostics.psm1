@@ -63,7 +63,7 @@ function ConvertTo-AppDocDiagnosticsPortablePath {
             return ('<external>/' + [System.IO.Path]::GetFileName($full))
         }
     }
-    catch { }
+    catch { Write-Verbose ("Path not normalized for diagnostics: {0}" -f $_.Exception.Message) }
         if ($normalized -match '^[A-Za-z]:') {
             $normalizedPath = $normalized -replace '\\', '/'
             $normalizedPath = $normalizedPath -replace '^[A-Za-z]:', '${ROOT_PATH}'

@@ -41,7 +41,7 @@ function Get-AppDocDetectedFrameworks {
 
     $packageJson = $null
     if (Test-Path $packageJsonPath) {
-        try { $packageJson = Get-Content $packageJsonPath -Raw | ConvertFrom-Json } catch { }
+        try { $packageJson = Get-Content $packageJsonPath -Raw | ConvertFrom-Json } catch { Write-Warning ("package.json could not be parsed; Node detection uses file signals only: {0}" -f $_.Exception.Message) }
     }
 
     $requirements = @()
@@ -87,7 +87,7 @@ function Get-AppDocDetectedFrameworks {
                         $hasWebSdk = $true
                     }
                 }
-            } catch { }
+            } catch { Write-Warning ("Project file could not be parsed as XML: {0}" -f $_.Exception.Message) }
         }
 
         foreach ($file in ($csFiles | Select-Object -First 40)) {

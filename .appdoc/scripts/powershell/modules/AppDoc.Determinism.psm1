@@ -146,7 +146,26 @@ function Get-AppDocDeterministicHash {
     }
 }
 
+
+function Set-AppDocFieldValue {
+    <#
+    .SYNOPSIS
+        Sets a field on a hashtable or a PSCustomObject (adding the property when missing).
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][object]$Target,
+        [Parameter(Mandatory = $true)][string]$Name,
+        $Value
+    )
+    if ($Target -is [System.Collections.IDictionary]) { $Target[$Name] = $Value; return }
+    $existing = $Target.PSObject.Properties[$Name]
+    if ($existing) { $existing.Value = $Value }
+    else { Add-Member -InputObject $Target -MemberType NoteProperty -Name $Name -Value $Value -Force }
+}
+
 Export-ModuleMember -Function @(
+    'Set-AppDocFieldValue',
     'ConvertTo-AppDocOrderedExtractionRecords',
     'ConvertTo-AppDocRelativePath',
     'Get-AppDocDeterministicHash'

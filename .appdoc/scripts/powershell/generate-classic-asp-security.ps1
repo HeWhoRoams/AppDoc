@@ -39,6 +39,12 @@ param(
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
+# Shared classic-ASP helpers (single definition; see modules/AppDoc.ClassicAsp.psm1).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+# Test-AppDocScratchFile lives in the Scope module; import it here rather than relying on
+# an earlier generator having loaded it into the session.
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Scope.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
 
 # Optional per-target opaque-token convention (config `opaqueTokenPattern`): values
@@ -52,15 +58,10 @@ if (Test-Path $cfgModule) {
     if ($appDocCfg -and $appDocCfg.values.opaqueTokenPattern) { $opaqueTokenPattern = [string]$appDocCfg.values.opaqueTokenPattern }
 }
 $opaqueNote = if ($opaqueTokenPattern) { " Values matching the target's opaque-token pattern (``$opaqueTokenPattern``) are sanitized placeholders and are referenced as-is." } else { '' }
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
-function Write-NotApplicablePlaceholder {
-    param([string]$OutputPath, [string]$Title)
-    $dir = Split-Path $OutputPath -Parent
-    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    $body = "# $Title`n`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`n`n## Summary`n`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP signal, so no content was extracted.`n`n---"
-    $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
-}
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 # Return a value wrapped in literal markdown backticks (for inline code spans).
 # Redact: any non-empty secret value becomes [REDACTED]; values matching the target's
 # configured opaque-token pattern (if any) pass through unchanged.
@@ -79,7 +80,7 @@ $evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "security.evi
 Write-Host "🔒 Generating Classic ASP security findings..." -ForegroundColor Cyan
 if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
     Write-Host "  Framework not Classic ASP - writing placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "Security and Operational Risks"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "Security and Operational Risks"
     @() | ConvertTo-Json -Depth 5 | Out-File -FilePath $evidencePath -Encoding UTF8
     exit 0
 }
@@ -202,11 +203,6 @@ foreach ($list in @($incFiles, $aspFiles)) {
 #     in N copy/test file(s)".
 # Distinct primary files each keep their own row (e.g. the same API-key literal in four
 # different status/feeds files is four real exposures, not a scratch dup).
-function Test-ScratchFile {
-    param([string]$Path)
-    $name = Split-Path $Path -Leaf
-    return ($name -match '(?i).*_copy.*|.*copy_.*|.*_old.*|.*_test.*|^testing.*|.*bak.*')
-}
 # group findings by type (finding text), preserving first-seen order
 $byType = New-Object System.Collections.Generic.List[object]
 $groupSeen = @{}
@@ -219,8 +215,8 @@ foreach ($fnd in $findings) {
 }
 $findings = New-Object System.Collections.Generic.List[object]
 foreach ($grp in $byType) {
-    $primaryItems = @($grp.items | Where-Object { -not (Test-ScratchFile ([string]$_.evidence)) })
-    $scratchItems = @($grp.items | Where-Object { Test-ScratchFile ([string]$_.evidence) })
+    $primaryItems = @($grp.items | Where-Object { -not (Test-AppDocScratchFile ([string]$_.evidence)) })
+    $scratchItems = @($grp.items | Where-Object { Test-AppDocScratchFile ([string]$_.evidence) })
     $scratchNote = ''
     if ($scratchItems.Count -gt 0) { $scratchNote = " [also present in $($scratchItems.Count) copy/test file(s)]" }
     # one row per distinct primary FILE (stable order)

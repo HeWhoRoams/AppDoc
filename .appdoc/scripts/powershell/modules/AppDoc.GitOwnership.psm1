@@ -73,7 +73,7 @@ function Get-AppDocGitHistoryStats {
             $firstDate = $ad
         }
     }
-    catch { }
+    catch { Write-Verbose ("git log (commit counts) unavailable: {0}" -f $_.Exception.Message) }
 
     # Resolve top-author display name + build the author summary in one pass.
     $authorList = @()
@@ -84,7 +84,7 @@ function Get-AppDocGitHistoryStats {
             if ($q.Count -ge 2 -and -not $nameByEmail.ContainsKey($q[0])) { $nameByEmail[$q[0]] = $q[1] }
         }
     }
-    catch { }
+    catch { Write-Verbose ("git log (author names) unavailable: {0}" -f $_.Exception.Message) }
     foreach ($k in ($authorCommitCounts.Keys | Sort-Object)) {
         $disp = if ($nameByEmail.ContainsKey($k) -and $nameByEmail[$k]) { $nameByEmail[$k] } else { $k }
         $authorList += [pscustomobject]@{ email = [string]$k; name = $disp; commits = [int]$authorCommitCounts[$k] }
@@ -137,7 +137,7 @@ function Get-AppDocGitCodeowners {
                 if ($pattern -eq '*') { $defaultOwner = ($owners -join ', ') }
             }
         }
-        catch { }
+        catch { Write-Warning ("CODEOWNERS could not be read: {0}" -f $_.Exception.Message) }
     }
     return [pscustomobject]@{
         present      = [bool]$found
@@ -194,12 +194,12 @@ function Get-AppDocGitFileOwnership {
             $fileMap[$pathRaw].commits++
         }
     }
-    catch { }
+    catch { Write-Verbose ("git log (per-file history) unavailable: {0}" -f $_.Exception.Message) }
 
     # Only files that exist in the current tree are reported: history also lists files that
     # were deleted or renamed long ago, which are not part of the application any more.
     $tracked = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
-    try { foreach ($t in @(& git -C $RootPath ls-files 2>$null)) { if ($t) { [void]$tracked.Add([string]$t) } } } catch { }
+    try { foreach ($t in @(& git -C $RootPath ls-files 2>$null)) { if ($t) { [void]$tracked.Add([string]$t) } } } catch { Write-Verbose ("git ls-files unavailable: {0}" -f $_.Exception.Message) }
     $global:LASTEXITCODE = 0
     $inScope = { param($rel) $true }
     if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {

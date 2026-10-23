@@ -9,7 +9,7 @@ Run these before reporting a build or enrichment run as done.
 | Code | Meaning |
 |---|---|
 | 0 | Gate passed (`pass`, or `pass-with-weak-coverage` without `-StrictValidation`), or `-AllowGateFail` was given |
-| 1 | Tool error: bad path, missing module, no or unreadable `validation-report.json` |
+| 1 | Tool error: bad path, missing module, a generator that crashed (listed in `diagnostics-report.json` → `metadata.scriptFailures`), or no or unreadable `validation-report.json` |
 | 2 | Gate failed: docs were written but did not pass the gate |
 | 3 | Fail-closed stop: the final redaction sweep could not run, or the semantic secret-redaction gate blocked |
 

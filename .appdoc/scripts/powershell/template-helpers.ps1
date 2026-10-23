@@ -606,18 +606,24 @@ function Add-AppDocProvenanceBlock {
 # as the former local copies (verified: identical modulo formatting).
 
 function Get-ClassicAspFrameworkApplicable {
+    # Thin wrapper kept for existing callers; see modules/AppDoc.ClassicAsp.psm1.
     param([string]$RootPath)
-    $fwPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "framework-detection.json"
-    if (-not (Test-Path $fwPath)) { return $false }
-    try { $fw = Get-Content $fwPath -Raw | ConvertFrom-Json -Depth 10 } catch { return $false }
-    $frameworks = @()
-    if ($fw -is [System.Collections.IEnumerable] -and $fw -isnot [string]) {
-        $frameworks = @($fw | ForEach-Object { [string]$_.framework } | Where-Object { $_ })
-    } else { $frameworks = @([string]$fw.framework) | Where-Object { $_ } }
-    return (($frameworks -contains "Classic ASP") -or ($frameworks -contains "ASP.NET Web Forms"))
+    if (-not (Get-Command Test-AppDocClassicAspTarget -ErrorAction SilentlyContinue)) {
+        Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+    }
+    return (Test-AppDocClassicAspTarget -RootPath $RootPath)
 }
 
-function Get-RelativePath { param([string]$FullPath, [string]$Base) $rel = $FullPath.Replace($Base, ""); $rel = $rel.TrimStart('\', '/'); return ($rel -replace '\\', '/') }
+function Get-RelativePath {
+    # Removes the base path only as a PREFIX (the old .Replace() also removed it from the
+    # middle of a path, e.g. /r/proj/sub/r/proj/x).
+    param([string]$FullPath, [string]$Base)
+    $rel = $FullPath
+    $b = $Base.TrimEnd('\', '/')
+    if ($b -and $rel.StartsWith($b, [System.StringComparison]::OrdinalIgnoreCase)) { $rel = $rel.Substring($b.Length) }
+    $rel = $rel.TrimStart('\', '/')
+    return ($rel -replace '\\', '/')
+}
 
 function Test-AppDocArtifactIsClassicAspPlaceholder {
     param([string]$Path)

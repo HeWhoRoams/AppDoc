@@ -34,7 +34,7 @@ if (Test-Path $evidencePath) {
         $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json
         $debtCount = @($evidence.records | Where-Object { [string]$_.kind -in @("technical-debt", "debt-item") }).Count
     }
-    catch { }
+    catch { Write-Warning ("debt-register evidence could not be read; counting 0 items: {0}" -f $_.Exception.Message) }
 }
 
 if ($debtCount -le 0) {

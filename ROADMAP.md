@@ -27,8 +27,8 @@ for the 1.1.0 work is in the two remediation plans (`AppDoc-Skill-Remediation-Pl
 
 - Remove the deprecated function aliases and the accepted old section heading ("Help Desk
   Workflows").
-- Turn on the remaining PSScriptAnalyzer rules in CI (empty catch blocks, indentation, aliases) once
-  the code is clean for each.
+- Turn on the remaining PSScriptAnalyzer rules in CI (indentation, aliases, empty catch blocks in
+  tests) once the code is clean for each.
 - Finish the structural refactors that 1.1.0 started: per-section composer module, validators as
   module functions returning structured results, a data-driven pipeline phase table.
 - AST caches: invalidate on source change (today a cached parse is reused as long as the file exists).

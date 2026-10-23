@@ -59,8 +59,10 @@ if (Test-Path $architectureModule) {
     Import-Module $architectureModule -Force -ErrorAction Stop
 }
 
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 # Epistemic-tagging library (deterministic claim-status resolution + coverage).
 # Used by the conformance gate's three discipline sub-checks. Absent on older
@@ -359,7 +361,7 @@ function Get-AppDocValidationContentExpectations {
             Get-Content -Path $file.FullName -ErrorAction SilentlyContinue | ForEach-Object {
                 $debtSignalCount += ([regex]::Matches($_, '(?im)\b(TODO|FIXME|HACK|XXX)\b')).Count
             }
-        } catch {}
+        } catch { Write-Verbose ("Debt-signal scan skipped a file: {0}" -f $_.Exception.Message) }
     }
 
     $dependencySurfaceExpected = ($dependencyCount -gt 0 -or $dependencySignalCount -gt 0)
@@ -692,15 +694,12 @@ function Get-CodeRouteCount {
 # ASP.NET Web Forms; every other framework keeps the C# path unchanged.
 
 function Get-AppDocIsClassicAspTarget {
+    # Thin wrapper; single definition in modules/AppDoc.ClassicAsp.psm1.
     param([string]$RootPath)
-    $fwPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "framework-detection.json"
-    if (-not (Test-Path $fwPath)) { return $false }
-    try { $fw = Get-Content $fwPath -Raw | ConvertFrom-Json -Depth 10 } catch { return $false }
-    $frameworks = @()
-    if ($fw -is [System.Collections.IEnumerable] -and $fw -isnot [string]) {
-        $frameworks = @($fw | ForEach-Object { [string]$_.framework } | Where-Object { $_ })
-    } else { $frameworks = @([string]$fw.framework) | Where-Object { $_ } }
-    return (($frameworks -contains "Classic ASP") -or ($frameworks -contains "ASP.NET Web Forms"))
+    if (-not (Get-Command Test-AppDocClassicAspTarget -ErrorAction SilentlyContinue)) {
+        Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+    }
+    return (Test-AppDocClassicAspTarget -RootPath $RootPath)
 }
 
 function Test-AppDocClassicAspConnValue {
@@ -894,7 +893,7 @@ function Get-DataModelCoverage {
                     Select-Object -Unique
             )
         }
-        catch { }
+        catch { Write-Warning ("data-model evidence could not be read: {0}" -f $_.Exception.Message) }
     }
 
     if ($modelNames.Count -eq 0) {

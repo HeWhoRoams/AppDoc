@@ -98,6 +98,8 @@ jobs:
           $findings | Group-Object RuleName | Sort-Object Count -Descending | ForEach-Object { "{0,5}  {1}" -f $_.Count, $_.Name }
           $enforced = @('PSUseApprovedVerbs', 'PSAvoidTrailingWhitespace')
           $blocking = @($findings | Where-Object { $enforced -contains $_.RuleName })
+          # Production code must not swallow errors silently (tests may, for best-effort cleanup).
+          $blocking += @($findings | Where-Object { $_.RuleName -eq 'PSAvoidUsingEmptyCatchBlock' -and $_.ScriptPath -match '[\\/]\.appdoc[\\/]' })
           if ($blocking.Count -gt 0) {
             $blocking | ForEach-Object { Write-Host "$($_.ScriptName):$($_.Line) [$($_.RuleName)] $($_.Message)" }
             throw "$($blocking.Count) finding(s) for enforced rules"

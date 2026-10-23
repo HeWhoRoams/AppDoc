@@ -100,7 +100,7 @@ if (Test-Path -LiteralPath $mdPathIn) {
         $master = Get-Content -LiteralPath $mdPathIn -Raw
         $m = [regex]::Match($master, '(?im)^\*\*Evidence date\*\*:\s*([^\r\n]+?)\s*$')
         if ($m.Success) { $reportDate = [string]$m.Groups[1].Value.Trim() }
-    } catch { }
+    } catch { Write-Verbose ("Evidence date not read from the master document: {0}" -f $_.Exception.Message) }
 }
 
 # --- Discover + extract (deterministic) --------------------------------------
