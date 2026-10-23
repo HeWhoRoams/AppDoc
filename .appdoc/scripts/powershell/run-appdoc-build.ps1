@@ -22,7 +22,8 @@
 #
 # Exit codes (see docs/adr/0003-sub-validator-failure-policy.md):
 #   0  gate passed (or -AllowGateFail was given)
-#   1  tool error (bad path, missing module, no validation report)
+#   1  tool error (bad path, missing module, invalid config, a pipeline generator crashed,
+#      no validation report)
 #   2  gate failed: docs were written but did not pass the gate
 #   3  fail-closed stop: the redaction sweep or the semantic secret-redaction gate blocked
 #

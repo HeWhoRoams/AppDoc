@@ -1184,8 +1184,8 @@ $pipelinePhases = @(
     }
 )
 
-# Explicit owner for the two artifacts both a generic and a classic-ASP generator can
-# write (api-inventory, data-model): the classic-ASP generator owns them when the target
+# Explicit owner for the artifacts both a generic and a classic-ASP generator can
+# write (api-inventory, data-model, build-cookbook): the classic-ASP generator owns them when the target
 # is Classic ASP / Web Forms AND has classic-ASP source files; otherwise the generic one
 # does. (The generators keep their own yield checks so each still works when run alone.)
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
