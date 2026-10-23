@@ -1,15 +1,15 @@
 {
   "artifact": "data-model",
-  "generatedAt": "2026-10-22T10:29:25-04:00",
+  "generatedAt": "2026-10-23T01:55:27-04:00",
   "recordCount": 0,
   "records": [],
   "metadata": {
+    "requiredEvidenceKeys": [
+      "models"
+    ],
     "requiredSections": [
       "Summary",
       "Data Models"
-    ],
-    "requiredEvidenceKeys": [
-      "models"
     ],
     "generator": "generate-data-model.ps1"
   },

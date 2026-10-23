@@ -1,5 +1,5 @@
 # System Overview
-**Generated**: 2026-10-22 10:29:30
+**Generated**: 2026-10-23 01:55:34
 
 ## Summary
 
@@ -14,19 +14,19 @@ This page explains, in plain language, what the application appears to do, how r
 - Runtime behavior is also influenced by environment and application configuration values loaded at startup. (evidence: ev-0001, ev-0002, ev-0003)
 
 ### Processing Steps
-- Processing flow could not be inferred beyond repository-level summaries in this scan. (evidence: ev-0073)
+- Processing flow could not be inferred beyond repository-level summaries in this scan. (evidence: ev-0050)
 
 ### Outputs
-- Output contracts are not strongly represented in current deterministic evidence. (evidence: ev-0073)
+- Output contracts are not strongly represented in current deterministic evidence. (evidence: ev-0050)
 
 ### Evidence References
 | ID | Artifact | Kind | Name | Source |
 |---|---|---|---|---|
-| ev-0001 | config-catalog | configuration | chat.tools.fileOperations.autoApprove.list | .vscode/settings.json:chat.tools.fileOperations.autoApprove.list |
-| ev-0002 | config-catalog | configuration | chat.tools.fileOperations.autoApprove.read | .vscode/settings.json:chat.tools.fileOperations.autoApprove.read |
-| ev-0003 | config-catalog | configuration | chat.tools.terminal.autoApprove.-ErrorAction | .vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction |
-| ev-0004 | config-catalog | configuration | chat.tools.terminal.autoApprove.-Json | .vscode/settings.json:chat.tools.terminal.autoApprove.-Json |
-| ev-0073 | overview | summary | system-purpose | repository |
+| ev-0001 | config-catalog | configuration | concurrency.cancel-in-progress | .github/workflows/appdoc-ci.yml:yaml/concurrency.cancel-in-progress |
+| ev-0002 | config-catalog | configuration | concurrency.group | .github/workflows/appdoc-ci.yml:yaml/concurrency.group |
+| ev-0003 | config-catalog | configuration | jobs.drift.name | .github/workflows/appdoc-ci.yml:yaml/jobs.drift.name |
+| ev-0004 | config-catalog | configuration | jobs.drift.needs | .github/workflows/appdoc-ci.yml:yaml/jobs.drift.needs |
+| ev-0050 | overview | summary | system-purpose | repository |
 
 ## System Purpose
 
@@ -105,15 +105,15 @@ This documentation set covers the following areas. Start with the artifact most 
 - No clear external system integration evidence was detected.
 
 ## Confidence Notes
-- Evidence coverage includes 0 endpoint records, 0 model records, 72 configuration records, and 0 dependency records.
-- Canonical evidence graph captured 74 entities and 72 relationships for this run.
+- Evidence coverage includes 0 endpoint records, 0 model records, 49 configuration records, and 0 dependency records.
+- Canonical evidence graph captured 51 entities and 49 relationships for this run.
 - Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.
 
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 546ea9d
-- Generated At: 2026-10-22T10:29:42-04:00
+- Commit Hash: 17cdd36
+- Generated At: 2026-10-23T01:55:45-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

@@ -1,12 +1,12 @@
 # Application Documentation
 
-**Evidence date**: 10/22/2026 10:29:35  
+**Evidence date**: 10/23/2026 01:55:38  
 **Framework**: ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot  
 **Composed from**: 11 per-artifact files + machine evidence (deterministic, no LLM).
 
-> **Handling note**: Secret material is redacted. Values shown as `@@HELPWEB_...@@` are opaque sanitized tokens and MUST NOT be reconstructed, resolved, or used to connect to any system. Connection strings below are shown in *shape only* (provider / catalog / source), never with live credentials.
+> **Handling note**: Secret material is redacted and shown as `[REDACTED]`. Connection strings below are shown in *shape only* (provider / catalog / source), never with live credentials.
 
-**Epistemic status legend**: Verified — supported by a located source file + searchable value. Inferred — a reasonable interpretation not confirmed by a concrete file+line. Partly verified — a file reference exists but the confirmable line/value is absent. Unknown — the repository does not establish the claim.
+**Epistemic status legend**: Verified — supported by a located source file + searchable value. Inferred — a reasonable interpretation not confirmed by a concrete file+line. Partly verified — a file reference exists but the confirmable line/value is absent. Unknown — the repository does not establish the claim. Operator-supplied — narrative the target's owner provided in an overlay file; not verified from source.
 
 ## Application Index
 
@@ -20,7 +20,7 @@ Auto-generated table of contents for this document, plus a quick cross-reference
 4. [Functional Inventory](#functional-inventory)
 5. [Roles and Access Model](#roles-and-access-model)
 6. [UI Catalog](#ui-catalog)
-7. [Help Desk Workflows](#help-desk-workflows)
+7. [Operational Workflows](#operational-workflows)
 8. [Data and Integrations](#data-and-integrations)
 9. [External Call Register](#external-call-register)
 10. [Stored-procedure data dictionary](#stored-procedure-data-dictionary)
@@ -57,9 +57,9 @@ The inspected unit is the application tree under the repository root: 0 request-
 
 | Aspect | Statement | Status |
 |--------|-----------|--------|
-| Purpose | Not detected for this framework — purpose is not extractable from the available artifacts for a non-classic-ASP codebase; owner-required. | Unknown |
-| Primary users | Not detected for this framework — no user-role signals extracted. | Unknown |
-| Interpretation basis | The classic-ASP help-desk interpretation (FrontCounter/HelpWeb/portal naming) does not apply to this framework. | N/A |
+| Purpose | Not established from source. AppDoc does not infer a system's business purpose from file or schema names; owner-required (an operator overlay can supply it). | Unknown |
+| Primary users | Not established from source; owner-required. | Unknown |
+| Interpretation basis | Only grounded inputs are used: the entry points (§4), the data objects (§8) and, where cited, the repository's own hand-authored docs. | N/A |
 
 ### System boundary
 
@@ -101,10 +101,10 @@ Components are projected from two deterministic sources: the build-cookbook code
 
 ```mermaid
 C4Context
-title w2 - System Context
+title selfbuild - System Context
 Person(user, "User", "Primary caller of the system")
-System(w2, "w2", "Software system: w2 (repository root; no in-scope .sln)")
-Rel(user, w2, "Uses")
+System(selfbuild, "selfbuild", "Software system: selfbuild (repository root; no in-scope .sln)")
+Rel(user, selfbuild, "Uses")
 ```
 
 ### 3.3 Authentication / Authorization
@@ -132,11 +132,11 @@ A deterministic scan locates the concrete role / privilege / authorization **tok
 
 | Role / concept | Observed capability | Where observed (file:line) | Status |
 |----------------|---------------------|----------------------------|--------|
-*Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP role-token scan (AlwaysAdmin/GID/ACD help-desk tokens) does not apply to this framework)* — status: N/A (no role/authorization tokens located for this framework).
+*Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP authorization-signal scan (session flags / access-check routines) does not apply to this framework)* — status: N/A (no role/authorization tokens located for this framework).
 
 ### Role-capability matrix
 
-*Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP help-desk role-capability matrix does not apply to this framework)* — status: N/A (owner-required for a framework-appropriate role matrix).
+*Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP role-capability matrix does not apply to this framework)* — status: N/A (owner-required for a framework-appropriate role matrix).
 
 *Role model not detected for this framework — the classic-ASP role/privilege concepts are N/A; a framework-appropriate role matrix would be owner-required.*
 
@@ -150,13 +150,28 @@ Each entry point that carries form/query input fields is a screen. Controls (for
 
 *Showing 0 screens with extracted input fields.*
 
-## Help Desk Workflows
+## Operational Workflows
 
-> Operator workflow skeletons are projected from the verified endpoint + stored-procedure flow. Deep operator narrative, evidence-retention policy, and escalation authorization are NOT source-derivable and are produced by the /appdoc.enhance semantic layer; cells below marked Unknown are owner-required. Every step cites a real source file:line; the verification *methods* and stored-procedure contracts are Verified, while the business policy / authorization / escalation steps remain Unknown.
+> Workflows are projected only from grounded evidence: the entry-point areas a user moves through and, where present, the stored-procedure contracts documented in source. Workflow sequencing, business policy, authorization and escalation are not derivable from source and stay `Unknown` (owner-required) unless the repository's own docs state them or the operator supplies them as an overlay.
 
-**Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP help-desk operator workflows (user-lookup / password-reset / AD-repair / extension / FrontCounter / queue-status skeletons derived from the verified endpoint + stored-procedure flow) do not apply to this framework)**
+### 7.1 Entry-point areas
 
-No framework-specific operator workflows were detected for this codebase. Skeleton operator workflows for the detected framework would be produced by the `/appdoc.enhance` semantic layer; none are composed here (not fabricated).
+| Area | Entry points | Example | Status |
+|------|--------------|---------|--------|
+| — | 0 | none extracted | Unknown |
+
+### 7.2 Procedure contracts behind operator actions
+
+*Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (stored-procedure contract blocks are a classic-ASP data point; not applicable to the detected framework)*
+
+### 7.3 Sequencing, policy, authorization and escalation
+
+| Item | Established by source? | Status |
+|------|------------------------|--------|
+| Which steps make up each workflow, and in what order | No | Unknown |
+| Who is authorized to perform each action | No | Unknown |
+| Evidence the operator must retain | No | Unknown |
+| Escalation path and thresholds | No | Unknown |
 
 ## Data and Integrations
 
@@ -218,7 +233,7 @@ Referenced tables and views are the direct-SQL surface (see 8.2 for sensitivity)
 
 ### 9.4 HTTP / XML endpoints
 
-*Not detected in this codebase.* No outbound HTTP/XML call sites were extracted in the available evidence for this framework. *Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP outbound HTTP/XML register (ITSM API / Bomgar remote-support via ServerXMLHTTP / FreeThreadedDOMDocument) does not apply to this framework)*
+*Not detected in this codebase.* No outbound HTTP/XML call sites were extracted in the available evidence for this framework. *Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP outbound HTTP/XML register (ServerXMLHTTP / FreeThreadedDOMDocument call sites) does not apply to this framework)*
 
 ### 9.5 Email / COM / file-system boundaries
 
@@ -300,30 +315,30 @@ Ownership and maintenance information is **not extractable** from the codebase (
 
 ### Ownership (git-derived — last-change author / churn, Verified-git-history)
 
-The target's git history is real and sufficient (45 commit(s)). Per-file ownership below is the **last-change author** with churn (instability = commit count); it is a deterministic projection of git log (plus CODEOWNERS when present), cited to docs/evidence/git-ownership.evidence.json. The table above remains a structure placeholder (application-level ownership stays owner-required unless a CODEOWNERS default declares it).
+The target's git history is real and sufficient (53 commit(s)). Per-file ownership below is the **last-change author** with churn (instability = commit count); it is a deterministic projection of git log (plus CODEOWNERS when present), cited to docs/evidence/git-ownership.evidence.json. The table above remains a structure placeholder (application-level ownership stays owner-required unless a CODEOWNERS default declares it).
 
-Declared owner (CODEOWNERS *): **Unknown (not declared)**  ·  top author: `Tim Niles <nilestimothyj@gmail.com> (45 commit(s)).
+Declared owner (CODEOWNERS *): **Unknown (not declared)**  ·  top author: Tim Niles (53 commit(s)).
 
 | File | Owner (last-change author) | Last change | Churn |
 |------|----------------------------|-------------|-------|
-| `.appdoc/scripts/powershell/run-all-generators.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 23 |
-| `.appdoc/scripts/powershell/validate-documentation.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 16 |
-| `.appdoc/scripts/powershell/generate-overview.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 15 |
-| `docs/build-cookbook.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
-| `docs/debt-register.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
-| `docs/dependencies-catalog.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
-| `docs/overview.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
-| `docs/start-here.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
-| `docs/test-catalog.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
-| `.appdoc/scripts/powershell/generate-api-inventory.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 13 |
-| `.appdoc/scripts/powershell/modules/AppDoc.ConfigCatalog.Renderer.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
-| `docs/api-inventory.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
-| `docs/config-catalog.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
-| `docs/data-model.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
-| `docs/evidence/manifest.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
+| `README.md` | Tim Niles | 2026-10-23 | 14 |
+| `.gitignore` | Tim Niles | 2026-10-23 | 9 |
+| `.github/prompts/appdoc.begin.prompt.md` | Tim Niles | 2026-10-23 | 8 |
+| `ROADMAP.md` | Tim Niles | 2026-10-23 | 8 |
+| `.github/copilot-instructions.md` | Tim Niles | 2026-10-23 | 6 |
+| `.github/prompts/appdoc.diagrams.prompt.md` | Tim Niles | 2026-02-26 | 6 |
+| `.github/workflows/appdoc-ci.yml` | Tim Niles | 2026-10-23 | 6 |
+| `references/config-schema.md` | Tim Niles | 2026-10-23 | 5 |
+| `references/verification.md` | Tim Niles | 2026-10-23 | 4 |
+| `SKILL.md` | Tim Niles | 2026-10-23 | 4 |
+| `.github/prompts/appdoc.enrich.prompt.md` | Tim Niles | 2026-10-23 | 3 |
+| `references/enrichment-operations.md` | Tim Niles | 2026-10-23 | 3 |
+| `.gitattributes` | Tim Niles | 2026-10-23 | 2 |
+| `.editorconfig` | Tim Niles | 2026-10-23 | 1 |
+| `.vscode/settings.example.json` | Tim Niles | 2026-10-23 | 1 |
 | … | (capped at 15; full table in docs/git-ownership.md) | | |
 
-*Verified-git-history: owner = last-change author, churn = commit count (deterministic git log projection; no inference). Application-level / on-call / SLO ownership remains owner-required — git history does not declare those.*
+*`Verified-git-history`: owner = last-change author, churn = commit count (deterministic `git log` projection; no inference). Application-level / on-call / SLO ownership remains owner-required — git history does not declare those.*
 
 ## Architecture and Data-Flow Diagrams
 
@@ -337,16 +352,16 @@ flowchart LR
     subgraph inputs["Input Boundary"]
         config_concurrency_cancel_in_4184c67a["concurrency.cancel-in-progress"]
         config_concurrency_group_4353a474["concurrency.group"]
-        config_github_copilot_chat_ex_3233c7ea["github.copilot.chat.executions.enabled"]
+        config_jobs_drift_name_84d8c2e6["jobs.drift.name"]
+        config_jobs_drift_needs_98e6a433["jobs.drift.needs"]
+        config_jobs_drift_runs_on_589e2ca4["jobs.drift.runs-on"]
+        config_jobs_drift_steps_shell_ed460ba6["jobs.drift.steps.shell"]
+        config_jobs_drift_steps_with_d2da89f4["jobs.drift.steps.with.fetch-depth"]
+        config_jobs_drift_steps_0_99a79b90["jobs.drift.steps(0)"]
+        config_jobs_drift_steps_1_38332dfa["jobs.drift.steps(1)"]
         config_jobs_hygiene_name_a7867886["jobs.hygiene.name"]
         config_jobs_hygiene_runs_on_f616492a["jobs.hygiene.runs-on"]
         config_jobs_hygiene_steps_run_348a44cb["jobs.hygiene.steps.run"]
-        config_jobs_hygiene_steps_she_e80f611f["jobs.hygiene.steps.shell"]
-        config_jobs_hygiene_steps_0_81f99013["jobs.hygiene.steps(0)"]
-        config_jobs_hygiene_steps_1_1f5e909e["jobs.hygiene.steps(1)"]
-        config_jobs_hygiene_steps_2_93e42ea2["jobs.hygiene.steps(2)"]
-        config_jobs_hygiene_steps_3_74378ec2["jobs.hygiene.steps(3)"]
-        config_jobs_tests_name_93d08342["jobs.tests.name"]
     end
     subgraph processing["Core Transformations"]
         component_core_processing_6d28d771["Core Processing"]
@@ -354,16 +369,16 @@ flowchart LR
     class component_core_processing_6d28d771 component
     class config_concurrency_cancel_in_4184c67a config
     class config_concurrency_group_4353a474 config
-    class config_github_copilot_chat_ex_3233c7ea config
+    class config_jobs_drift_name_84d8c2e6 config
+    class config_jobs_drift_needs_98e6a433 config
+    class config_jobs_drift_runs_on_589e2ca4 config
+    class config_jobs_drift_steps_shell_ed460ba6 config
+    class config_jobs_drift_steps_with_d2da89f4 config
+    class config_jobs_drift_steps_0_99a79b90 config
+    class config_jobs_drift_steps_1_38332dfa config
     class config_jobs_hygiene_name_a7867886 config
     class config_jobs_hygiene_runs_on_f616492a config
     class config_jobs_hygiene_steps_run_348a44cb config
-    class config_jobs_hygiene_steps_she_e80f611f config
-    class config_jobs_hygiene_steps_0_81f99013 config
-    class config_jobs_hygiene_steps_1_1f5e909e config
-    class config_jobs_hygiene_steps_2_93e42ea2 config
-    class config_jobs_hygiene_steps_3_74378ec2 config
-    class config_jobs_tests_name_93d08342 config
 classDef actor fill:#0f172a,stroke:#0f172a,color:#ffffff,stroke-width:1px
 classDef inbound fill:#dcfce7,stroke:#166534,color:#166534,stroke-width:1px
 classDef outbound fill:#ffedd5,stroke:#9a3412,color:#9a3412,stroke-width:1px
@@ -378,10 +393,10 @@ classDef dependency fill:#ede9fe,stroke:#4338ca,color:#4338ca,stroke-width:1px
 
 ```mermaid
 C4Context
-title w2 - System Context
+title selfbuild - System Context
 Person(user, "User", "Primary caller of the system")
-System(w2, "w2", "Software system: w2 (repository root; no in-scope .sln)")
-Rel(user, w2, "Uses")
+System(selfbuild, "selfbuild", "Software system: selfbuild (repository root; no in-scope .sln)")
+Rel(user, selfbuild, "Uses")
 ```
 
 ## Glossary
@@ -390,67 +405,67 @@ Recurring domain tokens and technical terms observed in the extracted evidence. 
 
 | Term | Observed meaning | Basis | Status |
 |------|------------------|-------|--------|
-| — | *Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP domain glossary (GID/ACD/Peregrine/SQLOLEDB/HDEMP/Bradford/Resnet) does not apply to this framework)* | N/A |
+| — | *Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework. (the classic-ASP technology glossary (ADO providers / ASP Session) does not apply to this framework)* | N/A |
 
 ## Evidence Register
 
-The full evidence register (section §14 in the benchmark) is reproduced below, projected verbatim from vidence-register.md.
+The full evidence register is reproduced below, projected verbatim from `evidence-register.md`.
 
 **Status model:** `Verified` — directly supported by inspected source (file + line or a searchable value). `Inferred` — a reasonable interpretation not confirmed by runtime. `Partly verified` — a file reference exists but the confirmable line/value is absent. `Unknown` — the repository does not establish the claim.
 
-**Records:** 84 across 14 evidence files.
+**Records:** 64 across 13 evidence files.
 
 Framework detected: **ASP.NET Core ASP.NET MVC 5 Flask Spring Boot** (C# C# Python Java); support level: full partial partial partial; extraction coverage: System.Object[]%.
 
 | Finding | Status | Supporting Artifact | Limitation |
 |---|---|---|---|
 | GitHub Actions | Partly verified | appdoc-ci.yml | File reference present; line/value not confirmed |
-| chat.tools.fileOperations.autoApprove.list | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.fileOperations.autoApprove.read | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.-ErrorAction | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.-Json | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.-RootPath | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.-Verbose | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove..\.AppDoc\\scripts\\powershell\\*.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/analyze-codebase.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/analyze-repository.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/catalog-samples.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/extract-config.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/generate-data-model.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/generate-debt-register.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/generate-improvements.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/generate-overview.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/run-all-generators.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/validate-data-model.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/validate-debt-register.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/validate-overview.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1 | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.Copy-Item | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.Get-ChildItem | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.Get-Content | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.git | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.git fetch | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.git status | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.pwsh | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.Remove-Item | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.Set-ExecutionPolicy | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.Test-Path | Verified | .vscode/settings.json | Runtime behavior not executed |
-| chat.tools.terminal.autoApprove.Write-Host | Verified | .vscode/settings.json | Runtime behavior not executed |
-| github.copilot.chat.executions.enabled | Verified | .vscode/settings.json | Runtime behavior not executed |
+| chat.tools.fileOperations.autoApprove.list | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.fileOperations.autoApprove.read | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.-ErrorAction | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.-Json | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.-RootPath | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.-Verbose | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove..\.AppDoc\\scripts\\powershell\\*.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/analyze-codebase.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/analyze-repository.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/catalog-samples.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/extract-config.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/generate-data-model.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/generate-debt-register.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/generate-improvements.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/generate-overview.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/run-all-generators.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/validate-data-model.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/validate-debt-register.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/validate-overview.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1 | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.Copy-Item | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.Get-ChildItem | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.Get-Content | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.git | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.git fetch | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.git status | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.pwsh | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.Remove-Item | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.Set-ExecutionPolicy | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.Test-Path | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| chat.tools.terminal.autoApprove.Write-Host | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
+| github.copilot.chat.executions.enabled | Partly verified | .vscode/settings.json | File reference present; line/value not confirmed |
 | jobs.syntax-gate.runs-on | Verified | .github/workflows/appdoc-ci.yml | Runtime behavior not executed |
 | jobs.syntax-gate.steps.shell | Verified | .github/workflows/appdoc-ci.yml | Runtime behavior not executed |
 | jobs.syntax-gate.steps[0] | Verified | .github/workflows/appdoc-ci.yml | Runtime behavior not executed |
@@ -460,26 +475,6 @@ Framework detected: **ASP.NET Core ASP.NET MVC 5 Flask Spring Boot** (C# C# Pyth
 | on.push.branches[0] | Verified | .github/workflows/appdoc-ci.yml | Runtime behavior not executed |
 | on.push.branches[1] | Verified | .github/workflows/appdoc-ci.yml | Runtime behavior not executed |
 | system-purpose | Inferred | repository | Interpretation not confirmed by runtime |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
-| (unnamed record) | Unknown | (no source reference) | Not established by repository |
 | api-inventory | Unknown | docs | Not established by repository |
 | data-model | Unknown | docs | Not established by repository |
 | source-files | Inferred | repository | Interpretation not confirmed by runtime |
@@ -489,7 +484,7 @@ Framework detected: **ASP.NET Core ASP.NET MVC 5 Flask Spring Boot** (C# C# Pyth
 | plan-debt-sprint | Unknown | docs | Not established by repository |
 | triage-dependency-risk | Unknown | docs | Not established by repository |
 
-**Status breakdown:** Verified (54), Inferred (3), Partly verified (1), Unknown (26)
+**Status breakdown:** Verified (8), Inferred (3), Partly verified (47), Unknown (6)
 
 > **Limitation note:** Every row is source-level. A `Verified` row proves the cited file/line exists; it does not prove runtime behavior, production configuration, or database procedure logic. Re-runnable commands for each `Verified` claim are in the Verification Appendix.
 
@@ -500,7 +495,7 @@ Automatically assembled from every Unknown / owner-required placeholder emitted 
 1. §3.3 — No centralized authn/authz policy was extracted; per-page checks observed but not exhaustively mapped (owner/ runtime required to confirm enforcement guarantees).
 2. §5 — Which roles exist at runtime and what each is authorized to do (role-capability matrix) is Unknown; owner-required.
 3. §6 — UI screen *states* (loading/empty/error/validated) are Unknown; runtime was not observed.
-4. §7 — Operator-workflow policy/authorization/escalation cells and evidence-retention policy are Unknown (owner-required); the deterministic skeletons cite the verified endpoint + stored-procedure flow only (see /appdoc.enhance).
+4. §7 — Workflow sequencing, authorization, evidence-retention and escalation policy are Unknown (owner-required); §7 projects only entry-point areas and documented procedure contracts.
 5. §10 — Stored-procedure parameter signatures and return-code ladders are Unknown (not in the evidence); not fabricated.
 6. §11 — Escalation points / on-call paths are Unknown (not extracted).
 7. §12 — Runtime security controls (auth strength, input validation, TLS, credential rotation) are Unknown; must not be treated as verified controls.
@@ -559,60 +554,14 @@ Projected from the build-cookbook (platform requirements, SQL servers, session b
 
 ## Verification Appendix
 
-The re-runnable verification appendix (section §18 in the benchmark, 174 re-runnable commands) is reproduced below, projected verbatim from erification-appendix.md.
+The re-runnable verification appendix is reproduced below, projected verbatim from `verification-appendix.md`.
 
 This appendix lists the exact, re-runnable PowerShell commands used to verify each `Verified` claim in the Evidence Register. All commands are run **from the repository root** (`<repo-root>`). A non-empty `Select-String` result proves the cited source-level fact.
 
-**Verified claims:** 54  |  **Re-runnable commands:** 19  |  **Insufficient detail (downgraded):** 35
+**Verified claims:** 8  |  **Re-runnable commands:** 3  |  **Insufficient detail (downgraded):** 5
 
 | Claim | Status | Command |
 |---|---|---|
-| chat.tools.fileOperations.autoApprove.list  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.fileOperations\.autoApprove\.list' |
-| chat.tools.fileOperations.autoApprove.read  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.fileOperations\.autoApprove\.read' |
-| chat.tools.terminal.autoApprove.-ErrorAction  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.-ErrorAction' |
-| chat.tools.terminal.autoApprove.-Json  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.-Json' |
-| chat.tools.terminal.autoApprove.-RootPath  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.-RootPath' |
-| chat.tools.terminal.autoApprove.-Verbose  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.-Verbose' |
-| chat.tools.terminal.autoApprove..\.AppDoc\\scripts\\powershell\\*.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/analyze-codebase.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/analyze-repository.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/catalog-samples.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/extract-config.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/generate-data-model.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/generate-debt-register.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/generate-improvements.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/generate-overview.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/run-all-generators.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/validate-data-model.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/validate-debt-register.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/validate-overview.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.Copy-Item  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.Copy-Item' |
-| chat.tools.terminal.autoApprove.Get-ChildItem  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.Get-ChildItem' |
-| chat.tools.terminal.autoApprove.Get-Content  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.Get-Content' |
-| chat.tools.terminal.autoApprove.git  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.git' |
-| chat.tools.terminal.autoApprove.git fetch  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.git status  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
-| chat.tools.terminal.autoApprove.pwsh  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.pwsh' |
-| chat.tools.terminal.autoApprove.Remove-Item  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.Remove-Item' |
-| chat.tools.terminal.autoApprove.Set-ExecutionPolicy  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.Set-ExecutionPolicy' |
-| chat.tools.terminal.autoApprove.Test-Path  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.Test-Path' |
-| chat.tools.terminal.autoApprove.Write-Host  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'chat\.tools\.terminal\.autoApprove\.Write-Host' |
-| github.copilot.chat.executions.enabled  [config-catalog] | Verified | Select-String -Path '.vscode/settings.json' -Pattern 'github\.copilot\.chat\.executions\.enabled' |
 | jobs.syntax-gate.runs-on  [config-catalog] | Verified | Select-String -Path '.github/workflows/appdoc-ci.yml' -Pattern 'jobs\.syntax-gate\.runs-on' |
 | jobs.syntax-gate.steps.shell  [config-catalog] | Verified | Select-String -Path '.github/workflows/appdoc-ci.yml' -Pattern 'jobs\.syntax-gate\.steps\.shell' |
 | jobs.syntax-gate.steps[0]  [config-catalog] | Partly verified | N/A — insufficient evidence detail |
@@ -627,3 +576,12 @@ This appendix lists the exact, re-runnable PowerShell commands used to verify ea
 ---
 
 *Composed deterministically by generate-unified-master.ps1. No LLM, no network, no randomness. Secrets redacted.*
+
+## Provenance
+
+- Generator Version: appdoc-run-all-generators/3.0.0
+- Commit Hash: 17cdd36
+- Generated At: 2026-10-23T01:55:45-04:00
+- Profile: default
+- Scope: .
+- Confidence/Inference Flags: deterministic, evidence-backed

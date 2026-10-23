@@ -1,6 +1,6 @@
 {
   "artifact": "application-documentation",
-  "generatedAt": "10/22/2026 10:29:35",
+  "generatedAt": "10/23/2026 01:55:38",
   "applicable": true,
   "framework": "ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot",
   "source": "generate-unified-master.ps1",
@@ -13,6 +13,7 @@
     "sqlServerInstances": 0,
     "testCaseCount": 0
   },
+  "overlays": [],
   "sections": [
     {
       "section": "Application Index",
@@ -64,13 +65,11 @@
       ]
     },
     {
-      "section": "Help Desk Workflows",
+      "section": "Operational Workflows",
       "status": "placeholder",
       "sources": [
         "api-inventory",
-        "data-model",
-        "procdict",
-        "extcalls"
+        "procdict"
       ]
     },
     {
@@ -172,5 +171,16 @@
         "verification-appendix.md"
       ]
     }
-  ]
+  ],
+  "provenance": {
+    "generatorVersion": "appdoc-run-all-generators/3.0.0",
+    "commitHash": "17cdd36",
+    "generatedAt": "2026-10-23T01:55:45-04:00",
+    "profile": "default",
+    "scope": ".",
+    "confidenceInferenceFlags": [
+      "deterministic",
+      "evidence-backed"
+    ]
+  }
 }

@@ -1,6 +1,6 @@
 {
   "artifact": "overview",
-  "generatedAt": "2026-10-22T10:29:30-04:00",
+  "generatedAt": "2026-10-23T01:55:34-04:00",
   "recordCount": 1,
   "records": [
     {
@@ -17,21 +17,26 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:30-04:00"
+      "timestamp": "2026-10-23T01:55:34-04:00"
     }
   ],
   "metadata": {
-    "welcomeNarrativePassSources": {
-      "pass1": "deterministic",
-      "pass2": "deterministic",
-      "pass3": "deterministic"
-    },
-    "evidenceGraphEdgeCount": 72,
-    "welcomeNarrativeVerified": true,
-    "evidenceGraphEntityCount": 74,
-    "welcomeStyleGatePassed": false,
-    "welcomeSectionCoveragePassed": true,
+    "welcomeSectionCoverageIssues": [],
+    "narrativeReviewRequired": true,
     "welcomeNarrativeIssues": [],
+    "welcomeNarrativeProvider": "deterministic",
+    "welcomeStyleGateMetrics": {
+      "textItemCount": 8,
+      "inventoryLeadCount": 0,
+      "countOnlySentenceCount": 0,
+      "businessVerbHits": 1,
+      "whatItDoesMetricLeadCount": 0,
+      "whatItDoesPurposeVerbHits": 0,
+      "numericDensity": 0.0729
+    },
+    "generator": "generate-overview.ps1",
+    "welcomeNarrativeVerified": true,
+    "welcomeSectionCoveragePassed": true,
     "narrativeArtifacts": {
       "pass1": "docs/evidence/narrative/purpose_model.json",
       "pass2": "docs/evidence/narrative/narrative_draft.md",
@@ -43,17 +48,31 @@
       "style-business-verb-coverage-low:1",
       "style-what-it-does-purpose-verb-low:0"
     ],
-    "welcomeNarrativeProvider": "deterministic",
+    "truthPackPath": "docs/evidence/overview-truth-pack.json",
+    "evidenceGraphEntityCount": 51,
+    "evidenceGraphPath": "docs/evidence/evidence-graph.json",
+    "welcomeStyleGatePassed": false,
+    "evidenceGraphEdgeCount": 49,
     "requiredEvidenceKeys": [
       "summary",
       "technologies"
     ],
-    "generator": "generate-overview.ps1",
+    "welcomeNarrativePassSources": {
+      "pass1": "deterministic",
+      "pass2": "deterministic",
+      "pass3": "deterministic"
+    },
+    "requiredSections": [
+      "Summary",
+      "System Purpose",
+      "Getting Started",
+      "Documentation Map"
+    ],
     "narrativeRunReport": {
       "pipelineVersion": "1.1.0",
-      "startedAt": "2026-10-22T10:29:29-04:00",
-      "endedAt": "2026-10-22T10:29:29-04:00",
-      "durationMs": 125.0,
+      "startedAt": "2026-10-23T01:55:33-04:00",
+      "endedAt": "2026-10-23T01:55:34-04:00",
+      "durationMs": 140.0,
       "model": "local-deterministic",
       "executionMode": "local-deterministic",
       "externalModelCalls": false,
@@ -91,26 +110,7 @@
       "narrativeReviewRequired": true,
       "autoPassWithoutHumanEdits": false
     },
-    "requiredSections": [
-      "Summary",
-      "System Purpose",
-      "Getting Started",
-      "Documentation Map"
-    ],
-    "contextPackPath": "docs/evidence/narrative-context-pack.json",
-    "narrativeReviewRequired": true,
-    "welcomeSectionCoverageIssues": [],
-    "truthPackPath": "docs/evidence/overview-truth-pack.json",
-    "evidenceGraphPath": "docs/evidence/evidence-graph.json",
-    "welcomeStyleGateMetrics": {
-      "textItemCount": 8,
-      "inventoryLeadCount": 0,
-      "countOnlySentenceCount": 0,
-      "businessVerbHits": 1,
-      "whatItDoesMetricLeadCount": 0,
-      "whatItDoesPurposeVerbHits": 0,
-      "numericDensity": 0.0729
-    }
+    "contextPackPath": "docs/evidence/narrative-context-pack.json"
   },
   "determinism": {
     "hashAlgorithm": "SHA256",
@@ -119,6 +119,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "191a1b4aa1aade649753e8402158efda3c516c040d56d76c82d383fc01cb7f3f"
+    "contentHash": "116f6c4d061bbe471458f3a24d1886f6504d1332d703916c721b25a15728a59c"
   }
 }

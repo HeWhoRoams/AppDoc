@@ -1,16 +1,4 @@
 {
-  "timestamp": "2026-10-22 10:29:37",
-  "overall": {
-    "hardPenaltyReasons": [],
-    "mediumQuality": 1,
-    "adjustedAverageScore": 99.0,
-    "missingDocs": 0,
-    "averageScore": 87.7,
-    "hardPenaltyApplied": false,
-    "highQuality": 9,
-    "lowQuality": 1,
-    "totalDocs": 11
-  },
   "penaltyBreakdown": {
     "totalPenaltyPoints": 0,
     "categoryTotals": {
@@ -97,12 +85,17 @@
     "artifactCount": 8
   },
   "status": "pass",
+  "timestamp": "2026-10-23 01:55:39",
   "documents": [
     {
-      "gated": true,
-      "codeBlocks": 0,
       "quality": "LOW",
+      "docType": "Overview",
       "score": 15,
+      "listItems": 19,
+      "tableRows": 25,
+      "placeholders": [],
+      "codeBlocks": 0,
+      "exists": true,
       "issues": [
         "Welcome subsection missing: what_it_does",
         "Welcome subsection missing: processing_steps",
@@ -110,144 +103,151 @@
         "Welcome subsection missing: confidence_notes",
         "Welcome subsection missing: evidence_refs"
       ],
-      "placeholders": [],
-      "listItems": 19,
-      "tableRows": 25,
-      "exists": true,
-      "docType": "Overview"
+      "gated": true
     },
     {
-      "gated": true,
-      "codeBlocks": 0,
       "quality": "HIGH",
+      "docType": "API Inventory",
       "score": 100,
-      "issues": [],
-      "placeholders": [],
       "listItems": 6,
       "tableRows": 9,
+      "placeholders": [],
+      "codeBlocks": 0,
       "exists": true,
-      "docType": "API Inventory"
+      "issues": [],
+      "gated": true
     },
     {
-      "gated": true,
-      "codeBlocks": 0,
       "quality": "HIGH",
+      "docType": "Data Model",
       "score": 100,
-      "issues": [],
-      "placeholders": [],
       "listItems": 6,
       "tableRows": 9,
-      "exists": true,
-      "docType": "Data Model"
-    },
-    {
-      "gated": true,
-      "codeBlocks": 0,
-      "quality": "HIGH",
-      "score": 100,
-      "issues": [],
       "placeholders": [],
-      "listItems": 8,
-      "tableRows": 86,
+      "codeBlocks": 0,
       "exists": true,
-      "docType": "Config Catalog"
+      "issues": [],
+      "gated": true
     },
     {
-      "gated": true,
-      "codeBlocks": 0,
       "quality": "HIGH",
+      "docType": "Config Catalog",
+      "score": 100,
+      "listItems": 7,
+      "tableRows": 63,
+      "placeholders": [],
+      "codeBlocks": 0,
+      "exists": true,
+      "issues": [],
+      "gated": true
+    },
+    {
+      "quality": "HIGH",
+      "docType": "Build Cookbook",
       "score": 90,
+      "listItems": 7,
+      "tableRows": 16,
+      "placeholders": [],
+      "codeBlocks": 0,
+      "exists": true,
       "issues": [
         "Build Steps table has no populated rows"
       ],
-      "placeholders": [],
-      "listItems": 0,
-      "tableRows": 7,
-      "exists": true,
-      "docType": "Build Cookbook"
+      "gated": true
     },
     {
-      "gated": true,
-      "codeBlocks": 0,
       "quality": "MEDIUM",
+      "docType": "Test Catalog",
       "score": 70,
+      "listItems": 0,
+      "tableRows": 7,
+      "placeholders": [],
+      "codeBlocks": 0,
+      "exists": true,
       "issues": [
         "Test Suites table has no populated rows",
         "Test Cases table has no populated rows"
       ],
-      "placeholders": [],
-      "listItems": 0,
-      "tableRows": 7,
-      "exists": true,
-      "docType": "Test Catalog"
+      "gated": true
     },
     {
-      "gated": true,
-      "codeBlocks": 0,
       "quality": "HIGH",
+      "docType": "Debt Register",
       "score": 100,
-      "issues": [],
-      "placeholders": [],
       "listItems": 6,
       "tableRows": 13,
+      "placeholders": [],
+      "codeBlocks": 0,
       "exists": true,
-      "docType": "Debt Register"
+      "issues": [],
+      "gated": true
     },
     {
-      "gated": true,
-      "codeBlocks": 0,
       "quality": "HIGH",
+      "docType": "Dependencies Catalog",
       "score": 90,
+      "listItems": 6,
+      "tableRows": 21,
+      "placeholders": [],
+      "codeBlocks": 0,
+      "exists": true,
       "issues": [
         "Dependency summary table has no populated rows"
       ],
-      "placeholders": [],
-      "listItems": 6,
-      "tableRows": 21,
-      "exists": true,
-      "docType": "Dependencies Catalog"
+      "gated": true
     },
     {
-      "gated": false,
-      "codeBlocks": 0,
       "quality": "HIGH",
+      "docType": "Start Here",
       "score": 100,
-      "issues": [],
-      "placeholders": [],
       "listItems": 24,
       "tableRows": 6,
+      "placeholders": [],
+      "codeBlocks": 0,
       "exists": true,
-      "docType": "Start Here"
+      "issues": [],
+      "gated": false
     },
     {
-      "gated": false,
-      "codeBlocks": 0,
       "quality": "HIGH",
+      "docType": "Task Guides",
       "score": 100,
-      "issues": [],
-      "placeholders": [],
       "listItems": 15,
       "tableRows": 8,
+      "placeholders": [],
+      "codeBlocks": 0,
       "exists": true,
-      "docType": "Task Guides"
+      "issues": [],
+      "gated": false
     },
     {
-      "gated": false,
-      "codeBlocks": 0,
       "quality": "HIGH",
+      "docType": "Documentation Index",
       "score": 100,
-      "issues": [],
-      "placeholders": [],
       "listItems": 12,
       "tableRows": 0,
+      "placeholders": [],
+      "codeBlocks": 0,
       "exists": true,
-      "docType": "Documentation Index"
+      "issues": [],
+      "gated": false
     }
   ],
+  "overall": {
+    "highQuality": 9,
+    "missingDocs": 0,
+    "adjustedAverageScore": 99.0,
+    "lowQuality": 1,
+    "averageScore": 87.7,
+    "hardPenaltyReasons": [],
+    "totalDocs": 11,
+    "mediumQuality": 1,
+    "hardPenaltyApplied": false
+  },
   "provenance": {
     "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "546ea9d",
-    "generatedAt": "2026-10-22T10:29:42-04:00",
+    "commitHash": "17cdd36",
+    "generatedAt": "2026-10-23T01:55:45-04:00",
     "profile": "default",
     "scope": ".",
     "confidenceInferenceFlags": [

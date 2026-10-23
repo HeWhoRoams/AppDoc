@@ -24,7 +24,7 @@
     {
       "text": "Processing flow could not be inferred beyond repository-level summaries in this scan.",
       "evidence_refs": [
-        "ev-0073"
+        "ev-0050"
       ]
     }
   ],
@@ -32,7 +32,7 @@
     {
       "text": "Output contracts are not strongly represented in current deterministic evidence.",
       "evidence_refs": [
-        "ev-0073"
+        "ev-0050"
       ]
     }
   ],
@@ -40,13 +40,13 @@
     {
       "text": "No clear external system integration evidence was detected.",
       "evidence_refs": [
-        "ev-0073"
+        "ev-0050"
       ]
     }
   ],
   "confidence_notes": [
     {
-      "text": "Evidence coverage includes 0 endpoint records, 0 model records, 72 configuration records, and 0 dependency records.",
+      "text": "Evidence coverage includes 0 endpoint records, 0 model records, 49 configuration records, and 0 dependency records.",
       "evidence_refs": [
         "ev-0001",
         "ev-0002",
@@ -55,15 +55,15 @@
       ]
     },
     {
-      "text": "Canonical evidence graph captured 74 entities and 72 relationships for this run.",
+      "text": "Canonical evidence graph captured 51 entities and 49 relationships for this run.",
       "evidence_refs": [
-        "ev-0073"
+        "ev-0050"
       ]
     },
     {
       "text": "Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.",
       "evidence_refs": [
-        "ev-0073"
+        "ev-0050"
       ]
     }
   ],
@@ -72,32 +72,32 @@
       "id": "ev-0001",
       "artifact": "config-catalog",
       "kind": "configuration",
-      "name": "chat.tools.fileOperations.autoApprove.list",
-      "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.list"
+      "name": "concurrency.cancel-in-progress",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/concurrency.cancel-in-progress"
     },
     {
       "id": "ev-0002",
       "artifact": "config-catalog",
       "kind": "configuration",
-      "name": "chat.tools.fileOperations.autoApprove.read",
-      "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.read"
+      "name": "concurrency.group",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/concurrency.group"
     },
     {
       "id": "ev-0003",
       "artifact": "config-catalog",
       "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.-ErrorAction",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction"
+      "name": "jobs.drift.name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.name"
     },
     {
       "id": "ev-0004",
       "artifact": "config-catalog",
       "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.-Json",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-Json"
+      "name": "jobs.drift.needs",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.needs"
     },
     {
-      "id": "ev-0073",
+      "id": "ev-0050",
       "artifact": "overview",
       "kind": "summary",
       "name": "system-purpose",

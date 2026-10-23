@@ -1,6 +1,6 @@
 # Component Dependencies and Configuration
 
-_Generated: 2026-10-22 10:29:37_
+_Generated: 2026-10-23 01:55:39_
 
 ## What This View Explains
 
@@ -17,32 +17,30 @@ flowchart LR
     subgraph workflow_config["GitHub Actions Workflow"]
         config_concurrency_cancel_in_4184c67a["concurrency.cancel-in-progress"]
         config_concurrency_group_4353a474["concurrency.group"]
+        config_jobs_drift_name_84d8c2e6["jobs.drift.name"]
+        config_jobs_drift_needs_98e6a433["jobs.drift.needs"]
+        config_jobs_drift_runs_on_589e2ca4["jobs.drift.runs-on"]
+        config_jobs_drift_steps_shell_ed460ba6["jobs.drift.steps.shell"]
+        config_jobs_drift_steps_with_d2da89f4["jobs.drift.steps.with.fetch-depth"]
+        config_jobs_drift_steps_0_99a79b90["jobs.drift.steps(0)"]
+        config_jobs_drift_steps_1_38332dfa["jobs.drift.steps(1)"]
         config_jobs_hygiene_name_a7867886["jobs.hygiene.name"]
         config_jobs_hygiene_runs_on_f616492a["jobs.hygiene.runs-on"]
         config_jobs_hygiene_steps_run_348a44cb["jobs.hygiene.steps.run"]
-        config_jobs_hygiene_steps_she_e80f611f["jobs.hygiene.steps.shell"]
-        config_jobs_hygiene_steps_0_81f99013["jobs.hygiene.steps(0)"]
-        config_jobs_hygiene_steps_1_1f5e909e["jobs.hygiene.steps(1)"]
-        config_jobs_hygiene_steps_2_93e42ea2["jobs.hygiene.steps(2)"]
-        config_jobs_hygiene_steps_3_74378ec2["jobs.hygiene.steps(3)"]
-        config_jobs_tests_name_93d08342["jobs.tests.name"]
-    end
-    subgraph vscode_settings["VS Code Settings"]
-        config_github_copilot_chat_ex_3233c7ea["github.copilot.chat.executions.enabled"]
     end
     class component_core_processing_6d28d771 component
     class config_concurrency_cancel_in_4184c67a config
     class config_concurrency_group_4353a474 config
-    class config_github_copilot_chat_ex_3233c7ea config
+    class config_jobs_drift_name_84d8c2e6 config
+    class config_jobs_drift_needs_98e6a433 config
+    class config_jobs_drift_runs_on_589e2ca4 config
+    class config_jobs_drift_steps_shell_ed460ba6 config
+    class config_jobs_drift_steps_with_d2da89f4 config
+    class config_jobs_drift_steps_0_99a79b90 config
+    class config_jobs_drift_steps_1_38332dfa config
     class config_jobs_hygiene_name_a7867886 config
     class config_jobs_hygiene_runs_on_f616492a config
     class config_jobs_hygiene_steps_run_348a44cb config
-    class config_jobs_hygiene_steps_she_e80f611f config
-    class config_jobs_hygiene_steps_0_81f99013 config
-    class config_jobs_hygiene_steps_1_1f5e909e config
-    class config_jobs_hygiene_steps_2_93e42ea2 config
-    class config_jobs_hygiene_steps_3_74378ec2 config
-    class config_jobs_tests_name_93d08342 config
 classDef actor fill:#0f172a,stroke:#0f172a,color:#ffffff,stroke-width:1px
 classDef inbound fill:#dcfce7,stroke:#166534,color:#166534,stroke-width:1px
 classDef outbound fill:#ffedd5,stroke:#9a3412,color:#9a3412,stroke-width:1px
@@ -74,3 +72,11 @@ classDef dependency fill:#ede9fe,stroke:#4338ca,color:#4338ca,stroke-width:1px
 - cfg-0011
 - cfg-0012
 
+## Provenance
+
+- Generator Version: appdoc-run-all-generators/3.0.0
+- Commit Hash: 17cdd36
+- Generated At: 2026-10-23T01:55:45-04:00
+- Profile: default
+- Scope: .
+- Confidence/Inference Flags: deterministic, evidence-backed

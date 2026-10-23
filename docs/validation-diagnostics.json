@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T10:29:43-04:00",
+  "generatedAt": "2026-10-23T01:55:44-04:00",
   "summary": {
     "total": 2,
     "byCategory": {
@@ -15,19 +15,19 @@
   },
   "events": [
     {
-      "timestamp": "2026-10-22T10:29:42-04:00",
+      "timestamp": "2026-10-23T01:55:43-04:00",
       "category": "INITIALIZATION",
       "severity": "Info",
       "component": "orchestrator",
       "message": "Diagnostics initialized",
       "filePath": "",
       "details": {
-        "rootPath": "./",
-        "outputPath": "./docs"
+        "outputPath": "./docs",
+        "rootPath": "./"
       }
     },
     {
-      "timestamp": "2026-10-22T10:29:43-04:00",
+      "timestamp": "2026-10-23T01:55:43-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -38,7 +38,7 @@
   ],
   "metadata": {
     "validation": {
-      "timestamp": "2026-10-22T10:29:43-04:00",
+      "timestamp": "2026-10-23T01:55:43-04:00",
       "strict": false,
       "threshold": 80,
       "status": "pass",
@@ -55,9 +55,9 @@
         "configCoverage": 100,
         "dataModelCoverage": 100,
         "redactionSafetyScore": 100,
-        "conformanceScore": 92.7,
+        "conformanceScore": 93.8,
         "sectionSpineCoverageScore": 100.0,
-        "epistemicCoverageScore": 97.7,
+        "epistemicCoverageScore": 97.0,
         "reVerifiabilityScore": 100.0,
         "claimGroundingScore": 100.0,
         "documentationFreshnessScore": 100.0,
@@ -158,46 +158,63 @@
       "missingEvidenceArtifacts": null,
       "validators": [
         {
-          "message": "OK",
+          "exitCode": 0,
           "passed": true,
-          "script": "validate-overview.ps1"
+          "internalError": false,
+          "script": "validate-overview.ps1",
+          "message": "OK"
         },
         {
-          "message": "OK",
+          "exitCode": 0,
           "passed": true,
-          "script": "validate-api-inventory.ps1"
+          "internalError": false,
+          "script": "validate-api-inventory.ps1",
+          "message": "OK"
         },
         {
-          "message": "OK",
+          "exitCode": 0,
           "passed": true,
-          "script": "validate-data-model.ps1"
+          "internalError": false,
+          "script": "validate-data-model.ps1",
+          "message": "OK"
         },
         {
-          "message": "OK",
+          "exitCode": 0,
           "passed": true,
-          "script": "validate-config-catalog.ps1"
+          "internalError": false,
+          "script": "validate-config-catalog.ps1",
+          "message": "OK"
         },
         {
-          "message": "OK",
+          "exitCode": 0,
           "passed": true,
-          "script": "validate-build-cookbook.ps1"
+          "internalError": false,
+          "script": "validate-build-cookbook.ps1",
+          "message": "OK"
         },
         {
-          "message": "OK",
+          "exitCode": 0,
           "passed": true,
-          "script": "validate-test-catalog.ps1"
+          "internalError": false,
+          "script": "validate-test-catalog.ps1",
+          "message": "OK"
         },
         {
-          "message": "OK",
+          "exitCode": 0,
           "passed": true,
-          "script": "validate-debt-register.ps1"
+          "internalError": false,
+          "script": "validate-debt-register.ps1",
+          "message": "OK"
         },
         {
-          "message": "OK",
+          "exitCode": 0,
           "passed": true,
-          "script": "validate-dependencies-catalog.ps1"
+          "internalError": false,
+          "script": "validate-dependencies-catalog.ps1",
+          "message": "OK"
         }
       ],
+      "validatorInternalErrors": null,
       "contractValidation": [
         {
           "artifact": "overview",
@@ -364,7 +381,7 @@
       },
       "coverageCalibration": {
         "path": "./csharp-default",
-        "framework": "csharp",
+        "framework": "ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot",
         "note": "config + data-model coverage measured with the C#-calibrated scorers (appsettings/config keys; model classes).",
         "config": null,
         "dataModel": null
@@ -430,7 +447,7 @@
           {
             "section": "Roles and Access Model",
             "status": "OWNER_REQUIRED",
-            "reason": "owner-pending cell (correctly Unknown; pending /appdoc.enhance); also carries 2 verified source-derivable row(s)",
+            "reason": "owner-pending cell (correctly Unknown; pending owner input); also carries 2 verified source-derivable row(s)",
             "rowCount": 0,
             "sourceSupport": 0,
             "benchmarkRef": "5 (5.2 owner-required)",
@@ -448,10 +465,10 @@
             "frameworkNA": false
           },
           {
-            "section": "Help Desk Workflows",
+            "section": "Operational Workflows",
             "status": "OWNER_REQUIRED",
-            "reason": "owner-pending cell (correctly Unknown; pending /appdoc.enhance); also carries 3 verified source-derivable row(s)",
-            "rowCount": 0,
+            "reason": "owner-pending cell (correctly Unknown; pending owner input); also carries 4 verified source-derivable row(s)",
+            "rowCount": 4,
             "sourceSupport": 0,
             "benchmarkRef": "7 (7.x policy/escalation owner-required)",
             "ownerPending": true,
@@ -510,7 +527,7 @@
           {
             "section": "Ownership and Maintenance",
             "status": "OWNER_REQUIRED",
-            "reason": "owner-pending cell (correctly Unknown; pending /appdoc.enhance); also carries 23 verified source-derivable row(s)",
+            "reason": "owner-pending cell (correctly Unknown; pending owner input); also carries 23 verified source-derivable row(s)",
             "rowCount": 23,
             "sourceSupport": 0,
             "benchmarkRef": "11 (13 ownership/SLO owner-required)",
@@ -541,7 +558,7 @@
             "section": "Evidence Register",
             "status": "PASS",
             "reason": "at benchmark depth; real content; epistemic-tagged",
-            "rowCount": 84,
+            "rowCount": 64,
             "sourceSupport": 0,
             "benchmarkRef": "discipline-addition (14)",
             "ownerPending": false,
@@ -550,7 +567,7 @@
           {
             "section": "Open Questions and Documentation Gaps",
             "status": "OWNER_REQUIRED",
-            "reason": "owner-pending cell (correctly Unknown; pending /appdoc.enhance); also carries 12 verified source-derivable row(s)",
+            "reason": "owner-pending cell (correctly Unknown; pending owner input); also carries 12 verified source-derivable row(s)",
             "rowCount": 0,
             "sourceSupport": 0,
             "benchmarkRef": "17",
@@ -581,7 +598,7 @@
             "section": "Verification Appendix",
             "status": "PASS",
             "reason": "at benchmark depth; real content; epistemic-tagged",
-            "rowCount": 54,
+            "rowCount": 8,
             "sourceSupport": 0,
             "benchmarkRef": "discipline-addition (18)",
             "ownerPending": false,
@@ -590,7 +607,7 @@
         ],
         "report": "docs/pristine-report.md",
         "evidence": "docs/evidence/pristine.evidence.json",
-        "determinismHash": "16b6b8e755a93d71d44057314ccec0c28629c441f6729548ee630837b48fe5fd"
+        "determinismHash": "512611b2fde6fcb3d216eafb450d6ca04069ebff9bfb3b1595fc558302bc77a2"
       },
       "pristineGate": {
         "mode": "report-only",
@@ -604,5 +621,16 @@
         "note": "REPORT-ONLY mode (DEFAULT): depth measurement, never blocks — pristineGate.blocked=false; status/overallScore unchanged."
       }
     }
+  },
+  "provenance": {
+    "generatorVersion": "appdoc-run-all-generators/3.0.0",
+    "commitHash": "17cdd36",
+    "generatedAt": "2026-10-23T01:55:45-04:00",
+    "profile": "default",
+    "scope": ".",
+    "confidenceInferenceFlags": [
+      "deterministic",
+      "evidence-backed"
+    ]
   }
 }

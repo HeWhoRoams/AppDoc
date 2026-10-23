@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-10-22T10:29:42-04:00",
+  "generatedAt": "2026-10-23T01:55:42-04:00",
   "summary": {
     "total": 5,
     "byCategory": {
-      "ENVIRONMENT_ERROR": 2,
       "INITIALIZATION": 1,
+      "ENVIRONMENT_ERROR": 2,
       "DETECTION_PATTERN_MISMATCH": 2
     },
     "bySeverity": {
@@ -16,19 +16,19 @@
   },
   "events": [
     {
-      "timestamp": "2026-10-22T10:29:39-04:00",
+      "timestamp": "2026-10-23T01:55:41-04:00",
       "category": "INITIALIZATION",
       "severity": "Info",
       "component": "orchestrator",
       "message": "Diagnostics initialized",
       "filePath": "",
       "details": {
-        "rootPath": "./",
-        "outputPath": "./docs"
+        "outputPath": "./docs",
+        "rootPath": "./"
       }
     },
     {
-      "timestamp": "2026-10-22T10:29:41-04:00",
+      "timestamp": "2026-10-23T01:55:42-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -37,7 +37,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-10-22T10:29:42-04:00",
+      "timestamp": "2026-10-23T01:55:42-04:00",
       "category": "ENVIRONMENT_ERROR",
       "severity": "Info",
       "component": "Validation",
@@ -46,7 +46,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-10-22T10:29:42-04:00",
+      "timestamp": "2026-10-23T01:55:42-04:00",
       "category": "ENVIRONMENT_ERROR",
       "severity": "Info",
       "component": "Validation",
@@ -55,7 +55,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-10-22T10:29:42-04:00",
+      "timestamp": "2026-10-23T01:55:42-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "Narrative",
@@ -70,27 +70,9 @@
     }
   ],
   "metadata": {
-    "narrativeReviewReasons": [
-      "style-business-verb-coverage-low:1",
-      "style-what-it-does-purpose-verb-low:0"
-    ],
-    "narrativeRunReportPath": "./docs/evidence/narrative-run-report.json",
-    "rootPath": "./",
-    "strictValidation": false,
-    "validationGate": {
-      "passed": true,
-      "reason": "Structured validation gate passed",
-      "averageScore": 99.0,
-      "belowThreshold": 0,
-      "strict": false,
-      "qualityThreshold": 80,
-      "evaluatedDocuments": 8
-    },
-    "outputPath": "./docs",
-    "narrativeReviewRequired": true,
     "architecture": {
       "version": "1.1.0",
-      "generatedAt": "2026-10-22T10:29:23-04:00",
+      "generatedAt": "2026-10-23T01:55:25-04:00",
       "primaryStyle": "no-api-surface",
       "primaryStyleLabel": "No API Surface",
       "styles": "no-api-surface",
@@ -113,54 +95,72 @@
         "sampledCodeFileCount": 0
       }
     },
-    "evidenceGraphPath": "./docs/evidence/evidence-graph.json",
+    "qualityThreshold": 80,
+    "narrativeReviewRequired": true,
     "localOnly": true,
+    "narrativeRunReportPath": "./docs/evidence/narrative-run-report.json",
     "evidenceGraphMetrics": {
-      "entityCount": 74,
-      "edgeCount": 72,
+      "entityCount": 51,
+      "edgeCount": 49,
       "entityTypeCount": {
-        "test_case": 0,
-        "component": 1,
-        "config_key": 72,
         "system": 1,
+        "component": 1,
         "endpoint_inbound": 0,
-        "dependency": 0,
+        "endpoint_outbound": 0,
         "data_model": 0,
-        "endpoint_outbound": 0
+        "config_key": 49,
+        "dependency": 0,
+        "test_case": 0
       },
       "inboundEndpointCount": 0,
       "outboundEndpointCount": 0,
       "componentCount": 1,
       "modelCount": 0,
-      "configCount": 72,
+      "configCount": 49,
       "dependencyCount": 0,
       "testCaseCount": 0
     },
+    "evidenceGraphPath": "./docs/evidence/evidence-graph.json",
+    "rootPath": "./",
     "evidenceGraphIntegrity": {
       "passed": true,
       "issues": null,
       "warnings": null,
       "metrics": {
-        "entityCount": 74,
-        "edgeCount": 72,
+        "entityCount": 51,
+        "edgeCount": 49,
         "inboundEndpointCount": 0,
         "outboundEndpointCount": 0
       }
     },
-    "qualityThreshold": 80,
-    "profile": "default",
     "scriptFailures": null,
     "frameworks": [
       "ASP.NET Core",
       "ASP.NET MVC 5",
       "Flask",
       "Spring Boot"
-    ]
+    ],
+    "validationGate": {
+      "passed": true,
+      "reason": "Structured validation gate passed",
+      "averageScore": 99.0,
+      "belowThreshold": 0,
+      "strict": false,
+      "qualityThreshold": 80,
+      "evaluatedDocuments": 8
+    },
+    "narrativeReviewReasons": [
+      "style-business-verb-coverage-low:1",
+      "style-what-it-does-purpose-verb-low:0"
+    ],
+    "outputPath": "./docs",
+    "profile": "default",
+    "strictValidation": false
   },
   "provenance": {
     "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "546ea9d",
-    "generatedAt": "2026-10-22T10:29:42-04:00",
+    "commitHash": "17cdd36",
+    "generatedAt": "2026-10-23T01:55:45-04:00",
     "profile": "default",
     "scope": ".",
     "confidenceInferenceFlags": [

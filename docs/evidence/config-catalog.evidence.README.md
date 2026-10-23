@@ -15,3 +15,12 @@ The generated evidence artifact `config-catalog.evidence.json` is committed to v
 - Always review diffs in evidence artifacts before committing.
 - Only commit regenerated evidence when it reflects a real, intended change in the codebase or configuration model.
 - If in doubt, consult project documentation or leads before removing or ignoring evidence files.
+
+## Provenance
+
+- Generator Version: appdoc-run-all-generators/3.0.0
+- Commit Hash: 17cdd36
+- Generated At: 2026-10-23T01:55:45-04:00
+- Profile: default
+- Scope: .
+- Confidence/Inference Flags: deterministic, evidence-backed

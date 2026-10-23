@@ -1,433 +1,52 @@
 # Git Ownership & Change History (Deterministic)
 
-**Report date**: 2026-10-21  
+**Report date**: 2026-10-23  
 
 > **What this is:** per-file ownership (last-change author), last-change date, and churn (instability = distinct commit count) derived deterministically from the target's git log + CODEOWNERS (when present). This backs the §13 Ownership cell with git-derived owner data **only when the git history is real and sufficient**.  
 
 > **Honest-Unknown guarantee:** a **non-git** directory (no .git) and **shallow** history (fewer than 2 commits — e.g. a single squashed commit) are **NOT** meaningful ownership, so every owner field degrades to Unknown rather than passing a single commit's author off as ownership. Git is never invoked on a non-git directory.
 
-## Result: Derived (real git history — 45 commit(s), 1 author(s))
+## Result: Derived (real git history — 53 commit(s), 1 author(s))
 
 | Field | Value |
 |-------|-------|
 | isGitRepo | true |
-| commitCount | 45 |
+| commitCount | 53 |
 | authors | 1 |
 | first date | 2025-11-14 |
-| last date | 2026-10-21 |
+| last date | 2026-10-23 |
 | declared owner (CODEOWNERS *) | Unknown |
-| top author | Tim Niles <nilestimothyj@gmail.com> (45 commits) |
+| top author | Tim Niles (53 commits) |
 
 ### Authors
 
 | Author | Commits |
 |--------|---------|
-| Tim Niles <nilestimothyj@gmail.com> | 45 |
+| Tim Niles | 53 |
 
 ### Per-file ownership (owner = last-change author; churn = commit count)
 
 | File | Owner (last-change) | Last change | Churn |
 |------|---------------------|-------------|-------|
-| `.appdoc/scripts/powershell/run-all-generators.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 23 |
-| `.appdoc/scripts/powershell/validate-documentation.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 16 |
-| `.appdoc/scripts/powershell/generate-overview.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 15 |
-| `docs/build-cookbook.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
-| `docs/debt-register.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
-| `docs/dependencies-catalog.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
-| `docs/overview.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
-| `docs/start-here.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
-| `docs/test-catalog.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
-| `.appdoc/scripts/powershell/generate-api-inventory.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 13 |
-| `.appdoc/scripts/powershell/modules/AppDoc.ConfigCatalog.Renderer.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
-| `docs/api-inventory.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
-| `docs/config-catalog.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
-| `docs/data-model.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
-| `docs/evidence/manifest.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
-| `docs/evidence/start-here.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
-| `docs/evidence/task-guides.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
-| `docs/quality-report.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
-| `docs/task-guides.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
-| `docs/validation-report.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
-| `README.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
-| `.appdoc/scripts/powershell/generate-config-catalog.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 11 |
-| `.appdoc/scripts/powershell/modules/AppDoc.DebtRegister.Renderer.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 11 |
-| `.appdoc/scripts/powershell/template-helpers.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 11 |
-| `docs/diagnostics-report.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 11 |
-| `docs/evidence/api-inventory.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 11 |
-| `docs/evidence/build-cookbook.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 11 |
-| `docs/evidence/data-model.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 11 |
-| `docs/evidence/debt-register.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 11 |
-| `docs/evidence/dependencies-catalog.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 11 |
-| `docs/evidence/overview.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 11 |
-| `docs/evidence/test-catalog.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 11 |
-| `docs/index.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 11 |
-| `.appdoc/scripts/powershell/generate-dependencies-catalog.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 10 |
-| `.appdoc/scripts/powershell/generate-task-guides.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 10 |
-| `.appdoc/scripts/powershell/modules/AppDoc.ApiInventory.Renderer.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 10 |
-| `.appdoc/scripts/powershell/modules/AppDoc.DependenciesCatalog.Renderer.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-11 | 10 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Evidence.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 10 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Scope.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 10 |
-| `docs/architecture-fingerprint.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 10 |
-| `docs/evidence/config-catalog.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 10 |
-| `docs/evidence/narrative-context-pack.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 10 |
-| `docs/evidence/narrative-run-report.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 10 |
-| `docs/evidence/overview-truth-pack.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 10 |
-| `docs/technical-implementation-plan.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 10 |
-| `docs/validation-diagnostics.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 10 |
-| `.appdoc/scripts/powershell/generate-build-cookbook.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 9 |
-| `.appdoc/scripts/powershell/modules/AppDoc.ConfigCatalog.Extractor.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 9 |
-| `.appdoc/scripts/powershell/modules/AppDoc.DataModel.Renderer.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 9 |
-| `.appdoc/scripts/powershell/modules/AppDoc.TestCatalog.Renderer.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 9 |
-| `docs/ast-typescript-cache.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 9 |
-| `docs/framework-detection.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 9 |
-| `.appdoc/scripts/powershell/generate-data-model.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 8 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Diagnostics.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 8 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Overview.ContextPack.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 8 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Overview.Renderer.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 8 |
-| `.appdoc/scripts/powershell/validate-diagrams.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-11 | 8 |
-| `.appdoc/scripts/powershell/validate-overview.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 8 |
-| `.github/prompts/appdoc.enhance.prompt.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 8 |
-| `docs/diagrams/critical-sequences.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 8 |
-| `docs/diagrams/data-flow.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 8 |
-| `docs/diagrams/data-lineage-core.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 8 |
-| `docs/diagrams/internal-flow.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 8 |
-| `docs/evidence/diagram-truth-pack.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 8 |
-| `.appdoc/scripts/powershell/generate-debt-register.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 7 |
-| `.appdoc/scripts/powershell/modules/AppDoc.BuildCookbook.Renderer.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 7 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Contracts.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 7 |
-| `.appdoc/scripts/powershell/modules/AppDoc.DataModel.Extractor.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 7 |
-| `.appdoc/scripts/powershell/modules/AppDoc.DependenciesCatalog.Extractor.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 7 |
-| `.appdoc/scripts/powershell/remediate-generated-docs.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-11 | 7 |
-| `.appdoc/scripts/powershell/validate-test-catalog.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 7 |
-| `.appdoc/templates/config-catalog-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 7 |
-| `.github/prompts/appdoc.begin.prompt.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 7 |
-| `.gitignore` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 7 |
-| `docs/ast-csharp-cache.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 7 |
-| `docs/diagrams/c4-container.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 7 |
-| `docs/diagrams/c4-context.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 7 |
-| `docs/evidence/evidence-graph.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 7 |
-| `docs/evidence/narrative/narrative_draft.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 7 |
-| `docs/evidence/narrative/narrative_final.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 7 |
-| `docs/evidence/narrative/purpose_model.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 7 |
-| `.appdoc/policies/scope.v1.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 6 |
-| `.appdoc/scripts/powershell/generate-mermaid-architecture-suite.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 6 |
-| `.appdoc/scripts/powershell/generate-start-here.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 6 |
-| `.appdoc/scripts/powershell/generate-test-catalog.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 6 |
-| `.appdoc/scripts/powershell/modules/AppDoc.ApiInventory.Extractor.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 6 |
-| `.appdoc/scripts/powershell/modules/AppDoc.ArchitectureFingerprint.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 6 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Diagrams.Renderer.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-11 | 6 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Overview.TruthPack.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 6 |
-| `.appdoc/scripts/powershell/parse-typescript-ast.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 6 |
-| `.appdoc/scripts/powershell/validate-start-here.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 6 |
-| `.appdoc/templates/build-cookbook-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 6 |
-| `.github/prompts/appdoc.diagrams.prompt.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 6 |
-| `ROADMAP.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 6 |
-| `.appdoc/scripts/powershell/ci-doc-integrity-gate.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 5 |
-| `.appdoc/scripts/powershell/modules/AppDoc.DebtRegister.Extractor.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-20 | 5 |
-| `.appdoc/scripts/powershell/parse-csharp-ast.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 5 |
-| `.appdoc/scripts/powershell/validate-api-inventory.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 5 |
-| `.appdoc/scripts/powershell/validate-debt-register.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 5 |
-| `.appdoc/templates/api-inventory-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 5 |
-| `.appdoc/templates/data-model-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 5 |
-| `.appdoc/templates/dependencies-catalog-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 5 |
-| `.appdoc/templates/overview-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 5 |
-| `.appdoc/templates/tech-debt-register-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 5 |
-| `.appdoc/templates/test-catalog-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 5 |
-| `docs/api-inventory.appendix.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 5 |
-| `docs/appdoc-artifact-quality-audit.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 5 |
-| `docs/appdoc-remediation-plan.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 5 |
-| `docs/evidence/evidence-graph.summary.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 5 |
-| `docs/evidence/metrics-canonical.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 5 |
-| `docs/implementation-checklist-v3.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 5 |
-| `.appdoc/scripts/powershell/agent-bridge-responder.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 4 |
-| `.appdoc/scripts/powershell/generate-c4-mermaid-diagrams.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 4 |
-| `.appdoc/scripts/powershell/generate-docs-index.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 4 |
-| `.appdoc/scripts/powershell/modules/AppDoc.AI.Provider.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 4 |
-| `.appdoc/scripts/powershell/modules/AppDoc.BuildCookbook.Extractor.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 4 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Diagrams.Normalizer.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-11 | 4 |
-| `.appdoc/scripts/powershell/modules/AppDoc.FrameworkDetection.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 4 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Overview.Narrative.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 4 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Overview.Pipeline.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 4 |
-| `.appdoc/scripts/powershell/modules/AppDoc.TestCatalog.Extractor.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-20 | 4 |
-| `.appdoc/scripts/powershell/validate-dependencies-catalog.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 4 |
-| `.github/copilot-instructions.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-15 | 4 |
-| `docs/diagrams/index.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-11 | 4 |
-| `tmp/logs/validate-documentation.out.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 4 |
-| `.appdoc/docs/diagram-workflow.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 3 |
-| `.appdoc/profiles/default.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 3 |
-| `.appdoc/scripts/powershell/appdoc.diagnose.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 3 |
-| `.appdoc/scripts/powershell/common.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 3 |
-| `.appdoc/scripts/powershell/generate-diagrams.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 3 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Determinism.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-20 | 3 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Diagrams.GraphExtractor.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-11 | 3 |
-| `.appdoc/scripts/powershell/modules/AppDoc.EvidenceGraph.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 3 |
-| `.appdoc/scripts/powershell/modules/AppDoc.TaskGuides.Extractor.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-20 | 3 |
-| `.appdoc/scripts/powershell/modules/AppDoc.TaskGuides.Renderer.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-19 | 3 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Validation.Core.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-11 | 3 |
-| `.appdoc/scripts/powershell/run-appdoc-semantic-enrich.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 3 |
-| `.appdoc/scripts/powershell/synthesize-assessment-report.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 3 |
-| `.appdoc/scripts/powershell/validate-config-catalog.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-18 | 3 |
-| `.appdoc/scripts/powershell/validate-data-model.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-18 | 3 |
-| `.appdoc/templates/task-guides-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 3 |
-| `.github/workflows/appdoc-ci.yml` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 3 |
-| `.tmp-logs/run-pester-safe.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 3 |
-| `docs/evidence/config-catalog.evidence.README.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 3 |
-| `docs/evidence/diagram-truth-pack.summary.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 3 |
-| `docs/evidence/narrative/review_notes.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 3 |
-| `tests/powershell/MermaidDiagrams.Tests.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 3 |
-| `.appdoc/scripts/powershell/calculate-quality-metrics.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `.appdoc/scripts/powershell/ci-diagram-stability-gate.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 2 |
-| `.appdoc/scripts/powershell/gap-analysis.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `.appdoc/scripts/powershell/generate-architecture-diagram.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 2 |
-| `.appdoc/scripts/powershell/generate-c4-diagrams.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 2 |
-| `.appdoc/scripts/powershell/generate-dependency-graph.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-18 | 2 |
-| `.appdoc/scripts/powershell/generate-readme.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Diagrams.Contract.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 2 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Overview.Extractor.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-18 | 2 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Profiles.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 2 |
-| `.appdoc/scripts/powershell/modules/C4ModelBuilder.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 2 |
-| `.appdoc/scripts/powershell/modules/DiagramIntegration.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 2 |
-| `.appdoc/scripts/powershell/modules/PlantUMLRenderer.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 2 |
-| `.appdoc/scripts/powershell/render-plantuml-diagrams.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 2 |
-| `.appdoc/scripts/powershell/run-appdoc-enrich.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `.appdoc/scripts/powershell/templates/c4/c4-component-template.puml` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 2 |
-| `.appdoc/scripts/powershell/templates/c4/c4-container-template.puml` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 2 |
-| `.appdoc/scripts/powershell/templates/c4/c4-context-template.puml` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 2 |
-| `.appdoc/scripts/powershell/templates/diagrams-readme-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 2 |
-| `.appdoc/scripts/powershell/validate-build-cookbook.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-18 | 2 |
-| `.appdoc/scripts/powershell/validate-task-guides.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `.appdoc/tools/AppDoc.CSharpAstParser/Program.cs` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 2 |
-| `.github/prompts/appdoc.enrich.prompt.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `.tmp-logs/pester-full.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 2 |
-| `.vscode/settings.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-18 | 2 |
-| `davia` | Tim Niles <nilestimothyj@gmail.com> | 2025-11-14 | 2 |
-| `docs/diagnostics-report.summary.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-11 | 2 |
-| `docs/evidence/manifest.summary.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 2 |
-| `docs/evidence/narrative-context-pack.summary.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 2 |
-| `docs/evidence/narrative-run-report.summary.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 2 |
-| `docs/evidence/overview-truth-pack.summary.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 2 |
-| `docs/quality-report.summary.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 2 |
-| `docs/validation-report.summary.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-16 | 2 |
-| `tmp_before.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 2 |
-| `tmp_crit.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 2 |
-| `tmp_crit2.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 2 |
-| `tmp_renderer_part.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 2 |
-| `tmp_seq.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-26 | 2 |
-| `tmp/CMich.CoreApi-master.matrix.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/DegreeAudit.matrix.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/LmsConnect-master.matrix.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/logs/pester-arch.out.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/logs/run-all-generators.out.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/logs/validate-diagrams.out.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/matrix-baseline.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/matrix-cmich-run.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/matrix-current.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/matrix-degreeaudit-run.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/matrix-lms-run.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/noapi-smoke.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/pester.latest.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/run-all-generators.latest.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/validate-diagrams.latest.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/validate-documentation.latest.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/validation-latest.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/verify-CMich.CoreApi-master.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/verify-DegreeAudit.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `tmp/verify-LmsConnect-master.log` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 2 |
-| `.appdoc/memory/style-guide.md` | Tim Niles <nilestimothyj@gmail.com> | 2025-11-14 | 1 |
-| `.appdoc/scripts/powershell/analyze-codebase.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2025-11-14 | 1 |
-| `.appdoc/scripts/powershell/analyze-repository.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2025-11-14 | 1 |
-| `.appdoc/scripts/powershell/ci-enrichment-gate.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `.appdoc/scripts/powershell/ci-syntax-gate.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-18 | 1 |
-| `.appdoc/scripts/powershell/extract-config.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2025-11-14 | 1 |
-| `.appdoc/scripts/powershell/generate-assessment-report.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2025-11-14 | 1 |
-| `.appdoc/scripts/powershell/generate-classic-asp-datamodel.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/generate-classic-asp-endpoints.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/generate-classic-asp-extcalls.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/generate-classic-asp-failures.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/generate-classic-asp-platform.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/generate-classic-asp-procdict.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/generate-classic-asp-security.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/generate-evidence-register.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/generate-external-calls.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/generate-git-ownership.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/generate-html-report.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/generate-pristine-report.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/generate-source-docs.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/generate-unified-master.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/generate-verification-appendix.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Config.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Epistemic.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/modules/AppDoc.ExternalCall.Extractor.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/modules/AppDoc.GitOwnership.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Overview.PromptCompiler.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-20 | 1 |
-| `.appdoc/scripts/powershell/modules/AppDoc.Pristine.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/modules/AppDoc.SemanticRedaction.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/modules/AppDoc.SourceDocs.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/scripts/powershell/quality-framework.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2025-11-14 | 1 |
-| `.appdoc/scripts/powershell/run-appdoc-build.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/templates/html/navy-teal.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/templates/html/theme.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `.appdoc/templates/readme-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2025-11-14 | 1 |
-| `.appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.github/prompts/speckit.analyze.prompt.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.github/prompts/speckit.checklist.prompt.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.github/prompts/speckit.clarify.prompt.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.github/prompts/speckit.constitution.prompt.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.github/prompts/speckit.implement.prompt.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.github/prompts/speckit.plan.prompt.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.github/prompts/speckit.specify.prompt.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.github/prompts/speckit.tasks.prompt.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.specify/memory/constitution.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.specify/scripts/powershell/check-prerequisites.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.specify/scripts/powershell/common.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.specify/scripts/powershell/create-new-feature.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.specify/scripts/powershell/setup-plan.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.specify/scripts/powershell/update-agent-context.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.specify/templates/agent-file-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.specify/templates/checklist-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.specify/templates/plan-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.specify/templates/spec-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.specify/templates/tasks-template.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `.tmp-logs/pester-full.result.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 1 |
-| `docs/adr/0001-redaction-externalize-per-target-secrets.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `docs/adr/0002-generated-docs-as-code.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `docs/api-inventory.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `docs/application-documentation.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `docs/application-documentation.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `docs/data-model.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `docs/evidence-register.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `docs/evidence/api-inventory.evidence.enriched.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/build-cookbook.evidence.enriched.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/config-catalog.evidence.enriched.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/data-model.evidence.enriched.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/debt-register.evidence.enriched.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/dependencies-catalog.evidence.enriched.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/overview.evidence.enriched.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/applied/api-inventory.semantic.applied.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/applied/build-cookbook.semantic.applied.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/applied/config-catalog.semantic.applied.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/applied/data-model.semantic.applied.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/applied/debt-register.semantic.applied.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/applied/dependencies-catalog.semantic.applied.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/applied/overview.semantic.applied.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/applied/start-here.semantic.applied.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/applied/task-guides.semantic.applied.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/applied/test-catalog.semantic.applied.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/input/api-inventory.semantic.input.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/input/build-cookbook.semantic.input.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/input/config-catalog.semantic.input.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/input/data-model.semantic.input.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/input/debt-register.semantic.input.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/input/dependencies-catalog.semantic.input.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/input/overview.semantic.input.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/input/start-here.semantic.input.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/input/task-guides.semantic.input.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/input/test-catalog.semantic.input.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/semantic/semantic-pending.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/start-here.evidence.enriched.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/task-guides.evidence.enriched.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/evidence/test-catalog.evidence.enriched.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-05 | 1 |
-| `docs/extcalls.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `docs/GLOSSARY.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `docs/procdict.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `docs/report.html` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `docs/security.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `docs/test-catalog.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `docs/verification-appendix.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `SKILL.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/classic-asp-sample/admin-report.asp` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/classic-asp-sample/audit-log.asp` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/classic-asp-sample/common/helpers.inc` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/classic-asp-sample/global.asa` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/classic-asp-sample/index.asp` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/classic-asp-sample/new-ticket.asp` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/classic-asp-sample/search-ticket.asp` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/classic-asp-sample/web.config` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-core-api-sample/appsettings.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-core-api-sample/Controllers/OrdersController.cs` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-core-api-sample/Controllers/StatusController.cs` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-core-api-sample/Controllers/TicketsController.cs` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-core-api-sample/Data/TicketRepository.cs` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-core-api-sample/Models/Ticket.cs` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-core-api-sample/Program.cs` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-core-api-sample/TicketApi.csproj` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-webforms-sample/DataAccess.cs` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-webforms-sample/index.aspx` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-webforms-sample/index.aspx.cs` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-webforms-sample/resetpwd.aspx` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-webforms-sample/resetpwd.aspx.cs` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-webforms-sample/search.aspx` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-webforms-sample/search.aspx.cs` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-webforms-sample/Ticket.cs` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-webforms-sample/TicketService.cs` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/csharp-webforms-sample/web.config` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/java-spring-sample/pom.xml` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/java-spring-sample/README.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/java-spring-sample/src/main/java/com/acme/Application.java` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/java-spring-sample/src/main/java/com/acme/Ticket.java` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/java-spring-sample/src/main/java/com/acme/TicketRepository.java` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/java-spring-sample/src/main/java/com/acme/TicketsController.java` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/java-spring-sample/src/main/java/com/acme/TicketService.java` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/java-spring-sample/src/main/java/com/example/app/AuditLog.java` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/java-spring-sample/src/main/java/com/example/app/AuditLogController.java` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/java-spring-sample/src/main/resources/application.properties` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/java-spring-sample/src/main/resources/application.yml` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/mock-llm-semantic-output/data-model.semantic.output.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/node-express-sample/.env` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/node-express-sample/package.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/node-express-sample/README.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/node-express-sample/src/data/db.ts` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/node-express-sample/src/index.ts` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/node-express-sample/src/models/Ticket.ts` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/node-express-sample/src/routes/tickets.ts` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/node-express-sample/src/services/itsm.ts` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/node-express-sample/tsconfig.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/python-flask-sample/.env` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/python-flask-sample/app.py` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/python-flask-sample/data/__init__.py` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/python-flask-sample/data/db.py` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/python-flask-sample/docs/ast-csharp-cache.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/python-flask-sample/docs/ast-typescript-cache.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/python-flask-sample/models.py` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/python-flask-sample/README.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/python-flask-sample/requirements.txt` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/python-flask-sample/routes.py` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/python-flask-sample/services/__init__.py` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/fixtures/python-flask-sample/services/itsm.py` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 1 |
-| `tests/powershell/C4ModelBuilder.Tests.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/api-inventory.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/ast-csharp-cache.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/ast-typescript-cache.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/build-cookbook.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/config-catalog.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/data-model.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/debt-register.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/dependencies-catalog.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/diagnostics-report.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/diagrams/c4-container.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/diagrams/c4-context.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/diagrams/README.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/evidence/api-inventory.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/evidence/build-cookbook.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/evidence/config-catalog.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/evidence/data-model.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/evidence/debt-register.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/evidence/dependencies-catalog.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/evidence/manifest.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/evidence/overview.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/evidence/start-here.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/evidence/task-guides.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/evidence/test-catalog.evidence.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/framework-detection.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/index.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/overview.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/quality-report.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/start-here.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/task-guides.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/test-catalog.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/validation-diagnostics.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/docs/validation-report.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
-| `tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj` | Tim Niles <nilestimothyj@gmail.com> | 2026-02-17 | 1 |
+| `README.md` | Tim Niles | 2026-10-23 | 14 |
+| `.gitignore` | Tim Niles | 2026-10-23 | 9 |
+| `.github/prompts/appdoc.begin.prompt.md` | Tim Niles | 2026-10-23 | 8 |
+| `ROADMAP.md` | Tim Niles | 2026-10-23 | 8 |
+| `.github/copilot-instructions.md` | Tim Niles | 2026-10-23 | 6 |
+| `.github/prompts/appdoc.diagrams.prompt.md` | Tim Niles | 2026-02-26 | 6 |
+| `.github/workflows/appdoc-ci.yml` | Tim Niles | 2026-10-23 | 6 |
+| `references/config-schema.md` | Tim Niles | 2026-10-23 | 5 |
+| `references/verification.md` | Tim Niles | 2026-10-23 | 4 |
+| `SKILL.md` | Tim Niles | 2026-10-23 | 4 |
+| `.github/prompts/appdoc.enrich.prompt.md` | Tim Niles | 2026-10-23 | 3 |
+| `references/enrichment-operations.md` | Tim Niles | 2026-10-23 | 3 |
+| `.gitattributes` | Tim Niles | 2026-10-23 | 2 |
+| `.editorconfig` | Tim Niles | 2026-10-23 | 1 |
+| `.vscode/settings.example.json` | Tim Niles | 2026-10-23 | 1 |
+| `LICENSE` | Tim Niles | 2026-10-23 | 1 |
+| `NOTICE` | Tim Niles | 2026-10-23 | 1 |
+| `PSScriptAnalyzerSettings.psd1` | Tim Niles | 2026-10-23 | 1 |
+| `references/enrichment-contract.md` | Tim Niles | 2026-10-23 | 1 |
 
 ---
 
@@ -436,8 +55,8 @@
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 546ea9d
-- Generated At: 2026-10-22T10:29:42-04:00
+- Commit Hash: 17cdd36
+- Generated At: 2026-10-23T01:55:45-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

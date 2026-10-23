@@ -1,6 +1,6 @@
 {
   "artifact": "build-cookbook",
-  "generatedAt": "2026-10-22T10:29:27-04:00",
+  "generatedAt": "2026-10-23T01:55:31-04:00",
   "recordCount": 1,
   "records": [
     {
@@ -16,13 +16,12 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     }
   ],
   "metadata": {
-    "commandCount": 0,
     "cicdCount": 1,
-    "prerequisiteCount": 0,
+    "commandCount": 0,
     "requiredEvidenceKeys": [
       "commands"
     ],
@@ -30,7 +29,8 @@
       "Summary",
       "Build Steps"
     ],
-    "generator": "generate-build-cookbook.ps1"
+    "generator": "generate-build-cookbook.ps1",
+    "prerequisiteCount": 0
   },
   "determinism": {
     "hashAlgorithm": "SHA256",

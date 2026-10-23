@@ -1,4 +1,18 @@
 {
+  "determinism": {
+    "canonicalOrdering": [
+      "nodes:type,label,id",
+      "edges:from,to,type,label,id"
+    ],
+    "stableIdAlgorithm": "sha1(prefix|seed)[0:8]",
+    "hashAlgorithm": "SHA256",
+    "excludeKeys": [
+      "generatedAt",
+      "updatedAt",
+      "timestamp"
+    ],
+    "contentHash": "2e14d7fd716cc98df24c52cf3c0846167a1615cd603f19819d4a9b58beb3ae22"
+  },
   "nodes": [
     {
       "id": "component_core_processing_6d28d771",
@@ -22,88 +36,79 @@
       "evidence_refs": "cfg-0002"
     },
     {
-      "id": "config_github_copilot_chat_ex_3233c7ea",
+      "id": "config_jobs_drift_name_84d8c2e6",
       "type": "config",
-      "label": "github.copilot.chat.executions.enabled",
-      "group": "config-vscode",
+      "label": "jobs.drift.name",
+      "group": "config-workflow",
       "evidence_refs": "cfg-0003"
+    },
+    {
+      "id": "config_jobs_drift_needs_98e6a433",
+      "type": "config",
+      "label": "jobs.drift.needs",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0004"
+    },
+    {
+      "id": "config_jobs_drift_runs_on_589e2ca4",
+      "type": "config",
+      "label": "jobs.drift.runs-on",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0005"
+    },
+    {
+      "id": "config_jobs_drift_steps_shell_ed460ba6",
+      "type": "config",
+      "label": "jobs.drift.steps.shell",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0006"
+    },
+    {
+      "id": "config_jobs_drift_steps_with_d2da89f4",
+      "type": "config",
+      "label": "jobs.drift.steps.with.fetch-depth",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0007"
+    },
+    {
+      "id": "config_jobs_drift_steps_0_99a79b90",
+      "type": "config",
+      "label": "jobs.drift.steps[0]",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0008"
+    },
+    {
+      "id": "config_jobs_drift_steps_1_38332dfa",
+      "type": "config",
+      "label": "jobs.drift.steps[1]",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0009"
     },
     {
       "id": "config_jobs_hygiene_name_a7867886",
       "type": "config",
       "label": "jobs.hygiene.name",
       "group": "config-workflow",
-      "evidence_refs": "cfg-0004"
+      "evidence_refs": "cfg-0010"
     },
     {
       "id": "config_jobs_hygiene_runs_on_f616492a",
       "type": "config",
       "label": "jobs.hygiene.runs-on",
       "group": "config-workflow",
-      "evidence_refs": "cfg-0005"
+      "evidence_refs": "cfg-0011"
     },
     {
       "id": "config_jobs_hygiene_steps_run_348a44cb",
       "type": "config",
       "label": "jobs.hygiene.steps.run",
       "group": "config-workflow",
-      "evidence_refs": "cfg-0006"
-    },
-    {
-      "id": "config_jobs_hygiene_steps_she_e80f611f",
-      "type": "config",
-      "label": "jobs.hygiene.steps.shell",
-      "group": "config-workflow",
-      "evidence_refs": "cfg-0007"
-    },
-    {
-      "id": "config_jobs_hygiene_steps_0_81f99013",
-      "type": "config",
-      "label": "jobs.hygiene.steps[0]",
-      "group": "config-workflow",
-      "evidence_refs": "cfg-0008"
-    },
-    {
-      "id": "config_jobs_hygiene_steps_1_1f5e909e",
-      "type": "config",
-      "label": "jobs.hygiene.steps[1]",
-      "group": "config-workflow",
-      "evidence_refs": "cfg-0009"
-    },
-    {
-      "id": "config_jobs_hygiene_steps_2_93e42ea2",
-      "type": "config",
-      "label": "jobs.hygiene.steps[2]",
-      "group": "config-workflow",
-      "evidence_refs": "cfg-0010"
-    },
-    {
-      "id": "config_jobs_hygiene_steps_3_74378ec2",
-      "type": "config",
-      "label": "jobs.hygiene.steps[3]",
-      "group": "config-workflow",
-      "evidence_refs": "cfg-0011"
-    },
-    {
-      "id": "config_jobs_tests_name_93d08342",
-      "type": "config",
-      "label": "jobs.tests.name",
-      "group": "config-workflow",
       "evidence_refs": "cfg-0012"
     }
   ],
-  "apiEntries": [],
   "schemaVersion": "appdoc-graph/v1",
-  "project": {
-    "name": "w2",
-    "rootPath": "."
-  },
-  "sources": {
-    "apiEvidencePath": "docs/evidence/api-inventory.evidence.json",
-    "dependencyEvidencePath": "docs/evidence/dependencies-catalog.evidence.json",
-    "configEvidencePath": "docs/evidence/config-catalog.evidence.json",
-    "modelEvidencePath": "docs/evidence/data-model.evidence.json"
-  },
+  "generatedAt": "2026-10-23T01:55:39-04:00",
+  "edges": [],
   "metrics": {
     "nodeCount": 13,
     "edgeCount": 0,
@@ -114,20 +119,15 @@
     "configCount": 12,
     "dependencyCount": 0
   },
-  "edges": [],
-  "determinism": {
-    "canonicalOrdering": [
-      "nodes:type,label,id",
-      "edges:from,to,type,label,id"
-    ],
-    "stableIdAlgorithm": "sha1(prefix|seed)[0:8]",
-    "hashAlgorithm": "SHA256",
-    "excludeKeys": [
-      "generatedAt",
-      "updatedAt",
-      "timestamp"
-    ],
-    "contentHash": "4a5fe45a53a9905dfcbf52c158aef3b55669a3fa1814ced8ebd36c49b125e488"
+  "apiEntries": [],
+  "sources": {
+    "dependencyEvidencePath": "docs/evidence/dependencies-catalog.evidence.json",
+    "modelEvidencePath": "docs/evidence/data-model.evidence.json",
+    "configEvidencePath": "docs/evidence/config-catalog.evidence.json",
+    "apiEvidencePath": "docs/evidence/api-inventory.evidence.json"
   },
-  "generatedAt": "2026-10-22T10:29:37-04:00"
+  "project": {
+    "name": "selfbuild",
+    "rootPath": "."
+  }
 }

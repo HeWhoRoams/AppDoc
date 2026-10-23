@@ -2,8 +2,8 @@
   "artifact": "pristine-report",
   "generator": "generate-pristine-report.ps1",
   "module": "AppDoc.Pristine.psm1",
-  "reportDate": "10/22/2026 10:29:35",
-  "benchmarkRef": "HELP_DESK_APPLICATION_DOCUMENTATION.md (18-section CMU Help Desk benchmark)",
+  "reportDate": "10/23/2026 01:55:38",
+  "benchmarkRef": "AppDoc 20-section reference structure (18 shared sections + 2 discipline additions)",
   "subScore": 78.9,
   "counts": {
     "PASS": 11,
@@ -38,28 +38,28 @@
       "sectionRef": "5 (5.2 owner-required)",
       "whatsMissing": "The role/permission capability matrix (§5.2): which roles exist, their concrete permissions, and how access is granted/revoked. Source code shows the role TYPES but not the authoritative policy.",
       "ownerMustProvide": "Authoritative role catalog + per-role permission matrix (who can do what), plus the access-control policy (RBAC/claims) with owner sign-off.",
-      "enhanceTarget": "/appdoc.enhance --section \"Roles and Access Model\" (fill §5.2 capability matrix; tag Verified on owner confirmation)"
+      "supplyVia": ".appdoc/overlays/roles-and-access-model.md"
     },
     {
-      "section": "Help Desk Workflows",
+      "section": "Operational Workflows",
       "sectionRef": "7 (7.x policy/escalation owner-required)",
-      "whatsMissing": "The §7.x policy/escalation content: the human approval policy, escalation thresholds/SLAs, and decision rules for help-desk workflows. Code shows the flow shapes but not the policy the owner sets.",
-      "ownerMustProvide": "Escalation policy + approval thresholds + SLA/decision rules for each help-desk workflow (owner-set, not derivable from source).",
-      "enhanceTarget": "/appdoc.enhance --section \"Help Desk Workflows\" (fill §7 policy/escalation; tag Verified on owner confirmation)"
+      "whatsMissing": "The §7.3 sequencing/policy content: the steps of each workflow and their order, who may perform each action, and the escalation thresholds/SLAs. Source shows entry points and procedure contracts, not the policy the owner sets.",
+      "ownerMustProvide": "Workflow steps + authorization + escalation policy for each operational workflow (owner-set, not derivable from source); can be supplied as an operator overlay (.appdoc/overlays/operational-workflows.md).",
+      "supplyVia": ".appdoc/overlays/operational-workflows.md"
     },
     {
       "section": "Ownership and Maintenance",
       "sectionRef": "11 (13 ownership/SLO owner-required)",
       "whatsMissing": "The §13 ownership/SLO/on-call details: owning team, SLO targets, and on-call rotation. Source shows the components, not who owns them or the SLOs.",
       "ownerMustProvide": "Owning team(s), SLO targets/definitions, and on-call rotation (org knowledge, not derivable from source).",
-      "enhanceTarget": "/appdoc.enhance --section \"Ownership and Maintenance\" (fill §13 ownership/SLO/on-call; tag Verified on owner confirmation)"
+      "supplyVia": ".appdoc/overlays/ownership-and-maintenance.md"
     },
     {
       "section": "Open Questions and Documentation Gaps",
       "sectionRef": "17",
       "whatsMissing": "The §17 open-questions resolution: answers/owners for each documented gap. The gaps are auto-surfaced, but their RESOLUTIONS + owners are owner-provided.",
       "ownerMustProvide": "For each open gap: the answer (or \"unresolved\"), a named owner, and a due date/next action.",
-      "enhanceTarget": "/appdoc.enhance --section \"Open Questions and Documentation Gaps\" (fill §17 resolutions/owners; tag Verified on owner confirmation)"
+      "supplyVia": ".appdoc/overlays/open-questions-and-documentation-gaps.md"
     }
   ],
   "records": [
@@ -135,7 +135,7 @@
       "section": "Roles and Access Model",
       "headingPresent": true,
       "status": "OWNER_REQUIRED",
-      "reason": "owner-pending cell (correctly Unknown; pending /appdoc.enhance); also carries 2 verified source-derivable row(s)",
+      "reason": "owner-pending cell (correctly Unknown; pending owner input); also carries 2 verified source-derivable row(s)",
       "populated": true,
       "rowCount": 0,
       "textPopulation": 2,
@@ -166,13 +166,13 @@
       "sectionScore": 0
     },
     {
-      "section": "Help Desk Workflows",
+      "section": "Operational Workflows",
       "headingPresent": true,
       "status": "OWNER_REQUIRED",
-      "reason": "owner-pending cell (correctly Unknown; pending /appdoc.enhance); also carries 3 verified source-derivable row(s)",
+      "reason": "owner-pending cell (correctly Unknown; pending owner input); also carries 4 verified source-derivable row(s)",
       "populated": true,
-      "rowCount": 0,
-      "textPopulation": 3,
+      "rowCount": 4,
+      "textPopulation": 1,
       "hasMermaid": false,
       "sourceSupport": 0,
       "epistemicTagged": true,
@@ -271,7 +271,7 @@
       "section": "Ownership and Maintenance",
       "headingPresent": true,
       "status": "OWNER_REQUIRED",
-      "reason": "owner-pending cell (correctly Unknown; pending /appdoc.enhance); also carries 23 verified source-derivable row(s)",
+      "reason": "owner-pending cell (correctly Unknown; pending owner input); also carries 23 verified source-derivable row(s)",
       "populated": true,
       "rowCount": 23,
       "textPopulation": 4,
@@ -324,7 +324,7 @@
       "status": "PASS",
       "reason": "at benchmark depth; real content; epistemic-tagged",
       "populated": true,
-      "rowCount": 84,
+      "rowCount": 64,
       "textPopulation": 5,
       "hasMermaid": false,
       "sourceSupport": 0,
@@ -339,7 +339,7 @@
       "section": "Open Questions and Documentation Gaps",
       "headingPresent": true,
       "status": "OWNER_REQUIRED",
-      "reason": "owner-pending cell (correctly Unknown; pending /appdoc.enhance); also carries 12 verified source-derivable row(s)",
+      "reason": "owner-pending cell (correctly Unknown; pending owner input); also carries 12 verified source-derivable row(s)",
       "populated": true,
       "rowCount": 0,
       "textPopulation": 12,
@@ -392,7 +392,7 @@
       "status": "PASS",
       "reason": "at benchmark depth; real content; epistemic-tagged",
       "populated": true,
-      "rowCount": 54,
+      "rowCount": 8,
       "textPopulation": 5,
       "hasMermaid": false,
       "sourceSupport": 0,
@@ -404,5 +404,5 @@
       "sectionScore": 100
     }
   ],
-  "determinismHash": "16b6b8e755a93d71d44057314ccec0c28629c441f6729548ee630837b48fe5fd"
+  "determinismHash": "512611b2fde6fcb3d216eafb450d6ca04069ebff9bfb3b1595fc558302bc77a2"
 }

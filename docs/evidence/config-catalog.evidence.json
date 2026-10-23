@@ -1,773 +1,8 @@
 {
   "artifact": "config-catalog",
-  "generatedAt": "2026-10-22T10:29:27-04:00",
-  "recordCount": 72,
+  "generatedAt": "2026-10-23T01:55:31-04:00",
+  "recordCount": 49,
   "records": [
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.list",
-      "name": "chat.tools.fileOperations.autoApprove.list",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.read",
-      "name": "chat.tools.fileOperations.autoApprove.read",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction",
-      "name": "chat.tools.terminal.autoApprove.-ErrorAction",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-Json",
-      "name": "chat.tools.terminal.autoApprove.-Json",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-RootPath",
-      "name": "chat.tools.terminal.autoApprove.-RootPath",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-Verbose",
-      "name": "chat.tools.terminal.autoApprove.-Verbose",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove../.AppDoc/scripts/powershell/*.ps1",
-      "name": "chat.tools.terminal.autoApprove..\\.AppDoc\\\\scripts\\\\powershell\\\\*.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
-      "name": "chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-codebase.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/analyze-codebase.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-repository.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/analyze-repository.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/catalog-samples.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/catalog-samples.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/extract-config.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/extract-config.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-data-model.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-data-model.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-debt-register.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-debt-register.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-improvements.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-improvements.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-overview.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-overview.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/run-all-generators.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/run-all-generators.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-data-model.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/validate-data-model.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-debt-register.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/validate-debt-register.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-overview.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/validate-overview.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Copy-Item",
-      "name": "chat.tools.terminal.autoApprove.Copy-Item",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-ChildItem",
-      "name": "chat.tools.terminal.autoApprove.Get-ChildItem",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-Content",
-      "name": "chat.tools.terminal.autoApprove.Get-Content",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git",
-      "name": "chat.tools.terminal.autoApprove.git",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "false"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git fetch",
-      "name": "chat.tools.terminal.autoApprove.git fetch",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git status",
-      "name": "chat.tools.terminal.autoApprove.git status",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.pwsh",
-      "name": "chat.tools.terminal.autoApprove.pwsh",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Remove-Item",
-      "name": "chat.tools.terminal.autoApprove.Remove-Item",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "false"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Set-ExecutionPolicy",
-      "name": "chat.tools.terminal.autoApprove.Set-ExecutionPolicy",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "false"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Test-Path",
-      "name": "chat.tools.terminal.autoApprove.Test-Path",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Write-Host",
-      "name": "chat.tools.terminal.autoApprove.Write-Host",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
-        "required": true,
-        "value": "true"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
-    },
     {
       "artifact": "config-catalog",
       "source": ".github/workflows/appdoc-ci.yml:yaml/concurrency.cancel-in-progress",
@@ -775,15 +10,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "true",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "true"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -792,32 +27,134 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "ci-${{ github.ref }}",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "ci-${{ github.ref }}"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:github.copilot.chat.executions.enabled",
-      "name": "github.copilot.chat.executions.enabled",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.name",
+      "name": "jobs.drift.name",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "type": "JSON Configuration",
-        "file": ".vscode/settings.json",
+        "value": "Committed docs/ match a fresh build",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.needs",
+      "name": "jobs.drift.needs",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "hygiene",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.runs-on",
+      "name": "jobs.drift.runs-on",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "ubuntu-latest",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps.shell",
+      "name": "jobs.drift.steps.shell",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "pwsh",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps.with.fetch-depth",
+      "name": "jobs.drift.steps.with.fetch-depth",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "0",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps[0]",
+      "name": "jobs.drift.steps[0]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps[1]",
+      "name": "jobs.drift.steps[1]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "name: Rebuild the self-dogfood docs in a scratch copy and compare",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -826,15 +163,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "Repo hygiene and static gates",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "Repo hygiene and static gates"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -843,15 +180,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "ubuntu-latest",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "ubuntu-latest"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -860,15 +197,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "./.appdoc/scripts/powershell/ci-doc-integrity-gate.ps1 -RootPath .",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "./.appdoc/scripts/powershell/ci-doc-integrity-gate.ps1 -RootPath ."
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -877,15 +214,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "pwsh",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "pwsh"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -894,15 +231,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "uses: actions/checkout@v4"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -911,15 +248,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "name: No tracked files that .gitignore excludes",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "name: No tracked files that .gitignore excludes"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -928,15 +265,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "name: Skill docs are harness-agnostic and frontmatter is valid",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "name: PowerShell syntax gate"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -945,15 +282,185 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "name: Core is harness-neutral and carries no target-specific names",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "name: Documentation integrity gate"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[4]",
+      "name": "jobs.hygiene.steps[4]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "name: Entry scripts declare PowerShell 7.2 and CmdletBinding",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[5]",
+      "name": "jobs.hygiene.steps[5]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "name: Scripts named in docs, prompts and editor settings exist",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[6]",
+      "name": "jobs.hygiene.steps[6]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "name: No absolute host paths and no CR line endings in committed docs/",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[7]",
+      "name": "jobs.hygiene.steps[7]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "name: PowerShell syntax gate",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[8]",
+      "name": "jobs.hygiene.steps[8]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "name: Documentation integrity gate",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.name",
+      "name": "jobs.lint.name",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "PSScriptAnalyzer",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.runs-on",
+      "name": "jobs.lint.runs-on",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "ubuntu-latest",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps.shell",
+      "name": "jobs.lint.steps.shell",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "pwsh",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps[0]",
+      "name": "jobs.lint.steps[0]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps[1]",
+      "name": "jobs.lint.steps[1]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "name: Analyze (enforced rules fail the job; the rest are reported)",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -962,15 +469,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "Pester + proof harness (${{ matrix.os }}, dotnet ${{ matrix.dotnet }})",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "Pester + proof harness (${{ matrix.os }})"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -979,15 +486,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "hygiene",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "hygiene"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -996,15 +503,32 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "${{ matrix.os }}",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "${{ matrix.os }}"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.if",
+      "name": "jobs.tests.steps.if",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "matrix.dotnet == 'without'",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -1013,15 +537,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "./tests/powershell/test-semantic-quarantine.ps1",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "./tests/powershell/test-semantic-quarantine.ps1"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -1030,15 +554,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "pwsh",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "pwsh"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -1047,15 +571,32 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "8.0.x",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "8.0.x"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.with.fetch-depth",
+      "name": "jobs.tests.steps.with.fetch-depth",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "0",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -1064,15 +605,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "uses: actions/checkout@v4"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -1081,15 +622,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "uses: actions/setup-dotnet@v4"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -1098,15 +639,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "name: Hide dotnet (regex-fallback leg)",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "name: Install Pester 5"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -1115,15 +656,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "name: Install Pester 5",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "name: Pester (all suites in tests/powershell)"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -1132,15 +673,32 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "name: Pester (unit suites + golden suites)",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "name: Semantic quarantine proof harness (plain script, not Pester)"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[5]",
+      "name": "jobs.tests.steps[5]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "name: Semantic quarantine proof harness (plain script, not Pester)",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -1149,15 +707,66 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "false",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "false"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.dotnet",
+      "name": "jobs.tests.strategy.matrix.dotnet",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "[with]",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.include.dotnet",
+      "name": "jobs.tests.strategy.matrix.include.dotnet",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "without",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.include[0]",
+      "name": "jobs.tests.strategy.matrix.include[0]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "os: ubuntu-latest",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -1166,15 +775,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "[ubuntu-latest, windows-latest]",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "[ubuntu-latest, windows-latest]"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -1183,15 +792,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "appdoc-ci",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "appdoc-ci"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -1200,15 +809,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "[main]",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "[main]"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -1217,27 +826,27 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "value": "read",
         "type": "YAML Configuration",
-        "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "read"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-22T10:29:27-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     }
   ],
   "metadata": {
+    "requiredEvidenceKeys": [
+      "configurations"
+    ],
     "requiredSections": [
       "Summary",
       "Configuration Options"
     ],
-    "configCount": 72,
-    "requiredEvidenceKeys": [
-      "configurations"
-    ],
-    "generator": "generate-config-catalog.ps1"
+    "generator": "generate-config-catalog.ps1",
+    "configCount": 49
   },
   "determinism": {
     "hashAlgorithm": "SHA256",
@@ -1246,6 +855,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "55fc9a69e0ec7b025e60bca7dba815718a3690d6ef8b83305ae3d10cf41625cd"
+    "contentHash": "2b46a9d58748341fbbc998223446602c6fe107be7df3544dc01baec7d473d621"
   }
 }
