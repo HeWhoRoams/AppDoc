@@ -1,10 +1,10 @@
 # AppDoc roadmap
 
-**Last updated:** 2026-10-22
+**Last updated:** 2026-10-23
 **Current version:** 1.1.0
 
 This file says what is done, what comes next, and what is planned for 2.0. The detailed reasoning
-for the 1.1.0 work is in the two remediation plans (`AppDoc-Skill-Remediation-Plan.md` and
+for the 1.1.0 work is in `CHANGELOG.md`, the two remediation plans (`AppDoc-Skill-Remediation-Plan.md` and
 `AppDoc-Review-Remediation-Plan.md`, kept in the project workspace) and in `docs/adr/`.
 
 ## Done (1.0.x – 1.1.0)

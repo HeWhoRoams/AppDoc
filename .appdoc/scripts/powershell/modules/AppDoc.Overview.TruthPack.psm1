@@ -762,7 +762,8 @@ function Get-AppDocOverviewTruthPackData {
         # If ASP.NET Core or C# framework detected, assume at least 1 code file and 1 dependency
         if ($frameworkList -contains "ASP.NET Core" -or $frameworkList -contains "ASP.NET MVC 5" -or $frameworkList -contains "WCF Services") {
             $patchedCodeFileCount = 1
-            $patchedDependencyCount = [Math]::Max(1, $dependencyRecordCount)
+            # The dependency count is NOT patched: it must equal the dependency evidence
+            # (canonical metrics), and inventing one dependency made the overview disagree.
         }
         # Flag architecture as uncertain if frameworks are detected but no code scan hit.
         $architectureDetectionWarning = "Framework detected without code scan hit; counts patched for consistency."

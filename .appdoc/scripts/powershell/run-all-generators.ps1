@@ -1418,6 +1418,7 @@ $integrityGateScriptPath = Join-Path $PSScriptRoot "ci-doc-integrity-gate.ps1"
 if (Test-Path $integrityGateScriptPath) {
     Write-Host "`n[Integrity Gate]" -ForegroundColor Cyan
     Write-Host "Running ci-doc-integrity-gate.ps1..."
+    $global:LASTEXITCODE = 0
     & $integrityGateScriptPath -RootPath $RootPath
     $integrityExitCode = $LASTEXITCODE
     if ($integrityExitCode -ne 0) {

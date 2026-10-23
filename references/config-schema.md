@@ -70,7 +70,8 @@ Two additive lists, applied on top of the built-in extractors and the semantic g
 | `redactionPatterns[]` | Exact secret **values**. Matched literally: regex metacharacters in a value are not interpreted, so `a.b` only matches `a.b`. |
 | `redactionRegexes[]` | Regular expressions (case-insensitive). Every match is replaced with `[REDACTED]`. An invalid regex stops the build with exit code 3 (fail-closed); a typo can never silently weaken redaction. |
 
-Both lists are applied by the final sweep over every `docs/**` `.md`/`.html`/`.json`, by the
+Both lists are applied by the final sweep over every generated `docs/**` `.md`/`.html`/`.json` (hand-authored
+files — `docs/adr/` and files carrying `<!-- appdoc:hand-authored -->` — are left untouched), by the
 source-docs extractor, and are scanned for by the fail-closed semantic gate (which inspects raw string
 values, so a secret containing `"` or `\` is still caught). Use them for target-specific secrets the
 built-in patterns don't cover (e.g. a service-account username you've decided to treat as secret). A

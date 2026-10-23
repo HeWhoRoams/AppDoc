@@ -219,6 +219,9 @@ if ($operatorMatchers.Count -gt 0 -or $uriCredPatterns.Count -gt 0) {
     foreach ($f in $sweepFiles) {
         $content = Get-Content -LiteralPath $f.FullName -Raw -ErrorAction SilentlyContinue
         if ([string]::IsNullOrWhiteSpace($content)) { continue }
+        # Hand-authored files (docs/adr/, or carrying the hand-authored marker) are not build
+        # output; rewriting them would corrupt prose such as a documented `user:pass@` example.
+        if (Test-AppDocHandAuthoredDoc -Path $f.FullName -DocsPath $docsPath -Content $content) { continue }
         $orig = $content
         # Vendored third-party blocks (e.g. the inlined Mermaid library in report.html) are
         # skipped: they cannot hold target secrets, and the regexes would corrupt them.

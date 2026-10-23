@@ -42,10 +42,10 @@ jobs:
         shell: pwsh
         run: |
           # Slash commands belong in .github/prompts only; target narrative belongs in the
-          # target's overlay files, never in the tool.
+          # target's overlay files, never in the tool. (Paths to the prompt files themselves are fine.)
           $files = @(Get-ChildItem .appdoc/scripts -Recurse -Force -File -Include *.ps1,*.psm1) +
                    @(Get-ChildItem docs -Recurse -File -Include *.md | Where-Object { $_.FullName -notmatch '[\\/]adr[\\/]' })
-          $hits = $files | Select-String -Pattern '/appdoc\.(begin|enrich|enhance|diagrams)\b','(?i)helpweb|frontcounter|hdemp|hdgid|peregrine|bradford|resnet|talisma|bomgar|CALLE0A' -List
+          $hits = $files | Select-String -Pattern '/appdoc\.(begin|enrich|enhance|diagrams)\b(?!\.prompt\.md)','(?i)helpweb|frontcounter|hdemp|hdgid|peregrine|bradford|resnet|talisma|bomgar|CALLE0A' -List
           $hits = @($hits | Where-Object { (Get-Content $_.Path -Raw) -notmatch '<!-- appdoc:hand-authored -->' })
           if ($hits) { $hits | ForEach-Object { Write-Host "$($_.Path):$($_.LineNumber): $($_.Line.Trim())" }; throw 'Harness-specific or target-specific text found in the core' }
 

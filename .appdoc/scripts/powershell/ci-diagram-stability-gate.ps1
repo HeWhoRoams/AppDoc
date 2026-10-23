@@ -116,6 +116,9 @@ function Get-DiagramSnapshot {
     }
 
     if (-not $SkipGeneration) {
+        # Reset first: under StrictMode an unset $LASTEXITCODE throws, and a script that does
+        # not call `exit` leaves it unset (or holding a stale value from an earlier command).
+        $global:LASTEXITCODE = 0
         $null = & $suiteScript -RootPath $TargetRoot -SkipC4:$SkipC4
         $exitCode = [int]$LASTEXITCODE
         if ($exitCode -ne 0) {
