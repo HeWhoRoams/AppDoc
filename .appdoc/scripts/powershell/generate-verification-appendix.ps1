@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-verification-appendix.ps1
 #
@@ -22,10 +23,15 @@
 #          Reads docs/evidence/*.evidence.enriched.json first and falls back to
 #          docs/evidence/*.evidence.json. Deterministic. No network. No LLM.
 #
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
+
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 $epistemicModule = Join-Path $PSScriptRoot "modules\AppDoc.Epistemic.psm1"
 if (-not (Test-Path $epistemicModule)) {
@@ -33,15 +39,17 @@ if (-not (Test-Path $epistemicModule)) {
     exit 1
 }
 Import-Module $epistemicModule -Force -ErrorAction Stop
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 if (-not (Test-Path $RootPath)) {
     Write-Error "Root path does not exist: $RootPath"
     exit 1
 }
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) { New-Item -Path $docsPath -ItemType Directory -Force | Out-Null }
 $evidencePath = Join-Path $docsPath "evidence"
 $outputPath = Join-Path $docsPath "verification-appendix.md"
@@ -88,7 +96,7 @@ foreach ($file in $filesToRead) {
 }
 
 # --- helpers -------------------------------------------------------------------
-function Esc-Quote {
+function Format-QuotedText {
     param([string]$Text)
     # single-quoted PS string: escape embedded single quotes by doubling them.
     if ($null -eq $Text) { $Text = '' }
@@ -159,13 +167,13 @@ foreach ($rec in $allRecords) {
     }
 
     if ($fileExists -and -not [string]::IsNullOrWhiteSpace($pattern)) {
-        $fileEsc = Esc-Quote $file
+        $fileEsc = Format-QuotedText $file
         if (Test-AppDocRegexSafe $pattern) {
-            $cmd = ("Select-String -Path '{0}' -SimpleMatch '{1}'" -f $fileEsc, (Esc-Quote $pattern))
+            $cmd = ("Select-String -Path '{0}' -SimpleMatch '{1}'" -f $fileEsc, (Format-QuotedText $pattern))
         }
         else {
             $regexEsc = [regex]::Escape($pattern)
-            $cmd = ("Select-String -Path '{0}' -Pattern '{1}'" -f $fileEsc, (Esc-Quote $regexEsc))
+            $cmd = ("Select-String -Path '{0}' -Pattern '{1}'" -f $fileEsc, (Format-QuotedText $regexEsc))
         }
         $rowStatus = 'Verified'
         $withCommand++
@@ -179,14 +187,14 @@ foreach ($rec in $allRecords) {
     $claimText = $finding
     if (-not [string]::IsNullOrWhiteSpace($artifactName)) { $claimText = ($finding + '  ' + '[' + $artifactName + ']') }
 
-    $rowLines += ('| ' + (Esc-MdCell $claimText) + ' | ' + (Esc-MdCell $rowStatus) + ' | ' + (Esc-MdCell $cmd) + ' |')
+    $rowLines += ('| ' + (ConvertTo-AppDocMarkdownCell $claimText) + ' | ' + (ConvertTo-AppDocMarkdownCell $rowStatus) + ' | ' + (ConvertTo-AppDocMarkdownCell $cmd) + ' |')
 }
 
 # --- render markdown -----------------------------------------------------------
 $md = @()
 $md += '# Verification Appendix'
 $md += ''
-$md += ('This appendix lists the exact, re-runnable PowerShell commands used to verify each `Verified` claim in the Evidence Register. All commands are run **from the repository root** (`' + $RootPath + '`). A non-empty `Select-String` result proves the cited source-level fact.')
+$md += ('This appendix lists the exact, re-runnable PowerShell commands used to verify each `Verified` claim in the Evidence Register. All commands are run **from the repository root** (`<repo-root>`). A non-empty `Select-String` result proves the cited source-level fact.')
 $md += ''
 $md += ('**Verified claims:** ' + $verifiedCount + '  ' + '|  **Re-runnable commands:** ' + $withCommand + '  ' + '|  **Insufficient detail (downgraded):** ' + $downgraded)
 $md += ''

@@ -1,0 +1,29 @@
+{
+    // Example VS Code settings for working on AppDoc with GitHub Copilot.
+    // Copy to .vscode/settings.json (git-ignored) if you want these auto-approvals;
+    // nothing is auto-approved unless you opt in.
+    "chat.tools.terminal.autoApprove": {
+        // Read-only commands
+        "Get-ChildItem": true,
+        "Get-Content": true,
+        "Test-Path": true,
+        "git status": true,
+        "git diff": true,
+        "git log": true,
+
+        // The AppDoc build (writes only to the target's output folder) and its checks
+        "**/.appdoc/scripts/powershell/run-appdoc-build.ps1": true,
+        "**/.appdoc/scripts/powershell/validate-documentation.ps1": true,
+        "**/.appdoc/scripts/powershell/appdoc.diagnose.ps1": true,
+        "**/tests/powershell/test-semantic-quarantine.ps1": true,
+
+        // Never auto-approved
+        "Remove-Item": false,
+        "Set-ExecutionPolicy": false,
+        "git push": false
+    },
+    "chat.tools.fileOperations.autoApprove": {
+        "read": true,
+        "list": true
+    }
+}

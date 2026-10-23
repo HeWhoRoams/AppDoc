@@ -1,0 +1,146 @@
+{
+  "artifact": "git-ownership",
+  "generator": "generate-git-ownership.ps1",
+  "module": "AppDoc.GitOwnership.psm1",
+  "version": "1.0.0",
+  "reportDate": "2026-10-23",
+  "isGitRepo": true,
+  "commitCount": 53,
+  "minCommitsForOwnership": 2,
+  "historySufficient": true,
+  "status": "Derived",
+  "owner": "Unknown",
+  "codeownersPresent": false,
+  "codeownersDefault": "",
+  "codeowners": [],
+  "authorCount": 1,
+  "firstDate": "2025-11-14",
+  "lastDate": "2026-10-23",
+  "topAuthorEmail": "",
+  "topAuthorName": "Tim Niles",
+  "topAuthorCommits": 53,
+  "authors": [
+    {
+      "email": "",
+      "name": "Tim Niles",
+      "commits": 53
+    }
+  ],
+  "fileCount": 19,
+  "files": [
+    {
+      "path": "README.md",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 14
+    },
+    {
+      "path": ".gitignore",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 9
+    },
+    {
+      "path": ".github/prompts/appdoc.begin.prompt.md",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 8
+    },
+    {
+      "path": "ROADMAP.md",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 8
+    },
+    {
+      "path": ".github/copilot-instructions.md",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 6
+    },
+    {
+      "path": ".github/prompts/appdoc.diagrams.prompt.md",
+      "owner": "Tim Niles",
+      "lastChange": "2026-02-26",
+      "churn": 6
+    },
+    {
+      "path": ".github/workflows/appdoc-ci.yml",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 6
+    },
+    {
+      "path": "references/config-schema.md",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 5
+    },
+    {
+      "path": "references/verification.md",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 4
+    },
+    {
+      "path": "SKILL.md",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 4
+    },
+    {
+      "path": ".github/prompts/appdoc.enrich.prompt.md",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 3
+    },
+    {
+      "path": "references/enrichment-operations.md",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 3
+    },
+    {
+      "path": ".gitattributes",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 2
+    },
+    {
+      "path": ".editorconfig",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 1
+    },
+    {
+      "path": ".vscode/settings.example.json",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 1
+    },
+    {
+      "path": "LICENSE",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 1
+    },
+    {
+      "path": "NOTICE",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 1
+    },
+    {
+      "path": "PSScriptAnalyzerSettings.psd1",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 1
+    },
+    {
+      "path": "references/enrichment-contract.md",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 1
+    }
+  ]
+}

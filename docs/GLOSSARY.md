@@ -1,4 +1,5 @@
 # AppDoc Glossary
+<!-- appdoc:hand-authored -->
 
 Working definitions for the AppDoc documentation-generation pipeline. For decisions and their
 rationale, see `docs/adr/`.

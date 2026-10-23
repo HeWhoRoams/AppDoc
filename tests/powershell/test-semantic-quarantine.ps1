@@ -31,13 +31,13 @@ $build = Join-Path $ps "run-appdoc-build.ps1"
 $fixture = Join-Path $RepoRoot "tests\fixtures\csharp-webforms-sample"
 $mockOut = Join-Path $RepoRoot "tests\fixtures\mock-llm-semantic-output\data-model.semantic.output.json"
 
-$work = Join-Path $env:TEMP ("p2a-quarantine-{0}" -f [guid]::NewGuid().ToString('n'))
+$work = Join-Path ([System.IO.Path]::GetTempPath()) ("p2a-quarantine-{0}" -f [guid]::NewGuid().ToString('n'))
 New-Item -ItemType Directory -Force -Path $work | Out-Null
 $target = Join-Path $work "target"
 Copy-Item -Path $fixture -Destination $target -Recurse
 
 $failures = [System.Collections.Generic.List[string]]::new()
-function Assert {
+function Assert-Proof {
     param([bool]$cond, [string]$what)
     if ($cond) { Write-Host ("  PASS  " + $what) -ForegroundColor Green }
     else       { Write-Host ("  FAIL  " + $what) -ForegroundColor Red; $script:failures.Add($what) }
@@ -71,21 +71,21 @@ $refusalPath = Join-Path $target "docs\evidence\semantic\quarantine-refusals.jso
 $refusals = if (Test-Path $refusalPath) { Get-Content $refusalPath -Raw | ConvertFrom-Json -Depth 100 } else { [pscustomobject]@{ refusalCount = 0; refusals = @() } }
 
 Write-Host "`n=== PROOF 2: provenance tagging (mock -> tagged applied envelope) ===" -ForegroundColor Cyan
-Assert ($ticket.provenance.role -eq 'llm')                 "role tagged 'llm' (mock overrode the Infer-Entity heuristic)"
-Assert ($ticket.provenance.businessPurpose -eq 'llm')      "businessPurpose tagged 'llm' (mock open-fill)"
-Assert ($ticket.provenance.schemaSource -eq 'deterministic') "schemaSource tagged 'deterministic' (Verified, not LLM)"
+Assert-Proof ($ticket.provenance.role -eq 'llm')                 "role tagged 'llm' (mock overrode the Infer-Entity heuristic)"
+Assert-Proof ($ticket.provenance.businessPurpose -eq 'llm')      "businessPurpose tagged 'llm' (mock open-fill)"
+Assert-Proof ($ticket.provenance.schemaSource -eq 'deterministic') "schemaSource tagged 'deterministic' (Verified, not LLM)"
 
 Write-Host "`n=== PROOF 3: Verified-fact lock (override REFUSED, heuristic override APPLIED) ===" -ForegroundColor Cyan
-Assert ($ticket.schemaSource -eq 'Ticket.cs')              "Verified schemaSource KEPT = 'Ticket.cs' (mock's WRONG-PATH refused)"
-Assert ($refusals.refusalCount -ge 1)                      "quarantine-refusals.json records the refused override"
-Assert (($refusals.refusals | Where-Object { $_.field -eq 'schemaSource' }).action -eq 'refused') "refusal entry action=refused for schemaSource"
-Assert ($ticket.role -eq 'DTO')                            "heuristic override APPLIED: role = 'DTO' (LLM wins over heuristic)"
+Assert-Proof ($ticket.schemaSource -eq 'Ticket.cs')              "Verified schemaSource KEPT = 'Ticket.cs' (mock's WRONG-PATH refused)"
+Assert-Proof ($refusals.refusalCount -ge 1)                      "quarantine-refusals.json records the refused override"
+Assert-Proof (($refusals.refusals | Where-Object { $_.field -eq 'schemaSource' }).action -eq 'refused') "refusal entry action=refused for schemaSource"
+Assert-Proof ($ticket.role -eq 'DTO')                            "heuristic override APPLIED: role = 'DTO' (LLM wins over heuristic)"
 
 Write-Host "`n=== PROOF 4: no-fabrication (un-provided fields stay open/Unknown) ===" -ForegroundColor Cyan
-Assert ($null -eq $ticket.usageFrequency)                  "usageFrequency null (mock left it open -> not invented)"
-Assert ($ticket.provenance.usageFrequency -eq 'open')      "usageFrequency provenance = 'open'"
-Assert ($null -eq $ticket.projectRole)                     "projectRole null (not invented)"
-Assert ($null -eq $ticket.relationships)                   "relationships null (not invented)"
+Assert-Proof ($null -eq $ticket.usageFrequency)                  "usageFrequency null (mock left it open -> not invented)"
+Assert-Proof ($ticket.provenance.usageFrequency -eq 'open')      "usageFrequency provenance = 'open'"
+Assert-Proof ($null -eq $ticket.projectRole)                     "projectRole null (not invented)"
+Assert-Proof ($null -eq $ticket.relationships)                   "relationships null (not invented)"
 
 Write-Host "`n=== PROOF 1: redaction hard-gate (0 fixture secrets in semantic/input/) ===" -ForegroundColor Cyan
 $inDir = Join-Path $target "docs\evidence\semantic\input"
@@ -94,13 +94,27 @@ Get-ChildItem $inDir -Filter "*.json" -File | ForEach-Object {
     $t = Get-Content $_.FullName -Raw
     $leaks += ([regex]::Matches($t, [regex]::Escape('FakeP@ss123'))).Count
 }
-Assert ($leaks -eq 0)                                       "0 occurrences of 'FakeP@ss123' across all input/ files (redacted)"
+Assert-Proof ($leaks -eq 0)                                       "0 occurrences of 'FakeP@ss123' across all input/ files (redacted)"
 
 Write-Host "`n=== PROOF 5: input-hash cache (HIT on unchanged, MISS on changed) ===" -ForegroundColor Cyan
 # re-apply with the SAME input -> the Ticket record (unchanged) must be a cache HIT.
 & $enrich -RootPath $target -SkipGate -SkipReRender *> $null
 $ticket2 = @(Read-Records -Path $applied)[0]
-Assert ($ticket2.cacheState -eq 'hit')                      "2nd apply: Ticket input-hash cache HIT (skips the LLM call)"
+Assert-Proof ($ticket2.cacheState -eq 'hit')                      "2nd apply: Ticket input-hash cache HIT (skips the LLM call)"
+# PROOF 5b: a corrected output for the SAME input supersedes the cache (never hidden).
+$outFile = Join-Path $outDir "data-model.semantic.output.json"
+$outDoc = Get-Content $outFile -Raw | ConvertFrom-Json -AsHashtable -Depth 100
+$outRecs = @(if ($outDoc -is [System.Collections.IDictionary] -and $outDoc.ContainsKey('records')) { $outDoc.records } else { $outDoc })
+$corrected = 'Corrected purpose (proof 5b).'
+$outRecs[0]['businessPurpose'] = $corrected
+if ($outDoc -is [System.Collections.IDictionary] -and $outDoc.ContainsKey('records')) { $outDoc.records = @($outRecs) } else { $outDoc = @($outRecs) }
+$outDoc | ConvertTo-Json -Depth 100 | Out-File $outFile -Encoding UTF8
+& $enrich -RootPath $target -SkipGate -SkipReRender *> $null
+$ticket2b = @(Read-Records -Path $applied)[0]
+Assert-Proof ($ticket2b.cacheState -eq 'superseded')              "corrected output, same input: cache SUPERSEDED (the edit is not hidden)"
+Assert-Proof ($ticket2b.businessPurpose -eq $corrected)           "the corrected businessPurpose is applied"
+& $enrich -RootPath $target -SkipGate -SkipReRender *> $null
+Assert-Proof ((@(Read-Records -Path $applied)[0]).cacheState -eq 'hit') "next apply with no further edit: cache HIT again (cache updated)"
 # change the extracted input metadata -> the Ticket record must be a cache MISS.
 $dmEv = Join-Path $target "docs\evidence\data-model.evidence.json"
 $d = Get-Content $dmEv -Raw | ConvertFrom-Json -AsHashtable -Depth 100
@@ -111,7 +125,7 @@ $d.records = @($dmRecur)
 $d | ConvertTo-Json -Depth 100 | Out-File $dmEv -Encoding UTF8
 & $enrich -RootPath $target -SkipGate -SkipReRender *> $null
 $ticket3 = @(Read-Records -Path $applied)[0]
-Assert ($ticket3.cacheState -eq 'miss')                     "3rd apply (input changed): cache MISS (re-enriches)"
+Assert-Proof ($ticket3.cacheState -eq 'miss')                     "3rd apply (input changed): cache MISS (re-enriches)"
 
 Write-Host "`n=== PROOF 1b: FAIL-CLOSED gate (a surviving secret BLOCKS the stage; input not written) ===" -ForegroundColor Cyan
 $fc = Join-Path $work "failclosed"
@@ -127,9 +141,9 @@ try {
     $errMsg = $_.Exception.Message
 }
 $fcInputCount = (Get-ChildItem (Join-Path $fc "docs\evidence\semantic\input") -Filter "*.json" -File -ErrorAction SilentlyContinue | Measure-Object).Count
-Assert $blocked                                              "fail-closed gate THREW on the surviving secret (stage blocked)"
-Assert ($errMsg -match "HARD GATE BLOCKED")                  "block message is the explicit HARD GATE error"
-Assert ($fcInputCount -eq 0)                                 "input NOT written (blocked before the un-redacted write)"
+Assert-Proof $blocked                                              "fail-closed gate THREW on the surviving secret (stage blocked)"
+Assert-Proof ($errMsg -match "HARD GATE BLOCKED")                  "block message is the explicit HARD GATE error"
+Assert-Proof ($fcInputCount -eq 0)                                 "input NOT written (blocked before the un-redacted write)"
 
 Write-Host "`n=== PROOF 6: opt-in no-op (enrichment OFF = deterministic-only; ON w/o LLM = 0 llm fields) ===" -ForegroundColor Cyan
 # OFF: a fresh build with NO -EnableSemanticEnrich must not create the semantic dir.
@@ -137,7 +151,7 @@ $off = Join-Path $work "off"
 Copy-Item $fixture $off -Recurse
 & $build -Path $off *> $null
 $offSemanticDir = Test-Path (Join-Path $off "docs\evidence\semantic")
-Assert (-not $offSemanticDir)                                "enrichment OFF (default): no semantic/ dir created (clean no-op)"
+Assert-Proof (-not $offSemanticDir)                                "enrichment OFF (default): no semantic/ dir created (clean no-op)"
 # ON but no LLM output present: 0 llm-tagged fields applied.
 $on = Join-Path $work "on-noLLM"
 Copy-Item $fixture $on -Recurse
@@ -151,14 +165,14 @@ Get-ChildItem (Join-Path $on "docs\evidence\semantic\applied") -Filter "*.json" 
         }
     }
 }
-Assert ($llmCount -eq 0)                                     "ON but no LLM output: 0 'llm'-tagged fields applied (no-op to deterministic-only)"
-Assert ($detCount -gt 0)                                      "deterministic fields still present (the gate-able core)"
+Assert-Proof ($llmCount -eq 0)                                     "ON but no LLM output: 0 'llm'-tagged fields applied (no-op to deterministic-only)"
+Assert-Proof ($detCount -gt 0)                                      "deterministic fields still present (the gate-able core)"
 
 Remove-Item $work -Recurse -Force -ErrorAction SilentlyContinue
 
 Write-Host "`n========================================" -ForegroundColor Cyan
 if ($failures.Count -eq 0) {
-    Write-Host "ALL SEMANTIC-QUARANTINE PROOFS PASSED (1b/2/3/4/5/6)" -ForegroundColor Green
+    Write-Host "ALL SEMANTIC-QUARANTINE PROOFS PASSED (1b/2/3/4/5/5b/6)" -ForegroundColor Green
     exit 0
 } else {
     Write-Host ("{0} PROOF(S) FAILED:" -f $failures.Count) -ForegroundColor Red

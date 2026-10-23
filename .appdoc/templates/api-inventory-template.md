@@ -63,4 +63,3 @@ Outbound dependency contracts are documented when detectable. Cross-check [Depen
 - Profile: [PROFILE]
 - Scope: [SCOPE]
 - Confidence/Inference Flags: deterministic, evidence-backed
-

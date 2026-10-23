@@ -1,7 +1,13 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
+
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -44,7 +50,7 @@ function Get-ApiSectionContent {
 
 Write-Progress -Activity "Validating API Inventory" -Status "Checking inventory..." -PercentComplete 0
 
-$inventoryPath = Join-Path $RootPath "docs\api-inventory.md"
+$inventoryPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "api-inventory.md"
 if (-not (Test-Path $inventoryPath)) {
     Write-Error "API inventory file not found at $inventoryPath"
     exit 1
@@ -60,7 +66,7 @@ $issues = @()
 $warnings = @()
 
 $apiSurfaceExpected = $true
-$fingerprintPath = Join-Path $RootPath "docs\architecture-fingerprint.json"
+$fingerprintPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "architecture-fingerprint.json"
 if (Test-Path $fingerprintPath) {
     try {
         $fingerprint = Get-Content $fingerprintPath -Raw | ConvertFrom-Json -Depth 80
@@ -73,7 +79,7 @@ if (Test-Path $fingerprintPath) {
     }
 }
 
-$evidencePath = Join-Path $RootPath "docs\evidence\api-inventory.evidence.json"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\api-inventory.evidence.json"
 $evidenceEndpointCount = 0
 $evidenceInboundCount = 0
 $evidenceOutboundCount = 0
@@ -115,7 +121,7 @@ else {
     $issues += "api-evidence-missing"
 }
 
-$graphPath = Join-Path $RootPath "docs\evidence\evidence-graph.json"
+$graphPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\evidence-graph.json"
 $graphInboundCount = -1
 $graphOutboundCount = -1
 $graphEndpointCount = -1

@@ -1,7 +1,13 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
+
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 function Get-OverviewSectionContent {
     param(
@@ -42,7 +48,7 @@ function Get-OverviewValue {
 
 Write-Progress -Activity "Validating Overview" -Status "Checking overview sections..." -PercentComplete 0
 
-$overviewPath = Join-Path $RootPath "docs\overview.md"
+$overviewPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "overview.md"
 if (-not (Test-Path $overviewPath)) {
     Write-Error "overview.md not found at $overviewPath"
     exit 1
@@ -65,7 +71,7 @@ foreach ($section in $requiredSections) {
     }
 }
 
-$fingerprintPath = Join-Path $RootPath "docs\architecture-fingerprint.json"
+$fingerprintPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "architecture-fingerprint.json"
 if (Test-Path $fingerprintPath) {
     try {
         $fingerprint = Get-Content $fingerprintPath -Raw | ConvertFrom-Json -Depth 40
@@ -83,8 +89,8 @@ if ($overview -match '(?im)\b(contradiction unresolved|architecture contradictio
     $issues += "unresolved-contradiction-language-present"
 }
 
-$truthPackPath = Join-Path $RootPath "docs\evidence\overview-truth-pack.json"
-$graphPath = Join-Path $RootPath "docs\evidence\evidence-graph.json"
+$truthPackPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\overview-truth-pack.json"
+$graphPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\evidence-graph.json"
 if ((Test-Path $truthPackPath) -and (Test-Path $graphPath)) {
     try {
         $truthPack = Get-Content $truthPackPath -Raw | ConvertFrom-Json -Depth 100

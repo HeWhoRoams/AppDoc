@@ -1,3 +1,4 @@
+#requires -Version 7.2
 <#
 .SYNOPSIS
     Generates C4 architecture diagrams in Mermaid format.
@@ -10,7 +11,7 @@
     Path to the solution file (.sln) or codebase directory.
 
 .PARAMETER OutputPath
-    Output directory for generated documentation artifacts. Defaults to 'docs'.
+    Output directory for generated documentation artifacts. Defaults to the target's output folder (config outputDir, default 'docs').
 
 .PARAMETER DiagramLevels
     Which C4 diagram levels to generate: 'Context', 'Container', or 'All'.
@@ -25,7 +26,7 @@ param(
     [string]$CodebasePath,
 
     [Parameter(Mandatory=$false)]
-    [string]$OutputPath = "docs",
+    [string]$OutputPath = "",
 
     [Parameter(Mandatory=$false)]
     [ValidateSet('Context', 'Container', 'All')]
@@ -34,6 +35,10 @@ param(
     [Parameter(Mandatory=$false)]
     [switch]$Force
 )
+
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 $modulesPath = Join-Path $PSScriptRoot "modules"
 Import-Module (Join-Path $modulesPath "C4ModelBuilder.psm1") -Force
@@ -85,7 +90,7 @@ function Get-AppDocApiEvidenceExternalSystems {
         [string]$RootPath
     )
 
-    $evidencePath = Join-Path $RootPath "docs/evidence/api-inventory.evidence.json"
+    $evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence/api-inventory.evidence.json"
     if (-not (Test-Path $evidencePath)) { return @() }
 
     $payload = $null
@@ -420,6 +425,7 @@ function Update-OverviewArchitectureSection {
 
 Write-Host "=== AppDoc Mermaid C4 Diagram Generator ===" -ForegroundColor Cyan
 Write-Host "Codebase: $CodebasePath"
+if ([string]::IsNullOrWhiteSpace($OutputPath)) { $OutputPath = Get-AppDocDocsPath -RootPath $CodebasePath }
 Write-Host "Output: $OutputPath"
 Write-Host ""
 

@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-classic-asp-platform.ps1
 #
@@ -11,14 +12,24 @@
 # framework-detection.json reports Classic ASP or ASP.NET Web Forms.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
+# Shared classic-ASP helpers (single definition; see modules/AppDoc.ClassicAsp.psm1).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 # --- Evidence + Contracts modules (canonical evidence + manifest) ----------------
 $contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
@@ -27,50 +38,45 @@ if ((Test-Path $contractsModule) -and (Test-Path $evidenceModule)) {
     Import-Module $contractsModule -Force -ErrorAction SilentlyContinue
     Import-Module $evidenceModule  -Force -ErrorAction SilentlyContinue
 }
-function Write-NotApplicablePlaceholder {
-    param([string]$OutputPath, [string]$Title)
-    $dir = Split-Path $OutputPath -Parent
-    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    $body = "# $Title`r`n`r`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`r`n`r`n## Summary`r`n`r`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP signal, so no content was extracted.`r`n`r`n## Build Steps`r`n`r`nNo build steps were extracted for this framework.`r`n`r`n## Dependencies`r`n`r`nNo build dependencies were extracted for this framework.`r`n`r`n---"
-    $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
-}
-function Trim-Quotes {
-    param([string]$Text)
-    if ([string]::IsNullOrWhiteSpace($Text)) { return "" }
-    $t = $Text.Trim()
-    while ($t.Length -ge 2) {
-        $first = $t.Substring(0, 1); $last = $t.Substring($t.Length - 1, 1)
-        if (($first -eq "`"" -and $last -eq "`"") -or ($first -eq "'" -and $last -eq "'")) { $t = $t.Substring(1, $t.Length - 2) } else { break }
-    }
-    while ($t.Length -gt 0 -and $t.Substring($t.Length - 1, 1) -in @("`"", "'")) { $t = $t.Substring(0, $t.Length - 1) }
-    while ($t.Length -gt 0 -and $t.Substring(0, 1) -in @("`"", "'")) { $t = $t.Substring(1) }
-    return $t.Trim()
-}
 
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
-$outputPath = Join-Path $RootPath "docs\build-cookbook.md"
-$evidencePath = Join-Path $RootPath "docs\build-cookbook.evidence.json"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "build-cookbook.md"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "build-cookbook.evidence.json"
 
 Write-Host "🖥️  Generating Classic ASP platform/deployment inventory..." -ForegroundColor Cyan
 if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
     Write-Host "  Framework not Classic ASP - writing placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "Build Cookbook"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "Build Cookbook" -ExtraSections ([ordered]@{ 'Build Steps' = 'No build steps were extracted for this framework.'; 'Dependencies' = 'No build dependencies were extracted for this framework.' })
     @() | ConvertTo-Json -Depth 5 | Out-File -FilePath $evidencePath -Encoding UTF8
     exit 0
 }
 
 $rootPrefix = $RootPath.TrimEnd('\', '/')
 
+# Never count AppDoc's own output (docs/), the skill folder (.appdoc/) or VCS metadata as
+# target source: on a re-run, docs/report.html from the previous run was being counted as
+# an .html source file, so a first run and a re-run produced different inventories.
+$platformOutputDirRe = '^(docs|\.appdoc|\.git)([\\/]|$)'
+function Get-PlatformTargetFiles {
+    param([string[]]$Include, [string]$Filter = '')
+    $gciArgs = @{ Path = $RootPath; Recurse = $true; File = $true; ErrorAction = 'SilentlyContinue' }
+    if ($Filter) { $gciArgs['Filter'] = $Filter } else { $gciArgs['Include'] = $Include }
+    @(Get-ChildItem @gciArgs | Where-Object {
+        $rel = [System.IO.Path]::GetRelativePath($RootPath, $_.FullName)
+        $rel -notmatch $platformOutputDirRe
+    })
+}
+
 # --- File inventory (counts by type + top-level dirs) ---------------------------
 $extCounts = @{}
 foreach ($ext in @("asp","aspx","inc","htm","html","js","css","asa","gif","jpg")) {
-    $n = @(Get-ChildItem -Path $RootPath -Recurse -Filter "*.$ext" -File -ErrorAction SilentlyContinue).Count
+    $n = @(Get-PlatformTargetFiles -Filter "*.$ext").Count
     $extCounts[$ext] = $n
 }
 $topDirs = New-Object System.Collections.Generic.List[object]
 $topDirItems = Get-ChildItem -Path $RootPath -Directory -ErrorAction SilentlyContinue | Sort-Object Name
 foreach ($d in $topDirItems) {
-    if ($d.Name -eq "docs") { continue }
+    if ($d.Name -match '^(docs|\.appdoc|\.git)$') { continue }
     $fileCount = @(Get-ChildItem -Path $d.FullName -Recurse -File -ErrorAction SilentlyContinue).Count
     if ($fileCount -gt 0) {
         $topDirs.Add([ordered]@{ name = $d.Name; fileCount = $fileCount })
@@ -79,23 +85,23 @@ foreach ($d in $topDirItems) {
 $topDirs = @($topDirs | Sort-Object { -[int]$_.fileCount })
 
 # --- IIS / ASP indicators -------------------------------------------------------
-$webConfigs = @(Get-ChildItem -Path $RootPath -Recurse -Filter "web.config" -File -ErrorAction SilentlyContinue | ForEach-Object { Get-RelativePath -FullPath $_.FullName -Base $rootPrefix })
-$globalAsa = @(Get-ChildItem -Path $RootPath -Recurse -Filter "global.asa" -File -ErrorAction SilentlyContinue | ForEach-Object { Get-RelativePath -FullPath $_.FullName -Base $rootPrefix })
+$webConfigs = @(Get-PlatformTargetFiles -Filter "web.config" | ForEach-Object { Get-RelativePath -FullPath $_.FullName -Base $rootPrefix })
+$globalAsa = @(Get-PlatformTargetFiles -Filter "global.asa" | ForEach-Object { Get-RelativePath -FullPath $_.FullName -Base $rootPrefix })
 
 # --- ADO provider versions + SQL Server instances (from connection strings) -----
 $script:providers = @{}        # provider -> filecount
 $script:instances = @{}        # host -> {host, catalogs=[...], files=[...]}
 $script:sqlFiles = New-Object System.Collections.Generic.List[string]
 
-$aspFiles = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp" -File -ErrorAction SilentlyContinue | Sort-Object FullName)
-$incFiles = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.inc" -File -ErrorAction SilentlyContinue | Sort-Object FullName)
-$htmPaths = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.htm","*.html" -File -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
+$aspFiles = @(Get-PlatformTargetFiles -Include "*.asp" | Sort-Object FullName)
+$incFiles = @(Get-PlatformTargetFiles -Include "*.inc" | Sort-Object FullName)
+$htmPaths = @(Get-PlatformTargetFiles -Include "*.htm","*.html" | ForEach-Object { $_.FullName })
 $htmSignalPaths = @()
 if ($htmPaths.Count -gt 0) {
     $htmSignalPaths = @(Select-String -Path $htmPaths -Pattern 'Provider\s*=|Data Source\s*=|Initial Catalog\s*=' -List -ErrorAction SilentlyContinue | ForEach-Object { $_.Path } | Sort-Object)
 }
 
-function Process-PlatformFile {
+function Invoke-PlatformFileScan {
     param([string]$FullPath)
     $rel = Get-RelativePath -FullPath $FullPath -Base $rootPrefix
     $content = Get-Content $FullPath -Raw -ErrorAction SilentlyContinue
@@ -112,8 +118,8 @@ function Process-PlatformFile {
         }
         $srcM = [regex]::Match($line, '(?i)Data Source\s*=\s*([^;&"]+)')
         $catM = [regex]::Match($line, '(?i)Initial Catalog\s*=\s*([^;&"]+)')
-        $server = if ($srcM.Success) { Trim-Quotes -Text $srcM.Groups[1].Value } else { "" }
-        $catalog = if ($catM.Success) { Trim-Quotes -Text $catM.Groups[1].Value } else { "" }
+        $server = if ($srcM.Success) { Remove-SurroundingQuotes -Text $srcM.Groups[1].Value } else { "" }
+        $catalog = if ($catM.Success) { Remove-SurroundingQuotes -Text $catM.Groups[1].Value } else { "" }
         if ($server -match '^\s*"' -or $server -match ' & ' -or $server.Length -gt 60) { $server = "dynamic" }
         if ([string]::IsNullOrWhiteSpace($server)) { $server = "unknown" }
         if ($catalog -match '^\s*"' -or $catalog -match ' & ' -or $catalog.Length -gt 60) { $catalog = "dynamic" }
@@ -128,9 +134,9 @@ function Process-PlatformFile {
     if ($hasConn -and -not ($script:sqlFiles -contains $rel)) { $script:sqlFiles.Add($rel) }
 }
 
-foreach ($f in $aspFiles) { Process-PlatformFile -FullPath $f.FullName }
-foreach ($f in $incFiles) { Process-PlatformFile -FullPath $f.FullName }
-foreach ($p in $htmSignalPaths) { Process-PlatformFile -FullPath $p }
+foreach ($f in $aspFiles) { Invoke-PlatformFileScan -FullPath $f.FullName }
+foreach ($f in $incFiles) { Invoke-PlatformFileScan -FullPath $f.FullName }
+foreach ($p in $htmSignalPaths) { Invoke-PlatformFileScan -FullPath $p }
 
 $providerRows = @($script:providers.GetEnumerator() | Sort-Object { -[int]$_.Value } | ForEach-Object { [ordered]@{ provider=$_.Key; count=$_.Value } })
 $instanceRows = @($script:instances.Values | Sort-Object { [string]$_.host })
@@ -245,7 +251,7 @@ $lines.Add("## Provenance"); $lines.Add("")
 $lines.Add("- Generator Version: appdoc-run-all-generators/3.0.0"); $lines.Add("- Commit Hash: unknown")
 $lines.Add("- Generated At: $generatedIso"); $lines.Add("- Profile: default"); $lines.Add("- Scope: .")
 $lines.Add("- Confidence/Inference Flags: deterministic, evidence-backed")
-$md = ($lines -join "`r`n")
+$md = ($lines -join "`n")
 $md | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 # --- Flat evidence --------------------------------------------------------------
@@ -269,6 +275,9 @@ if ((Get-Command Get-AppDocArtifactContract -ErrorAction SilentlyContinue) -and 
         generator            = "generate-classic-asp-platform.ps1"
         providerCount        = [int]$providerRows.Count
         instanceCount        = [int]$instanceRows.Count
+        # Same metadata contract as generate-build-cookbook.ps1 (the integrity gate
+        # cross-checks it against the records): classic-ASP emits no "cicd" records.
+        cicdCount            = [int]@($evidence | Where-Object { [string]$_.kind -eq 'cicd' }).Count
     }
     if ($canonPath -and (Get-Command Update-AppDocEvidenceManifest -ErrorAction SilentlyContinue)) {
         [void](Update-AppDocEvidenceManifest -RootPath $RootPath -Artifact "build-cookbook" -EvidencePath $canonPath -RecordCount $evidence.Count -Metadata @{

@@ -1,3 +1,5 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
@@ -5,19 +7,23 @@ param(
     [switch]$Json
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # Import the scope module for its working Get-AppDocSourceFiles / Get-AppDocRelativePath.
 # (This mirrors parse-csharp-ast.ps1. A previous revision defined broken local fallbacks
 # here that referenced an undefined `$files` and shadowed the module's implementations, so
 # the parser produced 0 records when invoked from within the generic extractor session.)
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
-if (Test-Path $scopeModule) { 
-    Import-Module $scopeModule -Force -ErrorAction Stop 
+if (Test-Path $scopeModule) {
+    Import-Module $scopeModule -Force -ErrorAction Stop
 }
 else {
     Write-Warning "AppDoc.Scope module not found at '$scopeModule'. Using fallback implementations."
 }
 
-$cachePath = Join-Path $RootPath "docs\ast-typescript-cache.json"
+$cachePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "ast-typescript-cache.json"
 if (-not $NoCache -and (Test-Path $cachePath)) {
     $cached = Get-Content $cachePath -Raw
     if ($Json) { $cached } else { Write-Output $cached }
@@ -71,7 +77,7 @@ foreach ($file in $tsFiles) {
             $searchStart = $match.Index
             $braceCounter = 0
             $braceStart = -1
-            
+
             for ($i = $searchStart; $i -lt $content.Length; $i++) {
                 if ($content[$i] -eq '{') {
                     if ($braceStart -eq -1 -and $i -ge $searchStart) {
@@ -88,7 +94,7 @@ foreach ($file in $tsFiles) {
                     }
                 }
             }
-            
+
             if ($classBodyContent) {
                 $propMatches = [regex]::Matches($classBodyContent, '(?m)^\s*(\w+)\??\s*:\s*([\w<>\[\]\|]+)')
                 foreach ($property in $propMatches) {

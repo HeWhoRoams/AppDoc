@@ -94,7 +94,7 @@ function Update-AppDocTaskGuidesContent {
         '(?s)(###\s+Change an Endpoint Safely\s*\r?\n\r?\n).*?(?=\r?\n###\s+Debug a Build Failure\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + $sections.changeEndpointGuide + "`r`n")
+            return ($m.Groups[1].Value + $sections.changeEndpointGuide + "`n")
         }
     )
     if ($before -eq $updated) { Write-Verbose "[TaskGuides.Renderer] Pattern not matched: Change an Endpoint Safely" }
@@ -106,7 +106,7 @@ function Update-AppDocTaskGuidesContent {
         '(?s)(###\s+Debug a Build Failure\s*\r?\n\r?\n).*?(?=\r?\n###\s+Triage Dependency Risk\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + $sections.debugBuildGuide + "`r`n")
+            return ($m.Groups[1].Value + $sections.debugBuildGuide + "`n")
         }
     )
     if ($before -eq $updated) { Write-Verbose "[TaskGuides.Renderer] Pattern not matched: Debug a Build Failure" }
@@ -118,7 +118,7 @@ function Update-AppDocTaskGuidesContent {
         '(?s)(###\s+Triage Dependency Risk\s*\r?\n\r?\n).*?(?=\r?\n###\s+Plan a Debt Sprint\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + $sections.dependencyRiskGuide + "`r`n")
+            return ($m.Groups[1].Value + $sections.dependencyRiskGuide + "`n")
         }
     )
     if ($before -eq $updated) { Write-Verbose "[TaskGuides.Renderer] Pattern not matched: Triage Dependency Risk" }
@@ -130,7 +130,7 @@ function Update-AppDocTaskGuidesContent {
         '(?s)(###\s+Plan a Debt Sprint\s*\r?\n\r?\n).*?(?=\r?\n##\s+Operational Checklist\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + $sections.debtSprintGuide + "`r`n")
+            return ($m.Groups[1].Value + $sections.debtSprintGuide + "`n")
         }
     )
     if ($before -eq $updated) { Write-Verbose "[TaskGuides.Renderer] Pattern not matched: Plan a Debt Sprint" }
@@ -142,7 +142,7 @@ function Update-AppDocTaskGuidesContent {
         '(?s)(##\s+Operational Checklist\s*\r?\n\r?\n).*?(?=\r?\n---\s*\r?\n)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + $sections.checklist + "`r`n")
+            return ($m.Groups[1].Value + $sections.checklist + "`n")
         }
     )
     if ($before -eq $updated) { Write-Verbose "[TaskGuides.Renderer] Pattern not matched: Operational Checklist" }
@@ -151,7 +151,7 @@ function Update-AppDocTaskGuidesContent {
         $regex = [regex]::new('(?s)\r?\n---\s*\r?\n')
         $updated = $regex.Replace(
             $updated,
-            "`r`n## Evidence Traceability`r`n`r`n$($sections.evidenceTraceability)`r`n`r`n---`r`n",
+            "`n## Evidence Traceability`n`n$($sections.evidenceTraceability)`n`n---`n",
             1
         )
     } else {
@@ -160,7 +160,7 @@ function Update-AppDocTaskGuidesContent {
             '(?s)(##\s+Evidence Traceability\s*\r?\n\r?\n).*?(?=\r?\n---\s*\r?\n)',
             [System.Text.RegularExpressions.MatchEvaluator]{
                 param($m)
-                return ($m.Groups[1].Value + $sections.evidenceTraceability + "`r`n")
+                return ($m.Groups[1].Value + $sections.evidenceTraceability + "`n")
             }
         )
     }

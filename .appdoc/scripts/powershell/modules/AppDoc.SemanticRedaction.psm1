@@ -12,7 +12,7 @@
 # gate is an INDEPENDENT, fail-closed second layer applied at the moment any
 # LLM-facing input is about to be written to <docs>/evidence/semantic/input/:
 #
-#   (1) Redact-AppDocSemanticEnvelope : sweep every string in the would-be envelope with
+#   (1) Protect-AppDocSemanticEnvelope : sweep every string in the would-be envelope with
 #       the SAME redaction the security/source-docs + config extractor use (the known-
 #       secrets list + the generic credential regexes). Config KEYS/names are KEPT; only
 #       secret VALUES become [REDACTED].
@@ -28,8 +28,8 @@
 #   $script:AppDocKnownSecrets
 #   Get-AppDocSemanticKnownSecrets
 #   Get-AppDocSemanticRedactionPatterns   (raw-credential regex list; order-indep. scan)
-#   Redact-AppDocSemanticString
-#   Redact-AppDocSemanticEnvelope
+#   Protect-AppDocSemanticString
+#   Protect-AppDocSemanticEnvelope
 #   Test-AppDocSemanticRedactionGate
 #   Get-AppDocCanonicalJson
 #   Get-AppDocSemanticInputHash
@@ -42,10 +42,13 @@
 # test target. Per-target live secrets are operator-supplied through the existing
 # operator channel (the enrichment gate's -ExtraKnownSecrets / the config
 # `redactionPatterns` key), merged additively with this list at the consumers below
-# (the Redact-AppDocSemanticString verbatim step + the Test-AppDocSemanticRedactionGate
+# (the Protect-AppDocSemanticString verbatim step + the Test-AppDocSemanticRedactionGate
 # known-secret scan). The variable + consumers are kept so that additive merge still
 # works when an operator supplies values.
 $script:AppDocKnownSecrets = @()
+
+# Shared operator-redaction compiler (literal values + regexes; invalid regex = error).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.SecretPolicy.psm1') -ErrorAction Stop
 
 # Credential patterns are split into two groups on purpose (the precision fix):
 #
@@ -161,7 +164,7 @@ function Get-AppDocSemanticUriCredentialPatterns {
     return @($script:AppDocUriCredentialPatterns)
 }
 
-function Redact-AppDocSemanticString {
+function Protect-AppDocSemanticString {
     [CmdletBinding()]
     param([AllowNull()][string]$Text)
 
@@ -206,7 +209,7 @@ function Redact-AppDocSemanticString {
     # DELIBERATELY NOT applied here: this function is the whole-envelope redactor used for
     # the JOIN-KEY / path / identifier fields, where a >=32-char legitimate run (a file or
     # namespace path) would be clobbered. The generic shapes are applied only to the
-    # secret-VALUE field via Redact-AppDocSemanticSecretValue.)
+    # secret-VALUE field via Protect-AppDocSemanticSecretValue.)
     $t = [regex]::Replace($t, 'eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9._\-]{5,}', '[REDACTED]')
     $t = [regex]::Replace($t, '(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}', '[REDACTED]')
 
@@ -216,17 +219,17 @@ function Redact-AppDocSemanticString {
     return $t
 }
 
-function Redact-AppDocSemanticSecretValue {
+function Protect-AppDocSemanticSecretValue {
     [CmdletBinding()]
     param([AllowNull()][string]$Text)
 
     # The secret-VALUE redactor: used ONLY for the field where raw secret VALUES live
-    # (the config-catalog `metadata.value`). It applies EVERYTHING Redact-AppDocSemanticString
+    # (the config-catalog `metadata.value`). It applies EVERYTHING Protect-AppDocSemanticString
     # does PLUS the generic high-entropy base64/hex shapes, so a real secret value
     # (e.g. a connection string or a long token) is STILL caught + redacted (fail-closed),
     # while the whole-envelope redactor keeps the JOIN-KEY / path fields untouched.
     if ($null -eq $Text) { return '' }
-    $t = Redact-AppDocSemanticString -Text $Text
+    $t = Protect-AppDocSemanticString -Text $Text
     foreach ($pat in $script:AppDocGenericHighEntropyPatterns) {
         $t = [regex]::Replace($t, $pat, '[REDACTED]')
     }
@@ -235,17 +238,17 @@ function Redact-AppDocSemanticSecretValue {
     return $t
 }
 
-function Redact-AppDocSemanticEnvelope {
+function Protect-AppDocSemanticEnvelope {
     [CmdletBinding()]
     param([AllowNull()][object]$Envelope)
 
     # Deep-copy via a JSON round-trip so the caller's envelope is not mutated in place.
     $json = $Envelope | ConvertTo-Json -Depth 100
     $obj = $json | ConvertFrom-Json -AsHashtable -Depth 100
-    return (Redact-AppDocSemanticNode -Node $obj -InMetadata $false)
+    return (Protect-AppDocSemanticNode -Node $obj -InMetadata $false)
 }
 
-function Redact-AppDocSemanticNode {
+function Protect-AppDocSemanticNode {
     [CmdletBinding()]
     param(
         [AllowNull()][object]$Node,
@@ -267,20 +270,20 @@ function Redact-AppDocSemanticNode {
             $childInMetadata = ($k -eq 'metadata')
             $isSecretValueLeaf = $IsSecretValueLeaf
             if ($InMetadata -and ($k -eq 'value')) { $isSecretValueLeaf = $true }
-            $out[$k] = (Redact-AppDocSemanticNode -Node $Node[$k] -InMetadata $childInMetadata -IsSecretValueLeaf $isSecretValueLeaf)
+            $out[$k] = (Protect-AppDocSemanticNode -Node $Node[$k] -InMetadata $childInMetadata -IsSecretValueLeaf $isSecretValueLeaf)
         }
         return $out
     }
 
     if ($Node -is [System.Collections.IList] -and $Node -isnot [System.Array]) {
         $list = [System.Collections.Generic.List[object]]::new()
-        foreach ($item in $Node) { $list.Add((Redact-AppDocSemanticNode -Node $item -InMetadata $InMetadata -IsSecretValueLeaf $IsSecretValueLeaf)) }
+        foreach ($item in $Node) { $list.Add((Protect-AppDocSemanticNode -Node $item -InMetadata $InMetadata -IsSecretValueLeaf $IsSecretValueLeaf)) }
         return $list
     }
 
     if ($Node -is [System.Array]) {
         $arr = [System.Collections.Generic.List[object]]::new()
-        foreach ($item in $Node) { $arr.Add((Redact-AppDocSemanticNode -Node $item -InMetadata $InMetadata -IsSecretValueLeaf $IsSecretValueLeaf)) }
+        foreach ($item in $Node) { $arr.Add((Protect-AppDocSemanticNode -Node $item -InMetadata $InMetadata -IsSecretValueLeaf $IsSecretValueLeaf)) }
         return $arr
     }
 
@@ -293,9 +296,9 @@ function Redact-AppDocSemanticNode {
         # redaction only, so legitimate >=32-char path runs are NEVER clobbered
         # (redacted source == raw source -> the apply-merge join works).
         if ($IsSecretValueLeaf) {
-            return (Redact-AppDocSemanticSecretValue -Text $Node)
+            return (Protect-AppDocSemanticSecretValue -Text $Node)
         }
-        return (Redact-AppDocSemanticString -Text $Node)
+        return (Protect-AppDocSemanticString -Text $Node)
     }
     return $Node
 }
@@ -305,7 +308,7 @@ function Get-AppDocSemanticValueBlobs {
     .SYNOPSIS
         Collects every STRING leaf that sits under a `metadata.value` key (the secret home).
         Used by Test-AppDocSemanticRedactionGate to scope the GENERIC high-entropy scan to
-        the secret-VALUE field, mirroring exactly where Redact-AppDocSemanticEnvelope
+        the secret-VALUE field, mirroring exactly where Protect-AppDocSemanticEnvelope
         applies those patterns. Returns a flat list of those string leaves (one entry per
         `metadata.value` leaf, or per string nested inside a `metadata.value` object/array).
     #>
@@ -353,34 +356,80 @@ function Get-AppDocSemanticValueBlobsNode {
     return @()
 }
 
+function Get-AppDocSemanticStringLeaves {
+    <#
+    .SYNOPSIS
+        Returns every string in the envelope - dictionary keys and string values - in its
+        RAW form (not JSON-escaped). The gate scans these so a secret containing a quote or
+        a backslash is still found (ConvertTo-Json would escape it to \" or \\).
+    #>
+    [CmdletBinding()]
+    param([AllowNull()][object]$Node)
+    $acc = [System.Collections.Generic.List[string]]::new()
+    $stack = [System.Collections.Generic.Stack[object]]::new()
+    if ($null -ne $Node) { $stack.Push($Node) }
+    while ($stack.Count -gt 0) {
+        $n = $stack.Pop()
+        if ($null -eq $n) { continue }
+        if ($n -is [string]) { $acc.Add($n); continue }
+        if ($n -is [System.Collections.IDictionary]) {
+            foreach ($k in $n.Keys) { $acc.Add([string]$k); $stack.Push($n[$k]) }
+            continue
+        }
+        if ($n -is [System.Management.Automation.PSCustomObject]) {
+            foreach ($prop in $n.PSObject.Properties) { $acc.Add([string]$prop.Name); $stack.Push($prop.Value) }
+            continue
+        }
+        if ($n -is [System.Collections.IEnumerable]) {
+            foreach ($item in $n) { $stack.Push($item) }
+            continue
+        }
+    }
+    return , $acc
+}
+
 function Test-AppDocSemanticRedactionGate {
     [CmdletBinding()]
     param(
         [AllowNull()][object]$Envelope,
-        [string[]]$ExtraKnownSecrets = @()
+        # Operator secret VALUES (config redactionPatterns), matched literally.
+        [string[]]$ExtraKnownSecrets = @(),
+        # Operator regular expressions (config redactionRegexes).
+        [string[]]$ExtraRedactionRegexes = @()
     )
 
-    # Serialize the (already redacted) envelope to a single string, then scan for any
-    # known secret or raw-credential shape that SURVIVED. Order-independent: a partial
-    # or context-blind redaction cannot hide a real credential here.
+    # Scan the (already redacted) envelope for any known secret or raw-credential shape
+    # that SURVIVED. Two views are scanned and a hit in EITHER blocks the stage:
+    #   - the RAW string leaves (keys + values), joined by newlines. Secrets containing a
+    #     quote or backslash are matched here; the JSON text would show them escaped.
+    #   - the compact JSON text, as before (catches shapes that span key/value syntax).
     $known = @($script:AppDocKnownSecrets) + @($ExtraKnownSecrets | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
+    $regexes = @($ExtraRedactionRegexes | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
 
     $hits = [System.Collections.Generic.List[object]]::new()
 
     if ($null -ne $Envelope) {
         $blob = ($Envelope | ConvertTo-Json -Depth 100 -Compress)
+        $leaves = (Get-AppDocSemanticStringLeaves -Node $Envelope) -join "`n"
     } else {
         $blob = ''
+        $leaves = ''
     }
 
-    foreach ($s in $known) {
-        if (-not $s) { continue }
-        $count = ([regex]::Matches($blob, [regex]::Escape([string]$s))).Count
-        if ($count -gt 0) { $hits.Add([pscustomobject]@{ kind = 'known-secret'; value = [string]$s; count = $count }) }
+    # Operator literals + regexes (compiled by the shared secret policy; an invalid regex
+    # throws, which blocks the stage - fail-closed).
+    $operatorMatchers = Get-AppDocOperatorRedactionMatchers -Literals $known -Regexes $regexes
+    # Hits name the operator entry by POSITION only, never by value: the hit list is
+    # written into the run report, and the value is the secret itself.
+    $mi = 0
+    foreach ($m in $operatorMatchers) {
+        $mi++
+        $count = [Math]::Max($m.Matches($leaves).Count, $m.Matches($blob).Count)
+        if ($count -gt 0) { $hits.Add([pscustomobject]@{ kind = 'known-secret'; operatorEntry = $mi; count = $count }) }
     }
 
     foreach ($pat in $script:AppDocSpecificCredentialPatterns) {
-        $count = ([regex]::Matches($blob, $pat)).Count
+        $count = [Math]::Max(([regex]::Matches($leaves, $pat)).Count, ([regex]::Matches($blob, $pat)).Count)
         if ($count -gt 0) { $hits.Add([pscustomobject]@{ kind = 'raw-credential-pattern'; pattern = $pat; count = $count }) }
     }
 
@@ -388,10 +437,8 @@ function Test-AppDocSemanticRedactionGate {
     # (metadata.value), mirroring where the redaction applies them. Scanning the whole
     # blob here would flag LEGITIMATE >=32-char path/identifier runs (a surviving source
     # path) as a "survived secret" and block the stage, so the generic scan is scoped to
-    # the secret home. This keeps the gate fail-closed for real secrets in metadata.value
-    # while NOT false-positiving on the (now-intact) join-key paths. The blobs are joined
-    # with a newline (NOT in the base64/hex char class) so adjacent values can never merge
-    # into one longer run and cause a false match.
+    # the secret home. The blobs are joined with a newline (NOT in the base64/hex char
+    # class) so adjacent values can never merge into one longer run.
     $valueBlobs = (Get-AppDocSemanticValueBlobs -Envelope $Envelope) -join "`n"
     if ($valueBlobs) {
         foreach ($pat in $script:AppDocGenericHighEntropyPatterns) {
@@ -404,7 +451,7 @@ function Test-AppDocSemanticRedactionGate {
         blocked      = $hits.Count -gt 0
         hitCount     = $hits.Count
         hits         = @($hits)
-        knownScanned = $known.Count
+        knownScanned = $known.Count + $regexes.Count
     }
     return $result
 }
@@ -570,9 +617,9 @@ Export-ModuleMember -Function @(
     'Get-AppDocSemanticKnownSecrets',
     'Get-AppDocSemanticRedactionPatterns',
     'Get-AppDocSemanticUriCredentialPatterns',
-    'Redact-AppDocSemanticString',
-    'Redact-AppDocSemanticSecretValue',
-    'Redact-AppDocSemanticEnvelope',
+    'Protect-AppDocSemanticString',
+    'Protect-AppDocSemanticSecretValue',
+    'Protect-AppDocSemanticEnvelope',
     'Get-AppDocSemanticValueBlobs',
     'Test-AppDocSemanticRedactionGate',
     'Get-AppDocCanonicalJson',
@@ -581,3 +628,9 @@ Export-ModuleMember -Function @(
     'Test-AppDocValueIsOpen',
     'ConvertTo-AppDocSemanticJson'
 )
+
+# Deprecated names (unapproved verbs), kept as aliases until AppDoc 1.2.0.
+Set-Alias -Name 'Redact-AppDocSemanticString' -Value 'Protect-AppDocSemanticString'
+Set-Alias -Name 'Redact-AppDocSemanticSecretValue' -Value 'Protect-AppDocSemanticSecretValue'
+Set-Alias -Name 'Redact-AppDocSemanticEnvelope' -Value 'Protect-AppDocSemanticEnvelope'
+Export-ModuleMember -Alias @('Redact-AppDocSemanticString', 'Redact-AppDocSemanticSecretValue', 'Redact-AppDocSemanticEnvelope')

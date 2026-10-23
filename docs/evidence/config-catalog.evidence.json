@@ -1,1724 +1,789 @@
 {
   "artifact": "config-catalog",
-  "generatedAt": "2026-10-17T18:40:50-04:00",
-  "recordCount": 110,
+  "generatedAt": "2026-10-23T01:55:31-04:00",
+  "recordCount": 49,
   "records": [
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.list",
-      "name": "chat.tools.fileOperations.autoApprove.list",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/concurrency.cancel-in-progress",
+      "name": "concurrency.cancel-in-progress",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
-        "required": false,
         "value": "true",
-        "type": "JSON Configuration"
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.read",
-      "name": "chat.tools.fileOperations.autoApprove.read",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/concurrency.group",
+      "name": "concurrency.group",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "ci-${{ github.ref }}",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction",
-      "name": "chat.tools.terminal.autoApprove.-ErrorAction",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.name",
+      "name": "jobs.drift.name",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "Committed docs/ match a fresh build",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-Json",
-      "name": "chat.tools.terminal.autoApprove.-Json",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.needs",
+      "name": "jobs.drift.needs",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "hygiene",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-RootPath",
-      "name": "chat.tools.terminal.autoApprove.-RootPath",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.runs-on",
+      "name": "jobs.drift.runs-on",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "ubuntu-latest",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-Verbose",
-      "name": "chat.tools.terminal.autoApprove.-Verbose",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps.shell",
+      "name": "jobs.drift.steps.shell",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "pwsh",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove../.AppDoc/scripts/powershell/*.ps1",
-      "name": "chat.tools.terminal.autoApprove..\\.AppDoc\\\\scripts\\\\powershell\\\\*.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps.with.fetch-depth",
+      "name": "jobs.drift.steps.with.fetch-depth",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "0",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
-      "name": "chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps[0]",
+      "name": "jobs.drift.steps[0]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps[1]",
+      "name": "jobs.drift.steps[1]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "name: Rebuild the self-dogfood docs in a scratch copy and compare",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-codebase.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/analyze-codebase.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.name",
+      "name": "jobs.hygiene.name",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "Repo hygiene and static gates",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-repository.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/analyze-repository.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.runs-on",
+      "name": "jobs.hygiene.runs-on",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "ubuntu-latest",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps.run",
+      "name": "jobs.hygiene.steps.run",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "./.appdoc/scripts/powershell/ci-doc-integrity-gate.ps1 -RootPath .",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/catalog-samples.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/catalog-samples.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps.shell",
+      "name": "jobs.hygiene.steps.shell",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "pwsh",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/extract-config.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/extract-config.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[0]",
+      "name": "jobs.hygiene.steps[0]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[1]",
+      "name": "jobs.hygiene.steps[1]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "name: No tracked files that .gitignore excludes",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[2]",
+      "name": "jobs.hygiene.steps[2]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "name: Skill docs are harness-agnostic and frontmatter is valid",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[3]",
+      "name": "jobs.hygiene.steps[3]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "name: Core is harness-neutral and carries no target-specific names",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[4]",
+      "name": "jobs.hygiene.steps[4]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "name: Entry scripts declare PowerShell 7.2 and CmdletBinding",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-data-model.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-data-model.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[5]",
+      "name": "jobs.hygiene.steps[5]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "name: Scripts named in docs, prompts and editor settings exist",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-debt-register.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-debt-register.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[6]",
+      "name": "jobs.hygiene.steps[6]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "name: No absolute host paths and no CR line endings in committed docs/",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[7]",
+      "name": "jobs.hygiene.steps[7]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "name: PowerShell syntax gate",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[8]",
+      "name": "jobs.hygiene.steps[8]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "name: Documentation integrity gate",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-improvements.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-improvements.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.name",
+      "name": "jobs.lint.name",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "PSScriptAnalyzer",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-overview.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-overview.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.runs-on",
+      "name": "jobs.lint.runs-on",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "ubuntu-latest",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps.shell",
+      "name": "jobs.lint.steps.shell",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "pwsh",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/run-all-generators.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/run-all-generators.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps[0]",
+      "name": "jobs.lint.steps[0]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps[1]",
+      "name": "jobs.lint.steps[1]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "name: Analyze (enforced rules fail the job; the rest are reported)",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.name",
+      "name": "jobs.tests.name",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "Pester + proof harness (${{ matrix.os }}, dotnet ${{ matrix.dotnet }})",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.needs",
+      "name": "jobs.tests.needs",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "hygiene",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.runs-on",
+      "name": "jobs.tests.runs-on",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "${{ matrix.os }}",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-data-model.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/validate-data-model.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.if",
+      "name": "jobs.tests.steps.if",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "matrix.dotnet == 'without'",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-debt-register.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/validate-debt-register.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.run",
+      "name": "jobs.tests.steps.run",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "./tests/powershell/test-semantic-quarantine.ps1",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-overview.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/validate-overview.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.shell",
+      "name": "jobs.tests.steps.shell",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "pwsh",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1",
-      "name": "chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.with.dotnet-version",
+      "name": "jobs.tests.steps.with.dotnet-version",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "8.0.x",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Copy-Item",
-      "name": "chat.tools.terminal.autoApprove.Copy-Item",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.with.fetch-depth",
+      "name": "jobs.tests.steps.with.fetch-depth",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "0",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-ChildItem",
-      "name": "chat.tools.terminal.autoApprove.Get-ChildItem",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[0]",
+      "name": "jobs.tests.steps[0]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-Content",
-      "name": "chat.tools.terminal.autoApprove.Get-Content",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[1]",
+      "name": "jobs.tests.steps[1]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git",
-      "name": "chat.tools.terminal.autoApprove.git",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[2]",
+      "name": "jobs.tests.steps[2]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "name: Hide dotnet (regex-fallback leg)",
+        "type": "YAML Configuration",
         "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[3]",
+      "name": "jobs.tests.steps[3]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "name: Install Pester 5",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[4]",
+      "name": "jobs.tests.steps[4]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "name: Pester (unit suites + golden suites)",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[5]",
+      "name": "jobs.tests.steps[5]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "value": "name: Semantic quarantine proof harness (plain script, not Pester)",
+        "type": "YAML Configuration",
+        "required": false,
+        "file": ".github/workflows/appdoc-ci.yml"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T01:55:31-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.fail-fast",
+      "name": "jobs.tests.strategy.fail-fast",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
         "value": "false",
-        "type": "JSON Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git fetch",
-      "name": "chat.tools.terminal.autoApprove.git fetch",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".vscode/settings.json",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git status",
-      "name": "chat.tools.terminal.autoApprove.git status",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.dotnet",
+      "name": "jobs.tests.strategy.matrix.dotnet",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "[with]",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.pwsh",
-      "name": "chat.tools.terminal.autoApprove.pwsh",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.include.dotnet",
+      "name": "jobs.tests.strategy.matrix.include.dotnet",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "without",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Remove-Item",
-      "name": "chat.tools.terminal.autoApprove.Remove-Item",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.include[0]",
+      "name": "jobs.tests.strategy.matrix.include[0]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "os: ubuntu-latest",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "false",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Set-ExecutionPolicy",
-      "name": "chat.tools.terminal.autoApprove.Set-ExecutionPolicy",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.os",
+      "name": "jobs.tests.strategy.matrix.os",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".vscode/settings.json",
+        "value": "[ubuntu-latest, windows-latest]",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "false",
-        "type": "JSON Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Test-Path",
-      "name": "chat.tools.terminal.autoApprove.Test-Path",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Write-Host",
-      "name": "chat.tools.terminal.autoApprove.Write-Host",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".vscode/settings.json",
-        "required": true,
-        "value": "true",
-        "type": "JSON Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".vscode/settings.json:github.copilot.chat.executions.enabled",
-      "name": "github.copilot.chat.executions.enabled",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".vscode/settings.json",
-        "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/itsm.base-url",
-      "name": "itsm.base-url",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
-        "required": true,
-        "value": "https://itsm.acme.internal",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.name",
-      "name": "jobs.golden-test-csharp-core.name",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "Golden-file regression (C# / ASP.NET Core Web API)",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.runs-on",
-      "name": "jobs.golden-test-csharp-core.runs-on",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "ubuntu-latest",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps.shell",
-      "name": "jobs.golden-test-csharp-core.steps.shell",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "pwsh",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps.uses",
-      "name": "jobs.golden-test-csharp-core.steps.uses",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "actions/setup-pwsh@v3",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[0]",
-      "name": "jobs.golden-test-csharp-core.steps[0]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "uses: actions/checkout@v4",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[1]",
-      "name": "jobs.golden-test-csharp-core.steps[1]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Setup PowerShell",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[2]",
-      "name": "jobs.golden-test-csharp-core.steps[2]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Install Pester",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[3]",
-      "name": "jobs.golden-test-csharp-core.steps[3]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Run C# ASP.NET Core Web API golden-file regression test",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.name",
-      "name": "jobs.golden-test-csharp.name",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "Golden-file regression (C# / ASP.NET Web Forms)",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.runs-on",
-      "name": "jobs.golden-test-csharp.runs-on",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "ubuntu-latest",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps.shell",
-      "name": "jobs.golden-test-csharp.steps.shell",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "pwsh",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps.uses",
-      "name": "jobs.golden-test-csharp.steps.uses",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "actions/setup-pwsh@v3",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[0]",
-      "name": "jobs.golden-test-csharp.steps[0]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "uses: actions/checkout@v4",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[1]",
-      "name": "jobs.golden-test-csharp.steps[1]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Setup PowerShell",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[2]",
-      "name": "jobs.golden-test-csharp.steps[2]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Install Pester",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[3]",
-      "name": "jobs.golden-test-csharp.steps[3]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Run C# Web Forms golden-file regression test",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.name",
-      "name": "jobs.golden-test-java.name",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "Golden-file regression (Java / Spring Boot)",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.runs-on",
-      "name": "jobs.golden-test-java.runs-on",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "ubuntu-latest",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps.shell",
-      "name": "jobs.golden-test-java.steps.shell",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "pwsh",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps.uses",
-      "name": "jobs.golden-test-java.steps.uses",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "actions/setup-pwsh@v3",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[0]",
-      "name": "jobs.golden-test-java.steps[0]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "uses: actions/checkout@v4",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[1]",
-      "name": "jobs.golden-test-java.steps[1]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Setup PowerShell",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[2]",
-      "name": "jobs.golden-test-java.steps[2]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Install Pester",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[3]",
-      "name": "jobs.golden-test-java.steps[3]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Run Java / Spring Boot golden-file regression test",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.name",
-      "name": "jobs.golden-test-node.name",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "Golden-file regression (Node / Express + TypeScript)",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.runs-on",
-      "name": "jobs.golden-test-node.runs-on",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "ubuntu-latest",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps.shell",
-      "name": "jobs.golden-test-node.steps.shell",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "pwsh",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps.uses",
-      "name": "jobs.golden-test-node.steps.uses",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "actions/setup-pwsh@v3",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[0]",
-      "name": "jobs.golden-test-node.steps[0]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "uses: actions/checkout@v4",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[1]",
-      "name": "jobs.golden-test-node.steps[1]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Setup PowerShell",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[2]",
-      "name": "jobs.golden-test-node.steps[2]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Install Pester",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[3]",
-      "name": "jobs.golden-test-node.steps[3]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Run Node / Express (TypeScript) golden-file regression test",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.name",
-      "name": "jobs.golden-test-python.name",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "Golden-file regression (Python / Flask)",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.runs-on",
-      "name": "jobs.golden-test-python.runs-on",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "ubuntu-latest",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps.shell",
-      "name": "jobs.golden-test-python.steps.shell",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "pwsh",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps.uses",
-      "name": "jobs.golden-test-python.steps.uses",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "actions/setup-pwsh@v3",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[0]",
-      "name": "jobs.golden-test-python.steps[0]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "uses: actions/checkout@v4",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[1]",
-      "name": "jobs.golden-test-python.steps[1]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Setup PowerShell",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[2]",
-      "name": "jobs.golden-test-python.steps[2]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Install Pester",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[3]",
-      "name": "jobs.golden-test-python.steps[3]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Run Python / Flask golden-file regression test",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.name",
-      "name": "jobs.golden-test.name",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "Golden-file regression (framework-agnostic)",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.runs-on",
-      "name": "jobs.golden-test.runs-on",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "ubuntu-latest",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps.shell",
-      "name": "jobs.golden-test.steps.shell",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "pwsh",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps.uses",
-      "name": "jobs.golden-test.steps.uses",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "actions/setup-pwsh@v3",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[0]",
-      "name": "jobs.golden-test.steps[0]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "uses: actions/checkout@v4",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[1]",
-      "name": "jobs.golden-test.steps[1]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Setup PowerShell",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[2]",
-      "name": "jobs.golden-test.steps[2]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Install Pester",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[3]",
-      "name": "jobs.golden-test.steps[3]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Run golden-file regression test",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.runs-on",
-      "name": "jobs.syntax-gate.runs-on",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "windows-latest",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps.shell",
-      "name": "jobs.syntax-gate.steps.shell",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "pwsh",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[0]",
-      "name": "jobs.syntax-gate.steps[0]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "uses: actions/checkout@v4",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[1]",
-      "name": "jobs.syntax-gate.steps[1]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Run PowerShell syntax gate",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[2]",
-      "name": "jobs.syntax-gate.steps[2]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Run documentation integrity gate",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/logging.level.com.acme",
-      "name": "logging.level.com.acme",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
-        "required": false,
-        "value": "INFO",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -1727,151 +792,49 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
         "value": "appdoc-ci",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[0]",
-      "name": "on.push.branches[0]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "main",
-        "type": "YAML Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[1]",
-      "name": "on.push.branches[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches",
+      "name": "on.push.branches",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
+        "value": "[main]",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "master",
-        "type": "YAML Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/server.port",
-      "name": "server.port",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/permissions.contents",
+      "name": "permissions.contents",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
-        "required": true,
-        "value": "8080",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.application.name",
-      "name": "spring.application.name",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
+        "value": "read",
+        "type": "YAML Configuration",
         "required": false,
-        "value": "tickets-service",
-        "type": "YAML Configuration"
+        "file": ".github/workflows/appdoc-ci.yml"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.datasource.password",
-      "name": "spring.datasource.password",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
-        "required": true,
-        "value": "[REDACTED]",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.datasource.url",
-      "name": "spring.datasource.url",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
-        "required": true,
-        "value": "jdbc:mysql://db-host.internal:3306/tickets",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.datasource.username",
-      "name": "spring.datasource.username",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
-        "required": true,
-        "value": "tickets_user",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.jpa.hibernate.ddl-auto",
-      "name": "spring.jpa.hibernate.ddl-auto",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
-        "required": false,
-        "value": "update",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-23T01:55:31-04:00"
     }
   ],
   "metadata": {
@@ -1882,8 +845,8 @@
       "Summary",
       "Configuration Options"
     ],
-    "configCount": 110,
-    "generator": "generate-config-catalog.ps1"
+    "generator": "generate-config-catalog.ps1",
+    "configCount": 49
   },
   "determinism": {
     "hashAlgorithm": "SHA256",
@@ -1892,6 +855,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "26f2d1e73536f5464513c307767fabe24f7444f592af89c676edb8e13f9a4cdd"
+    "contentHash": "2b46a9d58748341fbbc998223446602c6fe107be7df3544dc01baec7d473d621"
   }
 }

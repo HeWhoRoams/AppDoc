@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # AppDoc.Overview.TruthPack Module
 # Purpose: Build deterministic overview truth data used by narrative rendering.
 
@@ -60,19 +63,32 @@ function Get-AppDocOverviewEvidenceGraphData {
         [string]$RootPath
     )
 
-    $graphPath = Join-Path $RootPath (Join-Path "docs" (Join-Path "evidence" "evidence-graph.json"))
+    $graphPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) (Join-Path "evidence" "evidence-graph.json")
     $graph = Read-AppDocOverviewJsonFile -Path $graphPath
+    if (-not $graph) {
+        # The pipeline writes evidence-graph.json only after all generators ran. Build the
+        # same graph in memory from the evidence present now, so the truth pack counts with
+        # the graph's identity rules (one entity per type|name) on every run, instead of
+        # falling back to raw record counts on a first run and graph counts on a re-run.
+        $graphModule = Join-Path $PSScriptRoot "AppDoc.EvidenceGraph.psm1"
+        if (-not (Get-Command Get-AppDocEvidenceGraphData -ErrorAction SilentlyContinue) -and (Test-Path -LiteralPath $graphModule)) {
+            Import-Module $graphModule -ErrorAction Stop
+        }
+        if (Get-Command Get-AppDocEvidenceGraphData -ErrorAction SilentlyContinue) {
+            $graph = Get-AppDocEvidenceGraphData -RootPath $RootPath
+        }
+    }
     if (-not $graph) {
         return [ordered]@{
             exists = $false
-            path = $graphPath
+            path = "$(Get-AppDocDocsDirName -RootPath $RootPath)/evidence/evidence-graph.json"
             graph = $null
         }
     }
 
     return [ordered]@{
         exists = $true
-        path = $graphPath
+        path = "$(Get-AppDocDocsDirName -RootPath $RootPath)/evidence/evidence-graph.json"
         graph = $graph
     }
 }
@@ -136,7 +152,7 @@ function Get-AppDocOverviewEvidenceRecords {
 
     $records = @()
     foreach ($artifact in @($Artifacts | Where-Object { $_ })) {
-        $evidencePath = Join-Path $RootPath (Join-Path "docs" (Join-Path "evidence" ("{0}.evidence.json" -f [string]$artifact)))
+        $evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) (Join-Path "evidence" ("{0}.evidence.json" -f [string]$artifact))
         $payload = Read-AppDocOverviewJsonFile -Path $evidencePath
         if (-not $payload -or -not $payload.records) { continue }
 
@@ -424,7 +440,7 @@ function Get-AppDocOverviewTruthPackData {
         [object]$OverviewData = $null
     )
 
-    $docsPath = Join-Path $RootPath "docs"
+    $docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
     $projectName = Split-Path $RootPath -Leaf
 
     $frameworkDetectionPath = Join-Path $docsPath "framework-detection.json"
@@ -746,7 +762,8 @@ function Get-AppDocOverviewTruthPackData {
         # If ASP.NET Core or C# framework detected, assume at least 1 code file and 1 dependency
         if ($frameworkList -contains "ASP.NET Core" -or $frameworkList -contains "ASP.NET MVC 5" -or $frameworkList -contains "WCF Services") {
             $patchedCodeFileCount = 1
-            $patchedDependencyCount = [Math]::Max(1, $dependencyRecordCount)
+            # The dependency count is NOT patched: it must equal the dependency evidence
+            # (canonical metrics), and inventing one dependency made the overview disagree.
         }
         # Flag architecture as uncertain if frameworks are detected but no code scan hit.
         $architectureDetectionWarning = "Framework detected without code scan hit; counts patched for consistency."
@@ -755,7 +772,7 @@ function Get-AppDocOverviewTruthPackData {
         version = $script:AppDocOverviewTruthPackVersion
         generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
         projectName = $projectName
-        rootPath = $RootPath
+        rootPath = "."
         architecture = [ordered]@{
             primaryStyle = if ($architecture) { [string](Get-AppDocOverviewObjectValue -Object $architecture -Name "primaryStyle" -Default "unknown") } else { "unknown" }
             styles = [string[]]$architectureStyles
@@ -804,7 +821,7 @@ function Write-AppDocOverviewTruthPack {
         [hashtable]$TruthPack
     )
 
-    $evidenceDir = Join-Path $RootPath (Join-Path "docs" "evidence")
+    $evidenceDir = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
     if (-not (Test-Path $evidenceDir)) {
         New-Item -Path $evidenceDir -ItemType Directory -Force | Out-Null
     }

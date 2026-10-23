@@ -1,6 +1,6 @@
 {
   "artifact": "overview",
-  "generatedAt": "2026-10-17T18:40:57-04:00",
+  "generatedAt": "2026-10-23T01:55:34-04:00",
   "recordCount": 1,
   "records": [
     {
@@ -10,28 +10,69 @@
       "kind": "summary",
       "confidence": 1.0,
       "metadata": {
+        "fileCount": 1,
         "languageCount": 1,
-        "text": "This codebase contains 1 code file(s) across 1 language(s) (framework detected: ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot). Full analysis available in linked documentation.",
-        "fileCount": 1
+        "text": "This codebase contains 1 code file(s) across 1 language(s) (framework detected: ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot). Full analysis available in linked documentation."
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:56-04:00"
+      "timestamp": "2026-10-23T01:55:34-04:00"
     }
   ],
   "metadata": {
-    "welcomeNarrativeVerified": false,
+    "welcomeSectionCoverageIssues": [],
+    "narrativeReviewRequired": true,
+    "welcomeNarrativeIssues": [],
+    "welcomeNarrativeProvider": "deterministic",
+    "welcomeStyleGateMetrics": {
+      "textItemCount": 8,
+      "inventoryLeadCount": 0,
+      "countOnlySentenceCount": 0,
+      "businessVerbHits": 1,
+      "whatItDoesMetricLeadCount": 0,
+      "whatItDoesPurposeVerbHits": 0,
+      "numericDensity": 0.0729
+    },
+    "generator": "generate-overview.ps1",
+    "welcomeNarrativeVerified": true,
+    "welcomeSectionCoveragePassed": true,
+    "narrativeArtifacts": {
+      "pass1": "docs/evidence/narrative/purpose_model.json",
+      "pass2": "docs/evidence/narrative/narrative_draft.md",
+      "pass3": "docs/evidence/narrative/review_notes.json",
+      "final": "docs/evidence/narrative/narrative_final.json",
+      "runReport": "docs/evidence/narrative-run-report.json"
+    },
+    "welcomeStyleGateIssues": [
+      "style-business-verb-coverage-low:1",
+      "style-what-it-does-purpose-verb-low:0"
+    ],
+    "truthPackPath": "docs/evidence/overview-truth-pack.json",
+    "evidenceGraphEntityCount": 51,
+    "evidenceGraphPath": "docs/evidence/evidence-graph.json",
+    "welcomeStyleGatePassed": false,
+    "evidenceGraphEdgeCount": 49,
     "requiredEvidenceKeys": [
       "summary",
       "technologies"
     ],
-    "welcomeStyleGatePassed": true,
+    "welcomeNarrativePassSources": {
+      "pass1": "deterministic",
+      "pass2": "deterministic",
+      "pass3": "deterministic"
+    },
+    "requiredSections": [
+      "Summary",
+      "System Purpose",
+      "Getting Started",
+      "Documentation Map"
+    ],
     "narrativeRunReport": {
       "pipelineVersion": "1.1.0",
-      "startedAt": "2026-10-17T18:40:56-04:00",
-      "endedAt": "2026-10-17T18:40:56-04:00",
-      "durationMs": 79.0,
+      "startedAt": "2026-10-23T01:55:33-04:00",
+      "endedAt": "2026-10-23T01:55:34-04:00",
+      "durationMs": 140.0,
       "model": "local-deterministic",
       "executionMode": "local-deterministic",
       "externalModelCalls": false,
@@ -43,80 +84,33 @@
         "pass3": "deterministic"
       },
       "grounding": {
-        "passed": false,
-        "issues": [
-          "missing-refs:what_it_does:1",
-          "missing-refs:what_it_does:2",
-          "missing-refs:what_it_does:3",
-          "missing-refs:processing_steps:1",
-          "missing-refs:processing_steps:2"
-        ]
+        "passed": true,
+        "issues": []
       },
       "sectionCoverage": {
         "passed": true,
         "issues": []
       },
       "styleGate": {
-        "passed": true,
-        "issues": [],
+        "passed": false,
+        "issues": [
+          "style-business-verb-coverage-low:1",
+          "style-what-it-does-purpose-verb-low:0"
+        ],
         "metrics": {
-          "textItemCount": 11,
+          "textItemCount": 8,
           "inventoryLeadCount": 0,
           "countOnlySentenceCount": 0,
-          "businessVerbHits": 9,
+          "businessVerbHits": 1,
           "whatItDoesMetricLeadCount": 0,
-          "whatItDoesPurposeVerbHits": 7,
-          "numericDensity": 0.044
+          "whatItDoesPurposeVerbHits": 0,
+          "numericDensity": 0.0729
         }
       },
       "narrativeReviewRequired": true,
       "autoPassWithoutHumanEdits": false
     },
-    "welcomeNarrativeIssues": [
-      "missing-refs:what_it_does:1",
-      "missing-refs:what_it_does:2",
-      "missing-refs:what_it_does:3",
-      "missing-refs:processing_steps:1",
-      "missing-refs:processing_steps:2"
-    ],
-    "truthPackPath": "docs/evidence/overview-truth-pack.json",
-    "contextPackPath": "docs/evidence/narrative-context-pack.json",
-    "evidenceGraphEdgeCount": 68,
-    "welcomeNarrativePassSources": {
-      "pass1": "deterministic",
-      "pass2": "deterministic",
-      "pass3": "deterministic"
-    },
-    "welcomeSectionCoveragePassed": true,
-    "evidenceGraphPath": "/persistent/agent/workspace/AppDoc/docs/evidence/evidence-graph.json",
-    "generator": "generate-overview.ps1",
-    "welcomeNarrativeProvider": "deterministic",
-    "welcomeSectionCoverageIssues": [],
-    "narrativeArtifacts": {
-      "pass1": "docs/evidence/narrative/purpose_model.json",
-      "pass2": "docs/evidence/narrative/narrative_draft.md",
-      "pass3": "docs/evidence/narrative/review_notes.json",
-      "final": "docs/evidence/narrative/narrative_final.json",
-      "runReport": "docs/evidence/narrative-run-report.json"
-    },
-    "narrativeReviewRequired": true,
-    "welcomeStyleGateIssues": [],
-    "requiredSections": [
-      "Summary",
-      "System Purpose",
-      "Getting Started",
-      "Documentation Map"
-    ],
-    "welcomeStyleGateMetrics": {
-      "textItemCount": 11,
-      "inventoryLeadCount": 0,
-      "countOnlySentenceCount": 0,
-      "businessVerbHits": 9,
-      "whatItDoesMetricLeadCount": 0,
-      "whatItDoesPurposeVerbHits": 7,
-      "numericDensity": 0.044
-    },
-    "evidenceGraphEntityCount": 70
+    "contextPackPath": "docs/evidence/narrative-context-pack.json"
   },
   "determinism": {
     "hashAlgorithm": "SHA256",
@@ -125,6 +119,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "68069fbaef6ca9d533e4367d5e7835e27c9cdfdec3d332a25b7f2228ae5475f6"
+    "contentHash": "116f6c4d061bbe471458f3a24d1886f6504d1332d703916c721b25a15728a59c"
   }
 }

@@ -1,3 +1,6 @@
+# Shared secret vocabulary (single source of truth for credential key names).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.SecretPolicy.psm1') -ErrorAction Stop
+
 function Test-AppDocRequiredConfig {
     [CmdletBinding()]
     param(
@@ -41,7 +44,7 @@ function Test-AppDocSensitiveConfigKey {
     )
 
     $combined = ("{0} {1}" -f ($Key ?? ""), ($Type ?? "")).ToLowerInvariant()
-    return ($combined -match '(password|passwd|pwd|secret|token|api[_-]?key|client[_-]?secret|private[_-]?key|connectionstring|connection string|sas(?:token)?|thumbprint|cert(?:ificate)?[_-]?(password|secret|key))')
+    return ($combined -match ('(' + (Get-AppDocCredentialKeywordPattern) + ')'))
 }
 
 function Test-AppDocSecretLikeValue {
@@ -252,29 +255,14 @@ function ConvertFrom-AppDocYamlFallback {
 }
 
 function Get-AppDocConfigRelativePath {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$RootPath,
-        [Parameter(Mandatory=$true)]
-        [string]$Path
-    )
-
-    if (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue) {
-        return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-    }
-
-    try {
-        $rootFull = (Resolve-Path $RootPath).Path
-        $pathFull = (Resolve-Path $Path).Path
-        return [System.IO.Path]::GetRelativePath($rootFull, $pathFull).Replace('\', '/')
-    }
-    catch {
-        return $Path.Replace($RootPath, "").TrimStart([char[]]@(92, 47))
-    }
+    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
+    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
+    param([string]$RootPath, [string]$Path)
+    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
+    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
 }
 
-function Sanitize-AppDocConfigKey {
+function ConvertTo-AppDocSafeConfigKey {
     [CmdletBinding()]
     param([string]$Key)
 
@@ -387,7 +375,7 @@ function Add-AppDocJsonConfigProperties {
         $normPath = ($RelativePath -replace '\\+', '/') -replace '/+', '/'
         $normFull = ("${normPath}:$fullPath" -replace '\\+', '/') -replace '/+', '/'
         $results += @{
-            key = Sanitize-AppDocConfigKey -Key $fullPath
+            key = ConvertTo-AppDocSafeConfigKey -Key $fullPath
             value = Protect-AppDocConfigValue -Key $fullPath -Value $value -Type $FileType
             file = $normPath
             type = $FileType
@@ -447,7 +435,7 @@ function Get-AppDocConfigCatalogData {
                 foreach ($line in $lines) {
                     $lineNum++
                     if ($line -match "^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$") {
-                        $key = Sanitize-AppDocConfigKey -Key $Matches[1].Trim()
+                        $key = ConvertTo-AppDocSafeConfigKey -Key $Matches[1].Trim()
                         $rawValue = $Matches[2].Trim()
                         $configs += @{
                             key = $key
@@ -471,7 +459,7 @@ function Get-AppDocConfigCatalogData {
                             $settingKey = [string]$setting.key
                             $settingValue = [string]$setting.value
                             $configs += @{
-                                key = Sanitize-AppDocConfigKey -Key $settingKey
+                                key = ConvertTo-AppDocSafeConfigKey -Key $settingKey
                                 value = Protect-AppDocConfigValue -Key $settingKey -Value $settingValue -Type ".NET appSettings"
                                 file = $relativePath
                                 type = ".NET appSettings"
@@ -488,7 +476,7 @@ function Get-AppDocConfigCatalogData {
                             $connValue = [string]$conn.connectionString
                             $isRequired = $connName -match '(Default|Main|Primary|Production|Prod|Database|DB)' -or $connValue -match 'Initial Catalog|Database='
                             $configs += @{
-                                key = Sanitize-AppDocConfigKey -Key $connName
+                                key = ConvertTo-AppDocSafeConfigKey -Key $connName
                                 value = Protect-AppDocConfigValue -Key $connName -Value $connValue -Type ".NET Connection String"
                                 file = $relativePath
                                 type = ".NET Connection String"
@@ -580,7 +568,7 @@ function Get-AppDocConfigCatalogData {
                     foreach ($pairKey in $fallbackPairs.Keys) {
                         $valueString = [string]$fallbackPairs[$pairKey]
                         $configs += @{
-                            key = Sanitize-AppDocConfigKey -Key ([string]$pairKey)
+                            key = ConvertTo-AppDocSafeConfigKey -Key ([string]$pairKey)
                             value = Protect-AppDocConfigValue -Key ([string]$pairKey) -Value $valueString -Type $fileType
                             file = $relativePath
                             type = $fileType
@@ -605,7 +593,7 @@ function Get-AppDocConfigCatalogData {
                             if (-not $pair.Key) { continue }
                             $valueString = if ($pair.Value -is [string]) { $pair.Value } elseif ($null -eq $pair.Value) { "null" } else { ($pair.Value | ConvertTo-Json -Compress -Depth 3) }
                             $configs += @{
-                                key = Sanitize-AppDocConfigKey -Key ([string]$pair.Key)
+                                key = ConvertTo-AppDocSafeConfigKey -Key ([string]$pair.Key)
                                 value = Protect-AppDocConfigValue -Key ([string]$pair.Key) -Value $valueString -Type $fileType
                                 file = $relativePath
                                 type = $fileType
@@ -640,7 +628,7 @@ function Get-AppDocConfigCatalogData {
                         $value = $Matches[2].Trim()
                         $fullKey = if ($section) { "$section.$key" } else { $key }
                         $configs += @{
-                            key = Sanitize-AppDocConfigKey -Key $fullKey
+                            key = ConvertTo-AppDocSafeConfigKey -Key $fullKey
                             value = Protect-AppDocConfigValue -Key $fullKey -Value $value -Type $fileType
                             file = $relativePath
                             type = $fileType
@@ -716,7 +704,7 @@ function Get-AppDocConfigCatalogData {
             #   SQLALCHEMY_DATABASE_URI = 'sqlite:///database.db'
             #   Config.DEBUG = True
             if ($pyLine -match '^\s*(?:[A-Za-z_][A-Za-z0-9_]*\s*\.\s*)?([A-Z][A-Z0-9_]{2,})\s*=\s*(.+)$') {
-                $pyKey = Sanitize-AppDocConfigKey -Key $Matches[1].Trim()
+                $pyKey = ConvertTo-AppDocSafeConfigKey -Key $Matches[1].Trim()
                 $pyRawValue = $Matches[2].Trim()
                 # Strip surrounding matching quotes to get a clean value (e.g. 'sqlite:///database.db'
                 # -> sqlite:///database.db). Substring-based (not a \1 backreference: a backslash is

@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-html-report.ps1
 #
@@ -17,15 +18,20 @@
 #          (fonts + Mermaid load from CDN at view time; the file is otherwise
 #          self-contained). No LLM.
 #
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
     [string]$ThemePath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) { Write-Error "docs directory not found: $docsPath"; exit 1 }
 
 $defaultThemePath = Join-Path $PSScriptRoot "..\..\templates\html\theme.json"
@@ -41,9 +47,15 @@ $L = $theme.layout
 $M = $theme.masthead
 $MermaidCdn = $theme.mermaid.cdn
 $GoogleFonts = $F.googleFontsUrl
+# Asset mode: "inline" (default) makes report.html fully self-contained and usable offline
+# (Mermaid is inlined from the vendored copy; fonts fall back to the system font stack).
+# "cdn" loads Mermaid and Google Fonts from the network (smaller file).
+$AssetsMode = if ($theme.PSObject.Properties['assets'] -and $theme.assets) { ([string]$theme.assets).ToLowerInvariant() } else { 'inline' }
+if ($AssetsMode -notin @('inline', 'cdn')) { Write-Error "Theme 'assets' must be 'inline' or 'cdn' (got '$AssetsMode')"; exit 1 }
+$VendorMermaidPath = Join-Path (Join-Path (Join-Path (Join-Path (Join-Path $PSScriptRoot '..') '..') 'templates') 'html') (Join-Path 'vendor' 'mermaid.min.js')
 
 # --- helpers ------------------------------------------------------------------
-function Esc-Html {
+function ConvertTo-HtmlText {
     param([string]$Text)
     if ($null -eq $Text) { return '' }
     $Text = $Text -replace '&','&amp;'
@@ -55,7 +67,7 @@ function Esc-Html {
 function Convert-Inline {
     param([string]$Text)
     if ($null -eq $Text) { return '' }
-    $Text = Esc-Html $Text
+    $Text = ConvertTo-HtmlText $Text
     # `code`
     $Text = [regex]::Replace($Text, '`([^`]+)`', {
         param($m) $inner = $m.Groups[1].Value -replace '<','&lt;' -replace '>','&gt;'
@@ -152,7 +164,7 @@ function Convert-MarkdownFile {
             $i++
             while ($i -lt $n -and ($lines[$i] -notmatch '^\s*```')) { $body += $lines[$i]; $i++ }
             $i++   # closing fence
-            $escaped = ($body | ForEach-Object { Esc-Html $_ }) -join "`n"
+            $escaped = ($body | ForEach-Object { ConvertTo-HtmlText $_ }) -join "`n"
             if ($lang -ieq 'mermaid') {
                 $html += "<pre class=""mermaid"">`n$escaped`n</pre>"
             }
@@ -281,12 +293,12 @@ $openSub = $false
 foreach ($t in $allToc) {
     if ($t.level -eq 2) {
         if ($openSub) { $tocHtml += '</ul>'; $openSub = $false }
-        $link = "<a data-target=""$($t.anchor)"" href=""#$($t.anchor)"">$(Esc-Html $t.text)</a>"
+        $link = "<a data-target=""$($t.anchor)"" href=""#$($t.anchor)"">$(ConvertTo-HtmlText $t.text)</a>"
         $tocHtml += "<li>$link"
     }
     elseif ($t.level -eq 3) {
         if (-not $openSub) { $tocHtml += '<ul>'; $openSub = $true }
-        $link = "<a data-target=""$($t.anchor)"" href=""#$($t.anchor)"">$(Esc-Html $t.text)</a>"
+        $link = "<a data-target=""$($t.anchor)"" href=""#$($t.anchor)"">$(ConvertTo-HtmlText $t.text)</a>"
         $tocHtml += "<li>$link</li>"
     }
 }
@@ -389,8 +401,8 @@ targets.forEach(el => observer.observe(el));
 "@
 
 # --- assemble document ---------------------------------------------------------
-$docTitle = Esc-Html ([string]$M.title)
-$docSub = Esc-Html ([string]$M.sub)
+$docTitle = ConvertTo-HtmlText ([string]$M.title)
+$docSub = ConvertTo-HtmlText ([string]$M.sub)
 $generatedAt = (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
 
 $doc = @()
@@ -400,18 +412,54 @@ $doc += '<head>'
 $doc += '<meta charset="utf-8">'
 $doc += '<meta name="viewport" content="width=device-width, initial-scale=1">'
 $doc += "<title>$docTitle</title>"
-$doc += '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-$doc += "<link href=""$GoogleFonts"" rel=""stylesheet"">"
-$doc += "<script src=""$MermaidCdn""></script>"
+if ($AssetsMode -eq 'cdn') {
+    $doc += '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+    if ($GoogleFonts) { $doc += "<link href=""$GoogleFonts"" rel=""stylesheet"">" }
+    $doc += "<script src=""$MermaidCdn""></script>"
+}
+else {
+    if (-not (Test-Path -LiteralPath $VendorMermaidPath)) { Write-Error "Vendored Mermaid not found: $VendorMermaidPath (set the theme's assets to 'cdn' to load it from the network)"; exit 1 }
+    # Inline the vendored library. "</script" inside it would end the tag early, so escape it.
+    $mermaidJs = (Get-Content -LiteralPath $VendorMermaidPath -Raw) -replace '</script', '<\/script'
+    # The markers let the build's redaction sweep skip this block: it is vendored
+    # third-party code (cannot contain target secrets) and the credential regexes would
+    # otherwise corrupt it.
+    $doc += '<script>/*appdoc-vendor:begin mermaid*/'
+    $doc += $mermaidJs
+    $doc += '/*appdoc-vendor:end mermaid*/</script>'
+}
 $doc += '<style>'
 $doc += $css
 $doc += '</style>'
 $doc += '</head>'
 $doc += '<body>'
 $doc += '<header class="masthead">'
-$doc += '  <span class="logo" aria-hidden="true">'
-$doc += $cmuLogoSvg
-$doc += '  </span>'
+# Masthead logo is theme-driven (masthead.logoSvg): 'inline:cmu' (built-in CMU mark; also the default
+# when the property is absent), 'none' / '' (no logo), or 'file:<path>' / '<path>.svg' (inline an SVG
+# file; relative paths resolve against the theme file's directory).
+$logoSpec = if ($M -and $M.PSObject.Properties['logoSvg']) { [string]$M.logoSvg } else { 'inline:cmu' }
+$logoMarkup = $null
+if ([string]::IsNullOrWhiteSpace($logoSpec) -or $logoSpec -ieq 'none') {
+    $logoMarkup = $null
+}
+elseif ($logoSpec -ieq 'inline:cmu') {
+    $logoMarkup = $cmuLogoSvg
+}
+else {
+    $svgRel = if ($logoSpec -like 'file:*') { $logoSpec.Substring(5) } else { $logoSpec }
+    $svgPath = if ([System.IO.Path]::IsPathRooted($svgRel)) { $svgRel } else { Join-Path (Split-Path -Parent (Resolve-Path -LiteralPath $ThemePath).Path) $svgRel }
+    if ((Test-Path -LiteralPath $svgPath) -and ($svgPath -like '*.svg')) {
+        $logoMarkup = Get-Content -LiteralPath $svgPath -Raw
+    }
+    else {
+        Write-Warning "Theme logo '$logoSpec' not found or not an .svg file; rendering without a logo."
+    }
+}
+if ($logoMarkup) {
+    $doc += '  <span class="logo" aria-hidden="true">'
+    $doc += $logoMarkup
+    $doc += '  </span>'
+}
 $doc += '  <div>'
 $doc += "    <h1>$docTitle</h1>"
 $doc += "    <div class=""sub"">$docSub</div>"

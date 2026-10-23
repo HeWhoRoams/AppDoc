@@ -1,6 +1,6 @@
 # Start Here
 
-**Generated**: 2026-10-17 18:40:57
+**Generated**: 2026-10-23 01:55:34
 
 ## Who This Is For
 
@@ -70,8 +70,8 @@
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 85946f7
-- Generated At: 2026-10-17T18:41:14-04:00
+- Commit Hash: 17cdd36
+- Generated At: 2026-10-23T01:55:45-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

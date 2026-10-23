@@ -1,6 +1,6 @@
 {
   "artifact": "start-here",
-  "generatedAt": "2026-10-17T18:40:57-04:00",
+  "generatedAt": "2026-10-23T01:55:34-04:00",
   "recordCount": 3,
   "records": [
     {
@@ -15,7 +15,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:57-04:00"
+      "timestamp": "2026-10-23T01:55:34-04:00"
     },
     {
       "artifact": "start-here",
@@ -29,7 +29,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:57-04:00"
+      "timestamp": "2026-10-23T01:55:34-04:00"
     },
     {
       "artifact": "start-here",
@@ -38,13 +38,13 @@
       "kind": "summary",
       "confidence": 1.0,
       "metadata": {
-        "count": 0,
-        "languages": []
+        "languages": [],
+        "count": 0
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:57-04:00"
+      "timestamp": "2026-10-23T01:55:34-04:00"
     }
   ],
   "metadata": {

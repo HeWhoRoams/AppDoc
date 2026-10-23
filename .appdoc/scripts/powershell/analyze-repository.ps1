@@ -1,3 +1,5 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath

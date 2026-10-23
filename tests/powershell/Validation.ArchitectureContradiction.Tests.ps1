@@ -1,39 +1,41 @@
 # Pester tests for architecture contradiction validation
 
-$repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
-$validatorPath = Join-Path $repoRoot ".appdoc\scripts\powershell\validate-documentation.ps1"
+BeforeAll {
+    $repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+    $validatorPath = Join-Path $repoRoot ".appdoc/scripts/powershell/validate-documentation.ps1"
 
-function Remove-DirectoryRobust {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$Path,
-        [int]$MaxRetries = 5
-    )
+    function Remove-DirectoryRobust {
+        param(
+            [Parameter(Mandatory=$true)]
+            [string]$Path,
+            [int]$MaxRetries = 5
+        )
 
-    if (-not (Test-Path $Path)) { return }
+        if (-not (Test-Path $Path)) { return }
 
-    $lastError = $null
-    for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
-        try {
-            Get-ChildItem -Path $Path -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
-                try {
-                    if ($_.Attributes -band [IO.FileAttributes]::ReadOnly) {
-                        $_.Attributes = ($_.Attributes -bxor [IO.FileAttributes]::ReadOnly)
+        $lastError = $null
+        for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
+            try {
+                Get-ChildItem -Path $Path -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
+                    try {
+                        if ($_.Attributes -band [IO.FileAttributes]::ReadOnly) {
+                            $_.Attributes = ($_.Attributes -bxor [IO.FileAttributes]::ReadOnly)
+                        }
                     }
+                    catch {}
                 }
-                catch {}
+
+                Remove-Item -Path $Path -Recurse -Force -ErrorAction Stop
+                if (-not (Test-Path $Path)) { return }
             }
+            catch {
+                $lastError = $_.Exception.Message
+                Start-Sleep -Milliseconds (150 * $attempt)
+            }
+        }
 
-            Remove-Item -Path $Path -Recurse -Force -ErrorAction Stop
-            if (-not (Test-Path $Path)) { return }
-        }
-        catch {
-            $lastError = $_.Exception.Message
-            Start-Sleep -Milliseconds (150 * $attempt)
-        }
+        Write-Warning ("Failed to remove test directory after {0} attempts: {1}. Last error: {2}" -f $MaxRetries, $Path, $lastError)
     }
-
-    Write-Warning ("Failed to remove test directory after {0} attempts: {1}. Last error: {2}" -f $MaxRetries, $Path, $lastError)
 }
 
 Describe "validate-documentation architecture contradiction" {
@@ -147,9 +149,9 @@ REST API for order operations.
 
             $result = $jsonPayload | ConvertFrom-Json -Depth 30
 
-            @($result.contradictions | Where-Object { [string]$_ -like "architecture-contradiction:*" }).Count | Should BeGreaterThan 0
-            [int]$result.qualityPenaltyBreakdown.categoryTotals.contradiction | Should BeGreaterThan 0
-            [string]$result.status | Should Be "fail"
+            @($result.contradictions | Where-Object { [string]$_ -like "architecture-contradiction:*" }).Count | Should -BeGreaterThan 0
+            [int]$result.qualityPenaltyBreakdown.categoryTotals.contradiction | Should -BeGreaterThan 0
+            [string]$result.status | Should -Be "fail"
         }
         finally {
             $WarningPreference = $warningPreferenceBefore

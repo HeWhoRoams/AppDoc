@@ -39,32 +39,11 @@ function Get-AppDocDependenciesSourceFiles {
 }
 
 function Get-AppDocDependenciesRelativePath {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$RootPath,
-        [Parameter(Mandatory=$true)]
-        [string]$Path
-    )
-
-    if (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue) {
-        return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-    }
-
-    # Normalize path separators to '\' and trim trailing separators
-    $rootNorm = $RootPath -replace '/', '\'
-    $rootNorm = $rootNorm.TrimEnd('\')
-    $pathToCheck = $Path -replace '/', '\'
-    $pathToCheck = $pathToCheck.TrimEnd('\')
-    # Perform a case-insensitive prefix check
-    if ($pathToCheck -eq $rootNorm) {
-        return ''
-    }
-    $rootWithSep = $rootNorm + '\'
-    if ($pathToCheck.StartsWith($rootWithSep, [System.StringComparison]::OrdinalIgnoreCase)) {
-        return $pathToCheck.Substring($rootWithSep.Length)
-    }
-    return $pathToCheck
+    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
+    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
+    param([string]$RootPath, [string]$Path)
+    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
+    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
 }
 
 function Get-AppDocDependenciesCatalogData {

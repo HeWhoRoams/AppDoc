@@ -1,13 +1,19 @@
+#requires -Version 7.2
 #
 # generate-overview.ps1
 #
 # Purpose: Populates the overview template with repository analysis and technology summary.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
+
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 function Get-AppDocOverviewGeneratorValue {
     param(
@@ -140,13 +146,14 @@ function Add-AppDocOverviewSection {
         $body = @("- No deterministic evidence available for this section in the current run.")
     }
 
-    return ($Content.TrimEnd() + "`r`n`r`n## " + $SectionName + "`r`n" + ($body -join "`r`n") + "`r`n")
+    return ($Content.TrimEnd() + "`n`n## " + $SectionName + "`n" + ($body -join "`n") + "`n")
 }
 
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) {
-    . $helpersPath
-}
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: generators use its functions further down, so a missing file must stop here
+# rather than fail later with an unrelated "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
 if (-not (Test-Path $scopeModule)) { Write-Error "Required module not found: $scopeModule"; exit 1 }
@@ -195,7 +202,7 @@ if (-not (Test-Path $RootPath)) {
     exit 1
 }
 
-$outputPath = Join-Path $RootPath "docs\overview.md"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "overview.md"
 $initialized = Initialize-TemplateFile -TemplateName "overview-template.md" -OutputPath $outputPath -RootPath $RootPath
 if (-not $initialized) {
     Write-Error "Failed to initialize template"
@@ -217,7 +224,7 @@ if ($null -eq $truthPack) {
     Write-Warning "Get-AppDocOverviewTruthPackData returned null. Using empty truth pack."
     $truthPack = @{}
 } else {
-    $canonicalMetricsPath = Join-Path $RootPath "docs\evidence\metrics-canonical.json"
+    $canonicalMetricsPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\metrics-canonical.json"
     if (Test-Path $canonicalMetricsPath) {
         try {
             $canonical = Get-Content $canonicalMetricsPath -Raw | ConvertFrom-Json -Depth 50
@@ -287,8 +294,8 @@ $content = Add-AppDocOverviewSection -Content $content -SectionName "Inputs→Pr
 $content = Add-AppDocOverviewSection -Content $content -SectionName "External Systems" -Lines $externalLines
 $content = Add-AppDocOverviewSection -Content $content -SectionName "Confidence Notes" -Lines $confidenceLines
 
-$content = Normalize-AppDocTemplateInstructionText -Content $content
-$content = Normalize-AppDocMarkdownStructure -Content $content
+$content = Format-AppDocTemplateInstructionText -Content $content
+$content = Format-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 

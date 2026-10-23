@@ -49,23 +49,15 @@
 #
 # REDACTION: any real secret in a URL (token / apikey / password / :user:pass@)
 # is redacted to [REDACTED] before output (defense-in-depth, mirrors the
-# classic-ASP register's Sanitize-Text).
+# classic-ASP register's ConvertTo-SafeText).
 #
 
 function Get-AppDocExternalCallRelativePath {
-    [CmdletBinding()]
-    param(
-        [string]$RootPath,
-        [string]$Path
-    )
-
-    if (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue) {
-        return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-    }
-    if (-not $RootPath) { return $Path }
-    $rel = $Path.Replace($RootPath, "")
-    $rel = $rel.TrimStart('\', '/')
-    return ($rel -replace '\\', '/')
+    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
+    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
+    param([string]$RootPath, [string]$Path)
+    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
+    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
 }
 
 function Get-AppDocExternalCallScopedFiles {
@@ -89,7 +81,7 @@ function Get-AppDocExternalCallScopedFiles {
 
 # Redact any real secret value inside a URL / endpoint string. Defense-in-depth:
 # even if a credential-bearing URL literal is captured, it is redacted here.
-function Sanitize-AppDocExternalCallUrl {
+function ConvertTo-AppDocSafeExternalCallUrl {
     param([string]$t)
     if ($null -eq $t) { return '' }
     # userinfo credentials :user:pass@ -> :[REDACTED]@
@@ -245,7 +237,7 @@ function Add-AppDocExternalCallHit {
     $method = Get-AppDocExternalCallMethod -Verb $Verb -Lookahead $lookahead
     if (-not $method -and $DefaultVerbHint) { $method = $DefaultVerbHint }
 
-    $url = Sanitize-AppDocExternalCallUrl -t ([string]$endpoint.url)
+    $url = ConvertTo-AppDocSafeExternalCallUrl -t ([string]$endpoint.url)
 
     $Hits.Add([pscustomobject]@{
         mechanism  = $Mechanism
@@ -404,8 +396,12 @@ Export-ModuleMember -Function @(
     'Get-AppDocExternalCallData',
     'Get-AppDocExternalCallRelativePath',
     'Get-AppDocExternalCallScopedFiles',
-    'Sanitize-AppDocExternalCallUrl',
+    'ConvertTo-AppDocSafeExternalCallUrl',
     'Resolve-AppDocExternalCallEndpoint',
     'Get-AppDocExternalCallMethod',
     'Get-AppDocExternalCallFirstArg'
 )
+
+# Deprecated names (unapproved verbs), kept as aliases until AppDoc 1.2.0.
+Set-Alias -Name 'Sanitize-AppDocExternalCallUrl' -Value 'ConvertTo-AppDocSafeExternalCallUrl'
+Export-ModuleMember -Alias @('Sanitize-AppDocExternalCallUrl')

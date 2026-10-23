@@ -4,7 +4,7 @@
 #
 #          HONEST-UNKNOWN GUARANTEE (the hard bar):
 #            - NON-GIT DIR (no .git): isGitRepo=$false. Git is NEVER invoked. Every
-#              owner field degrades to 'Unknown'. (helpweb-scratch-src has no .git.)
+#              owner field degrades to 'Unknown'. (A scratch copy without .git is the usual case.)
 #            - SHALLOW HISTORY (commitCount < $MinCommitsForOwnership, default 2):
 #              historySufficient=$false. A single / squashed commit's author is NOT
 #              meaningful ownership, so every owner field degrades to 'Unknown'.
@@ -28,7 +28,7 @@ $script:AppDocGitOwnershipCodeExts = @('.cs', '.cshtml', '.aspx', '.aspx.cs', '.
 
 # --- git presence (GUARDED: never invoke git on a non-git dir) ---------------
 # Returns $true only if the target actually looks like a git work-tree: a .git dir/file
-# exists AND `git rev-parse --is-inside-work-tree` confirms it. A non-git dir (helpweb)
+# exists AND `git rev-parse --is-inside-work-tree` confirms it. A non-git dir
 # short-circuits to $false WITHOUT calling git at all.
 function Test-AppDocGitRepo {
     [CmdletBinding()]
@@ -58,7 +58,8 @@ function Get-AppDocGitHistoryStats {
     $lastDate = ''
     try {
         # %H commit, %ae email, %an name, %ad short date (chronological via --reverse)
-        $lines = @(& git -C $RootPath log --pretty=format:'%H|%ae|%an|%ad' --date=short 2>$null)
+        # --use-mailmap + %aE/%aN: a person with several addresses is counted once.
+        $lines = @(& git -C $RootPath log --use-mailmap --pretty=format:'%H|%aE|%aN|%ad' --date=short 2>$null)
         foreach ($ln in $lines) {
             if ([string]::IsNullOrWhiteSpace($ln)) { continue }
             $p = $ln.Split('|')
@@ -72,18 +73,18 @@ function Get-AppDocGitHistoryStats {
             $firstDate = $ad
         }
     }
-    catch { }
+    catch { Write-Verbose ("git log (commit counts) unavailable: {0}" -f $_.Exception.Message) }
 
     # Resolve top-author display name + build the author summary in one pass.
     $authorList = @()
     $nameByEmail = @{}
     try {
-        foreach ($ln in @(& git -C $RootPath log --pretty=format:'%ae|%an' --date=short 2>$null)) {
+        foreach ($ln in @(& git -C $RootPath log --use-mailmap --pretty=format:'%aE|%aN' --date=short 2>$null)) {
             $q = $ln.Split('|')
             if ($q.Count -ge 2 -and -not $nameByEmail.ContainsKey($q[0])) { $nameByEmail[$q[0]] = $q[1] }
         }
     }
-    catch { }
+    catch { Write-Verbose ("git log (author names) unavailable: {0}" -f $_.Exception.Message) }
     foreach ($k in ($authorCommitCounts.Keys | Sort-Object)) {
         $disp = if ($nameByEmail.ContainsKey($k) -and $nameByEmail[$k]) { $nameByEmail[$k] } else { $k }
         $authorList += [pscustomobject]@{ email = [string]$k; name = $disp; commits = [int]$authorCommitCounts[$k] }
@@ -136,7 +137,7 @@ function Get-AppDocGitCodeowners {
                 if ($pattern -eq '*') { $defaultOwner = ($owners -join ', ') }
             }
         }
-        catch { }
+        catch { Write-Warning ("CODEOWNERS could not be read: {0}" -f $_.Exception.Message) }
     }
     return [pscustomobject]@{
         present      = [bool]$found
@@ -158,12 +159,16 @@ function Get-AppDocGitFileOwnership {
     param(
         [Parameter(Mandatory=$true)][string]$RootPath,
         [Parameter(Mandatory=$false)][bool]$HistorySufficient = $true,
-        [Parameter(Mandatory=$false)][int]$MaxFiles = 400
+        [Parameter(Mandatory=$false)][int]$MaxFiles = 400,
+        # Author email addresses are personal data; they are shown only when asked for.
+        [Parameter(Mandatory=$false)][bool]$ShowEmails = $false
     )
 
     $fileMap = @{}   # path -> @{ commits = <count>; ownerEmail; ownerName; lastDate }
     try {
-        $raw = @(& git -C $RootPath log --pretty=format:'@@APPCOMMIT@@|%ae|%an|%ad' --date=short --numstat 2>$null)
+        # --no-renames: a rename is reported as delete + add with plain paths, so the
+        # existence filter below drops the old path instead of mis-parsing "a => b".
+        $raw = @(& git -C $RootPath log --use-mailmap --no-renames --pretty=format:'@@APPCOMMIT@@|%aE|%aN|%ad' --date=short --numstat 2>$null)
         $curEmail = ''; $curName = ''; $curDate = ''
         foreach ($ln in $raw) {
             if ([string]::IsNullOrWhiteSpace($ln)) { continue }
@@ -176,8 +181,6 @@ function Get-AppDocGitFileOwnership {
             $tabParts = $ln -split "`t"
             if ($tabParts.Count -lt 3) { continue }
             $pathRaw = $tabParts[2]
-            # Normalize a rename path "old{old => new}new" -> new path.
-            if ($pathRaw -match '\{(.*) => (.*?)([^{}]*)\}$') { $pathRaw = $matches[2] + $matches[3] }
             if ([string]::IsNullOrWhiteSpace($pathRaw)) { continue }
             if (-not $fileMap.ContainsKey($pathRaw)) {
                 $fileMap[$pathRaw] = @{ commits = 0; ownerEmail = ''; ownerName = ''; lastDate = '' }
@@ -191,16 +194,32 @@ function Get-AppDocGitFileOwnership {
             $fileMap[$pathRaw].commits++
         }
     }
-    catch { }
+    catch { Write-Verbose ("git log (per-file history) unavailable: {0}" -f $_.Exception.Message) }
+
+    # Only files that exist in the current tree are reported: history also lists files that
+    # were deleted or renamed long ago, which are not part of the application any more.
+    $tracked = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+    try { foreach ($t in @(& git -C $RootPath ls-files 2>$null)) { if ($t) { [void]$tracked.Add([string]$t) } } } catch { Write-Verbose ("git ls-files unavailable: {0}" -f $_.Exception.Message) }
+    $global:LASTEXITCODE = 0
+    $inScope = { param($rel) $true }
+    if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {
+        $inScope = { param($rel) Test-AppDocPathIncluded -Path (Join-Path $RootPath $rel) -RootPath $RootPath -Artifact 'default' }
+    }
 
     $sufficient = [bool]$HistorySufficient
     $records = @()
-    foreach ($path in $fileMap.Keys) {
+    foreach ($path in @($fileMap.Keys | Sort-Object)) {
+        if ($tracked.Count -gt 0 -and -not $tracked.Contains($path)) { continue }
+        if (-not (& $inScope $path)) { continue }
         $m = $fileMap[$path]
         $owner = 'Unknown'
         $lastChange = 'Unknown'
         if ($sufficient -and $m.ownerEmail) {
-            $disp = if ($m.ownerName -and $m.ownerName -ne $m.ownerEmail) { "$($m.ownerName) <$($m.ownerEmail)>" } else { $m.ownerEmail }
+            $disp = if ($ShowEmails) {
+                if ($m.ownerName -and $m.ownerName -ne $m.ownerEmail) { "$($m.ownerName) <$($m.ownerEmail)>" } else { $m.ownerEmail }
+            } else {
+                if ($m.ownerName) { [string]$m.ownerName } else { '(unnamed author)' }
+            }
             $owner = $disp
             if ($m.lastDate) { $lastChange = $m.lastDate }
         }
@@ -224,7 +243,10 @@ function Get-AppDocGitOwnership {
     param(
         [Parameter(Mandatory=$true)][string]$RootPath,
         [Parameter(Mandatory=$false)][int]$MinCommitsForOwnership = 2,
-        [Parameter(Mandatory=$false)][int]$MaxFiles = 400
+        [Parameter(Mandatory=$false)][int]$MaxFiles = 400,
+        # Author email addresses are personal data; they are shown only when asked for
+        # (config ownership.showEmails). Default: names only.
+        [Parameter(Mandatory=$false)][bool]$ShowEmails = $false
     )
 
     $isGit = Test-AppDocGitRepo -RootPath $RootPath
@@ -250,7 +272,7 @@ function Get-AppDocGitOwnership {
     $codeowners = Get-AppDocGitCodeowners -RootPath $RootPath
     $files = @()
     if ($isGit) {
-        $files = @(Get-AppDocGitFileOwnership -RootPath $RootPath -HistorySufficient $historySufficient -MaxFiles $MaxFiles)
+        $files = @(Get-AppDocGitFileOwnership -RootPath $RootPath -HistorySufficient $historySufficient -MaxFiles $MaxFiles -ShowEmails $ShowEmails)
     }
 
     # Overall owner: declared CODEOWNERS default wins (that IS declared ownership).
@@ -262,6 +284,11 @@ function Get-AppDocGitOwnership {
     # status: 'Derived' only when git history is real AND sufficient; 'Unknown' otherwise.
     $status = if ($historySufficient) { 'Derived' } else { 'Unknown' }
     if (-not $isGit) { $status = 'Unknown' }
+
+    if (-not $ShowEmails) {
+        $topAuthorEmail = ''
+        $authors = @($authors | ForEach-Object { [pscustomobject]@{ email = ''; name = [string]$_.name; commits = [int]$_.commits } })
+    }
 
     return [pscustomobject]@{
         isGitRepo             = [bool]$isGit

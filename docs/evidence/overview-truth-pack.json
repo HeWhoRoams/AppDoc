@@ -1,24 +1,519 @@
 {
+  "languageCount": {},
+  "evidence_refs": [
+    {
+      "id": "ev-0001",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "concurrency.cancel-in-progress",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/concurrency.cancel-in-progress",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0002",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "concurrency.group",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/concurrency.group",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0003",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.drift.name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.name",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0004",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.drift.needs",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.needs",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0005",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.drift.runs-on",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.runs-on",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0006",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.drift.steps.shell",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps.shell",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0007",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.drift.steps.with.fetch-depth",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps.with.fetch-depth",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0008",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.drift.steps[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps[0]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0009",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.drift.steps[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps[1]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0010",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.hygiene.name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.name",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0011",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.hygiene.runs-on",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.runs-on",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0012",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.hygiene.steps.run",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps.run",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0013",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.hygiene.steps.shell",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps.shell",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0014",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.hygiene.steps[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[0]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0015",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.hygiene.steps[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[1]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0016",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.hygiene.steps[2]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[2]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0017",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.hygiene.steps[3]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[3]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0018",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.hygiene.steps[4]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[4]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0019",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.hygiene.steps[5]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[5]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0020",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.hygiene.steps[6]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[6]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0021",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.hygiene.steps[7]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[7]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0022",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.hygiene.steps[8]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[8]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0023",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.lint.name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.name",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0024",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.lint.runs-on",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.runs-on",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0025",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.lint.steps.shell",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps.shell",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0026",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.lint.steps[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps[0]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0027",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.lint.steps[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps[1]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0028",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.name",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0029",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.needs",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.needs",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0030",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.runs-on",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.runs-on",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0031",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.steps.if",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.if",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0032",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.steps.run",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.run",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0033",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.steps.shell",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.shell",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0034",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.steps.with.dotnet-version",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.with.dotnet-version",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0035",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.steps.with.fetch-depth",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.with.fetch-depth",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0036",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.steps[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[0]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0037",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.steps[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[1]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0038",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.steps[2]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[2]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0039",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.steps[3]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[3]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0040",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.steps[4]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[4]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0041",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.steps[5]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[5]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0042",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.strategy.fail-fast",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.fail-fast",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0043",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.strategy.matrix.dotnet",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.dotnet",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0044",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.strategy.matrix.include.dotnet",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.include.dotnet",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0045",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.strategy.matrix.include[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.include[0]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0046",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "jobs.tests.strategy.matrix.os",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.os",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0047",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/name",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0048",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "on.push.branches",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0049",
+      "artifact": "config-catalog",
+      "kind": "configuration",
+      "name": "permissions.contents",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/permissions.contents",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0050",
+      "artifact": "overview",
+      "kind": "summary",
+      "name": "system-purpose",
+      "source": "repository",
+      "metadata": {
+        "text": "This codebase contains 1 code file(s) across 1 language(s) (framework detected: ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot). Full analysis available in linked documentation."
+      }
+    }
+  ],
+  "version": "1.2.0",
+  "generatedAt": "2026-10-23T01:55:33-04:00",
   "counts": {
     "codeFiles": 1,
-    "endpointRecords": 5,
-    "inboundEndpoints": 5,
+    "endpointRecords": 0,
+    "inboundEndpoints": 0,
     "outboundEndpoints": 0,
     "outboundMappedEndpoints": 0,
-    "modelRecords": 4,
-    "configurationRecords": 54,
+    "modelRecords": 0,
+    "configurationRecords": 49,
     "dependencyRecords": 0
   },
-  "graph": {
-    "enabled": true,
-    "path": "/persistent/agent/workspace/AppDoc/docs/evidence/evidence-graph.json",
-    "schemaVersion": "appdoc-evidence-graph/v1",
-    "graphVersion": "1.0.0",
-    "entityCount": 70,
-    "edgeCount": 68
-  },
-  "rootPath": "/persistent/agent/workspace/AppDoc",
-  "generatedAt": "2026-10-17T18:40:56-04:00",
   "architecture": {
     "primaryStyle": "no-api-surface",
     "styles": [
@@ -32,1133 +527,26 @@
     ],
     "detectionWarning": "Framework detected without code scan hit; counts patched for consistency."
   },
-  "languageCount": {},
-  "evidence_refs": [
-    {
-      "id": "ev-0001",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.fileOperations.autoApprove.list",
-      "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.list",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0002",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.fileOperations.autoApprove.read",
-      "source": ".vscode/settings.json:chat.tools.fileOperations.autoApprove.read",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0003",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.-ErrorAction",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-ErrorAction",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0004",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.-Json",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-Json",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0005",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.-RootPath",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-RootPath",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0006",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.-Verbose",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.-Verbose",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0007",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove..\\.AppDoc\\\\scripts\\\\powershell\\\\*.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove../.AppDoc/scripts/powershell/*.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0008",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove..AppDoc/scripts/powershell/*.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0009",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-capability-gaps.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0010",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/analyze-codebase.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-codebase.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0011",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/analyze-repository.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/analyze-repository.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0012",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/calculate-quality-metrics.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0013",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/catalog-samples.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/catalog-samples.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0014",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/extract-config.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/extract-config.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0015",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-api-inventory.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0016",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-assessment-report.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0017",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-build-cookbook.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0018",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-config-catalog.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0019",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/generate-data-model.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-data-model.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0020",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/generate-debt-register.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-debt-register.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0021",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependencies-catalog.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0022",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-dependency-graph.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0023",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/generate-improvements.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-improvements.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0024",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/generate-overview.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-overview.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0025",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/generate-test-catalog.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0026",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/run-all-generators.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/run-all-generators.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0027",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/synthesize-assessment-report.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0028",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-api-inventory.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0029",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-build-cookbook.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0030",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-config-catalog.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0031",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/validate-data-model.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-data-model.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0032",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/validate-debt-register.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-debt-register.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0033",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/validate-overview.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-overview.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0034",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.**/validate-test-catalog.ps1",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0035",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.Copy-Item",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Copy-Item",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0036",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.Get-ChildItem",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-ChildItem",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0037",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.Get-Content",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Get-Content",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0038",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.git",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0039",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.git fetch",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git fetch",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0040",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.git status",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.git status",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0041",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.pwsh",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.pwsh",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0042",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.Remove-Item",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Remove-Item",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0043",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.Set-ExecutionPolicy",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Set-ExecutionPolicy",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0044",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.Test-Path",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Test-Path",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0045",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "chat.tools.terminal.autoApprove.Write-Host",
-      "source": ".vscode/settings.json:chat.tools.terminal.autoApprove.Write-Host",
-      "metadata": {
-        "required": true
-      }
-    },
-    {
-      "id": "ev-0046",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "github.copilot.chat.executions.enabled",
-      "source": ".vscode/settings.json:github.copilot.chat.executions.enabled",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0047",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "itsm.base-url",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/itsm.base-url",
-      "metadata": {
-        "required": true
-      }
-    },
-    {
-      "id": "ev-0048",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp-core.name",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.name",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0049",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp-core.runs-on",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.runs-on",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0050",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp-core.steps.shell",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps.shell",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0051",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp-core.steps.uses",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps.uses",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0052",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp-core.steps[0]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[0]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0053",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp-core.steps[1]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[1]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0054",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp-core.steps[2]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[2]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0055",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp-core.steps[3]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[3]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0056",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp.name",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.name",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0057",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp.runs-on",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.runs-on",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0058",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp.steps.shell",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps.shell",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0059",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp.steps.uses",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps.uses",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0060",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp.steps[0]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[0]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0061",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp.steps[1]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[1]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0062",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp.steps[2]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[2]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0063",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-csharp.steps[3]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[3]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0064",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-java.name",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.name",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0065",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-java.runs-on",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.runs-on",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0066",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-java.steps.shell",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps.shell",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0067",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-java.steps.uses",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps.uses",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0068",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-java.steps[0]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[0]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0069",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-java.steps[1]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[1]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0070",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-java.steps[2]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[2]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0071",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-java.steps[3]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[3]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0072",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-node.name",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.name",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0073",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-node.runs-on",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.runs-on",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0074",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-node.steps.shell",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps.shell",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0075",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-node.steps.uses",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps.uses",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0076",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-node.steps[0]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[0]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0077",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-node.steps[1]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[1]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0078",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-node.steps[2]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[2]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0079",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-node.steps[3]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[3]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0080",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-python.name",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.name",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0081",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-python.runs-on",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.runs-on",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0082",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-python.steps.shell",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps.shell",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0083",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-python.steps.uses",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps.uses",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0084",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-python.steps[0]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[0]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0085",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-python.steps[1]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[1]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0086",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-python.steps[2]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[2]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0087",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test-python.steps[3]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[3]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0088",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test.name",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.name",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0089",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test.runs-on",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.runs-on",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0090",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test.steps.shell",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps.shell",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0091",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test.steps.uses",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps.uses",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0092",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test.steps[0]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[0]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0093",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test.steps[1]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[1]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0094",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test.steps[2]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[2]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0095",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.golden-test.steps[3]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[3]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0096",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.syntax-gate.runs-on",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.runs-on",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0097",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.syntax-gate.steps.shell",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps.shell",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0098",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.syntax-gate.steps[0]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[0]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0099",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.syntax-gate.steps[1]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[1]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0100",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "jobs.syntax-gate.steps[2]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[2]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0101",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "logging.level.com.acme",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/logging.level.com.acme",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0102",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "name",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/name",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0103",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "on.push.branches[0]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[0]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0104",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "on.push.branches[1]",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[1]",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0105",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "server.port",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/server.port",
-      "metadata": {
-        "required": true
-      }
-    },
-    {
-      "id": "ev-0106",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "spring.application.name",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.application.name",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0107",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "spring.datasource.password",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.datasource.password",
-      "metadata": {
-        "required": true
-      }
-    },
-    {
-      "id": "ev-0108",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "spring.datasource.url",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.datasource.url",
-      "metadata": {
-        "required": true
-      }
-    },
-    {
-      "id": "ev-0109",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "spring.datasource.username",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.datasource.username",
-      "metadata": {
-        "required": true
-      }
-    },
-    {
-      "id": "ev-0110",
-      "artifact": "config-catalog",
-      "kind": "configuration",
-      "name": "spring.jpa.hibernate.ddl-auto",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.jpa.hibernate.ddl-auto",
-      "metadata": {
-        "required": false
-      }
-    },
-    {
-      "id": "ev-0111",
-      "artifact": "overview",
-      "kind": "summary",
-      "name": "system-purpose",
-      "source": "repository",
-      "metadata": {
-        "text": "This codebase contains 1 code file(s) across 1 language(s) (framework detected: Classic ASP). Full analysis available in linked documentation."
-      }
-    }
-  ],
-  "projectName": "AppDoc",
+  "rootPath": ".",
+  "projectName": "selfbuild",
+  "graph": {
+    "enabled": true,
+    "path": "docs/evidence/evidence-graph.json",
+    "schemaVersion": "appdoc-evidence-graph/v1",
+    "graphVersion": "1.0.0",
+    "entityCount": 51,
+    "edgeCount": 49
+  },
   "facts": {
     "what_it_does": [
       {
-        "text": "At a high level, the application orchestrates Core Processing capabilities through its core services and workflows.",
-        "evidence_refs": []
-      },
-      {
-        "text": "This application appears to support Core Processing workflows and expose that behavior through its service interfaces.",
-        "evidence_refs": []
-      },
-      {
-        "text": "Its business behavior is centered on application records such as and, Help Desk Audit Trail, Help Desk Tickets, and Help Desk usp Get Monthly Metrics.",
-        "evidence_refs": []
+        "text": "This repository primarily defines tooling, automation, and configuration behavior rather than an exposed runtime API surface.",
+        "evidence_refs": [
+          "ev-0001",
+          "ev-0002",
+          "ev-0003",
+          "ev-0004"
+        ]
       }
     ],
     "inputs": [
@@ -1173,19 +561,17 @@
     ],
     "processing_steps": [
       {
-        "text": "Processing logic is organized around components such as Core Processing, where requests are validated and routed through domain logic.",
-        "evidence_refs": []
-      },
-      {
-        "text": "Core processing includes mapping request data into internal models and returning structured results for consumers.",
-        "evidence_refs": []
+        "text": "Processing flow could not be inferred beyond repository-level summaries in this scan.",
+        "evidence_refs": [
+          "ev-0050"
+        ]
       }
     ],
     "outputs": [
       {
         "text": "Output contracts are not strongly represented in current deterministic evidence.",
         "evidence_refs": [
-          "ev-0111"
+          "ev-0050"
         ]
       }
     ],
@@ -1193,13 +579,13 @@
       {
         "text": "No clear external system integration evidence was detected.",
         "evidence_refs": [
-          "ev-0111"
+          "ev-0050"
         ]
       }
     ],
     "confidence_notes": [
       {
-        "text": "Evidence coverage includes 5 endpoint records, 4 model records, 54 configuration records, and 0 dependency records.",
+        "text": "Evidence coverage includes 0 endpoint records, 0 model records, 49 configuration records, and 0 dependency records.",
         "evidence_refs": [
           "ev-0001",
           "ev-0002",
@@ -1208,18 +594,17 @@
         ]
       },
       {
-        "text": "Canonical evidence graph captured 70 entities and 68 relationships for this run.",
+        "text": "Canonical evidence graph captured 51 entities and 49 relationships for this run.",
         "evidence_refs": [
-          "ev-0111"
+          "ev-0050"
         ]
       },
       {
         "text": "Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.",
         "evidence_refs": [
-          "ev-0111"
+          "ev-0050"
         ]
       }
     ]
-  },
-  "version": "1.2.0"
+  }
 }

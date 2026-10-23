@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-classic-asp-procdict.ps1
 #
@@ -7,7 +8,7 @@
 #            (a) in-source stored-procedure CONTRACT blocks: the VB comment
 #                ladders that live in the .inc/.asp files documenting a
 #                procedure's Parameters and Return Codes (e.g.
-#                "Procedure: HelpDesk_ExtendAccount" / "Parameters:" /
+#                "Procedure: usp_ExtendAccount" / "Parameters:" /
 #                "Return Codes:").
 #            (b) stored-procedure CALL-SITES already discovered by
 #                generate-classic-asp-datamodel.ps1 (the EXEC / .Execute /
@@ -20,29 +21,32 @@
 #
 # Deterministic: no LLM, no randomness, no network. Framework-gated: only runs
 # when framework-detection.json reports Classic ASP or ASP.NET Web Forms.
-# Sanitized @@HELPWEB_...@@ tokens are treated as opaque values.
+# Connection-string values are treated as opaque and never printed.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
+# Shared classic-ASP helpers (single definition; see modules/AppDoc.ClassicAsp.psm1).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 # --- Evidence + Contracts modules (canonical evidence + manifest) ----------------
 $evidenceModule  = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
 if (Test-Path $evidenceModule) {
     Import-Module $evidenceModule -Force -ErrorAction SilentlyContinue
-}
-function Write-NotApplicablePlaceholder {
-    param([string]$OutputPath, [string]$Title)
-    $dir = Split-Path $OutputPath -Parent
-    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    $body = "# $Title`r`n`r`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`r`n`r`n## Summary`r`n`r`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP signal, so no content was extracted.`r`n`r`n---"
-    $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
 }
 # --- cell escaping for markdown tables ------------------------------------------
 # --- parse a single procedure contract block ------------------------------------
@@ -52,13 +56,13 @@ function Write-NotApplicablePlaceholder {
 # Uses a section state machine: params are only collected inside the Parameters:
 # section and return codes only inside the Return Codes: section, so surrounding
 # description prose / banners never false-match as a parameter or code.
-function Parse-ProcBlock {
+function Read-ProcBlock {
     param([string[]]$lines, [int]$start)
     $block = [ordered]@{ name=""; params=(New-Object System.Collections.Generic.List[object]); returns=(New-Object System.Collections.Generic.List[object]) }
     $nm = [regex]::Match($lines[$start], "(?i)\s*'(?:Stored\s+Procedure|Procedure(?:\s+Name)?)\s*[:\-]?\s*([A-Za-z_][A-Za-z0-9_.]*)")
     if ($nm.Success) { $block.name = $nm.Groups[1].Value }
     # Core-line normalizer: drop the VB comment quote and any leading dashes/tabs/spaces.
-    function Core-Line([string]$l) {
+    function Get-ProcCommentText([string]$l) {
         $c = $l
         $c = $c -replace "^\s*'", ""
         $c = $c -replace "^\s*[-]*\s*", ""
@@ -72,7 +76,7 @@ function Parse-ProcBlock {
         if ([string]::IsNullOrWhiteSpace($t)) { $i++; continue }
         # stop at a real code line (non-empty and not a VB comment)
         if (-not $t.TrimStart().StartsWith("'")) { break }
-        $c = Core-Line $t
+        $c = Get-ProcCommentText $t
         # stop at a banner line (a run of stars/plus that opens the next prose block)
         if ($c -match '^[+*]{3,}') { break }
         # stop at the next procedure-name marker
@@ -103,13 +107,13 @@ function Parse-ProcBlock {
 }
 
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
-$outputPath  = Join-Path $RootPath "docs\procdict.md"
-$evidencePath = Join-Path $RootPath "docs\procdict.evidence.json"
+$outputPath  = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "procdict.md"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "procdict.evidence.json"
 
 Write-Host "📚 Generating Classic ASP stored-procedure data dictionary..." -ForegroundColor Cyan
 if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
     Write-Host "  Framework not Classic ASP - writing placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "Stored-procedure data dictionary"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "Stored-procedure data dictionary"
     @() | ConvertTo-Json -Depth 5 | Out-File -FilePath $evidencePath -Encoding UTF8
     exit 0
 }
@@ -118,8 +122,8 @@ $rootPrefix = $RootPath.TrimEnd('\', '/')
 
 # --- load the call-site inventory produced by the datamodel extractor -----------
 $callSiteMap = @{}   # lowercased proc base-name -> @files
-$dmEvFlat = Join-Path $RootPath "docs\data-model.evidence.json"
-$dmEvCanon = Join-Path $RootPath "docs\evidence\data-model.evidence.json"
+$dmEvFlat = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "data-model.evidence.json"
+$dmEvCanon = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\data-model.evidence.json"
 $dmRecords = @()
 foreach ($cand in @($dmEvFlat, $dmEvCanon)) {
     if (Test-Path $cand) {
@@ -186,7 +190,7 @@ foreach ($list in @($incFiles, $aspFiles)) {
         for ($i = 0; $i -lt $lines.Count; $i++) {
             $m = [regex]::Match($lines[$i], "(?i)^\s*'\s*(?:Stored\s+Procedure|Procedure(?:\s+Name)?)\s*[:\-]?\s*([A-Za-z_][A-Za-z0-9_.]*)")
             if ($m.Success) {
-                $blk = Parse-ProcBlock -lines $lines -start $i
+                $blk = Read-ProcBlock -lines $lines -start $i
                 if ($blk.name -and $blk.params.Count -gt 0) {
                     Add-Doc -Name $blk.name -RelPath $rel -Params $blk.params -Returns $blk.returns
                 }
@@ -247,7 +251,7 @@ foreach ($d in $docRows) {
     $rcCell = if ($rc.Count -gt 0) { ($rc -join "; ") } else { "—" }
     $calls = $d.files
     $callsShown = if ($calls.Count -le 3) { ($calls -join ", ") } else { (($calls | Select-Object -First 3) -join ", ") + " (+$($calls.Count - 3) more)" }
-    $row = "| {0} | `{1}` | {2} | {3} | {4} | {5} | Verified |" -f $id, $d.name, (Md-Clean $fname), (Md-Clean $paramCell), (Md-Clean $rcCell), (Md-Clean $callsShown)
+    $row = "| {0} | `{1}` | {2} | {3} | {4} | {5} | Verified |" -f $id, $d.name, (Format-MarkdownCellText $fname), (Format-MarkdownCellText $paramCell), (Format-MarkdownCellText $rcCell), (Format-MarkdownCellText $callsShown)
     $lines.Add($row)
 }
 if ($docCount -eq 0) { $lines.Add("| — | — | — | — | — | — | Unknown |") }
@@ -265,7 +269,7 @@ foreach ($u in $undocRows) {
     $id = "spu-$( $uid.ToString('000') )"
     $files = $u.files
     $filesShown = if ($files.Count -le 3) { ($files -join ", ") } else { (($files | Select-Object -First 3) -join ", ") + " (+$($files.Count - 3) more)" }
-    $row = "| {0} | `{1}` | {2} | Partly verified |" -f $id, (Md-Clean $u.name), (Md-Clean $filesShown)
+    $row = "| {0} | `{1}` | {2} | Partly verified |" -f $id, (Format-MarkdownCellText $u.name), (Format-MarkdownCellText $filesShown)
     $lines.Add($row)
 }
 if ($undocCount -eq 0) { $lines.Add("| — | — | — | Unknown |") }
@@ -283,7 +287,7 @@ $lines.Add("## Provenance"); $lines.Add("")
 $lines.Add("- Generator Version: appdoc-run-all-generators/3.0.0"); $lines.Add("- Commit Hash: unknown")
 $lines.Add("- Generated At: $generatedIso"); $lines.Add("- Profile: default"); $lines.Add("- Scope: .")
 $lines.Add("- Confidence/Inference Flags: deterministic, evidence-backed")
-$md = ($lines -join "`r`n")
+$md = ($lines -join "`n")
 $md | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 # --- Flat evidence --------------------------------------------------------------
@@ -312,7 +316,7 @@ foreach ($u in $undocRows) {
 $evidence | ConvertTo-Json -Depth 14 | Out-File -FilePath $evidencePath -Encoding UTF8
 
 # --- Canonical evidence (docs/evidence/procdict.evidence.json) -------------------
-$canonDir = Join-Path $RootPath "docs\evidence"
+$canonDir = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
 if (-not (Test-Path $canonDir)) { New-Item -ItemType Directory -Path $canonDir -Force | Out-Null }
 $canonPath = Join-Path $canonDir "procdict.evidence.json"
 $canon = [ordered]@{

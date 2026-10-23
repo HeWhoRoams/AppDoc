@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # AppDoc.SourceDocs Module
 # ============================================================================
 # PURPOSE: deterministic SOURCE-OF-TRUTH discovery + citation extraction.
@@ -13,7 +16,7 @@
 #     role-access        role/permission/authorization content (role->purpose
 #                        tables, RBAC/AD-group descriptions, capability interfaces)
 #     operational-policy policy/SOP/procedure/retention/approval content (sub-
-#                        tagged: 'help-desk' for the §7 workflow cell;
+#                        tagged: 'service-procedure' for the §7 workflow cell;
 #                        'change-process' for the §13 change/release row)
 #     escalation         escalation/on-call/contact content
 #     troubleshooting    troubleshooting KB / symptom->fix content
@@ -59,6 +62,11 @@ $script:AppDocSourceDocsVersion = "1.0.0"
 # the single generator process (which discovers + redacts in one process) sees the value
 # at every redaction site. Default empty -> behavior identical to a no-config target.
 $script:AppDocSourceDocsExtraKnownSecrets = @()
+# Operator regexes (the config `redactionRegexes`), same channel as above.
+$script:AppDocSourceDocsExtraRegexes = @()
+
+# Shared secret vocabulary + operator redaction (single source of truth).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.SecretPolicy.psm1') -ErrorAction Stop
 
 # The 6 citable categories (fixed, ordered for determinism).
 $script:AppDocSourceDocsCategories = @(
@@ -77,8 +85,8 @@ $script:AppDocSourceDocsCapPerCategoryPath = 24
 $script:AppDocSourceDocsClaimMaxLen = 240
 
 # A "contains ANY category signal" pre-filter, used to skip line-by-line extraction
-# on files with no relevant content at all (e.g. the ~12k archived help pages in
-# helpweb's Archive/ that are dialup/webmail guides with no owner/role/policy/
+# on files with no relevant content at all (e.g. thousands of archived end-user
+# help pages with no owner/role/policy/
 # escalation/troubleshooting/slo statement). This is a conservative SUPERSET of the
 # per-category extractor patterns (so it never drops a file that would yield a record)
 # but deliberately tight (no bare common words) so it does not pass the 12k noise
@@ -108,7 +116,9 @@ function Get-AppDocSourceDocsRedacted {
         # channel: AppDoc ships shape-patterns only; live credential VALUES for a specific
         # target are supplied here by the operator (the build's config `redactionPatterns`
         # key), mirroring the enrichment gate's additive hardcoded+ExtraKnownSecrets merge.
-        [string[]]$ExtraKnownSecrets = @()
+        [string[]]$ExtraKnownSecrets = @(),
+        # Operator regular expressions (the config `redactionRegexes`), additive.
+        [string[]]$ExtraRedactionRegexes = @()
     )
 
     if ($null -eq $Text) { return '' }
@@ -126,13 +136,15 @@ function Get-AppDocSourceDocsRedacted {
     # value supplied twice is still redacted exactly once. These must never appear in any
     # emitted artifact.
     $knownSecrets = @() + @(($ExtraKnownSecrets + $script:AppDocSourceDocsExtraKnownSecrets) | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
-    foreach ($s in $knownSecrets) {
-        if ($s) { $t = [regex]::Replace($t, [regex]::Escape([string]$s), '[REDACTED]') }
+    $knownRegexes = @() + @(($ExtraRedactionRegexes + $script:AppDocSourceDocsExtraRegexes) | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
+    if ($knownSecrets.Count -gt 0 -or $knownRegexes.Count -gt 0) {
+        $matchers = Get-AppDocOperatorRedactionMatchers -Literals $knownSecrets -Regexes $knownRegexes
+        $t = Invoke-AppDocOperatorRedaction -Text $t -Matchers $matchers
     }
 
     # (b) Keyed credential values: <key> = <value> / <key>: <value> where the key
     # is credential-shaped and the value is a non-empty literal.
-    $keyed = '(?i)((?<=\b)(password|passwd|pwd|secret|token|apikey|api[_-]?key|client[_-]?secret|private[_-]?key|connectionstring|connection[_-]?string|credential|credentials|cert(?:ificate)?[_-]?(?:password|secret|key)|sas(?:token)?|thumbprint)\s*(?:[=:]|value)\s*)([" ]*\S+)'
+    $keyed = '(?i)((?<=\b)(' + (Get-AppDocCredentialKeywordPattern) + ')\s*(?:[=:]|value)\s*)([" ]*\S+)'
     $t = [regex]::Replace($t, $keyed, [System.Text.RegularExpressions.MatchEvaluator]{
         param($m) $m.Groups[1].Value + '[REDACTED]'
     })
@@ -174,7 +186,7 @@ function Get-AppDocSourceDocsGeneratedDocDirs {
         'ast-typescript-cache.json'
     )
     $topDirs = @(Get-ChildItem -Path $rootFull -Directory -Force -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -eq 'docs' -or $_.Name -eq 'doc' } |
+        Where-Object { $_.Name -eq 'docs' -or $_.Name -eq 'doc' -or $_.Name -eq (Get-AppDocDocsDirName -RootPath $rootFull) } |
         Sort-Object { $_.Name })
     foreach ($d in $topDirs) {
         $isGen = $false
@@ -199,7 +211,7 @@ function Test-AppDocSourceDocsDocTextExt {
 # (.asp/.aspx) has no such interface concept (its role mechanisms are data-driven /
 # in-source tokens, NOT a citable capability interface), and JS (`.js`) is excluded
 # to keep the code scan bounded (JS capability interfaces are rare and not the
-# target; helpweb's Archive carries thousands of `.js` library files we must not
+# target; an archive folder can carry thousands of `.js` library files we must not
 # full-read). The discovery pre-filter (content-based) means only the few code files
 # that actually declare a *permission/*role/*access/*security interface are read.
 function Test-AppDocSourceDocsCodeFile {
@@ -260,12 +272,11 @@ function Test-AppDocSourceDocsCandidate {
     )
     # (2b) EXCLUDE user-generated forum / discussion boards. A forum thread (or
     # archived forum page) is USER CONTENT, not a hand-authored source-of-truth doc:
-    # helpweb's Archive carries discussion boards (Archive/Internal/discussion,
-    # Archive/old/discussion) full of user posts + spam. Citing a forum post as the
-    # source of an ownership/policy/escalation claim would fabricate provenance, so
-    # these paths are never scanned. The real helpweb source docs (Policies.htm,
-    # Computer Repair.htm, phone.htm, phonelist.htm, Contact List...htm) live
-    # OUTSIDE any discussion/ dir, so this exclusion is content-precise.
+    # archived sites often carry discussion boards (e.g. Archive/old/discussion) full
+    # of user posts + spam. Citing a forum post as the source of an ownership/policy/
+    # escalation claim would fabricate provenance, so these paths are never scanned.
+    # Hand-authored policy/contact pages live OUTSIDE any discussion/ dir, so this
+    # exclusion is content-precise.
     $forumPatterns = @(
         '(?i)(^|/)discussion(?=/|$)',
         '(?i)(^|/)_hddisc(?=/|$)',
@@ -407,12 +418,12 @@ function Get-AppDocSourceDocsClaimsForFile {
 
     # ---- ownership: explicit owner/team/division/department LINES ----
     # STRICT: only explicit owner/label statements. Bare "point of contact"
-    # (e.g. "the Help Desk is the first point of contact when you have a
+    # (e.g. "the service desk is the first point of contact when you have a
     # problem"), bare "technical expert", and bare "maintained by" are too
     # common in help prose and would fabricate ownership citations — excluded.
     # a legacy C# MVC 5 target's real ownership lines are label-styled: "Division: ESS",
     # "Department/Technical Owner(s)", "Business Owner:", "Subject Matter
-    # Expert:" — all caught below. helpweb has NO such line -> stays Unknown.
+    # Expert:" — all caught below. A target with no such line stays Unknown.
     $ownRe = '(?i)\b(business\s+owner|technical\s+owner|subject\s+matter\s+expert|department\s*/?\s*technical\s+owner|technical\s+owner\(s\)|owning\s+team|division|team\s+lead|change\s+(?:process|management|control)|release\s+process|maintain(?:ed|s)?\s+by)\b'
     for ($i = 1; $i -le $total; $i++) {
         $raw = [string]$Lines[$i - 1]
@@ -498,7 +509,7 @@ function Get-AppDocSourceDocsClaimsForFile {
         # Request, or a "role -> purpose/capability" phrase). Bare "permission"/
         # "access"/"claim" are common in help prose ("you need access to your
         # mailbox") and must NOT fabricate a role-access citation — this keeps
-        # helpweb §5.2 honest-Unknown while still catching a legacy target's
+        # §5.2 honest-Unknown on help-prose sites while still catching a legacy target's
         # authorization model (readme L39/L41/L43/L45/L84, all of which name a
         # SAP role / AD group / ERP / HR position / Security Request).
         if ($raw -match '(?i)(SAP\s+role|Z_CM_|Y08\b|AD-?group|AD\s+group|active\s+directory|\brbac\b|erp\s+system|hr\s+position|security\s+request|role.{0,30}?(purpose|capability|privilege))' -and
@@ -560,16 +571,16 @@ function Get-AppDocSourceDocsClaimsForFile {
     }
 
     # ---- operational-policy: policy/SOP/procedure/retention/approval ----
-    # Sub-tagged so §7 (help-desk workflow) and §13 (change/release) get the RIGHT
-    # citations: 'help-desk' = repair/ticket/SOP/operator/charge context;
+    # Sub-tagged so §7 (operational workflows) and §13 (change/release) get the RIGHT
+    # citations: 'service-procedure' = repair/ticket/SOP/operator/charge context;
     # 'change-process' = change/release/deploy/merge/signoff/approval context.
-    # (a) help-desk POLICY/charge/SOP lines (NOT bare "help desk" / "computer
+    # (a) service POLICY/charge/SOP lines (NOT bare "help desk" / "computer
     #     repair" — those appear on nearly every archived help page and would
     #     fabricate thousands of §7 citations). Policy-level tokens (repair
     #     policy, service policy, SOP, ticket procedure, per-hour charge, no
-    #     charge, evidence retention) still catch helpweb's real Policy.htm
-    #     repair policy + phone.htm ticket SOP.
-    $pdHelpDeskRe = '(?i)(repair\s+policy|service\s+policy|standard\s+operating\s+procedure|\bsop\b|trouble\s+ticket|ticket\s+procedure|filling\s+(?:out\s+)?a\s+trouble|operator\s+workflow|no\s+charge|free\s+of\s+charge|service\s+fee|labor\s+charge|\$\s*\d+\s*(?:per|/)\s*hour|\bper\s*hour\b|evidence\s+retention|retain\s+(?:evidence|records)|approval\s+(?:threshold|policy))'
+    #     charge, evidence retention) still catch a real repair-policy page or a
+    #     ticket SOP.
+    $pdServiceProcRe = '(?i)(repair\s+policy|service\s+policy|standard\s+operating\s+procedure|\bsop\b|trouble\s+ticket|ticket\s+procedure|filling\s+(?:out\s+)?a\s+trouble|operator\s+workflow|no\s+charge|free\s+of\s+charge|service\s+fee|labor\s+charge|\$\s*\d+\s*(?:per|/)\s*hour|\bper\s*hour\b|evidence\s+retention|retain\s+(?:evidence|records)|approval\s+(?:threshold|policy))'
     $pdChangeRe   = '(?i)(change\s+(?:process|control|management)|release\s+process|deployment\s+(?:process|policy)|merge\s+(?:process|policy)|\bsign-?off\b|signoff|approval\s+(?:required|policy)|require\s+testing|change\s+request|change\s+management)'
     $pdCount = 0
     for ($i = 1; $i -le $total; $i++) {
@@ -577,7 +588,7 @@ function Get-AppDocSourceDocsClaimsForFile {
         $clean = Get-AppDocSourceDocsCleanLine $raw
         if ($clean.Length -lt 20) { continue }
         $sub = ''
-        if ($raw -match $pdHelpDeskRe) { $sub = 'help-desk' }
+        if ($raw -match $pdServiceProcRe) { $sub = 'service-procedure' }
         elseif ($raw -match $pdChangeRe) { $sub = 'change-process' }
         else { continue }
         $pdCount++
@@ -641,7 +652,9 @@ function Get-AppDocSourceDocs {
         # Operator-supplied per-target secret VALUES (the build's config `redactionPatterns`
         # key), merged additively with the (intentionally empty) built-in list at redaction
         # time. Default empty -> behavior identical to a no-config target.
-        [string[]]$ExtraKnownSecrets = @()
+        [string[]]$ExtraKnownSecrets = @(),
+        # Operator regular expressions (the config `redactionRegexes`), additive.
+        [string[]]$ExtraRedactionRegexes = @()
     )
 
     # Publish the operator value to the module-scope channel so every line redactor in
@@ -649,6 +662,7 @@ function Get-AppDocSourceDocs {
     # additively. (The public Get-AppDocSourceDocsRedacted keeps its own -ExtraKnownSecrets
     # param for direct calls; this script-scope var covers the generator call chain.)
     $script:AppDocSourceDocsExtraKnownSecrets = @($ExtraKnownSecrets | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
+    $script:AppDocSourceDocsExtraRegexes = @($ExtraRedactionRegexes | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
     if (-not (Test-Path $RootPath)) { throw "Root path does not exist: $RootPath" }
     $rootFull = (Resolve-Path $RootPath).Path
 

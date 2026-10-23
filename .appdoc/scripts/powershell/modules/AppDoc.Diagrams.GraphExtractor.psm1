@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 function Get-AppDocDiagramValue {
     [CmdletBinding()]
     param(
@@ -327,7 +330,9 @@ function Get-AppDocDiagramApiEndpointEntries {
             Sort-Object @{ Expression = { if ([string]$_.direction -eq "inbound") { 0 } else { 1 } } }, `
                         @{ Expression = { [string]$_.label } }, `
                         @{ Expression = { [string]$_.component } }, `
-                        @{ Expression = { [string]$_.style } }
+                        @{ Expression = { [string]$_.style } }, `
+                        @{ Expression = { [string]$_.method } }, `
+                        @{ Expression = { [string]$_.ref } }
     )
 }
 
@@ -522,24 +527,11 @@ function ConvertTo-AppDocDiagramRecordRef {
 }
 
 function Get-AppDocDiagramRelativePath {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$RootPath,
-        [Parameter(Mandatory=$true)]
-        [string]$FullPath
-    )
-
-    try {
-        return [System.IO.Path]::GetRelativePath($RootPath, $FullPath)
-    }
-    catch {
-        $root = $RootPath.TrimEnd('\','/')
-        if ($FullPath.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) {
-            return $FullPath.Substring($root.Length).TrimStart('\','/')
-        }
-        return $FullPath
-    }
+    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
+    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
+    param([string]$RootPath, [string]$FullPath)
+    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
+    return (Get-AppDocRelativePath -RootPath $RootPath -Path $FullPath)
 }
 
 function Get-AppDocDiagramConfigGroup {
@@ -818,7 +810,7 @@ function Get-AppDocDiagramGraphData {
     }
 
     $limits = Get-AppDocDiagramValue -Object $Contract -Name "limits" -Default @{}
-    $evidenceRoot = Join-Path $RootPath (Join-Path "docs" "evidence")
+    $evidenceRoot = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
     $projectName = Split-Path $RootPath -Leaf
 
     $apiPayload = Get-AppDocDiagramEvidencePayload -EvidenceRoot $evidenceRoot -Artifact "api-inventory"
@@ -1030,7 +1022,7 @@ function Get-AppDocDiagramGraphData {
     if (Get-Command ConvertTo-AppDocGraphV1 -ErrorAction SilentlyContinue) {
         return (ConvertTo-AppDocGraphV1 -RootPath $RootPath -Nodes $nodes -Edges $edges -Project @{
                 name = $projectName
-                rootPath = $RootPath
+                rootPath = "."
         } -Sources $sources -Extensions @{ apiEntries = @($apiEntries) })
     }
 
@@ -1049,7 +1041,7 @@ function Get-AppDocDiagramGraphData {
         generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
         project = [ordered]@{
             name = $projectName
-            rootPath = $RootPath
+            rootPath = "."
         }
         metrics = [ordered]@{
             nodeCount = $sortedNodes.Count
@@ -1076,7 +1068,7 @@ function Write-AppDocDiagramTruthPack {
         [hashtable]$GraphData
     )
 
-    $evidenceDir = Join-Path $RootPath (Join-Path "docs" "evidence")
+    $evidenceDir = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
     if (-not (Test-Path $evidenceDir)) {
         New-Item -Path $evidenceDir -ItemType Directory -Force | Out-Null
     }

@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-classic-asp-security.ps1
 #
@@ -16,52 +17,70 @@
 #                diagnostic visibility,
 #            (f) string-built SQL (SQL assembled by string concatenation,
 #                FixSQL-style, not parameterized),
-#            (g) ADO connection strings with embedded credentials (count; the
-#                sanitized @@HELPWEB_...@@ tokens are referenced as-is and are
-#                never resolved).
+#            (g) ADO connection strings with embedded credentials (count only).
 #
 # REDACTION RULE (non-negotiable): every finding is documented with file:line,
 # severity, and status, but a REAL secret value (password / API key / GID /
-# credential) is NEVER printed — it is emitted as [REDACTED]. The sanitized
-# @@HELPWEB_...@@ tokens are already opaque and are referenced as-is.
+# credential) is NEVER printed — it is emitted as [REDACTED]. A target may declare an
+# opaque-token pattern (config `opaqueTokenPattern`) for already-sanitized placeholders,
+# which are referenced as-is.
 #
 # Deterministic: no LLM, no randomness, no network. Framework-gated: only runs
 # when framework-detection.json reports Classic ASP or ASP.NET Web Forms.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
+# Shared classic-ASP helpers (single definition; see modules/AppDoc.ClassicAsp.psm1).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+# Test-AppDocScratchFile lives in the Scope module; import it here rather than relying on
+# an earlier generator having loaded it into the session.
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Scope.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
-function Write-NotApplicablePlaceholder {
-    param([string]$OutputPath, [string]$Title)
-    $dir = Split-Path $OutputPath -Parent
-    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    $body = "# $Title`r`n`r`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`r`n`r`n## Summary`r`n`r`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP signal, so no content was extracted.`r`n`r`n---"
-    $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
+
+# Optional per-target opaque-token convention (config `opaqueTokenPattern`): values
+# matching it are already-sanitized placeholders and are kept verbatim. Default: none,
+# so every secret value is redacted.
+$opaqueTokenPattern = ''
+$cfgModule = Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Config.psm1'
+if (Test-Path $cfgModule) {
+    Import-Module $cfgModule -Force -ErrorAction Stop
+    $appDocCfg = Get-AppDocConfig -RootPath $RootPath
+    if ($appDocCfg -and $appDocCfg.values.opaqueTokenPattern) { $opaqueTokenPattern = [string]$appDocCfg.values.opaqueTokenPattern }
 }
+$opaqueNote = if ($opaqueTokenPattern) { " Values matching the target's opaque-token pattern (``$opaqueTokenPattern``) are sanitized placeholders and are referenced as-is." } else { '' }
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 # Return a value wrapped in literal markdown backticks (for inline code spans).
-# Redact: any non-empty secret value becomes [REDACTED]; @@HELPWEB_ tokens pass through.
-function Redact-Value {
+# Redact: any non-empty secret value becomes [REDACTED]; values matching the target's
+# configured opaque-token pattern (if any) pass through unchanged.
+function Protect-SecretValue {
     param([string]$v)
     $t = ([string]$v).Trim()
     if ([string]::IsNullOrWhiteSpace($t)) { return "[REDACTED]" }
-    if ($t -match '^@@HELPWEB_') { return $t }
+    if ($opaqueTokenPattern -and $t -match $opaqueTokenPattern) { return $t }
     return "[REDACTED]"
 }
 
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
-$outputPath  = Join-Path $RootPath "docs\security.md"
-$evidencePath = Join-Path $RootPath "docs\security.evidence.json"
+$outputPath  = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "security.md"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "security.evidence.json"
 
 Write-Host "🔒 Generating Classic ASP security findings..." -ForegroundColor Cyan
 if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
     Write-Host "  Framework not Classic ASP - writing placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "Security and Operational Risks"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "Security and Operational Risks"
     @() | ConvertTo-Json -Depth 5 | Out-File -FilePath $evidencePath -Encoding UTF8
     exit 0
 }
@@ -103,7 +122,7 @@ foreach ($list in @($incFiles, $aspFiles)) {
                 if ($authSet) {
                     $idNum = ($findings.Count + 1)
                     $fid = "SEC-$( $idNum.ToString('000') )"
-                    $ev = (Md-Back $rel) + (" line {0} (auth set line {1})" -f ($i + 1), $setLine)
+                    $ev = (Format-CodeSpan $rel) + (" line {0} (auth set line {1})" -f ($i + 1), $setLine)
                     Add-Finding -Id $fid -Finding "A hardcoded guest login bypasses `SimpleVerify` — a fixed username/password pair authenticates before the normal verify path." -Evidence $ev -Severity "Critical" -Secret "username=$userLiteral; password=[REDACTED]" -Status "Verified"
                 }
             }
@@ -115,8 +134,8 @@ foreach ($list in @($incFiles, $aspFiles)) {
             if ($L -notmatch '(?i)setRequestHeader\s+"Authorization"') { continue }
             $idNum = ($findings.Count + 1)
             $fid = "SEC-$( $idNum.ToString('000') )"
-            $ev = (Md-Back $rel) + " line " + ($i + 1)
-            Add-Finding -Id $fid -Finding "A hardcoded ITSM API authorization header is present (an Apikey credential is sent on an outbound ITSM request)." -Evidence $ev -Severity "Critical" -Secret "apikey=[REDACTED]" -Status "Verified"
+            $ev = (Format-CodeSpan $rel) + " line " + ($i + 1)
+            Add-Finding -Id $fid -Finding "A hardcoded authorization header is present (a credential is sent on an outbound HTTP request)." -Evidence $ev -Severity "Critical" -Secret "apikey=[REDACTED]" -Status "Verified"
         }
 
         # ---- (c) per-user debug backdoor that dumps raw SQL --------------------
@@ -130,7 +149,7 @@ foreach ($list in @($incFiles, $aspFiles)) {
                 if ($dump) {
                     $idNum = ($findings.Count + 1)
                     $fid = "SEC-$( $idNum.ToString('000') )"
-                    $ev = (Md-Back $rel) + " line " + ($i + 1)
+                    $ev = (Format-CodeSpan $rel) + " line " + ($i + 1)
                     Add-Finding -Id $fid -Finding "A per-user debug backdoor dumps raw SQL to the response for one specific operator Global ID." -Evidence $ev -Severity "High" -Secret "operatorGid=[REDACTED]" -Status "Verified"
                 }
             }
@@ -149,7 +168,7 @@ foreach ($list in @($incFiles, $aspFiles)) {
         if ($hasPwdOut -and $rendersPwd) {
             $idNum = ($findings.Count + 1)
             $fid = "SEC-$( $idNum.ToString('000') )"
-            Add-Finding -Id $fid -Finding "Generated passwords are rendered in the HTML response (a password OUT parameter is written to the page)." -Evidence (Md-Back $rel) -Severity "High" -Secret "generatedPassword=[REDACTED]" -Status "Verified"
+            Add-Finding -Id $fid -Finding "Generated passwords are rendered in the HTML response (a password OUT parameter is written to the page)." -Evidence (Format-CodeSpan $rel) -Severity "High" -Secret "generatedPassword=[REDACTED]" -Status "Verified"
         }
 
         # ---- (e) On Error Resume Next ------------------------------------------
@@ -184,11 +203,6 @@ foreach ($list in @($incFiles, $aspFiles)) {
 #     in N copy/test file(s)".
 # Distinct primary files each keep their own row (e.g. the same API-key literal in four
 # different status/feeds files is four real exposures, not a scratch dup).
-function Is-ScratchFile {
-    param([string]$Path)
-    $name = Split-Path $Path -Leaf
-    return ($name -match '(?i).*_copy.*|.*copy_.*|.*_old.*|.*_test.*|^testing.*|.*bak.*')
-}
 # group findings by type (finding text), preserving first-seen order
 $byType = New-Object System.Collections.Generic.List[object]
 $groupSeen = @{}
@@ -201,8 +215,8 @@ foreach ($fnd in $findings) {
 }
 $findings = New-Object System.Collections.Generic.List[object]
 foreach ($grp in $byType) {
-    $primaryItems = @($grp.items | Where-Object { -not (Is-ScratchFile ([string]$_.evidence)) })
-    $scratchItems = @($grp.items | Where-Object { Is-ScratchFile ([string]$_.evidence) })
+    $primaryItems = @($grp.items | Where-Object { -not (Test-AppDocScratchFile ([string]$_.evidence)) })
+    $scratchItems = @($grp.items | Where-Object { Test-AppDocScratchFile ([string]$_.evidence) })
     $scratchNote = ''
     if ($scratchItems.Count -gt 0) { $scratchNote = " [also present in $($scratchItems.Count) copy/test file(s)]" }
     # one row per distinct primary FILE (stable order)
@@ -242,7 +256,7 @@ $generatedIso = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ssK')
 $critCount = @($findings | Where-Object { $_.severity -eq "Critical" }).Count
 $highCount = @($findings | Where-Object { $_.severity -eq "High" }).Count
 $medCount  = @($findings | Where-Object { $_.severity -eq "Medium" }).Count
-$summaryText = "This artifact lists the security findings actually present in the classic-ASP source, each with its file:line evidence, severity, and epistemic status. Every REAL secret value (password, API key, operator Global ID, credential) is **redacted** and emitted as ``[REDACTED]``; the sanitized ``@@HELPWEB_...@@`` tokens are already opaque and are referenced as-is. Severity reflects the blast radius of the exposure, not runtime reachability (which is Unknown)."
+$summaryText = "This artifact lists the security findings actually present in the classic-ASP source, each with its file:line evidence, severity, and epistemic status. Every REAL secret value (password, API key, credential) is **redacted** and emitted as ``[REDACTED]``.$opaqueNote Severity reflects the blast radius of the exposure, not runtime reachability (which is Unknown)."
 
 $lines = New-Object System.Collections.Generic.List[string]
 $lines.Add("# Security and Operational Risks"); $lines.Add(""); $lines.Add($generatedLine); $lines.Add("")
@@ -261,7 +275,7 @@ $lines.Add("")
 $lines.Add("| ID | Finding | Evidence (file:line) | Severity | Secret Value (redacted) | Status |")
 $lines.Add("|------|---------|----------------------|----------|-------------------------|--------|")
 foreach ($fnd in $findings) {
-    $row = "| {0} | {1} | {2} | {3} | {4} | {5} |" -f $fnd.id, (Md-Clean $fnd.finding), (Md-Clean $fnd.evidence), $fnd.severity, (Md-Clean $fnd.secret), $fnd.status
+    $row = "| {0} | {1} | {2} | {3} | {4} | {5} |" -f $fnd.id, (Format-MarkdownCellText $fnd.finding), (Format-MarkdownCellText $fnd.evidence), $fnd.severity, (Format-MarkdownCellText $fnd.secret), $fnd.status
     $lines.Add($row)
 }
 if ($findings.Count -eq 0) { $lines.Add("| — | none detected | — | — | — | Unknown |") }
@@ -282,7 +296,7 @@ $unknowns = @(
     "Backup / recovery and vulnerability-scanning posture"
 )
 foreach ($u in $unknowns) {
-    $lines.Add("| {0} | No — not derivable from source | Unknown |" -f (Md-Clean $u))
+    $lines.Add("| {0} | No — not derivable from source | Unknown |" -f (Format-MarkdownCellText $u))
 }
 $lines.Add("")
 $lines.Add("## Evidence Traceability"); $lines.Add("")
@@ -298,7 +312,7 @@ $lines.Add("## Provenance"); $lines.Add("")
 $lines.Add("- Generator Version: appdoc-run-all-generators/3.0.0"); $lines.Add("- Commit Hash: unknown")
 $lines.Add("- Generated At: $generatedIso"); $lines.Add("- Profile: default"); $lines.Add("- Scope: .")
 $lines.Add("- Confidence/Inference Flags: deterministic, evidence-backed, secrets redacted")
-$md = ($lines -join "`r`n")
+$md = ($lines -join "`n")
 $md | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 # ---- Flat evidence --------------------------------------------------------------
@@ -310,7 +324,7 @@ $evidence.Add([ordered]@{ kind="operational-unknown"; finding="Runtime security 
 $evidence | ConvertTo-Json -Depth 14 | Out-File -FilePath $evidencePath -Encoding UTF8
 
 # ---- Canonical evidence (docs/evidence/security.evidence.json) ------------------
-$canonDir = Join-Path $RootPath "docs\evidence"
+$canonDir = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
 if (-not (Test-Path $canonDir)) { New-Item -ItemType Directory -Path $canonDir -Force | Out-Null }
 $canonPath = Join-Path $canonDir "security.evidence.json"
 $recArr = @($evidence | ForEach-Object { $_ })

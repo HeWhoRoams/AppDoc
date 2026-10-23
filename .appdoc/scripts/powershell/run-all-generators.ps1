@@ -1,3 +1,5 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
@@ -19,7 +21,7 @@ param(
     #   measurement that NEVER blocks; status/overallScore unchanged.
     # -PristineGate ON (OPT-IN): the pristine check becomes a real gate that BLOCKS
     #   the run when any section is EMPTY (emptyCount>0) OR pristine subScore < floor.
-    #   OWNER_REQUIRED cells are EXCLUDED (pending /appdoc.enhance, not failures).
+    #   OWNER_REQUIRED cells are EXCLUDED (pending owner input, not failures).
     # Passed through to validate-documentation.ps1, which records the decision in
     # validation-report.json as `pristineGate`.
     [Parameter(Mandatory=$false)]
@@ -28,6 +30,10 @@ param(
     [ValidateRange(1,100)]
     [int]$PristineFloor = 80
 )
+
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 <#
 .SYNOPSIS
@@ -58,7 +64,7 @@ param(
 .PARAMETER PristineGate
     OPT-IN (default OFF): make the PRISTINE CHECK a real gate that BLOCKS the run
     when any section is EMPTY (emptyCount>0) OR the pristine sub-score < -PristineFloor.
-    OWNER_REQUIRED cells are EXCLUDED (pending /appdoc.enhance, not failures). When
+    OWNER_REQUIRED cells are EXCLUDED (pending owner input, not failures). When
     OFF (default), the pristine check is report-only (a non-blocking DEPTH measurement;
     status/overallScore are unchanged). The decision is recorded in
     docs/validation-report.json as `pristineGate`.
@@ -183,7 +189,7 @@ function Get-AppDocValidationExpectations {
         [object]$ArchitectureFingerprint = $null
     )
 
-    $docsPath = Join-Path $RootPath "docs"
+    $docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
     $overviewTruthPath = Join-Path $docsPath "evidence\overview-truth-pack.json"
     $apiEvidencePath = Join-Path $docsPath "evidence\api-inventory.evidence.json"
     $modelEvidencePath = Join-Path $docsPath "evidence\data-model.evidence.json"
@@ -213,7 +219,7 @@ function Get-AppDocValidationExpectations {
             $apiPayload = Get-Content $apiEvidencePath -Raw | ConvertFrom-Json -Depth 50
             $apiCount = @($apiPayload.records | Where-Object { $_ -and [string]$_.kind -eq "endpoint" }).Count
         }
-        catch {}
+        catch { Write-Warning ("api-inventory evidence could not be read for the integrity check: {0}" -f $_.Exception.Message) }
     }
 
     if ($modelCount -eq 0 -and (Test-Path $modelEvidencePath)) {
@@ -221,7 +227,7 @@ function Get-AppDocValidationExpectations {
             $modelPayload = Get-Content $modelEvidencePath -Raw | ConvertFrom-Json -Depth 50
             $modelCount = @($modelPayload.records | Where-Object { $_ -and [string]$_.kind -eq "model" }).Count
         }
-        catch {}
+        catch { Write-Warning ("data-model evidence could not be read for the integrity check: {0}" -f $_.Exception.Message) }
     }
 
     if ($dependencyCount -eq 0 -and (Test-Path $dependencyEvidencePath)) {
@@ -229,7 +235,7 @@ function Get-AppDocValidationExpectations {
             $dependencyPayload = Get-Content $dependencyEvidencePath -Raw | ConvertFrom-Json -Depth 50
             $dependencyCount = @($dependencyPayload.records | Where-Object { $_ -and [string]$_.kind -eq "dependency" }).Count
         }
-        catch {}
+        catch { Write-Warning ("dependencies evidence could not be read for the integrity check: {0}" -f $_.Exception.Message) }
     }
 
     if (Test-Path $testEvidencePath) {
@@ -237,7 +243,7 @@ function Get-AppDocValidationExpectations {
             $testPayload = Get-Content $testEvidencePath -Raw | ConvertFrom-Json -Depth 50
             $testRecordCount = @($testPayload.records | Where-Object { $_ -and [string]$_.kind -in @("test-case","test-suite") }).Count
         }
-        catch {}
+        catch { Write-Warning ("test evidence could not be read for the integrity check: {0}" -f $_.Exception.Message) }
     }
 
     if (Test-Path $debtEvidencePath) {
@@ -245,7 +251,7 @@ function Get-AppDocValidationExpectations {
             $debtPayload = Get-Content $debtEvidencePath -Raw | ConvertFrom-Json -Depth 50
             $debtRecordCount = @($debtPayload.records | Where-Object { $_ -and [string]$_.kind -in @("technical-debt","debt-item") }).Count
         }
-        catch {}
+        catch { Write-Warning ("debt-register evidence could not be read for the integrity check: {0}" -f $_.Exception.Message) }
     }
 
     $primaryStyle = ""
@@ -501,10 +507,10 @@ function Write-AppDocCanonicalMetrics {
         schemaVersion = "appdoc-metrics-canonical/v1"
         generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
         source = [ordered]@{
-            endpoint = "docs/evidence/api-inventory.evidence.json"
-            model = "docs/evidence/data-model.evidence.json"
-            dependency = "docs/evidence/dependencies-catalog.evidence.json"
-            test = "docs/evidence/test-catalog.evidence.json"
+            endpoint = "$(Get-AppDocDocsDirName -RootPath $RootPath)/evidence/api-inventory.evidence.json"
+            model = "$(Get-AppDocDocsDirName -RootPath $RootPath)/evidence/data-model.evidence.json"
+            dependency = "$(Get-AppDocDocsDirName -RootPath $RootPath)/evidence/dependencies-catalog.evidence.json"
+            test = "$(Get-AppDocDocsDirName -RootPath $RootPath)/evidence/test-catalog.evidence.json"
         }
         totals = [ordered]@{
             endpointCount = [int]$endpointCount
@@ -554,7 +560,7 @@ function Write-AppDocCanonicalMetrics {
 # It is a surgical no-op: it only rewrites the truth pack when a count actually
 # disagrees with the canonical, so already-consistent frameworks are byte-untouched.
 # It does NOT change the canonical metrics, the gate check, or any threshold.
-function Realign-AppDocOverviewTruthPackToCanonical {
+function Sync-AppDocOverviewTruthPackToCanonical {
     param(
         [Parameter(Mandatory=$true)]
         [string]$RootPath,
@@ -625,20 +631,11 @@ function Realign-AppDocOverviewTruthPackToCanonical {
     return $true
 }
 
-function Get-AppDocGitCommitHash {
-    param([string]$RootPath)
-
-    try {
-        $hash = (& git -C $RootPath rev-parse --short HEAD 2>$null | Out-String).Trim()
-        if ([string]::IsNullOrWhiteSpace($hash)) { return "unknown" }
-        return $hash
-    }
-    catch {
-        return "unknown"
-    }
-}
-
 function Set-AppDocRootProvenance {
+    # Thin wrapper kept for the existing call sites: the footer logic lives in
+    # modules/AppDoc.Provenance.psm1 (recursive over docs/**, idempotent, LF, skips
+    # hand-authored files). run-appdoc-build.ps1 calls it again as its final step so the
+    # second composer pass cannot leave the master document without a footer.
     param(
         [Parameter(Mandatory=$true)]
         [string]$RootPath,
@@ -647,69 +644,8 @@ function Set-AppDocRootProvenance {
         [Parameter(Mandatory=$true)]
         [string]$Profile
     )
-
-    $timestamp = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ssK")
-    $commitHash = Get-AppDocGitCommitHash -RootPath $RootPath
-    $generatorVersion = "appdoc-run-all-generators/3.0.0"
-    $scopeValue = "."
-    $inferenceFlags = @("deterministic", "evidence-backed")
-
-    $markdownFiles = @(
-        Get-ChildItem -Path $DocsPath -Filter "*.md" -File -ErrorAction SilentlyContinue
-    )
-    foreach ($file in $markdownFiles) {
-        $content = Get-Content $file.FullName -Raw
-        $block = @(
-            "## Provenance",
-            "",
-            "- Generator Version: $generatorVersion",
-            "- Commit Hash: $commitHash",
-            "- Generated At: $timestamp",
-            "- Profile: $Profile",
-            "- Scope: $scopeValue",
-            "- Confidence/Inference Flags: $($inferenceFlags -join ', ')"
-        ) -join "`r`n"
-
-        if ($content -match '(?ims)^##\s+Provenance\s*$') {
-            $content = [regex]::Replace(
-                $content,
-                '(?ims)^##\s+Provenance\s*$.*?(?=^##\s+[^\r\n]+|\z)',
-                $block + "`r`n"
-            )
-        }
-        else {
-            $content = $content.TrimEnd() + "`r`n`r`n" + $block + "`r`n"
-        }
-
-        $content | Out-File -FilePath $file.FullName -Encoding UTF8 -NoNewline
-    }
-
-    $jsonFiles = @(
-        Get-ChildItem -Path $DocsPath -Filter "*.json" -File -ErrorAction SilentlyContinue
-    )
-    foreach ($file in $jsonFiles) {
-        try {
-            $obj = Get-Content $file.FullName -Raw | ConvertFrom-Json -Depth 120
-            $provenance = [ordered]@{
-                generatorVersion = $generatorVersion
-                commitHash = $commitHash
-                generatedAt = $timestamp
-                profile = $Profile
-                scope = $scopeValue
-                confidenceInferenceFlags = $inferenceFlags
-            }
-            if ($obj -is [System.Collections.IDictionary]) {
-                $obj["provenance"] = $provenance
-            }
-            else {
-                $obj | Add-Member -NotePropertyName "provenance" -NotePropertyValue $provenance -Force
-            }
-            $obj | ConvertTo-Json -Depth 100 | Out-File -FilePath $file.FullName -Encoding UTF8
-        }
-        catch {
-            Write-Warning ("Skipping provenance for non-JSON file payload: {0}" -f $file.FullName)
-        }
-    }
+    Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Provenance.psm1') -Force -ErrorAction Stop
+    [void](Set-AppDocProvenanceFooter -RootPath $RootPath -DocsPath $DocsPath -Profile $Profile)
 }
 
 function Write-AppDocJsonCompanionSummaries {
@@ -775,7 +711,7 @@ function Write-AppDocJsonCompanionSummaries {
             "",
             "## Trust but verify",
             "- $verify"
-        ) -join "`r`n"
+        ) -join "`n"
 
         $summaryContent | Out-File -FilePath $summaryPath -Encoding UTF8 -NoNewline
     }
@@ -937,7 +873,7 @@ function Test-GeneratedDoc {
         [AllowNull()]
         [hashtable]$Expectations = @{}
     )
-    
+
     if (-not (Test-Path $FilePath)) {
         return @{
             docType = $DocType
@@ -948,7 +884,7 @@ function Test-GeneratedDoc {
             issues = @("File does not exist")
         }
     }
-    
+
     $content = Get-Content $FilePath -Raw
     $placeholders = @()
     $issues = @()
@@ -957,7 +893,7 @@ function Test-GeneratedDoc {
     $allowNoDependencySurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoDependencySurface" -Default $false)
     $allowNoTestSurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoTestSurface" -Default $false)
     $allowNoDebtSurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoDebtSurface" -Default $false)
-    
+
     # Detect common placeholder patterns
     $placeholderPatterns = @(
         @{ Pattern = '_No .* detected'; Description = "Empty detection placeholder" }
@@ -970,7 +906,7 @@ function Test-GeneratedDoc {
         @{ Pattern = '\[PLACEHOLDER\]|\[TODO\]|\[TBD\]'; Description = "Explicit placeholder marker" }
         @{ Pattern = '(?im)^\s*This (section|codebase) may'; Description = "Uncertain filler text" }
     )
-    
+
     foreach ($pattern in $placeholderPatterns) {
         $patternMatches = [regex]::Matches($content, $pattern.Pattern)
         if ($pattern.Description -eq "Empty detection placeholder") {
@@ -984,12 +920,12 @@ function Test-GeneratedDoc {
             $placeholders += "$($patternMatches.Count)x $($pattern.Description)"
         }
     }
-    
+
     # Count critical sections (table rows, list items)
     $tableRowCount = ([regex]::Matches($content, '^\|[^|]+\|', 'Multiline')).Count
     $listItemCount = ([regex]::Matches($content, '^[-*]\s+', 'Multiline')).Count
     $codeBlockCount = ([regex]::Matches($content, '```', 'Multiline')).Count
-    
+
     # Detect empty critical sections
     if ($content -match '\|\s*---\s*\|[\r\n]+[\r\n]+_No') {
         if (($DocType -eq "Test Catalog" -and $allowNoTestSurface) -or ($DocType -eq "Dependencies Catalog" -and $allowNoDependencySurface)) {
@@ -999,7 +935,7 @@ function Test-GeneratedDoc {
             $issues += "Empty table with placeholder"
         }
     }
-    
+
     if ($tableRowCount -le 2 -and $DocType -in @('API Inventory', 'Data Model', 'Config Catalog', 'Test Catalog')) {
         if ($DocType -eq "API Inventory" -and $allowNoApiSurface) {
             # Allowed in no-API-surface repositories.
@@ -1017,24 +953,24 @@ function Test-GeneratedDoc {
 
     # Doc-type specific structural checks
     $issues += Get-DocSpecificIssues -DocType $DocType -Content $content -Expectations $Expectations
-    
+
     # Calculate quality score (0-100)
     $score = 100
     $score -= ($placeholders.Count * 15)  # -15 per placeholder type
     $score -= ($issues.Count * 20)        # -20 per issue
-    
+
     # Bonus for having content
     if ($tableRowCount -gt 5) { $score += 10 }
     if ($listItemCount -gt 10) { $score += 5 }
     if ($codeBlockCount -gt 2) { $score += 5 }
-    
+
     $score = [Math]::Max(0, [Math]::Min(100, $score))
-    
+
     # Determine quality level
-    $quality = if ($score -ge 80) { "HIGH" } 
+    $quality = if ($score -ge 80) { "HIGH" }
                elseif ($score -ge 40) { "MEDIUM" }
                else { "LOW" }
-    
+
     return @{
         docType = $DocType
         exists = $true
@@ -1078,7 +1014,7 @@ function Get-AppDocFrameworkNames {
             Select-Object -Unique
     )
 }
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) {
     New-Item -Path $docsPath -ItemType Directory -Force | Out-Null
 }
@@ -1190,6 +1126,16 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
     Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Warning" -Message "PowerShell 7+ is recommended for AppDoc generators" -Details @{ version = $PSVersionTable.PSVersion.ToString() }
 }
 
+# Determinism across re-runs: some generators (overview, start-here) read DERIVED evidence
+# that this pipeline only rebuilds later in the run (the evidence graph, the canonical
+# metrics). On a first run those files do not exist yet; on a re-run a stale copy from the
+# previous run would be read instead, so the two runs produced different counts. Remove the
+# stale copies up front so every run sees the same inputs in the same order.
+foreach ($staleDerived in @('evidence-graph.json', 'metrics-canonical.json')) {
+    $stalePath = Join-Path (Join-Path $docsPath 'evidence') $staleDerived
+    if (Test-Path -LiteralPath $stalePath) { Remove-Item -LiteralPath $stalePath -Force }
+}
+
 $pipelinePhases = @(
     @{
         Name = "Analysis"
@@ -1201,6 +1147,11 @@ $pipelinePhases = @(
     },
     @{
         Name = "Generation"
+        # Order matters: every EVIDENCE producer (generic and framework-specific) runs
+        # before the generators that SUMMARISE evidence (overview, start-here, task guides,
+        # docs index, evidence register, verification appendix, composer). Previously the
+        # classic-ASP producers ran after overview/start-here, which then had to be
+        # re-aligned and re-run.
         Scripts = @(
             "generate-api-inventory.ps1",
             "generate-data-model.ps1",
@@ -1209,12 +1160,6 @@ $pipelinePhases = @(
             "generate-test-catalog.ps1",
             "generate-debt-register.ps1",
             "generate-dependencies-catalog.ps1",
-            "generate-overview.ps1",
-            "generate-start-here.ps1",
-            "generate-task-guides.ps1",
-            "generate-docs-index.ps1",
-            "generate-evidence-register.ps1",
-            "generate-verification-appendix.ps1",
             "generate-classic-asp-endpoints.ps1",
             "generate-classic-asp-datamodel.ps1",
             "generate-classic-asp-platform.ps1",
@@ -1223,13 +1168,30 @@ $pipelinePhases = @(
             "generate-classic-asp-security.ps1",
             "generate-external-calls.ps1",
             "generate-classic-asp-extcalls.ps1",
+            "generate-overview.ps1",
+            "generate-start-here.ps1",
+            "generate-task-guides.ps1",
+            "generate-docs-index.ps1",
             "generate-source-docs.ps1",
             "generate-git-ownership.ps1",
+            # The evidence register and verification appendix summarise EVERY evidence
+            # file, so they run after all evidence producers (extcalls, source-docs,
+            # git-ownership, ...). Running them earlier made a first run and a re-run differ.
+            "generate-evidence-register.ps1",
+            "generate-verification-appendix.ps1",
             "generate-unified-master.ps1"
         )
     }
 )
-$scriptFailures = @()
+
+# Explicit owner for the artifacts both a generic and a classic-ASP generator can
+# write (api-inventory, data-model, build-cookbook): the classic-ASP generator owns them when the target
+# is Classic ASP / Web Forms AND has classic-ASP source files; otherwise the generic one
+# does. (The generators keep their own yield checks so each still works when run alone.)
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+$classicAspOwnsShared = (Test-AppDocClassicAspTarget -RootPath $RootPath) -and ((Get-AppDocClassicAspSourceFileCount -RootPath $RootPath) -gt 0)
+$skipScripts = if ($classicAspOwnsShared) { @('generate-api-inventory.ps1', 'generate-data-model.ps1', 'generate-build-cookbook.ps1') } else { @('generate-classic-asp-endpoints.ps1', 'generate-classic-asp-datamodel.ps1', 'generate-classic-asp-platform.ps1') }
+Write-Host ("Shared-artifact owner: {0} (api-inventory, data-model, build-cookbook)" -f $(if ($classicAspOwnsShared) { 'classic-ASP generators' } else { 'generic generators' })) -ForegroundColor Gray
 
 foreach ($phase in $pipelinePhases) {
     Write-Host "`n[$($phase.Name)]" -ForegroundColor Cyan
@@ -1244,6 +1206,11 @@ foreach ($phase in $pipelinePhases) {
         if ($DryRun) {
             Write-Host "[DryRun] Would execute $script" -ForegroundColor Gray
             Add-AppDocDiagnostic -Category "NOT_FOUND" -Severity "Info" -Message "Dry run skipped script execution" -Component $phase.Name -FilePath $scriptPath -Details @{ script = $script }
+            continue
+        }
+
+        if ($skipScripts -contains $script) {
+            Write-Host "Skipping $script (another generator owns this artifact for this target)." -ForegroundColor Gray
             continue
         }
 
@@ -1426,15 +1393,15 @@ catch {
     Write-Warning ("Failed to generate canonical metrics: {0}" -f $_.Exception.Message)
 }
 
-# Re-align the overview truth-pack counts to the canonical metrics now that they exist.
-# (generate-overview.ps1 ran earlier, before classic-ASP endpoint/model evidence was
-# populated, so its counts can be stale; the canonical metrics are the ground-truth
-# count source. This is a no-op when they already agree.)
+# Invariant check: the overview truth-pack counts must agree with the canonical metrics.
+# With every evidence producer running before generate-overview.ps1 this is a no-op; if
+# it ever has to re-align, an evidence producer has been moved after the overview, so it
+# is reported as a warning.
 if (Test-Path $canonicalMetricsPath) {
     try {
-        $realignedOverview = Realign-AppDocOverviewTruthPackToCanonical -RootPath $RootPath -DocsPath $docsPath
+        $realignedOverview = Sync-AppDocOverviewTruthPackToCanonical -RootPath $RootPath -DocsPath $docsPath
         if ($realignedOverview) {
-            Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Overview truth-pack re-aligned to canonical metrics" -Component "Generation" -FilePath (Join-Path $docsPath "evidence\overview-truth-pack.json")
+            Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Warning" -Message "Overview truth-pack had to be re-aligned to canonical metrics (an evidence producer ran after the overview)" -Component "Generation" -FilePath (Join-Path $docsPath "evidence\overview-truth-pack.json")
             Write-Host "📄 Overview truth-pack counts re-aligned to canonical metrics." -ForegroundColor Cyan
         }
     }
@@ -1443,31 +1410,15 @@ if (Test-Path $canonicalMetricsPath) {
         Write-Warning ("Failed to re-align overview truth-pack to canonical: {0}" -f $_.Exception.Message)
     }
 
-    # start-here.md carries "API endpoints documented: N" / "Data models documented: M"
-    # signal lines. generate-start-here.ps1 ran earlier (before the classic-ASP
-    # endpoint/model evidence was populated), so on classic-ASP targets those lines are
-    # stale at 0 while the canonical + evidence hold the real counts. Now that the
-    # evidence and canonical metrics are complete, re-run the start-here generator so its
-    # counts reflect the populated evidence (it derives counts from the same evidence
-    # records the gate cross-checks, so this makes start-here consistent and is a
-    # no-op when the counts already agree).
-    $startHereGenerator = Join-Path $PSScriptRoot "generate-start-here.ps1"
-    if (Test-Path $startHereGenerator) {
-        try {
-            & $startHereGenerator -RootPath $RootPath
-            Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Start-here re-generated with populated classic-ASP evidence" -Component "Generation" -FilePath (Join-Path $docsPath "start-here.md")
-        }
-        catch {
-            Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to re-generate start-here" -Details @{ exception = $_.Exception.Message }
-            Write-Warning ("Failed to re-generate start-here: {0}" -f $_.Exception.Message)
-        }
-    }
+    # (start-here used to be re-run here because it ran before the classic-ASP evidence
+    # producers; the Generation phase order now runs every evidence producer first.)
 }
 
 $integrityGateScriptPath = Join-Path $PSScriptRoot "ci-doc-integrity-gate.ps1"
 if (Test-Path $integrityGateScriptPath) {
     Write-Host "`n[Integrity Gate]" -ForegroundColor Cyan
     Write-Host "Running ci-doc-integrity-gate.ps1..."
+    $global:LASTEXITCODE = 0
     & $integrityGateScriptPath -RootPath $RootPath
     $integrityExitCode = $LASTEXITCODE
     if ($integrityExitCode -ne 0) {
@@ -1556,24 +1507,24 @@ foreach ($result in $validationResults) {
         "LOW"    { "🔴" }
         "MISSING" { "❌" }
     }
-    
+
     $color = switch ($result.quality) {
         "HIGH"   { "Green" }
         "MEDIUM" { "Yellow" }
         "LOW"    { "Red" }
         "MISSING" { "DarkRed" }
     }
-    
+
     Write-Host "$emoji " -NoNewline
     Write-Host "$($result.docType): " -NoNewline -ForegroundColor White
     Write-Host "$($result.quality) ($($result.score)%)" -ForegroundColor $color
-    
+
     if ($result.placeholders.Count -gt 0) {
         foreach ($placeholder in $result.placeholders) {
             Write-Host "   ⚠️  $placeholder" -ForegroundColor DarkYellow
         }
     }
-    
+
     if ($result.issues.Count -gt 0) {
         foreach ($issue in $result.issues) {
             Write-Host "   ❌ $issue" -ForegroundColor DarkRed
@@ -1876,7 +1827,7 @@ catch {
 # Exit with warning if majority are low quality
 if ($lowQuality -gt ($totalDocs / 2)) {
     Write-Host "`n⚠️  WARNING: More than 50% of documentation is LOW quality!" -ForegroundColor Red
-    Write-Host "   Consider running AppDoc enhancement workflow or manual review." -ForegroundColor Yellow
+    Write-Host "   Consider manual review, or supplying owner context as an operator overlay." -ForegroundColor Yellow
 }
 
 if ($scriptFailures.Count -gt 0) {
@@ -1887,9 +1838,7 @@ if ($scriptFailures.Count -gt 0) {
 }
 
 Write-Host "`nAll generators completed." -ForegroundColor Green
-Write-Host "Next step: bootstrap enriched evidence with run-appdoc-enrich.ps1." -ForegroundColor Cyan
-Write-Host "  pwsh ./.appdoc/scripts/powershell/run-appdoc-enrich.ps1 -RootPath \"$RootPath\"" -ForegroundColor Gray
-Write-Host "After enrichment, run /appdoc.enhance for editorial polish." -ForegroundColor Cyan
+Write-Host "Optional next step: the quarantined enrichment loop (SKILL.md, Layer 2)." -ForegroundColor Cyan
 
 if (-not $DryRun) {
     Remove-Item -Path $runSessionPath -Force -ErrorAction SilentlyContinue

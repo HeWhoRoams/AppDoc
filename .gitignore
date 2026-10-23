@@ -1,4 +1,3 @@
-
 # Node modules
 node_modules/
 
@@ -16,12 +15,16 @@ build/
 # OS files
 .DS_Store
 Thumbs.db
-.github/prompts/speckit.*
-.specify/
-specs/
 
 # AppDoc test-run artifacts + runtime temp (generated, not source)
 tests/test-output/
 tests/powershell/test-output/
 .appdoc/tmp/
+.tmp-logs/
+.tmp-baseline/
+tmp_*.ps1
+*.log
 tmp/
+
+# Personal editor settings (see .vscode/settings.example.json)
+.vscode/settings.json

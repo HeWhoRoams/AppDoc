@@ -313,7 +313,7 @@ function ConvertTo-AppDocGraphV1 {
 
     $projectRoot = [string](Get-AppDocGraphValue -Object $Project -Name "rootPath" -Default "")
     if ([string]::IsNullOrWhiteSpace($projectRoot)) {
-        $projectRoot = $RootPath
+        $projectRoot = "."
     }
 
     $graph = [ordered]@{

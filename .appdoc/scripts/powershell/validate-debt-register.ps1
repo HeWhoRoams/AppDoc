@@ -1,12 +1,18 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # Validate technical debt register
 Write-Progress -Activity "Validating Technical Debt Register" -Status "Checking register..." -PercentComplete 0
 
-$registerPath = Join-Path $RootPath "docs\debt-register.md"
+$registerPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "debt-register.md"
 
 if (-not (Test-Path $registerPath)) {
     Write-Error "Technical debt register file not found at $registerPath"
@@ -22,13 +28,13 @@ if ($content -notmatch "# Technical Debt Register") {
 
 # Count debts from evidence first, fallback to debt item table rows
 $debtCount = 0
-$evidencePath = Join-Path $RootPath "docs\evidence\debt-register.evidence.json"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\debt-register.evidence.json"
 if (Test-Path $evidencePath) {
     try {
         $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json
         $debtCount = @($evidence.records | Where-Object { [string]$_.kind -in @("technical-debt", "debt-item") }).Count
     }
-    catch { }
+    catch { Write-Warning ("debt-register evidence could not be read; counting 0 items: {0}" -f $_.Exception.Message) }
 }
 
 if ($debtCount -le 0) {

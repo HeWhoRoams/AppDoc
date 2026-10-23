@@ -1,3 +1,5 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
@@ -14,6 +16,10 @@ param(
     [Parameter(Mandatory=$false)]
     [switch]$Json
 )
+
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -110,6 +116,9 @@ function Get-DiagramSnapshot {
     }
 
     if (-not $SkipGeneration) {
+        # Reset first: under StrictMode an unset $LASTEXITCODE throws, and a script that does
+        # not call `exit` leaves it unset (or holding a stale value from an earlier command).
+        $global:LASTEXITCODE = 0
         $null = & $suiteScript -RootPath $TargetRoot -SkipC4:$SkipC4
         $exitCode = [int]$LASTEXITCODE
         if ($exitCode -ne 0) {
@@ -117,12 +126,12 @@ function Get-DiagramSnapshot {
         }
     }
 
-    $truthPackPath = Join-Path $TargetRoot (Join-Path "docs" (Join-Path "evidence" "diagram-truth-pack.json"))
+    $truthPackPath = Join-Path (Get-AppDocDocsPath -RootPath $TargetRoot) (Join-Path "evidence" "diagram-truth-pack.json")
     if (-not (Test-Path $truthPackPath)) {
         throw "Missing diagram truth pack after generation: $truthPackPath"
     }
 
-    $diagramsPath = Join-Path $TargetRoot (Join-Path "docs" "diagrams")
+    $diagramsPath = Join-Path (Get-AppDocDocsPath -RootPath $TargetRoot) "diagrams"
     if (-not (Test-Path $diagramsPath)) {
         throw "Missing diagrams directory after generation: $diagramsPath"
     }

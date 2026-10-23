@@ -1,3 +1,6 @@
+#requires -Version 7.2
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 #
 # template-helpers.ps1
 #
@@ -167,7 +170,7 @@ function Add-GenerationMetadata {
     return $Content
 }
 
-function Normalize-AppDocTemplateInstructionText {
+function Format-AppDocTemplateInstructionText {
     <#
     .SYNOPSIS
     Replaces template instructional prose with deterministic, non-placeholder language.
@@ -204,17 +207,17 @@ function Normalize-AppDocTemplateInstructionText {
         '(?ms)(^##\s+Overview\s*\r?\n)\s*(?=##\s+)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "`r`nThis section summarizes extracted findings for this artifact.`r`n`r`n")
+            return ($m.Groups[1].Value + "`nThis section summarizes extracted findings for this artifact.`n`n")
         }
     )
 
     # Collapse excessive blank lines produced by removals.
-    $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`r`n`r`n")
+    $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`n`n")
 
     return $updated
 }
 
-function Normalize-AppDocMarkdownStructure {
+function Format-AppDocMarkdownStructure {
     <#
     .SYNOPSIS
     Applies cross-artifact markdown structure normalization after template population.
@@ -233,12 +236,12 @@ function Normalize-AppDocMarkdownStructure {
     $updated = [regex]::Replace(
         $updated,
         '(?im)^(##\s+[^\r\n#]+?)\s*(No evidence found for this section in the current scan\.)\s*$',
-        '$1' + "`r`n`r`n" + '$2'
+        '$1' + "`n`n" + '$2'
     )
     $updated = [regex]::Replace(
         $updated,
         '(?im)^(##\s+[^\r\n#]+?)\s*(_No[^\r\n_]+_)\s*$',
-        '$1' + "`r`n`r`n" + '$2'
+        '$1' + "`n`n" + '$2'
     )
 
     # Prevent no-evidence sentence from living inside markdown table bodies.
@@ -247,7 +250,7 @@ function Normalize-AppDocMarkdownStructure {
         '(?ms)(^\|[^\r\n]+\|\r?\n\|[-:\s|]+\|\r?\n)(No evidence found for this section in the current scan\.)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "`r`n`r`n" + $m.Groups[2].Value)
+            return ($m.Groups[1].Value + "`n`n" + $m.Groups[2].Value)
         }
     )
 
@@ -255,20 +258,20 @@ function Normalize-AppDocMarkdownStructure {
     $updated = [regex]::Replace(
         $updated,
         '(?m)(^\|[^\r\n]*\|\r?\n)(##\s+[^\r\n]+)',
-        '$1' + "`r`n" + '$2'
+        '$1' + "`n" + '$2'
     )
 
     # Normalize summary-style sections to exactly one Summary section.
-    if (Get-Command Normalize-AppDocSingleSummarySection -ErrorAction SilentlyContinue) {
-        $updated = Normalize-AppDocSingleSummarySection -Content $updated
+    if (Get-Command Format-AppDocSingleSummarySection -ErrorAction SilentlyContinue) {
+        $updated = Format-AppDocSingleSummarySection -Content $updated
     }
 
     # Trim redundant blank lines introduced by cleanup.
-    $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`r`n`r`n")
+    $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`n`n")
     return $updated
 }
 
-function Normalize-AppDocSingleSummarySection {
+function Format-AppDocSingleSummarySection {
     <#
     .SYNOPSIS
     Ensures markdown contains exactly one summary section titled 'Summary'.
@@ -354,12 +357,12 @@ function Normalize-AppDocSingleSummarySection {
         $updated = $updated.Replace([string]$candidate.full, '')
     }
 
-    $newSummary = "## Summary`r`n`r`n$summaryBody`r`n"
+    $newSummary = "## Summary`n`n$summaryBody`n"
     $generatedRegex = [regex]::new('(?im)^\*\*Generated\*\*:[^\r\n]*\r?\n')
     if ($generatedRegex.IsMatch($updated)) {
         $updated = $generatedRegex.Replace($updated, [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Value + "`r`n" + $newSummary + "`r`n")
+            return ($m.Value + "`n" + $newSummary + "`n")
         }, 1)
     }
     else {
@@ -367,16 +370,16 @@ function Normalize-AppDocSingleSummarySection {
         if ($titleRegex.IsMatch($updated)) {
             $updated = $titleRegex.Replace($updated, [System.Text.RegularExpressions.MatchEvaluator]{
                 param($m)
-                return ($m.Value + "`r`n" + $newSummary + "`r`n")
+                return ($m.Value + "`n" + $newSummary + "`n")
             }, 1)
         }
         else {
-            $updated = $newSummary + "`r`n" + $updated
+            $updated = $newSummary + "`n" + $updated
         }
     }
 
-    $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`r`n`r`n")
-    return $updated.TrimEnd() + "`r`n"
+    $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`n`n")
+    return $updated.TrimEnd() + "`n"
 }
 
 # =============================================================================
@@ -387,11 +390,11 @@ function Normalize-AppDocSingleSummarySection {
 #   - Section vocabulary is defined in one place (Get-AppDocSectionVocabulary).
 #   - Tables: key column first, evidence/status column last, numeric columns
 #     right-aligned (---:), em dash (—) for nulls, no captions.
-#   - Empty state: ONE convention (Emit-AppDocEmptyState) — a bold semantic
+#   - Empty state: ONE convention (Get-AppDocEmptyStateText) — a bold semantic
 #     label in prose; replaces the historical 3-way split (italic
 #     `_No ... detected._` filler / `| N/A |` row / truly-empty row) and avoids
 #     the banned `_No ... detected\.` pattern.
-#   - Provenance: ONE placement, always last (Emit-AppDocProvenance).
+#   - Provenance: ONE placement, always last (Add-AppDocProvenanceBlock).
 # =============================================================================
 
 function Get-AppDocSectionVocabulary {
@@ -511,7 +514,7 @@ function Build-AppDocTable {
     return ($output -join "`n")
 }
 
-function Emit-AppDocEmptyState {
+function Get-AppDocEmptyStateText {
     <#
     .SYNOPSIS
     Emits the single canonical empty-state convention for a section.
@@ -545,7 +548,7 @@ function Emit-AppDocEmptyState {
     return ("**" + $label + "**")
 }
 
-function Emit-AppDocProvenance {
+function Add-AppDocProvenanceBlock {
     <#
     .SYNOPSIS
     Emits a single, always-last `## Provenance` block in a markdown document.
@@ -581,19 +584,19 @@ function Emit-AppDocProvenance {
         "- Profile: $Profile",
         "- Scope: $Scope",
         "- Confidence/Inference Flags: $($ConfidenceFlags -join ', ')"
-    ) -join "`r`n"
+    ) -join "`n"
 
     if ($Content -match '(?ims)^##\s+Provenance\s*$') {
         # Replace the existing Provenance section with the canonical block.
         return [regex]::Replace(
             $Content,
             '(?ims)^##\s+Provenance\s*$.*?(?=^##\s+[^\r\n]+|\z)',
-            { param($m) return ($block + "`r`n") },
+            { param($m) return ($block + "`n") },
             1
         )
     }
 
-    return ($Content.TrimEnd() + "`r`n`r`n" + $block + "`r`n")
+    return ($Content.TrimEnd() + "`n`n" + $block + "`n")
 }
 
 
@@ -603,18 +606,24 @@ function Emit-AppDocProvenance {
 # as the former local copies (verified: identical modulo formatting).
 
 function Get-ClassicAspFrameworkApplicable {
+    # Thin wrapper kept for existing callers; see modules/AppDoc.ClassicAsp.psm1.
     param([string]$RootPath)
-    $fwPath = Join-Path $RootPath "docs\framework-detection.json"
-    if (-not (Test-Path $fwPath)) { return $false }
-    try { $fw = Get-Content $fwPath -Raw | ConvertFrom-Json -Depth 10 } catch { return $false }
-    $frameworks = @()
-    if ($fw -is [System.Collections.IEnumerable] -and $fw -isnot [string]) {
-        $frameworks = @($fw | ForEach-Object { [string]$_.framework } | Where-Object { $_ })
-    } else { $frameworks = @([string]$fw.framework) | Where-Object { $_ } }
-    return (($frameworks -contains "Classic ASP") -or ($frameworks -contains "ASP.NET Web Forms"))
+    if (-not (Get-Command Test-AppDocClassicAspTarget -ErrorAction SilentlyContinue)) {
+        Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+    }
+    return (Test-AppDocClassicAspTarget -RootPath $RootPath)
 }
 
-function Get-RelativePath { param([string]$FullPath, [string]$Base) $rel = $FullPath.Replace($Base, ""); $rel = $rel.TrimStart('\', '/'); return ($rel -replace '\\', '/') }
+function Get-RelativePath {
+    # Removes the base path only as a PREFIX (the old .Replace() also removed it from the
+    # middle of a path, e.g. /r/proj/sub/r/proj/x).
+    param([string]$FullPath, [string]$Base)
+    $rel = $FullPath
+    $b = $Base.TrimEnd('\', '/')
+    if ($b -and $rel.StartsWith($b, [System.StringComparison]::OrdinalIgnoreCase)) { $rel = $rel.Substring($b.Length) }
+    $rel = $rel.TrimStart('\', '/')
+    return ($rel -replace '\\', '/')
+}
 
 function Test-AppDocArtifactIsClassicAspPlaceholder {
     param([string]$Path)
@@ -651,7 +660,7 @@ function Get-MarkdownSectionBlock {
 # generate-evidence-register.ps1, and generate-verification-appendix.ps1. One canonical
 # definition here; each generator consumes the shared copy (verified byte-identical bodies).
 
-function Md-Clean {
+function Format-MarkdownCellText {
     param([string]$v)
     $v = [string]$v
     $v = $v -replace '\|', '/'
@@ -659,9 +668,9 @@ function Md-Clean {
     return $v.Trim()
 }
 
-function Md-Back { param([string]$x) return ('`' + $x + '`') }
+function Format-CodeSpan { param([string]$x) return ('`' + $x + '`') }
 
-function Esc-MdCell {
+function ConvertTo-AppDocMarkdownCell {
     param([string]$Text)
     if ($null -eq $Text) { $Text = '' }
     $Text = $Text -replace '[|]', '\|' -replace "`r", '' -replace "`n", ' '

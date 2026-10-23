@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 function Invoke-AppDocApiAstParserScript {
     [CmdletBinding()]
     param(
@@ -23,7 +26,7 @@ function Invoke-AppDocApiAstParserScript {
     }
 
     $cacheFile = if ($ScriptName -eq "parse-csharp-ast.ps1") { "ast-csharp-cache.json" } else { "ast-typescript-cache.json" }
-    $cachePath = Join-Path $RootPath (Join-Path "docs" $cacheFile)
+    $cachePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) $cacheFile
     if (-not (Test-Path $cachePath)) {
         return $null
     }
@@ -106,19 +109,11 @@ function Add-AppDocAstEndpointsToInventory {
 }
 
 function Get-AppDocApiRelativePath {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$RootPath,
-        [Parameter(Mandatory=$true)]
-        [string]$Path
-    )
-
-    if (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue) {
-        return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-    }
-
-    return $Path.Replace($RootPath, "").TrimStart([char[]]@(92, 47))
+    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
+    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
+    param([string]$RootPath, [string]$Path)
+    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
+    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
 }
 
 function Get-AppDocApiScopedFiles {
@@ -1289,7 +1284,17 @@ function Get-AppDocApiInventoryData {
 
     $endpointByKey = @{}
     foreach ($endpoint in $normalizedEndpoints) {
-        $dedupeKey = "{0}|{1}|{2}|{3}" -f $endpoint.method, $endpoint.path.ToLowerInvariant(), $endpoint.controller.ToLowerInvariant(), $endpoint.direction
+        # One endpoint = one (method, path, source file, direction). The AST and regex
+        # extractors can both find the same route and may label its controller differently,
+        # so the controller is NOT part of the key; the higher-signal record (AST) wins.
+        $fileKey = [string]$endpoint.filePath
+        if ($fileKey -and $fileKey -ne 'unknown') {
+            if (-not [System.IO.Path]::IsPathRooted($fileKey)) { $fileKey = Join-Path $RootPath $fileKey }
+            $fileKey = ([System.IO.Path]::GetFullPath($fileKey) -replace '\\', '/').ToLowerInvariant()
+        } else {
+            $fileKey = ([string]$endpoint.controller).ToLowerInvariant()
+        }
+        $dedupeKey = "{0}|{1}|{2}|{3}" -f $endpoint.method, $endpoint.path.ToLowerInvariant(), $fileKey, $endpoint.direction
         if (-not $endpointByKey.ContainsKey($dedupeKey)) {
             $endpointByKey[$dedupeKey] = $endpoint
             continue

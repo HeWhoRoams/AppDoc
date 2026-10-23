@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-classic-asp-datamodel.ps1
 #
@@ -9,17 +10,27 @@
 #
 # Deterministic: no LLM, no randomness, no network. Framework-gated: only runs when
 # framework-detection.json reports Classic ASP or ASP.NET Web Forms. Sanitized
-# @@HELPWEB_...@@ tokens are treated as opaque values (structure is parsed, values ignored).
+# Connection-string values are never printed (structure is parsed, values ignored).
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
+# Shared classic-ASP helpers (single definition; see modules/AppDoc.ClassicAsp.psm1).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 # --- Evidence + Contracts modules (canonical evidence + manifest) ----------------
 $contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
@@ -29,28 +40,12 @@ if ((Test-Path $contractsModule) -and (Test-Path $evidenceModule)) {
     Import-Module $evidenceModule  -Force -ErrorAction SilentlyContinue
 }
 
-function Trim-Quotes {
-    param([string]$Text)
-    if ([string]::IsNullOrWhiteSpace($Text)) { return "" }
-    $t = $Text.Trim()
-    while ($t.Length -ge 2) {
-        $first = $t.Substring(0, 1)
-        $last = $t.Substring($t.Length - 1, 1)
-        if (($first -eq "`"" -and $last -eq "`"") -or ($first -eq "'" -and $last -eq "'")) { $t = $t.Substring(1, $t.Length - 2) }
-        else { break }
-    }
-    # Also strip a dangling quote at either end (connection strings end with a single
-    # double-quote that is not paired with an opening one in the segment).
-    while ($t.Length -gt 0 -and $t.Substring($t.Length - 1, 1) -in @("`"", "'")) { $t = $t.Substring(0, $t.Length - 1) }
-    while ($t.Length -gt 0 -and $t.Substring(0, 1) -in @("`"", "'")) { $t = $t.Substring(1) }
-    return $t.Trim()
-}
 # Connection-string values are often built with VBScript string concatenation
 # (Data Source=" & dbHost & "), so a literal value may not be present. Detect and
 # mark those as dynamic rather than leaking raw concatenation tokens into the doc.
-function Normalize-ConnValue {
+function ConvertTo-NormalizedConnValue {
     param([string]$Raw)
-    $v = if ([string]::IsNullOrWhiteSpace($Raw)) { "" } else { Trim-Quotes -Text $Raw }
+    $v = if ([string]::IsNullOrWhiteSpace($Raw)) { "" } else { Remove-SurroundingQuotes -Text $Raw }
     # Strip a trailing VBScript concatenation operator fragment ( & ...) if present.
     if ($v -match ' & \S') { $v = $v -replace '\s*&\s*$' -replace '(?s).*&\s*', '' }
     if ($v -match ' & ' -or $v -match '^\s*&' -or $v -match '"\s*&' -or $v -match '^\s*"' -or $v -match '\s*&\s*$') {
@@ -59,13 +54,6 @@ function Normalize-ConnValue {
     if ($v.Length -gt 60) { return "dynamic" }
     if ([string]::IsNullOrWhiteSpace($v)) { return "unknown" }
     return $v
-}
-function Write-NotApplicablePlaceholder {
-    param([string]$OutputPath, [string]$Title)
-    $dir = Split-Path $OutputPath -Parent
-    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    $body = "# $Title`r`n`r`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`r`n`r`n## Summary`r`n`r`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP signal, so no content was extracted.`r`n`r`n---"
-    $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
 }
 
 # --- Classic-ASP source-presence guard (shared-artifact ownership) --------------
@@ -77,29 +65,14 @@ function Write-NotApplicablePlaceholder {
 # framework label. We count classic-ASP source files using the same exclusions the
 # generators apply (path dirs + basename scratch globs) and, when the count is 0,
 # yield to the prior owner instead of overwriting.
-function Get-ClassicAspSourceFileCount {
-    param([string]$RootPath)
-    # Path-dir exclusions (mirror the framework detector $aspExcl EXACTLY so the
-    # guard's "source presence" matches what the detector itself counted). NOTE:
-    # fixtures is excluded but test/tests is NOT — real classic-ASP apps ship live
-    # test/ pages (the classic-ASP test target has test/), so excluding tests would silently drop content.
-    $pathExcl  = '(?i)([\\/](fixtures|node_modules|bin|obj|dist|build|__pycache__|\.venv|target)[\\/])'
-    # Basename scratch globs (mirror generate-unified-master.ps1 $scratchRe):
-    # *_copy*, copy_*, *_old*, *_test*, testing*, *bak*
-    $scratchRe = '(?i).*_copy.*|.*copy_.*|.*_old.*|.*_test.*|^testing.*|.*bak.*'
-    $files = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp","*.inc" -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.FullName -notmatch $pathExcl } |
-        Where-Object { $_.Name -notmatch $scratchRe })
-    return $files.Count
-}
 
 # The N-A placeholder this generator emits; its presence marks the artifact as
 # "not owned by (or already claimed by) the classic-ASP layer." A file WITHOUT this
 # marker was populated by another framework's generator (e.g. the C# AST path) and
 # must not be clobbered.
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
-$outputPath = Join-Path $RootPath "docs\data-model.md"
-$evidencePath = Join-Path $RootPath "docs\data-model.evidence.json"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "data-model.md"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "data-model.evidence.json"
 
 Write-Host "🗄️  Generating Classic ASP data model..." -ForegroundColor Cyan
 if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
@@ -119,7 +92,7 @@ if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
         exit 0
     }
     Write-Host "  Framework not Classic ASP / Web Forms - writing placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "Data Model"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "Data Model"
     @() | ConvertTo-Json -Depth 5 | Out-File -FilePath $evidencePath -Encoding UTF8
     exit 0
 }
@@ -133,7 +106,7 @@ if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
 # docs/data-model.md with an empty classic-ASP table. When classic-ASP source is
 # absent we yield: leave a non-placeholder artifact (written by the C# path) intact,
 # and only write the N-A placeholder when no prior owner populated it.
-$classicAspSourceCount = Get-ClassicAspSourceFileCount -RootPath $RootPath
+$classicAspSourceCount = Get-AppDocClassicAspSourceFileCount -RootPath $RootPath
 if ($classicAspSourceCount -eq 0) {
     $artifactExists    = Test-Path $outputPath
     $isPriorOwnerOwned = $artifactExists -and (-not (Test-AppDocArtifactIsClassicAspPlaceholder -Path $outputPath))
@@ -143,7 +116,7 @@ if ($classicAspSourceCount -eq 0) {
         exit 0
     }
     Write-Host "  No classic-ASP source found and no prior owner artifact - writing N-A placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "Data Model"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "Data Model"
     @() | ConvertTo-Json -Depth 5 | Out-File -FilePath $evidencePath -Encoding UTF8
     Write-Host "✅ Placeholder written: $outputPath" -ForegroundColor Green
     exit 0
@@ -173,7 +146,7 @@ function Add-FileRef {
     if (-not ($Map[$Key].files -contains $RelPath)) { $Map[$Key].files.Add($RelPath) }
 }
 
-function Process-DataModelFile {
+function Invoke-DataModelFileScan {
     param([string]$FullPath)
     $rel = Get-RelativePath -FullPath $FullPath -Base $rootPrefix
     $content = Get-Content $FullPath -Raw -ErrorAction SilentlyContinue
@@ -193,8 +166,8 @@ function Process-DataModelFile {
         # If the value was empty, the line likely builds it by concatenation (" & x & ").
         if ([string]::IsNullOrWhiteSpace($catalog) -and $line -match '(?i)Initial Catalog\s*=\s*["&]') { $catalog = "dynamic" }
         if ([string]::IsNullOrWhiteSpace($server)  -and $line -match '(?i)Data Source\s*=\s*["&]')     { $server  = "dynamic" }
-        $catalog = Normalize-ConnValue -Raw $catalog
-        $server  = Normalize-ConnValue -Raw $server
+        $catalog = ConvertTo-NormalizedConnValue -Raw $catalog
+        $server  = ConvertTo-NormalizedConnValue -Raw $server
         $key = ("{0}|{1}|{2}" -f $provider, $server, $catalog).ToLowerInvariant()
         if (-not $script:dbs.ContainsKey($key)) {
             $script:dbs[$key] = [ordered]@{ provider=$provider; server=$server; catalog=$catalog; files=(New-Object System.Collections.Generic.List[string]) }
@@ -202,25 +175,30 @@ function Process-DataModelFile {
         if (-not ($script:dbs[$key].files -contains $rel)) { $script:dbs[$key].files.Add($rel) }
     }
 
+    # SQL is only read from CODE: VBScript comment lines (' ... / REM ...) are blanked
+    # first (keeping line numbers), so prose such as "runs a stored procedure via EXEC and
+    # streams the result" can never be read as a procedure named "and".
+    $codeContent = [regex]::Replace($content, "(?im)^[ \t]*(?:'|REM\b)[^\r\n]*", '')
+
     # (b) SQL objects.
-    foreach ($m in [regex]::Matches($content, '(?is)\bSELECT\b[^;]{0,500}?\bFROM\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
+    foreach ($m in [regex]::Matches($codeContent, '(?is)\bSELECT\b[^;]{0,500}?\bFROM\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
         Add-SqlObject -Name $m.Groups[1].Value -Type "table/view" -RelPath $rel
     }
-    foreach ($m in [regex]::Matches($content, '(?i)\bINSERT\s+INTO\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
+    foreach ($m in [regex]::Matches($codeContent, '(?i)\bINSERT\s+INTO\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
         Add-SqlObject -Name $m.Groups[1].Value -Type "table" -RelPath $rel
     }
-    foreach ($m in [regex]::Matches($content, '(?i)\bUPDATE\s+([A-Za-z_][A-Za-z0-9_.$]*)\s+(SET|FROM)')) {
+    foreach ($m in [regex]::Matches($codeContent, '(?i)\bUPDATE\s+([A-Za-z_][A-Za-z0-9_.$]*)\s+(SET|FROM)')) {
         Add-SqlObject -Name $m.Groups[1].Value -Type "table" -RelPath $rel
     }
     # DELETE FROM x
-    foreach ($m in [regex]::Matches($content, '(?i)\bDELETE\s+FROM\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
+    foreach ($m in [regex]::Matches($codeContent, '(?i)\bDELETE\s+FROM\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
         Add-SqlObject -Name $m.Groups[1].Value -Type "table/view" -RelPath $rel
     }
 
     # (c) Stored procedures via EXEC/EXECUTE.
-    foreach ($m in [regex]::Matches($content, '(?i)\bEXEC(UTE)?\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
+    foreach ($m in [regex]::Matches($codeContent, '(?i)\bEXEC(UTE)?\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
         $procName = $m.Groups[2].Value
-        if ($procName -match '(?i)^(SELECT|INSERT|UPDATE|DELETE|SET|IF|END|OPEN|CLOSE|WAITFOR|PRINT|RETURN)$') { continue }
+        if ($procName -match '(?i)^(SELECT|INSERT|UPDATE|DELETE|SET|IF|END|OPEN|CLOSE|WAITFOR|PRINT|RETURN|AND|OR|THE|A|AN|TO|OF|ON|VIA|WITH)$') { continue }
         Add-Proc -Name $procName -RelPath $rel
     }
 
@@ -258,9 +236,9 @@ function Add-Proc {
     if (-not ($script:procCalls[$key].files -contains $RelPath)) { $script:procCalls[$key].files.Add($RelPath) }
 }
 
-foreach ($f in $aspFiles) { Process-DataModelFile -FullPath $f.FullName }
-foreach ($f in $incFiles) { Process-DataModelFile -FullPath $f.FullName }
-foreach ($p in $htmSignalPaths) { Process-DataModelFile -FullPath $p }
+foreach ($f in $aspFiles) { Invoke-DataModelFileScan -FullPath $f.FullName }
+foreach ($f in $incFiles) { Invoke-DataModelFileScan -FullPath $f.FullName }
+foreach ($p in $htmSignalPaths) { Invoke-DataModelFileScan -FullPath $p }
 
 # Sort aggregates deterministically.
 # Sort by the full dedup key (provider|server|catalog) so rows with the same
@@ -344,7 +322,7 @@ $lines.Add("## Provenance"); $lines.Add("")
 $lines.Add("- Generator Version: appdoc-run-all-generators/3.0.0"); $lines.Add("- Commit Hash: unknown")
 $lines.Add("- Generated At: $generatedIso"); $lines.Add("- Profile: default"); $lines.Add("- Scope: .")
 $lines.Add("- Confidence/Inference Flags: deterministic, evidence-backed")
-$md = ($lines -join "`r`n")
+$md = ($lines -join "`n")
 $md | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 # --- Flat evidence --------------------------------------------------------------

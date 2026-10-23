@@ -1,3 +1,5 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
@@ -10,12 +12,16 @@ param(
     #   measurement that NEVER blocks; pristineGate.enabled=false.
     # -PristineGate ON (OPT-IN): the pristine check becomes a real gate that BLOCKS
     #   the run when any section is EMPTY (emptyCount>0) OR pristine subScore < floor.
-    #   OWNER_REQUIRED cells are EXCLUDED (pending /appdoc.enhance, not failures).
+    #   OWNER_REQUIRED cells are EXCLUDED (pending owner input, not failures).
     # -PristineFloor: the floor the pristine sub-score must meet (default 80).
     [switch]$PristineGate,
     [ValidateRange(1,100)]
     [int]$PristineFloor = 80
 )
+
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 $diagnosticsModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagnostics.psm1"
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
@@ -47,13 +53,16 @@ if (-not (Test-Path $validationCoreModule)) {
     exit 1
 }
 Import-Module $validationCoreModule -Force -ErrorAction Stop
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.SecretPolicy.psm1') -Force -ErrorAction Stop
 
 if (Test-Path $architectureModule) {
     Import-Module $architectureModule -Force -ErrorAction Stop
 }
 
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 # Epistemic-tagging library (deterministic claim-status resolution + coverage).
 # Used by the conformance gate's three discipline sub-checks. Absent on older
@@ -74,7 +83,7 @@ if (Test-Path $pristineModule) {
     try { Import-Module $pristineModule -Force -ErrorAction SilentlyContinue; $hasPristine = (Get-Command Get-AppDocPristineAssessment -ErrorAction SilentlyContinue) -ne $null } catch { $hasPristine = $false }
 }
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) {
     Write-Error "docs directory not found: $docsPath"
     exit 1
@@ -352,7 +361,7 @@ function Get-AppDocValidationContentExpectations {
             Get-Content -Path $file.FullName -ErrorAction SilentlyContinue | ForEach-Object {
                 $debtSignalCount += ([regex]::Matches($_, '(?im)\b(TODO|FIXME|HACK|XXX)\b')).Count
             }
-        } catch {}
+        } catch { Write-Verbose ("Debt-signal scan skipped a file: {0}" -f $_.Exception.Message) }
     }
 
     $dependencySurfaceExpected = ($dependencyCount -gt 0 -or $dependencySignalCount -gt 0)
@@ -574,15 +583,37 @@ foreach ($validator in $validatorScripts) {
         continue
     }
 
+    # Sub-validators report a failed check with `exit 1` (which sets $LASTEXITCODE in this
+    # scope) and report unusable input with Write-Error (which throws under -ErrorAction
+    # Stop). Reset $LASTEXITCODE first so a stale value from an earlier native command can
+    # never be mistaken for this validator's result. See docs/adr/0003.
+    $global:LASTEXITCODE = 0
     try {
-        & $scriptPath -RootPath $RootPath -ErrorAction Stop | Out-Null
-        $validatorResults += @{ script = $scriptName; passed = $true; message = "OK" }
+        $validatorOutput = & $scriptPath -RootPath $RootPath -ErrorAction Stop *>&1 | Out-String
+        $validatorExitCode = $global:LASTEXITCODE
+        if ($validatorExitCode -ne 0) {
+            $issueLines = @(($validatorOutput -split "`r?`n") | Where-Object { $_ -match '^\s*-\s+\S' } | ForEach-Object { $_.Trim().TrimStart('-').Trim() } | Select-Object -First 10)
+            $internal = @($issueLines | Where-Object { $_ -match 'internal-error' }).Count -gt 0
+            $message = if ($issueLines.Count -gt 0) { "Failed: " + ($issueLines -join '; ') } else { "Failed (exit code $validatorExitCode)" }
+            $validatorResults += @{ script = $scriptName; passed = $false; exitCode = $validatorExitCode; internalError = $internal; message = $message }
+            Write-AppDocDiagnostic -Category "VALIDATION_ERROR" -Severity "Warning" -Message "Validator failed: $scriptName" -Component "validation" -FilePath $scriptPath -Details @{ exitCode = $validatorExitCode; issues = ($issueLines -join '; ') } | Out-Null
+        }
+        else {
+            $validatorResults += @{ script = $scriptName; passed = $true; exitCode = 0; internalError = $false; message = "OK" }
+        }
     }
     catch {
-        $validatorResults += @{ script = $scriptName; passed = $false; message = $_.Exception.Message }
-        Write-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Validator failed: $scriptName" -Component "validation" -FilePath $scriptPath -Details @{ exception = $_.Exception.Message } | Out-Null
+        # Write-Error from the validator = a validation failure (e.g. unreadable artifact).
+        # Any other exception is a defect in the validator itself (internal error).
+        $isValidationError = ([string]$_.FullyQualifiedErrorId) -like '*WriteErrorException*'
+        $validatorResults += @{ script = $scriptName; passed = $false; exitCode = $null; internalError = (-not $isValidationError); message = $_.Exception.Message }
+        Write-AppDocDiagnostic -Category $(if ($isValidationError) { "VALIDATION_ERROR" } else { "INTERNAL_ERROR" }) -Severity "Warning" -Message "Validator failed: $scriptName" -Component "validation" -FilePath $scriptPath -Details @{ exception = $_.Exception.Message } | Out-Null
+    }
+    finally {
+        $global:LASTEXITCODE = 0
     }
 }
+$validatorInternalErrors = @($validatorResults | Where-Object { $_.internalError } | ForEach-Object { "validator-internal-error:$($_.script)" })
 
 $contractValidationResults = @()
 foreach ($artifact in $expectedEvidenceArtifacts) {
@@ -619,7 +650,7 @@ function Get-DocRouteCount {
     $parent = Split-Path $ApiDocPath -Parent
     $evidencePath = $null
     while ($parent -and -not $evidencePath) {
-        $candidate = Join-Path $parent "docs\evidence\api-inventory.evidence.json"
+        $candidate = Join-Path (Join-Path (Join-Path $parent (Get-AppDocDocsDirName -RootPath $parent)) "evidence") "api-inventory.evidence.json"
         if (Test-Path $candidate) { $evidencePath = $candidate; break }
         $parent = Split-Path $parent -Parent
     }
@@ -663,19 +694,16 @@ function Get-CodeRouteCount {
 # ASP.NET Web Forms; every other framework keeps the C# path unchanged.
 
 function Get-AppDocIsClassicAspTarget {
+    # Thin wrapper; single definition in modules/AppDoc.ClassicAsp.psm1.
     param([string]$RootPath)
-    $fwPath = Join-Path $RootPath "docs\framework-detection.json"
-    if (-not (Test-Path $fwPath)) { return $false }
-    try { $fw = Get-Content $fwPath -Raw | ConvertFrom-Json -Depth 10 } catch { return $false }
-    $frameworks = @()
-    if ($fw -is [System.Collections.IEnumerable] -and $fw -isnot [string]) {
-        $frameworks = @($fw | ForEach-Object { [string]$_.framework } | Where-Object { $_ })
-    } else { $frameworks = @([string]$fw.framework) | Where-Object { $_ } }
-    return (($frameworks -contains "Classic ASP") -or ($frameworks -contains "ASP.NET Web Forms"))
+    if (-not (Get-Command Test-AppDocClassicAspTarget -ErrorAction SilentlyContinue)) {
+        Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+    }
+    return (Test-AppDocClassicAspTarget -RootPath $RootPath)
 }
 
 function Test-AppDocClassicAspConnValue {
-    # Mirror of the datamodel extractor's Normalize-ConnValue so the gate's
+    # Mirror of the datamodel extractor's ConvertTo-NormalizedConnValue so the gate's
     # connection identity matches what data-model.md actually documents.
     param([string]$Raw)
     $dq = [char]34; $sq = [char]39
@@ -747,7 +775,7 @@ function Get-ClassicAspDataModelCoverage {
     $dbs = New-Object System.Collections.Generic.HashSet[string]
     $objects = New-Object System.Collections.Generic.HashSet[string]
     $procs = New-Object System.Collections.Generic.HashSet[string]
-    $kwProcs = @("select","insert","update","delete","set","if","end","open","close","waitfor","print","return")
+    $kwProcs = @("select","insert","update","delete","set","if","end","open","close","waitfor","print","return","and","or","the","a","an","to","of","on","via","with")
     $rootPrefix = $RootPath.TrimEnd('\', '/')
 
     $aspFiles = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp" -File -ErrorAction SilentlyContinue)
@@ -777,6 +805,9 @@ function Get-ClassicAspDataModelCoverage {
             $server  = Test-AppDocClassicAspConnValue -Raw $server
             [void]$DbSet.Add(("{0}|{1}|{2}" -f $provider, $server, $catalog).ToLowerInvariant())
         }
+        # Same rule as generate-classic-asp-datamodel.ps1: SQL is read from code only
+        # (VBScript comment lines are blanked), so prose cannot become a procedure name.
+        $content = [regex]::Replace($content, "(?im)^[ \t]*(?:'|REM\b)[^\r\n]*", '')
         foreach ($m in [regex]::Matches($content, '(?is)\bSELECT\b[^;]{0,500}?\bFROM\s+([A-Za-z_][A-Za-z0-9_.$]*)')) {
             $n = $m.Groups[1].Value.Trim(); if ($n.Length -ge 2) { [void]$ObjSet.Add($n.ToLowerInvariant()) }
         }
@@ -850,7 +881,7 @@ function Get-DataModelCoverage {
     if (-not (Test-Path $ModelDocPath)) { return 100 }
 
     $modelNames = @()
-    $evidencePath = Join-Path $RootPath "docs\evidence\data-model.evidence.json"
+    $evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\data-model.evidence.json"
     if (Test-Path $evidencePath) {
         try {
             $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json
@@ -862,7 +893,7 @@ function Get-DataModelCoverage {
                     Select-Object -Unique
             )
         }
-        catch { }
+        catch { Write-Warning ("data-model evidence could not be read: {0}" -f $_.Exception.Message) }
     }
 
     if ($modelNames.Count -eq 0) {
@@ -901,14 +932,17 @@ function Get-RedactionSafetyScore {
 
     $sensitiveRows = [regex]::Matches(
         $content,
-        '(?im)^\|[^\r\n]*(password|passwd|pwd|secret|token|api[_-]?key|client[_-]?secret|private[_-]?key|connection\s*string)[^\r\n]*\|[^\r\n]*$'
+        ('(?im)^\|[^\r\n]*(' + (Get-AppDocCredentialKeywordPattern) + ')[^\r\n]*\|[^\r\n]*$')
     )
 
     if ($sensitiveRows.Count -eq 0) { return 100 }
 
+    # (This check silently matched nothing while generated docs had CRLF line endings,
+    # because `[^\r\n]*$` cannot cross the \r; with LF output it now runs.) Both redaction
+    # markers the renderers emit count as redacted.
     $unredacted = 0
     foreach ($row in $sensitiveRows) {
-        if ([string]$row.Value -notmatch '\[REDACTED\]') {
+        if ([string]$row.Value -notmatch '\[REDACTED\]|\*\*\*masked\*\*\*') {
             $unredacted++
         }
     }
@@ -983,7 +1017,7 @@ function Get-SectionSpineCoverageScore {
         "Functional Inventory",
         "Roles and Access Model",
         "UI Catalog",
-        "Help Desk Workflows",
+        "Operational Workflows",
         "Data and Integrations",
         "External Call Register",
         "Stored-procedure data dictionary",
@@ -1024,12 +1058,25 @@ function Get-SectionSpineCoverageScore {
 
     $allText = ($files | ForEach-Object { Get-Content $_ -Raw } | Where-Object { $_ }) -join "`n"
 
+    # Section renamed in 1.1.0 ("Help Desk Workflows" -> "Operational Workflows"). For one
+    # release the old heading still counts, with a deprecation warning, so committed
+    # outputs built by 1.0.x do not fail at once. Remove in 1.2.0.
+    $deprecatedSpineAliases = @{ "Operational Workflows" = "Help Desk Workflows" }
+
     $found = 0
     foreach ($title in $spine) {
         # Match the title as a heading (## / ### / #) with optional numbering or
         # a letter-suffix (e.g. "8A"), tolerant of case.
         $pattern = ('(?im)^#{1,6}\s+(?:\d{1,2}[A-Za-z]?\s*[.:]\s*)?' + [regex]::Escape($title) + '\b')
-        if ($allText -match $pattern) { $found++ }
+        if ($allText -match $pattern) { $found++; continue }
+        if ($deprecatedSpineAliases.ContainsKey($title)) {
+            $old = $deprecatedSpineAliases[$title]
+            $oldPattern = ('(?im)^#{1,6}\s+(?:\d{1,2}[A-Za-z]?\s*[.:]\s*)?' + [regex]::Escape($old) + '\b')
+            if ($allText -match $oldPattern) {
+                $found++
+                Write-Warning "Section heading '$old' is deprecated; rebuild to get '$title'. The old heading is accepted until AppDoc 1.2.0."
+            }
+        }
     }
 
     return [Math]::Round((($found / [Math]::Max(1, $spine.Count)) * 100), 1)
@@ -2139,7 +2186,10 @@ $overallScore = [Math]::Max(0, [Math]::Round(($overallScoreRaw - $penaltyDeducti
 
 $hasBlockingIssues = (@($policyGates.blockingIssues).Count -gt 0)
 $weakCoverage = ($evidencePresence -lt 70 -or $semanticContractScore -lt 65 -or $evidenceContractScore -lt 65 -or $claimGroundingScore -lt 50 -or $sectionSpineCoverageScore -lt 50 -or $epistemicCoverageScore -lt 50 -or $reVerifiabilityScore -lt 50)
-$validationStatus = if ($hasBlockingIssues -or $overallScore -lt $Threshold) {
+# ADR 0003: a validator that CRASHED (internal error) is a tool defect, so the gate
+# cannot vouch for the package -> fail. A validator that reports failed checks lowers
+# validatorPassRate and the threshold decides.
+$validationStatus = if ($hasBlockingIssues -or $overallScore -lt $Threshold -or $validatorInternalErrors.Count -gt 0) {
     "fail"
 }
 elseif ($weakCoverage) {
@@ -2147,6 +2197,17 @@ elseif ($weakCoverage) {
 }
 else {
     "pass"
+}
+
+# The detected framework(s), from framework-detection.json; "unknown" when none.
+$detectedFrameworkLabel = 'unknown'
+$fwDetectPath = Join-Path $docsPath 'framework-detection.json'
+if (Test-Path -LiteralPath $fwDetectPath) {
+    try {
+        $fwDetect = Get-Content -LiteralPath $fwDetectPath -Raw | ConvertFrom-Json -Depth 10
+        $fwNames = @(@($fwDetect) | ForEach-Object { [string]$_.framework } | Where-Object { $_ } | Select-Object -Unique)
+        if ($fwNames.Count -gt 0) { $detectedFrameworkLabel = ($fwNames -join ', ') }
+    } catch { $detectedFrameworkLabel = 'unknown' }
 }
 
 $result = [ordered]@{
@@ -2185,6 +2246,7 @@ $result = [ordered]@{
     missingArtifacts = $missing
     missingEvidenceArtifacts = $missingEvidence
     validators = $validatorResults
+    validatorInternalErrors = @($validatorInternalErrors)
     contractValidation = $contractValidationResults
     evidenceContractValidation = $evidenceContractResults
     contradictions = @($allContradictionIssues)
@@ -2194,7 +2256,7 @@ $result = [ordered]@{
     policyGates = $policyGates
     coverageCalibration = [ordered]@{
         path = if ($isClassicAspTarget) { "classic-asp" } else { "csharp-default" }
-        framework = if ($isClassicAspTarget) { "Classic ASP" } else { "csharp" }
+        framework = $detectedFrameworkLabel
         note = if ($isClassicAspTarget) { "config + data-model coverage measured against classic-ASP source artifacts (config-file keys; ADO/SQL data objects) as documented/expected ratios." } else { "config + data-model coverage measured with the C#-calibrated scorers (appsettings/config keys; model classes)." }
         config = $script:ClassicAspCalibration.config
         dataModel = $script:ClassicAspCalibration.dataModel
@@ -2215,7 +2277,7 @@ $result = [ordered]@{
 #       blocked=false. NEVER changes status or overallScore.
 #   BLOCKING (OPT-IN, -PristineGate ON): the pristine check becomes a real gate
 #       that BLOCKS the run when emptyCount>0 OR subScore<floor (-PristineFloor).
-#       OWNER_REQUIRED cells are EXCLUDED (pending /appdoc.enhance, not failures).
+#       OWNER_REQUIRED cells are EXCLUDED (pending owner input, not failures).
 #       The decision is the PURE FUNCTION Test-AppDocPristineGate (unit-testable).
 #       When it blocks, status flips to 'blocked' (a NEW additive blocking
 #       condition); overallScore is UNCHANGED (structural conformance untouched).
@@ -2255,8 +2317,8 @@ if ($hasPristine) {
                     frameworkNA  = [bool]$_.frameworkNA
                 }
             })
-            report         = 'docs/pristine-report.md'
-            evidence       = 'docs/evidence/pristine.evidence.json'
+            report         = "$(Get-AppDocDocsDirName -RootPath $RootPath)/pristine-report.md"
+            evidence       = "$(Get-AppDocDocsDirName -RootPath $RootPath)/evidence/pristine.evidence.json"
             determinismHash= [string]$pristineAssessment.determinismHash
         }
 
@@ -2284,7 +2346,7 @@ if ($hasPristine) {
             floorMet       = [bool]$pristineGateDec.floorMet
             blocked        = [bool]$pristineGateDec.blocked
             blockingIssues = @($pristineGateDec.blockingIssues)
-            note           = if ($pristineGateEnabled) { 'BLOCKING mode (OPT-IN, -PristineGate): the run is blocked when emptyCount>0 OR subScore<floor; OWNER_REQUIRED is excluded (pending /appdoc.enhance, not a failure).' } else { 'REPORT-ONLY mode (DEFAULT): depth measurement, never blocks — pristineGate.blocked=false; status/overallScore unchanged.' }
+            note           = if ($pristineGateEnabled) { 'BLOCKING mode (OPT-IN, -PristineGate): the run is blocked when emptyCount>0 OR subScore<floor; OWNER_REQUIRED is excluded (pending owner input, not a failure).' } else { 'REPORT-ONLY mode (DEFAULT): depth measurement, never blocks — pristineGate.blocked=false; status/overallScore unchanged.' }
         }
         # BLOCK path (additive): when blocking mode AND a violation, flip the run's
         # status to 'blocked' (a NEW blocking condition). overallScore is UNCHANGED —
@@ -2304,20 +2366,9 @@ if ($hasPristine) {
 }
 
 
-# Write only the JSON payload to the output file, suppressing any console/table output.
-# Ensure the scratch dir exists (fresh checkouts may not have tmp/logs) and guard
-# the write so a failure to log the temp file can never block the canonical report.
-$jsonOutPath = Join-Path $RootPath "tmp\logs\validate-documentation.out.json"
-$jsonOutDir = Split-Path $jsonOutPath -Parent
-if (-not (Test-Path $jsonOutDir)) {
-    try { New-Item -Path $jsonOutDir -ItemType Directory -Force | Out-Null } catch { }
-}
-try {
-    $result | ConvertTo-Json -Depth 20 | Out-File -FilePath $jsonOutPath -Encoding UTF8
-}
-catch {
-    Write-Warning ("Could not write scratch validation log {0}: {1}" -f $jsonOutPath, $_.Exception.Message)
-}
+# (A scratch copy used to be written to <target>/tmp/logs/. It polluted the target
+# repository and fed back into the next run's file scan, so it was removed; the
+# canonical report below is the single output.)
 
 # Write the CANONICAL validation report to docs/validation-report.json. This is the
 # authoritative, committed validation result (referenced by the prompts, the
@@ -2357,7 +2408,7 @@ if ($Json) {
 }
 else {
     Write-Host "Validation score: $overallScore" -ForegroundColor Cyan
-    Write-Host "Validation report: $reportPath"
+    Write-Host "Validation report: $canonicalReportPath"
 }
 
 if ($Strict -and $overallScore -lt $Threshold) {
@@ -2368,6 +2419,11 @@ if ($Strict -and $overallScore -lt $Threshold) {
 if ($Strict -and @($policyGates.blockingIssues).Count -gt 0) {
     $issueSummary = (@($policyGates.blockingIssues) -join "; ")
     Write-Error "Validation policy gates failed: $issueSummary"
+    exit 1
+}
+
+if ($Strict -and $validatorInternalErrors.Count -gt 0) {
+    Write-Error ("Validator internal error(s): " + ($validatorInternalErrors -join "; "))
     exit 1
 }
 

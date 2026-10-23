@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-classic-asp-extcalls.ps1
 #
@@ -12,8 +13,8 @@
 #            (b) stored-proc EMAIL calls: EXEC ... send_mail @address,@Subject,@MSG.
 #            (c) distinct COM objects instantiated via Server.CreateObject(...)
 #                / CreateObject(...) (object name + occurrence count + sample file).
-#            (d) file-system / UNC boundaries: @@HELPWEB_UNC_* tokens and \\ UNC
-#                paths (referenced as opaque/redacted, NEVER resolved).
+#            (d) file-system / UNC boundaries: literal \\server\share paths
+#                (counted and cited by file; the paths themselves are not printed).
 #
 # The ADO boundary (ADODB.Connection/Command/Recordset) is referenced as a
 # boundary CLASS (the DB boundary; the full register is in section 9.1) rather
@@ -21,30 +22,34 @@
 #
 # REDACTION RULE (non-negotiable): a REAL secret value (API key / Authorization
 # header literal / embedded credential) is NEVER printed. It is emitted as
-# [REDACTED]. URLs are shown as-is (they are destinations, not credentials);
-# the sanitized @@HELPWEB_...@@ tokens are already opaque and are referenced
-# as-is and never resolved.
+# [REDACTED]. URLs are shown as-is (they are destinations, not credentials).
 #
 # Deterministic: no LLM, no randomness, no network. Framework-gated: only runs
 # when framework-detection.json reports Classic ASP or ASP.NET Web Forms.
 # Scratch/copy/old/test/bak files are excluded by BASENAME.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
+# Shared classic-ASP helpers (single definition; see modules/AppDoc.ClassicAsp.psm1).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+# Test-AppDocScratchFile lives in the Scope module; import it here rather than relying on
+# an earlier generator having loaded it into the session.
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Scope.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
-function Write-NotApplicablePlaceholder {
-    param([string]$OutputPath, [string]$Title)
-    $dir = Split-Path $OutputPath -Parent
-    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    $body = "# $Title`r`n`r`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`r`n`r`n## Summary`r`n`r`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP external-call signal, so no content was extracted.`r`n`r`n---"
-    $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
-}
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 # Join-Row: build a markdown table row from cleaned cells (no -f formatting).
 function Join-Row {
     param([string[]]$Cells)
@@ -54,16 +59,11 @@ function Join-Row {
 }
 
 # Scratch / copy / old / test / bak files are excluded by BASENAME.
-function Is-ScratchFile {
-    param([string]$Path)
-    $name = Split-Path $Path -Leaf
-    return ($name -match '(?i).*_copy.*|.*copy_.*|.*_old.*|.*_test.*|^testing.*|.*bak.*')
-}
 
 # Sanitize a string before it is written: redact any real Authorization/Apikey
-# header value and any bearer/token credential. @@HELPWEB_ tokens pass through.
+# header value and any bearer/token credential.
 # Defense-in-depth: even if a real value is captured, it is redacted here.
-function Sanitize-Text {
+function ConvertTo-SafeText {
     param([string]$t)
     if ($null -eq $t) { return '' }
     # Apikey / Authorization / Bearer header literals -> redact the value.
@@ -83,22 +83,16 @@ function Sanitize-Text {
 # api-inventory no-clobber guard.
 # Classic-ASP SOURCE PRESENCE: the real signal this generator OWNS extcalls.md is the
 # presence of TRUE classic-ASP source (*.asp / *.inc), not the framework label and not
-# *.aspx. This mirrors generate-classic-asp-endpoints.ps1's Get-ClassicAspSourceFileCount
+# *.aspx. This mirrors generate-classic-asp-endpoints.ps1's Get-AppDocClassicAspSourceFileCount
 # EXACTLY (which counts only *.asp/*.inc, not *.aspx). Web Forms is a C# framework that
 # is "framework-applicable" and ships *.aspx + *.cs code-behind files: on such a target
 # there are 0 true classic-ASP (*.asp/*.inc) files, so the generic extractor (which reads
 # *.cs) is the real owner of extcalls.md and this generator must yield. We apply the same
 # scratch basename exclusions this generator already uses.
-function Get-ClassicAspSourceFileCount {
-    param([string]$RootPath)
-    $files = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp","*.inc" -File -ErrorAction SilentlyContinue |
-        Where-Object { -not (Is-ScratchFile $_.FullName) })
-    return $files.Count
-}
 
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
-$outputPath   = Join-Path $RootPath "docs\extcalls.md"
-$evidencePath = Join-Path $RootPath "docs\extcalls.evidence.json"
+$outputPath   = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "extcalls.md"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "extcalls.evidence.json"
 
 Write-Host "🌐 Generating Classic ASP external-call register (HTTP/XML + Email/COM/file boundaries)..." -ForegroundColor Cyan
 if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
@@ -116,7 +110,7 @@ if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
         exit 0
     }
     Write-Host "  Framework not Classic ASP - writing placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "External Call Register"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "External Call Register" -Signal 'classic-ASP external-call'
     @() | ConvertTo-Json -Depth 5 | Out-File -FilePath $evidencePath -Encoding UTF8
     exit 0
 }
@@ -129,7 +123,7 @@ if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
 # already populated. When classic-ASP source is absent we yield: leave a non-
 # placeholder artifact (written by the generic path) intact; only write our own
 # placeholder when no prior owner populated it.
-$classicAspSourceCount = Get-ClassicAspSourceFileCount -RootPath $RootPath
+$classicAspSourceCount = Get-AppDocClassicAspSourceFileCount -RootPath $RootPath
 if ($classicAspSourceCount -eq 0) {
     $artifactExists    = Test-Path $outputPath
     $isPriorOwnerOwned = $artifactExists -and (-not (Test-AppDocArtifactIsClassicAspPlaceholder -Path $outputPath))
@@ -139,7 +133,7 @@ if ($classicAspSourceCount -eq 0) {
         exit 0
     }
     Write-Host "  No classic-ASP source found and no prior owner artifact - writing N-A placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "External Call Register"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "External Call Register" -Signal 'classic-ASP external-call'
     @() | ConvertTo-Json -Depth 5 | Out-File -FilePath $evidencePath -Encoding UTF8
     exit 0
 }
@@ -147,7 +141,7 @@ if ($classicAspSourceCount -eq 0) {
 $rootPrefix = $RootPath.TrimEnd('\', '/')
 # Collect classic-ASP source files (asp/aspx/inc), EXCLUDING scratch by basename, sorted for determinism.
 $allFiles = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp","*.aspx","*.inc" -File -ErrorAction SilentlyContinue |
-    Where-Object { -not (Is-ScratchFile $_.FullName) } |
+    Where-Object { -not (Test-AppDocScratchFile $_.FullName) } |
     Sort-Object FullName)
 # Scratch set (for the "also present in N copy/test file(s)" note), same scoping.
 $allFilesInclScratch = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp","*.aspx","*.inc" -File -ErrorAction SilentlyContinue | Sort-Object FullName)
@@ -161,7 +155,8 @@ $authHeaderRe = '(?i)setRequestHeader\s*\(?\s*"Authorization"'
 $apiKeyRe     = '(?i)Apikey\s+[A-Za-z0-9][A-Za-z0-9\-_.]{6,}'
 $sendMailRe   = [regex]'(?i)\bsend_mail\b'
 $createObjRe  = [regex]'(?i)CreateObject\s*\(?\s*"?([^",)\s]+)"?'
-$uncTokenRe   = [regex]'@@HELPWEB_UNC'
+# A literal UNC path inside a string: "\\server\share..." (2+ backslashes, a host, a share).
+$uncTokenRe   = [regex]'\\\\[A-Za-z0-9_.$-]+\\[A-Za-z0-9_.$-]+'
 
 # ---- Accumulators -----------------------------------------------------------
 $endpointHits = New-Object System.Collections.Generic.List[object]   # @{file; line; url; mech; behavior}
@@ -208,10 +203,6 @@ foreach ($f in $allFiles) {
             if ($L -match '(?i)\.load\b') { $beh = 'loads remote XML document' }
             elseif ($L -match '(?i)\.open\b') { $beh = 'outbound HTTP request' }
             else { $beh = 'outbound HTTP/XML request (call site)' }
-            # URL-path hint (Inferred)
-            if ($url -match '(?i)/command\.ns') { $beh += '; Bomgar remote-support API (parses XML, renders rep names)' }
-            elseif ($url -match '(?i)CreateUserFromContact') { $beh += '; ITSM account creation' }
-            elseif ($url -match '(?i)/api/analysis/|getReport') { $beh += '; ITSM report fetch (analysis)' }
             if ($hasAuthHeader -or $hasApiKey) { $beh += '; sends hardcoded Authorization header (Apikey [REDACTED])' }
             $endpointHits.Add([pscustomobject]@{ file=$rel; line=($i + 1); url=$url; mech=$mech; behavior=$beh })
         }
@@ -254,7 +245,7 @@ foreach ($f in $allFiles) {
 # Count scratch-file hits per URL so a primary row can note duplicate copies.
 $scratchUrlCounts = @{}
 foreach ($f in $allFilesInclScratch) {
-    if (-not (Is-ScratchFile $f.FullName)) { continue }
+    if (-not (Test-AppDocScratchFile $f.FullName)) { continue }
     $content = Get-Content $f.FullName -Raw -ErrorAction SilentlyContinue
     if ([string]::IsNullOrWhiteSpace($content)) { continue }
     foreach ($m in $quotedUrlRe.Matches($content)) {
@@ -272,7 +263,7 @@ foreach ($h in ($endpointHits | Sort-Object @{Expression = { $_.url } }, @{Expre
     $seenEndpoint[$key] = $true
     $scratchNote = ''
     if ($scratchUrlCounts.ContainsKey($h.url)) { $scratchNote = " [also present in $($scratchUrlCounts[$h.url]) copy/test file(s)]" }
-    $evidence = (Md-Back $h.file) + " line " + $h.line + $scratchNote
+    $evidence = (Format-CodeSpan $h.file) + " line " + $h.line + $scratchNote
     $endpointRows.Add([pscustomobject]@{
         id=''; endpoint=$h.url; mechanism=$h.mech; evidence=$evidence; behavior=$h.behavior; status='Verified'
     })
@@ -295,9 +286,9 @@ foreach ($h in ($sendMailHits | Sort-Object @{Expression = { $_.file } }, @{Expr
     if ($seenMailFile.ContainsKey($h.file)) { continue }
     $seenMailFile[$h.file] = $true
     $boundaryRows.Add([pscustomobject]@{
-        id=''; btype='Email (stored procedure)'; call='`EXEC Peregrine.Peregrine.send_mail @address, @Subject, @MSG`';
-        evidence=(Md-Back $h.file) + " line " + $h.line;
-        behavior='Sends Talisma reset-request email; recipient list is hardcoded in source'; status='Verified'
+        id=''; btype='Email (stored procedure)'; call=(Format-CodeSpan (ConvertTo-SafeText ([string]$h.snippet)));
+        evidence=(Format-CodeSpan $h.file) + " line " + $h.line;
+        behavior='Sends email through a stored-procedure `send_mail` call'; status='Verified'
     })
 }
 # (2) ADO boundary class (DB boundary; register in 9.1)
@@ -311,9 +302,9 @@ if ($adoCount -gt 0) {
 # (3) file-system / UNC boundary
 if ($uncCount -gt 0) {
     $boundaryRows.Add([pscustomobject]@{
-        id=''; btype='File-system / UNC'; call='`@@HELPWEB_UNC_*@@` tokens + `\\` UNC paths';
-        evidence=("$uncCount token occurrences across $($uncFiles.Count) files; e.g. " + (Md-Back $uncFiles[0]));
-        behavior='UNC file-share boundary; values are opaque sanitized tokens (never resolved)'; status='Verified'
+        id=''; btype='File-system / UNC'; call='`\\server\share` UNC paths (not printed)';
+        evidence=("$uncCount UNC path occurrences across $($uncFiles.Count) files; e.g. " + (Format-CodeSpan $uncFiles[0]));
+        behavior='UNC file-share boundary'; status='Verified'
     })
 }
 $bIdx = 1
@@ -322,12 +313,12 @@ foreach ($br in $boundaryRows) { $br.id = "BND-$($bIdx.ToString('00'))"; $bIdx++
 # ---- Render markdown --------------------------------------------------------
 $generatedLine = "**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))"
 $generatedIso  = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ssK')
-$summaryText = "This artifact lists the external-call boundaries actually present in the classic-ASP source, each with its file:line evidence and epistemic status. **HTTP/XML endpoints** are the outbound URL + XML-HTTP mechanism sites (ITSM API, Bomgar remote-support, ACD/status cross-application links). **Email/COM/file boundaries** are the stored-proc email, ADO database boundary (class), and UNC/file-system boundary. Every REAL secret value (API key / Authorization header / embedded credential) is **redacted** and emitted as ``[REDACTED]``; the sanitized ``@@HELPWEB_...@@`` tokens are already opaque and are referenced as-is. Status ``Verified`` means the call site is present in the current source, not that the target is reachable in production (that is Unknown)."
+$summaryText = "This artifact lists the external-call boundaries actually present in the classic-ASP source, each with its file:line evidence and epistemic status. **HTTP/XML endpoints** are the outbound URL + XML-HTTP mechanism sites. **Email/COM/file boundaries** are stored-procedure email calls, the ADO database boundary (class), and UNC/file-system paths. Every REAL secret value (API key / Authorization header / embedded credential) is **redacted** and emitted as ``[REDACTED]``. Status ``Verified`` means the call site is present in the current source, not that the target is reachable in production (that is Unknown)."
 
 $lines = New-Object System.Collections.Generic.List[string]
 $lines.Add("# External Call Register"); $lines.Add(""); $lines.Add($generatedLine); $lines.Add("")
 $lines.Add("## Summary"); $lines.Add(""); $lines.Add($summaryText); $lines.Add("")
-$totalsLine = "Totals: **$($endpointRows.Count)** HTTP/XML endpoint site(s), **$($boundaryRows.Count)** Email/COM/file boundary row(s), **$($comCounts.Count)** distinct COM object type(s) (top $($comShow.Count) shown); $adoCount ADO boundary instantiation(s) across $($adoFiles.Count) file(s), $uncCount `@@HELPWEB_UNC` token occurrence(s), $($apiKeyFiles.Count) file(s) with a hardcoded Authorization header (Apikey [REDACTED])."
+$totalsLine = "Totals: **$($endpointRows.Count)** HTTP/XML endpoint site(s), **$($boundaryRows.Count)** Email/COM/file boundary row(s), **$($comCounts.Count)** distinct COM object type(s) (top $($comShow.Count) shown); $adoCount ADO boundary instantiation(s) across $($adoFiles.Count) file(s), $uncCount UNC path occurrence(s), $($apiKeyFiles.Count) file(s) with a hardcoded Authorization header (Apikey [REDACTED])."
 $lines.Add($totalsLine); $lines.Add("")
 $lines.Add("## Contents"); $lines.Add("")
 $lines.Add("- [HTTP/XML Endpoints](#httpxml-endpoints) — outbound URL + XML-HTTP mechanism sites")
@@ -341,18 +332,18 @@ $lines.Add("Each row is an outbound HTTP/XML call site verified against the sour
 $lines.Add("| ID | Endpoint/URL | Mechanism | Source file:line | Data/behavior | Status |")
 $lines.Add("|----|--------------|-----------|------------------|---------------|--------|")
 foreach ($er in $endpointRows) {
-    $cells = @($er.id, (Md-Clean (Md-Back $er.endpoint)), (Md-Clean (Md-Back $er.mechanism)), (Md-Clean $er.evidence), (Md-Clean $er.behavior), $er.status)
+    $cells = @($er.id, (Format-MarkdownCellText (Format-CodeSpan $er.endpoint)), (Format-MarkdownCellText (Format-CodeSpan $er.mechanism)), (Format-MarkdownCellText $er.evidence), (Format-MarkdownCellText $er.behavior), $er.status)
     $lines.Add((Join-Row $cells))
 }
 if ($endpointRows.Count -eq 0) { $lines.Add("| — | none detected | — | — | — | Unknown |") }
 $lines.Add("")
 
 $lines.Add("## Email/COM/File Boundaries"); $lines.Add("")
-$lines.Add("Non-HTTP external boundaries: the stored-proc email call, the ADO database boundary (class — full register in section 9.1), and the UNC/file-system boundary. `@@HELPWEB_...@@` tokens are opaque and never resolved."); $lines.Add("")
+$lines.Add("Non-HTTP external boundaries: stored-procedure email calls, the ADO database boundary (class — full register in section 9.1), and UNC/file-system paths."); $lines.Add("")
 $lines.Add("| ID | Boundary type | Observed call | Source file:line | Behavior | Status |")
 $lines.Add("|----|---------------|---------------|------------------|----------|--------|")
 foreach ($br in $boundaryRows) {
-    $cells = @($br.id, (Md-Clean $br.btype), (Md-Clean $br.call), (Md-Clean $br.evidence), (Md-Clean $br.behavior), $br.status)
+    $cells = @($br.id, (Format-MarkdownCellText $br.btype), (Format-MarkdownCellText $br.call), (Format-MarkdownCellText $br.evidence), (Format-MarkdownCellText $br.behavior), $br.status)
     $lines.Add((Join-Row $cells))
 }
 if ($boundaryRows.Count -eq 0) { $lines.Add("| — | none detected | — | — | — | Unknown |") }
@@ -363,7 +354,7 @@ $lines.Add("Distinct COM objects instantiated via `CreateObject`/`Server.CreateO
 $lines.Add("| COM object | Count | Sample file | Status |")
 $lines.Add("|------------|-------|-------------|--------|")
 foreach ($cr in $comShow) {
-    $cells = @((Md-Clean (Md-Back $cr.object)), $cr.count, (Md-Clean (Md-Back $cr.sample)), $cr.status)
+    $cells = @((Format-MarkdownCellText (Format-CodeSpan $cr.object)), $cr.count, (Format-MarkdownCellText (Format-CodeSpan $cr.sample)), $cr.status)
     $lines.Add((Join-Row $cells))
 }
 if ($comRows.Count -eq 0) { $lines.Add("| — | none detected | — | Unknown |") }
@@ -385,17 +376,17 @@ $lines.Add("- Generated At: $generatedIso"); $lines.Add("- Profile: default"); $
 $lines.Add("- Confidence/Inference Flags: deterministic, evidence-backed, secrets redacted")
 
 # Sanitize the full markdown (defense-in-depth) before writing.
-$md = ($lines -join "`r`n")
-$md = Sanitize-Text $md
+$md = ($lines -join "`n")
+$md = ConvertTo-SafeText $md
 $md | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 # ---- Flat evidence ----------------------------------------------------------
 $evidence = New-Object System.Collections.Generic.List[object]
 foreach ($er in $endpointRows) {
-    $evidence.Add([ordered]@{ kind="http-endpoint"; id=$er.id; endpoint=(Sanitize-Text $er.endpoint); mechanism=$er.mechanism; evidence=(Sanitize-Text $er.evidence); behavior=(Sanitize-Text $er.behavior); status=$er.status })
+    $evidence.Add([ordered]@{ kind="http-endpoint"; id=$er.id; endpoint=(ConvertTo-SafeText $er.endpoint); mechanism=$er.mechanism; evidence=(ConvertTo-SafeText $er.evidence); behavior=(ConvertTo-SafeText $er.behavior); status=$er.status })
 }
 foreach ($br in $boundaryRows) {
-    $evidence.Add([ordered]@{ kind="boundary"; id=$br.id; btype=$br.btype; call=(Sanitize-Text $br.call); evidence=(Sanitize-Text $br.evidence); behavior=(Sanitize-Text $br.behavior); status=$br.status })
+    $evidence.Add([ordered]@{ kind="boundary"; id=$br.id; btype=$br.btype; call=(ConvertTo-SafeText $br.call); evidence=(ConvertTo-SafeText $br.evidence); behavior=(ConvertTo-SafeText $br.behavior); status=$br.status })
 }
 foreach ($cr in $comRows) {
     $evidence.Add([ordered]@{ kind="com-object"; object=$cr.object; count=$cr.count; sample=$cr.sample; status=$cr.status })
@@ -403,7 +394,7 @@ foreach ($cr in $comRows) {
 $evidence | ConvertTo-Json -Depth 14 | Out-File -FilePath $evidencePath -Encoding UTF8
 
 # ---- Canonical evidence (docs/evidence/extcalls.evidence.json) --------------
-$canonDir = Join-Path $RootPath "docs\evidence"
+$canonDir = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
 if (-not (Test-Path $canonDir)) { New-Item -ItemType Directory -Path $canonDir -Force | Out-Null }
 $canonPath = Join-Path $canonDir "extcalls.evidence.json"
 $recArr = @($evidence | ForEach-Object { $_ })

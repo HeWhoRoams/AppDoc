@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # AppDoc.Overview.ContextPack Module
 # Purpose: Build a versioned, normalized narrative context pack from deterministic overview truth data.
 
@@ -55,7 +58,7 @@ function ConvertTo-AppDocOverviewContextArray {
     return @($Value)
 }
 
-function Normalize-AppDocOverviewPath {
+function ConvertTo-AppDocOverviewPath {
     [CmdletBinding()]
     param(
         [AllowNull()]
@@ -143,8 +146,8 @@ function Get-AppDocOverviewContextPackData {
 
         $kind = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "kind" -Default "")
         $entityType = Get-AppDocOverviewEntityType -Kind $kind
-        $name = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default ""))
-        $source = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default ""))
+        $name = ConvertTo-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default ""))
+        $source = ConvertTo-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default ""))
         $evidenceId = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "id" -Default "")
         if ([string]::IsNullOrWhiteSpace($evidenceId)) { continue }
 
@@ -178,8 +181,8 @@ function Get-AppDocOverviewContextPackData {
         $kind = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "kind" -Default "")
         if ($kind -ne "endpoint") { continue }
 
-        $name = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default ""))
-        $source = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default ""))
+        $name = ConvertTo-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default ""))
+        $source = ConvertTo-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default ""))
         $entityKey = "endpoint|{0}|{1}" -f $name, $source
         if (-not $entityIndex.ContainsKey($entityKey)) { continue }
 
@@ -266,7 +269,7 @@ function Get-AppDocOverviewContextPackData {
         run_id = [Guid]::NewGuid().ToString()
         project = [ordered]@{
             name = $projectName
-            root_path = $RootPath
+            root_path = "."
             audience = $Audience
             style_profile = $StyleProfile
         }
@@ -281,8 +284,8 @@ function Get-AppDocOverviewContextPackData {
                 ForEach-Object {
                     $rawName = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "name" -Default "")
                     $rawSource = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "source" -Default "")
-                    $normalizedName = Normalize-AppDocOverviewPath $rawName
-                    $normalizedSource = Normalize-AppDocOverviewPath $rawSource
+                    $normalizedName = ConvertTo-AppDocOverviewPath $rawName
+                    $normalizedSource = ConvertTo-AppDocOverviewPath $rawSource
                     [ordered]@{
                         id = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "id" -Default "")
                         artifact = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "artifact" -Default "")
@@ -321,7 +324,7 @@ function Write-AppDocOverviewContextPack {
         [hashtable]$ContextPack
     )
 
-    $evidenceDir = Join-Path $RootPath "docs" "evidence"
+    $evidenceDir = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
     if (-not (Test-Path $evidenceDir)) {
         New-Item -Path $evidenceDir -ItemType Directory -Force | Out-Null
     }

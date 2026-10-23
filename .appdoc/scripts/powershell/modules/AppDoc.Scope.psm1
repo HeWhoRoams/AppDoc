@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # Cross-version Windows OS detection
 if ($null -eq $script:IsWindowsOS) {
     $script:IsWindowsOS = $false
@@ -22,6 +25,17 @@ $script:AppDocGeneratedProxyPatterns = @(
     '(?i)(?:^|\\)Reference\.cs$',
     '(?i)\.(svcmap|svcinfo|wsdl|disco)$'
 )
+
+# Scratch / backup copies of source files (by file NAME): *_copy*, copy_*, *_old*, *_test*,
+# testing*, *bak*. Classic-ASP sites accumulate these next to live pages; they are not the
+# application. Single definition shared by the generators and the composer.
+$script:AppDocScratchFileNamePattern = '(?i).*_copy.*|.*copy_.*|.*_old.*|.*_test.*|^testing.*|.*bak.*'
+function Test-AppDocScratchFile {
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Path)
+    $name = [System.IO.Path]::GetFileName($Path)
+    return ($name -match $script:AppDocScratchFileNamePattern)
+}
 
 function Get-AppDocDefaultScopePolicy {
     [CmdletBinding()]
@@ -358,6 +372,13 @@ function Test-AppDocPathIncluded {
         }
     }
 
+    # AppDoc's own output folder (config outputDir; default docs) is never target source.
+    if ($RootPath -and -not $IncludeDocs) {
+        $outDir = (Get-AppDocDocsDirName -RootPath $RootPath) -replace '/', '\'
+        $normForOut = $normalized.TrimStart('\')
+        if ($normForOut -eq $outDir -or $normForOut.StartsWith($outDir + '\', [System.StringComparison]::OrdinalIgnoreCase)) { return $false }
+    }
+
     $policy = Get-AppDocScopePolicy -RootPath $RootPath
     $profile = Resolve-AppDocScopeProfile -Policy $policy -Artifact $Artifact
     $excludedPatterns = Get-AppDocScopeExclusionPatterns -Profile $profile -AdditionalExcludePatterns $AdditionalExcludePatterns -IncludeDocs:$IncludeDocs -IncludeAppDocTools:$IncludeAppDocTools -IncludeFixtures:$IncludeFixtures -IncludeTests:$IncludeTests
@@ -408,6 +429,9 @@ function Get-AppDocSourceFiles {
 }
 
 function Get-AppDocRelativePath {
+    # Repo-relative path with forward slashes. Single implementation:
+    # ConvertTo-AppDocRelativePath (AppDoc.Determinism); paths outside the root are
+    # reported as "<external>/<leaf>" so no host path leaks into the output.
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
@@ -415,18 +439,16 @@ function Get-AppDocRelativePath {
         [Parameter(Mandatory=$true)]
         [string]$Path
     )
-
-    try {
-        $rootFull = (Resolve-Path $RootPath).Path
-        $pathFull = (Resolve-Path $Path).Path
-        return [System.IO.Path]::GetRelativePath($rootFull, $pathFull).Replace('\', '/')
+    if (-not (Get-Command ConvertTo-AppDocRelativePath -ErrorAction SilentlyContinue)) {
+        Import-Module (Join-Path $PSScriptRoot 'AppDoc.Determinism.psm1') -ErrorAction Stop
     }
-    catch {
-        return $Path.Replace($RootPath, '').TrimStart([char[]]@(92, 47))
-    }
+    $p = $Path
+    if (-not [System.IO.Path]::IsPathRooted($p)) { $p = Join-Path $RootPath $p }
+    return (ConvertTo-AppDocRelativePath -Path $p -RootPath $RootPath)
 }
 
 Export-ModuleMember -Function @(
+    'Test-AppDocScratchFile',
     'Get-AppDocDefaultScopePolicy',
     'Clear-AppDocScopePolicyCache',
     'Get-AppDocScopePolicy',

@@ -1,3 +1,5 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
@@ -10,10 +12,16 @@ param(
     # generic credential patterns), so an operator-listed secret the redaction did not
     # neutralize is caught and the stage is BLOCKED (fail-closed).
     [string[]]$RedactionPatterns = @(),
+    # Operator regular expressions (the config redactionRegexes), scanned by the gate.
+    [string[]]$RedactionRegexes = @(),
     # When $true (default), the secret-redaction hard gate is enforced before any
     # LLM-facing input is written. Set $false only for debugging a suspected gate hit.
     [switch]$DisableRedactionGate
 )
+
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -28,7 +36,7 @@ if (-not (Test-Path $RootPath)) {
     throw "Root path does not exist: $RootPath"
 }
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 $evidenceDir = Join-Path $docsPath "evidence"
 if (-not (Test-Path $evidenceDir)) {
     throw "Evidence directory not found: $evidenceDir"
@@ -54,16 +62,21 @@ if (-not $DryRun) {
 # aware of them even when invoked standalone (not via run-appdoc-build.ps1). A no-
 # config target behaves exactly as today (no operator patterns).
 $operatorPatterns = @()
-$configModule = Join-Path $PSScriptRoot "modules\AppDoc.Config.psm1"
+$operatorRegexes = @()
+$configModule = Join-Path (Join-Path $PSScriptRoot "modules") "AppDoc.Config.psm1"
 if (Test-Path $configModule) {
-    try {
-        Import-Module $configModule -Force -ErrorAction SilentlyContinue
-        $cfg = Get-AppDocConfig -RootPath $RootPath
-        if ($cfg) { $operatorPatterns = @($cfg.values.redactionPatterns | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) }) }
-    } catch { /* config load is additive; a failure falls back to the built-in gate */ }
+    # Fail-closed: an unreadable config would silently drop the operator's secrets.
+    Import-Module $configModule -Force -ErrorAction Stop
+    $cfg = Get-AppDocConfig -RootPath $RootPath
+    if ($cfg -and $cfg.error) { throw "SECRET-REDACTION HARD GATE BLOCKED the semantic stage: $($cfg.error)" }
+    if ($cfg) {
+        $operatorPatterns = @($cfg.values.redactionPatterns | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+        $operatorRegexes = @($cfg.values.redactionRegexes | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+    }
 }
-# Any patterns passed on the command line take precedence / are additive.
+# Any patterns passed on the command line are additive.
 $gateExtraKnownSecrets = @($operatorPatterns + @($RedactionPatterns) | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
+$gateExtraRegexes = @($operatorRegexes + @($RedactionRegexes) | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
 
 function Get-FieldValue {
     param(
@@ -98,7 +111,7 @@ function Set-FieldValue {
     $Record[$Name] = $Value
 }
 
-function To-Hashtable {
+function ConvertTo-PlainHashtable {
     param(
         [Parameter(Mandatory=$true)]
         $InputObject
@@ -119,7 +132,7 @@ function New-SemanticKey {
     return (("{0}|{1}|{2}" -f ($Source ?? ""), ($Name ?? ""), ($Kind ?? "")).ToLowerInvariant())
 }
 
-function Infer-Tier {
+function Get-InferredTier {
     param(
         [string]$Source,
         [string]$Name
@@ -139,7 +152,7 @@ function Infer-Tier {
     return 'runtime'
 }
 
-function Infer-RequiredForDeployment {
+function Test-InferredRequiredForDeployment {
     param(
         [string]$Name,
         [object]$Metadata
@@ -156,7 +169,7 @@ function Infer-RequiredForDeployment {
     return $false
 }
 
-function Infer-DependencyKind {
+function Get-InferredDependencyKind {
     param([string]$Type)
 
     $t = ($Type ?? "").ToLowerInvariant()
@@ -168,7 +181,7 @@ function Infer-DependencyKind {
     return 'system'
 }
 
-function Infer-CriticalPath {
+function Get-InferredCriticalPath {
     param(
         [string]$Name,
         [string]$Project,
@@ -183,7 +196,7 @@ function Infer-CriticalPath {
     return $false
 }
 
-function Infer-ModelRole {
+function Get-InferredModelRole {
     param(
         [string]$Source,
         [string]$Name,
@@ -218,7 +231,7 @@ function Infer-ModelRole {
     return 'Unknown'
 }
 
-function Infer-IsGeneratedModel {
+function Test-InferredGeneratedModel {
     param(
         [string]$Source,
         [string]$Name
@@ -256,7 +269,7 @@ function Build-TestDiagnosis {
     }
 }
 
-function Ensure-ConfidenceNote {
+function Set-AppDocConfidenceNote {
     param(
         [hashtable]$Record
     )
@@ -308,6 +321,7 @@ $updatedFiles = 0
 $globalRefusals = @()
 $cacheHitCount = 0
 $cacheMissCount = 0
+$cacheSupersededCount = 0
 $gateBlockedFiles = @()
 
 foreach ($file in $enrichedFiles) {
@@ -324,7 +338,7 @@ foreach ($file in $enrichedFiles) {
     # -- PowerShell's ConvertTo-Json otherwise collapses a 1-record array to an object.
     $inRecords = [System.Collections.ArrayList]::new()
     foreach ($rec in $records) {
-        $recH = To-Hashtable -InputObject $rec
+        $recH = ConvertTo-PlainHashtable -InputObject $rec
         $recIn = [ordered]@{
             source = [string](Get-FieldValue -Record $recH -Name 'source' -Default '')
             name = [string](Get-FieldValue -Record $recH -Name 'name' -Default '')
@@ -335,7 +349,7 @@ foreach ($file in $enrichedFiles) {
         }
         # (4) redact this record's values (built-in known secrets + generic patterns)
         # BEFORE it is allowed to reach the LLM-facing envelope.
-        $redRec = Redact-AppDocSemanticEnvelope -Envelope $recIn
+        $redRec = Protect-AppDocSemanticEnvelope -Envelope $recIn
         [void]$inRecords.Add($redRec)
     }
     $semanticInput = [ordered]@{
@@ -352,7 +366,7 @@ foreach ($file in $enrichedFiles) {
     # BLOCKED: the input is NOT written and the file does not proceed to the
     # LLM/apply step (it is not silently dropped -- it is skipped with a clear error
     # and reported in the gate block list).
-    $gateResult = Test-AppDocSemanticRedactionGate -Envelope $semanticInput -ExtraKnownSecrets $gateExtraKnownSecrets
+    $gateResult = Test-AppDocSemanticRedactionGate -Envelope $semanticInput -ExtraKnownSecrets $gateExtraKnownSecrets -ExtraRedactionRegexes $gateExtraRegexes
 
     $inputPath = Join-Path $inputDir ($file.Name.Replace('.evidence.enriched.json', '.semantic.input.json'))
 
@@ -392,7 +406,7 @@ foreach ($file in $enrichedFiles) {
         try {
             $semanticOutput = Get-Content -Path $outputPath -Raw | ConvertFrom-Json -AsHashtable -Depth 100
             foreach ($outRecord in @((Get-FieldValue -Record $semanticOutput -Name 'records' -Default @()))) {
-                $outHash = To-Hashtable -InputObject $outRecord
+                $outHash = ConvertTo-PlainHashtable -InputObject $outRecord
                 $okey = New-SemanticKey -Source ([string](Get-FieldValue -Record $outHash -Name 'source' -Default '')) -Name ([string](Get-FieldValue -Record $outHash -Name 'name' -Default '')) -Kind ([string](Get-FieldValue -Record $outHash -Name 'kind' -Default ''))
                 $outputLookup[$okey] = $outHash
             }
@@ -407,14 +421,14 @@ foreach ($file in $enrichedFiles) {
     # computed over the exact record as written to the LLM-facing envelope).
     $inputHashByKey = @{}
     foreach ($inRec in @($inRecords)) {
-        $inH = To-Hashtable -InputObject $inRec
+        $inH = ConvertTo-PlainHashtable -InputObject $inRec
         $ihKey = New-SemanticKey -Source ([string](Get-FieldValue -Record $inH -Name 'source' -Default '')) -Name ([string](Get-FieldValue -Record $inH -Name 'name' -Default '')) -Kind ([string](Get-FieldValue -Record $inH -Name 'kind' -Default ''))
         $inputHashByKey[$ihKey] = (Get-AppDocSemanticInputHash -Obj $inH)
     }
 
     $updatedRecords = @(
         $records | ForEach-Object {
-            $record = To-Hashtable -InputObject $_
+            $record = ConvertTo-PlainHashtable -InputObject $_
             $source = [string](Get-FieldValue -Record $record -Name 'source' -Default '')
             $name = [string](Get-FieldValue -Record $record -Name 'name' -Default '')
             $kind = [string](Get-FieldValue -Record $record -Name 'kind' -Default '')
@@ -427,16 +441,25 @@ foreach ($file in $enrichedFiles) {
             $llmResult = $null
             if ($null -ne $recInputHash -and $cache.ContainsKey($recInputHash)) {
                 $cacheState = 'hit'
-                $cacheHitCount++
                 $cached = $cache[$recInputHash]
                 if ($null -ne (Get-FieldValue -Record $cached -Name 'llmResult' -Default $null)) {
-                    $llmResult = To-Hashtable -InputObject (Get-FieldValue -Record $cached -Name 'llmResult' -Default $null)
+                    $llmResult = ConvertTo-PlainHashtable -InputObject (Get-FieldValue -Record $cached -Name 'llmResult' -Default $null)
                 }
+                # A corrected output file for the SAME input supersedes the cached result:
+                # the cache must never hide an edit the LLM session (or a reviewer) made.
+                if ($outputLookup.ContainsKey($key)) {
+                    $currentOut = ConvertTo-PlainHashtable -InputObject $outputLookup[$key]
+                    if ((Get-AppDocCanonicalJson -Obj $currentOut) -ne (Get-AppDocCanonicalJson -Obj $llmResult)) {
+                        $cacheState = 'superseded'
+                        $llmResult = $currentOut
+                    }
+                }
+                if ($cacheState -eq 'hit') { $cacheHitCount++ } else { $cacheSupersededCount++ }
             }
             else {
                 $cacheState = 'miss'
                 $cacheMissCount++
-                if ($outputLookup.ContainsKey($key)) { $llmResult = To-Hashtable -InputObject $outputLookup[$key] }
+                if ($outputLookup.ContainsKey($key)) { $llmResult = ConvertTo-PlainHashtable -InputObject $outputLookup[$key] }
             }
 
             # --- (1)+(2) QUARANTINE: provenance tiering + the Verified-fact lock --
@@ -484,12 +507,12 @@ foreach ($file in $enrichedFiles) {
 
             if ($kind -eq 'configuration') {
                 if ([string]::IsNullOrWhiteSpace([string](Get-FieldValue -Record $record -Name 'tier' -Default ''))) {
-                    Set-FieldValue -Record $record -Name 'tier' -Value (Infer-Tier -Source $source -Name $name)
+                    Set-FieldValue -Record $record -Name 'tier' -Value (Get-InferredTier -Source $source -Name $name)
                     $detFilled['tier'] = $true
                 }
                 if ($null -eq (Get-FieldValue -Record $record -Name 'requiredForDeployment' -Default $null)) {
                     $req = Get-FieldValue -Record $metadata -Name 'required' -Default $null
-                    Set-FieldValue -Record $record -Name 'requiredForDeployment' -Value (Infer-RequiredForDeployment -Name $name -Metadata $metadata)
+                    Set-FieldValue -Record $record -Name 'requiredForDeployment' -Value (Test-InferredRequiredForDeployment -Name $name -Metadata $metadata)
                     $detFilled['requiredForDeployment'] = $true
                     # source-grounded (Verified) when an explicit real metadata.required
                     # was present; a low-confidence name guess otherwise (not verified).
@@ -500,23 +523,23 @@ foreach ($file in $enrichedFiles) {
             if ($kind -eq 'dependency') {
                 if ([string]::IsNullOrWhiteSpace([string](Get-FieldValue -Record $record -Name 'dependencyKind' -Default ''))) {
                     $depType = [string](Get-FieldValue -Record $metadata -Name 'type' -Default '')
-                    Set-FieldValue -Record $record -Name 'dependencyKind' -Value (Infer-DependencyKind -Type $depType)
+                    Set-FieldValue -Record $record -Name 'dependencyKind' -Value (Get-InferredDependencyKind -Type $depType)
                     $detFilled['dependencyKind'] = $true
                 }
                 if ($null -eq (Get-FieldValue -Record $record -Name 'criticalPath' -Default $null)) {
                     $project = [string](Get-FieldValue -Record $metadata -Name 'project' -Default '')
-                    Set-FieldValue -Record $record -Name 'criticalPath' -Value (Infer-CriticalPath -Name $name -Project $project -Kind $kind)
+                    Set-FieldValue -Record $record -Name 'criticalPath' -Value (Get-InferredCriticalPath -Name $name -Project $project -Kind $kind)
                     $detFilled['criticalPath'] = $true
                 }
             }
 
             if ($kind -eq 'model') {
                 if ([string]::IsNullOrWhiteSpace([string](Get-FieldValue -Record $record -Name 'role' -Default ''))) {
-                    Set-FieldValue -Record $record -Name 'role' -Value (Infer-ModelRole -Source $source -Name $name -Metadata $metadata)
+                    Set-FieldValue -Record $record -Name 'role' -Value (Get-InferredModelRole -Source $source -Name $name -Metadata $metadata)
                     $detFilled['role'] = $true
                 }
                 if ($null -eq (Get-FieldValue -Record $record -Name 'isGenerated' -Default $null)) {
-                    Set-FieldValue -Record $record -Name 'isGenerated' -Value (Infer-IsGeneratedModel -Source $source -Name $name)
+                    Set-FieldValue -Record $record -Name 'isGenerated' -Value (Test-InferredGeneratedModel -Source $source -Name $name)
                     $detFilled['isGenerated'] = $true
                 }
             }
@@ -563,7 +586,7 @@ foreach ($file in $enrichedFiles) {
             }
 
             # (3) persist the cache for a MISS where a fresh LLM result was applied
-            if (($cacheState -eq 'miss') -and ($null -ne $llmResult) -and ($null -ne $recInputHash)) {
+            if (($cacheState -in @('miss', 'superseded')) -and ($null -ne $llmResult) -and ($null -ne $recInputHash)) {
                 $cache[$recInputHash] = [ordered]@{
                     artifact = $artifact
                     key = $key
@@ -572,7 +595,7 @@ foreach ($file in $enrichedFiles) {
                 }
             }
 
-            Ensure-ConfidenceNote -Record $record
+            Set-AppDocConfidenceNote -Record $record
 
             # (1) tag the final per-field provenance on the record (the observable
             # quarantine boundary). Precedence: LLM-set -> 'llm'; deterministic-fill
@@ -592,7 +615,7 @@ foreach ($file in $enrichedFiles) {
     )
 
     $payload['records'] = $updatedRecords
-    $meta = To-Hashtable -InputObject (Get-FieldValue -Record $payload -Name 'metadata' -Default @{})
+    $meta = ConvertTo-PlainHashtable -InputObject (Get-FieldValue -Record $payload -Name 'metadata' -Default @{})
     $meta['enriched'] = $true
     $meta['enrichmentMode'] = 'semantic-applied'
     $meta['semanticInputPath'] = $inputPath.Replace($RootPath, '.').TrimStart('\').Replace('\','/')
@@ -603,11 +626,13 @@ foreach ($file in $enrichedFiles) {
         enforced = -not [bool]$DisableRedactionGate
         passed = $true
         operatorPatterns = $gateExtraKnownSecrets.Count
+        operatorRegexes = $gateExtraRegexes.Count
     }
     $meta['cache'] = [ordered]@{
         path = ($cachePath.Replace($RootPath, '.').TrimStart('\').Replace('\','/'))
         hitRecords = $cacheHitCount
         missRecords = $cacheMissCount
+        supersededRecords = $cacheSupersededCount
     }
     $meta['quarantine'] = [ordered]@{
         refusals = (@($globalRefusals | Where-Object { ([string](Get-FieldValue -Record $_ -Name 'artifact' -Default '') -eq $artifact) }).Count)
@@ -670,6 +695,7 @@ $pendingPayload = [ordered]@{
     pendingFieldCount = $pending.Count
     cacheHits = $cacheHitCount
     cacheMisses = $cacheMissCount
+    cacheSuperseded = $cacheSupersededCount
     verifiedFactLockRefusals = $globalRefusals.Count
     pending = $pending
 }
@@ -683,7 +709,7 @@ Write-Host ("Enriched files updated: {0}" -f $updatedFiles) -ForegroundColor Gra
 Write-Host ("Pending semantic fields: {0}" -f $pending.Count) -ForegroundColor Gray
 $gateColor = if ($gateBlockedFiles.Count -gt 0) { 'Red' } else { 'Gray' }
 Write-Host ("Secret-redaction gate: {0} file(s) blocked" -f $gateBlockedFiles.Count) -ForegroundColor $gateColor
-Write-Host ("Input-hash cache: {0} hit(s), {1} miss(es)" -f $cacheHitCount, $cacheMissCount) -ForegroundColor Gray
+Write-Host ("Input-hash cache: {0} hit(s), {1} miss(es), {2} superseded by a corrected output" -f $cacheHitCount, $cacheMissCount, $cacheSupersededCount) -ForegroundColor Gray
 Write-Host ("Verified-fact-lock refusals: {0}" -f $globalRefusals.Count) -ForegroundColor Gray
 if ($pending.Count -gt 0) {
     Write-Host ("Pending report: {0}" -f $pendingPath) -ForegroundColor Gray

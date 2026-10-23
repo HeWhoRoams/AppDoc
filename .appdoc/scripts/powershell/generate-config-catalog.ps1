@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-config-catalog.ps1
 #
@@ -5,15 +6,21 @@
 #          config-catalog template with discovered configuration options.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) {
-    . $helpersPath
-}
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: generators use its functions further down, so a missing file must stop here
+# rather than fail later with an unrelated "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 function Import-RequiredModule {
     param(
@@ -43,7 +50,7 @@ if (-not (Test-Path $RootPath)) {
     exit 1
 }
 
-$outputPath = Join-Path $RootPath "docs\config-catalog.md"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "config-catalog.md"
 $initialized = Initialize-TemplateFile -TemplateName "config-catalog-template.md" -OutputPath $outputPath -RootPath $RootPath
 if (-not $initialized) {
     Write-Error "Failed to initialize template"
@@ -80,30 +87,10 @@ $configs = @($configData.configs | Where-Object { $_ -ne $null })
 $discoveredConfigFiles = @($configData.discoveredConfigFiles | Where-Object { $_ -ne $null })
 $envVars = @($configData.envVars | Where-Object { $_ -ne $null })
 
-function Set-AppDocFieldValue {
-    param(
-        [Parameter(Mandatory=$true)]
-        [object]$Target,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        $Value
-    )
+# Set-AppDocFieldValue: shared definition in modules/AppDoc.Determinism.psm1.
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Determinism.psm1') -ErrorAction Stop
 
-    if ($Target -is [System.Collections.IDictionary]) {
-        $Target[$Name] = $Value
-        return
-    }
-
-    $existing = $Target.PSObject.Properties[$Name]
-    if ($existing) {
-        $existing.Value = $Value
-    }
-    else {
-        Add-Member -InputObject $Target -MemberType NoteProperty -Name $Name -Value $Value -Force
-    }
-}
-
-$enrichedEvidencePath = Join-Path $RootPath "docs\evidence\config-catalog.evidence.enriched.json"
+$enrichedEvidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\config-catalog.evidence.enriched.json"
 if (Test-Path $enrichedEvidencePath) {
     try {
         $enrichedPayload = Get-Content -Path $enrichedEvidencePath -Raw | ConvertFrom-Json -Depth 80
@@ -146,8 +133,8 @@ $appDocRoot = if ($scriptRoot) { Split-Path $scriptRoot -Parent } else { $null }
 $templateFallbackPath = if ($appDocRoot) { Join-Path $appDocRoot "templates\config-catalog-template.md" } else { $null }
 $content = Get-AppDocConfigCatalogTemplateContent -RootPath $RootPath -TemplateName "config-catalog-template.md" -FallbackPath $templateFallbackPath
 $content = Update-AppDocConfigCatalogContent -Content $content -Configs $configs -DiscoveredConfigFiles $discoveredConfigFiles -EnvVars $envVars
-$content = Normalize-AppDocTemplateInstructionText -Content $content
-$content = Normalize-AppDocMarkdownStructure -Content $content
+$content = Format-AppDocTemplateInstructionText -Content $content
+$content = Format-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 

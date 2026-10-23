@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-external-calls.ps1
 #
@@ -43,21 +44,28 @@
 #          is redacted to [REDACTED] before output (defense-in-depth).
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
+
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 $ErrorActionPreference = "Stop"
 
 $extractorModule = Join-Path $PSScriptRoot "modules\AppDoc.ExternalCall.Extractor.psm1"
 if (-not (Test-Path $extractorModule)) { Write-Error "Required module not found: $extractorModule"; exit 1 }
 Import-Module $extractorModule -Force -ErrorAction Stop
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
-$outputPath   = Join-Path $RootPath "docs\extcalls.md"
-$evidencePath = Join-Path $RootPath "docs\extcalls.evidence.json"
+$outputPath   = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "extcalls.md"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "extcalls.evidence.json"
 
 Write-Host "🌐 Generating generic external-call register (outbound HTTP for non-ASP frameworks)..." -ForegroundColor Cyan
 
@@ -81,13 +89,13 @@ $evidence = New-Object System.Collections.Generic.List[object]
 $eIdx = 1
 foreach ($r in $records) {
     $id = "HTTP-$($eIdx.ToString('00'))"
-    $evidenceCell = (Md-Back $r.file) + " line " + $r.line
+    $evidenceCell = (Format-CodeSpan $r.file) + " line " + $r.line
     # Data/behavior: the epistemic tag for the URL (Literal / Inferred / Relative).
     $behavior = "Outbound HTTP call site; URL " + $r.urlKind
     $endpointRows.Add([pscustomobject]@{
         id = $id
-        endpoint = (Sanitize-AppDocExternalCallUrl -t ([string]$r.endpoint))
-        mechanism = (Sanitize-AppDocExternalCallUrl -t ([string]$r.mechanism))
+        endpoint = (ConvertTo-AppDocSafeExternalCallUrl -t ([string]$r.endpoint))
+        mechanism = (ConvertTo-AppDocSafeExternalCallUrl -t ([string]$r.mechanism))
         evidence = $evidenceCell
         behavior = $behavior
         status = "Verified"
@@ -100,8 +108,8 @@ foreach ($r in $records) {
     $evidence.Add([ordered]@{
         kind = "http-endpoint"
         id = $id
-        endpoint = (Sanitize-AppDocExternalCallUrl -t ([string]$r.endpoint))
-        mechanism = (Sanitize-AppDocExternalCallUrl -t ([string]$r.mechanism))
+        endpoint = (ConvertTo-AppDocSafeExternalCallUrl -t ([string]$r.endpoint))
+        mechanism = (ConvertTo-AppDocSafeExternalCallUrl -t ([string]$r.mechanism))
         method = [string]$r.method
         evidence = $evidenceCell
         behavior = $behavior
@@ -121,7 +129,7 @@ $lines = New-Object System.Collections.Generic.List[string]
 $lines.Add("# External Call Register"); $lines.Add(""); $lines.Add($generatedLine); $lines.Add("")
 $lines.Add("## Summary"); $lines.Add("")
 if ($endpointRows.Count -gt 0) {
-    $summaryText = "This artifact lists the outbound HTTP call sites actually present in the source, extracted by the generic framework-agnostic extractor. Each row is an outbound HTTP call site verified against the source at the cited file:line. The **Mechanism** is the calling API (e.g. `fetch()`, `requests.put`, `restTemplate.postForObject`, `client.PostAsync`); the **Data/behavior** carries the epistemic tag for the endpoint: `Literal` = a string-literal URL was captured, `Inferred` = the URL is derived from a variable/config (the base is cited when a real http(s):// literal is present in the same file; otherwise the URL is recorded as `from <variable>` and is NOT fabricated), `Relative path` = a relative path literal (base comes from client config). Any real secret in a URL is emitted as ``[REDACTED]``. Status `Verified` = the call site is present in the current source; runtime reachability of the target is Unknown."
+    $summaryText = "This artifact lists the outbound HTTP call sites actually present in the source, extracted by the generic framework-agnostic extractor. Each row is an outbound HTTP call site verified against the source at the cited file:line. The **Mechanism** is the calling API (e.g. ``fetch()``, ``requests.put``, ``restTemplate.postForObject``, ``client.PostAsync``); the **Data/behavior** carries the epistemic tag for the endpoint: ``Literal`` = a string-literal URL was captured, ``Inferred`` = the URL is derived from a variable/config (the base is cited when a real http(s):// literal is present in the same file; otherwise the URL is recorded as ``from <variable>`` and is NOT fabricated), ``Relative path`` = a relative path literal (base comes from client config). Any real secret in a URL is emitted as ``[REDACTED]``. Status ``Verified`` = the call site is present in the current source; runtime reachability of the target is Unknown."
 }
 else {
     $summaryText = "No outbound HTTP call sites were detected in this codebase by the generic extractor (fetch/axios/XMLHttpRequest/http(s).request/got for TS-JS; requests/httpx/urllib/aiohttp/http.client for Python; RestTemplate/WebClient/HttpClient/OkHttp for Java; HttpClient/WebClient/HttpWebRequest/RestClient for C#). Rows are never fabricated; section 9.4 of the master document therefore carries the honest not-detected note."
@@ -136,7 +144,7 @@ if ($endpointRows.Count -gt 0) {
     $lines.Add("| ID | Endpoint/URL | Mechanism | Source file:line | Data/behavior | Status |")
     $lines.Add("|----|--------------|-----------|------------------|---------------|--------|")
     foreach ($er in $endpointRows) {
-        $cells = @($er.id, (Md-Clean (Md-Back $er.endpoint)), (Md-Clean (Md-Back $er.mechanism)), (Md-Clean $er.evidence), (Md-Clean $er.behavior), $er.status)
+        $cells = @($er.id, (Format-MarkdownCellText (Format-CodeSpan $er.endpoint)), (Format-MarkdownCellText (Format-CodeSpan $er.mechanism)), (Format-MarkdownCellText $er.evidence), (Format-MarkdownCellText $er.behavior), $er.status)
         $lines.Add('| ' + ($cells -join ' | ') + ' |')
     }
     $lines.Add("")
@@ -147,14 +155,14 @@ $lines.Add("- Generator Version: appdoc-run-all-generators/3.0.0"); $lines.Add("
 $lines.Add("- Generated At: $generatedIso"); $lines.Add("- Profile: default"); $lines.Add("- Scope: .")
 $lines.Add("- Confidence/Inference Flags: deterministic, evidence-backed, secrets redacted")
 
-$md = ($lines -join "`r`n")
+$md = ($lines -join "`n")
 $md | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 # --- Flat evidence -------------------------------------------------------------
 $evidence | ConvertTo-Json -Depth 14 | Out-File -FilePath $evidencePath -Encoding UTF8
 
 # --- Canonical evidence (docs/evidence/extcalls.evidence.json) ------------------
-$canonDir = Join-Path $RootPath "docs\evidence"
+$canonDir = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
 if (-not (Test-Path $canonDir)) { New-Item -ItemType Directory -Path $canonDir -Force | Out-Null }
 $canonPath = Join-Path $canonDir "extcalls.evidence.json"
 $recArr = @($evidence | ForEach-Object { $_ })

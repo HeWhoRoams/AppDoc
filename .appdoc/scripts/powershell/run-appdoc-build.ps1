@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # run-appdoc-build.ps1
 #
@@ -8,33 +9,25 @@
 #          report.html, all per-artifact + evidence JSON (incl. git-ownership), pristine-report.md,
 #          and validation-report.json.
 #
-#          This is a THIN WRAPPER that ORCHESTRATES the existing pipeline — it does NOT
-#          re-implement or fork the extractors / composer / gate. Concretely it:
-#            (1) loads <target>/.appdoc/config.json (AppDoc.Config) — theme, redaction
-#                patterns, pristine floor (sensible defaults when absent -> backward-compat:
-#                a no-config target behaves exactly as today);
-#            (2) invokes the existing run-all-generators.ps1 pipeline (the real work, now
-#                including the NEW generate-git-ownership.ps1 + the composer + pristine +
-#                validation), passing the config pristineFloor through;
-#            (3) regenerates the HTML report with the CONFIG THEME (a no-op when the config
-#                is the default CMU theme -> byte-identical);
-#            (4) applies a CONFIG-DRIVEN redaction sweep to the final artifacts
-#                (config redactionPatterns -> [REDACTED]; a byte-identical no-op when the
-#                config has no patterns, i.e. the default -> backward-compatible).
+#          This is a THIN WRAPPER that ORCHESTRATES the existing pipeline; it does not
+#          re-implement the extractors / composer / gate. Steps:
+#            (1) load <target>/.appdoc/config.json (AppDoc.Config) - theme, redaction
+#                patterns, pristine floor (defaults when absent);
+#            (2) run-all-generators.ps1 (the real work: extractors, git-ownership, composer,
+#                pristine, validation);
+#            (3) second pass: composer + pristine + validation once diagrams exist;
+#            (4) HTML report with the config theme;
+#            (5) redaction sweep over the final artifacts (fail-closed);
+#            (6) optional semantic (LLM) enrichment stage (default OFF).
 #
-#          Why NOT re-run the composer: the pipeline's own composer run already reads the
-#          git-ownership evidence (generate-git-ownership.ps1 now runs in the Generation
-#          phase before the composer), and the pipeline stamps the Provenance footer AFTER
-#          the composer. Re-running the composer here would drop that provenance stamp and
-#          risk a gate regression. The wrapper therefore only touches the HTML (a
-#          presentation artifact the gate does not score) and the final redaction sweep.
+# Exit codes (see docs/adr/0003-sub-validator-failure-policy.md):
+#   0  gate passed (or -AllowGateFail was given)
+#   1  tool error (bad path, missing module, invalid config, a pipeline generator crashed,
+#      no validation report)
+#   2  gate failed: docs were written but did not pass the gate
+#   3  fail-closed stop: the redaction sweep or the semantic secret-redaction gate blocked
 #
-#          The gate pass/fail logic/threshold, the extractors' core logic, Get-SectionTable,
-#          the §1/§3/§4/§6/§8/§10 fixes, the BUILD-1 source-doc citation logic, and the
-#          pristine N/A + owner-pending logic are ALL UNCHANGED. Deterministic: the only
-#          wall-clock in the package is the provenance stamp (Generated At) applied by the
-#          pipeline (excluded from the determinism check).
-#
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true, Position=0)]
     [string]$Path,
@@ -50,8 +43,14 @@ param(
     [Parameter(Mandatory=$false)]
     [switch]$StrictValidation,
     [Parameter(Mandatory=$false)]
-    [switch]$EnableSemanticEnrich
+    [switch]$EnableSemanticEnrich,
+    [Parameter(Mandatory=$false)]
+    [switch]$AllowGateFail
 )
+
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 $ErrorActionPreference = "Stop"
 $scriptDir   = $PSScriptRoot
@@ -61,7 +60,7 @@ $configModule = Join-Path $scriptDir "modules/AppDoc.Config.psm1"
 
 if (-not (Test-Path $Path)) { Write-Error "Target path does not exist: $Path"; exit 1 }
 $RootPath = (Resolve-Path -LiteralPath $Path).Path
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host " AppDoc build  (single command)" -ForegroundColor Cyan
@@ -71,18 +70,37 @@ Write-Host "==========================================" -ForegroundColor Cyan
 # --- (1) load config (sensible defaults when absent) -------------------------
 $themePath = ''
 $redactionPatterns = @()
+$redactionRegexes = @()
 $pristineFloor = 80
+$cfg = $null
 if (Test-Path $configModule) {
-    Import-Module $configModule -Force -ErrorAction SilentlyContinue
+    Import-Module $configModule -Force -ErrorAction Stop
     $cfg = Get-AppDocConfig -RootPath $RootPath
+    if ($cfg -and $cfg.error) {
+        Write-Error "[Config] $($cfg.error). Fix the file (or remove it to use defaults); refusing to build without the operator's redaction settings." -ErrorAction Continue
+        exit 1
+    }
     if ($cfg) {
         $themePath = [string]$cfg.themePath
         $redactionPatterns = @($cfg.values.redactionPatterns | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+        $redactionRegexes = @($cfg.values.redactionRegexes | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
         $pristineFloor = [int]$cfg.values.pristineFloor
-        Write-Host "   config: $($cfg.configPath) (loaded=$([bool]$cfg.loaded))  theme=$([string]$cfg.values.theme)  pristineFloor=$pristineFloor  redactionPatterns=$($redactionPatterns.Count)" -ForegroundColor Gray
+        Write-Host "   config: $($cfg.configPath) (loaded=$([bool]$cfg.loaded))  theme=$([string]$cfg.values.theme)  pristineFloor=$pristineFloor  redactionPatterns=$($redactionPatterns.Count)  redactionRegexes=$($redactionRegexes.Count)" -ForegroundColor Gray
     }
 } else {
-    Write-Warning "AppDoc.Config module not found; using defaults (theme=cmu, pristineFloor=80)."
+    Write-Error "AppDoc.Config module not found: $configModule"; exit 1
+}
+
+# Compile operator redaction now so an invalid regex stops the build before any output is
+# written (fail-closed, exit 3).
+$secretPolicyModule = Join-Path $scriptDir "modules/AppDoc.SecretPolicy.psm1"
+try {
+    Import-Module $secretPolicyModule -Force -ErrorAction Stop
+    $operatorMatchers = Get-AppDocOperatorRedactionMatchers -Literals $redactionPatterns -Regexes $redactionRegexes
+}
+catch {
+    Write-Error "[Redaction] FAIL-CLOSED: $($_.Exception.Message)" -ErrorAction Continue
+    exit 3
 }
 
 # --- (2) run the EXISTING pipeline (the real work) ---------------------------
@@ -97,11 +115,15 @@ if ($SkipSyntaxGate) { $pipelineArgs['SkipSyntaxGate'] = $true }
 if ($StrictValidation){ $pipelineArgs['StrictValidation'] = $true }
 
 Write-Host "`n[Pipeline] running run-all-generators.ps1 (incl. git-ownership + composer + pristine + validation) ..." -ForegroundColor Cyan
+# The orchestrator's own exit code is not used: native commands it runs (git) also set
+# $LASTEXITCODE, so the value is ambiguous. The authoritative outcome is the final
+# validation-report.json, which decides the build exit code at the end of this script.
 try {
     & $orchestrator @pipelineArgs
 } catch {
-    Write-Warning "Pipeline reported a non-fatal issue: $($_.Exception.Message)"
+    Write-Warning "Pipeline reported an issue: $($_.Exception.Message)"
 }
+$global:LASTEXITCODE = 0
 
 if (-not (Test-Path $docsPath)) {
     Write-Error "Pipeline did not produce a docs directory: $docsPath"; exit 1
@@ -117,11 +139,8 @@ if (-not (Test-Path $docsPath)) {
 # validation scripts the pipeline already ran (orchestrated, not re-implemented), re-run
 # now that every artifact — including docs/diagrams/* — is present.
 #
-# Provenance-safety: the provenance policy gate checks ONLY the 5 critical per-artifact
-# .md docs (overview/api-inventory/data-model/config-catalog/build-cookbook) + the 3 JSON
-# reports — NOT application-documentation.md. The composer re-run rewrites only the
-# composed master + its flat evidence json, so no provenance stamp is lost and the gate
-# pass/fail is unchanged. This additive 2nd pass does NOT change status/overallScore
+# Provenance: the composer re-run rewrites the composed master without a footer; step
+# (4b) below re-stamps every generated doc, so the final package always carries one. This additive 2nd pass does NOT change status/overallScore
 # (both are frozen before the pristine fold); it makes the composed doc + pristine report
 # reflect the complete, diagram-populated package (section 14 PASS instead of EMPTY).
 $composer     = Join-Path $scriptDir "generate-unified-master.ps1"
@@ -154,6 +173,14 @@ if (Test-Path $htmlGen) {
     } catch { Write-Warning "HTML report generation failed (non-fatal): $($_.Exception.Message)" }
 }
 
+# --- (4b) Provenance footer on every generated doc (final stamp) -------------
+# The second composer pass above rewrote application-documentation.md without a footer;
+# stamp every generated docs/**/*.md now (idempotent; hand-authored files are skipped).
+$provenanceModule = Join-Path $scriptDir "modules/AppDoc.Provenance.psm1"
+Import-Module $provenanceModule -Force -ErrorAction Stop
+$stampedCount = Set-AppDocProvenanceFooter -RootPath $RootPath -DocsPath $docsPath -Profile $Profile
+Write-Host "[Provenance] footer stamped on $stampedCount generated Markdown file(s)." -ForegroundColor Gray
+
 # --- (5) CONFIG-DRIVEN redaction sweep (additive; no-op when no patterns) ----
 # Defense-in-depth over the FINAL composed artifacts: replace each config
 # redactionPattern with [REDACTED]. With the default config (no patterns) this is a
@@ -170,16 +197,21 @@ if (Test-Path $htmlGen) {
 # committed baselines (verified 0 hits) and every fixture -- while it
 # closes a leak that the extractor-level redaction (Protect-AppDocConfigValue) missed.
 $semanticRedactionModule = Join-Path $scriptDir "modules/AppDoc.SemanticRedaction.psm1"
+# FAIL-CLOSED: if the redaction module cannot be loaded the build stops (exit 3); it never
+# continues without the built-in URI-credential patterns.
 $uriCredPatterns = @()
-if (Test-Path $semanticRedactionModule) {
-    try {
-        Import-Module $semanticRedactionModule -Force -ErrorAction Stop
-        $uriCredPatterns = @(Get-AppDocSemanticUriCredentialPatterns)
-    }
-    catch { Write-Warning "[Redaction] could not load semantic redaction module; skipping built-in URI-credential sweep: $($_.Exception.Message)" }
+try {
+    if (-not (Test-Path $semanticRedactionModule)) { throw "module not found: $semanticRedactionModule" }
+    Import-Module $semanticRedactionModule -Force -ErrorAction Stop
+    $uriCredPatterns = @(Get-AppDocSemanticUriCredentialPatterns)
+    if ($uriCredPatterns.Count -eq 0) { throw "no URI-credential patterns returned" }
+}
+catch {
+    Write-Error "[Redaction] FAIL-CLOSED: cannot load the redaction module ($($_.Exception.Message)). The final docs were NOT swept; do not publish them." -ErrorAction Continue
+    exit 3
 }
 
-if ($redactionPatterns.Count -gt 0 -or $uriCredPatterns.Count -gt 0) {
+if ($operatorMatchers.Count -gt 0 -or $uriCredPatterns.Count -gt 0) {
     $sweepFiles = @()
     foreach ($ext in @('*.md', '*.html', '*.json')) {
         $sweepFiles += @(Get-ChildItem -Path $docsPath -Filter $ext -File -Recurse -ErrorAction SilentlyContinue)
@@ -188,20 +220,29 @@ if ($redactionPatterns.Count -gt 0 -or $uriCredPatterns.Count -gt 0) {
     foreach ($f in $sweepFiles) {
         $content = Get-Content -LiteralPath $f.FullName -Raw -ErrorAction SilentlyContinue
         if ([string]::IsNullOrWhiteSpace($content)) { continue }
+        # Hand-authored files (docs/adr/, or carrying the hand-authored marker) are not build
+        # output; rewriting them would corrupt prose such as a documented `user:pass@` example.
+        if (Test-AppDocHandAuthoredDoc -Path $f.FullName -DocsPath $docsPath -Content $content) { continue }
         $orig = $content
-        foreach ($pat in $redactionPatterns) {
-            $content = [regex]::Replace($content, [regex]::Escape([string]$pat), '[REDACTED]')
+        # Vendored third-party blocks (e.g. the inlined Mermaid library in report.html) are
+        # skipped: they cannot hold target secrets, and the regexes would corrupt them.
+        $parts = [regex]::Split($content, '(/\*appdoc-vendor:begin [a-z0-9-]+\*/.*?/\*appdoc-vendor:end [a-z0-9-]+\*/)', [System.Text.RegularExpressions.RegexOptions]::Singleline)
+        for ($pi = 0; $pi -lt $parts.Count; $pi++) {
+            if ($parts[$pi].StartsWith('/*appdoc-vendor:begin ')) { continue }
+            # Operator redaction: redactionPatterns (literal values) + redactionRegexes.
+            $parts[$pi] = Invoke-AppDocOperatorRedaction -Text $parts[$pi] -Matchers $operatorMatchers
+            # Built-in URI-credential sweep (value-scoped; single source of truth = semantic module).
+            foreach ($uriPat in $uriCredPatterns) {
+                $parts[$pi] = [regex]::Replace($parts[$pi], $uriPat, '[REDACTED]')
+            }
         }
-        # Built-in URI-credential sweep (value-scoped; single source of truth = semantic module).
-        foreach ($uriPat in $uriCredPatterns) {
-            $content = [regex]::Replace($content, $uriPat, '[REDACTED]')
-        }
+        $content = -join $parts
         if ($content -cne $orig) {
             $content | Out-File -LiteralPath $f.FullName -Encoding UTF8 -NoNewline
             $changed++
         }
     }
-    Write-Host "[Redaction] config redactionPatterns=$($redactionPatterns.Count) uriCredPatterns=$($uriCredPatterns.Count); $changed file(s) swept." -ForegroundColor Gray
+    Write-Host "[Redaction] config redactionPatterns=$($redactionPatterns.Count) redactionRegexes=$($redactionRegexes.Count) uriCredPatterns=$($uriCredPatterns.Count); $changed file(s) swept." -ForegroundColor Gray
 } else {
     Write-Host "[Redaction] no config redactionPatterns -> sweep is a no-op (built-in extractors still redact known secrets)." -ForegroundColor Gray
 }
@@ -232,19 +273,18 @@ if ($semEnable) {
         try {
             # -SkipGate: the enrichment bootstrap's own ci-enrichment-gate.ps1 is a
             # separate legacy gate; the authoritative documentation gate is the one the
-            # pipeline already ran (and -SkipReRender keeps the gate-scored artifacts
-            # untouched). -SkipReRender: do not re-render the 4 .md catalogs.
-            # We do NOT read $LASTEXITCODE after this .ps1 call: it is only updated by
-            # native executables, so it would observe a STALE value from a prior native
-            # command (e.g. git in a non-repo) and false-alarm. A real stage failure
-            # (including the fail-closed secret-redaction gate) throws, which the catch
-            # below surfaces as a warning without clobbering the deterministic output.
+            # pipeline already ran. -SkipReRender keeps the 4 gate-scored .md catalogs
+            # untouched. A fail-closed secret-redaction block throws; it stops the build
+            # with exit 3 (the deterministic docs remain, the LLM input is NOT written).
             & $enrichScript -RootPath $RootPath -SkipGate -SkipReRender
         } catch {
-            # Fail-closed: a secret-redaction gate block (or any stage failure) surfaces
-            # as a warning here; it does NOT clobber the deterministic-only output.
+            if ($_.Exception.Message -match 'SECRET-REDACTION HARD GATE') {
+                Write-Error "[SemanticEnrich] FAIL-CLOSED: $($_.Exception.Message)" -ErrorAction Continue
+                exit 3
+            }
             Write-Warning "Semantic enrichment stage failed: $($_.Exception.Message)"
         }
+        $global:LASTEXITCODE = 0
     }
     else {
         Write-Warning "Semantic enrichment script not found: $enrichScript (stage skipped)."
@@ -254,14 +294,56 @@ else {
     Write-Host "[SemanticEnrich] OFF (default) -> no-op; deterministic-only output is exactly today's (no LLM call, no enrichment applied)." -ForegroundColor Gray
 }
 
-# --- summary -----------------------------------------------------------------
+# --- (7) line endings: UTF-8 (no BOM), LF, one final newline -----------------
+# Matches .gitattributes (*.md eol=lf). ConvertTo-Json / Out-File emit CRLF on Windows,
+# so this last pass is what makes the output identical on every OS.
+$lfCount = Convert-AppDocDocsLineEndings -DocsPath $docsPath
+Write-Host "[LineEndings] normalized $lfCount file(s) to LF." -ForegroundColor Gray
+
+# --- summary + exit code -----------------------------------------------------
 Write-Host "`n==========================================" -ForegroundColor Cyan
 Write-Host " AppDoc build complete: $docsPath" -ForegroundColor Cyan
-if (Test-Path (Join-Path $docsPath 'validation-report.json')) {
-    try {
-        $vr = Get-Content -LiteralPath (Join-Path $docsPath 'validation-report.json') -Raw | ConvertFrom-Json -Depth 20
-        $pristineSub = if ($vr.PSObject.Properties['pristine']) { $vr.pristine.subScore } else { 'n/a' }
-        Write-Host ("   gate status={0}  overallScore={1}  pristine sub-score={2}" -f $vr.status, $vr.overallScore, $pristineSub) -ForegroundColor Green
-    } catch { Write-Warning "Could not read validation-report.json for the summary." }
+$reportPath = Join-Path $docsPath 'validation-report.json'
+if (-not (Test-Path $reportPath)) {
+    Write-Error "No validation-report.json was produced; the build cannot be trusted." -ErrorAction Continue
+    exit 1
 }
+try {
+    $vr = Get-Content -LiteralPath $reportPath -Raw | ConvertFrom-Json -Depth 20
+} catch {
+    Write-Error "validation-report.json is unreadable: $($_.Exception.Message)" -ErrorAction Continue
+    exit 1
+}
+$pristineSub = if ($vr.PSObject.Properties['pristine']) { $vr.pristine.subScore } else { 'n/a' }
+Write-Host ("   gate status={0}  overallScore={1}  pristine sub-score={2}" -f $vr.status, $vr.overallScore, $pristineSub) -ForegroundColor Green
 Write-Host "==========================================" -ForegroundColor Cyan
+
+# A generator that crashed is a tool error even when the gate passes: the docs it should have
+# written are missing or stale, and the gate cannot always tell. (This used to be a warning only.)
+$diagPath = Join-Path $docsPath 'diagnostics-report.json'
+if (Test-Path -LiteralPath $diagPath) {
+    try {
+        $diag = Get-Content -LiteralPath $diagPath -Raw | ConvertFrom-Json -Depth 20
+        $failedScripts = @($diag.metadata.scriptFailures | Where-Object { $_ })
+    }
+    catch {
+        Write-Error "diagnostics-report.json is unreadable: $($_.Exception.Message)" -ErrorAction Continue
+        exit 1
+    }
+    if ($failedScripts.Count -gt 0) {
+        foreach ($f in $failedScripts) { Write-Warning ("Generator failed: {0} ({1})" -f $f.script, (([string]$f.error) -split "`n")[0]) }
+        Write-Error "$($failedScripts.Count) generator(s) failed; the output is incomplete (exit 1)." -ErrorAction Continue
+        exit 1
+    }
+}
+
+$gatePassed = ($vr.status -eq 'pass') -or ((-not $StrictValidation) -and $vr.status -eq 'pass-with-weak-coverage')
+if (-not $gatePassed) {
+    if ($AllowGateFail) {
+        Write-Warning "Gate status is '$($vr.status)'; continuing because -AllowGateFail was given."
+        exit 0
+    }
+    Write-Warning "Gate status is '$($vr.status)'. The docs were written but did not pass the gate (exit 2)."
+    exit 2
+}
+exit 0

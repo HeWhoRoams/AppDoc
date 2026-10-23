@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-debt-register.ps1
 #
@@ -5,15 +6,21 @@
 #          debt-register template with discovered debt items and priorities.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) {
-    . $helpersPath
-}
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: generators use its functions further down, so a missing file must stop here
+# rather than fail later with an unrelated "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
 if (-not (Test-Path $scopeModule)) {
@@ -57,7 +64,7 @@ if (-not (Test-Path $RootPath)) {
     exit 1
 }
 
-$outputPath = Join-Path $RootPath "docs\debt-register.md"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "debt-register.md"
 $initialized = Initialize-TemplateFile -TemplateName "tech-debt-register-template.md" -OutputPath $outputPath -RootPath $RootPath
 if (-not $initialized) {
     Write-Error "Failed to initialize template"
@@ -73,30 +80,10 @@ if ($debtData -and $debtData.debts) {
     $debts = @()
 }
 
-function Set-AppDocFieldValue {
-    param(
-        [Parameter(Mandatory=$true)]
-        [object]$Target,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        $Value
-    )
+# Set-AppDocFieldValue: shared definition in modules/AppDoc.Determinism.psm1.
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Determinism.psm1') -ErrorAction Stop
 
-    if ($Target -is [System.Collections.IDictionary]) {
-        $Target[$Name] = $Value
-        return
-    }
-
-    $existing = $Target.PSObject.Properties[$Name]
-    if ($existing) {
-        $existing.Value = $Value
-    }
-    else {
-        Add-Member -InputObject $Target -MemberType NoteProperty -Name $Name -Value $Value -Force
-    }
-}
-
-$enrichedEvidencePath = Join-Path $RootPath "docs\evidence\debt-register.evidence.enriched.json"
+$enrichedEvidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\debt-register.evidence.enriched.json"
 if (Test-Path $enrichedEvidencePath) {
     try {
         $enrichedPayload = Get-Content -Path $enrichedEvidencePath -Raw | ConvertFrom-Json -Depth 80
@@ -137,8 +124,8 @@ if (Test-Path $enrichedEvidencePath) {
 Write-Progress -Activity "Generating Technical Debt Register" -Status "Populating template..." -PercentComplete 60
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocDebtRegisterContent -Content $content -Debts $debts
-$content = Normalize-AppDocTemplateInstructionText -Content $content
-$content = Normalize-AppDocMarkdownStructure -Content $content
+$content = Format-AppDocTemplateInstructionText -Content $content
+$content = Format-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 

@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-evidence-register.ps1
 #
@@ -15,10 +16,15 @@
 #          docs/evidence/*.evidence.json so it works whether or not enrichment has
 #          been run. Deterministic. No network. No LLM.
 #
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
+
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 $epistemicModule = Join-Path $PSScriptRoot "modules\AppDoc.Epistemic.psm1"
 if (-not (Test-Path $epistemicModule)) {
@@ -26,15 +32,17 @@ if (-not (Test-Path $epistemicModule)) {
     exit 1
 }
 Import-Module $epistemicModule -Force -ErrorAction Stop
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 if (-not (Test-Path $RootPath)) {
     Write-Error "Root path does not exist: $RootPath"
     exit 1
 }
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) {
     New-Item -Path $docsPath -ItemType Directory -Force | Out-Null
 }
@@ -50,6 +58,13 @@ if (Test-Path $evidencePath) {
     $enriched = @(Get-ChildItem -Path $evidencePath -Filter "*.evidence.enriched.json" -File -ErrorAction SilentlyContinue | Sort-Object Name)
     $base = @(Get-ChildItem -Path $evidencePath -Filter "*.evidence.json" -File -ErrorAction SilentlyContinue | Sort-Object Name)
 }
+# Reports ABOUT the generated documentation are not source evidence and are written after
+# this register (pristine scores the composed doc). Including them made a re-run list the
+# previous run's report rows, so a first run and a re-run differed.
+$derivedReportArtifacts = @('pristine')
+$isSourceEvidence = { param($f) $k = ([IO.Path]::GetFileNameWithoutExtension($f.Name) -replace '\.evidence(\.enriched)?$', ''); $derivedReportArtifacts -notcontains $k }
+$enriched = @($enriched | Where-Object { & $isSourceEvidence $_ })
+$base = @($base | Where-Object { & $isSourceEvidence $_ })
 
 # Build an artifact-keyed list of source files to read (enriched wins over base).
 $enrichedArtifacts = @{}
@@ -64,7 +79,7 @@ foreach ($f in $base) {
     else { $filesToRead += $f.FullName }
 }
 # Include enriched files that have no base counterpart.
-foreach ($key in $enrichedArtifacts.Keys) {
+foreach ($key in @($enrichedArtifacts.Keys | Sort-Object)) {
     $covered = $false
     foreach ($f in $base) {
         $bkey = [IO.Path]::GetFileNameWithoutExtension($f.Name) -replace '\.evidence$', ''
@@ -135,7 +150,7 @@ foreach ($rec in $allRecords) {
     if ($null -eq $statusTally[$status]) { $statusTally[$status] = 0 }
     $statusTally[$status] = $statusTally[$status] + 1
 
-    $rowLines += ('| ' + (Esc-MdCell $finding) + ' | ' + (Esc-MdCell $status) + ' | ' + (Esc-MdCell $artifact) + ' | ' + (Esc-MdCell $limitation) + ' |')
+    $rowLines += ('| ' + (ConvertTo-AppDocMarkdownCell $finding) + ' | ' + (ConvertTo-AppDocMarkdownCell $status) + ' | ' + (ConvertTo-AppDocMarkdownCell $artifact) + ' | ' + (ConvertTo-AppDocMarkdownCell $limitation) + ' |')
 }
 
 # --- framework note ------------------------------------------------------------

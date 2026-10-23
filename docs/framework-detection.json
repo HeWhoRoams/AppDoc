@@ -1,91 +1,49 @@
 [
   {
-    "language": "C#",
-    "versionRange": "2.1+",
-    "framework": "ASP.NET Core",
     "detectionSignals": [
       "*.csproj",
       "[ApiController]",
       "MapControllers"
     ],
+    "language": "C#",
+    "versionRange": "2.1+",
+    "framework": "ASP.NET Core",
     "coveragePercent": 90,
-    "supportLevel": "full",
-    "provenance": {
-      "generatorVersion": "appdoc-run-all-generators/3.0.0",
-      "commitHash": "85946f7",
-      "generatedAt": "2026-10-17T18:41:14-04:00",
-      "profile": "default",
-      "scope": ".",
-      "confidenceInferenceFlags": [
-        "deterministic",
-        "evidence-backed"
-      ]
-    }
+    "supportLevel": "full"
   },
   {
-    "language": "C#",
-    "versionRange": "5.x",
-    "framework": "ASP.NET MVC 5",
     "detectionSignals": [
       "System.Web.Mvc",
       "*Controller.cs"
     ],
+    "language": "C#",
+    "versionRange": "5.x",
+    "framework": "ASP.NET MVC 5",
     "coveragePercent": 75,
-    "supportLevel": "partial",
-    "provenance": {
-      "generatorVersion": "appdoc-run-all-generators/3.0.0",
-      "commitHash": "85946f7",
-      "generatedAt": "2026-10-17T18:41:14-04:00",
-      "profile": "default",
-      "scope": ".",
-      "confidenceInferenceFlags": [
-        "deterministic",
-        "evidence-backed"
-      ]
-    }
+    "supportLevel": "partial"
   },
   {
+    "detectionSignals": [
+      "requirements.txt:flask",
+      "@app.route",
+      "app = Flask(",
+      "create_app"
+    ],
     "language": "Python",
     "versionRange": "2.x+",
     "framework": "Flask",
-    "detectionSignals": [
-      "requirements.txt:flask",
-      "@app.route"
-    ],
     "coveragePercent": 65,
-    "supportLevel": "partial",
-    "provenance": {
-      "generatorVersion": "appdoc-run-all-generators/3.0.0",
-      "commitHash": "85946f7",
-      "generatedAt": "2026-10-17T18:41:14-04:00",
-      "profile": "default",
-      "scope": ".",
-      "confidenceInferenceFlags": [
-        "deterministic",
-        "evidence-backed"
-      ]
-    }
+    "supportLevel": "partial"
   },
   {
-    "language": "Java",
-    "versionRange": "2.x+",
-    "framework": "Spring Boot",
     "detectionSignals": [
       "pom.xml:spring-boot",
       "@RestController"
     ],
+    "language": "Java",
+    "versionRange": "2.x+",
+    "framework": "Spring Boot",
     "coveragePercent": 60,
-    "supportLevel": "partial",
-    "provenance": {
-      "generatorVersion": "appdoc-run-all-generators/3.0.0",
-      "commitHash": "85946f7",
-      "generatedAt": "2026-10-17T18:41:14-04:00",
-      "profile": "default",
-      "scope": ".",
-      "confidenceInferenceFlags": [
-        "deterministic",
-        "evidence-backed"
-      ]
-    }
+    "supportLevel": "partial"
   }
 ]

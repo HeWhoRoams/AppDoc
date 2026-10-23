@@ -1,13 +1,21 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 $evidenceGraphModulePath = Join-Path $PSScriptRoot "modules\AppDoc.EvidenceGraph.psm1"
 if (Test-Path $evidenceGraphModulePath) {
@@ -135,7 +143,7 @@ if (-not (Test-Path $RootPath)) {
     throw "Root path does not exist: $RootPath"
 }
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) {
     Write-Host "Integrity gate skipped: docs directory not found at $docsPath" -ForegroundColor Yellow
     exit 0

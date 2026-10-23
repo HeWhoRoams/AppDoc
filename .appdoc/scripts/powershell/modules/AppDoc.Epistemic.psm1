@@ -175,7 +175,7 @@ function Resolve-AppDocEpistemicStatus {
     return "Unknown"
 }
 
-function Tag-Claim {
+function Add-AppDocClaimTag {
     <#
     .SYNOPSIS
     Tags a single documentation claim with an epistemic status.
@@ -195,7 +195,7 @@ function Tag-Claim {
       the generators and the gate); -Claim and -Evidence are filled from the
       record when left empty.
     .EXAMPLE
-    Tag-Claim -Claim "120-minute session timeout" -Evidence "portal/global.asa:14" -Status "Verified"
+    Add-AppDocClaimTag -Claim "120-minute session timeout" -Evidence "portal/global.asa:14" -Status "Verified"
     #>
     [CmdletBinding()]
     param(
@@ -221,7 +221,7 @@ function Tag-Claim {
     if (-not [string]::IsNullOrWhiteSpace($Status)) {
         $normalized = $Status.Trim()
         if ($allowed -notcontains $normalized) {
-            throw "Tag-Claim: invalid epistemic status '$Status'. Allowed: $($allowed -join ', ')."
+            throw "Add-AppDocClaimTag: invalid epistemic status '$Status'. Allowed: $($allowed -join ', ')."
         }
         $finalStatus = $normalized
     }
@@ -375,6 +375,10 @@ function Assert-AllClaimsTagged {
     return $true
 }
 
-Export-ModuleMember -Function Tag-Claim, Get-EpistemicCoverage, Assert-AllClaimsTagged, `
+Export-ModuleMember -Function Add-AppDocClaimTag, Get-EpistemicCoverage, Assert-AllClaimsTagged, `
     Get-AppDocEpistemicAllowedStatuses, Test-AppDocEpistemicStatus, `
     Resolve-AppDocEpistemicStatus, Resolve-AppDocEpistemicFile, Resolve-AppDocEpistemicLine
+
+# Deprecated names (unapproved verbs), kept as aliases until AppDoc 1.2.0.
+Set-Alias -Name 'Tag-Claim' -Value 'Add-AppDocClaimTag'
+Export-ModuleMember -Alias @('Tag-Claim')

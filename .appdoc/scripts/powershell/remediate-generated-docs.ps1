@@ -1,14 +1,24 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
-$helpersPath = Join-Path $PSScriptRoot "template-helpers.ps1"
-if (Test-Path $helpersPath) {
-    . $helpersPath
-}
 
-$docsPath = Join-Path $RootPath "docs"
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.SecretPolicy.psm1') -Force -ErrorAction Stop
+$credentialKeyPattern = '(?i)(' + (Get-AppDocCredentialKeywordPattern) + ')'
+
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: generators use its functions further down, so a missing file must stop here
+# rather than fail later with an unrelated "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
+
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) {
     Write-Error "docs directory not found: $docsPath"
     exit 1
@@ -81,7 +91,7 @@ function Set-AppDocSummarySection {
     $summaryText = Get-AppDocSummaryText -DocFileName $DocFileName
     if ([string]::IsNullOrWhiteSpace($summaryText)) { return $Markdown }
 
-    $section = "## Summary`r`n`r`n$summaryText`r`n"
+    $section = "## Summary`n`n$summaryText`n"
     $updated = [regex]::Replace($Markdown, '(?is)\r?\n##\s+Summary\s*\r?\n.*?(?=\r?\n##\s+|\z)', "")
     $updated = [regex]::Replace($updated, '(?is)\r?\n##\s+Executive Summary\s*\r?\n.*?(?=\r?\n##\s+|\z)', "")
     $updated = [regex]::Replace($updated, '(?is)\r?\n##\s+Plain Language Summary\s*\r?\n.*?(?=\r?\n##\s+|\z)', "")
@@ -92,7 +102,7 @@ function Set-AppDocSummarySection {
     if ($generatedRegex.IsMatch($updated)) {
         return $generatedRegex.Replace($updated, [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Value + "`r`n" + $section + "`r`n")
+            return ($m.Value + "`n" + $section + "`n")
         }, 1)
     }
 
@@ -100,11 +110,11 @@ function Set-AppDocSummarySection {
     if ([regex]::IsMatch($updated, $titlePattern)) {
         return [regex]::Replace($updated, $titlePattern, [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Value + "`r`n" + $section + "`r`n")
+            return ($m.Value + "`n" + $section + "`n")
         }, 1)
     }
 
-    return ($section + "`r`n" + $updated)
+    return ($section + "`n" + $updated)
 }
 
 function Add-AppDocEvidenceTraceabilitySection {
@@ -120,7 +130,7 @@ function Add-AppDocEvidenceTraceabilitySection {
     $artifact = Get-AppDocArtifactFromDocFile -DocFileName $DocFileName
     if (-not $artifact) { return $Markdown }
 
-    $evidencePath = Join-Path (Join-Path (Join-Path $RootPath 'docs') 'evidence') ("{0}.evidence.json" -f $artifact)
+    $evidencePath = Join-Path (Join-Path ((Get-AppDocDocsPath -RootPath $RootPath)) 'evidence') ("{0}.evidence.json" -f $artifact)
     if (-not (Test-Path $evidencePath)) { return $Markdown }
 
     try {
@@ -151,10 +161,10 @@ function Add-AppDocEvidenceTraceabilitySection {
     $updated = [regex]::Replace($Markdown, '(?is)\r?\n##\s+Evidence Traceability\s*\r?\n.*?(?=\r?\n##\s+|\r?\n---\s*\r?\n|\z)', "")
 
     if ($updated -match '(?m)^---\s*$') {
-        return [regex]::Replace($updated, '(?m)^---\s*$', ($traceabilitySection + "`r`n---"), 1)
+        return [regex]::Replace($updated, '(?m)^---\s*$', ($traceabilitySection + "`n---"), 1)
     }
 
-    return ($updated.TrimEnd() + $traceabilitySection + "`r`n`r`n---")
+    return ($updated.TrimEnd() + $traceabilitySection + "`n`n---")
 }
 
 function Protect-AppDocSensitiveMarkdown {
@@ -196,7 +206,7 @@ function Protect-AppDocSensitiveMarkdown {
 
         $keyCell = ($cells[0] -replace '`', '')
         $typeCell = if ($cells.Count -ge 2) { ($cells[1] -replace '`', '') } else { '' }
-        $isSensitive = ($keyCell -match '(?i)password|passwd|pwd|secret|token|api[_-]?key|client[_-]?secret|private[_-]?key|connection\s*string' -or
+        $isSensitive = ($keyCell -match $credentialKeyPattern -or
                        $typeCell -match '(?i)connection\s*string')
 
         $defaultIndex = -1
@@ -219,16 +229,16 @@ function Protect-AppDocSensitiveMarkdown {
         [void]$outputLines.Add($normalizedRow)
     }
 
-    return ($outputLines -join "`r`n")
+    return ($outputLines -join "`n")
 }
 
 foreach ($file in $docFiles) {
     $content = Get-Content -Path $file -Raw
     $fileName = [System.IO.Path]::GetFileName($file)
 
-    $content = [regex]::Replace($content, '(?is)\r?\n##\s+Population Guide\s*\r?\n.*?(?=\r?\n---\s*\r?\n|\z)', "`r`n")
-    if (Get-Command Normalize-AppDocTemplateInstructionText -ErrorAction SilentlyContinue) {
-        $content = Normalize-AppDocTemplateInstructionText -Content $content
+    $content = [regex]::Replace($content, '(?is)\r?\n##\s+Population Guide\s*\r?\n.*?(?=\r?\n---\s*\r?\n|\z)', "`n")
+    if (Get-Command Format-AppDocTemplateInstructionText -ErrorAction SilentlyContinue) {
+        $content = Format-AppDocTemplateInstructionText -Content $content
     }
 
     if ($fileName -ieq 'config-catalog.md') {
@@ -238,12 +248,12 @@ foreach ($file in $docFiles) {
     $content = Set-AppDocSummarySection -Markdown $content -DocFileName $fileName
     $content = Add-AppDocEvidenceTraceabilitySection -Markdown $content -RootPath $RootPath -DocFileName $fileName
 
-    if (Get-Command Normalize-AppDocSingleSummarySection -ErrorAction SilentlyContinue) {
-        $content = Normalize-AppDocSingleSummarySection -Content $content
+    if (Get-Command Format-AppDocSingleSummarySection -ErrorAction SilentlyContinue) {
+        $content = Format-AppDocSingleSummarySection -Content $content
     }
 
     $content = [regex]::Replace($content, '(?im)^\s*\*\*Generated by AppDoc Framework\*\*\s*$', '**Generated by AppDoc Framework**')
-    $content = [regex]::Replace($content, '(?s)(\r?\n){3,}', "`r`n`r`n")
+    $content = [regex]::Replace($content, '(?s)(\r?\n){3,}', "`n`n")
 
     $content | Out-File -FilePath $file -Encoding UTF8 -NoNewline
 }

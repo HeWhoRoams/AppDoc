@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-build-cookbook.ps1
 #
@@ -8,21 +9,25 @@
 # Output: Populates docs/build-cookbook.md from template
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # Import template helpers with explicit error handling
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (-not (Test-Path $helpersPath)) {
-    Write-Error "Required helpers file not found: $helpersPath"
-    exit 1
-}
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: generators use its functions further down, so a missing file must stop here
+# rather than fail later with an unrelated "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
 . $helpersPath
-if (-not (Get-Command Normalize-AppDocMarkdownStructure -ErrorAction SilentlyContinue)) {
-    Write-Error "Failed to import Normalize-AppDocMarkdownStructure from $helpersPath. File may be corrupt or missing required functions."
+if (-not (Get-Command Format-AppDocMarkdownStructure -ErrorAction SilentlyContinue)) {
+    Write-Error "Failed to import Format-AppDocMarkdownStructure from $helpersPath. File may be corrupt or missing required functions."
     exit 1
 }
 
@@ -71,7 +76,7 @@ if (-not (Test-Path $RootPath)) {
 }
 
 # Initialize template
-$outputPath = Join-Path (Join-Path $RootPath 'docs') 'build-cookbook.md'
+$outputPath = Join-Path ((Get-AppDocDocsPath -RootPath $RootPath)) 'build-cookbook.md'
 $initialized = Initialize-TemplateFile -TemplateName "build-cookbook-template.md" -OutputPath $outputPath -RootPath $RootPath
 
 if (-not $initialized) {
@@ -102,8 +107,8 @@ Write-Progress -Activity "Generating Build Cookbook" -Status "Populating templat
 try {
     $content = Get-Content -Path $outputPath -Raw
     $content = Update-AppDocBuildCookbookContent -Content $content -Commands $commands -Prerequisites $prerequisites -CicdInfo $cicdInfo
-    $content = Normalize-AppDocTemplateInstructionText -Content $content
-    $content = Normalize-AppDocMarkdownStructure -Content $content
+    $content = Format-AppDocTemplateInstructionText -Content $content
+    $content = Format-AppDocMarkdownStructure -Content $content
     $content = Add-GenerationMetadata -Content $content
     $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 } catch {

@@ -43,3 +43,13 @@ describes.
 
 - ADR 0001 — redaction externalization (the security boundary this docs-as-code artifact must honor:
   committed docs never contain a secret's *value*).
+
+## Amendment (2026-10-22): which files get a footer
+
+The build now stamps the `## Provenance` footer as its last Markdown step, recursively over
+`docs/**`, so every generated file (including `diagrams/` and `evidence/` summaries, and the
+composed master after its second pass) carries exactly one footer as its final section. Hand-authored
+files are left untouched: everything under `docs/adr/`, and any file containing the line
+`<!-- appdoc:hand-authored -->`. Generated files are written as UTF-8 without BOM with LF line
+endings, matching `.gitattributes`. (Implementation: `AppDoc.Provenance.psm1`; test:
+`Provenance.Footer.Tests.ps1`.)

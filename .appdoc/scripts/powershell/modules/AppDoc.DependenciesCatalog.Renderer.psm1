@@ -368,7 +368,7 @@ function Update-AppDocDependenciesCatalogContent {
         '(?s)(##\s+Security Considerations\s*\r?\n\r?\n).*?(?=\r?\n##\s+Licensing\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "This artifact does not currently include automated CVE/advisory enrichment. Use dependency scanning tools in CI and prioritize packages with multiple versions or broad usage footprint for security review." + "`r`n")
+            return ($m.Groups[1].Value + "This artifact does not currently include automated CVE/advisory enrichment. Use dependency scanning tools in CI and prioritize packages with multiple versions or broad usage footprint for security review." + "`n")
         }
     )
 
@@ -377,7 +377,7 @@ function Update-AppDocDependenciesCatalogContent {
         '(?s)(##\s+Upgrade Recommendations\s*\r?\n\r?\n).*?(?=(\r?\n##\s+)|\z)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "Focus upgrades on packages that appear in many projects, show version divergence, or sit on critical execution paths. Roll upgrades in small batches and validate build/test outputs after each change set." + "`r`n")
+            return ($m.Groups[1].Value + "Focus upgrades on packages that appear in many projects, show version divergence, or sit on critical execution paths. Roll upgrades in small batches and validate build/test outputs after each change set." + "`n")
         }
     )
 

@@ -1,12 +1,18 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # Validate data model
 Write-Progress -Activity "Validating Data Model" -Status "Checking model..." -PercentComplete 0
 
-$modelPath = Join-Path $RootPath "docs\data-model.md"
+$modelPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "data-model.md"
 
 if (-not (Test-Path $modelPath)) {
     Write-Error "Data model file not found at $modelPath"
@@ -22,7 +28,7 @@ if ($content -notmatch "# Data Model") {
 
 # Count models from evidence first, fallback to rendered table rows.
 $modelCount = 0
-$evidencePath = Join-Path $RootPath "docs\evidence\data-model.evidence.json"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\data-model.evidence.json"
 if (Test-Path $evidencePath) {
     try {
         $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json

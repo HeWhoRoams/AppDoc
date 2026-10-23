@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 function Invoke-AppDocDataModelAstParserScript {
     [CmdletBinding()]
     param(
@@ -35,7 +38,7 @@ function Invoke-AppDocDataModelAstParserScript {
         Write-Verbose "Unknown AST parser script: $ScriptName. No cache file mapping found."
         return $null
     }
-    $cachePath = Join-Path $RootPath (Join-Path "docs" $cacheFile)
+    $cachePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) $cacheFile
     if (-not (Test-Path $cachePath)) {
         return $null
     }
@@ -160,19 +163,11 @@ function Get-AppDocDataModelSourceFiles {
 }
 
 function Get-AppDocDataModelRelativePath {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$RootPath,
-        [Parameter(Mandatory=$true)]
-        [string]$Path
-    )
-
-    if (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue) {
-        return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-    }
-
-    return $Path.Replace($RootPath, "").TrimStart([char[]]@(92, 47))
+    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
+    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
+    param([string]$RootPath, [string]$Path)
+    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
+    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
 }
 
 function Test-AppDocDataModelCandidate {

@@ -1,3 +1,5 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
@@ -45,7 +47,7 @@ foreach ($fileName in $configFiles) {
                         type = "json_config"
                     }
                 }
-            } catch {}
+            } catch { Write-Warning ("JSON config file could not be parsed: {0}" -f $_.Exception.Message) }
         }
     }
 }

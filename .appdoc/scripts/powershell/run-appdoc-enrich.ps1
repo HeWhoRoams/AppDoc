@@ -1,3 +1,5 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
@@ -13,6 +15,10 @@ param(
     [switch]$SkipReRender
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $evidenceModulePath = Join-Path $PSScriptRoot "modules\AppDoc.Evidence.psm1"
 if (-not (Test-Path $evidenceModulePath)) {
     Write-Error "Required module not found: $evidenceModulePath"
@@ -25,7 +31,7 @@ if (-not (Test-Path $RootPath)) {
     exit 1
 }
 
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 $evidenceDir = Join-Path $docsPath "evidence"
 if (-not (Test-Path $evidenceDir)) {
     Write-Error "Evidence directory not found: $evidenceDir"
@@ -135,7 +141,7 @@ foreach ($file in $evidenceFiles) {
         metadata = [ordered]@{
             enriched = $true
             enrichmentMode = "schema-bootstrap"
-            enrichmentPrompt = ".github/prompts/appdoc.enrich.prompt.md"
+            enrichmentPrompt = "references/enrichment-contract.md"
             sourceEvidence = $file.Name
             requiresSemanticEnrichment = $true
         }
@@ -165,12 +171,10 @@ if (-not $DryRun) {
             throw "Semantic enrichment script not found: $semanticApplyScript"
         }
 
-        # A .ps1 child that `throw`s (e.g. the fail-closed secret-redaction gate) propagates
-        # the terminating error to this caller under $ErrorActionPreference=Stop. We do NOT
-        # rely on $LASTEXITCODE here -- it is only updated by native executables, not .ps1
-        # calls, so reading it would observe a STALE value (a prior native cmd like git can
-        # leave it non-zero) and false-alarm. Natural throw-propagation is the correct,
-        # fail-closed signal; the caller (run-appdoc-build.ps1) catches it and reports it.
+        # The semantic stage signals the fail-closed secret-redaction gate by THROWING; the
+        # terminating error propagates to this caller under $ErrorActionPreference=Stop and
+        # run-appdoc-build.ps1 turns it into exit code 3. (The script never uses `exit N`,
+        # so $LASTEXITCODE carries no information here.)
         & $semanticApplyScript -RootPath $RootPath
     }
 

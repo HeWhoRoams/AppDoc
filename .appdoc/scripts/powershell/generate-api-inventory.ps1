@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-api-inventory.ps1
 #
@@ -5,15 +6,21 @@
 #          the api-inventory template.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) {
-    . $helpersPath
-}
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: generators use its functions further down, so a missing file must stop here
+# rather than fail later with an unrelated "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
 if (-not (Test-Path $scopeModule)) { Write-Error "Required module not found: $scopeModule"; exit 1 }
@@ -147,7 +154,7 @@ function Write-AppDocApiInventoryAppendix {
         [array]$Endpoints
     )
 
-    $appendixPath = Join-Path $RootPath "docs\api-inventory.appendix.md"
+    $appendixPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "api-inventory.appendix.md"
     $appendixDir = Split-Path $appendixPath -Parent
     if (-not (Test-Path $appendixDir)) {
         New-Item -ItemType Directory -Path $appendixDir -Force | Out-Null
@@ -170,7 +177,7 @@ function Write-AppDocApiInventoryAppendix {
     # honest "Purpose unclear from available evidence" fallback (never fabricated). When
     # the enriched evidence is absent (enrichment OFF) this whole projection is a NO-OP
     # and the appendix stays byte-identical to the deterministic-only output.
-    $enrichedApiPath = Join-Path $RootPath "docs\evidence\api-inventory.evidence.enriched.json"
+    $enrichedApiPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\api-inventory.evidence.enriched.json"
     $hasEnrichedApi = $false
     $apiBusinessPurposeLookup = @{}
     if (Test-Path $enrichedApiPath) {
@@ -262,7 +269,7 @@ function Write-AppDocApiInventoryAppendix {
         "---",
         "",
         "**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))"
-    ) -join "`r`n"
+    ) -join "`n"
 
     $appendixContent | Out-File -FilePath $appendixPath -Encoding UTF8 -NoNewline
     return $appendixPath
@@ -275,7 +282,7 @@ if (-not (Test-Path $RootPath)) {
     exit 1
 }
 
-$outputPath = Join-Path $RootPath "docs\api-inventory.md"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "api-inventory.md"
 $initialized = Initialize-TemplateFile -TemplateName "api-inventory-template.md" -OutputPath $outputPath -RootPath $RootPath
 if (-not $initialized) {
     Write-Error "Failed to initialize template"
@@ -320,8 +327,8 @@ if ($endpoints.Count -eq 0) {
 Write-Progress -Activity "Generating API Inventory" -Status "Populating template..." -PercentComplete 80
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocApiInventoryContent -Content $content -Endpoints $endpoints
-$content = Normalize-AppDocTemplateInstructionText -Content $content
-$content = Normalize-AppDocMarkdownStructure -Content $content
+$content = Format-AppDocTemplateInstructionText -Content $content
+$content = Format-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
@@ -338,7 +345,7 @@ $outboundCount = @($endpoints | Where-Object { $_.direction -eq "outbound" }).Co
 $canonicalEndpointCount = [int]$endpoints.Count
 $canonicalInboundCount = [int]$inboundCount
 $canonicalOutboundCount = [int]$outboundCount
-$canonicalMetricsPath = Join-Path $RootPath "docs\evidence\metrics-canonical.json"
+$canonicalMetricsPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\metrics-canonical.json"
 if (Test-Path $canonicalMetricsPath) {
     try {
         $canonical = Get-Content $canonicalMetricsPath -Raw | ConvertFrom-Json -Depth 40

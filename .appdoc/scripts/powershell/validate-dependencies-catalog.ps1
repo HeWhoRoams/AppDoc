@@ -1,7 +1,13 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
+
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -136,7 +142,7 @@ function Get-DependencyGraphAlignedEntityCount {
 
 Write-Progress -Activity "Validating Dependencies Catalog" -Status "Checking catalog..." -PercentComplete 0
 
-$catalogPath = Join-Path $RootPath "docs" "dependencies-catalog.md"
+$catalogPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "dependencies-catalog.md"
 if (-not (Test-Path $catalogPath)) {
     Write-Error "Dependencies catalog file not found at $catalogPath"
     exit 1
@@ -151,7 +157,7 @@ if ($content -notmatch '(?im)^#\s+Dependencies Catalog\b') {
 $issues = @()
 $warnings = @()
 
-$canonicalPath = Join-Path (Join-Path (Join-Path $RootPath "docs") "evidence") "metrics-canonical.json"
+$canonicalPath = Join-Path (Join-Path ((Get-AppDocDocsPath -RootPath $RootPath)) "evidence") "metrics-canonical.json"
 $canonicalDependencyCount = $null
 if (Test-Path $canonicalPath) {
     try {
@@ -165,7 +171,7 @@ if (Test-Path $canonicalPath) {
     }
 }
 
-$evidencePath = Join-Path $RootPath "docs" "evidence" "dependencies-catalog.evidence.json"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence" "dependencies-catalog.evidence.json"
 $dependencyCount = 0
 $expectedGraphDependencyCount = 0
 if (Test-Path $evidencePath) {
@@ -183,20 +189,29 @@ if (Test-Path $evidencePath) {
                 Group-Object -Property @{ Expression = { "{0}|{1}|{2}" -f [string]$_.name, [string]$_.source, [string](Get-DependencyValidationValue -Object $_.metadata -Name "version" -Default "") } } |
                 Where-Object { $_.Count -gt 1 }
         )
-        $totalExcessDuplicates = ($duplicateDependencies | Measure-Object -Property Count -Sum).Sum - $duplicateDependencies.Count
+        # Sum manually: under Set-StrictMode, (Measure-Object -Property Count -Sum).Sum throws on an
+        # empty set, which previously surfaced as a false 'dependencies-evidence-unparseable'.
+        $totalExcessDuplicates = 0
+        foreach ($dupGroup in $duplicateDependencies) { $totalExcessDuplicates += ($dupGroup.Count - 1) }
         if ($totalExcessDuplicates -gt 0) {
             $issues += ("duplicate-dependency-records:{0}" -f $totalExcessDuplicates)
         }
     }
     catch {
-        $issues += "dependencies-evidence-unparseable"
+        # Keep evidence-corruption and validator-logic failures distinguishable.
+        if ($_.Exception -is [System.ArgumentException] -or $_.Exception.GetType().Name -match 'Json|Parse') {
+            $issues += "dependencies-evidence-unparseable"
+        }
+        else {
+            $issues += ("dependencies-validator-internal-error: {0}" -f $_.Exception.Message)
+        }
     }
 }
 else {
     $issues += "dependencies-evidence-missing"
 }
 
-$graphPath = Join-Path $RootPath "docs" "evidence" "evidence-graph.json"
+$graphPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence" "evidence-graph.json"
 $graphDependencyCount = -1
 if (Test-Path $graphPath) {
     try {

@@ -62,4 +62,3 @@ Run tests at solution scope for baseline verification, then rerun only impacted 
 - Profile: [PROFILE]
 - Scope: [SCOPE]
 - Confidence/Inference Flags: deterministic, evidence-backed
-

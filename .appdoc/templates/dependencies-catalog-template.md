@@ -83,4 +83,3 @@ Focus upgrades on packages used across many projects, packages with version conf
 - Profile: [PROFILE]
 - Scope: [SCOPE]
 - Confidence/Inference Flags: deterministic, evidence-backed
-

@@ -1,4 +1,4 @@
-function Escape-Markdown {
+function ConvertTo-EscapedMarkdown {
     param(
         [Parameter(Mandatory)]
         [string]$Text
@@ -28,18 +28,18 @@ function Get-AppDocBuildStepsMarkdown {
         return $buildTablePlaceholder
     }
 
-    $tableHeader = "| Step | Command | Description | Estimated Time |`r`n|------|---------|-------------|----------------|"
+    $tableHeader = "| Step | Command | Description | Estimated Time |`n|------|---------|-------------|----------------|"
     $rows = @()
     $index = 1
     foreach ($command in $Commands) {
         $desc = if ($command.command -and $command.command -ne "No description") { [string]$command.command } else { "{0} command" -f [string]$command.type }
-        $invocationEscaped = Escape-Markdown -Text ([string]$command.invocation)
-        $descEscaped = Escape-Markdown -Text $desc
+        $invocationEscaped = ConvertTo-EscapedMarkdown -Text ([string]$command.invocation)
+        $descEscaped = ConvertTo-EscapedMarkdown -Text $desc
         $rows += "| $index | ``$invocationEscaped`` | $descEscaped | N/A |"
         $index++
     }
 
-    return ($tableHeader + "`r`n" + ($rows -join "`r`n"))
+    return ($tableHeader + "`n" + ($rows -join "`n"))
 }
 
 function Get-AppDocBuildCookbookMarkdown {
@@ -71,14 +71,14 @@ function Update-AppDocBuildCookbookContent {
         '(?s)(##\s+Overview\s*\r?\n(?:\r?\n)?).*?(?=\r?\n##\s+Prerequisites\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "This cookbook is assembled from detected build commands and CI hints so teams can reproduce, troubleshoot, and standardize build execution." + "`r`n")
+            return ($m.Groups[1].Value + "This cookbook is assembled from detected build commands and CI hints so teams can reproduce, troubleshoot, and standardize build execution." + "`n")
         }
     )
 
     # Prerequisites section
     $prereqContent = $null
     if ($Prerequisites -and $Prerequisites.Count -gt 0) {
-        $prereqContent = ($Prerequisites | ForEach-Object { "- $_" }) -join "`r`n"
+        $prereqContent = ($Prerequisites | ForEach-Object { "- $_" }) -join "`n"
     } else {
         $prereqContent = "Use a Windows development environment with dotnet, msbuild, and nuget available on PATH. Align SDK/toolchain versions with solution and CI expectations before running full builds."
     }
@@ -88,7 +88,7 @@ function Update-AppDocBuildCookbookContent {
             '(?s)(##\s+Prerequisites\s*\r?\n(?:\r?\n)?).*?(?=\r?\n##\s+Build Steps\b)',
             [System.Text.RegularExpressions.MatchEvaluator]{
                 param($m)
-                return ($m.Groups[1].Value + $prereqContent + "`r`n")
+                return ($m.Groups[1].Value + $prereqContent + "`n")
             }
         )
     } else {
@@ -98,12 +98,12 @@ function Update-AppDocBuildCookbookContent {
     # CI/CD section
     $cicdContent = $null
     if ($CicdInfo -and $CicdInfo.Count -gt 0) {
-        $cicdContent = "**Detected CI/CD Platforms:**`r`n`r`n"
+        $cicdContent = "**Detected CI/CD Platforms:**`n`n"
         foreach ($ci in $CicdInfo) {
-            $pathEscaped = Escape-Markdown -Text ([string]$ci.path)
-            $detailsEscaped = Escape-Markdown -Text ([string]$ci.details)
-            $platformEscaped = Escape-Markdown -Text ([string]$ci.platform)
-            $cicdContent += "- **$platformEscaped**: ``$pathEscaped`` - $detailsEscaped`r`n"
+            $pathEscaped = ConvertTo-EscapedMarkdown -Text ([string]$ci.path)
+            $detailsEscaped = ConvertTo-EscapedMarkdown -Text ([string]$ci.details)
+            $platformEscaped = ConvertTo-EscapedMarkdown -Text ([string]$ci.platform)
+            $cicdContent += "- **$platformEscaped**: ``$pathEscaped`` - $detailsEscaped`n"
         }
     } else {
         $cicdContent = "No CI/CD manifest was detected in this scan. If builds are automated externally, document that pipeline entrypoint before release changes."
@@ -114,7 +114,7 @@ function Update-AppDocBuildCookbookContent {
             '(?s)(##\s+CI/CD Integration\s*\r?\n\r?\n).*?(?=\r?\n##\s+Troubleshooting\b)',
             [System.Text.RegularExpressions.MatchEvaluator]{
                 param($m)
-                return ($m.Groups[1].Value + $cicdContent + "`r`n")
+                return ($m.Groups[1].Value + $cicdContent + "`n")
             }
         )
     } else {
@@ -130,7 +130,7 @@ function Update-AppDocBuildCookbookContent {
             $buildSectionPattern,
             [System.Text.RegularExpressions.MatchEvaluator]{
                 param($m)
-                return ($m.Groups[1].Value + $buildStepsContent + "`r`n")
+                return ($m.Groups[1].Value + $buildStepsContent + "`n")
             }
         )
     } else {
@@ -140,7 +140,7 @@ function Update-AppDocBuildCookbookContent {
             '(?s)(##\s+Build Steps\s*\r?\n(?:\r?\n)?).*?(?=\r?\n##\s+Dependencies\b)',
             [System.Text.RegularExpressions.MatchEvaluator]{
                 param($m)
-                return ($m.Groups[1].Value + $manualBuildSteps + "`r`n")
+                return ($m.Groups[1].Value + $manualBuildSteps + "`n")
             }
         )
     }
@@ -157,7 +157,7 @@ function Update-AppDocBuildCookbookContent {
         '(?s)(##\s+Dependencies\s*\r?\n(?:\r?\n)?).*?(?=\r?\n##\s+CI/CD Integration\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + $dependenciesContent + "`r`n")
+            return ($m.Groups[1].Value + $dependenciesContent + "`n")
         }
     )
 
@@ -166,7 +166,7 @@ function Update-AppDocBuildCookbookContent {
         '(?s)(##\s+Troubleshooting\s*\r?\n(?:\r?\n)?).*?(?=\r?\n##\s+Example Build Scripts\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "Start with restore (dotnet restore or nuget restore) and then run the narrowest failing build command from this artifact. If failures persist, compare local toolchain versions with CI and check dependency/version drift in [Dependencies Catalog](dependencies-catalog.md)." + "`r`n")
+            return ($m.Groups[1].Value + "Start with restore (dotnet restore or nuget restore) and then run the narrowest failing build command from this artifact. If failures persist, compare local toolchain versions with CI and check dependency/version drift in [Dependencies Catalog](dependencies-catalog.md)." + "`n")
         }
     )
 
@@ -175,7 +175,7 @@ function Update-AppDocBuildCookbookContent {
         '(?s)(##\s+Example Build Scripts\s*\r?\n(?:\r?\n)?).*?(?=(\r?\n##\s+)|\z)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "A curated script was not extracted in this run. For repeatable local execution, chain restore -> build -> test commands from the Build Steps table into a repo-specific helper script." + "`r`n")
+            return ($m.Groups[1].Value + "A curated script was not extracted in this run. For repeatable local execution, chain restore -> build -> test commands from the Build Steps table into a repo-specific helper script." + "`n")
         }
     )
 

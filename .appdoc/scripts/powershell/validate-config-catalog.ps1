@@ -1,12 +1,18 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # Validate config catalog
 Write-Progress -Activity "Validating Config Catalog" -Status "Checking catalog..." -PercentComplete 0
 
-$catalogPath = Join-Path $RootPath "docs\config-catalog.md"
+$catalogPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "config-catalog.md"
 
 if (-not (Test-Path $catalogPath)) {
     Write-Error "Config catalog file not found at $catalogPath"

@@ -1,3 +1,5 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
@@ -5,10 +7,14 @@ param(
     [switch]$Json
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
 if (Test-Path $scopeModule) { Import-Module $scopeModule -Force -ErrorAction Stop }
 
-$cachePath = Join-Path $RootPath "docs\ast-csharp-cache.json"
+$cachePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "ast-csharp-cache.json"
 if (-not $NoCache -and (Test-Path $cachePath)) {
     $cached = Get-Content $cachePath -Raw
     if ($Json) { $cached } else { Write-Output $cached }

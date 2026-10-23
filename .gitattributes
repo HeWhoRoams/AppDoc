@@ -1,0 +1,14 @@
+* text=auto
+*.ps1  text eol=lf
+*.psm1 text eol=lf
+*.psd1 text eol=lf
+*.md   text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.cs   text eol=lf
+*.png  binary
+*.ico  binary
+*.html text eol=lf
+*.mmd  text eol=lf
+# Vendored third-party code: not ours to diff or lint.
+.appdoc/templates/html/vendor/** -diff linguist-vendored

@@ -1,21 +1,9 @@
 function Get-AppDocDebtRelativePath {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$RootPath,
-        [Parameter(Mandatory=$true)]
-        [string]$Path
-    )
-
-    if (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue) {
-        return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-    }
-
-    $normalizedRoot = $RootPath.TrimEnd([char[]]@(92, 47)) + [IO.Path]::DirectorySeparatorChar
-    if ($Path.StartsWith($normalizedRoot, [StringComparison]::OrdinalIgnoreCase)) {
-        return $Path.Substring($normalizedRoot.Length)
-    }
-    return $Path.Replace($RootPath, "").TrimStart([char[]]@(92, 47))
+    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
+    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
+    param([string]$RootPath, [string]$Path)
+    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
+    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
 }
 
 function Get-AppDocDebtSourceFiles {

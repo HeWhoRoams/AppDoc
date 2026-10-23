@@ -124,7 +124,7 @@ function Update-AppDocTestCatalogContent {
                 [System.Text.RegularExpressions.MatchEvaluator]{
                     param($m)
                     $source = $m.Value
-                    $lineEnding = ($source -match "\r\n") ? "`r`n" : "`n"
+                    $lineEnding = ($source -match "\r\n") ? "`n" : "`n"
                     return ($m.Groups[1].Value + $sections.testSuitesContent + $lineEnding)
                 }
             )
@@ -141,13 +141,13 @@ function Update-AppDocTestCatalogContent {
                 $testCasesPattern,
                 [System.Text.RegularExpressions.MatchEvaluator]{
                     param($m)
-                    return ($m.Groups[1].Value + $sections.testCasesContent + "`r`n")
+                    return ($m.Groups[1].Value + $sections.testCasesContent + "`n")
                 }
             )
         } else {
             if ((-not ($updated -match '##\s+Test Maintenance')) -and (-not [string]::IsNullOrEmpty($sections.testCasesContent)) -and (-not ($updated -match [regex]::Escape($sections.testCasesContent)))) {
                 Write-Verbose "Test Cases header or lookahead not found; appending test cases content before '## Test Maintenance' section."
-                $updated += "`r`n`r`n" + $sections.testCasesContent + "`r`n"
+                $updated += "`n`n" + $sections.testCasesContent + "`n"
             } else {
                 Write-Verbose "Test Cases content or '## Test Maintenance' section already present; skipping fallback append."
             }
@@ -170,7 +170,7 @@ function Update-AppDocTestCatalogContent {
         '(?s)(##\s+Overview\s*\r?\n\r?\n).*?(?=\r?\n##\s+Test Environment Setup\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "Test metadata is extracted from discovered test files and method signatures. Use this catalog to understand suite intent and identify where coverage is concentrated." + "`r`n")
+            return ($m.Groups[1].Value + "Test metadata is extracted from discovered test files and method signatures. Use this catalog to understand suite intent and identify where coverage is concentrated." + "`n")
         }
     )
     $updated = [regex]::Replace(
@@ -178,7 +178,7 @@ function Update-AppDocTestCatalogContent {
         '(?s)(##\s+Test Environment Setup\s*\r?\n\r?\n).*?(?=\r?\n##\s+Test Suites\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "No dedicated environment bootstrap script was extracted. Use the build and restore commands in [Build Cookbook](build-cookbook.md), then execute targeted suites from this catalog." + "`r`n")
+            return ($m.Groups[1].Value + "No dedicated environment bootstrap script was extracted. Use the build and restore commands in [Build Cookbook](build-cookbook.md), then execute targeted suites from this catalog." + "`n")
         }
     )
     $updated = [regex]::Replace(
@@ -186,7 +186,7 @@ function Update-AppDocTestCatalogContent {
         '(?s)(##\s+Test Coverage Metrics\s*\r?\n\r?\n).*?(?=\r?\n##\s+Test Cases\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + $coverageSummary + "`r`n")
+            return ($m.Groups[1].Value + $coverageSummary + "`n")
         }
     )
     $updated = [regex]::Replace(
@@ -194,7 +194,7 @@ function Update-AppDocTestCatalogContent {
         '(?s)(##\s+Test Maintenance\s*\r?\n\r?\n).*?(?=\r?\n##\s+Example Test Runs\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "Prioritize maintenance for suites tied to frequently changed business rules and high-churn components. Keep suite names and test intent aligned with current behavior to preserve debugging value." + "`r`n")
+            return ($m.Groups[1].Value + "Prioritize maintenance for suites tied to frequently changed business rules and high-churn components. Keep suite names and test intent aligned with current behavior to preserve debugging value." + "`n")
         }
     )
     $updated = [regex]::Replace(
@@ -202,7 +202,7 @@ function Update-AppDocTestCatalogContent {
         '(?s)(##\s+Example Test Runs\s*\r?\n\r?\n).*?(?=(\r?\n##\s+)|\z)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + $exampleRun + "`r`n")
+            return ($m.Groups[1].Value + $exampleRun + "`n")
         }
     )
 

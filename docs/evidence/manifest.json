@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-10-17T18:40:57-04:00",
+  "generatedAt": "2026-10-23T01:55:34-04:00",
   "artifacts": [
     {
       "artifact": "api-inventory",
-      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/api-inventory.evidence.json",
+      "path": "docs/evidence/api-inventory.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-10-17T18:40:22-04:00",
+      "updatedAt": "2026-10-23T01:55:26-04:00",
       "metadata": {
         "generator": "generate-api-inventory.ps1"
       }
@@ -22,9 +22,9 @@
     },
     {
       "artifact": "build-cookbook",
-      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/build-cookbook.evidence.json",
+      "path": "docs/evidence/build-cookbook.evidence.json",
       "recordCount": 1,
-      "updatedAt": "2026-10-17T18:40:52-04:00",
+      "updatedAt": "2026-10-23T01:55:31-04:00",
       "metadata": {
         "generator": "generate-build-cookbook.ps1"
       }
@@ -41,9 +41,9 @@
     },
     {
       "artifact": "config-catalog",
-      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/config-catalog.evidence.json",
-      "recordCount": 110,
-      "updatedAt": "2026-10-17T18:40:50-04:00",
+      "path": "docs/evidence/config-catalog.evidence.json",
+      "recordCount": 49,
+      "updatedAt": "2026-10-23T01:55:31-04:00",
       "metadata": {
         "generator": "generate-config-catalog.ps1"
       }
@@ -60,9 +60,9 @@
     },
     {
       "artifact": "data-model",
-      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/data-model.evidence.json",
+      "path": "docs/evidence/data-model.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-10-17T18:40:25-04:00",
+      "updatedAt": "2026-10-23T01:55:27-04:00",
       "metadata": {
         "generator": "generate-data-model.ps1"
       }
@@ -79,9 +79,9 @@
     },
     {
       "artifact": "debt-register",
-      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/debt-register.evidence.json",
+      "path": "docs/evidence/debt-register.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-10-17T18:40:54-04:00",
+      "updatedAt": "2026-10-23T01:55:32-04:00",
       "metadata": {
         "generator": "generate-debt-register.ps1"
       }
@@ -98,9 +98,9 @@
     },
     {
       "artifact": "dependencies-catalog",
-      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/dependencies-catalog.evidence.json",
+      "path": "docs/evidence/dependencies-catalog.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-10-17T18:40:55-04:00",
+      "updatedAt": "2026-10-23T01:55:32-04:00",
       "metadata": {
         "generator": "generate-dependencies-catalog.ps1"
       }
@@ -117,9 +117,9 @@
     },
     {
       "artifact": "overview",
-      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/overview.evidence.json",
+      "path": "docs/evidence/overview.evidence.json",
       "recordCount": 1,
-      "updatedAt": "2026-10-17T18:40:57-04:00",
+      "updatedAt": "2026-10-23T01:55:34-04:00",
       "metadata": {
         "generator": "generate-overview.ps1"
       }
@@ -136,9 +136,9 @@
     },
     {
       "artifact": "start-here",
-      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/start-here.evidence.json",
+      "path": "docs/evidence/start-here.evidence.json",
       "recordCount": 3,
-      "updatedAt": "2026-10-17T18:40:57-04:00",
+      "updatedAt": "2026-10-23T01:55:34-04:00",
       "metadata": {
         "generator": "generate-start-here.ps1"
       }
@@ -155,9 +155,9 @@
     },
     {
       "artifact": "task-guides",
-      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/task-guides.evidence.json",
+      "path": "docs/evidence/task-guides.evidence.json",
       "recordCount": 5,
-      "updatedAt": "2026-10-17T18:40:57-04:00",
+      "updatedAt": "2026-10-23T01:55:34-04:00",
       "metadata": {
         "generator": "generate-task-guides.ps1"
       }
@@ -174,9 +174,9 @@
     },
     {
       "artifact": "test-catalog",
-      "path": "/persistent/agent/workspace/AppDoc/docs/evidence/test-catalog.evidence.json",
+      "path": "docs/evidence/test-catalog.evidence.json",
       "recordCount": 0,
-      "updatedAt": "2026-10-17T18:40:53-04:00",
+      "updatedAt": "2026-10-23T01:55:31-04:00",
       "metadata": {
         "generator": "generate-test-catalog.ps1"
       }
@@ -195,87 +195,115 @@
   "markdownChecksums": [
     {
       "path": "docs/api-inventory.appendix.md",
-      "sha256": "a319d3b7d594bcb22168d67a93761594a4a71e8005d5dc76c05cce4bcac69e75"
+      "sha256": "f81d035f4e4bdd4b66840ad04b8ff1676d3ec3c74a45d80976a057fd628259df"
     },
     {
       "path": "docs/api-inventory.md",
-      "sha256": "f21c78304fc5e0706bfea40f2252edf4f985dc39a1f84337ddb2a25389a29b02"
+      "sha256": "5e25b6ec51a41012f815e58723fbe8bfc20913d1464b081985c1077b1f32db61"
     },
     {
       "path": "docs/appdoc-artifact-quality-audit.md",
-      "sha256": "e9e68092815d07e5ad9a84f832baf3baea0ea11f4b4602b212b24f8191f15f66"
+      "sha256": "e54056f93563a6a6848df29a48dbfb1143ec5363651524d5d0950043064a78fe"
     },
     {
       "path": "docs/appdoc-remediation-plan.md",
-      "sha256": "18063406b751b90bc1f908a1cb36e0c514a5685b8d1979d72884714a8084fcae"
+      "sha256": "f960b717c5a80dcec526422a377dcc7adc86930d8463fd3a554845686cf6a28e"
     },
     {
       "path": "docs/application-documentation.md",
-      "sha256": "5f9f27f4d62a6f003c40efe4d2286e5a52918dd63abdde79b1235b2235f8fb2c"
+      "sha256": "9a8d28fbaa5d8eedee169a7c83dd2a8e4a616776de414616d197f60298389e47"
     },
     {
       "path": "docs/build-cookbook.md",
-      "sha256": "b613562af78e580c21acb90f60945c8d5c2eef37e6800a01f0bce03f54e31f2f"
+      "sha256": "821bfaf05e8eb9be5f1f7768be0ac6b2c1b81843f6038d6a83bdd8c4bef4e14e"
     },
     {
       "path": "docs/config-catalog.md",
-      "sha256": "33dd9f1d21201604908881c378b7562a7ac291e80e142ba22a3a65865ac88bef"
+      "sha256": "3709895550e3e45ed916b11e2831afca4813055eacf0031815c913f6335d3aed"
     },
     {
       "path": "docs/data-model.md",
-      "sha256": "456f6b0dcd31d85361f59dce395dbd64585d85728839507c6ab08f7b06ac659a"
+      "sha256": "6f7c93eac67a5215257c19e692852b9bd7a1001fa85450c4aa08f1cb2d2ee17c"
     },
     {
       "path": "docs/debt-register.md",
-      "sha256": "7a4b008557b24085d388b054b5949047f7a509dde7ed4ddc28cc4f764a82a495"
+      "sha256": "5273caded79216a057ad7de8e0257c4ab0d2c4a5d5cdd0c23d8f4e79cae8b79f"
     },
     {
       "path": "docs/dependencies-catalog.md",
-      "sha256": "5efcbc8bd8bd24a1a238718267f9d440a8a58690d665580805b32ac4320cf923"
+      "sha256": "dcbc180de3b221194c4a4c64e8b5b25162bb168a47051cb411ee531265da3021"
     },
     {
       "path": "docs/evidence-register.md",
-      "sha256": "e2658d2c1571fd09457bcf476dac1e2992490553e2db0d75fb932c270cebe302"
+      "sha256": "f342f2373b17d82b8d1a0305578f23b3a27f1bc9496e36544add2737ac4dce3f"
+    },
+    {
+      "path": "docs/extcalls.md",
+      "sha256": "3513bca0ce14f28f1d36625ca2c4b1a0b40a14132cf0c83b7da01a9a4e229dcd"
+    },
+    {
+      "path": "docs/git-ownership.md",
+      "sha256": "145537dadc821a16939d9a87ebdc7f7a24638ac5c512fa6cb56a99d1fcd48390"
+    },
+    {
+      "path": "docs/GLOSSARY.md",
+      "sha256": "4538640dbc5237a3897e46595ddc27ef0d6a0462a9d3f27ad717e9505094ed83"
     },
     {
       "path": "docs/implementation-checklist-v3.md",
-      "sha256": "a9349f02c31a001b16dd735ec1e2f55f511b00ebd02ca94d10acb6f3a9247f57"
+      "sha256": "a6716d1640ceeafa06e9990923f7777761cfbe2805807e7e4dff2706abbc21bb"
     },
     {
       "path": "docs/index.md",
-      "sha256": "89e890cabba4f32c1982d518865f05b7686e8d6f97dd821598cc2e7c8c597ba6"
+      "sha256": "a04d04551e8b7da11919d4820e634872896dd37d2b5d9210b8aff740660def5e"
     },
     {
       "path": "docs/overview.md",
-      "sha256": "ba94eaf2fef962bd6ce61b3501b41f7b53e1b05ea1cec29cd250a52496e458d7"
+      "sha256": "974bce6a6feda86355d179babecebaf23fdc4c5331f9886ccc659a83425871e3"
+    },
+    {
+      "path": "docs/pristine-report.md",
+      "sha256": "e725da8ba78a69d88c04509be9cdc8669b7dd2fe369fe94e0166c038927b077e"
+    },
+    {
+      "path": "docs/procdict.md",
+      "sha256": "c79ff7812d6637238bf1f77d1b27dd8db873e54523c02630c239cd823cec91ea"
     },
     {
       "path": "docs/quality-report.summary.md",
-      "sha256": "d9e7c8b6347fa8227a6e426580b9af26df3ccd9a6691a15d30b1cfe1a30cbafb"
+      "sha256": "064064f1e5b00eaf57cb8165bf8148e2a3e16b87de624eacda6b5bf3ac858710"
+    },
+    {
+      "path": "docs/security.md",
+      "sha256": "4d0874d326b491186709d94c200a16598bdc519af89563d94fc373dd74142285"
+    },
+    {
+      "path": "docs/source-docs.md",
+      "sha256": "1a66d8239abe08a09fafe8b6cf5a1374c0e098a5a3b3a7a399899d5df7e3fdf2"
     },
     {
       "path": "docs/start-here.md",
-      "sha256": "d17603c46d8f7e09d91ff6b70184a4422936cdd7c4520484f409a62b6f7f12c1"
+      "sha256": "7ef6b9073573d57a236ff0821c3df0d4d2cb7de49e49ca2bc56cb5223ca954b6"
     },
     {
       "path": "docs/task-guides.md",
-      "sha256": "dcad7979afc7186ecd1998df4f26f9a418d24b884adc6c45443a14ae25925426"
+      "sha256": "1c93f73005be75a72d3974a5494497eca081d71daa11d01cfcca247f78d02273"
     },
     {
       "path": "docs/technical-implementation-plan.md",
-      "sha256": "91659f0cc9259f09609e716e58c59117545b9f08e0cc89b3c15cb127417561a6"
+      "sha256": "2840e323b72cd5ccf768733468398ec6cb8b299362ed727551f6abb5edb1a0bc"
     },
     {
       "path": "docs/test-catalog.md",
-      "sha256": "2c4f167648b7601c7ab0fc404fe8e8ad4e735d44b2fe48772d9ac8df092637a1"
+      "sha256": "ff51079f671781680b30a01a94936d5997ed6acabf21628584d1e604aec090d3"
     },
     {
       "path": "docs/validation-report.summary.md",
-      "sha256": "16817196cafc8ffcf0ba47fd8ce50cb2b2ec4d70f3f37c2b305c6ed99da419fa"
+      "sha256": "02b38764dd92d64889fe1ccb1aedb3cf0ece992709b026f384e6b68b68a646a9"
     },
     {
       "path": "docs/verification-appendix.md",
-      "sha256": "dfdfe3c5f6bf14208dcdb9b4f602321bdcd981e07d96d2d414a94b0e3460b505"
+      "sha256": "29aef52c2d57ef43c21aa174053d7fc40d2498b8addaf12fab7fa56b9174339f"
     }
   ],
   "signoff": {
@@ -291,6 +319,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "1e58f4c84fc58307ac5b5eb879b528e45f2bffd50ce3b49ff682f17ac9c6253e"
+    "contentHash": "04bb7cc3001ab15332b443400f163fd82d6c5d678245a849aa453e93f6a1d289"
   }
 }

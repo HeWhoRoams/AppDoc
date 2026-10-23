@@ -12,10 +12,10 @@ function Get-AppDocProfile {
     )
 
     $profileDir = Join-Path (Join-Path $RootPath ".appdoc") "profiles"
-    $profilePath = if ([System.IO.Path]::IsPathRooted($Profile)) { 
-        $Profile 
-    } else { 
-        Join-Path $profileDir ("{0}.json" -f $Profile) 
+    $profilePath = if ([System.IO.Path]::IsPathRooted($Profile)) {
+        $Profile
+    } else {
+        Join-Path $profileDir ("{0}.json" -f $Profile)
     }
 
     if (Test-Path $profilePath) {

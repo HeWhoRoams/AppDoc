@@ -14,26 +14,11 @@ function Get-AppDocTestCatalogSourceFiles {
 }
 
 function Get-AppDocTestCatalogRelativePath {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$RootPath,
-        [Parameter(Mandatory=$true)]
-        [string]$Path
-    )
-
-    if (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue) {
-        return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-    }
-
-    # Normalize trailing slashes
-    $rootNorm = $RootPath.TrimEnd('\', '/')
-    $pathNorm = $Path.TrimEnd('\', '/')
-    if ($pathNorm.StartsWith($rootNorm, [System.StringComparison]::OrdinalIgnoreCase)) {
-        $relative = $pathNorm.Substring($rootNorm.Length)
-        return $relative.TrimStart('\', '/')
-    }
-    return $pathNorm
+    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
+    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
+    param([string]$RootPath, [string]$Path)
+    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
+    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
 }
 
 function Get-AppDocTestCatalogData {

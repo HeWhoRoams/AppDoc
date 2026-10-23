@@ -44,16 +44,11 @@ function Get-AppDocBuildCookbookData {
     }
 
     function Get-AppDocBuildRelativePath {
-        param(
-            [string]$RootPath,
-            [string]$Path
-        )
-
-        if (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue) {
-            return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-        }
-
-        return $Path.Replace($RootPath, "").TrimStart([char[]]@(92, 47))
+        # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
+        # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
+        param([string]$RootPath, [string]$Path)
+        if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
+        return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
     }
 
     # Prerequisites from first project file.

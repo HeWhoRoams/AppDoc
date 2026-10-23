@@ -4,7 +4,8 @@
 #
 #          The single command (run-appdoc-build.ps1) reads this config to drive:
 #            - theme            : HTML report theme (default: CMU Maroon & Gold #6a0032/#ffc82e)
-#            - redactionPatterns: extra secret literals / regexes to redact (additive)
+#            - redactionPatterns: extra secret VALUES to redact, matched literally (additive)
+#            - redactionRegexes : extra regular expressions to redact (additive; invalid = error)
 #            - pristineFloor    : pristine gate floor (default 80)
 #            - outputDir        : docs output dir (default 'docs')
 #            - minCommitsForOwnership: git-history depth floor for real ownership
@@ -32,7 +33,11 @@ $script:AppDocConfigDefaults = [ordered]@{
     schemaVersion            = 'appdoc-config/v1'
     theme                    = 'cmu'              # name -> .appdoc/templates/html/<name>.json ; or an absolute path
     themeFile                = ''                # explicit theme .json path (overrides 'theme' when set)
-    redactionPatterns        = @()               # extra secret literals OR regexes (each redacted verbatim/regex)
+    redactionPatterns        = @()               # extra secret VALUES, matched literally
+    redactionRegexes         = @()               # extra regular expressions; every match is redacted
+    opaqueTokenPattern       = ''                # regex for sanitized placeholder tokens kept verbatim (default: none)
+    overlays                 = @{}               # section title -> overlay .md path (default: .appdoc/overlays/<slug>.md)
+    ownershipShowEmails      = $false            # config "ownership": { "showEmails": true } -> include author emails
     pristineFloor            = 80                # pristine gate floor (1..100)
     outputDir                = 'docs'            # docs output dir name under the target root
     minCommitsForOwnership   = 2                 # git history depth floor for real ownership (default 2)
@@ -62,25 +67,42 @@ function Resolve-AppDocThemePath {
     [CmdletBinding()]
     param(
         [AllowEmptyString()][string]$ThemePath = '',
-        [AllowEmptyString()][string]$ThemeName = ''
+        [AllowEmptyString()][string]$ThemeName = '',
+        # Relative theme paths resolve against the target root (falls back to the
+        # current directory when not given).
+        [AllowEmptyString()][string]$RootPath = ''
     )
-    # Explicit path wins.
-    if (-not [string]::IsNullOrWhiteSpace($ThemePath)) {
-        if (Test-Path -LiteralPath $ThemePath) { return (Resolve-Path -LiteralPath $ThemePath).Path }
+    $templatesDir = Get-AppDocConfigTemplatesDir
+    $resolveFile = {
+        param([string]$p)
+        if ([System.IO.Path]::IsPathRooted($p)) { $cand = $p }
+        elseif ($RootPath) { $cand = Join-Path $RootPath $p }
+        else { $cand = $p }
+        if (Test-Path -LiteralPath $cand -PathType Leaf) { return (Resolve-Path -LiteralPath $cand).Path }
         return $null
     }
-    $templatesDir = Get-AppDocConfigTemplatesDir
+
+    # Explicit theme file wins. A file that does not exist is an error, not a silent
+    # fallback: the operator asked for a specific look.
+    if (-not [string]::IsNullOrWhiteSpace($ThemePath)) {
+        $hit = & $resolveFile $ThemePath
+        if ($hit) { return $hit }
+        throw "Theme file not found: $ThemePath"
+    }
+
     if (-not [string]::IsNullOrWhiteSpace($ThemeName)) {
-        $candidate = Join-Path $templatesDir "$($ThemeName).json"
+        # A path given as the theme (absolute, or relative to the target, ending in .json).
+        if ([System.IO.Path]::IsPathRooted($ThemeName) -or $ThemeName -match '[\\/]' -or $ThemeName -like '*.json') {
+            $hit = & $resolveFile $ThemeName
+            if ($hit) { return $hit }
+            if (-not ($ThemeName -like '*.json' -and $ThemeName -notmatch '[\\/]')) { throw "Theme file not found: $ThemeName" }
+        }
+        # A bundled theme name: templates/html/<name>.json ('cmu' is the canonical theme.json).
+        $bundledName = if ($ThemeName -ieq 'cmu') { 'theme' } else { $ThemeName -replace '\.json$', '' }
+        $candidate = Join-Path $templatesDir "$bundledName.json"
         if (Test-Path -LiteralPath $candidate) { return (Resolve-Path -LiteralPath $candidate).Path }
-        # Maybe the name already includes the extension.
-        $candidate2 = Join-Path $templatesDir $ThemeName
-        if (Test-Path -LiteralPath $candidate2) { return (Resolve-Path -LiteralPath $candidate2).Path }
-        # Named theme missing -> fall back to the canonical default (theme.json) rather
-        # than a broken build. (The default 'cmu' name maps to the canonical theme.json.)
-        $canonical = Join-Path $templatesDir 'theme.json'
-        if (Test-Path -LiteralPath $canonical) { return (Resolve-Path -LiteralPath $canonical).Path }
-        return $null
+        $available = @(Get-ChildItem -LiteralPath $templatesDir -Filter '*.json' -File -ErrorAction SilentlyContinue | ForEach-Object { if ($_.BaseName -eq 'theme') { 'cmu' } else { $_.BaseName } } | Sort-Object)
+        Write-Warning ("[Theme] '{0}' not found; available: {1}. Using the default (cmu)." -f $ThemeName, ($available -join ', '))
     }
     # Default CMU theme.
     $default = Join-Path $templatesDir 'theme.json'
@@ -101,8 +123,9 @@ function Get-AppDocConfig {
     $config = @{}
     foreach ($k in $script:AppDocConfigDefaults.Keys) { $config[$k] = $script:AppDocConfigDefaults[$k] }
 
-    $configPath = Join-Path $RootPath ".appdoc\config.json"
+    $configPath = Join-Path (Join-Path $RootPath ".appdoc") "config.json"
     $loaded = $false
+    $loadError = ''
     if (Test-Path -LiteralPath $configPath) {
         try {
             $raw = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json -Depth 30
@@ -113,24 +136,50 @@ function Get-AppDocConfig {
             if ($raw.PSObject.Properties['redactionPatterns']) {
                 $config['redactionPatterns'] = @($raw.redactionPatterns | ForEach-Object { [string]$_ } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
             }
+            if ($raw.PSObject.Properties['redactionRegexes']) {
+                $config['redactionRegexes'] = @($raw.redactionRegexes | ForEach-Object { [string]$_ } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+            }
+            if ($raw.PSObject.Properties['opaqueTokenPattern'] -and $raw.opaqueTokenPattern) {
+                $otp = [string]$raw.opaqueTokenPattern
+                try { [void][regex]::new($otp) } catch { throw "opaqueTokenPattern is not a valid regular expression: $otp" }
+                $config['opaqueTokenPattern'] = $otp
+            }
+            if ($raw.PSObject.Properties['overlays'] -and $raw.overlays) {
+                $ov = @{}
+                foreach ($prop in $raw.overlays.PSObject.Properties) { $ov[[string]$prop.Name] = [string]$prop.Value }
+                $config['overlays'] = $ov
+            }
+            if ($raw.PSObject.Properties['ownership'] -and $raw.ownership -and $raw.ownership.PSObject.Properties['showEmails']) {
+                $config['ownershipShowEmails'] = [bool]$raw.ownership.showEmails
+            }
             if ($raw.PSObject.Properties['pristineFloor'] -and $raw.pristineFloor) { $config['pristineFloor'] = [int]$raw.pristineFloor }
             if ($raw.PSObject.Properties['outputDir'] -and $raw.outputDir) { $config['outputDir'] = [string]$raw.outputDir }
             if ($raw.PSObject.Properties['minCommitsForOwnership'] -and $raw.minCommitsForOwnership) { $config['minCommitsForOwnership'] = [int]$raw.minCommitsForOwnership }
             if ($null -ne $raw.PSObject.Properties['enableSemanticEnrich'] -and $null -ne $raw.enableSemanticEnrich) { $config['enableSemanticEnrich'] = [bool]$raw.enableSemanticEnrich }
         }
         catch {
-            # Invalid JSON -> fall back to defaults (backward-compat, never crash the build).
+            # Invalid JSON: report it. The build treats this as an error (fail-closed),
+            # because silently using defaults would drop the operator's redaction lists.
             $loaded = $false
+            $loadError = "invalid config file ${configPath}: $($_.Exception.Message)"
         }
     }
+
+    # Theme problems (a missing theme file) are reported through .error so the build can
+    # stop with a clear message instead of silently using another theme.
+    $themeResolved = $null
+    try { $themeResolved = Resolve-AppDocThemePath -ThemePath $config['themeFile'] -ThemeName $config['theme'] -RootPath $RootPath }
+    catch { if (-not $loadError) { $loadError = $_.Exception.Message } }
 
     return [pscustomobject]@{
         configPath     = $configPath
         loaded         = [bool]$loaded
+        # Non-empty when the config file exists but could not be parsed.
+        error          = [string]$loadError
         # $config is a plain hashtable with every default key present.
         values         = $config
         # Resolved theme file path (default cmu when absent). $null if unresolvable.
-        themePath      = (Resolve-AppDocThemePath -ThemePath $config['themeFile'] -ThemeName $config['theme'])
+        themePath      = $themeResolved
     }
 }
 

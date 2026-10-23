@@ -1,7 +1,13 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
+
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -144,7 +150,7 @@ function Get-TestGraphAlignedEntityCount {
 
 Write-Progress -Activity "Validating Test Catalog" -Status "Checking catalog..." -PercentComplete 0
 
-$catalogPath = Join-Path $RootPath "docs\test-catalog.md"
+$catalogPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "test-catalog.md"
 if (-not (Test-Path $catalogPath)) {
     Write-Error "Test catalog file not found at $catalogPath"
     exit 1
@@ -159,7 +165,7 @@ if ($content -notmatch '(?im)^#\s+Test Catalog\b') {
 $issues = @()
 $warnings = @()
 
-$canonicalPath = Join-Path $RootPath "docs\evidence\metrics-canonical.json"
+$canonicalPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\metrics-canonical.json"
 $canonicalTestCaseCount = $null
 $canonicalTestSuiteCount = $null
 if (Test-Path $canonicalPath) {
@@ -175,7 +181,7 @@ if (Test-Path $canonicalPath) {
     }
 }
 
-$evidencePath = Join-Path $RootPath "docs\evidence\test-catalog.evidence.json"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\test-catalog.evidence.json"
 $testCaseCount = 0
 $testSuiteCount = 0
 $expectedGraphTestCaseCount = 0
@@ -214,7 +220,7 @@ else {
     $issues += "test-evidence-missing"
 }
 
-$graphPath = Join-Path $RootPath "docs\evidence\evidence-graph.json"
+$graphPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence\evidence-graph.json"
 $graphTestCaseCount = -1
 if (Test-Path $graphPath) {
     try {

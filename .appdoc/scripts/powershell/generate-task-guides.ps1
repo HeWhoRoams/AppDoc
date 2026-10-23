@@ -1,12 +1,19 @@
+#requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) {
-    . $helpersPath
-}
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: generators use its functions further down, so a missing file must stop here
+# rather than fail later with an unrelated "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
 if (Test-Path $scopeModule) {
@@ -43,7 +50,7 @@ if (-not (Get-Command Initialize-TemplateFile -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
-$outputPath = Join-Path $RootPath "docs\task-guides.md"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "task-guides.md"
 $initialized = Initialize-TemplateFile -TemplateName "task-guides-template.md" -OutputPath $outputPath -RootPath $RootPath
 if (-not $initialized) {
     Write-Error "Failed to initialize task-guides template"
@@ -71,8 +78,8 @@ if (-not $hasEndpointRows) {
 }
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocTaskGuidesContent -Content $content -TaskData $taskData
-$content = Normalize-AppDocTemplateInstructionText -Content $content
-$content = Normalize-AppDocMarkdownStructure -Content $content
+$content = Format-AppDocTemplateInstructionText -Content $content
+$content = Format-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 

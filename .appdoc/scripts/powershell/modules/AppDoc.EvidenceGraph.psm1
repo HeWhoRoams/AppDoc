@@ -1,3 +1,6 @@
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 # AppDoc.EvidenceGraph Module
 # Purpose: Build a canonical deterministic evidence graph from artifact evidence payloads.
 
@@ -117,24 +120,11 @@ function ConvertTo-AppDocEvidenceGraphId {
 }
 
 function Get-AppDocEvidenceGraphRelativePath {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$RootPath,
-        [Parameter(Mandatory=$true)]
-        [string]$Path
-    )
-
-    if (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue) {
-        return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-    }
-
-    $rootNorm = $RootPath.TrimEnd('\', '/')
-    $pathNorm = $Path.TrimEnd('\', '/')
-    if ($pathNorm.StartsWith($rootNorm, [System.StringComparison]::OrdinalIgnoreCase)) {
-        return $pathNorm.Substring($rootNorm.Length).TrimStart('\', '/').Replace('\', '/')
-    }
-    return $pathNorm.Replace('\', '/')
+    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
+    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
+    param([string]$RootPath, [string]$Path)
+    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
+    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
 }
 
 function Get-AppDocEvidenceGraphArtifactPayload {
@@ -146,7 +136,7 @@ function Get-AppDocEvidenceGraphArtifactPayload {
         [string]$Artifact
     )
 
-    $evidenceDir = Join-Path (Join-Path $RootPath "docs") "evidence"
+    $evidenceDir = Join-Path ((Get-AppDocDocsPath -RootPath $RootPath)) "evidence"
     $path = Join-Path $evidenceDir ("{0}.evidence.json" -f $Artifact)
     if (-not (Test-Path $path)) {
         return [ordered]@{
@@ -534,7 +524,8 @@ function Get-AppDocEvidenceGraphData {
                 @{ Expression = { [string]$_.id } }
     )
 
-    $countByType = @{}
+    # Ordered (contract entity-type order) so the rendered summary is stable across processes.
+    $countByType = [ordered]@{}
     foreach ($type in @($contract.entityTypes)) {
         $countByType[$type] = @($entities | Where-Object { [string]$_.type -eq $type }).Count
     }
@@ -579,7 +570,7 @@ function Write-AppDocEvidenceGraph {
         $GraphData = Get-AppDocEvidenceGraphData -RootPath $RootPath
     }
 
-    $evidenceDir = Join-Path (Join-Path $RootPath "docs") "evidence"
+    $evidenceDir = Join-Path ((Get-AppDocDocsPath -RootPath $RootPath)) "evidence"
     if (-not (Test-Path $evidenceDir)) {
         New-Item -Path $evidenceDir -ItemType Directory -Force | Out-Null
     }
@@ -620,7 +611,7 @@ function Test-AppDocEvidenceGraphIntegrity {
     )
 
     if ($null -eq $GraphData) {
-        $graphPath = Join-Path (Join-Path (Join-Path $RootPath "docs") "evidence") "evidence-graph.json"
+        $graphPath = Join-Path (Join-Path ((Get-AppDocDocsPath -RootPath $RootPath)) "evidence") "evidence-graph.json"
         if (Test-Path $graphPath) {
             try {
                 $GraphData = Get-Content -Path $graphPath -Raw | ConvertFrom-Json -Depth 120
@@ -696,7 +687,7 @@ function Test-AppDocEvidenceGraphIntegrity {
     $inboundEndpointCount = [int](Get-AppDocEvidenceGraphValue -Object $metrics -Name "inboundEndpointCount" -Default 0)
     $outboundEndpointCount = [int](Get-AppDocEvidenceGraphValue -Object $metrics -Name "outboundEndpointCount" -Default 0)
 
-    $fingerprintPath = Join-Path $RootPath "docs\architecture-fingerprint.json"
+    $fingerprintPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "architecture-fingerprint.json"
     if (Test-Path $fingerprintPath) {
         try {
             $fingerprint = Get-Content -Path $fingerprintPath -Raw | ConvertFrom-Json -Depth 60

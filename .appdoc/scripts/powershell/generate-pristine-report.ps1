@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-pristine-report.ps1
 #
@@ -22,15 +23,20 @@
 # overallScore) and BLOCKING (OPT-IN, only when the operator passes -PristineGate — see
 # the "Gate mode" footer below). By default this report is report-only output.
 #
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
 
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
-$docsPath = Join-Path $RootPath "docs"
+$docsPath = (Get-AppDocDocsPath -RootPath $RootPath)
 if (-not (Test-Path $docsPath)) { Write-Error "docs directory not found: $docsPath"; exit 1 }
 
 # --- Import the pristine rubric module ---------------------------------------
@@ -79,7 +85,7 @@ $out.Add('>   |--------|---------|')
 $out.Add('>   | **PASS** | structurally present + populated with REAL content + epistemic-tagged + re-verifiable + at benchmark depth |')
 $out.Add('>   | **WEAK** | present + populated but BELOW benchmark depth (a source-grounded section with real rows but fewer than the source/benchmark cap supports), or missing epistemic tags — a real finding |')
 $out.Add('>   | **EMPTY** | present (heading) but NO real content, and the source DOES support content — a real finding |')
-$out.Add('>   | **OWNER_REQUIRED** | a KNOWN owner-pending cell (capability matrix 5.2, policy/escalation 7, escalation paths 11, ownership/on-call/SLO 13, open questions 17) — correctly tagged `Unknown`, pending `/appdoc.enhance`, NOT a failure |')
+$out.Add('>   | **OWNER_REQUIRED** | a KNOWN owner-pending cell (capability matrix 5.2, policy/escalation 7, escalation paths 11, ownership/on-call/SLO 13, open questions 17) — correctly tagged `Unknown`, pending owner input, NOT a failure |')
 $out.Add('>   | **N/A** | a FRAMEWORK-N/A section: it documents a capability that only exists in classic-ASP codebases (today, only the Stored-procedure data dictionary — ADO stored procedures transcribed from live `.inc` files). When the target has NO ADO data surface, it is **excluded from the sub-score denominator** (not summed, not counted) and NOT treated as EMPTY — the honest classification, not a gap |')
 $out.Add('>   ')
 $out.Add('>   **Depth rule (objective):** a TABLE section is populated iff it carries >=1 real data row (not a header + a `_No ... detected._` placeholder); a TEXT/DIAGRAM section iff it carries >=1 substantive paragraph / list-item / mermaid block. WEAK vs PASS compares the surfaced rows to the **benchmark cap** (the composer-designed representative sample, e.g. Functional Inventory capped at 60) CAPPED by the real source count (from the evidence artifacts), so a thin source is never a false finding.')
@@ -129,7 +135,7 @@ $out.Add('|--------|-------|---------|')
 $out.Add("| **PASS** | $passN | at benchmark depth, real content, epistemic-tagged |")
 $out.Add("| **WEAK** | $weakN | populated but below benchmark depth / missing tags (real finding) |")
 $out.Add("| **EMPTY** | $emptyN | no real content where the source supports it (real finding) |")
-$out.Add("| **OWNER-REQUIRED** | $ownerN | known owner-pending cell, correctly `Unknown`, pending `/appdoc.enhance` (NOT a failure) |")
+$out.Add("| **OWNER-REQUIRED** | $ownerN | known owner-pending cell, correctly `Unknown`, pending owner input (NOT a failure) |")
 $out.Add("| **N/A** | $naN | framework-N/A (capability is classic-ASP-specific; target has no ADO surface) — EXCLUDED from the sub-score denominator |")
 $out.Add("| **Scored (denominator)** | $scoredN | every section except N/A; the sub-score is `Round(Σ(scores) / $scoredN, 1)` |")
 $out.Add("| **Total** | $totalN | all sections (scored + N/A) |")
@@ -150,20 +156,20 @@ $out.Add('')
 # it does NOT change the 20-row table, the sub-score, or the gate.
 $checklist = @(Get-AppDocPristineOwnerPendingChecklist -records $assessment.records)
 $out.Add('')
-$out.Add('## Owner-pending checklist (`/appdoc.enhance`)')
+$out.Add('## Owner-pending checklist')
 $out.Add('')
-$out.Add('> **What this is:** the cells that are correctly tagged `Unknown` and pending `/appdoc.enhance` — the complement to the source-derivable (auto) content. These are **NOT failures** (they classify `OWNER_REQUIRED`, not `EMPTY`). This is the deterministic, framework-agnostic "what is left for a human" checklist. It is ADDED on every run regardless of the pristine gate mode.')
+$out.Add('> **What this is:** the cells that are correctly tagged `Unknown` and pending owner input — the complement to the source-derivable (auto) content. These are **NOT failures** (they classify `OWNER_REQUIRED`, not `EMPTY`). This is the deterministic, framework-agnostic "what is left for a human" checklist. It is ADDED on every run regardless of the pristine gate mode.')
 $out.Add('')
 if ($checklist.Count -eq 0) {
     $out.Add('_No OWNER-REQUIRED cells this run (no owner-pending cells to fill)._')
 } else {
-    $out.Add('| # | Section | Benchmark ref | What''s missing | Owner must provide | `/appdoc.enhance` target |')
-    $out.Add('|---|---------|---------------|-----------------|--------------------|--------------------------|')
+    $out.Add('| # | Section | Benchmark ref | What''s missing | Owner must provide | Supply it in (operator overlay) |')
+    $out.Add('|---|---------|---------------|-----------------|--------------------|---------------------------------|')
     $cidx = 1
     foreach ($cell in $checklist) {
         $what = ([string]$cell.whatsMissing -replace '\|', '\|') -replace "`r?`n", ' '
         $must = ([string]$cell.ownerMustProvide -replace '\|', '\|') -replace "`r?`n", ' '
-        $tgt  = ([string]$cell.enhanceTarget -replace '\|', '\|') -replace "`r?`n", ' '
+        $tgt  = '`' + ([string]$cell.supplyVia) + '`'
         $out.Add("| $cidx | $($cell.section) | $($cell.sectionRef) | $what | $must | $tgt |")
         $cidx++
     }
@@ -184,7 +190,7 @@ $out.Add('')
 $out.Add('| Mode | Status | Effect |')
 $out.Add('|------|--------|--------|')
 $out.Add('| **`report-only`** (DEFAULT) | on for every pipeline run | the pristine sub-score is a DEPTH measurement: additive only — does NOT change `status` (pass/fail) or `overallScore` (the structural conformance composite is untouched). The run is never blocked by the pristine check. |')
-$out.Add('| **`blocking`** (OPT-IN) | only with `-PristineGate` on `run-all-generators.ps1` | the pristine check becomes a real gate that BLOCKS the run when any section is `EMPTY` (emptyCount>0) OR the sub-score < floor (`-PristineFloor`, default 80). OWNER_REQUIRED cells are EXCLUDED (pending `/appdoc.enhance`, not failures). The decision is the pure function `Test-AppDocPristineGate`; the result is recorded in `validation-report.json` as `pristineGate`. |')
+$out.Add('| **`blocking`** (OPT-IN) | only with `-PristineGate` on `run-all-generators.ps1` | the pristine check becomes a real gate that BLOCKS the run when any section is `EMPTY` (emptyCount>0) OR the sub-score < floor (`-PristineFloor`, default 80). OWNER_REQUIRED cells are EXCLUDED (pending owner input, not failures). The decision is the pure function `Test-AppDocPristineGate`; the result is recorded in `validation-report.json` as `pristineGate`. |')
 $out.Add('')
 $out.Add('*Default = report-only. This report is the human-readable companion; the machine-readable gate decision (`mode` / `enabled` / `blocked`) lives in `docs/validation-report.json` -> `pristineGate`.*')
 $out.Add('')
@@ -193,7 +199,7 @@ $out.Add('')
 $out.Add('*Generated by `generate-pristine-report.ps1` (pure function of the composed doc + evidence artifacts; no LLM, no network, no randomness). The pristine sub-score is a DEPTH measurement: by default it is NON-BLOCKING / additive (report-only) and does not change `status` or `overallScore` in `docs/validation-report.json`; it blocks only under the OPT-IN `blocking` mode (`-PristineGate`).*')
 
 $reportPath = Join-Path $docsPath 'pristine-report.md'
-($out -join "`r`n") | Out-File -FilePath $reportPath -Encoding UTF8 -NoNewline
+($out -join "`n") | Out-File -FilePath $reportPath -Encoding UTF8 -NoNewline
 
 # --- machine evidence record --------------------------------------------------
 $evidenceDir = Join-Path $docsPath 'evidence'
@@ -224,7 +230,7 @@ $evOut = [ordered]@{
     sourceSupport     = $assessment.sourceSupport
     # Owner-pending checklist (Deliverable C): the machine-readable complement to the
     # source-derivable content — the 5 OWNER_REQUIRED cells, each with what's-missing /
-    # owner-must-provide / enhance-target. Reuses the rubric's classification (the SAME
+    # owner-must-provide / supply-via. Reuses the rubric's classification (the SAME
     # 5 cells this run actually classified OWNER_REQUIRED), so it is deterministic +
     # framework-agnostic. Additive — it does NOT change subScore, counts, or the gate.
     ownerPendingChecklist = @($checklist | ForEach-Object {
@@ -233,7 +239,7 @@ $evOut = [ordered]@{
             sectionRef       = [string]$_.sectionRef
             whatsMissing     = [string]$_.whatsMissing
             ownerMustProvide = [string]$_.ownerMustProvide
-            enhanceTarget    = [string]$_.enhanceTarget
+            supplyVia        = [string]$_.supplyVia
         }
     })
     records           = @($assessment.records | ForEach-Object {

@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-classic-asp-failures.ps1
 #
@@ -13,14 +14,24 @@
 # framework-detection.json reports Classic ASP or ASP.NET Web Forms.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
 )
 
+
+# Output folder resolution (config outputDir).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+
+# Shared classic-ASP helpers (single definition; see modules/AppDoc.ClassicAsp.psm1).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+
 $ErrorActionPreference = "Stop"
-$helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"
-if (Test-Path $helpersPath) { . $helpersPath }
+$helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
+# Required: a missing helpers file must stop here, not fail later with "command not found".
+if (-not (Test-Path -LiteralPath $helpersPath)) { Write-Error "Required helpers file not found: $helpersPath"; exit 1 }
+. $helpersPath
 
 # --- Evidence + Contracts modules (canonical evidence + manifest) ----------------
 $contractsModule = Join-Path $PSScriptRoot "modules\AppDoc.Contracts.psm1"
@@ -29,23 +40,16 @@ if ((Test-Path $contractsModule) -and (Test-Path $evidenceModule)) {
     Import-Module $contractsModule -Force -ErrorAction SilentlyContinue
     Import-Module $evidenceModule  -Force -ErrorAction SilentlyContinue
 }
-function Write-NotApplicablePlaceholder {
-    param([string]$OutputPath, [string]$Title)
-    $dir = Split-Path $OutputPath -Parent
-    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    $body = "# $Title`r`n`r`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`r`n`r`n## Summary`r`n`r`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP signal, so no content was extracted.`r`n`r`n## Test Suites`r`n`r`nNo test suites were extracted for this framework.`r`n`r`n## Test Cases`r`n`r`nNo test cases were extracted for this framework.`r`n`r`n---"
-    $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
-}
-function Wrap-Backtick { param([string]$Text) return ('`' + $Text + '`') }
+function Format-CodeSpan { param([string]$Text) return ('`' + $Text + '`') }
 
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
-$outputPath = Join-Path $RootPath "docs\test-catalog.md"
-$evidencePath = Join-Path $RootPath "docs\test-catalog.evidence.json"
+$outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "test-catalog.md"
+$evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "test-catalog.evidence.json"
 
 Write-Host "⚠️  Generating Classic ASP failure-mode catalog..." -ForegroundColor Cyan
 if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
     Write-Host "  Framework not Classic ASP - writing placeholder." -ForegroundColor Yellow
-    Write-NotApplicablePlaceholder -OutputPath $outputPath -Title "Test Catalog"
+    Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "Test Catalog" -ExtraSections ([ordered]@{ 'Test Suites' = 'No test suites were extracted for this framework.'; 'Test Cases' = 'No test cases were extracted for this framework.' })
     @() | ConvertTo-Json -Depth 5 | Out-File -FilePath $evidencePath -Encoding UTF8
     exit 0
 }
@@ -76,7 +80,7 @@ function Show-Files {
     return "$head (+$($Files.Count - $Max) more)"
 }
 
-function Process-FailuresFile {
+function Invoke-FailuresFileScan {
     param([string]$FullPath)
     $rel = Get-RelativePath -FullPath $FullPath -Base $rootPrefix
     $content = Get-Content $FullPath -Raw -ErrorAction SilentlyContinue
@@ -121,12 +125,12 @@ function Process-FailuresFile {
         # Purpose context = a window of the raw text around the tag.
         $start = [Math]::Max(0, $m.Index - 400); $end = [Math]::Min($content.Length, $m.Index + 400)
         $window = $content.Substring($start, ($end - $start))
-        $purpose = Infer-RefreshPurpose -Window $window
+        $purpose = Get-InferredRefreshPurpose -Window $window
         $script:refreshTimers.Add([ordered]@{ file=$rel; seconds=$sec; purpose=$purpose })
     }
 }
 
-function Infer-RefreshPurpose {
+function Get-InferredRefreshPurpose {
     param([string]$Window)
     $w = $Window.ToLowerInvariant()
     if ($w -match 'status|poll') { return "Status auto-refresh/polling" }
@@ -138,8 +142,8 @@ function Infer-RefreshPurpose {
     return "Auto-refresh (page reload)"
 }
 
-foreach ($f in $aspFiles) { Process-FailuresFile -FullPath $f.FullName }
-foreach ($p in $htmRefreshPaths) { Process-FailuresFile -FullPath $p }
+foreach ($f in $aspFiles) { Invoke-FailuresFileScan -FullPath $f.FullName }
+foreach ($p in $htmRefreshPaths) { Invoke-FailuresFileScan -FullPath $p }
 
 # De-duplicate refresh timers by (file, seconds, purpose): a file with the same
 # interval+purpose multiple times is one observable signal, not N. Keeps the
@@ -199,14 +203,14 @@ $lines.Add("|------|------|---------|-------------------|--------|")
 $fmId = 0
 foreach ($r in $script:redirectAfterFailure) {
     $fmId++
-    $relDisp = Wrap-Backtick -Text $r.file
+    $relDisp = Format-CodeSpan -Text $r.file
     $fmLine = "| {0} | {1} | Response.Redirect after query failure (line {2}) | Redirects user away on DB error | Verified |" -f ("fm-$( $fmId.ToString('000') )"), $relDisp, $r.line
     $lines.Add($fmLine)
 }
 $tmId = 0
 foreach ($t in $script:refreshTimers) {
     $tmId++
-    $relDisp = Wrap-Backtick -Text $t.file
+    $relDisp = Format-CodeSpan -Text $t.file
     $fmLine = "| {0} | {1} | Auto-refresh timer ({2}s) | Page reloads every {2}s | Verified |" -f ("tm-$( $tmId.ToString('000') )"), $relDisp, $t.seconds
     $lines.Add($fmLine)
 }
@@ -217,7 +221,7 @@ $lines.Add("## Auto-Refresh Timers"); $lines.Add("")
 $lines.Add("| File | Interval (sec) | Purpose (inferred) | Status |")
 $lines.Add("|------|----------------|--------------------|--------|")
 foreach ($t in ($script:refreshTimers | Sort-Object { [string]$_.file })) {
-    $relDisp = Wrap-Backtick -Text $t.file
+    $relDisp = Format-CodeSpan -Text $t.file
     $tLine = "| {0} | {1} | {2} | Verified |" -f $relDisp, $t.seconds, $t.purpose
     $lines.Add($tLine)
 }
@@ -239,7 +243,7 @@ $lines.Add("## Provenance"); $lines.Add("")
 $lines.Add("- Generator Version: appdoc-run-all-generators/3.0.0"); $lines.Add("- Commit Hash: unknown")
 $lines.Add("- Generated At: $generatedIso"); $lines.Add("- Profile: default"); $lines.Add("- Scope: .")
 $lines.Add("- Confidence/Inference Flags: deterministic, evidence-backed")
-$md = ($lines -join "`r`n")
+$md = ($lines -join "`n")
 $md | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 # --- Flat evidence --------------------------------------------------------------

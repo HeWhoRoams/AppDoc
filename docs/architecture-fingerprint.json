@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "generatedAt": "2026-10-17T18:40:17-04:00",
+  "generatedAt": "2026-10-23T01:55:25-04:00",
   "primaryStyle": "no-api-surface",
   "primaryStyleLabel": "No API Surface",
   "styles": [
@@ -26,8 +26,8 @@
   },
   "provenance": {
     "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "85946f7",
-    "generatedAt": "2026-10-17T18:41:14-04:00",
+    "commitHash": "17cdd36",
+    "generatedAt": "2026-10-23T01:55:45-04:00",
     "profile": "default",
     "scope": ".",
     "confidenceInferenceFlags": [

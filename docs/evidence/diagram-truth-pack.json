@@ -1,123 +1,4 @@
 {
-  "nodes": [
-    {
-      "id": "component_core_processing_6d28d771",
-      "type": "component",
-      "label": "Core Processing",
-      "group": "processing",
-      "evidence_refs": null
-    },
-    {
-      "id": "config_github_copilot_chat_ex_3233c7ea",
-      "type": "config",
-      "label": "github.copilot.chat.executions.enabled",
-      "group": "config-vscode",
-      "evidence_refs": "cfg-0001"
-    },
-    {
-      "id": "config_itsm_base_url_386a0b40",
-      "type": "config",
-      "label": "itsm.base-url",
-      "group": "config-runtime",
-      "evidence_refs": "cfg-0002"
-    },
-    {
-      "id": "config_jobs_golden_test_cshar_a550e61a",
-      "type": "config",
-      "label": "jobs.golden-test-csharp-core.name",
-      "group": "config-workflow",
-      "evidence_refs": "cfg-0003"
-    },
-    {
-      "id": "config_jobs_golden_test_cshar_56738826",
-      "type": "config",
-      "label": "jobs.golden-test-csharp-core.runs-on",
-      "group": "config-workflow",
-      "evidence_refs": "cfg-0004"
-    },
-    {
-      "id": "config_jobs_golden_test_cshar_86c8eb3e",
-      "type": "config",
-      "label": "jobs.golden-test-csharp-core.steps.shell",
-      "group": "config-workflow",
-      "evidence_refs": "cfg-0005"
-    },
-    {
-      "id": "config_jobs_golden_test_cshar_7ca31392",
-      "type": "config",
-      "label": "jobs.golden-test-csharp-core.steps.uses",
-      "group": "config-workflow",
-      "evidence_refs": "cfg-0006"
-    },
-    {
-      "id": "config_jobs_golden_test_cshar_8a0b4f2d",
-      "type": "config",
-      "label": "jobs.golden-test-csharp-core.steps[0]",
-      "group": "config-workflow",
-      "evidence_refs": "cfg-0007"
-    },
-    {
-      "id": "config_jobs_golden_test_cshar_3e4d8917",
-      "type": "config",
-      "label": "jobs.golden-test-csharp-core.steps[1]",
-      "group": "config-workflow",
-      "evidence_refs": "cfg-0008"
-    },
-    {
-      "id": "config_jobs_golden_test_cshar_e6aa6fbd",
-      "type": "config",
-      "label": "jobs.golden-test-csharp-core.steps[2]",
-      "group": "config-workflow",
-      "evidence_refs": "cfg-0009"
-    },
-    {
-      "id": "config_jobs_golden_test_cshar_b2b231cf",
-      "type": "config",
-      "label": "jobs.golden-test-csharp-core.steps[3]",
-      "group": "config-workflow",
-      "evidence_refs": "cfg-0010"
-    },
-    {
-      "id": "config_jobs_golden_test_cshar_3b25b092",
-      "type": "config",
-      "label": "jobs.golden-test-csharp.name",
-      "group": "config-workflow",
-      "evidence_refs": "cfg-0011"
-    },
-    {
-      "id": "config_jobs_golden_test_cshar_b895bb4e",
-      "type": "config",
-      "label": "jobs.golden-test-csharp.runs-on",
-      "group": "config-workflow",
-      "evidence_refs": "cfg-0012"
-    }
-  ],
-  "project": {
-    "name": "AppDoc",
-    "rootPath": "/persistent/agent/workspace/AppDoc"
-  },
-  "generatedAt": "2026-10-17T18:41:01-04:00",
-  "apiEntries": [],
-  "edges": [
-    {
-      "id": "edge_config_itsm_base_url_3_3e5fb38a",
-      "from": "config_itsm_base_url_386a0b40",
-      "to": "component_core_processing_6d28d771",
-      "type": "configures",
-      "label": "configures",
-      "evidence_refs": "cfg-0002"
-    }
-  ],
-  "metrics": {
-    "nodeCount": 13,
-    "edgeCount": 1,
-    "inboundEndpointCount": 0,
-    "outboundEndpointCount": 0,
-    "componentCount": 1,
-    "modelCount": 0,
-    "configCount": 12,
-    "dependencyCount": 0
-  },
   "determinism": {
     "canonicalOrdering": [
       "nodes:type,label,id",
@@ -130,13 +11,123 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "7729706963eac40aa3f6aae6b654be0d43dedb724ba985793d893601cb3342d1"
+    "contentHash": "2e14d7fd716cc98df24c52cf3c0846167a1615cd603f19819d4a9b58beb3ae22"
   },
+  "nodes": [
+    {
+      "id": "component_core_processing_6d28d771",
+      "type": "component",
+      "label": "Core Processing",
+      "group": "processing",
+      "evidence_refs": null
+    },
+    {
+      "id": "config_concurrency_cancel_in_4184c67a",
+      "type": "config",
+      "label": "concurrency.cancel-in-progress",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0001"
+    },
+    {
+      "id": "config_concurrency_group_4353a474",
+      "type": "config",
+      "label": "concurrency.group",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0002"
+    },
+    {
+      "id": "config_jobs_drift_name_84d8c2e6",
+      "type": "config",
+      "label": "jobs.drift.name",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0003"
+    },
+    {
+      "id": "config_jobs_drift_needs_98e6a433",
+      "type": "config",
+      "label": "jobs.drift.needs",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0004"
+    },
+    {
+      "id": "config_jobs_drift_runs_on_589e2ca4",
+      "type": "config",
+      "label": "jobs.drift.runs-on",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0005"
+    },
+    {
+      "id": "config_jobs_drift_steps_shell_ed460ba6",
+      "type": "config",
+      "label": "jobs.drift.steps.shell",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0006"
+    },
+    {
+      "id": "config_jobs_drift_steps_with_d2da89f4",
+      "type": "config",
+      "label": "jobs.drift.steps.with.fetch-depth",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0007"
+    },
+    {
+      "id": "config_jobs_drift_steps_0_99a79b90",
+      "type": "config",
+      "label": "jobs.drift.steps[0]",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0008"
+    },
+    {
+      "id": "config_jobs_drift_steps_1_38332dfa",
+      "type": "config",
+      "label": "jobs.drift.steps[1]",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0009"
+    },
+    {
+      "id": "config_jobs_hygiene_name_a7867886",
+      "type": "config",
+      "label": "jobs.hygiene.name",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0010"
+    },
+    {
+      "id": "config_jobs_hygiene_runs_on_f616492a",
+      "type": "config",
+      "label": "jobs.hygiene.runs-on",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0011"
+    },
+    {
+      "id": "config_jobs_hygiene_steps_run_348a44cb",
+      "type": "config",
+      "label": "jobs.hygiene.steps.run",
+      "group": "config-workflow",
+      "evidence_refs": "cfg-0012"
+    }
+  ],
+  "schemaVersion": "appdoc-graph/v1",
+  "generatedAt": "2026-10-23T01:55:39-04:00",
+  "edges": [],
+  "metrics": {
+    "nodeCount": 13,
+    "edgeCount": 0,
+    "inboundEndpointCount": 0,
+    "outboundEndpointCount": 0,
+    "componentCount": 1,
+    "modelCount": 0,
+    "configCount": 12,
+    "dependencyCount": 0
+  },
+  "apiEntries": [],
   "sources": {
-    "apiEvidencePath": "docs/evidence/api-inventory.evidence.json",
-    "configEvidencePath": "docs/evidence/config-catalog.evidence.json",
+    "dependencyEvidencePath": "docs/evidence/dependencies-catalog.evidence.json",
     "modelEvidencePath": "docs/evidence/data-model.evidence.json",
-    "dependencyEvidencePath": "docs/evidence/dependencies-catalog.evidence.json"
+    "configEvidencePath": "docs/evidence/config-catalog.evidence.json",
+    "apiEvidencePath": "docs/evidence/api-inventory.evidence.json"
   },
-  "schemaVersion": "appdoc-graph/v1"
+  "project": {
+    "name": "selfbuild",
+    "rootPath": "."
+  }
 }
