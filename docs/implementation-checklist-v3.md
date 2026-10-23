@@ -212,9 +212,9 @@
 
 ## Matrix Verification (Required)
 
-- [ ] `C:\Github\legacy-csharp-mvc5-app`
-- [ ] `C:\Github\csharp-core-api-app`
-- [ ] `C:\Github\cms-content-connector-app`
+- [ ] `<path-to-legacy-csharp-mvc5-target>`
+- [ ] `<path-to-csharp-core-api-target>`
+- [ ] `<path-to-cms-connector-target>`
 
 For each repo, capture:
 - [ ] `validation-report.json` summary

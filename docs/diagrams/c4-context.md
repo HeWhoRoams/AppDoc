@@ -1,10 +1,10 @@
 # C4 System Context
 
-**Generated**: 2026-10-17 18:40:59
+**Generated**: 2026-10-22 10:29:34
 
 ## Summary
 
-- System: AppDoc (repository root)
+- System: w2 (repository root)
 - External systems detected: 0
 - Note: no in-scope .NET solution file found; context reflects the repository itself
 
@@ -12,10 +12,10 @@
 
 ```mermaid
 C4Context
-title AppDoc - System Context
+title w2 - System Context
 Person(user, "User", "Primary caller of the system")
-System(appdoc, "AppDoc", "Software system: AppDoc (repository root; no in-scope .sln)")
-Rel(user, appdoc, "Uses")
+System(w2, "w2", "Software system: w2 (repository root; no in-scope .sln)")
+Rel(user, w2, "Uses")
 ```
 
 ---

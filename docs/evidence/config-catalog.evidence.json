@@ -1,7 +1,7 @@
 {
   "artifact": "config-catalog",
-  "generatedAt": "2026-10-17T18:40:50-04:00",
-  "recordCount": 110,
+  "generatedAt": "2026-10-22T10:29:27-04:00",
+  "recordCount": 72,
   "records": [
     {
       "artifact": "config-catalog",
@@ -10,15 +10,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -27,15 +27,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -44,15 +44,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -61,15 +61,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -78,15 +78,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -95,15 +95,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -112,15 +112,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -129,15 +129,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -146,15 +146,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -163,15 +163,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -180,15 +180,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -197,15 +197,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -214,15 +214,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -231,15 +231,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -248,15 +248,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -265,15 +265,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -282,15 +282,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -299,15 +299,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -316,15 +316,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -333,15 +333,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -350,15 +350,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -367,15 +367,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -384,15 +384,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -401,15 +401,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -418,15 +418,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -435,15 +435,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -452,15 +452,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -469,15 +469,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -486,15 +486,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -503,15 +503,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -520,15 +520,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -537,15 +537,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -554,15 +554,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -571,15 +571,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -588,15 +588,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -605,15 +605,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -622,15 +622,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -639,15 +639,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "false",
-        "type": "JSON Configuration"
+        "value": "false"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -656,15 +656,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -673,15 +673,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -690,15 +690,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -707,15 +707,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "false",
-        "type": "JSON Configuration"
+        "value": "false"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -724,15 +724,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "false",
-        "type": "JSON Configuration"
+        "value": "false"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -741,15 +741,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -758,15 +758,49 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": true,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/concurrency.cancel-in-progress",
+      "name": "concurrency.cancel-in-progress",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "type": "YAML Configuration",
+        "file": ".github/workflows/appdoc-ci.yml",
+        "required": false,
+        "value": "true"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-22T10:29:27-04:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/concurrency.group",
+      "name": "concurrency.group",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "type": "YAML Configuration",
+        "file": ".github/workflows/appdoc-ci.yml",
+        "required": false,
+        "value": "ci-${{ github.ref }}"
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -775,950 +809,372 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "JSON Configuration",
         "file": ".vscode/settings.json",
         "required": false,
-        "value": "true",
-        "type": "JSON Configuration"
+        "value": "true"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/itsm.base-url",
-      "name": "itsm.base-url",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.name",
+      "name": "jobs.hygiene.name",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
-        "required": true,
-        "value": "https://itsm.acme.internal",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.name",
-      "name": "jobs.golden-test-csharp-core.name",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "Golden-file regression (C# / ASP.NET Core Web API)",
-        "type": "YAML Configuration"
+        "value": "Repo hygiene and static gates"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.runs-on",
-      "name": "jobs.golden-test-csharp-core.runs-on",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.runs-on",
+      "name": "jobs.hygiene.runs-on",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "ubuntu-latest",
-        "type": "YAML Configuration"
+        "value": "ubuntu-latest"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps.shell",
-      "name": "jobs.golden-test-csharp-core.steps.shell",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps.run",
+      "name": "jobs.hygiene.steps.run",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "pwsh",
-        "type": "YAML Configuration"
+        "value": "./.appdoc/scripts/powershell/ci-doc-integrity-gate.ps1 -RootPath ."
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps.uses",
-      "name": "jobs.golden-test-csharp-core.steps.uses",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps.shell",
+      "name": "jobs.hygiene.steps.shell",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "actions/setup-pwsh@v3",
-        "type": "YAML Configuration"
+        "value": "pwsh"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[0]",
-      "name": "jobs.golden-test-csharp-core.steps[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[0]",
+      "name": "jobs.hygiene.steps[0]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "uses: actions/checkout@v4",
-        "type": "YAML Configuration"
+        "value": "uses: actions/checkout@v4"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[1]",
-      "name": "jobs.golden-test-csharp-core.steps[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[1]",
+      "name": "jobs.hygiene.steps[1]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "name: Setup PowerShell",
-        "type": "YAML Configuration"
+        "value": "name: No tracked files that .gitignore excludes"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[2]",
-      "name": "jobs.golden-test-csharp-core.steps[2]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[2]",
+      "name": "jobs.hygiene.steps[2]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "name: Install Pester",
-        "type": "YAML Configuration"
+        "value": "name: PowerShell syntax gate"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp-core.steps[3]",
-      "name": "jobs.golden-test-csharp-core.steps[3]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[3]",
+      "name": "jobs.hygiene.steps[3]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "name: Run C# ASP.NET Core Web API golden-file regression test",
-        "type": "YAML Configuration"
+        "value": "name: Documentation integrity gate"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.name",
-      "name": "jobs.golden-test-csharp.name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.name",
+      "name": "jobs.tests.name",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "Golden-file regression (C# / ASP.NET Web Forms)",
-        "type": "YAML Configuration"
+        "value": "Pester + proof harness (${{ matrix.os }})"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.runs-on",
-      "name": "jobs.golden-test-csharp.runs-on",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.needs",
+      "name": "jobs.tests.needs",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "ubuntu-latest",
-        "type": "YAML Configuration"
+        "value": "hygiene"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps.shell",
-      "name": "jobs.golden-test-csharp.steps.shell",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.runs-on",
+      "name": "jobs.tests.runs-on",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "pwsh",
-        "type": "YAML Configuration"
+        "value": "${{ matrix.os }}"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps.uses",
-      "name": "jobs.golden-test-csharp.steps.uses",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.run",
+      "name": "jobs.tests.steps.run",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "actions/setup-pwsh@v3",
-        "type": "YAML Configuration"
+        "value": "./tests/powershell/test-semantic-quarantine.ps1"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[0]",
-      "name": "jobs.golden-test-csharp.steps[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.shell",
+      "name": "jobs.tests.steps.shell",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "uses: actions/checkout@v4",
-        "type": "YAML Configuration"
+        "value": "pwsh"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[1]",
-      "name": "jobs.golden-test-csharp.steps[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.with.dotnet-version",
+      "name": "jobs.tests.steps.with.dotnet-version",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "name: Setup PowerShell",
-        "type": "YAML Configuration"
+        "value": "8.0.x"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[2]",
-      "name": "jobs.golden-test-csharp.steps[2]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[0]",
+      "name": "jobs.tests.steps[0]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "name: Install Pester",
-        "type": "YAML Configuration"
+        "value": "uses: actions/checkout@v4"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-csharp.steps[3]",
-      "name": "jobs.golden-test-csharp.steps[3]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[1]",
+      "name": "jobs.tests.steps[1]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "name: Run C# Web Forms golden-file regression test",
-        "type": "YAML Configuration"
+        "value": "uses: actions/setup-dotnet@v4"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.name",
-      "name": "jobs.golden-test-java.name",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[2]",
+      "name": "jobs.tests.steps[2]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "Golden-file regression (Java / Spring Boot)",
-        "type": "YAML Configuration"
+        "value": "name: Install Pester 5"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.runs-on",
-      "name": "jobs.golden-test-java.runs-on",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[3]",
+      "name": "jobs.tests.steps[3]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "ubuntu-latest",
-        "type": "YAML Configuration"
+        "value": "name: Pester (all suites in tests/powershell)"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps.shell",
-      "name": "jobs.golden-test-java.steps.shell",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[4]",
+      "name": "jobs.tests.steps[4]",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "pwsh",
-        "type": "YAML Configuration"
+        "value": "name: Semantic quarantine proof harness (plain script, not Pester)"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps.uses",
-      "name": "jobs.golden-test-java.steps.uses",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.fail-fast",
+      "name": "jobs.tests.strategy.fail-fast",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "actions/setup-pwsh@v3",
-        "type": "YAML Configuration"
+        "value": "false"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[0]",
-      "name": "jobs.golden-test-java.steps[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.os",
+      "name": "jobs.tests.strategy.matrix.os",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "uses: actions/checkout@v4",
-        "type": "YAML Configuration"
+        "value": "[ubuntu-latest, windows-latest]"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[1]",
-      "name": "jobs.golden-test-java.steps[1]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Setup PowerShell",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[2]",
-      "name": "jobs.golden-test-java.steps[2]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Install Pester",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-java.steps[3]",
-      "name": "jobs.golden-test-java.steps[3]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Run Java / Spring Boot golden-file regression test",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.name",
-      "name": "jobs.golden-test-node.name",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "Golden-file regression (Node / Express + TypeScript)",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.runs-on",
-      "name": "jobs.golden-test-node.runs-on",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "ubuntu-latest",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps.shell",
-      "name": "jobs.golden-test-node.steps.shell",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "pwsh",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps.uses",
-      "name": "jobs.golden-test-node.steps.uses",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "actions/setup-pwsh@v3",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[0]",
-      "name": "jobs.golden-test-node.steps[0]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "uses: actions/checkout@v4",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[1]",
-      "name": "jobs.golden-test-node.steps[1]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Setup PowerShell",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[2]",
-      "name": "jobs.golden-test-node.steps[2]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Install Pester",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-node.steps[3]",
-      "name": "jobs.golden-test-node.steps[3]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Run Node / Express (TypeScript) golden-file regression test",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.name",
-      "name": "jobs.golden-test-python.name",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "Golden-file regression (Python / Flask)",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.runs-on",
-      "name": "jobs.golden-test-python.runs-on",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "ubuntu-latest",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps.shell",
-      "name": "jobs.golden-test-python.steps.shell",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "pwsh",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps.uses",
-      "name": "jobs.golden-test-python.steps.uses",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "actions/setup-pwsh@v3",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[0]",
-      "name": "jobs.golden-test-python.steps[0]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "uses: actions/checkout@v4",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[1]",
-      "name": "jobs.golden-test-python.steps[1]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Setup PowerShell",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[2]",
-      "name": "jobs.golden-test-python.steps[2]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Install Pester",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test-python.steps[3]",
-      "name": "jobs.golden-test-python.steps[3]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Run Python / Flask golden-file regression test",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.name",
-      "name": "jobs.golden-test.name",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "Golden-file regression (framework-agnostic)",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.runs-on",
-      "name": "jobs.golden-test.runs-on",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "ubuntu-latest",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps.shell",
-      "name": "jobs.golden-test.steps.shell",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "pwsh",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps.uses",
-      "name": "jobs.golden-test.steps.uses",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "actions/setup-pwsh@v3",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[0]",
-      "name": "jobs.golden-test.steps[0]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "uses: actions/checkout@v4",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[1]",
-      "name": "jobs.golden-test.steps[1]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Setup PowerShell",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[2]",
-      "name": "jobs.golden-test.steps[2]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Install Pester",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.golden-test.steps[3]",
-      "name": "jobs.golden-test.steps[3]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Run golden-file regression test",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.runs-on",
-      "name": "jobs.syntax-gate.runs-on",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "windows-latest",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps.shell",
-      "name": "jobs.syntax-gate.steps.shell",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "pwsh",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[0]",
-      "name": "jobs.syntax-gate.steps[0]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "uses: actions/checkout@v4",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[1]",
-      "name": "jobs.syntax-gate.steps[1]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Run PowerShell syntax gate",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.syntax-gate.steps[2]",
-      "name": "jobs.syntax-gate.steps[2]",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".github/workflows/appdoc-ci.yml",
-        "required": false,
-        "value": "name: Run documentation integrity gate",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/logging.level.com.acme",
-      "name": "logging.level.com.acme",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
-        "required": false,
-        "value": "INFO",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
@@ -1727,162 +1183,60 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "appdoc-ci",
-        "type": "YAML Configuration"
+        "value": "appdoc-ci"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[0]",
-      "name": "on.push.branches[0]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches",
+      "name": "on.push.branches",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "main",
-        "type": "YAML Configuration"
+        "value": "[main]"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     },
     {
       "artifact": "config-catalog",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches[1]",
-      "name": "on.push.branches[1]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/permissions.contents",
+      "name": "permissions.contents",
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "type": "YAML Configuration",
         "file": ".github/workflows/appdoc-ci.yml",
         "required": false,
-        "value": "master",
-        "type": "YAML Configuration"
+        "value": "read"
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/server.port",
-      "name": "server.port",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
-        "required": true,
-        "value": "8080",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.application.name",
-      "name": "spring.application.name",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
-        "required": false,
-        "value": "tickets-service",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.datasource.password",
-      "name": "spring.datasource.password",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
-        "required": true,
-        "value": "[REDACTED]",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.datasource.url",
-      "name": "spring.datasource.url",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
-        "required": true,
-        "value": "jdbc:mysql://db-host.internal:3306/tickets",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.datasource.username",
-      "name": "spring.datasource.username",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
-        "required": true,
-        "value": "tickets_user",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
-    },
-    {
-      "artifact": "config-catalog",
-      "source": ".tmp-java-golden-verify/src/main/resources/application.yml:yaml/spring.jpa.hibernate.ddl-auto",
-      "name": "spring.jpa.hibernate.ddl-auto",
-      "kind": "configuration",
-      "confidence": 1.0,
-      "metadata": {
-        "file": ".tmp-java-golden-verify/src/main/resources/application.yml",
-        "required": false,
-        "value": "update",
-        "type": "YAML Configuration"
-      },
-      "provider": "generator",
-      "providerType": "deterministic",
-      "status": "Detected",
-      "timestamp": "2026-10-17T18:40:50-04:00"
+      "timestamp": "2026-10-22T10:29:27-04:00"
     }
   ],
   "metadata": {
-    "requiredEvidenceKeys": [
-      "configurations"
-    ],
     "requiredSections": [
       "Summary",
       "Configuration Options"
     ],
-    "configCount": 110,
+    "configCount": 72,
+    "requiredEvidenceKeys": [
+      "configurations"
+    ],
     "generator": "generate-config-catalog.ps1"
   },
   "determinism": {
@@ -1892,6 +1246,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "26f2d1e73536f5464513c307767fabe24f7444f592af89c676edb8e13f9a4cdd"
+    "contentHash": "55fc9a69e0ec7b025e60bca7dba815718a3690d6ef8b83305ae3d10cf41625cd"
   }
 }

@@ -1,3 +1,4 @@
+#requires -Version 7.2
 # Common PowerShell functions for AppDoc Framework
 # Shared utilities for all documentation generation scripts
 

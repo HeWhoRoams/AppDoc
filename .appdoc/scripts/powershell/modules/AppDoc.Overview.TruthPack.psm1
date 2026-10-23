@@ -65,14 +65,14 @@ function Get-AppDocOverviewEvidenceGraphData {
     if (-not $graph) {
         return [ordered]@{
             exists = $false
-            path = $graphPath
+            path = 'docs/evidence/evidence-graph.json'
             graph = $null
         }
     }
 
     return [ordered]@{
         exists = $true
-        path = $graphPath
+        path = 'docs/evidence/evidence-graph.json'
         graph = $graph
     }
 }
@@ -755,7 +755,7 @@ function Get-AppDocOverviewTruthPackData {
         version = $script:AppDocOverviewTruthPackVersion
         generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
         projectName = $projectName
-        rootPath = $RootPath
+        rootPath = "."
         architecture = [ordered]@{
             primaryStyle = if ($architecture) { [string](Get-AppDocOverviewObjectValue -Object $architecture -Name "primaryStyle" -Default "unknown") } else { "unknown" }
             styles = [string[]]$architectureStyles

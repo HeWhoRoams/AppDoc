@@ -1,20 +1,20 @@
 {
   "artifact": "dependencies-catalog",
-  "generatedAt": "2026-10-17T18:40:55-04:00",
+  "generatedAt": "2026-10-22T10:29:28-04:00",
   "recordCount": 0,
   "records": [],
   "metadata": {
-    "dependencyCount": 0,
     "projectCount": 0,
     "graphSchemaTarget": "appdoc-evidence-graph/v1",
+    "dependencyCount": 0,
+    "generator": "generate-dependencies-catalog.ps1",
     "requiredEvidenceKeys": [
       "dependencies"
     ],
     "requiredSections": [
       "Summary",
       "Dependency Summary"
-    ],
-    "generator": "generate-dependencies-catalog.ps1"
+    ]
   },
   "determinism": {
     "hashAlgorithm": "SHA256",

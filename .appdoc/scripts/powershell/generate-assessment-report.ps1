@@ -1,3 +1,4 @@
+#requires -Version 7.2
 param(
     [Parameter(Mandatory=$false)]
     [string]$RootPath = "."
@@ -13,7 +14,8 @@ if (-not (Test-Path $docsPath)) {
 
 # Gather metrics from generated docs
 $docFiles = Get-ChildItem -Path $docsPath -Filter "*.md" -ErrorAction SilentlyContinue
-$totalSize = ($docFiles | Measure-Object -Property Length -Sum).Sum
+$totalSize = 0
+foreach ($docFile in @($docFiles)) { $totalSize += $docFile.Length }
 
 # Analyze each document
 $docMetrics = @()

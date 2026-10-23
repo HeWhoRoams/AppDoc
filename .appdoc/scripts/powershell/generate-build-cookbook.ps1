@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-build-cookbook.ps1
 #

@@ -1,12 +1,12 @@
 {
   "artifact": "application-documentation",
-  "generatedAt": "10/16/2026 23:43:08",
+  "generatedAt": "10/22/2026 10:29:35",
   "applicable": true,
   "framework": "ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot",
   "source": "generate-unified-master.ps1",
   "counts": {
-    "endpointCount": 5,
-    "modelCount": 4,
+    "endpointCount": 0,
+    "modelCount": 0,
     "databaseCount": 0,
     "tableCount": 0,
     "procedureCount": 0,
@@ -172,16 +172,5 @@
         "verification-appendix.md"
       ]
     }
-  ],
-  "provenance": {
-    "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "85946f7",
-    "generatedAt": "2026-10-17T18:41:14-04:00",
-    "profile": "default",
-    "scope": ".",
-    "confidenceInferenceFlags": [
-      "deterministic",
-      "evidence-backed"
-    ]
-  }
+  ]
 }

@@ -1,6 +1,6 @@
 # Application Documentation
 
-**Evidence date**: 10/16/2026 23:43:08  
+**Evidence date**: 10/22/2026 10:29:35  
 **Framework**: ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot  
 **Composed from**: 11 per-artifact files + machine evidence (deterministic, no LLM).
 
@@ -41,19 +41,17 @@ Auto-generated table of contents for this document, plus a quick cross-reference
 |---|--------------------|-------------|--------|--------|
 | — | none extracted | — | — | Unknown |
 
-*Top 10 of 5 request-addressable entry points (see Functional Inventory for the capped detail table).*
+*Top 10 of 0 request-addressable entry points (see Functional Inventory for the capped detail table).*
 
 ## Coverage and Executive Overview
 
 ### What was inspected
 
-The inspected unit is the application tree under the repository root: 5 request-addressable entry points and the data / integration surfaces the extractors detected for this framework (ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot). The System Overview narrative (overview.md) reports the following as the high-level shape:
+The inspected unit is the application tree under the repository root: 0 request-addressable entry points and the data / integration surfaces the extractors detected for this framework (ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot). The System Overview narrative (overview.md) reports the following as the high-level shape:
 
 *From System Overview:*
 
-- At a high level, the application orchestrates Core Processing capabilities through its core services and workflows. _(Inferred — overview narrative)_
-- This application appears to support Core Processing workflows and expose that behavior through its service interfaces. _(Inferred — overview narrative)_
-- Its business behavior is centered on application records such as and, Help Desk Audit Trail, Help Desk Tickets, and Help Desk usp Get Monthly Metrics. _(Inferred — overview narrative)_
+- This repository primarily defines tooling, automation, and configuration behavior rather than an exposed runtime API surface. (evidence: ev-0001, ev-0002, ev-0003, ev-0004) _(Inferred — overview narrative)_
 
 ### Purpose and users
 
@@ -69,8 +67,8 @@ The boundary is stated as concrete, countable extents extracted from the machine
 
 | Boundary extent | Value | Status |
 |-----------------|-------|--------|
-| Request-addressable entry points (endpoints) | 5 | Verified |
-| Database objects (models) | 4 | Verified |
+| Request-addressable entry points (endpoints) | 0 | Verified |
+| Database objects (models) | 0 | Verified |
 | Distinct databases (connection strings) | 0 | Verified |
 | SQL Server instances | 0 | Verified |
 | Tables and views referenced | 0 | Verified |
@@ -81,8 +79,8 @@ Canonical count markers (for cross-artifact metric consistency):
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| API endpoints documented | 5 | Verified |
-| Database object records (models) | 4 | Verified |
+| API endpoints documented | 0 | Verified |
+| Database object records (models) | 0 | Verified |
 
 ## Architecture
 
@@ -103,10 +101,10 @@ Components are projected from two deterministic sources: the build-cookbook code
 
 ```mermaid
 C4Context
-title AppDoc - System Context
+title w2 - System Context
 Person(user, "User", "Primary caller of the system")
-System(appdoc, "AppDoc", "Software system: AppDoc (repository root; no in-scope .sln)")
-Rel(user, appdoc, "Uses")
+System(w2, "w2", "Software system: w2 (repository root; no in-scope .sln)")
+Rel(user, w2, "Uses")
 ```
 
 ### 3.3 Authentication / Authorization
@@ -118,13 +116,13 @@ Rel(user, appdoc, "Uses")
 
 ## Functional Inventory
 
-Each request-addressable entry point is one feature. The detail table is capped to the first 60 by subsystem order; the full set of 5 entry points lives in [API Inventory](api-inventory.md). Status: Verified for entry presence, Inferred for the feature purpose/name.
+Each request-addressable entry point is one feature. The detail table is capped to the first 60 by subsystem order; the full set of 0 entry points lives in [API Inventory](api-inventory.md). Status: Verified for entry presence, Inferred for the feature purpose/name.
 
 | ID | Feature (Inferred) | Entry point | Inputs (form/query fields) | Dependencies | Status |
 |----|--------------------|-------------|-----------------------------|--------------|--------|
 | — | none extracted | — | — | — | Unknown |
 
-*Showing 5 of 5 total entry points.*
+*Showing 0 of 0 total entry points.*
 
 ## Roles and Access Model
 
@@ -170,15 +168,23 @@ The data layer and integration surfaces (databases, tables/views, stored procedu
 |----|----------|--------|----------|-------------------------|--------|
 | — | not detected | — | — | — | Unknown |
 
-*Showing 0 of 0 databases.*
-
 ### Entities (tables/views, representative) — status Verified
 
 | ID | DB | Object | Type | Sensitivity | Referenced from | Status |
 |----|----|--------|------|-------------|-----------------|--------|
-| — | not detected | — | — | Unknown | — | Unknown |
+| — | not detected (no ADO tables/views) | — | — | n/a (ORM/EF Core surface) | — | Honest (framework) |
 
-*Showing 0 of 0 tables/views.*
+*This framework does not use ADO tables/views; its data surface is the ORM/EF Core entity model. Sensitivity Inferred.*
+
+### Entities / domain model (representative) — status Inferred
+
+Generic data-model records for this framework (ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot), projected from the data-model evidence (class / interface / struct). Representative sample, capped at 25 and deterministically sorted; **Sensitivity** is Inferred (not confirmed). The authoritative schema lives in the framework's data layer (ORM / entity model) and requires data-owner confirmation.
+
+| # | Entity | Type | Fields | Source file | Status |
+|---|--------|------|--------|-------------|--------|
+| — | not detected | — | — | — | Unknown |
+
+*Showing 0 of 0 domain-model entities (representative sample; deterministic). Sensitivity Inferred.*
 
 ## External Call Register
 
@@ -246,6 +252,15 @@ Projected from the test-catalog known-failure-mode records. Each row is a real p
 
 *Showing 0 of 0 distinct non-scratch failure-mode/timer records (identical rows deduped; full set in [test-catalog](test-catalog.md)).*
 
+### Troubleshooting KB (cited from hand-authored docs — Inferred)
+
+The following symptom→fix / incident entries come from the repo's hand-authored troubleshooting KB (documented, but a KB is not an authoritative policy — tagged Inferred):
+
+- ## Troubleshooting  
+  - Source: `README.md`:146 — `Inferred` (confidence: medium)
+
+*§11 troubleshooting KB: `README.md`: 146. All claims are `Inferred` (each backed by a real hand-authored file:line; no fabrication).*
+
 ## Security and Operational Risks
 
 Projected from the test-catalog security findings and the data-model connection-string inventory. Credential values are **redacted** (shown only as opaque sanitized tokens).
@@ -283,6 +298,33 @@ Ownership and maintenance information is **not extractable** from the codebase (
 
 *This table is a structure placeholder. All cells are Unknown / owner-required — ownership data was not present in the inspected codebase.*
 
+### Ownership (git-derived — last-change author / churn, Verified-git-history)
+
+The target's git history is real and sufficient (45 commit(s)). Per-file ownership below is the **last-change author** with churn (instability = commit count); it is a deterministic projection of git log (plus CODEOWNERS when present), cited to docs/evidence/git-ownership.evidence.json. The table above remains a structure placeholder (application-level ownership stays owner-required unless a CODEOWNERS default declares it).
+
+Declared owner (CODEOWNERS *): **Unknown (not declared)**  ·  top author: `Tim Niles <nilestimothyj@gmail.com> (45 commit(s)).
+
+| File | Owner (last-change author) | Last change | Churn |
+|------|----------------------------|-------------|-------|
+| `.appdoc/scripts/powershell/run-all-generators.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 23 |
+| `.appdoc/scripts/powershell/validate-documentation.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 16 |
+| `.appdoc/scripts/powershell/generate-overview.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-03-04 | 15 |
+| `docs/build-cookbook.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
+| `docs/debt-register.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
+| `docs/dependencies-catalog.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
+| `docs/overview.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
+| `docs/start-here.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
+| `docs/test-catalog.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 14 |
+| `.appdoc/scripts/powershell/generate-api-inventory.ps1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 13 |
+| `.appdoc/scripts/powershell/modules/AppDoc.ConfigCatalog.Renderer.psm1` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
+| `docs/api-inventory.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
+| `docs/config-catalog.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
+| `docs/data-model.md` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
+| `docs/evidence/manifest.json` | Tim Niles <nilestimothyj@gmail.com> | 2026-10-21 | 12 |
+| … | (capped at 15; full table in docs/git-ownership.md) | | |
+
+*Verified-git-history: owner = last-change author, churn = commit count (deterministic git log projection; no inference). Application-level / on-call / SLO ownership remains owner-required — git history does not declare those.*
+
 ## Architecture and Data-Flow Diagrams
 
 > These diagrams represent **observed calls** extracted from the codebase, not production topology. They are deterministic projections of the evidence graph.
@@ -293,65 +335,35 @@ Ownership and maintenance information is **not extractable** from the codebase (
 flowchart LR
     %% Solid edges: runtime request/data flow. Dashed edges: structural/config/dependency links.
     subgraph inputs["Input Boundary"]
-        actor_user_calling_system_16ed03d7["User / Calling System"]
+        config_concurrency_cancel_in_4184c67a["concurrency.cancel-in-progress"]
+        config_concurrency_group_4353a474["concurrency.group"]
         config_github_copilot_chat_ex_3233c7ea["github.copilot.chat.executions.enabled"]
-        config_jobs_syntax_gate_runs_1cc1bd48["jobs.syntax-gate.runs-on"]
-        config_jobs_syntax_gate_steps_b0ed346a["jobs.syntax-gate.steps.shell"]
-        config_jobs_syntax_gate_steps_c21bece1["jobs.syntax-gate.steps(0)"]
-        config_jobs_syntax_gate_steps_f955e977["jobs.syntax-gate.steps(1)"]
-        config_jobs_syntax_gate_steps_fea78b6a["jobs.syntax-gate.steps(2)"]
-        config_name_6ae99955["name"]
-        config_on_push_branches_0_2a450bbd["on.push.branches(0)"]
-        config_on_push_branches_1_81342622["on.push.branches(1)"]
-        inbound_tests_fixtures_classic_70fe47d5["tests/fixtures/classic-asp-sample/admin-report.asp"]
-        inbound_tests_fixtures_classic_001b8f19["tests/fixtures/classic-asp-sample/audit-log.asp"]
-        inbound_tests_fixtures_classic_bb5ccbaf["tests/fixtures/classic-asp-sample/index.asp"]
-        inbound_tests_fixtures_classic_898febc4["tests/fixtures/classic-asp-sample/new-ticket.asp"]
-        inbound_tests_fixtures_classic_b06933c3["tests/fixtures/classic-asp-sample/search-ticket.asp"]
+        config_jobs_hygiene_name_a7867886["jobs.hygiene.name"]
+        config_jobs_hygiene_runs_on_f616492a["jobs.hygiene.runs-on"]
+        config_jobs_hygiene_steps_run_348a44cb["jobs.hygiene.steps.run"]
+        config_jobs_hygiene_steps_she_e80f611f["jobs.hygiene.steps.shell"]
+        config_jobs_hygiene_steps_0_81f99013["jobs.hygiene.steps(0)"]
+        config_jobs_hygiene_steps_1_1f5e909e["jobs.hygiene.steps(1)"]
+        config_jobs_hygiene_steps_2_93e42ea2["jobs.hygiene.steps(2)"]
+        config_jobs_hygiene_steps_3_74378ec2["jobs.hygiene.steps(3)"]
+        config_jobs_tests_name_93d08342["jobs.tests.name"]
     end
     subgraph processing["Core Transformations"]
         component_core_processing_6d28d771["Core Processing"]
     end
-    subgraph data["Data Stores and Models"]
-        data_and_cffa50a3["and"]
-        data_helpdesk_audittrail_9267afc4["HelpDesk.AuditTrail"]
-        data_helpdesk_tickets_1005e0b3["HelpDesk.Tickets"]
-        data_helpdesk_usp_getmonthl_741ce4e0["HelpDesk.usp_GetMonthlyMetrics"]
-    end
-    actor_user_calling_system_16ed03d7 -->|initiates| inbound_tests_fixtures_classic_001b8f19
-    actor_user_calling_system_16ed03d7 -->|initiates| inbound_tests_fixtures_classic_70fe47d5
-    actor_user_calling_system_16ed03d7 -->|initiates| inbound_tests_fixtures_classic_898febc4
-    actor_user_calling_system_16ed03d7 -->|initiates| inbound_tests_fixtures_classic_b06933c3
-    actor_user_calling_system_16ed03d7 -->|initiates| inbound_tests_fixtures_classic_bb5ccbaf
-    component_core_processing_6d28d771 -->|reads/writes| data_and_cffa50a3
-    component_core_processing_6d28d771 -->|reads/writes| data_helpdesk_audittrail_9267afc4
-    component_core_processing_6d28d771 -->|reads/writes| data_helpdesk_tickets_1005e0b3
-    component_core_processing_6d28d771 -->|reads/writes| data_helpdesk_usp_getmonthl_741ce4e0
-    inbound_tests_fixtures_classic_001b8f19 -->|routes to| component_core_processing_6d28d771
-    inbound_tests_fixtures_classic_70fe47d5 -->|routes to| component_core_processing_6d28d771
-    inbound_tests_fixtures_classic_898febc4 -->|routes to| component_core_processing_6d28d771
-    inbound_tests_fixtures_classic_b06933c3 -->|routes to| component_core_processing_6d28d771
-    inbound_tests_fixtures_classic_bb5ccbaf -->|routes to| component_core_processing_6d28d771
-    class actor_user_calling_system_16ed03d7 actor
     class component_core_processing_6d28d771 component
+    class config_concurrency_cancel_in_4184c67a config
+    class config_concurrency_group_4353a474 config
     class config_github_copilot_chat_ex_3233c7ea config
-    class config_jobs_syntax_gate_runs_1cc1bd48 config
-    class config_jobs_syntax_gate_steps_b0ed346a config
-    class config_jobs_syntax_gate_steps_c21bece1 config
-    class config_jobs_syntax_gate_steps_f955e977 config
-    class config_jobs_syntax_gate_steps_fea78b6a config
-    class config_name_6ae99955 config
-    class config_on_push_branches_0_2a450bbd config
-    class config_on_push_branches_1_81342622 config
-    class data_and_cffa50a3 data
-    class data_helpdesk_audittrail_9267afc4 data
-    class data_helpdesk_tickets_1005e0b3 data
-    class data_helpdesk_usp_getmonthl_741ce4e0 data
-    class inbound_tests_fixtures_classic_70fe47d5 inbound
-    class inbound_tests_fixtures_classic_001b8f19 inbound
-    class inbound_tests_fixtures_classic_bb5ccbaf inbound
-    class inbound_tests_fixtures_classic_898febc4 inbound
-    class inbound_tests_fixtures_classic_b06933c3 inbound
+    class config_jobs_hygiene_name_a7867886 config
+    class config_jobs_hygiene_runs_on_f616492a config
+    class config_jobs_hygiene_steps_run_348a44cb config
+    class config_jobs_hygiene_steps_she_e80f611f config
+    class config_jobs_hygiene_steps_0_81f99013 config
+    class config_jobs_hygiene_steps_1_1f5e909e config
+    class config_jobs_hygiene_steps_2_93e42ea2 config
+    class config_jobs_hygiene_steps_3_74378ec2 config
+    class config_jobs_tests_name_93d08342 config
 classDef actor fill:#0f172a,stroke:#0f172a,color:#ffffff,stroke-width:1px
 classDef inbound fill:#dcfce7,stroke:#166534,color:#166534,stroke-width:1px
 classDef outbound fill:#ffedd5,stroke:#9a3412,color:#9a3412,stroke-width:1px
@@ -366,10 +378,10 @@ classDef dependency fill:#ede9fe,stroke:#4338ca,color:#4338ca,stroke-width:1px
 
 ```mermaid
 C4Context
-title AppDoc - System Context
+title w2 - System Context
 Person(user, "User", "Primary caller of the system")
-System(appdoc, "AppDoc", "Software system: AppDoc (repository root; no in-scope .sln)")
-Rel(user, appdoc, "Uses")
+System(w2, "w2", "Software system: w2 (repository root; no in-scope .sln)")
+Rel(user, w2, "Uses")
 ```
 
 ## Glossary
@@ -386,7 +398,7 @@ The full evidence register (section §14 in the benchmark) is reproduced below, 
 
 **Status model:** `Verified` — directly supported by inspected source (file + line or a searchable value). `Inferred` — a reasonable interpretation not confirmed by runtime. `Partly verified` — a file reference exists but the confirmable line/value is absent. `Unknown` — the repository does not establish the claim.
 
-**Records:** 64 across 10 evidence files.
+**Records:** 84 across 14 evidence files.
 
 Framework detected: **ASP.NET Core ASP.NET MVC 5 Flask Spring Boot** (C# C# Python Java); support level: full partial partial partial; extraction coverage: System.Object[]%.
 
@@ -448,6 +460,26 @@ Framework detected: **ASP.NET Core ASP.NET MVC 5 Flask Spring Boot** (C# C# Pyth
 | on.push.branches[0] | Verified | .github/workflows/appdoc-ci.yml | Runtime behavior not executed |
 | on.push.branches[1] | Verified | .github/workflows/appdoc-ci.yml | Runtime behavior not executed |
 | system-purpose | Inferred | repository | Interpretation not confirmed by runtime |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
 | api-inventory | Unknown | docs | Not established by repository |
 | data-model | Unknown | docs | Not established by repository |
 | source-files | Inferred | repository | Interpretation not confirmed by runtime |
@@ -457,7 +489,7 @@ Framework detected: **ASP.NET Core ASP.NET MVC 5 Flask Spring Boot** (C# C# Pyth
 | plan-debt-sprint | Unknown | docs | Not established by repository |
 | triage-dependency-risk | Unknown | docs | Not established by repository |
 
-**Status breakdown:** Verified (54), Inferred (3), Partly verified (1), Unknown (6)
+**Status breakdown:** Verified (54), Inferred (3), Partly verified (1), Unknown (26)
 
 > **Limitation note:** Every row is source-level. A `Verified` row proves the cited file/line exists; it does not prove runtime behavior, production configuration, or database procedure logic. Re-runnable commands for each `Verified` claim are in the Verification Appendix.
 
@@ -529,7 +561,7 @@ Projected from the build-cookbook (platform requirements, SQL servers, session b
 
 The re-runnable verification appendix (section §18 in the benchmark, 174 re-runnable commands) is reproduced below, projected verbatim from erification-appendix.md.
 
-This appendix lists the exact, re-runnable PowerShell commands used to verify each `Verified` claim in the Evidence Register. All commands are run **from the repository root** (`/persistent/agent/workspace/AppDoc`). A non-empty `Select-String` result proves the cited source-level fact.
+This appendix lists the exact, re-runnable PowerShell commands used to verify each `Verified` claim in the Evidence Register. All commands are run **from the repository root** (`<repo-root>`). A non-empty `Select-String` result proves the cited source-level fact.
 
 **Verified claims:** 54  |  **Re-runnable commands:** 19  |  **Insufficient detail (downgraded):** 35
 
@@ -595,12 +627,3 @@ This appendix lists the exact, re-runnable PowerShell commands used to verify ea
 ---
 
 *Composed deterministically by generate-unified-master.ps1. No LLM, no network, no randomness. Secrets redacted.*
-
-## Provenance
-
-- Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 85946f7
-- Generated At: 2026-10-17T18:41:14-04:00
-- Profile: default
-- Scope: .
-- Confidence/Inference Flags: deterministic, evidence-backed

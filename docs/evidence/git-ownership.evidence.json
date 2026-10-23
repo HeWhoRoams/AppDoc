@@ -1,0 +1,2432 @@
+{
+  "artifact": "git-ownership",
+  "generator": "generate-git-ownership.ps1",
+  "module": "AppDoc.GitOwnership.psm1",
+  "version": "1.0.0",
+  "reportDate": "2026-10-21",
+  "isGitRepo": true,
+  "commitCount": 45,
+  "minCommitsForOwnership": 2,
+  "historySufficient": true,
+  "status": "Derived",
+  "owner": "Unknown",
+  "codeownersPresent": false,
+  "codeownersDefault": "",
+  "codeowners": [],
+  "authorCount": 1,
+  "firstDate": "2025-11-14",
+  "lastDate": "2026-10-21",
+  "topAuthorEmail": "nilestimothyj@gmail.com",
+  "topAuthorName": "Tim Niles",
+  "topAuthorCommits": 45,
+  "authors": [
+    {
+      "email": "nilestimothyj@gmail.com",
+      "name": "Tim Niles",
+      "commits": 45
+    }
+  ],
+  "fileCount": 400,
+  "files": [
+    {
+      "path": ".appdoc/scripts/powershell/run-all-generators.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 23
+    },
+    {
+      "path": ".appdoc/scripts/powershell/validate-documentation.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 16
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-overview.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-04",
+      "churn": 15
+    },
+    {
+      "path": "docs/build-cookbook.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 14
+    },
+    {
+      "path": "docs/debt-register.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 14
+    },
+    {
+      "path": "docs/dependencies-catalog.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 14
+    },
+    {
+      "path": "docs/overview.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 14
+    },
+    {
+      "path": "docs/start-here.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 14
+    },
+    {
+      "path": "docs/test-catalog.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 14
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-api-inventory.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 13
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.ConfigCatalog.Renderer.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 12
+    },
+    {
+      "path": "docs/api-inventory.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 12
+    },
+    {
+      "path": "docs/config-catalog.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 12
+    },
+    {
+      "path": "docs/data-model.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 12
+    },
+    {
+      "path": "docs/evidence/manifest.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 12
+    },
+    {
+      "path": "docs/evidence/start-here.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 12
+    },
+    {
+      "path": "docs/evidence/task-guides.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 12
+    },
+    {
+      "path": "docs/quality-report.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 12
+    },
+    {
+      "path": "docs/task-guides.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 12
+    },
+    {
+      "path": "docs/validation-report.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 12
+    },
+    {
+      "path": "README.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 12
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-config-catalog.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 11
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.DebtRegister.Renderer.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 11
+    },
+    {
+      "path": ".appdoc/scripts/powershell/template-helpers.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 11
+    },
+    {
+      "path": "docs/diagnostics-report.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 11
+    },
+    {
+      "path": "docs/evidence/api-inventory.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 11
+    },
+    {
+      "path": "docs/evidence/build-cookbook.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 11
+    },
+    {
+      "path": "docs/evidence/data-model.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 11
+    },
+    {
+      "path": "docs/evidence/debt-register.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 11
+    },
+    {
+      "path": "docs/evidence/dependencies-catalog.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 11
+    },
+    {
+      "path": "docs/evidence/overview.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 11
+    },
+    {
+      "path": "docs/evidence/test-catalog.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 11
+    },
+    {
+      "path": "docs/index.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 11
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-dependencies-catalog.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 10
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-task-guides.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 10
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.ApiInventory.Renderer.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 10
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.DependenciesCatalog.Renderer.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-11",
+      "churn": 10
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Evidence.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-04",
+      "churn": 10
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Scope.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 10
+    },
+    {
+      "path": "docs/architecture-fingerprint.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 10
+    },
+    {
+      "path": "docs/evidence/config-catalog.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 10
+    },
+    {
+      "path": "docs/evidence/narrative-context-pack.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 10
+    },
+    {
+      "path": "docs/evidence/narrative-run-report.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 10
+    },
+    {
+      "path": "docs/evidence/overview-truth-pack.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 10
+    },
+    {
+      "path": "docs/technical-implementation-plan.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 10
+    },
+    {
+      "path": "docs/validation-diagnostics.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 10
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-build-cookbook.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 9
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.ConfigCatalog.Extractor.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 9
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.DataModel.Renderer.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 9
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.TestCatalog.Renderer.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 9
+    },
+    {
+      "path": "docs/ast-typescript-cache.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 9
+    },
+    {
+      "path": "docs/framework-detection.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 9
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-data-model.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 8
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Diagnostics.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 8
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Overview.ContextPack.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-04",
+      "churn": 8
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Overview.Renderer.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 8
+    },
+    {
+      "path": ".appdoc/scripts/powershell/validate-diagrams.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-11",
+      "churn": 8
+    },
+    {
+      "path": ".appdoc/scripts/powershell/validate-overview.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-04",
+      "churn": 8
+    },
+    {
+      "path": ".github/prompts/appdoc.enhance.prompt.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 8
+    },
+    {
+      "path": "docs/diagrams/critical-sequences.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 8
+    },
+    {
+      "path": "docs/diagrams/data-flow.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 8
+    },
+    {
+      "path": "docs/diagrams/data-lineage-core.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 8
+    },
+    {
+      "path": "docs/diagrams/internal-flow.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 8
+    },
+    {
+      "path": "docs/evidence/diagram-truth-pack.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 8
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-debt-register.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 7
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.BuildCookbook.Renderer.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 7
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Contracts.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 7
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.DataModel.Extractor.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 7
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.DependenciesCatalog.Extractor.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-04",
+      "churn": 7
+    },
+    {
+      "path": ".appdoc/scripts/powershell/remediate-generated-docs.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-11",
+      "churn": 7
+    },
+    {
+      "path": ".appdoc/scripts/powershell/validate-test-catalog.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-04",
+      "churn": 7
+    },
+    {
+      "path": ".appdoc/templates/config-catalog-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 7
+    },
+    {
+      "path": ".github/prompts/appdoc.begin.prompt.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 7
+    },
+    {
+      "path": ".gitignore",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 7
+    },
+    {
+      "path": "docs/ast-csharp-cache.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 7
+    },
+    {
+      "path": "docs/diagrams/c4-container.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 7
+    },
+    {
+      "path": "docs/diagrams/c4-context.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 7
+    },
+    {
+      "path": "docs/evidence/evidence-graph.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 7
+    },
+    {
+      "path": "docs/evidence/narrative/narrative_draft.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 7
+    },
+    {
+      "path": "docs/evidence/narrative/narrative_final.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 7
+    },
+    {
+      "path": "docs/evidence/narrative/purpose_model.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 7
+    },
+    {
+      "path": ".appdoc/policies/scope.v1.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 6
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-mermaid-architecture-suite.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-04",
+      "churn": 6
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-start-here.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-04",
+      "churn": 6
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-test-catalog.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 6
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.ApiInventory.Extractor.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 6
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.ArchitectureFingerprint.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 6
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Diagrams.Renderer.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-11",
+      "churn": 6
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Overview.TruthPack.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-04",
+      "churn": 6
+    },
+    {
+      "path": ".appdoc/scripts/powershell/parse-typescript-ast.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 6
+    },
+    {
+      "path": ".appdoc/scripts/powershell/validate-start-here.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 6
+    },
+    {
+      "path": ".appdoc/templates/build-cookbook-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 6
+    },
+    {
+      "path": ".github/prompts/appdoc.diagrams.prompt.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 6
+    },
+    {
+      "path": "ROADMAP.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 6
+    },
+    {
+      "path": ".appdoc/scripts/powershell/ci-doc-integrity-gate.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 5
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.DebtRegister.Extractor.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-20",
+      "churn": 5
+    },
+    {
+      "path": ".appdoc/scripts/powershell/parse-csharp-ast.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 5
+    },
+    {
+      "path": ".appdoc/scripts/powershell/validate-api-inventory.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 5
+    },
+    {
+      "path": ".appdoc/scripts/powershell/validate-debt-register.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 5
+    },
+    {
+      "path": ".appdoc/templates/api-inventory-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 5
+    },
+    {
+      "path": ".appdoc/templates/data-model-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 5
+    },
+    {
+      "path": ".appdoc/templates/dependencies-catalog-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 5
+    },
+    {
+      "path": ".appdoc/templates/overview-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 5
+    },
+    {
+      "path": ".appdoc/templates/tech-debt-register-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 5
+    },
+    {
+      "path": ".appdoc/templates/test-catalog-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 5
+    },
+    {
+      "path": "docs/api-inventory.appendix.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 5
+    },
+    {
+      "path": "docs/appdoc-artifact-quality-audit.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 5
+    },
+    {
+      "path": "docs/appdoc-remediation-plan.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 5
+    },
+    {
+      "path": "docs/evidence/evidence-graph.summary.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 5
+    },
+    {
+      "path": "docs/evidence/metrics-canonical.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 5
+    },
+    {
+      "path": "docs/implementation-checklist-v3.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 5
+    },
+    {
+      "path": ".appdoc/scripts/powershell/agent-bridge-responder.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 4
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-c4-mermaid-diagrams.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 4
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-docs-index.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-04",
+      "churn": 4
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.AI.Provider.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 4
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.BuildCookbook.Extractor.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 4
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Diagrams.Normalizer.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-11",
+      "churn": 4
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.FrameworkDetection.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 4
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Overview.Narrative.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 4
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Overview.Pipeline.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 4
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.TestCatalog.Extractor.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-20",
+      "churn": 4
+    },
+    {
+      "path": ".appdoc/scripts/powershell/validate-dependencies-catalog.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-04",
+      "churn": 4
+    },
+    {
+      "path": ".github/copilot-instructions.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-15",
+      "churn": 4
+    },
+    {
+      "path": "docs/diagrams/index.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-11",
+      "churn": 4
+    },
+    {
+      "path": "tmp/logs/validate-documentation.out.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 4
+    },
+    {
+      "path": ".appdoc/docs/diagram-workflow.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/profiles/default.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/scripts/powershell/appdoc.diagnose.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/scripts/powershell/common.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-diagrams.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Determinism.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-20",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Diagrams.GraphExtractor.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-11",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.EvidenceGraph.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-04",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.TaskGuides.Extractor.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-20",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.TaskGuides.Renderer.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-19",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Validation.Core.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-11",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/scripts/powershell/run-appdoc-semantic-enrich.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/scripts/powershell/synthesize-assessment-report.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/scripts/powershell/validate-config-catalog.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-18",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/scripts/powershell/validate-data-model.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-18",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/templates/task-guides-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 3
+    },
+    {
+      "path": ".github/workflows/appdoc-ci.yml",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 3
+    },
+    {
+      "path": ".tmp-logs/run-pester-safe.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 3
+    },
+    {
+      "path": "docs/evidence/config-catalog.evidence.README.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 3
+    },
+    {
+      "path": "docs/evidence/diagram-truth-pack.summary.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 3
+    },
+    {
+      "path": "docs/evidence/narrative/review_notes.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 3
+    },
+    {
+      "path": "tests/powershell/MermaidDiagrams.Tests.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-04",
+      "churn": 3
+    },
+    {
+      "path": ".appdoc/scripts/powershell/calculate-quality-metrics.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/ci-diagram-stability-gate.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/gap-analysis.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-architecture-diagram.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-c4-diagrams.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-dependency-graph.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-18",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-readme.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Diagrams.Contract.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Overview.Extractor.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-18",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Profiles.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/C4ModelBuilder.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/DiagramIntegration.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/PlantUMLRenderer.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/render-plantuml-diagrams.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/run-appdoc-enrich.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/templates/c4/c4-component-template.puml",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/templates/c4/c4-container-template.puml",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/templates/c4/c4-context-template.puml",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/templates/diagrams-readme-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/validate-build-cookbook.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-18",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/scripts/powershell/validate-task-guides.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/tools/AppDoc.CSharpAstParser/Program.cs",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 2
+    },
+    {
+      "path": ".github/prompts/appdoc.enrich.prompt.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": ".tmp-logs/pester-full.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 2
+    },
+    {
+      "path": ".vscode/settings.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-18",
+      "churn": 2
+    },
+    {
+      "path": "davia",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2025-11-14",
+      "churn": 2
+    },
+    {
+      "path": "docs/diagnostics-report.summary.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-11",
+      "churn": 2
+    },
+    {
+      "path": "docs/evidence/manifest.summary.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 2
+    },
+    {
+      "path": "docs/evidence/narrative-context-pack.summary.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 2
+    },
+    {
+      "path": "docs/evidence/narrative-run-report.summary.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 2
+    },
+    {
+      "path": "docs/evidence/overview-truth-pack.summary.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 2
+    },
+    {
+      "path": "docs/quality-report.summary.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 2
+    },
+    {
+      "path": "docs/validation-report.summary.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-16",
+      "churn": 2
+    },
+    {
+      "path": "tmp_before.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 2
+    },
+    {
+      "path": "tmp_crit.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 2
+    },
+    {
+      "path": "tmp_crit2.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 2
+    },
+    {
+      "path": "tmp_renderer_part.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 2
+    },
+    {
+      "path": "tmp_seq.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-26",
+      "churn": 2
+    },
+    {
+      "path": "tmp/CMich.CoreApi-master.matrix.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/DegreeAudit.matrix.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/LmsConnect-master.matrix.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/logs/pester-arch.out.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/logs/run-all-generators.out.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/logs/validate-diagrams.out.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/matrix-baseline.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/matrix-cmich-run.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/matrix-current.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/matrix-degreeaudit-run.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/matrix-lms-run.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/noapi-smoke.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/pester.latest.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/run-all-generators.latest.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/validate-diagrams.latest.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/validate-documentation.latest.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/validation-latest.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/verify-CMich.CoreApi-master.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/verify-DegreeAudit.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": "tmp/verify-LmsConnect-master.log",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 2
+    },
+    {
+      "path": ".appdoc/memory/style-guide.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2025-11-14",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/analyze-codebase.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2025-11-14",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/analyze-repository.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2025-11-14",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/ci-enrichment-gate.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/ci-syntax-gate.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-18",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/extract-config.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2025-11-14",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-assessment-report.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2025-11-14",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-classic-asp-datamodel.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-classic-asp-endpoints.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-classic-asp-extcalls.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-classic-asp-failures.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-classic-asp-platform.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-classic-asp-procdict.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-classic-asp-security.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-evidence-register.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-external-calls.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-git-ownership.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-html-report.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-pristine-report.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-source-docs.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-unified-master.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/generate-verification-appendix.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Config.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Epistemic.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.ExternalCall.Extractor.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.GitOwnership.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Overview.PromptCompiler.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-20",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.Pristine.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.SemanticRedaction.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/modules/AppDoc.SourceDocs.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/quality-framework.psm1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2025-11-14",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/scripts/powershell/run-appdoc-build.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/templates/html/navy-teal.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/templates/html/theme.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/templates/readme-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2025-11-14",
+      "churn": 1
+    },
+    {
+      "path": ".appdoc/tools/AppDoc.CSharpAstParser/AppDoc.CSharpAstParser.csproj",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".github/prompts/speckit.analyze.prompt.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".github/prompts/speckit.checklist.prompt.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".github/prompts/speckit.clarify.prompt.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".github/prompts/speckit.constitution.prompt.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".github/prompts/speckit.implement.prompt.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".github/prompts/speckit.plan.prompt.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".github/prompts/speckit.specify.prompt.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".github/prompts/speckit.tasks.prompt.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".specify/memory/constitution.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".specify/scripts/powershell/check-prerequisites.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".specify/scripts/powershell/common.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".specify/scripts/powershell/create-new-feature.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".specify/scripts/powershell/setup-plan.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".specify/scripts/powershell/update-agent-context.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".specify/templates/agent-file-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".specify/templates/checklist-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".specify/templates/plan-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".specify/templates/spec-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".specify/templates/tasks-template.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": ".tmp-logs/pester-full.result.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-04",
+      "churn": 1
+    },
+    {
+      "path": "docs/adr/0001-redaction-externalize-per-target-secrets.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "docs/adr/0002-generated-docs-as-code.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "docs/api-inventory.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "docs/application-documentation.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "docs/application-documentation.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "docs/data-model.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence-register.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/api-inventory.evidence.enriched.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/build-cookbook.evidence.enriched.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/config-catalog.evidence.enriched.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/data-model.evidence.enriched.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/debt-register.evidence.enriched.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/dependencies-catalog.evidence.enriched.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/overview.evidence.enriched.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/applied/api-inventory.semantic.applied.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/applied/build-cookbook.semantic.applied.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/applied/config-catalog.semantic.applied.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/applied/data-model.semantic.applied.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/applied/debt-register.semantic.applied.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/applied/dependencies-catalog.semantic.applied.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/applied/overview.semantic.applied.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/applied/start-here.semantic.applied.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/applied/task-guides.semantic.applied.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/applied/test-catalog.semantic.applied.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/input/api-inventory.semantic.input.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/input/build-cookbook.semantic.input.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/input/config-catalog.semantic.input.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/input/data-model.semantic.input.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/input/debt-register.semantic.input.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/input/dependencies-catalog.semantic.input.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/input/overview.semantic.input.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/input/start-here.semantic.input.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/input/task-guides.semantic.input.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/input/test-catalog.semantic.input.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/semantic/semantic-pending.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/start-here.evidence.enriched.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/task-guides.evidence.enriched.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/evidence/test-catalog.evidence.enriched.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-03-05",
+      "churn": 1
+    },
+    {
+      "path": "docs/extcalls.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "docs/GLOSSARY.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "docs/procdict.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "docs/report.html",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "docs/security.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "docs/test-catalog.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "docs/verification-appendix.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "SKILL.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/classic-asp-sample/admin-report.asp",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/classic-asp-sample/audit-log.asp",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/classic-asp-sample/common/helpers.inc",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/classic-asp-sample/global.asa",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/classic-asp-sample/index.asp",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/classic-asp-sample/new-ticket.asp",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/classic-asp-sample/search-ticket.asp",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/classic-asp-sample/web.config",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-core-api-sample/appsettings.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-core-api-sample/Controllers/OrdersController.cs",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-core-api-sample/Controllers/StatusController.cs",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-core-api-sample/Controllers/TicketsController.cs",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-core-api-sample/Data/TicketRepository.cs",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-core-api-sample/Models/Ticket.cs",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-core-api-sample/Program.cs",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-core-api-sample/TicketApi.csproj",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-webforms-sample/DataAccess.cs",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-webforms-sample/index.aspx",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-webforms-sample/index.aspx.cs",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-webforms-sample/resetpwd.aspx",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-webforms-sample/resetpwd.aspx.cs",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-webforms-sample/search.aspx",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-webforms-sample/search.aspx.cs",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-webforms-sample/Ticket.cs",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-webforms-sample/TicketService.cs",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/csharp-webforms-sample/web.config",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/java-spring-sample/pom.xml",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/java-spring-sample/README.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/java-spring-sample/src/main/java/com/acme/Application.java",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/java-spring-sample/src/main/java/com/acme/Ticket.java",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/java-spring-sample/src/main/java/com/acme/TicketRepository.java",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/java-spring-sample/src/main/java/com/acme/TicketsController.java",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/java-spring-sample/src/main/java/com/acme/TicketService.java",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/java-spring-sample/src/main/java/com/example/app/AuditLog.java",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/java-spring-sample/src/main/java/com/example/app/AuditLogController.java",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/java-spring-sample/src/main/resources/application.properties",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/java-spring-sample/src/main/resources/application.yml",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/mock-llm-semantic-output/data-model.semantic.output.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/node-express-sample/.env",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/node-express-sample/package.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/node-express-sample/README.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/node-express-sample/src/data/db.ts",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/node-express-sample/src/index.ts",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/node-express-sample/src/models/Ticket.ts",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/node-express-sample/src/routes/tickets.ts",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/node-express-sample/src/services/itsm.ts",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/node-express-sample/tsconfig.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/python-flask-sample/.env",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/python-flask-sample/app.py",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/python-flask-sample/data/__init__.py",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/python-flask-sample/data/db.py",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/python-flask-sample/docs/ast-csharp-cache.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/python-flask-sample/docs/ast-typescript-cache.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/python-flask-sample/models.py",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/python-flask-sample/README.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/python-flask-sample/requirements.txt",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/python-flask-sample/routes.py",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/python-flask-sample/services/__init__.py",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/fixtures/python-flask-sample/services/itsm.py",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-10-21",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/C4ModelBuilder.Tests.ps1",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/api-inventory.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/ast-csharp-cache.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/ast-typescript-cache.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/build-cookbook.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/config-catalog.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/data-model.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/debt-register.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/dependencies-catalog.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/diagnostics-report.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/diagrams/c4-container.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/diagrams/c4-context.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/diagrams/README.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/evidence/api-inventory.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/evidence/build-cookbook.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/evidence/config-catalog.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/evidence/data-model.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/evidence/debt-register.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/evidence/dependencies-catalog.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/evidence/manifest.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/evidence/overview.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/evidence/start-here.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/evidence/task-guides.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/evidence/test-catalog.evidence.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/framework-detection.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/index.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/overview.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/quality-report.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/start-here.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/task-guides.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/test-catalog.md",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/validation-diagnostics.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/docs/validation-report.json",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    },
+    {
+      "path": "tests/powershell/fixtures/sample-dotnet-app/SampleApp.Common/SampleApp.Common.csproj",
+      "owner": "Tim Niles <nilestimothyj@gmail.com>",
+      "lastChange": "2026-02-17",
+      "churn": 1
+    }
+  ]
+}

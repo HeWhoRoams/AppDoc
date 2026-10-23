@@ -1,19 +1,19 @@
 [
   {
-    "language": "C#",
-    "versionRange": "2.1+",
-    "framework": "ASP.NET Core",
     "detectionSignals": [
       "*.csproj",
       "[ApiController]",
       "MapControllers"
     ],
+    "versionRange": "2.1+",
     "coveragePercent": 90,
     "supportLevel": "full",
+    "language": "C#",
+    "framework": "ASP.NET Core",
     "provenance": {
       "generatorVersion": "appdoc-run-all-generators/3.0.0",
-      "commitHash": "85946f7",
-      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "commitHash": "546ea9d",
+      "generatedAt": "2026-10-22T10:29:42-04:00",
       "profile": "default",
       "scope": ".",
       "confidenceInferenceFlags": [
@@ -23,19 +23,19 @@
     }
   },
   {
-    "language": "C#",
-    "versionRange": "5.x",
-    "framework": "ASP.NET MVC 5",
     "detectionSignals": [
       "System.Web.Mvc",
       "*Controller.cs"
     ],
+    "versionRange": "5.x",
     "coveragePercent": 75,
     "supportLevel": "partial",
+    "language": "C#",
+    "framework": "ASP.NET MVC 5",
     "provenance": {
       "generatorVersion": "appdoc-run-all-generators/3.0.0",
-      "commitHash": "85946f7",
-      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "commitHash": "546ea9d",
+      "generatedAt": "2026-10-22T10:29:42-04:00",
       "profile": "default",
       "scope": ".",
       "confidenceInferenceFlags": [
@@ -45,19 +45,21 @@
     }
   },
   {
-    "language": "Python",
-    "versionRange": "2.x+",
-    "framework": "Flask",
     "detectionSignals": [
       "requirements.txt:flask",
-      "@app.route"
+      "@app.route",
+      "app = Flask(",
+      "create_app"
     ],
+    "versionRange": "2.x+",
     "coveragePercent": 65,
     "supportLevel": "partial",
+    "language": "Python",
+    "framework": "Flask",
     "provenance": {
       "generatorVersion": "appdoc-run-all-generators/3.0.0",
-      "commitHash": "85946f7",
-      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "commitHash": "546ea9d",
+      "generatedAt": "2026-10-22T10:29:42-04:00",
       "profile": "default",
       "scope": ".",
       "confidenceInferenceFlags": [
@@ -67,19 +69,19 @@
     }
   },
   {
-    "language": "Java",
-    "versionRange": "2.x+",
-    "framework": "Spring Boot",
     "detectionSignals": [
       "pom.xml:spring-boot",
       "@RestController"
     ],
+    "versionRange": "2.x+",
     "coveragePercent": 60,
     "supportLevel": "partial",
+    "language": "Java",
+    "framework": "Spring Boot",
     "provenance": {
       "generatorVersion": "appdoc-run-all-generators/3.0.0",
-      "commitHash": "85946f7",
-      "generatedAt": "2026-10-17T18:41:14-04:00",
+      "commitHash": "546ea9d",
+      "generatedAt": "2026-10-22T10:29:42-04:00",
       "profile": "default",
       "scope": ".",
       "confidenceInferenceFlags": [

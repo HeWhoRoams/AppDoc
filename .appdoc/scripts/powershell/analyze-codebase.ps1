@@ -1,3 +1,4 @@
+#requires -Version 7.2
 # Analyze codebase to identify documentation gaps
 # Used by /AppDoc.analyze command
 

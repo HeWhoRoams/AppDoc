@@ -31,7 +31,7 @@ $build = Join-Path $ps "run-appdoc-build.ps1"
 $fixture = Join-Path $RepoRoot "tests\fixtures\csharp-webforms-sample"
 $mockOut = Join-Path $RepoRoot "tests\fixtures\mock-llm-semantic-output\data-model.semantic.output.json"
 
-$work = Join-Path $env:TEMP ("p2a-quarantine-{0}" -f [guid]::NewGuid().ToString('n'))
+$work = Join-Path ([System.IO.Path]::GetTempPath()) ("p2a-quarantine-{0}" -f [guid]::NewGuid().ToString('n'))
 New-Item -ItemType Directory -Force -Path $work | Out-Null
 $target = Join-Path $work "target"
 Copy-Item -Path $fixture -Destination $target -Recurse

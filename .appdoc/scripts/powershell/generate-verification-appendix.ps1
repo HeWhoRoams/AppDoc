@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-verification-appendix.ps1
 #
@@ -186,7 +187,7 @@ foreach ($rec in $allRecords) {
 $md = @()
 $md += '# Verification Appendix'
 $md += ''
-$md += ('This appendix lists the exact, re-runnable PowerShell commands used to verify each `Verified` claim in the Evidence Register. All commands are run **from the repository root** (`' + $RootPath + '`). A non-empty `Select-String` result proves the cited source-level fact.')
+$md += ('This appendix lists the exact, re-runnable PowerShell commands used to verify each `Verified` claim in the Evidence Register. All commands are run **from the repository root** (`<repo-root>`). A non-empty `Select-String` result proves the cited source-level fact.')
 $md += ''
 $md += ('**Verified claims:** ' + $verifiedCount + '  ' + '|  **Re-runnable commands:** ' + $withCommand + '  ' + '|  **Insufficient detail (downgraded):** ' + $downgraded)
 $md += ''

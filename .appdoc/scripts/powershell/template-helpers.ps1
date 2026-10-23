@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # template-helpers.ps1
 #

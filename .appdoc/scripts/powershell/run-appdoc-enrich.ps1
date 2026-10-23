@@ -1,3 +1,4 @@
+#requires -Version 7.2
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
@@ -135,7 +136,7 @@ foreach ($file in $evidenceFiles) {
         metadata = [ordered]@{
             enriched = $true
             enrichmentMode = "schema-bootstrap"
-            enrichmentPrompt = ".github/prompts/appdoc.enrich.prompt.md"
+            enrichmentPrompt = "references/enrichment-contract.md"
             sourceEvidence = $file.Name
             requiresSemanticEnrichment = $true
         }

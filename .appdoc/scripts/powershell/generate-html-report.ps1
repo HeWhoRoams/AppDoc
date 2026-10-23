@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-html-report.ps1
 #
@@ -409,9 +410,32 @@ $doc += '</style>'
 $doc += '</head>'
 $doc += '<body>'
 $doc += '<header class="masthead">'
-$doc += '  <span class="logo" aria-hidden="true">'
-$doc += $cmuLogoSvg
-$doc += '  </span>'
+# Masthead logo is theme-driven (masthead.logoSvg): 'inline:cmu' (built-in CMU mark; also the default
+# when the property is absent), 'none' / '' (no logo), or 'file:<path>' / '<path>.svg' (inline an SVG
+# file; relative paths resolve against the theme file's directory).
+$logoSpec = if ($M -and $M.PSObject.Properties['logoSvg']) { [string]$M.logoSvg } else { 'inline:cmu' }
+$logoMarkup = $null
+if ([string]::IsNullOrWhiteSpace($logoSpec) -or $logoSpec -ieq 'none') {
+    $logoMarkup = $null
+}
+elseif ($logoSpec -ieq 'inline:cmu') {
+    $logoMarkup = $cmuLogoSvg
+}
+else {
+    $svgRel = if ($logoSpec -like 'file:*') { $logoSpec.Substring(5) } else { $logoSpec }
+    $svgPath = if ([System.IO.Path]::IsPathRooted($svgRel)) { $svgRel } else { Join-Path (Split-Path -Parent (Resolve-Path -LiteralPath $ThemePath).Path) $svgRel }
+    if ((Test-Path -LiteralPath $svgPath) -and ($svgPath -like '*.svg')) {
+        $logoMarkup = Get-Content -LiteralPath $svgPath -Raw
+    }
+    else {
+        Write-Warning "Theme logo '$logoSpec' not found or not an .svg file; rendering without a logo."
+    }
+}
+if ($logoMarkup) {
+    $doc += '  <span class="logo" aria-hidden="true">'
+    $doc += $logoMarkup
+    $doc += '  </span>'
+}
 $doc += '  <div>'
 $doc += "    <h1>$docTitle</h1>"
 $doc += "    <div class=""sub"">$docSub</div>"

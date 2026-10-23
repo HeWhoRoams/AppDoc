@@ -1,6 +1,6 @@
 # Test Catalog
 
-**Generated**: 2026-10-17 18:40:58
+**Generated**: 2026-10-22 10:29:31
 
 ## Summary
 
@@ -28,8 +28,8 @@ No test cases were extracted for this framework.
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 85946f7
-- Generated At: 2026-10-17T18:41:14-04:00
+- Commit Hash: 546ea9d
+- Generated At: 2026-10-22T10:29:42-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

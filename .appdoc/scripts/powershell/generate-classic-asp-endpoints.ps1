@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-classic-asp-endpoints.ps1
 #

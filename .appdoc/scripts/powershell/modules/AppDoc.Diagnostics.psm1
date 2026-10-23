@@ -50,6 +50,20 @@ function ConvertTo-AppDocDiagnosticsPortablePath {
     }
 
     $normalized = $candidate -replace '\\', '/'
+    # Paths inside the AppDoc install itself -> <appdoc>/...; any other absolute path -> <external>/<leaf>.
+    # Generated artifacts must not embed host-specific absolute paths.
+    try {
+        $appdocRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..' '..' '..'))
+        $full = [System.IO.Path]::GetFullPath($candidate)
+        if ($full.StartsWith($appdocRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+            $rel = [System.IO.Path]::GetRelativePath($appdocRoot, $full) -replace '\\', '/'
+            return ('<appdoc>/' + $rel)
+        }
+        if ([System.IO.Path]::IsPathRooted($candidate)) {
+            return ('<external>/' + [System.IO.Path]::GetFileName($full))
+        }
+    }
+    catch { }
         if ($normalized -match '^[A-Za-z]:') {
             $normalizedPath = $normalized -replace '\\', '/'
             $normalizedPath = $normalizedPath -replace '^[A-Za-z]:', '${ROOT_PATH}'

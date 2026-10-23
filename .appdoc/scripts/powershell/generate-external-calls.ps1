@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #
 # generate-external-calls.ps1
 #

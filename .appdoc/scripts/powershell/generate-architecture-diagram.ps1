@@ -1,3 +1,4 @@
+#requires -Version 7.2
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS

@@ -3,6 +3,33 @@
 
 $script:AppDocDeterminismVersion = "1.0.0"
 
+function ConvertTo-AppDocRelativePath {
+    <#
+    .SYNOPSIS
+        Returns Path relative to RootPath using forward slashes, so generated artifacts never embed host-specific absolute paths.
+        Paths outside RootPath are returned as '<external>/<leaf>'.
+    #>
+    [CmdletBinding()]
+    param(
+        [AllowNull()][string]$Path,
+        [Parameter(Mandatory = $true)][string]$RootPath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Path)) { return "" }
+    try {
+        $root = [System.IO.Path]::GetFullPath($RootPath)
+        $full = [System.IO.Path]::GetFullPath($Path)
+    }
+    catch { return ($Path -replace '\\', '/') }
+
+    $rel = [System.IO.Path]::GetRelativePath($root, $full)
+    if ($rel -eq '.') { return '.' }
+    if ($rel.StartsWith('..') -or [System.IO.Path]::IsPathRooted($rel)) {
+        return ('<external>/' + [System.IO.Path]::GetFileName($full))
+    }
+    return ($rel -replace '\\', '/')
+}
+
 function ConvertTo-AppDocDeterministicValue {
     [CmdletBinding()]
     param(
@@ -121,5 +148,6 @@ function Get-AppDocDeterministicHash {
 
 Export-ModuleMember -Function @(
     'ConvertTo-AppDocOrderedExtractionRecords',
+    'ConvertTo-AppDocRelativePath',
     'Get-AppDocDeterministicHash'
 )

@@ -1,10 +1,10 @@
 # C4 Container
 
-**Generated**: 2026-10-17 18:40:59
+**Generated**: 2026-10-22 10:29:34
 
 ## Summary
 
-- System: AppDoc (repository root)
+- System: w2 (repository root)
 - Containers detected: 0
 - Relationships detected: 0
 - Note: no in-scope .NET solution file found; no deployable containers detected
@@ -13,9 +13,9 @@
 
 ```mermaid
 C4Container
-title AppDoc - Container View
+title w2 - Container View
 Person(user, "User", "Primary caller of the system")
-System_Boundary(system_boundary, "AppDoc") {
+System_Boundary(system_boundary, "w2") {
   Container(no_containers, "No deployable containers detected", "N/A", "No in-scope solution file")
 }
 Rel(user, no_containers, "Inspects")

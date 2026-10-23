@@ -1,0 +1,39 @@
+{
+  "artifact": "source-docs",
+  "generator": "generate-source-docs.ps1",
+  "module": "AppDoc.SourceDocs.psm1",
+  "version": "1.0.0",
+  "reportDate": "10/22/2026 10:28:50",
+  "fileCount": 1,
+  "totalRecords": 1,
+  "citedCategories": [
+    "troubleshooting"
+  ],
+  "categories": {
+    "ownership": [],
+    "role-access": [],
+    "operational-policy": [],
+    "escalation": [],
+    "troubleshooting": [
+      {
+        "category": "troubleshooting",
+        "claim": "## Troubleshooting",
+        "path": "README.md",
+        "lines": [
+          146
+        ],
+        "lineStart": 146,
+        "lineEnd": 146,
+        "sub": "",
+        "provenance": "README.md:146",
+        "confidence": "medium"
+      }
+    ],
+    "slo": []
+  },
+  "files": {
+    "README.md": [
+      "troubleshooting"
+    ]
+  }
+}

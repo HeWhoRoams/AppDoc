@@ -1,3 +1,4 @@
+#requires -Version 7.2
 <#
 .SYNOPSIS
     Generates C4 architecture diagrams in Mermaid format.

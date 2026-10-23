@@ -1,4 +1,4 @@
-﻿# AppDoc
+# AppDoc
 
 ## Overview
 
@@ -13,7 +13,7 @@ Two things set it apart:
 
 ## Prerequisites
 
-- **PowerShell 7+** (`pwsh`) — required for all scripts. Runs on **Linux and Windows** (AppDoc is actively run on Linux).
+- **PowerShell 7.2+** (`pwsh`) — required for all scripts (Windows PowerShell 5.1 is not supported). Runs on **Windows and Linux**; CI exercises both.
 - **Target codebase path** where the `docs/` output can be written. Work on a **scratch copy** of a real target so you never clobber its committed `docs/`.
 - **(Optional)** An AI/LLM session for the enrichment layer. No provider or key is required by AppDoc.
 
@@ -35,6 +35,14 @@ Fills the owner-required narrative cells (purpose, data flows, ownership) that s
 - **An input-hash cache** — re-runs skip unchanged records.
 
 It is **OFF by default** and no-ops to deterministic-only output when not enabled. The layer's contract is documented in the AI prompts under `.github/prompts/` (`appdoc.begin`, `appdoc.enrich`, `appdoc.enhance`, `appdoc.diagrams`).
+
+## Using AppDoc as a skill
+
+AppDoc ships as a harness-agnostic skill: `SKILL.md` is the entry point and `references/` holds the detailed contracts (`enrichment-contract.md`, `enrichment-operations.md`, `config-schema.md`, `verification.md`). Any AI tool that can read `SKILL.md` and run `pwsh` can drive it. GitHub Copilot slash-command wrappers live in `.github/prompts/`.
+
+## Branding and configuration
+
+AppDoc is CMU-first: reports default to the CMU maroon/gold theme and mark. Theme, logo, report header text, redaction patterns and output directory are all configurable per target via `.appdoc/config.json` — see [`references/config-schema.md`](references/config-schema.md). Other organizations set `theme`/`themeFile` and `masthead.logoSvg` (`none` or their own SVG).
 
 ## Quick Start
 
@@ -108,8 +116,8 @@ A fail-closed gate (`Test-AppDocSemanticRedactionGate`) blocks the enrichment st
 ## Verification
 
 - **`validate-documentation.ps1`** — the authoritative gate: a composite score plus blocking policy checks. A run can score at or above threshold and still fail on a blocking policy issue.
-- **Six golden regression suites** — 132 assertions across the six framework classes. They lock each framework's recorded output to its committed baseline and guard against extractor regressions.
-- **The 18-proof semantic-quarantine harness** (`tests/powershell/test-semantic-quarantine.ps1`) — a self-contained, fail-closed proof of the redaction + quarantine layer using its own fixture secrets. Run it as a plain script, **not** Pester:
+- **Six golden regression suites** — one per framework class (all assertions must pass). They lock each framework's recorded output to its committed baseline and guard against extractor regressions.
+- **The semantic-quarantine proof harness** (`tests/powershell/test-semantic-quarantine.ps1`) — a self-contained, fail-closed proof of the redaction + quarantine layer using its own fixture secrets. Run it as a plain script, **not** Pester:
 
 ```bash
 pwsh -NoProfile -File tests/powershell/test-semantic-quarantine.ps1
@@ -156,7 +164,7 @@ The gate is the accuracy device — never lower the quality threshold or weaken 
 
 ## License
 
-License file is not currently included in this repository. Add a `LICENSE` file before external distribution.
+MIT — see [LICENSE](LICENSE). Copyright (c) 2026 Tim Niles.
 
 ## Support
 

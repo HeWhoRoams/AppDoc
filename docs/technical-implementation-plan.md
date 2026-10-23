@@ -117,9 +117,9 @@ Validation fails if provenance is missing.
 ## 9. Verification Matrix
 
 Run full workflow and validation after each phase for:
-- `C:\Github\legacy-csharp-mvc5-app`
-- `C:\Github\csharp-core-api-app`
-- `C:\Github\cms-content-connector-app`
+- `<path-to-legacy-csharp-mvc5-target>`
+- `<path-to-csharp-core-api-target>`
+- `<path-to-cms-connector-target>`
 
 Required outcomes per phase:
 - No architecture contradiction warnings.

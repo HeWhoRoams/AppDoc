@@ -327,7 +327,9 @@ function Get-AppDocDiagramApiEndpointEntries {
             Sort-Object @{ Expression = { if ([string]$_.direction -eq "inbound") { 0 } else { 1 } } }, `
                         @{ Expression = { [string]$_.label } }, `
                         @{ Expression = { [string]$_.component } }, `
-                        @{ Expression = { [string]$_.style } }
+                        @{ Expression = { [string]$_.style } }, `
+                        @{ Expression = { [string]$_.method } }, `
+                        @{ Expression = { [string]$_.ref } }
     )
 }
 
@@ -1030,7 +1032,7 @@ function Get-AppDocDiagramGraphData {
     if (Get-Command ConvertTo-AppDocGraphV1 -ErrorAction SilentlyContinue) {
         return (ConvertTo-AppDocGraphV1 -RootPath $RootPath -Nodes $nodes -Edges $edges -Project @{
                 name = $projectName
-                rootPath = $RootPath
+                rootPath = "."
         } -Sources $sources -Extensions @{ apiEntries = @($apiEntries) })
     }
 
@@ -1049,7 +1051,7 @@ function Get-AppDocDiagramGraphData {
         generatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
         project = [ordered]@{
             name = $projectName
-            rootPath = $RootPath
+            rootPath = "."
         }
         metrics = [ordered]@{
             nodeCount = $sortedNodes.Count

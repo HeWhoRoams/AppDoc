@@ -174,7 +174,7 @@ function Update-AppDocEvidenceManifest {
 
     $entry = [ordered]@{
         artifact = $Artifact
-        path = $EvidencePath
+        path = (ConvertTo-AppDocRelativePath -Path $EvidencePath -RootPath $RootPath)
         recordCount = $RecordCount
         updatedAt = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
         metadata = $Metadata

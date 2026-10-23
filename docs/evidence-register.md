@@ -2,7 +2,7 @@
 
 **Status model:** `Verified` — directly supported by inspected source (file + line or a searchable value). `Inferred` — a reasonable interpretation not confirmed by runtime. `Partly verified` — a file reference exists but the confirmable line/value is absent. `Unknown` — the repository does not establish the claim.
 
-**Records:** 64 across 10 evidence files.
+**Records:** 84 across 14 evidence files.
 
 Framework detected: **ASP.NET Core ASP.NET MVC 5 Flask Spring Boot** (C# C# Python Java); support level: full partial partial partial; extraction coverage: System.Object[]%.
 
@@ -64,6 +64,26 @@ Framework detected: **ASP.NET Core ASP.NET MVC 5 Flask Spring Boot** (C# C# Pyth
 | on.push.branches[0] | Verified | .github/workflows/appdoc-ci.yml | Runtime behavior not executed |
 | on.push.branches[1] | Verified | .github/workflows/appdoc-ci.yml | Runtime behavior not executed |
 | system-purpose | Inferred | repository | Interpretation not confirmed by runtime |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
+| (unnamed record) | Unknown | (no source reference) | Not established by repository |
 | api-inventory | Unknown | docs | Not established by repository |
 | data-model | Unknown | docs | Not established by repository |
 | source-files | Inferred | repository | Interpretation not confirmed by runtime |
@@ -73,15 +93,15 @@ Framework detected: **ASP.NET Core ASP.NET MVC 5 Flask Spring Boot** (C# C# Pyth
 | plan-debt-sprint | Unknown | docs | Not established by repository |
 | triage-dependency-risk | Unknown | docs | Not established by repository |
 
-**Status breakdown:** Verified (54), Inferred (3), Partly verified (1), Unknown (6)
+**Status breakdown:** Verified (54), Inferred (3), Partly verified (1), Unknown (26)
 
 > **Limitation note:** Every row is source-level. A `Verified` row proves the cited file/line exists; it does not prove runtime behavior, production configuration, or database procedure logic. Re-runnable commands for each `Verified` claim are in the Verification Appendix.
 
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 85946f7
-- Generated At: 2026-10-17T18:41:14-04:00
+- Commit Hash: 546ea9d
+- Generated At: 2026-10-22T10:29:42-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

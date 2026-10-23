@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-10-17T18:41:14-04:00",
+  "generatedAt": "2026-10-22T10:29:42-04:00",
   "summary": {
-    "total": 13,
+    "total": 5,
     "byCategory": {
-      "DETECTION_PATTERN_MISMATCH": 11,
-      "ENVIRONMENT_ERROR": 1,
-      "INITIALIZATION": 1
+      "ENVIRONMENT_ERROR": 2,
+      "INITIALIZATION": 1,
+      "DETECTION_PATTERN_MISMATCH": 2
     },
     "bySeverity": {
-      "Info": 2,
-      "Warning": 11
+      "Warning": 2,
+      "Info": 3
     },
     "hasErrors": false,
     "hasWarnings": true
   },
   "events": [
     {
-      "timestamp": "2026-10-17T18:41:06-04:00",
+      "timestamp": "2026-10-22T10:29:39-04:00",
       "category": "INITIALIZATION",
       "severity": "Info",
       "component": "orchestrator",
@@ -28,79 +28,7 @@
       }
     },
     {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Cross-artifact metric drift detected: cross-artifact-metric-drift:unified-master-endpoint-count:5/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Cross-artifact metric drift detected: cross-artifact-metric-drift:unified-master-model-count:4/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Cross-artifact metric drift detected: cross-artifact-metric-drift:overview-endpoint-count:5/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Cross-artifact metric drift detected: cross-artifact-metric-drift:overview-model-count:4/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: cross-artifact-metric-drift:unified-master-endpoint-count:5/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: cross-artifact-metric-drift:unified-master-model-count:4/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: cross-artifact-metric-drift:overview-endpoint-count:5/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: cross-artifact-metric-drift:overview-model-count:4/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
+      "timestamp": "2026-10-22T10:29:41-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -109,7 +37,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-10-17T18:41:14-04:00",
+      "timestamp": "2026-10-22T10:29:42-04:00",
       "category": "ENVIRONMENT_ERROR",
       "severity": "Info",
       "component": "Validation",
@@ -118,7 +46,16 @@
       "details": {}
     },
     {
-      "timestamp": "2026-10-17T18:41:14-04:00",
+      "timestamp": "2026-10-22T10:29:42-04:00",
+      "category": "ENVIRONMENT_ERROR",
+      "severity": "Info",
+      "component": "Validation",
+      "message": "Pristine check report generated (non-blocking depth measurement)",
+      "filePath": "./.appdoc/scripts/powershell/generate-pristine-report.ps1",
+      "details": {}
+    },
+    {
+      "timestamp": "2026-10-22T10:29:42-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "Narrative",
@@ -126,64 +63,34 @@
       "filePath": "./docs/evidence/narrative-run-report.json",
       "details": {
         "reasons": [
-          "missing-refs:what_it_does:1",
-          "missing-refs:what_it_does:2",
-          "missing-refs:what_it_does:3",
-          "missing-refs:processing_steps:1",
-          "missing-refs:processing_steps:2"
+          "style-business-verb-coverage-low:1",
+          "style-what-it-does-purpose-verb-low:0"
         ]
-      }
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "Validation",
-      "message": "Validation is below threshold in soft mode",
-      "filePath": "",
-      "details": {
-        "belowThreshold": 1,
-        "threshold": 80,
-        "averageScore": 89.0
       }
     }
   ],
   "metadata": {
+    "narrativeReviewReasons": [
+      "style-business-verb-coverage-low:1",
+      "style-what-it-does-purpose-verb-low:0"
+    ],
+    "narrativeRunReportPath": "./docs/evidence/narrative-run-report.json",
+    "rootPath": "./",
     "strictValidation": false,
-    "profile": "default",
-    "evidenceGraphMetrics": {
-      "entityCount": 112,
-      "edgeCount": 110,
-      "entityTypeCount": {
-        "config_key": 110,
-        "test_case": 0,
-        "component": 1,
-        "endpoint_outbound": 0,
-        "dependency": 0,
-        "system": 1,
-        "endpoint_inbound": 0,
-        "data_model": 0
-      },
-      "inboundEndpointCount": 0,
-      "outboundEndpointCount": 0,
-      "componentCount": 1,
-      "modelCount": 0,
-      "configCount": 110,
-      "dependencyCount": 0,
-      "testCaseCount": 0
+    "validationGate": {
+      "passed": true,
+      "reason": "Structured validation gate passed",
+      "averageScore": 99.0,
+      "belowThreshold": 0,
+      "strict": false,
+      "qualityThreshold": 80,
+      "evaluatedDocuments": 8
     },
     "outputPath": "./docs",
-    "rootPath": "./",
-    "frameworks": [
-      "ASP.NET Core",
-      "ASP.NET MVC 5",
-      "Flask",
-      "Spring Boot"
-    ],
-    "qualityThreshold": 80,
+    "narrativeReviewRequired": true,
     "architecture": {
       "version": "1.1.0",
-      "generatedAt": "2026-10-17T18:40:17-04:00",
+      "generatedAt": "2026-10-22T10:29:23-04:00",
       "primaryStyle": "no-api-surface",
       "primaryStyleLabel": "No API Surface",
       "styles": "no-api-surface",
@@ -206,43 +113,54 @@
         "sampledCodeFileCount": 0
       }
     },
-    "validationGate": {
-      "passed": false,
-      "reason": "Structured validation gate failed (score and/or policy gates)",
-      "averageScore": 89.0,
-      "belowThreshold": 1,
-      "strict": false,
-      "qualityThreshold": 80,
-      "evaluatedDocuments": 8
-    },
-    "narrativeReviewRequired": true,
+    "evidenceGraphPath": "./docs/evidence/evidence-graph.json",
     "localOnly": true,
+    "evidenceGraphMetrics": {
+      "entityCount": 74,
+      "edgeCount": 72,
+      "entityTypeCount": {
+        "test_case": 0,
+        "component": 1,
+        "config_key": 72,
+        "system": 1,
+        "endpoint_inbound": 0,
+        "dependency": 0,
+        "data_model": 0,
+        "endpoint_outbound": 0
+      },
+      "inboundEndpointCount": 0,
+      "outboundEndpointCount": 0,
+      "componentCount": 1,
+      "modelCount": 0,
+      "configCount": 72,
+      "dependencyCount": 0,
+      "testCaseCount": 0
+    },
     "evidenceGraphIntegrity": {
       "passed": true,
       "issues": null,
       "warnings": null,
       "metrics": {
-        "entityCount": 112,
-        "edgeCount": 110,
+        "entityCount": 74,
+        "edgeCount": 72,
         "inboundEndpointCount": 0,
         "outboundEndpointCount": 0
       }
     },
-    "narrativeReviewReasons": [
-      "missing-refs:what_it_does:1",
-      "missing-refs:what_it_does:2",
-      "missing-refs:what_it_does:3",
-      "missing-refs:processing_steps:1",
-      "missing-refs:processing_steps:2"
-    ],
-    "narrativeRunReportPath": "./docs/evidence/narrative-run-report.json",
-    "evidenceGraphPath": "./docs/evidence/evidence-graph.json",
-    "scriptFailures": null
+    "qualityThreshold": 80,
+    "profile": "default",
+    "scriptFailures": null,
+    "frameworks": [
+      "ASP.NET Core",
+      "ASP.NET MVC 5",
+      "Flask",
+      "Spring Boot"
+    ]
   },
   "provenance": {
     "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "85946f7",
-    "generatedAt": "2026-10-17T18:41:14-04:00",
+    "commitHash": "546ea9d",
+    "generatedAt": "2026-10-22T10:29:42-04:00",
     "profile": "default",
     "scope": ".",
     "confidenceInferenceFlags": [

@@ -1,6 +1,6 @@
 # Verification Appendix
 
-This appendix lists the exact, re-runnable PowerShell commands used to verify each `Verified` claim in the Evidence Register. All commands are run **from the repository root** (`/persistent/agent/workspace/AppDoc`). A non-empty `Select-String` result proves the cited source-level fact.
+This appendix lists the exact, re-runnable PowerShell commands used to verify each `Verified` claim in the Evidence Register. All commands are run **from the repository root** (`<repo-root>`). A non-empty `Select-String` result proves the cited source-level fact.
 
 **Verified claims:** 54  |  **Re-runnable commands:** 19  |  **Insufficient detail (downgraded):** 35
 
@@ -66,8 +66,8 @@ This appendix lists the exact, re-runnable PowerShell commands used to verify ea
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 85946f7
-- Generated At: 2026-10-17T18:41:14-04:00
+- Commit Hash: 546ea9d
+- Generated At: 2026-10-22T10:29:42-04:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

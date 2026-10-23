@@ -266,7 +266,7 @@ function Get-AppDocOverviewContextPackData {
         run_id = [Guid]::NewGuid().ToString()
         project = [ordered]@{
             name = $projectName
-            root_path = $RootPath
+            root_path = "."
             audience = $Audience
             style_profile = $StyleProfile
         }

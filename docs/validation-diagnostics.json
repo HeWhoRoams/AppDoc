@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-10-17T18:41:14-04:00",
+  "generatedAt": "2026-10-22T10:29:43-04:00",
   "summary": {
-    "total": 10,
+    "total": 2,
     "byCategory": {
-      "DETECTION_PATTERN_MISMATCH": 9,
-      "INITIALIZATION": 1
+      "INITIALIZATION": 1,
+      "DETECTION_PATTERN_MISMATCH": 1
     },
     "bySeverity": {
-      "Info": 1,
-      "Warning": 9
+      "Warning": 1,
+      "Info": 1
     },
     "hasErrors": false,
     "hasWarnings": true
   },
   "events": [
     {
-      "timestamp": "2026-10-17T18:41:06-04:00",
+      "timestamp": "2026-10-22T10:29:42-04:00",
       "category": "INITIALIZATION",
       "severity": "Info",
       "component": "orchestrator",
@@ -27,79 +27,7 @@
       }
     },
     {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Cross-artifact metric drift detected: cross-artifact-metric-drift:unified-master-endpoint-count:5/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Cross-artifact metric drift detected: cross-artifact-metric-drift:unified-master-model-count:4/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Cross-artifact metric drift detected: cross-artifact-metric-drift:overview-endpoint-count:5/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Cross-artifact metric drift detected: cross-artifact-metric-drift:overview-model-count:4/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: cross-artifact-metric-drift:unified-master-endpoint-count:5/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: cross-artifact-metric-drift:unified-master-model-count:4/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: cross-artifact-metric-drift:overview-endpoint-count:5/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
-      "category": "DETECTION_PATTERN_MISMATCH",
-      "severity": "Warning",
-      "component": "validation",
-      "message": "Policy gate blocking issue: cross-artifact-metric-drift:overview-model-count:4/0",
-      "filePath": "./docs",
-      "details": {}
-    },
-    {
-      "timestamp": "2026-10-17T18:41:14-04:00",
+      "timestamp": "2026-10-22T10:29:43-04:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -110,13 +38,13 @@
   ],
   "metadata": {
     "validation": {
-      "timestamp": "2026-10-17T18:41:14-04:00",
+      "timestamp": "2026-10-22T10:29:43-04:00",
       "strict": false,
       "threshold": 80,
-      "status": "fail",
-      "overallScore": 89,
-      "overallScoreRaw": 91.2,
-      "penaltyDeduction": 2.0,
+      "status": "pass",
+      "overallScore": 99,
+      "overallScoreRaw": 99.3,
+      "penaltyDeduction": 0.0,
       "metrics": {
         "validatorPassRate": 100.0,
         "artifactPresence": 100.0,
@@ -129,7 +57,7 @@
         "redactionSafetyScore": 100,
         "conformanceScore": 92.7,
         "sectionSpineCoverageScore": 100.0,
-        "epistemicCoverageScore": 97.0,
+        "epistemicCoverageScore": 97.7,
         "reVerifiabilityScore": 100.0,
         "claimGroundingScore": 100.0,
         "documentationFreshnessScore": 100.0,
@@ -138,14 +66,14 @@
         "taskGuideEvidenceCoverageScore": 50.0,
         "taskGuideTimeToCompleteMinutes": 12.0,
         "taskGuideTimeScore": 100.0,
-        "metricDriftScore": 0.0,
-        "policyGateScore": 55.0
+        "metricDriftScore": 100.0,
+        "policyGateScore": 100.0
       },
       "qualityPenaltyBreakdown": {
-        "totalPenaltyPoints": 16,
+        "totalPenaltyPoints": 0,
         "categoryTotals": {
           "contradiction": 0,
-          "duplicateRows": 16,
+          "duplicateRows": 0,
           "misclassification": 0,
           "staleProvenance": 0,
           "verbosityOverflow": 0
@@ -215,13 +143,13 @@
             "reasons": null
           },
           "dependencies-catalog": {
-            "total": 16,
+            "total": 0,
             "contradiction": 0,
-            "duplicateRows": 16,
+            "duplicateRows": 0,
             "misclassification": 0,
             "staleProvenance": 0,
             "verbosityOverflow": 0,
-            "reasons": "duplicate-rows:2"
+            "reasons": null
           }
         },
         "artifactCount": 8
@@ -230,44 +158,44 @@
       "missingEvidenceArtifacts": null,
       "validators": [
         {
-          "script": "validate-overview.ps1",
+          "message": "OK",
           "passed": true,
-          "message": "OK"
+          "script": "validate-overview.ps1"
         },
         {
-          "script": "validate-api-inventory.ps1",
+          "message": "OK",
           "passed": true,
-          "message": "OK"
+          "script": "validate-api-inventory.ps1"
         },
         {
-          "script": "validate-data-model.ps1",
+          "message": "OK",
           "passed": true,
-          "message": "OK"
+          "script": "validate-data-model.ps1"
         },
         {
-          "script": "validate-config-catalog.ps1",
+          "message": "OK",
           "passed": true,
-          "message": "OK"
+          "script": "validate-config-catalog.ps1"
         },
         {
-          "script": "validate-build-cookbook.ps1",
+          "message": "OK",
           "passed": true,
-          "message": "OK"
+          "script": "validate-build-cookbook.ps1"
         },
         {
-          "script": "validate-test-catalog.ps1",
+          "message": "OK",
           "passed": true,
-          "message": "OK"
+          "script": "validate-test-catalog.ps1"
         },
         {
-          "script": "validate-debt-register.ps1",
+          "message": "OK",
           "passed": true,
-          "message": "OK"
+          "script": "validate-debt-register.ps1"
         },
         {
-          "script": "validate-dependencies-catalog.ps1",
+          "message": "OK",
           "passed": true,
-          "message": "OK"
+          "script": "validate-dependencies-catalog.ps1"
         }
       ],
       "contractValidation": [
@@ -398,14 +326,9 @@
         }
       },
       "metricDrift": {
-        "score": 0.0,
-        "passed": false,
-        "issues": [
-          "cross-artifact-metric-drift:unified-master-endpoint-count:5/0",
-          "cross-artifact-metric-drift:unified-master-model-count:4/0",
-          "cross-artifact-metric-drift:overview-endpoint-count:5/0",
-          "cross-artifact-metric-drift:overview-model-count:4/0"
-        ],
+        "score": 100.0,
+        "passed": true,
+        "issues": null,
         "signals": {
           "canonical": {
             "endpointCount": 0,
@@ -414,13 +337,13 @@
             "testCaseCount": 0
           },
           "unifiedMaster": {
-            "endpointCount": 5,
-            "modelCount": 4,
+            "endpointCount": 0,
+            "modelCount": 0,
             "present": true
           },
           "overviewTruthPack": {
-            "endpointCount": 5,
-            "modelCount": 4,
+            "endpointCount": 0,
+            "modelCount": 0,
             "dependencyCount": 0
           },
           "testEvidenceCaseCount": 0,
@@ -435,14 +358,9 @@
         "issues": null
       },
       "policyGates": {
-        "blockingIssues": [
-          "cross-artifact-metric-drift:unified-master-endpoint-count:5/0",
-          "cross-artifact-metric-drift:unified-master-model-count:4/0",
-          "cross-artifact-metric-drift:overview-endpoint-count:5/0",
-          "cross-artifact-metric-drift:overview-model-count:4/0"
-        ],
-        "score": 55,
-        "passed": false
+        "blockingIssues": null,
+        "score": 100.0,
+        "passed": true
       },
       "coverageCalibration": {
         "path": "./csharp-default",
@@ -450,18 +368,241 @@
         "note": "config + data-model coverage measured with the C#-calibrated scorers (appsettings/config keys; model classes).",
         "config": null,
         "dataModel": null
+      },
+      "pristine": {
+        "blocking": false,
+        "mode": "report-only",
+        "additive": true,
+        "note": "Per-section depth measurement vs the HELP_DESK benchmark (Step 1b). MODE=report-only (DEFAULT): NON-BLOCKING — does not change status or overallScore.",
+        "subScore": 78.9,
+        "counts": {
+          "PASS": 11,
+          "WEAK": 0,
+          "EMPTY": 4,
+          "OWNER_REQUIRED": 4,
+          "NA": 1,
+          "scored": 19,
+          "total": 20
+        },
+        "naSections": "Stored-procedure data dictionary",
+        "reVerifiable": true,
+        "sections": [
+          {
+            "section": "Application Index",
+            "status": "PASS",
+            "reason": "at benchmark depth; real content; epistemic-tagged",
+            "rowCount": 0,
+            "sourceSupport": 0,
+            "benchmarkRef": "1",
+            "ownerPending": false,
+            "frameworkNA": false
+          },
+          {
+            "section": "Coverage and Executive Overview",
+            "status": "PASS",
+            "reason": "at benchmark depth; real content; epistemic-tagged",
+            "rowCount": 12,
+            "sourceSupport": 0,
+            "benchmarkRef": "2",
+            "ownerPending": false,
+            "frameworkNA": false
+          },
+          {
+            "section": "Architecture",
+            "status": "PASS",
+            "reason": "at benchmark depth; real content; epistemic-tagged",
+            "rowCount": 2,
+            "sourceSupport": 0,
+            "benchmarkRef": "3",
+            "ownerPending": false,
+            "frameworkNA": false
+          },
+          {
+            "section": "Functional Inventory",
+            "status": "EMPTY",
+            "reason": "no real content (placeholder only)",
+            "rowCount": 0,
+            "sourceSupport": 0,
+            "benchmarkRef": "4",
+            "ownerPending": false,
+            "frameworkNA": false
+          },
+          {
+            "section": "Roles and Access Model",
+            "status": "OWNER_REQUIRED",
+            "reason": "owner-pending cell (correctly Unknown; pending /appdoc.enhance); also carries 2 verified source-derivable row(s)",
+            "rowCount": 0,
+            "sourceSupport": 0,
+            "benchmarkRef": "5 (5.2 owner-required)",
+            "ownerPending": true,
+            "frameworkNA": false
+          },
+          {
+            "section": "UI Catalog",
+            "status": "EMPTY",
+            "reason": "no real content (placeholder only)",
+            "rowCount": 0,
+            "sourceSupport": 0,
+            "benchmarkRef": "6",
+            "ownerPending": false,
+            "frameworkNA": false
+          },
+          {
+            "section": "Help Desk Workflows",
+            "status": "OWNER_REQUIRED",
+            "reason": "owner-pending cell (correctly Unknown; pending /appdoc.enhance); also carries 3 verified source-derivable row(s)",
+            "rowCount": 0,
+            "sourceSupport": 0,
+            "benchmarkRef": "7 (7.x policy/escalation owner-required)",
+            "ownerPending": true,
+            "frameworkNA": false
+          },
+          {
+            "section": "Data and Integrations",
+            "status": "EMPTY",
+            "reason": "no real content (placeholder only)",
+            "rowCount": 0,
+            "sourceSupport": 0,
+            "benchmarkRef": "8",
+            "ownerPending": false,
+            "frameworkNA": false
+          },
+          {
+            "section": "External Call Register",
+            "status": "PASS",
+            "reason": "at benchmark depth; real content; epistemic-tagged",
+            "rowCount": 1,
+            "sourceSupport": 0,
+            "benchmarkRef": "8A",
+            "ownerPending": false,
+            "frameworkNA": false
+          },
+          {
+            "section": "Stored-procedure data dictionary",
+            "status": "NA",
+            "reason": "framework-N/A (stored-procedure data dictionary is classic-ASP-specific (ADO stored procedures transcribed from live `.inc` files); target is ASP.NET Core — no ADO data surface detected)",
+            "rowCount": 0,
+            "sourceSupport": 0,
+            "benchmarkRef": "8B",
+            "ownerPending": false,
+            "frameworkNA": true
+          },
+          {
+            "section": "Troubleshooting Matrix",
+            "status": "PASS",
+            "reason": "Verified-source-doc — populated from `README.md`: 146 (cited hand-authored docs; owner-pending cell resolved from source-of-truth)",
+            "rowCount": 0,
+            "sourceSupport": 0,
+            "benchmarkRef": "9 (11 escalation-paths owner-required)",
+            "ownerPending": true,
+            "frameworkNA": false
+          },
+          {
+            "section": "Security and Operational Risks",
+            "status": "PASS",
+            "reason": "at benchmark depth; real content; epistemic-tagged",
+            "rowCount": 5,
+            "sourceSupport": 0,
+            "benchmarkRef": "10",
+            "ownerPending": false,
+            "frameworkNA": false
+          },
+          {
+            "section": "Ownership and Maintenance",
+            "status": "OWNER_REQUIRED",
+            "reason": "owner-pending cell (correctly Unknown; pending /appdoc.enhance); also carries 23 verified source-derivable row(s)",
+            "rowCount": 23,
+            "sourceSupport": 0,
+            "benchmarkRef": "11 (13 ownership/SLO owner-required)",
+            "ownerPending": true,
+            "frameworkNA": false
+          },
+          {
+            "section": "Architecture and Data-Flow Diagrams",
+            "status": "PASS",
+            "reason": "at benchmark depth; real content; epistemic-tagged",
+            "rowCount": 0,
+            "sourceSupport": 0,
+            "benchmarkRef": "12",
+            "ownerPending": false,
+            "frameworkNA": false
+          },
+          {
+            "section": "Glossary",
+            "status": "EMPTY",
+            "reason": "no real content (placeholder only)",
+            "rowCount": 0,
+            "sourceSupport": 0,
+            "benchmarkRef": "13 (Glossary)",
+            "ownerPending": false,
+            "frameworkNA": false
+          },
+          {
+            "section": "Evidence Register",
+            "status": "PASS",
+            "reason": "at benchmark depth; real content; epistemic-tagged",
+            "rowCount": 84,
+            "sourceSupport": 0,
+            "benchmarkRef": "discipline-addition (14)",
+            "ownerPending": false,
+            "frameworkNA": false
+          },
+          {
+            "section": "Open Questions and Documentation Gaps",
+            "status": "OWNER_REQUIRED",
+            "reason": "owner-pending cell (correctly Unknown; pending /appdoc.enhance); also carries 12 verified source-derivable row(s)",
+            "rowCount": 0,
+            "sourceSupport": 0,
+            "benchmarkRef": "17",
+            "ownerPending": true,
+            "frameworkNA": false
+          },
+          {
+            "section": "Recommendations",
+            "status": "PASS",
+            "reason": "at benchmark depth; real content; epistemic-tagged",
+            "rowCount": 2,
+            "sourceSupport": 0,
+            "benchmarkRef": "16",
+            "ownerPending": false,
+            "frameworkNA": false
+          },
+          {
+            "section": "Operations Runbook",
+            "status": "PASS",
+            "reason": "at benchmark depth; real content; epistemic-tagged",
+            "rowCount": 5,
+            "sourceSupport": 0,
+            "benchmarkRef": "17 (Ops Runbook)",
+            "ownerPending": false,
+            "frameworkNA": false
+          },
+          {
+            "section": "Verification Appendix",
+            "status": "PASS",
+            "reason": "at benchmark depth; real content; epistemic-tagged",
+            "rowCount": 54,
+            "sourceSupport": 0,
+            "benchmarkRef": "discipline-addition (18)",
+            "ownerPending": false,
+            "frameworkNA": false
+          }
+        ],
+        "report": "docs/pristine-report.md",
+        "evidence": "docs/evidence/pristine.evidence.json",
+        "determinismHash": "16b6b8e755a93d71d44057314ccec0c28629c441f6729548ee630837b48fe5fd"
+      },
+      "pristineGate": {
+        "mode": "report-only",
+        "enabled": false,
+        "floor": 80,
+        "emptyCount": 4,
+        "subScore": 78.9,
+        "floorMet": false,
+        "blocked": false,
+        "blockingIssues": null,
+        "note": "REPORT-ONLY mode (DEFAULT): depth measurement, never blocks — pristineGate.blocked=false; status/overallScore unchanged."
       }
     }
-  },
-  "provenance": {
-    "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "85946f7",
-    "generatedAt": "2026-10-17T18:41:14-04:00",
-    "profile": "default",
-    "scope": ".",
-    "confidenceInferenceFlags": [
-      "deterministic",
-      "evidence-backed"
-    ]
   }
 }

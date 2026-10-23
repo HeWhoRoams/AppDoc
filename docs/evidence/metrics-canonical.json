@@ -1,6 +1,6 @@
 {
   "schemaVersion": "appdoc-metrics-canonical/v1",
-  "generatedAt": "2026-10-17T18:41:00-04:00",
+  "generatedAt": "2026-10-22T10:29:35-04:00",
   "source": {
     "endpoint": "docs/evidence/api-inventory.evidence.json",
     "model": "docs/evidence/data-model.evidence.json",
@@ -26,8 +26,8 @@
       "testCaseCount": 0
     },
     "overviewTruthPack": {
-      "endpointCount": 5,
-      "modelCount": 4,
+      "endpointCount": 0,
+      "modelCount": 0,
       "dependencyCount": 0
     }
   }

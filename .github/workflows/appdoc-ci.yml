@@ -2,154 +2,94 @@ name: appdoc-ci
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
-  syntax-gate:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run PowerShell syntax gate
-        shell: pwsh
-        run: |
-          ./.appdoc/scripts/powershell/ci-syntax-gate.ps1 -RootPath .
-      - name: Run documentation integrity gate
-        shell: pwsh
-        run: |
-          ./.appdoc/scripts/powershell/ci-doc-integrity-gate.ps1 -RootPath .
-
-  golden-test:
+  hygiene:
+    name: Repo hygiene and static gates
     runs-on: ubuntu-latest
-    name: Golden-file regression (framework-agnostic)
     steps:
       - uses: actions/checkout@v4
-      - name: Setup PowerShell
-        uses: actions/setup-pwsh@v3
-      - name: Install Pester
-        shell: pwsh
-        run: |
-          if (-not (Get-Module -ListAvailable -Name Pester)) {
-            Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
-          }
-          "Pester $(Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version"
-      - name: Run golden-file regression test
-        shell: pwsh
-        run: |
-          Invoke-Pester -Path ./tests/powershell/test-golden-classic-asp.ps1 -Output Detailed
 
-  golden-test-csharp:
-    runs-on: ubuntu-latest
-    name: Golden-file regression (C# / ASP.NET Web Forms)
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup PowerShell
-        uses: actions/setup-pwsh@v3
-      - name: Install Pester
+      - name: No tracked files that .gitignore excludes
         shell: pwsh
         run: |
-          if (-not (Get-Module -ListAvailable -Name Pester)) {
-            Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
+          $bad = @(git ls-files -ci --exclude-standard)
+          if ($bad.Count -gt 0) {
+            $bad | ForEach-Object { Write-Host "tracked-but-ignored: $_" }
+            throw "$($bad.Count) tracked file(s) match .gitignore. Run: git rm -r --cached <path>"
           }
-          "Pester $(Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version"
-      - name: Run C# Web Forms golden-file regression test
-        shell: pwsh
-        run: |
-          Invoke-Pester -Path ./tests/powershell/test-golden-csharp-webforms.ps1 -Output Detailed
 
-  golden-test-csharp-core:
-    runs-on: ubuntu-latest
-    name: Golden-file regression (C# / ASP.NET Core Web API)
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup PowerShell
-        uses: actions/setup-pwsh@v3
-      - name: Install Pester
+      - name: Skill docs are harness-agnostic and frontmatter is valid
         shell: pwsh
         run: |
-          if (-not (Get-Module -ListAvailable -Name Pester)) {
-            Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
-          }
-          "Pester $(Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version"
-      - name: Run C# ASP.NET Core Web API golden-file regression test
-        shell: pwsh
-        run: |
-          Invoke-Pester -Path ./tests/powershell/test-golden-csharp-core-api.ps1 -Output Detailed
+          $docs = @('SKILL.md','README.md') + (Get-ChildItem references -Filter *.md | ForEach-Object { $_.FullName })
+          $bad = Select-String -Path $docs -Pattern '/persistent/','Hermes','[A-Za-z]:\\Users\\' -List
+          if ($bad) { $bad | ForEach-Object { Write-Host "host-specific text in $($_.Path)" }; throw 'Host-specific text found in skill docs' }
+          $fm = (Get-Content SKILL.md -Raw) -split "(?m)^---\s*$"
+          if ($fm.Count -lt 3) { throw 'SKILL.md frontmatter missing' }
+          foreach ($key in 'name:','description:','license:') { if ($fm[1] -notmatch "(?m)^$key") { throw "SKILL.md frontmatter missing $key" } }
 
-  golden-test-node:
-    runs-on: ubuntu-latest
-    name: Golden-file regression (Node / Express + TypeScript)
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup PowerShell
-        uses: actions/setup-pwsh@v3
-      - name: Install Pester
+      - name: No absolute host paths in committed docs/
         shell: pwsh
         run: |
-          if (-not (Get-Module -ListAvailable -Name Pester)) {
-            Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
-          }
-          "Pester $(Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version"
-      - name: Run Node / Express (TypeScript) golden-file regression test
-        shell: pwsh
-        run: |
-          Invoke-Pester -Path ./tests/powershell/test-golden-node-express.ps1 -Output Detailed
+          $hits = Get-ChildItem docs -Recurse -File | Select-String -Pattern '/persistent/','/home/[A-Za-z0-9_.-]+/','/tmp/','(?<![A-Za-z])[A-Za-z]:\\(Users|Github|Windows)' -List
+          if ($hits) { $hits | ForEach-Object { Write-Host "absolute path in $($_.Path)" }; throw 'Absolute host paths found in docs/' }
 
-  golden-test-python:
-    runs-on: ubuntu-latest
-    name: Golden-file regression (Python / Flask)
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup PowerShell
-        uses: actions/setup-pwsh@v3
-      - name: Install Pester
+      - name: PowerShell syntax gate
         shell: pwsh
-        run: |
-          if (-not (Get-Module -ListAvailable -Name Pester)) {
-            Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
-          }
-          "Pester $(Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version"
-      - name: Run Python / Flask golden-file regression test
-        shell: pwsh
-        run: |
-          Invoke-Pester -Path ./tests/powershell/test-golden-python-flask.ps1 -Output Detailed
+        run: ./.appdoc/scripts/powershell/ci-syntax-gate.ps1 -RootPath .
 
-  golden-test-java:
-    runs-on: ubuntu-latest
-    name: Golden-file regression (Java / Spring Boot)
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup PowerShell
-        uses: actions/setup-pwsh@v3
-      - name: Install Pester
+      - name: Documentation integrity gate
         shell: pwsh
-        run: |
-          if (-not (Get-Module -ListAvailable -Name Pester)) {
-            Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
-          }
-          "Pester $(Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version"
-      - name: Run Java / Spring Boot golden-file regression test
-        shell: pwsh
-        run: |
-          Invoke-Pester -Path ./tests/powershell/test-golden-java-spring.ps1 -Output Detailed
+        run: ./.appdoc/scripts/powershell/ci-doc-integrity-gate.ps1 -RootPath .
 
-  pristine-gate-test:
-    runs-on: ubuntu-latest
-    name: Pristine gate decision function (unit test)
+  tests:
+    name: Pester + proof harness (${{ matrix.os }})
+    needs: hygiene
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Setup PowerShell
-        uses: actions/setup-pwsh@v3
-      - name: Install Pester
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install Pester 5
         shell: pwsh
         run: |
-          if (-not (Get-Module -ListAvailable -Name Pester)) {
-            Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
-          }
-          "Pester $(Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version"
-      - name: Run the pristine gate decision-function unit test
+          Install-Module Pester -MinimumVersion 5.5.0 -MaximumVersion 5.99.99 -Force -Scope CurrentUser -SkipPublisherCheck
+          Import-Module Pester -MinimumVersion 5.5.0 -MaximumVersion 5.99.99
+          "Pester $((Get-Module Pester).Version)"
+
+      - name: Pester (unit suites + golden suites)
         shell: pwsh
         run: |
-          Invoke-Pester -Path ./tests/powershell/test-pristine-gate.ps1 -Output Detailed
+          # Pester only auto-discovers *.Tests.ps1; the golden/pristine suites are named test-*.ps1, so list them explicitly.
+          $files = @(Get-ChildItem ./tests/powershell -File -Filter *.ps1 |
+              Where-Object { $_.Name -like '*.Tests.ps1' -or $_.Name -like 'test-golden-*.ps1' -or $_.Name -eq 'test-pristine-gate.ps1' } |
+              Select-Object -ExpandProperty FullName)
+          "Running $($files.Count) Pester files"
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = $files
+          $cfg.Run.PassThru = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          $result = Invoke-Pester -Configuration $cfg
+          "Passed=$($result.PassedCount) Failed=$($result.FailedCount) Skipped=$($result.SkippedCount) Total=$($result.TotalCount)"
+          if ($result.FailedCount -gt 0 -or $result.FailedContainersCount -gt 0 -or $result.TotalCount -eq 0) { exit 1 }
+
+      - name: Semantic quarantine proof harness (plain script, not Pester)
+        shell: pwsh
+        run: ./tests/powershell/test-semantic-quarantine.ps1
