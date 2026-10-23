@@ -34,7 +34,7 @@ function Write-NotApplicablePlaceholder {
     param([string]$OutputPath, [string]$Title)
     $dir = Split-Path $OutputPath -Parent
     if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    $body = "# $Title`r`n`r`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`r`n`r`n## Summary`r`n`r`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP signal, so no content was extracted.`r`n`r`n## Test Suites`r`n`r`nNo test suites were extracted for this framework.`r`n`r`n## Test Cases`r`n`r`nNo test cases were extracted for this framework.`r`n`r`n---"
+    $body = "# $Title`n`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`n`n## Summary`n`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP signal, so no content was extracted.`n`n## Test Suites`n`nNo test suites were extracted for this framework.`n`n## Test Cases`n`nNo test cases were extracted for this framework.`n`n---"
     $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
 }
 function Wrap-Backtick { param([string]$Text) return ('`' + $Text + '`') }
@@ -240,7 +240,7 @@ $lines.Add("## Provenance"); $lines.Add("")
 $lines.Add("- Generator Version: appdoc-run-all-generators/3.0.0"); $lines.Add("- Commit Hash: unknown")
 $lines.Add("- Generated At: $generatedIso"); $lines.Add("- Profile: default"); $lines.Add("- Scope: .")
 $lines.Add("- Confidence/Inference Flags: deterministic, evidence-backed")
-$md = ($lines -join "`r`n")
+$md = ($lines -join "`n")
 $md | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 # --- Flat evidence --------------------------------------------------------------

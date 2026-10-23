@@ -295,7 +295,7 @@ function Update-AppDocDataModelContent {
         '(?s)(##\s+Data Models\s*\r?\n\r?\n).*?(?=\r?\n##\s+[^\r\n]+|\z)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + $ModelContent + "`r`n")
+            return ($m.Groups[1].Value + $ModelContent + "`n")
         }
     )
 
@@ -304,7 +304,7 @@ function Update-AppDocDataModelContent {
         '(?s)(##\s+Validation Rules\s*\r?\n\r?\n).*?(?=\r?\n##\s+Indexes and Performance\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "Validation rules are mostly implemented in business logic and model usage paths rather than centralized schema annotations. Use model call-sites and domain services to confirm runtime validation behavior." + "`r`n")
+            return ($m.Groups[1].Value + "Validation rules are mostly implemented in business logic and model usage paths rather than centralized schema annotations. Use model call-sites and domain services to confirm runtime validation behavior." + "`n")
         }
     )
 
@@ -313,7 +313,7 @@ function Update-AppDocDataModelContent {
         '(?s)(##\s+Indexes and Performance\s*\r?\n\r?\n).*?(?=\r?\n##\s+Data Flow Patterns\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "Index and persistence-performance metadata are not directly available from type extraction alone. Pair this catalog with database artifacts and query traces when assessing performance risk." + "`r`n")
+            return ($m.Groups[1].Value + "Index and persistence-performance metadata are not directly available from type extraction alone. Pair this catalog with database artifacts and query traces when assessing performance risk." + "`n")
         }
     )
 
@@ -322,7 +322,7 @@ function Update-AppDocDataModelContent {
         '(?s)(##\s+Data Flow Patterns\s*\r?\n\r?\n).*?(?=\r?\n##\s+Schema Evolution\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "Model flow is inferred through controller/service usage rather than fully reconstructed as end-to-end pipelines in this artifact. Use API and component hotspots in [System Overview](overview.md) to map key data movement paths." + "`r`n")
+            return ($m.Groups[1].Value + "Model flow is inferred through controller/service usage rather than fully reconstructed as end-to-end pipelines in this artifact. Use API and component hotspots in [System Overview](overview.md) to map key data movement paths." + "`n")
         }
     )
 
@@ -331,7 +331,7 @@ function Update-AppDocDataModelContent {
         '(?s)(##\s+Schema Evolution\s*\r?\n\r?\n).*?(?=\r?\n##\s+Example Instances\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "Historical schema evolution evidence is out of scope for this deterministic scan. Use migration history, release notes, and git history to track breaking or structural model changes." + "`r`n")
+            return ($m.Groups[1].Value + "Historical schema evolution evidence is out of scope for this deterministic scan. Use migration history, release notes, and git history to track breaking or structural model changes." + "`n")
         }
     )
 
@@ -340,7 +340,7 @@ function Update-AppDocDataModelContent {
         '(?s)(##\s+Example Instances\s*\r?\n\r?\n).*?(?=(\r?\n##\s+)|\z)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "Concrete example instances were not extracted automatically. Derive practical examples from representative controller actions and test fixtures that construct these models." + "`r`n")
+            return ($m.Groups[1].Value + "Concrete example instances were not extracted automatically. Derive practical examples from representative controller actions and test fixtures that construct these models." + "`n")
         }
     )
 

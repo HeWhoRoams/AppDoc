@@ -42,6 +42,12 @@ $L = $theme.layout
 $M = $theme.masthead
 $MermaidCdn = $theme.mermaid.cdn
 $GoogleFonts = $F.googleFontsUrl
+# Asset mode: "inline" (default) makes report.html fully self-contained and usable offline
+# (Mermaid is inlined from the vendored copy; fonts fall back to the system font stack).
+# "cdn" loads Mermaid and Google Fonts from the network (smaller file).
+$AssetsMode = if ($theme.PSObject.Properties['assets'] -and $theme.assets) { ([string]$theme.assets).ToLowerInvariant() } else { 'inline' }
+if ($AssetsMode -notin @('inline', 'cdn')) { Write-Error "Theme 'assets' must be 'inline' or 'cdn' (got '$AssetsMode')"; exit 1 }
+$VendorMermaidPath = Join-Path (Join-Path (Join-Path (Join-Path (Join-Path $PSScriptRoot '..') '..') 'templates') 'html') (Join-Path 'vendor' 'mermaid.min.js')
 
 # --- helpers ------------------------------------------------------------------
 function Esc-Html {
@@ -401,9 +407,22 @@ $doc += '<head>'
 $doc += '<meta charset="utf-8">'
 $doc += '<meta name="viewport" content="width=device-width, initial-scale=1">'
 $doc += "<title>$docTitle</title>"
-$doc += '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-$doc += "<link href=""$GoogleFonts"" rel=""stylesheet"">"
-$doc += "<script src=""$MermaidCdn""></script>"
+if ($AssetsMode -eq 'cdn') {
+    $doc += '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+    if ($GoogleFonts) { $doc += "<link href=""$GoogleFonts"" rel=""stylesheet"">" }
+    $doc += "<script src=""$MermaidCdn""></script>"
+}
+else {
+    if (-not (Test-Path -LiteralPath $VendorMermaidPath)) { Write-Error "Vendored Mermaid not found: $VendorMermaidPath (set the theme's assets to 'cdn' to load it from the network)"; exit 1 }
+    # Inline the vendored library. "</script" inside it would end the tag early, so escape it.
+    $mermaidJs = (Get-Content -LiteralPath $VendorMermaidPath -Raw) -replace '</script', '<\/script'
+    # The markers let the build's redaction sweep skip this block: it is vendored
+    # third-party code (cannot contain target secrets) and the credential regexes would
+    # otherwise corrupt it.
+    $doc += '<script>/*appdoc-vendor:begin mermaid*/'
+    $doc += $mermaidJs
+    $doc += '/*appdoc-vendor:end mermaid*/</script>'
+}
 $doc += '<style>'
 $doc += $css
 $doc += '</style>'

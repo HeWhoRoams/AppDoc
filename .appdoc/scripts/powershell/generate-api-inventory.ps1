@@ -263,7 +263,7 @@ function Write-AppDocApiInventoryAppendix {
         "---",
         "",
         "**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))"
-    ) -join "`r`n"
+    ) -join "`n"
 
     $appendixContent | Out-File -FilePath $appendixPath -Encoding UTF8 -NoNewline
     return $appendixPath

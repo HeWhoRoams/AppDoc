@@ -38,8 +38,7 @@ Sub-validator results are recorded truthfully in `validation-report.json` (`vali
 
 ## Test suites and on-target checks
 - **The deterministic hard bars** (Layer 1, above) — gate pass, pristine, redaction 0 (secret values),
-  gate-stable determinism. (A `build_cicd_count_mismatch` integrity warning is **benign / non-fatal** —
-  it does not fail the gate; do not treat it as an error.)
+  gate-stable determinism.
 - **The quarantine harness** (proves the safety layer, mock LLM — no real call needed):
   ```bash
   pwsh -NoProfile -File tests/powershell/test-semantic-quarantine.ps1

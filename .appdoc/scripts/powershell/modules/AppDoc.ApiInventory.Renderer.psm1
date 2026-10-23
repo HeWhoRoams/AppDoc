@@ -460,7 +460,7 @@ function Update-AppDocApiInventoryContent {
         }
     )
     if ($before -eq $after -and $after -notmatch '(?im)^##\s+API Endpoints\b') {
-        $after = $after.TrimEnd() + "`r`n`r`n## API Endpoints`r`n`r`n" + $sections.endpointContent + "`r`n"
+        $after = $after.TrimEnd() + "`n`n## API Endpoints`n`n" + $sections.endpointContent + "`n"
     }
 
     $sectionFallbacks = [ordered]@{
@@ -483,7 +483,7 @@ function Update-AppDocApiInventoryContent {
                 $existingBody = $m.Groups[3].Value.Trim()
                 $isPlaceholder = ($existingBody -eq "" -or $existingBody -eq $sectionBody)
                 if ($isPlaceholder) {
-                    return ($m.Groups[1].Value + $sectionBody + "`r`n")
+                    return ($m.Groups[1].Value + $sectionBody + "`n")
                 } else {
                     return $m.Value
                 }

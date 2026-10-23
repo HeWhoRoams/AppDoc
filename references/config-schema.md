@@ -17,6 +17,7 @@ AppDoc is CMU-first: the default theme is the CMU maroon/gold theme with the CMU
 - `themeFile` — explicit path to a theme `.json` (overrides `theme`).
 - Inside a theme file, `masthead.logoSvg` controls the logo: `inline:cmu` (built-in CMU mark; also the default when the key is absent), `none` (no logo), or `file:<path>` / `<path>.svg` (inline that SVG; relative paths resolve against the theme file's folder).
 - `masthead.title` / `masthead.sub` set the report header text; `colors` and `fonts` restyle the report.
+- `assets` — `inline` (default) makes `report.html` fully self-contained: the vendored Mermaid library is inlined and fonts fall back to the system font stack, so the report works offline and when emailed (about 3.5 MB). `cdn` loads Mermaid (`mermaid.cdn`) and Google Fonts (`fonts.googleFontsUrl`) from the network instead (smaller file, needs internet).
 
 To brand for another organization, copy `.appdoc/templates/html/theme.json`, change colors/fonts/masthead, set `logoSvg` to `none` or your own SVG, and point `themeFile` at it.
 
@@ -46,6 +47,16 @@ pattern configured, every secret value is redacted.
   "opaqueTokenPattern": "@@APP_[A-Z0-9_]+@@",
   "overlays": { "Operational Workflows": ".appdoc/overlays/operational-workflows.md" }
 }
+```
+
+### Git ownership
+
+`docs/git-ownership.md` lists the files that exist in the current tree (renamed and deleted paths
+are dropped; the scope policy applies) with their last-change author and churn. Author **names** are
+shown; email addresses are personal data and are omitted unless the target opts in:
+
+```json
+{ "ownership": { "showEmails": true } }
 ```
 
 ### Operator redaction overrides (`.appdoc/config.json`, optional)

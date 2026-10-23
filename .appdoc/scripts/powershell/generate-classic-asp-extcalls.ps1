@@ -41,7 +41,7 @@ function Write-NotApplicablePlaceholder {
     param([string]$OutputPath, [string]$Title)
     $dir = Split-Path $OutputPath -Parent
     if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    $body = "# $Title`r`n`r`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`r`n`r`n## Summary`r`n`r`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP external-call signal, so no content was extracted.`r`n`r`n---"
+    $body = "# $Title`n`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`n`n## Summary`n`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP external-call signal, so no content was extracted.`n`n---"
     $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
 }
 # Join-Row: build a markdown table row from cleaned cells (no -f formatting).
@@ -381,7 +381,7 @@ $lines.Add("- Generated At: $generatedIso"); $lines.Add("- Profile: default"); $
 $lines.Add("- Confidence/Inference Flags: deterministic, evidence-backed, secrets redacted")
 
 # Sanitize the full markdown (defense-in-depth) before writing.
-$md = ($lines -join "`r`n")
+$md = ($lines -join "`n")
 $md = Sanitize-Text $md
 $md | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 

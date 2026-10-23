@@ -354,7 +354,7 @@ function Update-AppDocConfigCatalogContent {
         '(?s)(##\s+Configuration Sources\s*\r?\n\r?\n).*?(?=\r?\n##\s+Configuration Options\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + $sections.configSourcesContent + "`r`n")
+            return ($m.Groups[1].Value + $sections.configSourcesContent + "`n")
         }
     )
     $updated = [regex]::Replace(
@@ -362,7 +362,7 @@ function Update-AppDocConfigCatalogContent {
         '(?s)(##\s+Configuration Options\s*\r?\n\r?\n).*?(?=\r?\n##\s+Environment Variables\b)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + $sections.configOptionsContent + "`r`n")
+            return ($m.Groups[1].Value + $sections.configOptionsContent + "`n")
         }
     )
     $updated = [regex]::Replace(
@@ -370,7 +370,7 @@ function Update-AppDocConfigCatalogContent {
         '(?s)(##\s+Environment Variables\s*\r?\n\r?\n).*?(?=(\r?\n##\s+)|\z)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + $sections.envVarsContent + "`r`n")
+            return ($m.Groups[1].Value + $sections.envVarsContent + "`n")
         }
     )
 
@@ -388,7 +388,7 @@ function Update-AppDocConfigCatalogContent {
                 $sectionPattern,
                 [System.Text.RegularExpressions.MatchEvaluator]{
                     param($m)
-                    return ($m.Groups[1].Value + [string]$sectionFallbacks[$header] + "`r`n")
+                    return ($m.Groups[1].Value + [string]$sectionFallbacks[$header] + "`n")
                 }
             )
         }

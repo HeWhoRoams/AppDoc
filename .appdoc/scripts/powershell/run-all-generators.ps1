@@ -626,20 +626,11 @@ function Realign-AppDocOverviewTruthPackToCanonical {
     return $true
 }
 
-function Get-AppDocGitCommitHash {
-    param([string]$RootPath)
-
-    try {
-        $hash = (& git -C $RootPath rev-parse --short HEAD 2>$null | Out-String).Trim()
-        if ([string]::IsNullOrWhiteSpace($hash)) { return "unknown" }
-        return $hash
-    }
-    catch {
-        return "unknown"
-    }
-}
-
 function Set-AppDocRootProvenance {
+    # Thin wrapper kept for the existing call sites: the footer logic lives in
+    # modules/AppDoc.Provenance.psm1 (recursive over docs/**, idempotent, LF, skips
+    # hand-authored files). run-appdoc-build.ps1 calls it again as its final step so the
+    # second composer pass cannot leave the master document without a footer.
     param(
         [Parameter(Mandatory=$true)]
         [string]$RootPath,
@@ -648,69 +639,8 @@ function Set-AppDocRootProvenance {
         [Parameter(Mandatory=$true)]
         [string]$Profile
     )
-
-    $timestamp = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ssK")
-    $commitHash = Get-AppDocGitCommitHash -RootPath $RootPath
-    $generatorVersion = "appdoc-run-all-generators/3.0.0"
-    $scopeValue = "."
-    $inferenceFlags = @("deterministic", "evidence-backed")
-
-    $markdownFiles = @(
-        Get-ChildItem -Path $DocsPath -Filter "*.md" -File -ErrorAction SilentlyContinue
-    )
-    foreach ($file in $markdownFiles) {
-        $content = Get-Content $file.FullName -Raw
-        $block = @(
-            "## Provenance",
-            "",
-            "- Generator Version: $generatorVersion",
-            "- Commit Hash: $commitHash",
-            "- Generated At: $timestamp",
-            "- Profile: $Profile",
-            "- Scope: $scopeValue",
-            "- Confidence/Inference Flags: $($inferenceFlags -join ', ')"
-        ) -join "`r`n"
-
-        if ($content -match '(?ims)^##\s+Provenance\s*$') {
-            $content = [regex]::Replace(
-                $content,
-                '(?ims)^##\s+Provenance\s*$.*?(?=^##\s+[^\r\n]+|\z)',
-                $block + "`r`n"
-            )
-        }
-        else {
-            $content = $content.TrimEnd() + "`r`n`r`n" + $block + "`r`n"
-        }
-
-        $content | Out-File -FilePath $file.FullName -Encoding UTF8 -NoNewline
-    }
-
-    $jsonFiles = @(
-        Get-ChildItem -Path $DocsPath -Filter "*.json" -File -ErrorAction SilentlyContinue
-    )
-    foreach ($file in $jsonFiles) {
-        try {
-            $obj = Get-Content $file.FullName -Raw | ConvertFrom-Json -Depth 120
-            $provenance = [ordered]@{
-                generatorVersion = $generatorVersion
-                commitHash = $commitHash
-                generatedAt = $timestamp
-                profile = $Profile
-                scope = $scopeValue
-                confidenceInferenceFlags = $inferenceFlags
-            }
-            if ($obj -is [System.Collections.IDictionary]) {
-                $obj["provenance"] = $provenance
-            }
-            else {
-                $obj | Add-Member -NotePropertyName "provenance" -NotePropertyValue $provenance -Force
-            }
-            $obj | ConvertTo-Json -Depth 100 | Out-File -FilePath $file.FullName -Encoding UTF8
-        }
-        catch {
-            Write-Warning ("Skipping provenance for non-JSON file payload: {0}" -f $file.FullName)
-        }
-    }
+    Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Provenance.psm1') -Force -ErrorAction Stop
+    [void](Set-AppDocProvenanceFooter -RootPath $RootPath -DocsPath $DocsPath -Profile $Profile)
 }
 
 function Write-AppDocJsonCompanionSummaries {
@@ -776,7 +706,7 @@ function Write-AppDocJsonCompanionSummaries {
             "",
             "## Trust but verify",
             "- $verify"
-        ) -join "`r`n"
+        ) -join "`n"
 
         $summaryContent | Out-File -FilePath $summaryPath -Encoding UTF8 -NoNewline
     }

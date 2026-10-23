@@ -1,4 +1,5 @@
 # AppDoc Documentation Production Plan (v3)
+<!-- appdoc:hand-authored -->
 
 **Version:** 3.0.0  
 **Date:** 2026-03-04  

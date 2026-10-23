@@ -1,0 +1,9 @@
+AppDoc
+Copyright (c) 2026 Tim Niles. Licensed under the MIT License (see LICENSE).
+
+This repository includes third-party software:
+
+- Mermaid 11.17.2 (https://github.com/mermaid-js/mermaid)
+  File: .appdoc/templates/html/vendor/mermaid.min.js
+  License: MIT (see .appdoc/templates/html/vendor/mermaid.LICENSE)
+  Used to render diagrams in the self-contained HTML report.

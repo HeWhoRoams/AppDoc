@@ -51,7 +51,7 @@ function Write-NotApplicablePlaceholder {
         "Not applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP signal, so no content was extracted.",
         "",
         "---"
-    ) -join "`r`n"
+    ) -join "`n"
     $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
 }
 
@@ -384,7 +384,7 @@ $mdParts.Add("- Generated At: $generatedIso")
 $mdParts.Add("- Profile: default")
 $mdParts.Add("- Scope: .")
 $mdParts.Add("- Confidence/Inference Flags: deterministic, evidence-backed")
-$md = ($mdParts -join "`r`n")
+$md = ($mdParts -join "`n")
 
 $md | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 

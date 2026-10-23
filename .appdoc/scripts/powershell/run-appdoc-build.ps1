@@ -133,11 +133,8 @@ if (-not (Test-Path $docsPath)) {
 # validation scripts the pipeline already ran (orchestrated, not re-implemented), re-run
 # now that every artifact — including docs/diagrams/* — is present.
 #
-# Provenance-safety: the provenance policy gate checks ONLY the 5 critical per-artifact
-# .md docs (overview/api-inventory/data-model/config-catalog/build-cookbook) + the 3 JSON
-# reports — NOT application-documentation.md. The composer re-run rewrites only the
-# composed master + its flat evidence json, so no provenance stamp is lost and the gate
-# pass/fail is unchanged. This additive 2nd pass does NOT change status/overallScore
+# Provenance: the composer re-run rewrites the composed master without a footer; step
+# (4b) below re-stamps every generated doc, so the final package always carries one. This additive 2nd pass does NOT change status/overallScore
 # (both are frozen before the pristine fold); it makes the composed doc + pristine report
 # reflect the complete, diagram-populated package (section 14 PASS instead of EMPTY).
 $composer     = Join-Path $scriptDir "generate-unified-master.ps1"
@@ -169,6 +166,14 @@ if (Test-Path $htmlGen) {
         else { & $htmlGen -RootPath $RootPath }
     } catch { Write-Warning "HTML report generation failed (non-fatal): $($_.Exception.Message)" }
 }
+
+# --- (4b) Provenance footer on every generated doc (final stamp) -------------
+# The second composer pass above rewrote application-documentation.md without a footer;
+# stamp every generated docs/**/*.md now (idempotent; hand-authored files are skipped).
+$provenanceModule = Join-Path $scriptDir "modules/AppDoc.Provenance.psm1"
+Import-Module $provenanceModule -Force -ErrorAction Stop
+$stampedCount = Set-AppDocProvenanceFooter -RootPath $RootPath -DocsPath $docsPath -Profile $Profile
+Write-Host "[Provenance] footer stamped on $stampedCount generated Markdown file(s)." -ForegroundColor Gray
 
 # --- (5) CONFIG-DRIVEN redaction sweep (additive; no-op when no patterns) ----
 # Defense-in-depth over the FINAL composed artifacts: replace each config
@@ -210,12 +215,19 @@ if ($operatorMatchers.Count -gt 0 -or $uriCredPatterns.Count -gt 0) {
         $content = Get-Content -LiteralPath $f.FullName -Raw -ErrorAction SilentlyContinue
         if ([string]::IsNullOrWhiteSpace($content)) { continue }
         $orig = $content
-        # Operator redaction: redactionPatterns (literal values) + redactionRegexes.
-        $content = Invoke-AppDocOperatorRedaction -Text $content -Matchers $operatorMatchers
-        # Built-in URI-credential sweep (value-scoped; single source of truth = semantic module).
-        foreach ($uriPat in $uriCredPatterns) {
-            $content = [regex]::Replace($content, $uriPat, '[REDACTED]')
+        # Vendored third-party blocks (e.g. the inlined Mermaid library in report.html) are
+        # skipped: they cannot hold target secrets, and the regexes would corrupt them.
+        $parts = [regex]::Split($content, '(/\*appdoc-vendor:begin [a-z0-9-]+\*/.*?/\*appdoc-vendor:end [a-z0-9-]+\*/)', [System.Text.RegularExpressions.RegexOptions]::Singleline)
+        for ($pi = 0; $pi -lt $parts.Count; $pi++) {
+            if ($parts[$pi].StartsWith('/*appdoc-vendor:begin ')) { continue }
+            # Operator redaction: redactionPatterns (literal values) + redactionRegexes.
+            $parts[$pi] = Invoke-AppDocOperatorRedaction -Text $parts[$pi] -Matchers $operatorMatchers
+            # Built-in URI-credential sweep (value-scoped; single source of truth = semantic module).
+            foreach ($uriPat in $uriCredPatterns) {
+                $parts[$pi] = [regex]::Replace($parts[$pi], $uriPat, '[REDACTED]')
+            }
         }
+        $content = -join $parts
         if ($content -cne $orig) {
             $content | Out-File -LiteralPath $f.FullName -Encoding UTF8 -NoNewline
             $changed++
@@ -272,6 +284,12 @@ if ($semEnable) {
 else {
     Write-Host "[SemanticEnrich] OFF (default) -> no-op; deterministic-only output is exactly today's (no LLM call, no enrichment applied)." -ForegroundColor Gray
 }
+
+# --- (7) line endings: UTF-8 (no BOM), LF, one final newline -----------------
+# Matches .gitattributes (*.md eol=lf). ConvertTo-Json / Out-File emit CRLF on Windows,
+# so this last pass is what makes the output identical on every OS.
+$lfCount = Convert-AppDocDocsLineEndings -DocsPath $docsPath
+Write-Host "[LineEndings] normalized $lfCount file(s) to LF." -ForegroundColor Gray
 
 # --- summary + exit code -----------------------------------------------------
 Write-Host "`n==========================================" -ForegroundColor Cyan

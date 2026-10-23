@@ -1,4 +1,5 @@
 # AppDoc Remediation Plan
+<!-- appdoc:hand-authored -->
 
 **Status**: Active  
 **Principle**: Build a pipeline where every stage does one thing cleanly. AI enriches evidence before it is rendered. Deterministic code never synthesises meaning.

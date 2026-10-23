@@ -265,6 +265,13 @@ Describe "Golden-file structural regression: Python / Flask pipeline" {
         }
     }
 
+    Context "Validation report names the detected framework" {
+        It "records Flask (not a hard-coded C# label) as the calibration framework" {
+            $vr = Get-Content (Join-Path $script:docs "validation-report.json") -Raw | ConvertFrom-Json -Depth 30
+            [string]$vr.coverageCalibration.framework | Should -Match 'Flask'
+        }
+    }
+
     Context "Redaction (the fixture's fake DB password must be redacted)" {
         It "does not leak the fixture secret into ANY generated artifact (md/html/json)" {
             $leaks = @()

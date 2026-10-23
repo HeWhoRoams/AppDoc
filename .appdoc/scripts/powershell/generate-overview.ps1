@@ -141,7 +141,7 @@ function Add-AppDocOverviewSection {
         $body = @("- No deterministic evidence available for this section in the current run.")
     }
 
-    return ($Content.TrimEnd() + "`r`n`r`n## " + $SectionName + "`r`n" + ($body -join "`r`n") + "`r`n")
+    return ($Content.TrimEnd() + "`n`n## " + $SectionName + "`n" + ($body -join "`n") + "`n")
 }
 
 $helpersPath = Join-Path (Split-Path $PSScriptRoot -Parent) "powershell\template-helpers.ps1"

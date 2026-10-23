@@ -1,4 +1,5 @@
 # AppDoc v3 Implementation Checklist
+<!-- appdoc:hand-authored -->
 
 **Version:** 3.0.0  
 **Date:** 2026-03-04  

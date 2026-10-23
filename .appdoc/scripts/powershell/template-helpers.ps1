@@ -205,12 +205,12 @@ function Normalize-AppDocTemplateInstructionText {
         '(?ms)(^##\s+Overview\s*\r?\n)\s*(?=##\s+)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "`r`nThis section summarizes extracted findings for this artifact.`r`n`r`n")
+            return ($m.Groups[1].Value + "`nThis section summarizes extracted findings for this artifact.`n`n")
         }
     )
 
     # Collapse excessive blank lines produced by removals.
-    $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`r`n`r`n")
+    $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`n`n")
 
     return $updated
 }
@@ -234,12 +234,12 @@ function Normalize-AppDocMarkdownStructure {
     $updated = [regex]::Replace(
         $updated,
         '(?im)^(##\s+[^\r\n#]+?)\s*(No evidence found for this section in the current scan\.)\s*$',
-        '$1' + "`r`n`r`n" + '$2'
+        '$1' + "`n`n" + '$2'
     )
     $updated = [regex]::Replace(
         $updated,
         '(?im)^(##\s+[^\r\n#]+?)\s*(_No[^\r\n_]+_)\s*$',
-        '$1' + "`r`n`r`n" + '$2'
+        '$1' + "`n`n" + '$2'
     )
 
     # Prevent no-evidence sentence from living inside markdown table bodies.
@@ -248,7 +248,7 @@ function Normalize-AppDocMarkdownStructure {
         '(?ms)(^\|[^\r\n]+\|\r?\n\|[-:\s|]+\|\r?\n)(No evidence found for this section in the current scan\.)',
         [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Groups[1].Value + "`r`n`r`n" + $m.Groups[2].Value)
+            return ($m.Groups[1].Value + "`n`n" + $m.Groups[2].Value)
         }
     )
 
@@ -256,7 +256,7 @@ function Normalize-AppDocMarkdownStructure {
     $updated = [regex]::Replace(
         $updated,
         '(?m)(^\|[^\r\n]*\|\r?\n)(##\s+[^\r\n]+)',
-        '$1' + "`r`n" + '$2'
+        '$1' + "`n" + '$2'
     )
 
     # Normalize summary-style sections to exactly one Summary section.
@@ -265,7 +265,7 @@ function Normalize-AppDocMarkdownStructure {
     }
 
     # Trim redundant blank lines introduced by cleanup.
-    $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`r`n`r`n")
+    $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`n`n")
     return $updated
 }
 
@@ -355,12 +355,12 @@ function Normalize-AppDocSingleSummarySection {
         $updated = $updated.Replace([string]$candidate.full, '')
     }
 
-    $newSummary = "## Summary`r`n`r`n$summaryBody`r`n"
+    $newSummary = "## Summary`n`n$summaryBody`n"
     $generatedRegex = [regex]::new('(?im)^\*\*Generated\*\*:[^\r\n]*\r?\n')
     if ($generatedRegex.IsMatch($updated)) {
         $updated = $generatedRegex.Replace($updated, [System.Text.RegularExpressions.MatchEvaluator]{
             param($m)
-            return ($m.Value + "`r`n" + $newSummary + "`r`n")
+            return ($m.Value + "`n" + $newSummary + "`n")
         }, 1)
     }
     else {
@@ -368,16 +368,16 @@ function Normalize-AppDocSingleSummarySection {
         if ($titleRegex.IsMatch($updated)) {
             $updated = $titleRegex.Replace($updated, [System.Text.RegularExpressions.MatchEvaluator]{
                 param($m)
-                return ($m.Value + "`r`n" + $newSummary + "`r`n")
+                return ($m.Value + "`n" + $newSummary + "`n")
             }, 1)
         }
         else {
-            $updated = $newSummary + "`r`n" + $updated
+            $updated = $newSummary + "`n" + $updated
         }
     }
 
-    $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`r`n`r`n")
-    return $updated.TrimEnd() + "`r`n"
+    $updated = [regex]::Replace($updated, '(?s)(\r?\n){3,}', "`n`n")
+    return $updated.TrimEnd() + "`n"
 }
 
 # =============================================================================
@@ -582,19 +582,19 @@ function Emit-AppDocProvenance {
         "- Profile: $Profile",
         "- Scope: $Scope",
         "- Confidence/Inference Flags: $($ConfidenceFlags -join ', ')"
-    ) -join "`r`n"
+    ) -join "`n"
 
     if ($Content -match '(?ims)^##\s+Provenance\s*$') {
         # Replace the existing Provenance section with the canonical block.
         return [regex]::Replace(
             $Content,
             '(?ims)^##\s+Provenance\s*$.*?(?=^##\s+[^\r\n]+|\z)',
-            { param($m) return ($block + "`r`n") },
+            { param($m) return ($block + "`n") },
             1
         )
     }
 
-    return ($Content.TrimEnd() + "`r`n`r`n" + $block + "`r`n")
+    return ($Content.TrimEnd() + "`n`n" + $block + "`n")
 }
 
 

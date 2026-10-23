@@ -1540,8 +1540,9 @@ if ($goEv) {
         $out.Add("")
         $declaredOwner = if ($goOwner -and $goOwner -ne 'Unknown') { $goOwner } else { 'Unknown (not declared)' }
         $ownerLine = "Declared owner (CODEOWNERS `*`): **" + $declaredOwner + "**  ·  top author: "
-        if ($goTopEmail) {
-            $topAuthorCell = '`' + $goTopName + ' <' + $goTopEmail + '>'
+        # Author emails appear only when the target opted in (config ownership.showEmails).
+        if ($goTopName -or $goTopEmail) {
+            $topAuthorCell = if ($goTopEmail) { '`' + $goTopName + ' <' + $goTopEmail + '>`' } else { $goTopName }
             $ownerLine += "$topAuthorCell ($goTopCommits commit(s))."
         }
         else { $ownerLine += 'Unknown.' }
@@ -1903,7 +1904,7 @@ if ($currentSection) { foreach ($b in (Get-OverlayBlock -Section $currentSection
 $out = $withOverlays
 
 $mdPath = Join-Path $docsPath "application-documentation.md"
-($out -join "`r`n") | Out-File -FilePath $mdPath -Encoding UTF8 -NoNewline
+($out -join "`n") | Out-File -FilePath $mdPath -Encoding UTF8 -NoNewline
 
 # --- write the flat evidence file -------------------------------------------
 $evOut = [ordered]@{

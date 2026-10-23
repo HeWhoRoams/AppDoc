@@ -148,7 +148,7 @@ $lines.Add("- Generator Version: appdoc-run-all-generators/3.0.0"); $lines.Add("
 $lines.Add("- Generated At: $generatedIso"); $lines.Add("- Profile: default"); $lines.Add("- Scope: .")
 $lines.Add("- Confidence/Inference Flags: deterministic, evidence-backed, secrets redacted")
 
-$md = ($lines -join "`r`n")
+$md = ($lines -join "`n")
 $md | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 # --- Flat evidence -------------------------------------------------------------

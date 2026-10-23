@@ -37,6 +37,7 @@ $script:AppDocConfigDefaults = [ordered]@{
     redactionRegexes         = @()               # extra regular expressions; every match is redacted
     opaqueTokenPattern       = ''                # regex for sanitized placeholder tokens kept verbatim (default: none)
     overlays                 = @{}               # section title -> overlay .md path (default: .appdoc/overlays/<slug>.md)
+    ownershipShowEmails      = $false            # config "ownership": { "showEmails": true } -> include author emails
     pristineFloor            = 80                # pristine gate floor (1..100)
     outputDir                = 'docs'            # docs output dir name under the target root
     minCommitsForOwnership   = 2                 # git history depth floor for real ownership (default 2)
@@ -130,6 +131,9 @@ function Get-AppDocConfig {
                 $ov = @{}
                 foreach ($prop in $raw.overlays.PSObject.Properties) { $ov[[string]$prop.Name] = [string]$prop.Value }
                 $config['overlays'] = $ov
+            }
+            if ($raw.PSObject.Properties['ownership'] -and $raw.ownership -and $raw.ownership.PSObject.Properties['showEmails']) {
+                $config['ownershipShowEmails'] = [bool]$raw.ownership.showEmails
             }
             if ($raw.PSObject.Properties['pristineFloor'] -and $raw.pristineFloor) { $config['pristineFloor'] = [int]$raw.pristineFloor }
             if ($raw.PSObject.Properties['outputDir'] -and $raw.outputDir) { $config['outputDir'] = [string]$raw.outputDir }

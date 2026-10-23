@@ -26,10 +26,16 @@ AfterAll {
 }
 
 Describe 'HTML report masthead logo' {
-    It 'renders the CMU mark with the default theme' {
+    It 'renders the logo and the default theme''s primary colour' {
+        $defaultTheme = Get-Content (Join-Path $script:themeDir 'theme.json') -Raw | ConvertFrom-Json -Depth 30
         $html = Invoke-Report
         $html | Should -Match '<span class="logo"'
-        $html | Should -Match '#6a0032'
+        $html | Should -Match ([regex]::Escape([string]$defaultTheme.colors.primary))
+    }
+
+    It 'keeps the CMU theme selectable by name (maroon #6a0032)' {
+        $cmu = Get-Content (Join-Path $script:themeDir 'theme.json') -Raw | ConvertFrom-Json -Depth 30
+        $cmu.colors.primary | Should -Be '#6a0032'
     }
 
     It 'renders no logo when the theme sets logoSvg to none' {
@@ -46,5 +52,26 @@ Describe 'HTML report masthead logo' {
         $theme | ConvertTo-Json -Depth 30 | Set-Content -Path $themePath -Encoding utf8
         $html = Invoke-Report -ThemePath $themePath
         $html | Should -Match 'custom-mark'
+    }
+}
+
+Describe 'HTML report is self-contained by default (offline)' {
+    It 'loads no script or font from the network with the default theme' {
+        $html = Invoke-Report
+        $html | Should -Not -Match '<script[^>]+src="https?:'
+        $html | Should -Not -Match 'href="https://fonts\.'
+    }
+    It 'inlines the vendored Mermaid library' {
+        $html = Invoke-Report
+        $html | Should -Match '/\*appdoc-vendor:begin mermaid\*/'
+        $html | Should -Match 'mermaid\.initialize'
+    }
+    It 'uses the CDN only when the theme asks for it' {
+        $theme = Get-Content (Join-Path $script:themeDir 'theme.json') -Raw | ConvertFrom-Json -AsHashtable -Depth 30
+        $theme.assets = 'cdn'
+        $themePath = Join-Path $script:tmp 'cdn-theme.json'
+        $theme | ConvertTo-Json -Depth 30 | Set-Content -Path $themePath -Encoding utf8
+        $html = Invoke-Report -ThemePath $themePath
+        $html | Should -Match '<script src="https://cdn\.jsdelivr\.net/npm/mermaid'
     }
 }

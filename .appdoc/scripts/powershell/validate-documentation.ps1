@@ -933,9 +933,12 @@ function Get-RedactionSafetyScore {
 
     if ($sensitiveRows.Count -eq 0) { return 100 }
 
+    # (This check silently matched nothing while generated docs had CRLF line endings,
+    # because `[^\r\n]*$` cannot cross the \r; with LF output it now runs.) Both redaction
+    # markers the renderers emit count as redacted.
     $unredacted = 0
     foreach ($row in $sensitiveRows) {
-        if ([string]$row.Value -notmatch '\[REDACTED\]') {
+        if ([string]$row.Value -notmatch '\[REDACTED\]|\*\*\*masked\*\*\*') {
             $unredacted++
         }
     }
@@ -2192,6 +2195,17 @@ else {
     "pass"
 }
 
+# The detected framework(s), from framework-detection.json; "unknown" when none.
+$detectedFrameworkLabel = 'unknown'
+$fwDetectPath = Join-Path $docsPath 'framework-detection.json'
+if (Test-Path -LiteralPath $fwDetectPath) {
+    try {
+        $fwDetect = Get-Content -LiteralPath $fwDetectPath -Raw | ConvertFrom-Json -Depth 10
+        $fwNames = @(@($fwDetect) | ForEach-Object { [string]$_.framework } | Where-Object { $_ } | Select-Object -Unique)
+        if ($fwNames.Count -gt 0) { $detectedFrameworkLabel = ($fwNames -join ', ') }
+    } catch { $detectedFrameworkLabel = 'unknown' }
+}
+
 $result = [ordered]@{
     timestamp = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK")
     strict = $Strict.IsPresent
@@ -2238,7 +2252,7 @@ $result = [ordered]@{
     policyGates = $policyGates
     coverageCalibration = [ordered]@{
         path = if ($isClassicAspTarget) { "classic-asp" } else { "csharp-default" }
-        framework = if ($isClassicAspTarget) { "Classic ASP" } else { "csharp" }
+        framework = $detectedFrameworkLabel
         note = if ($isClassicAspTarget) { "config + data-model coverage measured against classic-ASP source artifacts (config-file keys; ADO/SQL data objects) as documented/expected ratios." } else { "config + data-model coverage measured with the C#-calibrated scorers (appsettings/config keys; model classes)." }
         config = $script:ClassicAspCalibration.config
         dataModel = $script:ClassicAspCalibration.dataModel

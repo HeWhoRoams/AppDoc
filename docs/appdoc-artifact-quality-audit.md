@@ -1,4 +1,5 @@
 # AppDoc Artifact Quality Audit
+<!-- appdoc:hand-authored -->
 
 **Date**: 2026-03-05
 **Repos Audited**: an academic-history module, a CMS content-connector app, a C# Core API app, a legacy C# MVC 5 app
