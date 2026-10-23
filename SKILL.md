@@ -2,7 +2,7 @@
 name: appdoc
 description: "Generate evidence-traceable codebase documentation with AppDoc: a deterministic PowerShell 7 build plus an optional, quarantined LLM-session enrichment loop. Use when asked to document, re-document, or enrich documentation for a codebase."
 license: MIT
-version: 1.0.0
+version: 1.1.0
 compatibility: "Requires PowerShell 7.2+ (pwsh). Optional .NET SDK 8 for the Roslyn C# AST parser (regex fallback when absent). Works with any agent that can read this file and run pwsh."
 ---
 

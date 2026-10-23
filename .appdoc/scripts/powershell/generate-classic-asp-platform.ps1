@@ -12,6 +12,7 @@
 # framework-detection.json reports Classic ASP or ASP.NET Web Forms.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
@@ -39,7 +40,7 @@ function Write-NotApplicablePlaceholder {
     $body = "# $Title`n`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`n`n## Summary`n`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP signal, so no content was extracted.`n`n## Build Steps`n`nNo build steps were extracted for this framework.`n`n## Dependencies`n`nNo build dependencies were extracted for this framework.`n`n---"
     $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
 }
-function Trim-Quotes {
+function Remove-SurroundingQuotes {
     param([string]$Text)
     if ([string]::IsNullOrWhiteSpace($Text)) { return "" }
     $t = $Text.Trim()
@@ -114,7 +115,7 @@ if ($htmPaths.Count -gt 0) {
     $htmSignalPaths = @(Select-String -Path $htmPaths -Pattern 'Provider\s*=|Data Source\s*=|Initial Catalog\s*=' -List -ErrorAction SilentlyContinue | ForEach-Object { $_.Path } | Sort-Object)
 }
 
-function Process-PlatformFile {
+function Invoke-PlatformFileScan {
     param([string]$FullPath)
     $rel = Get-RelativePath -FullPath $FullPath -Base $rootPrefix
     $content = Get-Content $FullPath -Raw -ErrorAction SilentlyContinue
@@ -131,8 +132,8 @@ function Process-PlatformFile {
         }
         $srcM = [regex]::Match($line, '(?i)Data Source\s*=\s*([^;&"]+)')
         $catM = [regex]::Match($line, '(?i)Initial Catalog\s*=\s*([^;&"]+)')
-        $server = if ($srcM.Success) { Trim-Quotes -Text $srcM.Groups[1].Value } else { "" }
-        $catalog = if ($catM.Success) { Trim-Quotes -Text $catM.Groups[1].Value } else { "" }
+        $server = if ($srcM.Success) { Remove-SurroundingQuotes -Text $srcM.Groups[1].Value } else { "" }
+        $catalog = if ($catM.Success) { Remove-SurroundingQuotes -Text $catM.Groups[1].Value } else { "" }
         if ($server -match '^\s*"' -or $server -match ' & ' -or $server.Length -gt 60) { $server = "dynamic" }
         if ([string]::IsNullOrWhiteSpace($server)) { $server = "unknown" }
         if ($catalog -match '^\s*"' -or $catalog -match ' & ' -or $catalog.Length -gt 60) { $catalog = "dynamic" }
@@ -147,9 +148,9 @@ function Process-PlatformFile {
     if ($hasConn -and -not ($script:sqlFiles -contains $rel)) { $script:sqlFiles.Add($rel) }
 }
 
-foreach ($f in $aspFiles) { Process-PlatformFile -FullPath $f.FullName }
-foreach ($f in $incFiles) { Process-PlatformFile -FullPath $f.FullName }
-foreach ($p in $htmSignalPaths) { Process-PlatformFile -FullPath $p }
+foreach ($f in $aspFiles) { Invoke-PlatformFileScan -FullPath $f.FullName }
+foreach ($f in $incFiles) { Invoke-PlatformFileScan -FullPath $f.FullName }
+foreach ($p in $htmSignalPaths) { Invoke-PlatformFileScan -FullPath $p }
 
 $providerRows = @($script:providers.GetEnumerator() | Sort-Object { -[int]$_.Value } | ForEach-Object { [ordered]@{ provider=$_.Key; count=$_.Value } })
 $instanceRows = @($script:instances.Values | Sort-Object { [string]$_.host })

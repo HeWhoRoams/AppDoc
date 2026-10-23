@@ -1,4 +1,6 @@
-# AppDoc Begin Prompt
+# AppDoc Begin (Copilot adapter)
+
+This prompt is a thin wrapper. The procedure is defined in [`SKILL.md`](../../SKILL.md) (Layer 1 — deterministic build) and verified as described in [`references/verification.md`](../../references/verification.md). Follow those; this file only maps the slash-command arguments.
 
 ## User Input
 
@@ -6,49 +8,31 @@
 $ARGUMENTS
 ```
 
-Use this prompt to run deterministic AppDoc generation from start to finish with no interactive pauses.
+## Arguments
 
-## Control Flow
+- Argument 1 (required): the target repository root.
+- Optional flags: `--strict`, `--threshold <1-100>`, `--skip-diagrams`.
 
-1. Parse arguments:
-- Argument 1 (required): target repository root path.
-- Argument 2 (optional): output docs path (default `docs/`).
-- Optional flags: `--strict`, `--threshold <1-100>`, `--skip-diagrams`, `--dry-run`.
+To change where the output is written, set `outputDir` in `<target>/.appdoc/config.json` (see `references/config-schema.md`); there is no command-line output-path argument.
 
-2. Validate prerequisites:
-- Target path exists.
-- `.appdoc/scripts/powershell/run-all-generators.ps1` exists.
+## Run
 
-3. Execute a single orchestrated command:
+Work on a scratch copy of the target (SKILL.md, "Prerequisites and setup"), then run the single build command:
 
 ```powershell
-pwsh ./.appdoc/scripts/powershell/run-all-generators.ps1 -RootPath <target-root> [flags]
+pwsh -NoProfile -File ./.appdoc/scripts/powershell/run-appdoc-build.ps1 -Path <target-root> [-StrictValidation] [-QualityThreshold N] [-SkipDiagrams]
 ```
 
-Flag mapping:
-- `--strict` => `-StrictValidation`
-- `--threshold N` => `-QualityThreshold N`
-- `--skip-diagrams` => `-SkipDiagrams`
-- `--dry-run` => `-DryRun`
+Flag mapping: `--strict` → `-StrictValidation`, `--threshold N` → `-QualityThreshold N`, `--skip-diagrams` → `-SkipDiagrams`.
 
-4. If command fails:
-- Report failure reason.
-- Surface key diagnostics from `docs/diagnostics-report.json` and `docs/validation-report.json` when available.
+Do not call `run-all-generators.ps1` or individual generators directly: the build command also loads the target's config, applies the redaction sweep and stamps provenance.
 
-5. If command succeeds:
-- Report generated artifacts under `docs/`.
-- Provide summary from:
-  - `docs/quality-report.json`
-  - `docs/validation-report.json`
-  - `docs/diagnostics-report.json`
+## Report
 
-## Non-Negotiables
-
-- Do not run per-generator and per-validator scripts manually when `run-all-generators.ps1` is available.
-- Do not pause between phases.
+- Exit code `0` = gate passed; `2` = gate failed; `3` = fail-closed redaction stop; `1` = tool error. Report any non-zero code as "not done".
+- Summarise from `<output>/validation-report.json` (status, overallScore, pristine sub-score, any failed validators) and `<output>/diagnostics-report.json`.
 - Do not invent output; only report files and metrics that exist.
-- Use absolute paths for script execution.
 
-## Optional Next Step
+## Optional next step
 
-Suggest `/appdoc.enhance` after deterministic generation completes.
+The quarantined enrichment loop (SKILL.md, Layer 2; Copilot adapter: `/appdoc.enrich`).

@@ -55,18 +55,18 @@ function Get-ProjectFiles {
                 $slnContent = Get-Content $Path -Raw -ErrorAction Stop
                 $projectPattern = 'Project\("\{[^}]+\}"\)\s*=\s*"[^"]+",\s*"([^"]+\.csproj)"'
                 $matches = [regex]::Matches($slnContent, $projectPattern)
-                
+
                 $slnDir = Split-Path $Path -Parent
                 $projects = $matches | ForEach-Object {
                     $relPath = $_.Groups[1].Value
                     Join-Path $slnDir $relPath
                 }
-                
+
                 Write-Verbose "Found $($projects.Count) projects in solution"
                 return $projects
             }
         }
-        
+
         # Scan directory for .csproj files
         $projects = Get-ChildItem -Path $Path -Filter "*.csproj" -Recurse -ErrorAction Stop | Select-Object -ExpandProperty FullName
         Write-Verbose "Found $($projects.Count) project files"
@@ -111,7 +111,7 @@ function Read-CsprojFile {
 
     try {
         [xml]$projectXml = Get-Content $ProjectPath -Raw
-        
+
         $projectData = @{
             Path = $ProjectPath
             Name = [System.IO.Path]::GetFileNameWithoutExtension($ProjectPath)
@@ -157,7 +157,7 @@ function Read-CsprojFile {
                     }
                 }
             }
-            
+
             # Extract project references (also use ItemGroup iteration for namespace compatibility)
             if ($itemGroup.ProjectReference) {
                 foreach ($projRef in $itemGroup.ProjectReference) {
@@ -208,7 +208,7 @@ function Get-SolutionInfo {
     }
 
     $solutionName = [System.IO.Path]::GetFileNameWithoutExtension($SolutionPath)
-    
+
     $systemInfo = @{
         Name = $solutionName
         Path = $SolutionPath
@@ -448,7 +448,7 @@ function Get-ContainerType {
 
     # Read full project XML for legacy project type detection
     [xml]$projectXml = Get-Content $ProjectPath -Raw
-    
+
     # Check for legacy ASP.NET Web Application (ProjectTypeGuids)
     $projectTypeGuids = $projectXml.SelectSingleNode("//ProjectTypeGuids")
     if ($projectTypeGuids) {
@@ -474,7 +474,7 @@ function Get-ContainerType {
         if ($servicePackages) {
             return "Service"
         }
-        
+
         # If it's an executable, assume it's a service (console apps are usually workers/services in enterprise apps)
         return "Service"
     }
@@ -583,10 +583,10 @@ function Build-ContainerModel {
         }
 
         $containerType = Get-ContainerType -ProjectPath $projPath
-        
+
         # Determine technology
         $technology = switch ($containerType) {
-            "WebApp" { 
+            "WebApp" {
                 if ($projData.Sdk -match 'Web') { "ASP.NET Core" }
                 else { "ASP.NET" }
             }
@@ -616,14 +616,14 @@ function Build-ContainerModel {
     }
 
     Write-Verbose "Built $($containers.Count) containers"
-    
+
     # Return early if no containers found
     if ($containers.Count -eq 0) {
         Write-Warning "No containers detected. All projects were classified as libraries or tests."
-        
+
         # Get system info for minimal model
         $systemInfo = Get-SolutionInfo -SolutionPath $SolutionPath
-        
+
         return @{
             SystemName = $systemInfo.Name
             SystemDescription = $systemInfo.Description
@@ -631,13 +631,13 @@ function Build-ContainerModel {
             Relationships = @()
         }
     }
-    
+
     # Build relationships between containers
     $relationships = Build-ContainerRelationships -Containers $containers -SolutionPath $SolutionPath
-    
+
     # Get system info
     $systemInfo = Get-SolutionInfo -SolutionPath $SolutionPath
-    
+
     # Return complete container model
     return @{
         SystemName = $systemInfo.Name
@@ -671,7 +671,7 @@ function Build-ContainerRelationships {
     param(
         [Parameter(Mandatory=$true)]
         [array]$Containers,
-        
+
         [Parameter(Mandatory=$true)]
         [string]$SolutionPath
     )
@@ -682,11 +682,11 @@ function Build-ContainerRelationships {
 
     foreach ($container in $Containers) {
         $dependencies = Find-ProjectDependencies -ProjectPath $container.ProjectPath
-        
+
         foreach ($depName in $dependencies) {
             # Find the target container
             $targetContainer = $Containers | Where-Object { $_.Name -eq $depName }
-            
+
             if ($targetContainer) {
                 # Infer relationship description based on types
                 $description = switch ($container.Type) {

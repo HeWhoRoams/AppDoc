@@ -11,7 +11,7 @@
 #   (4) enabled=false (report-only, the DEFAULT)   -> NEVER blocked, even if
 #       emptyCount>0 / subScore<floor
 #   (5) OWNER_REQUIRED>0                           -> NEVER blocks (excluded —
-#       they are pending /appdoc.enhance, not failures), even with enabled=true
+#       they are pending owner input, not failures), even with enabled=true
 #
 # The report-only invariants hold too: enabled=false sets blocked=false and leaves
 # blockingIssues empty in EVERY case.
@@ -99,7 +99,7 @@ Describe "Pristine gate decision function (Test-AppDocPristineGate)" {
     Context "OWNER_REQUIRED cells are EXCLUDED from the gate (never a failure)" {
         It "case 5: OWNER_REQUIRED present, enabled — NEVER blocks (excluded)" {
             $r = Test-AppDocPristineGate -EmptyCount 0 -SubScore 95.8 -Floor 80 -OwnerRequiredCount 5 -Enabled $true
-            $r.blocked | Should -BeFalse -Because "OWNER_REQUIRED cells are pending /appdoc.enhance, not failures"
+            $r.blocked | Should -BeFalse -Because "OWNER_REQUIRED cells are pending owner input, not failures"
             @($r.blockingIssues).Count | Should -Be 0
         }
 

@@ -29,6 +29,7 @@
 # Scratch/copy/old/test/bak files are excluded by BASENAME.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
@@ -57,7 +58,7 @@ function Join-Row {
 }
 
 # Scratch / copy / old / test / bak files are excluded by BASENAME.
-function Is-ScratchFile {
+function Test-ScratchFile {
     param([string]$Path)
     $name = Split-Path $Path -Leaf
     return ($name -match '(?i).*_copy.*|.*copy_.*|.*_old.*|.*_test.*|^testing.*|.*bak.*')
@@ -66,7 +67,7 @@ function Is-ScratchFile {
 # Sanitize a string before it is written: redact any real Authorization/Apikey
 # header value and any bearer/token credential.
 # Defense-in-depth: even if a real value is captured, it is redacted here.
-function Sanitize-Text {
+function ConvertTo-SafeText {
     param([string]$t)
     if ($null -eq $t) { return '' }
     # Apikey / Authorization / Bearer header literals -> redact the value.
@@ -95,7 +96,7 @@ function Sanitize-Text {
 function Get-ClassicAspSourceFileCount {
     param([string]$RootPath)
     $files = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp","*.inc" -File -ErrorAction SilentlyContinue |
-        Where-Object { -not (Is-ScratchFile $_.FullName) })
+        Where-Object { -not (Test-ScratchFile $_.FullName) })
     return $files.Count
 }
 
@@ -150,7 +151,7 @@ if ($classicAspSourceCount -eq 0) {
 $rootPrefix = $RootPath.TrimEnd('\', '/')
 # Collect classic-ASP source files (asp/aspx/inc), EXCLUDING scratch by basename, sorted for determinism.
 $allFiles = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp","*.aspx","*.inc" -File -ErrorAction SilentlyContinue |
-    Where-Object { -not (Is-ScratchFile $_.FullName) } |
+    Where-Object { -not (Test-ScratchFile $_.FullName) } |
     Sort-Object FullName)
 # Scratch set (for the "also present in N copy/test file(s)" note), same scoping.
 $allFilesInclScratch = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp","*.aspx","*.inc" -File -ErrorAction SilentlyContinue | Sort-Object FullName)
@@ -254,7 +255,7 @@ foreach ($f in $allFiles) {
 # Count scratch-file hits per URL so a primary row can note duplicate copies.
 $scratchUrlCounts = @{}
 foreach ($f in $allFilesInclScratch) {
-    if (-not (Is-ScratchFile $f.FullName)) { continue }
+    if (-not (Test-ScratchFile $f.FullName)) { continue }
     $content = Get-Content $f.FullName -Raw -ErrorAction SilentlyContinue
     if ([string]::IsNullOrWhiteSpace($content)) { continue }
     foreach ($m in $quotedUrlRe.Matches($content)) {
@@ -272,7 +273,7 @@ foreach ($h in ($endpointHits | Sort-Object @{Expression = { $_.url } }, @{Expre
     $seenEndpoint[$key] = $true
     $scratchNote = ''
     if ($scratchUrlCounts.ContainsKey($h.url)) { $scratchNote = " [also present in $($scratchUrlCounts[$h.url]) copy/test file(s)]" }
-    $evidence = (Md-Back $h.file) + " line " + $h.line + $scratchNote
+    $evidence = (Format-CodeSpan $h.file) + " line " + $h.line + $scratchNote
     $endpointRows.Add([pscustomobject]@{
         id=''; endpoint=$h.url; mechanism=$h.mech; evidence=$evidence; behavior=$h.behavior; status='Verified'
     })
@@ -295,8 +296,8 @@ foreach ($h in ($sendMailHits | Sort-Object @{Expression = { $_.file } }, @{Expr
     if ($seenMailFile.ContainsKey($h.file)) { continue }
     $seenMailFile[$h.file] = $true
     $boundaryRows.Add([pscustomobject]@{
-        id=''; btype='Email (stored procedure)'; call=(Md-Back (Sanitize-Text ([string]$h.snippet)));
-        evidence=(Md-Back $h.file) + " line " + $h.line;
+        id=''; btype='Email (stored procedure)'; call=(Format-CodeSpan (ConvertTo-SafeText ([string]$h.snippet)));
+        evidence=(Format-CodeSpan $h.file) + " line " + $h.line;
         behavior='Sends email through a stored-procedure `send_mail` call'; status='Verified'
     })
 }
@@ -312,7 +313,7 @@ if ($adoCount -gt 0) {
 if ($uncCount -gt 0) {
     $boundaryRows.Add([pscustomobject]@{
         id=''; btype='File-system / UNC'; call='`\\server\share` UNC paths (not printed)';
-        evidence=("$uncCount UNC path occurrences across $($uncFiles.Count) files; e.g. " + (Md-Back $uncFiles[0]));
+        evidence=("$uncCount UNC path occurrences across $($uncFiles.Count) files; e.g. " + (Format-CodeSpan $uncFiles[0]));
         behavior='UNC file-share boundary'; status='Verified'
     })
 }
@@ -341,7 +342,7 @@ $lines.Add("Each row is an outbound HTTP/XML call site verified against the sour
 $lines.Add("| ID | Endpoint/URL | Mechanism | Source file:line | Data/behavior | Status |")
 $lines.Add("|----|--------------|-----------|------------------|---------------|--------|")
 foreach ($er in $endpointRows) {
-    $cells = @($er.id, (Md-Clean (Md-Back $er.endpoint)), (Md-Clean (Md-Back $er.mechanism)), (Md-Clean $er.evidence), (Md-Clean $er.behavior), $er.status)
+    $cells = @($er.id, (Format-MarkdownCellText (Format-CodeSpan $er.endpoint)), (Format-MarkdownCellText (Format-CodeSpan $er.mechanism)), (Format-MarkdownCellText $er.evidence), (Format-MarkdownCellText $er.behavior), $er.status)
     $lines.Add((Join-Row $cells))
 }
 if ($endpointRows.Count -eq 0) { $lines.Add("| — | none detected | — | — | — | Unknown |") }
@@ -352,7 +353,7 @@ $lines.Add("Non-HTTP external boundaries: stored-procedure email calls, the ADO 
 $lines.Add("| ID | Boundary type | Observed call | Source file:line | Behavior | Status |")
 $lines.Add("|----|---------------|---------------|------------------|----------|--------|")
 foreach ($br in $boundaryRows) {
-    $cells = @($br.id, (Md-Clean $br.btype), (Md-Clean $br.call), (Md-Clean $br.evidence), (Md-Clean $br.behavior), $br.status)
+    $cells = @($br.id, (Format-MarkdownCellText $br.btype), (Format-MarkdownCellText $br.call), (Format-MarkdownCellText $br.evidence), (Format-MarkdownCellText $br.behavior), $br.status)
     $lines.Add((Join-Row $cells))
 }
 if ($boundaryRows.Count -eq 0) { $lines.Add("| — | none detected | — | — | — | Unknown |") }
@@ -363,7 +364,7 @@ $lines.Add("Distinct COM objects instantiated via `CreateObject`/`Server.CreateO
 $lines.Add("| COM object | Count | Sample file | Status |")
 $lines.Add("|------------|-------|-------------|--------|")
 foreach ($cr in $comShow) {
-    $cells = @((Md-Clean (Md-Back $cr.object)), $cr.count, (Md-Clean (Md-Back $cr.sample)), $cr.status)
+    $cells = @((Format-MarkdownCellText (Format-CodeSpan $cr.object)), $cr.count, (Format-MarkdownCellText (Format-CodeSpan $cr.sample)), $cr.status)
     $lines.Add((Join-Row $cells))
 }
 if ($comRows.Count -eq 0) { $lines.Add("| — | none detected | — | Unknown |") }
@@ -386,16 +387,16 @@ $lines.Add("- Confidence/Inference Flags: deterministic, evidence-backed, secret
 
 # Sanitize the full markdown (defense-in-depth) before writing.
 $md = ($lines -join "`n")
-$md = Sanitize-Text $md
+$md = ConvertTo-SafeText $md
 $md | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 
 # ---- Flat evidence ----------------------------------------------------------
 $evidence = New-Object System.Collections.Generic.List[object]
 foreach ($er in $endpointRows) {
-    $evidence.Add([ordered]@{ kind="http-endpoint"; id=$er.id; endpoint=(Sanitize-Text $er.endpoint); mechanism=$er.mechanism; evidence=(Sanitize-Text $er.evidence); behavior=(Sanitize-Text $er.behavior); status=$er.status })
+    $evidence.Add([ordered]@{ kind="http-endpoint"; id=$er.id; endpoint=(ConvertTo-SafeText $er.endpoint); mechanism=$er.mechanism; evidence=(ConvertTo-SafeText $er.evidence); behavior=(ConvertTo-SafeText $er.behavior); status=$er.status })
 }
 foreach ($br in $boundaryRows) {
-    $evidence.Add([ordered]@{ kind="boundary"; id=$br.id; btype=$br.btype; call=(Sanitize-Text $br.call); evidence=(Sanitize-Text $br.evidence); behavior=(Sanitize-Text $br.behavior); status=$br.status })
+    $evidence.Add([ordered]@{ kind="boundary"; id=$br.id; btype=$br.btype; call=(ConvertTo-SafeText $br.call); evidence=(ConvertTo-SafeText $br.evidence); behavior=(ConvertTo-SafeText $br.behavior); status=$br.status })
 }
 foreach ($cr in $comRows) {
     $evidence.Add([ordered]@{ kind="com-object"; object=$cr.object; count=$cr.count; sample=$cr.sample; status=$cr.status })

@@ -17,7 +17,7 @@ jobs:
     name: Repo hygiene and static gates
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: No tracked files that .gitignore excludes
         shell: pwsh
@@ -36,13 +36,46 @@ jobs:
           if ($bad) { $bad | ForEach-Object { Write-Host "host-specific text in $($_.Path)" }; throw 'Host-specific text found in skill docs' }
           $fm = (Get-Content SKILL.md -Raw) -split "(?m)^---\s*$"
           if ($fm.Count -lt 3) { throw 'SKILL.md frontmatter missing' }
-          foreach ($key in 'name:','description:','license:') { if ($fm[1] -notmatch "(?m)^$key") { throw "SKILL.md frontmatter missing $key" } }
+          foreach ($key in 'name:','description:','license:','version:') { if ($fm[1] -notmatch "(?m)^$key") { throw "SKILL.md frontmatter missing $key" } }
 
-      - name: No absolute host paths in committed docs/
+      - name: Core is harness-neutral and carries no target-specific names
+        shell: pwsh
+        run: |
+          # Slash commands belong in .github/prompts only; target narrative belongs in the
+          # target's overlay files, never in the tool.
+          $files = @(Get-ChildItem .appdoc/scripts -Recurse -Force -File -Include *.ps1,*.psm1) +
+                   @(Get-ChildItem docs -Recurse -File -Include *.md | Where-Object { $_.FullName -notmatch '[\\/]adr[\\/]' })
+          $hits = $files | Select-String -Pattern '/appdoc\.(begin|enrich|enhance|diagrams)\b','(?i)helpweb|frontcounter|hdemp|hdgid|peregrine|bradford|resnet|talisma|bomgar|CALLE0A' -List
+          $hits = @($hits | Where-Object { (Get-Content $_.Path -Raw) -notmatch '<!-- appdoc:hand-authored -->' })
+          if ($hits) { $hits | ForEach-Object { Write-Host "$($_.Path):$($_.LineNumber): $($_.Line.Trim())" }; throw 'Harness-specific or target-specific text found in the core' }
+
+      - name: Entry scripts declare PowerShell 7.2 and CmdletBinding
+        shell: pwsh
+        run: |
+          $bad = foreach ($f in Get-ChildItem .appdoc/scripts/powershell -Filter *.ps1 -File) {
+            if ($f.Name -eq 'template-helpers.ps1') { continue }   # dot-sourced library
+            $c = Get-Content $f.FullName -Raw
+            if ($c -notmatch '(?m)^#requires -Version 7\.2' -or $c -notmatch '(?m)^\[CmdletBinding\(\)\]\s*\r?\nparam\s*\(') { $f.Name }
+          }
+          if ($bad) { $bad | ForEach-Object { Write-Host "missing #requires/CmdletBinding: $_" }; throw 'Entry script header check failed' }
+
+      - name: Scripts named in docs, prompts and editor settings exist
+        shell: pwsh
+        run: |
+          $sources = @('SKILL.md','README.md','.vscode/settings.example.json') + @(Get-ChildItem references,.github/prompts -Filter *.md -File | ForEach-Object FullName)
+          $named = $sources | Select-String -Pattern '([A-Za-z0-9_.-]+\.ps1)\b' -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
+          $missing = foreach ($n in $named) {
+            if (-not (Get-ChildItem -Recurse -Force -File -Filter $n -ErrorAction SilentlyContinue | Select-Object -First 1)) { $n }
+          }
+          if ($missing) { $missing | ForEach-Object { Write-Host "referenced but missing: $_" }; throw 'Referenced scripts are missing' }
+
+      - name: No absolute host paths and no CR line endings in committed docs/
         shell: pwsh
         run: |
           $hits = Get-ChildItem docs -Recurse -File | Select-String -Pattern '/persistent/','/home/[A-Za-z0-9_.-]+/','/tmp/','(?<![A-Za-z])[A-Za-z]:\\(Users|Github|Windows)' -List
           if ($hits) { $hits | ForEach-Object { Write-Host "absolute path in $($_.Path)" }; throw 'Absolute host paths found in docs/' }
+          $cr = foreach ($f in Get-ChildItem docs -Recurse -File -Include *.md,*.json,*.html) { if ([System.IO.File]::ReadAllBytes($f.FullName) -contains 13) { $f.FullName } }
+          if ($cr) { $cr | ForEach-Object { Write-Host "CR line ending in $_" }; throw 'Generated docs must use LF line endings' }
 
       - name: PowerShell syntax gate
         shell: pwsh
@@ -52,20 +85,55 @@ jobs:
         shell: pwsh
         run: ./.appdoc/scripts/powershell/ci-doc-integrity-gate.ps1 -RootPath .
 
+  lint:
+    name: PSScriptAnalyzer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Analyze (enforced rules fail the job; the rest are reported)
+        shell: pwsh
+        run: |
+          Install-Module PSScriptAnalyzer -MinimumVersion 1.22.0 -Force -Scope CurrentUser
+          $findings = @(Invoke-ScriptAnalyzer -Path ./.appdoc/scripts/powershell,./tests/powershell -Recurse -Settings ./PSScriptAnalyzerSettings.psd1)
+          $findings | Group-Object RuleName | Sort-Object Count -Descending | ForEach-Object { "{0,5}  {1}" -f $_.Count, $_.Name }
+          $enforced = @('PSUseApprovedVerbs', 'PSAvoidTrailingWhitespace')
+          $blocking = @($findings | Where-Object { $enforced -contains $_.RuleName })
+          if ($blocking.Count -gt 0) {
+            $blocking | ForEach-Object { Write-Host "$($_.ScriptName):$($_.Line) [$($_.RuleName)] $($_.Message)" }
+            throw "$($blocking.Count) finding(s) for enforced rules"
+          }
+
   tests:
-    name: Pester + proof harness (${{ matrix.os }})
+    name: Pester + proof harness (${{ matrix.os }}, dotnet ${{ matrix.dotnet }})
     needs: hygiene
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+        dotnet: [with]
+        include:
+          # Exercise the regex fallback the README promises when no .NET SDK is present.
+          - os: ubuntu-latest
+            dotnet: without
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        if: matrix.dotnet == 'with'
         with:
           dotnet-version: '8.0.x'
+
+      - name: Hide dotnet (regex-fallback leg)
+        if: matrix.dotnet == 'without'
+        shell: bash
+        run: |
+          for d in $(dirname "$(command -v dotnet)" 2>/dev/null) /usr/share/dotnet /usr/lib/dotnet; do
+            [ -d "$d" ] && sudo mv "$d" "$d.hidden" || true
+          done
+          if command -v dotnet; then echo "dotnet still visible"; exit 1; fi
 
       - name: Install Pester 5
         shell: pwsh
@@ -93,3 +161,30 @@ jobs:
       - name: Semantic quarantine proof harness (plain script, not Pester)
         shell: pwsh
         run: ./tests/powershell/test-semantic-quarantine.ps1
+
+  drift:
+    name: Committed docs/ match a fresh build
+    needs: hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+      - name: Rebuild the self-dogfood docs in a scratch copy and compare
+        shell: pwsh
+        run: |
+          $scratch = Join-Path $env:RUNNER_TEMP 'self'
+          Copy-Item -Path . -Destination $scratch -Recurse -Force
+          & pwsh -NoProfile -File (Join-Path $scratch '.appdoc/scripts/powershell/run-appdoc-build.ps1') -Path $scratch
+          if ($LASTEXITCODE -ne 0) { throw "build exited $LASTEXITCODE" }
+          function Get-Stable([string]$p) { ((Get-Content -LiteralPath $p -Raw) -replace "`r", '' -split "`n" | Where-Object { $_ -notmatch 'Generated|Evidence date|Commit Hash|Report date' }) -join "`n" }
+          $problems = @()
+          foreach ($c in 'config-catalog.md','data-model.md','debt-register.md','dependencies-catalog.md') {
+            if ((Get-Stable "docs/$c") -cne (Get-Stable (Join-Path $scratch "docs/$c"))) { $problems += "catalog differs: $c" }
+          }
+          $headings = { param($p) @((Get-Content -LiteralPath $p) | Where-Object { $_ -match '^## ' }) -join "`n" }
+          if ((& $headings 'docs/application-documentation.md') -cne (& $headings (Join-Path $scratch 'docs/application-documentation.md'))) { $problems += 'section headings differ: application-documentation.md' }
+          $a = Get-Content docs/validation-report.json -Raw | ConvertFrom-Json -Depth 30
+          $b = Get-Content (Join-Path $scratch 'docs/validation-report.json') -Raw | ConvertFrom-Json -Depth 30
+          if ($a.status -ne $b.status -or $a.overallScore -ne $b.overallScore) { $problems += "gate differs: committed $($a.status)/$($a.overallScore), fresh $($b.status)/$($b.overallScore)" }
+          if ($problems) { $problems | ForEach-Object { Write-Host $_ }; throw 'docs/ is stale: run the build on the repo root and commit docs/' }

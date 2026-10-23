@@ -9,6 +9,7 @@
 # Output: Populates docs/build-cookbook.md from template
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
@@ -26,8 +27,8 @@ if (-not (Test-Path $helpersPath)) {
     exit 1
 }
 . $helpersPath
-if (-not (Get-Command Normalize-AppDocMarkdownStructure -ErrorAction SilentlyContinue)) {
-    Write-Error "Failed to import Normalize-AppDocMarkdownStructure from $helpersPath. File may be corrupt or missing required functions."
+if (-not (Get-Command Format-AppDocMarkdownStructure -ErrorAction SilentlyContinue)) {
+    Write-Error "Failed to import Format-AppDocMarkdownStructure from $helpersPath. File may be corrupt or missing required functions."
     exit 1
 }
 
@@ -107,8 +108,8 @@ Write-Progress -Activity "Generating Build Cookbook" -Status "Populating templat
 try {
     $content = Get-Content -Path $outputPath -Raw
     $content = Update-AppDocBuildCookbookContent -Content $content -Commands $commands -Prerequisites $prerequisites -CicdInfo $cicdInfo
-    $content = Normalize-AppDocTemplateInstructionText -Content $content
-    $content = Normalize-AppDocMarkdownStructure -Content $content
+    $content = Format-AppDocTemplateInstructionText -Content $content
+    $content = Format-AppDocMarkdownStructure -Content $content
     $content = Add-GenerationMetadata -Content $content
     $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 } catch {

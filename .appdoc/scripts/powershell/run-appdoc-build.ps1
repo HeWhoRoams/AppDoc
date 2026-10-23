@@ -26,6 +26,7 @@
 #   2  gate failed: docs were written but did not pass the gate
 #   3  fail-closed stop: the redaction sweep or the semantic secret-redaction gate blocked
 #
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true, Position=0)]
     [string]$Path,

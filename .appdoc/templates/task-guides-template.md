@@ -54,4 +54,3 @@ _Task checklist pending deterministic population._
 - Profile: [PROFILE]
 - Scope: [SCOPE]
 - Confidence/Inference Flags: deterministic, evidence-backed
-

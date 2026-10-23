@@ -44,6 +44,7 @@
 #          is redacted to [REDACTED] before output (defense-in-depth).
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
@@ -86,13 +87,13 @@ $evidence = New-Object System.Collections.Generic.List[object]
 $eIdx = 1
 foreach ($r in $records) {
     $id = "HTTP-$($eIdx.ToString('00'))"
-    $evidenceCell = (Md-Back $r.file) + " line " + $r.line
+    $evidenceCell = (Format-CodeSpan $r.file) + " line " + $r.line
     # Data/behavior: the epistemic tag for the URL (Literal / Inferred / Relative).
     $behavior = "Outbound HTTP call site; URL " + $r.urlKind
     $endpointRows.Add([pscustomobject]@{
         id = $id
-        endpoint = (Sanitize-AppDocExternalCallUrl -t ([string]$r.endpoint))
-        mechanism = (Sanitize-AppDocExternalCallUrl -t ([string]$r.mechanism))
+        endpoint = (ConvertTo-AppDocSafeExternalCallUrl -t ([string]$r.endpoint))
+        mechanism = (ConvertTo-AppDocSafeExternalCallUrl -t ([string]$r.mechanism))
         evidence = $evidenceCell
         behavior = $behavior
         status = "Verified"
@@ -105,8 +106,8 @@ foreach ($r in $records) {
     $evidence.Add([ordered]@{
         kind = "http-endpoint"
         id = $id
-        endpoint = (Sanitize-AppDocExternalCallUrl -t ([string]$r.endpoint))
-        mechanism = (Sanitize-AppDocExternalCallUrl -t ([string]$r.mechanism))
+        endpoint = (ConvertTo-AppDocSafeExternalCallUrl -t ([string]$r.endpoint))
+        mechanism = (ConvertTo-AppDocSafeExternalCallUrl -t ([string]$r.mechanism))
         method = [string]$r.method
         evidence = $evidenceCell
         behavior = $behavior
@@ -141,7 +142,7 @@ if ($endpointRows.Count -gt 0) {
     $lines.Add("| ID | Endpoint/URL | Mechanism | Source file:line | Data/behavior | Status |")
     $lines.Add("|----|--------------|-----------|------------------|---------------|--------|")
     foreach ($er in $endpointRows) {
-        $cells = @($er.id, (Md-Clean (Md-Back $er.endpoint)), (Md-Clean (Md-Back $er.mechanism)), (Md-Clean $er.evidence), (Md-Clean $er.behavior), $er.status)
+        $cells = @($er.id, (Format-MarkdownCellText (Format-CodeSpan $er.endpoint)), (Format-MarkdownCellText (Format-CodeSpan $er.mechanism)), (Format-MarkdownCellText $er.evidence), (Format-MarkdownCellText $er.behavior), $er.status)
         $lines.Add('| ' + ($cells -join ' | ') + ' |')
     }
     $lines.Add("")

@@ -24,6 +24,7 @@
 # Connection-string values are treated as opaque and never printed.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
@@ -57,13 +58,13 @@ function Write-NotApplicablePlaceholder {
 # Uses a section state machine: params are only collected inside the Parameters:
 # section and return codes only inside the Return Codes: section, so surrounding
 # description prose / banners never false-match as a parameter or code.
-function Parse-ProcBlock {
+function Read-ProcBlock {
     param([string[]]$lines, [int]$start)
     $block = [ordered]@{ name=""; params=(New-Object System.Collections.Generic.List[object]); returns=(New-Object System.Collections.Generic.List[object]) }
     $nm = [regex]::Match($lines[$start], "(?i)\s*'(?:Stored\s+Procedure|Procedure(?:\s+Name)?)\s*[:\-]?\s*([A-Za-z_][A-Za-z0-9_.]*)")
     if ($nm.Success) { $block.name = $nm.Groups[1].Value }
     # Core-line normalizer: drop the VB comment quote and any leading dashes/tabs/spaces.
-    function Core-Line([string]$l) {
+    function Get-ProcCommentText([string]$l) {
         $c = $l
         $c = $c -replace "^\s*'", ""
         $c = $c -replace "^\s*[-]*\s*", ""
@@ -77,7 +78,7 @@ function Parse-ProcBlock {
         if ([string]::IsNullOrWhiteSpace($t)) { $i++; continue }
         # stop at a real code line (non-empty and not a VB comment)
         if (-not $t.TrimStart().StartsWith("'")) { break }
-        $c = Core-Line $t
+        $c = Get-ProcCommentText $t
         # stop at a banner line (a run of stars/plus that opens the next prose block)
         if ($c -match '^[+*]{3,}') { break }
         # stop at the next procedure-name marker
@@ -191,7 +192,7 @@ foreach ($list in @($incFiles, $aspFiles)) {
         for ($i = 0; $i -lt $lines.Count; $i++) {
             $m = [regex]::Match($lines[$i], "(?i)^\s*'\s*(?:Stored\s+Procedure|Procedure(?:\s+Name)?)\s*[:\-]?\s*([A-Za-z_][A-Za-z0-9_.]*)")
             if ($m.Success) {
-                $blk = Parse-ProcBlock -lines $lines -start $i
+                $blk = Read-ProcBlock -lines $lines -start $i
                 if ($blk.name -and $blk.params.Count -gt 0) {
                     Add-Doc -Name $blk.name -RelPath $rel -Params $blk.params -Returns $blk.returns
                 }
@@ -252,7 +253,7 @@ foreach ($d in $docRows) {
     $rcCell = if ($rc.Count -gt 0) { ($rc -join "; ") } else { "—" }
     $calls = $d.files
     $callsShown = if ($calls.Count -le 3) { ($calls -join ", ") } else { (($calls | Select-Object -First 3) -join ", ") + " (+$($calls.Count - 3) more)" }
-    $row = "| {0} | `{1}` | {2} | {3} | {4} | {5} | Verified |" -f $id, $d.name, (Md-Clean $fname), (Md-Clean $paramCell), (Md-Clean $rcCell), (Md-Clean $callsShown)
+    $row = "| {0} | `{1}` | {2} | {3} | {4} | {5} | Verified |" -f $id, $d.name, (Format-MarkdownCellText $fname), (Format-MarkdownCellText $paramCell), (Format-MarkdownCellText $rcCell), (Format-MarkdownCellText $callsShown)
     $lines.Add($row)
 }
 if ($docCount -eq 0) { $lines.Add("| — | — | — | — | — | — | Unknown |") }
@@ -270,7 +271,7 @@ foreach ($u in $undocRows) {
     $id = "spu-$( $uid.ToString('000') )"
     $files = $u.files
     $filesShown = if ($files.Count -le 3) { ($files -join ", ") } else { (($files | Select-Object -First 3) -join ", ") + " (+$($files.Count - 3) more)" }
-    $row = "| {0} | `{1}` | {2} | Partly verified |" -f $id, (Md-Clean $u.name), (Md-Clean $filesShown)
+    $row = "| {0} | `{1}` | {2} | Partly verified |" -f $id, (Format-MarkdownCellText $u.name), (Format-MarkdownCellText $filesShown)
     $lines.Add($row)
 }
 if ($undocCount -eq 0) { $lines.Add("| — | — | — | Unknown |") }

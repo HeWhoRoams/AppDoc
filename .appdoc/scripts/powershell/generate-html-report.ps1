@@ -18,6 +18,7 @@
 #          (fonts + Mermaid load from CDN at view time; the file is otherwise
 #          self-contained). No LLM.
 #
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
@@ -54,7 +55,7 @@ if ($AssetsMode -notin @('inline', 'cdn')) { Write-Error "Theme 'assets' must be
 $VendorMermaidPath = Join-Path (Join-Path (Join-Path (Join-Path (Join-Path $PSScriptRoot '..') '..') 'templates') 'html') (Join-Path 'vendor' 'mermaid.min.js')
 
 # --- helpers ------------------------------------------------------------------
-function Esc-Html {
+function ConvertTo-HtmlText {
     param([string]$Text)
     if ($null -eq $Text) { return '' }
     $Text = $Text -replace '&','&amp;'
@@ -66,7 +67,7 @@ function Esc-Html {
 function Convert-Inline {
     param([string]$Text)
     if ($null -eq $Text) { return '' }
-    $Text = Esc-Html $Text
+    $Text = ConvertTo-HtmlText $Text
     # `code`
     $Text = [regex]::Replace($Text, '`([^`]+)`', {
         param($m) $inner = $m.Groups[1].Value -replace '<','&lt;' -replace '>','&gt;'
@@ -163,7 +164,7 @@ function Convert-MarkdownFile {
             $i++
             while ($i -lt $n -and ($lines[$i] -notmatch '^\s*```')) { $body += $lines[$i]; $i++ }
             $i++   # closing fence
-            $escaped = ($body | ForEach-Object { Esc-Html $_ }) -join "`n"
+            $escaped = ($body | ForEach-Object { ConvertTo-HtmlText $_ }) -join "`n"
             if ($lang -ieq 'mermaid') {
                 $html += "<pre class=""mermaid"">`n$escaped`n</pre>"
             }
@@ -292,12 +293,12 @@ $openSub = $false
 foreach ($t in $allToc) {
     if ($t.level -eq 2) {
         if ($openSub) { $tocHtml += '</ul>'; $openSub = $false }
-        $link = "<a data-target=""$($t.anchor)"" href=""#$($t.anchor)"">$(Esc-Html $t.text)</a>"
+        $link = "<a data-target=""$($t.anchor)"" href=""#$($t.anchor)"">$(ConvertTo-HtmlText $t.text)</a>"
         $tocHtml += "<li>$link"
     }
     elseif ($t.level -eq 3) {
         if (-not $openSub) { $tocHtml += '<ul>'; $openSub = $true }
-        $link = "<a data-target=""$($t.anchor)"" href=""#$($t.anchor)"">$(Esc-Html $t.text)</a>"
+        $link = "<a data-target=""$($t.anchor)"" href=""#$($t.anchor)"">$(ConvertTo-HtmlText $t.text)</a>"
         $tocHtml += "<li>$link</li>"
     }
 }
@@ -400,8 +401,8 @@ targets.forEach(el => observer.observe(el));
 "@
 
 # --- assemble document ---------------------------------------------------------
-$docTitle = Esc-Html ([string]$M.title)
-$docSub = Esc-Html ([string]$M.sub)
+$docTitle = ConvertTo-HtmlText ([string]$M.title)
+$docSub = ConvertTo-HtmlText ([string]$M.sub)
 $generatedAt = (Get-Date -Format "yyyy-MM-dd HH:mm:ss")
 
 $doc = @()

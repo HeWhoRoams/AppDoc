@@ -5,6 +5,7 @@
 # Purpose: Populates the overview template with repository analysis and technology summary.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
@@ -292,8 +293,8 @@ $content = Add-AppDocOverviewSection -Content $content -SectionName "Inputs→Pr
 $content = Add-AppDocOverviewSection -Content $content -SectionName "External Systems" -Lines $externalLines
 $content = Add-AppDocOverviewSection -Content $content -SectionName "Confidence Notes" -Lines $confidenceLines
 
-$content = Normalize-AppDocTemplateInstructionText -Content $content
-$content = Normalize-AppDocMarkdownStructure -Content $content
+$content = Format-AppDocTemplateInstructionText -Content $content
+$content = Format-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 

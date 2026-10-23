@@ -13,6 +13,7 @@
 # writes a minimal "not applicable" placeholder and exits 0.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
@@ -215,7 +216,7 @@ $entries = New-Object System.Collections.Generic.List[object]
 $id = 0
 
 # Process a candidate entry-point file.
-function Process-EntryFile {
+function Invoke-EntryFileScan {
     param(
         [string]$FullPath,
         [string]$RootPrefix,
@@ -283,10 +284,10 @@ function Process-EntryFile {
 }
 
 foreach ($f in $aspFiles) {
-    Process-EntryFile -FullPath $f.FullName -RootPrefix $rootPrefix -Entries $entries -IdCounter ([ref]$id) -RequireRequestSignal $false
+    Invoke-EntryFileScan -FullPath $f.FullName -RootPrefix $rootPrefix -Entries $entries -IdCounter ([ref]$id) -RequireRequestSignal $false
 }
 foreach ($f in $htmFiles) {
-    Process-EntryFile -FullPath $f.FullName -RootPrefix $rootPrefix -Entries $entries -IdCounter ([ref]$id) -RequireRequestSignal $true
+    Invoke-EntryFileScan -FullPath $f.FullName -RootPrefix $rootPrefix -Entries $entries -IdCounter ([ref]$id) -RequireRequestSignal $true
 }
 
 # Sort entries deterministically by file path.

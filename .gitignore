@@ -25,3 +25,6 @@ tests/powershell/test-output/
 tmp_*.ps1
 *.log
 tmp/
+
+# Personal editor settings (see .vscode/settings.example.json)
+.vscode/settings.json

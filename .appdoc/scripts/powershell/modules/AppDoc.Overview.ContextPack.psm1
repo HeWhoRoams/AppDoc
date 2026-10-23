@@ -58,7 +58,7 @@ function ConvertTo-AppDocOverviewContextArray {
     return @($Value)
 }
 
-function Normalize-AppDocOverviewPath {
+function ConvertTo-AppDocOverviewPath {
     [CmdletBinding()]
     param(
         [AllowNull()]
@@ -146,8 +146,8 @@ function Get-AppDocOverviewContextPackData {
 
         $kind = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "kind" -Default "")
         $entityType = Get-AppDocOverviewEntityType -Kind $kind
-        $name = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default ""))
-        $source = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default ""))
+        $name = ConvertTo-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default ""))
+        $source = ConvertTo-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default ""))
         $evidenceId = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "id" -Default "")
         if ([string]::IsNullOrWhiteSpace($evidenceId)) { continue }
 
@@ -181,8 +181,8 @@ function Get-AppDocOverviewContextPackData {
         $kind = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "kind" -Default "")
         if ($kind -ne "endpoint") { continue }
 
-        $name = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default ""))
-        $source = Normalize-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default ""))
+        $name = ConvertTo-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default ""))
+        $source = ConvertTo-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default ""))
         $entityKey = "endpoint|{0}|{1}" -f $name, $source
         if (-not $entityIndex.ContainsKey($entityKey)) { continue }
 
@@ -284,8 +284,8 @@ function Get-AppDocOverviewContextPackData {
                 ForEach-Object {
                     $rawName = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "name" -Default "")
                     $rawSource = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "source" -Default "")
-                    $normalizedName = Normalize-AppDocOverviewPath $rawName
-                    $normalizedSource = Normalize-AppDocOverviewPath $rawSource
+                    $normalizedName = ConvertTo-AppDocOverviewPath $rawName
+                    $normalizedSource = ConvertTo-AppDocOverviewPath $rawSource
                     [ordered]@{
                         id = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "id" -Default "")
                         artifact = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "artifact" -Default "")

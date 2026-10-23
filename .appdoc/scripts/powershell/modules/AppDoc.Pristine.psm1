@@ -17,7 +17,7 @@
 #                   content. A real finding.
 #   OWNER_REQUIRED  a KNOWN owner-pending cell (capability matrix 5.2, policy/
 #                   escalation 7, escalation paths 11, ownership/on-call/SLO 13, open
-#                   questions 17) — correctly tagged Unknown, pending /appdoc.enhance,
+#                   questions 17) — correctly tagged Unknown, pending owner input,
 #                   NOT a failure.
 #   NA              a FRAMEWORK-N/A section: the section documents a capability that
 #                   only exists in classic-ASP codebases (today, ONLY the
@@ -51,7 +51,7 @@
 #       becomes a real gate that BLOCKS the run when (i) any section classifies EMPTY
 #       (emptyCount>0) OR (ii) the pristine subScore < floor (floor default 80, via
 #       -PristineFloor). OWNER_REQUIRED cells are EXCLUDED from the gate (they are
-#       pending /appdoc.enhance, NOT failures — a doc with correctly-pending owner cells
+#       pending owner input, NOT failures — a doc with correctly-pending owner cells
 #       must NOT be blocked); N/A is already excluded from the sub-score denominator.
 #       When it blocks, a NEW additive blocking condition flips the run's status to
 #       'blocked' (overallScore is UNCHANGED — the structural conformance composite is
@@ -238,17 +238,17 @@ function Get-AppDocPristineSourceSupport {
     $ext  = Read-AppDocPristineEvidence -DocsPath $DocsPath -Artifact 'extcalls'
     $pd   = Read-AppDocPristineEvidence -DocsPath $DocsPath -Artifact 'procdict'
 
-    function Kind-Count {
+    function Get-EvidenceKindCount {
         param($Ev, [string[]]$Kinds)
         if ($null -eq $Ev -or $null -eq $Ev.records) { return 0 }
         return @($Ev.records | Where-Object { $_ -and [string]$_.kind -in $Kinds }).Count
     }
 
-    $endpoints = Kind-Count $api @('endpoint')
-    $models    = Kind-Count $dm  @('model')
-    $databases = Kind-Count $dm  @('database')
-    $deps      = Kind-Count $dep @('dependency')
-    $testCases = Kind-Count $test @('test-case', 'test', 'parameterized test')
+    $endpoints = Get-EvidenceKindCount $api @('endpoint')
+    $models    = Get-EvidenceKindCount $dm  @('model')
+    $databases = Get-EvidenceKindCount $dm  @('database')
+    $deps      = Get-EvidenceKindCount $dep @('dependency')
+    $testCases = Get-EvidenceKindCount $test @('test-case', 'test', 'parameterized test')
 
     $tables = 0; $procs = 0; $dbCount = $databases
     if ($dm -and $dm.metadata) {
@@ -293,7 +293,7 @@ function Get-AppDocPristineSourceSupport {
 #               composer's own Add-Question markers): 5.2 capability matrix, 7
 #               policy/escalation, 11 escalation paths, 13 ownership/SLO, 17 open
 #               questions. These are correctly tagged Unknown, pending
-#               /appdoc.enhance — NOT a failure (they classify OWNER_REQUIRED even
+#               owner input — NOT a failure (they classify OWNER_REQUIRED even
 #               when they also carry verified source-derivable content).
 # sourceKeys  : which evidence counts feed the "what the source supports" depth.
 # benchmark   : the composer's DESIGNED representative cap for the section (e.g. §4
@@ -484,7 +484,7 @@ function Test-AppDocPristineSection {
     if (-not $present) {
         if ($owner) {
             $status = 'OWNER_REQUIRED'
-            $reason = 'owner-pending cell; section heading absent (pending /appdoc.enhance)'
+            $reason = 'owner-pending cell; section heading absent (pending owner input)'
         } else {
             $status = 'EMPTY'
             $reason = 'section heading absent from composed document'
@@ -492,7 +492,7 @@ function Test-AppDocPristineSection {
     }
     elseif ($owner) {
         # Owner-pending cell. BASELINE (unchanged): correctly tagged Unknown, pending
-        # /appdoc.enhance -> OWNER_REQUIRED even when the section also carries verified
+        # owner input -> OWNER_REQUIRED even when the section also carries verified
         # source-derivable content (the depth is transparent).
         #
         # SOURCE-OF-TRUTH BACKING (Phase 1 Build 1): when the repo's HAND-AUTHORED docs
@@ -527,10 +527,10 @@ function Test-AppDocPristineSection {
         }
         elseif ($cmp -gt 0) {
             $status = 'OWNER_REQUIRED'
-            $reason = ('owner-pending cell (correctly Unknown; pending /appdoc.enhance); also carries {0} verified source-derivable row(s)' -f $cmp)
+            $reason = ('owner-pending cell (correctly Unknown; pending owner input); also carries {0} verified source-derivable row(s)' -f $cmp)
         } else {
             $status = 'OWNER_REQUIRED'
-            $reason = 'owner-pending cell (correctly Unknown; pending /appdoc.enhance); no source-derivable content'
+            $reason = 'owner-pending cell (correctly Unknown; pending owner input); no source-derivable content'
         }
     }
     elseif (-not $populated) {
@@ -705,11 +705,11 @@ function Get-AppDocPristineAssessment {
 
 # --- OWNER-PENDING CHECKLIST (Step 1b complement) ----------------------------
 # A deterministic, framework-agnostic checklist of the 5 OWNER-REQUIRED cells: the
-# cells that are correctly tagged Unknown and pending /appdoc.enhance (NOT failures).
+# cells that are correctly tagged Unknown and pending owner input (NOT failures).
 # This is the 'what's left for a human' complement to the source-derivable (auto)
 # content. It REUSES the rubric's ownerPending classification (the SAME 5 cells the
 # rubric flags) — we do NOT hardcode a divergent list. For each cell: what's missing
-# (one line), what the owner must provide (concrete), and the /appdoc.enhance target.
+# (one line), what the owner must provide (concrete), and where to supply it (overlay).
 function Get-AppDocPristineOwnerPendingChecklist {
     # $records: the per-section records from Get-AppDocPristineAssessment (optional).
     # When provided, the checklist is restricted to the sections ACTUALLY classified
@@ -719,32 +719,27 @@ function Get-AppDocPristineOwnerPendingChecklist {
 
     # Per-section human detail, keyed by the exact composed section heading. The KEY
     # set is derived from the rubric (single source of truth); this table only supplies
-    # the per-cell human text (what's-missing / owner-must-provide / enhance-target).
+    # the per-cell human text (what's-missing / owner-must-provide).
     $meta = [ordered]@{
         'Roles and Access Model' = [ordered]@{
             whatsMissing   = 'The role/permission capability matrix (§5.2): which roles exist, their concrete permissions, and how access is granted/revoked. Source code shows the role TYPES but not the authoritative policy.'
             ownerMustProvide = 'Authoritative role catalog + per-role permission matrix (who can do what), plus the access-control policy (RBAC/claims) with owner sign-off.'
-            enhanceTarget  = '/appdoc.enhance --section "Roles and Access Model" (fill §5.2 capability matrix; tag Verified on owner confirmation)'
         }
         'Operational Workflows' = [ordered]@{
             whatsMissing   = 'The §7.3 sequencing/policy content: the steps of each workflow and their order, who may perform each action, and the escalation thresholds/SLAs. Source shows entry points and procedure contracts, not the policy the owner sets.'
             ownerMustProvide = 'Workflow steps + authorization + escalation policy for each operational workflow (owner-set, not derivable from source); can be supplied as an operator overlay (.appdoc/overlays/operational-workflows.md).'
-            enhanceTarget  = '/appdoc.enhance --section "Operational Workflows" (fill §7 policy/escalation; tag Verified on owner confirmation)'
         }
         'Troubleshooting Matrix' = [ordered]@{
             whatsMissing   = 'The §11 escalation paths: the human escalation routes, on-call contacts, and the triage decision tree. Source shows the diagnostics, not who to escalate to or the path taken.'
             ownerMustProvide = 'Escalation paths + on-call/contacts + triage decision tree (owner-operational knowledge, not derivable from source).'
-            enhanceTarget  = '/appdoc.enhance --section "Troubleshooting Matrix" (fill §11 escalation paths; tag Verified on owner confirmation)'
         }
         'Ownership and Maintenance' = [ordered]@{
             whatsMissing   = 'The §13 ownership/SLO/on-call details: owning team, SLO targets, and on-call rotation. Source shows the components, not who owns them or the SLOs.'
             ownerMustProvide = 'Owning team(s), SLO targets/definitions, and on-call rotation (org knowledge, not derivable from source).'
-            enhanceTarget  = '/appdoc.enhance --section "Ownership and Maintenance" (fill §13 ownership/SLO/on-call; tag Verified on owner confirmation)'
         }
         'Open Questions and Documentation Gaps' = [ordered]@{
             whatsMissing   = 'The §17 open-questions resolution: answers/owners for each documented gap. The gaps are auto-surfaced, but their RESOLUTIONS + owners are owner-provided.'
             ownerMustProvide = 'For each open gap: the answer (or "unresolved"), a named owner, and a due date/next action.'
-            enhanceTarget  = '/appdoc.enhance --section "Open Questions and Documentation Gaps" (fill §17 resolutions/owners; tag Verified on owner confirmation)'
         }
     }
 
@@ -768,7 +763,9 @@ function Get-AppDocPristineOwnerPendingChecklist {
             sectionRef      = [string]$spec.benchmarkRef
             whatsMissing    = [string]$m.whatsMissing
             ownerMustProvide = [string]$m.ownerMustProvide
-            enhanceTarget   = [string]$m.enhanceTarget
+            # Where the owner records it: an operator overlay for the section (rendered
+            # as Operator-supplied). See references/config-schema.md.
+            supplyVia       = ('.appdoc/overlays/{0}.md' -f (($section.ToLowerInvariant() -replace '[^a-z0-9]+', '-').Trim('-')))
         })
     }
     return $out
@@ -780,7 +777,7 @@ function Get-AppDocPristineOwnerPendingChecklist {
 #   -SubScore            : the pristine sub-score (N/A already excluded from denominator).
 #   -Floor               : the floor the sub-score must meet (default 80, via -PristineFloor).
 #   -OwnerRequiredCount  : number of OWNER_REQUIRED cells. IGNORED — NEVER blocks
-#                          (they are pending /appdoc.enhance, not failures).
+#                          (they are pending owner input, not failures).
 #   -Enabled             : report-only (false, DEFAULT) vs blocking (true, OPT-IN).
 # Returns an ordered record: { blocked, floorMet, emptyViolation, blockingIssues }.
 #   - Enabled=false (report-only): NEVER blocks (blocked=$false) regardless of counts.

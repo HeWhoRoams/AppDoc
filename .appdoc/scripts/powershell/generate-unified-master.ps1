@@ -21,6 +21,7 @@
 # any other framework those rows are honestly replaced with a "not detected for
 # this framework" placeholder so no framework-specific content is fabricated.
 #
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
@@ -95,7 +96,7 @@ function Split-CellLine {
     $s = $s -replace '\|\s*$', ''
     return @($s -split '\|' | ForEach-Object { $_.Trim() })
 }
-function Clean-Cell {
+function Format-AppDocCell {
     param([string]$v)
     if ($null -eq $v) { return '' }
     $v = $v -replace '`', ''
@@ -114,11 +115,11 @@ function Get-SectionTable {
     if ($headerIdx -lt 0) { return $null }
     for ($j = $headerIdx + 1; $j -lt ($lines.Count - 1); $j++) {
         if ($lines[$j] -match '^\s*\|.*\|\s*$' -and $lines[$j + 1] -match '^\s*\|?[\s:|-]+\|?\s*$') {
-            $hcells = @((Split-CellLine ([string]$lines[$j])) | ForEach-Object { Clean-Cell $_ })
+            $hcells = @((Split-CellLine ([string]$lines[$j])) | ForEach-Object { Format-AppDocCell $_ })
             $rows = @()
             $k = $j + 2
             while ($k -lt $lines.Count -and ($lines[$k] -match '^\s*\|.*\|\s*$') -and ($lines[$k] -notmatch '^\s*\|[\s:|-]+\|\s*$')) {
-                $rows += ,@((Split-CellLine ([string]$lines[$k])) | ForEach-Object { Clean-Cell $_ })
+                $rows += ,@((Split-CellLine ([string]$lines[$k])) | ForEach-Object { Format-AppDocCell $_ })
                 $k++
             }
             return [pscustomobject]@{ Header = $hcells; Rows = $rows }
@@ -204,7 +205,7 @@ function Get-AnchorHeading {
     $t = $t -replace '\s+', '-'
     return $t
 }
-function Humanize-FileName {
+function Format-FileNameAsTitle {
     param([string]$name)
     $n = [string]($name -replace '\.(asp|aspx|htm|html|inc)$', '')
     $n = $n -replace '[\-_]+', ' '
@@ -245,7 +246,7 @@ function Get-FrameworkLabel {
 # NDA: an honest "not detected for this framework" line. Used only for the
 # classic-ASP-specific narrative rows when the target is NOT classic ASP, so that
 # no framework-specific claim is fabricated for C#/.NET or other frameworks.
-function NDA {
+function Get-NotDetectedText {
     param([string]$Detail)
     $d = if ($Detail) { " ($Detail)" } else { '' }
     return "*Not detected for this framework — classic-ASP-specific data point; not applicable to the detected framework.{0}*" -f $d
@@ -275,16 +276,16 @@ $securityMd = Read-Md "security.md"
 $extcallsMd = Read-Md "extcalls.md"
 
 # --- Counts (deterministic, from evidence records / metadata) -----------------
-function Ev-Count {
+function Get-EvidenceKindCount {
     param($Ev, [string[]]$Kinds)
     if ($null -eq $Ev -or $null -eq $Ev.records) { return 0 }
     if ($Kinds.Count -eq 0) { return @($Ev.records).Count }
     return @($Ev.records | Where-Object { $_ -and [string]$_.kind -in $Kinds }).Count
 }
-$endpointCount   = Ev-Count $apiEv @("endpoint")
+$endpointCount   = Get-EvidenceKindCount $apiEv @("endpoint")
 if ($endpointCount -eq 0 -and $metrics) { $endpointCount = [int]($metrics.totals.endpointCount) }
-$dmModelCount    = Ev-Count $dmEv @("model")
-$dmDbCount       = Ev-Count $dmEv @("database")
+$dmModelCount    = Get-EvidenceKindCount $dmEv @("model")
+$dmDbCount       = Get-EvidenceKindCount $dmEv @("database")
 if ($null -ne $dmEv.metadata) {
     $dmTableCount = [int]$dmEv.metadata.tableCount
     $dmProcCount  = [int]$dmEv.metadata.procedureCount
@@ -310,7 +311,7 @@ if ($null -ne $cfgEv -and $null -ne $cfgEv.records) {
     )
 }
 $cfgConnStringCount = @($cfgConnStrings).Count
-$testCaseCount = Ev-Count $testEv @("test-case")
+$testCaseCount = Get-EvidenceKindCount $testEv @("test-case")
 $onErrorFiles  = if ($testEv.metadata -and $testEv.metadata.onerrorResumeFiles) { [int]$testEv.metadata.onerrorResumeFiles } else { 0 }
 $refreshTimers = if ($testEv.metadata -and $testEv.metadata.refreshTimers)        { [int]$testEv.metadata.refreshTimers } else { 0 }
 $redirectFail  = if ($testEv.metadata -and $testEv.metadata.redirectAfterFailure) { [int]$testEv.metadata.redirectAfterFailure } else { 0 }
@@ -397,19 +398,19 @@ function Add-Question { param([string]$q) $openQuestions.Add($q) }
 $sdEvPath = Get-EvidencePath -DocsPath $docsPath -Artifact 'source-docs'
 $sdEv = $null
 if ($sdEvPath) { $sdEv = Read-Json -Path $sdEvPath }
-function Sd-Records {
+function Get-SourceDocRecords {
     param([string]$Category)
     if ($null -eq $sdEv -or $null -eq $sdEv.categories) { return @() }
     $c = $sdEv.categories.$Category
     if ($null -eq $c) { return @() }
     return @($c)
 }
-$sdHasRoleAccess    = (@(Sd-Records 'role-access').Count -gt 0)
-$sdHasOwnership     = (@(Sd-Records 'ownership').Count -gt 0)
-$sdHasEscalation    = (@(Sd-Records 'escalation').Count -gt 0)
-$sdHasTroubleshoot  = (@(Sd-Records 'troubleshooting').Count -gt 0)
+$sdHasRoleAccess    = (@(Get-SourceDocRecords 'role-access').Count -gt 0)
+$sdHasOwnership     = (@(Get-SourceDocRecords 'ownership').Count -gt 0)
+$sdHasEscalation    = (@(Get-SourceDocRecords 'escalation').Count -gt 0)
+$sdHasTroubleshoot  = (@(Get-SourceDocRecords 'troubleshooting').Count -gt 0)
 # §7 service procedures: only 'service-procedure' sub-tagged operational-policy citations back it.
-$sdServiceProc = @(Sd-Records 'operational-policy' | Where-Object { [string]$_.sub -eq 'service-procedure' })
+$sdServiceProc = @(Get-SourceDocRecords 'operational-policy' | Where-Object { [string]$_.sub -eq 'service-procedure' })
 $sdHasServiceProcedure = ($sdServiceProc.Count -gt 0)
 
 
@@ -418,7 +419,7 @@ $sdHasServiceProcedure = ($sdServiceProc.Count -gt 0)
 function Get-EntryPointAreas {
     $paths = @()
     if ($apiUseEvidence) { $paths = @($apiEpSorted | ForEach-Object { [string]$_.name }) }
-    elseif ($apiTab) { $paths = @($apiTab.Rows | Where-Object { $_.Count -ge 2 } | ForEach-Object { ([string](Clean-Cell $_[1])) -replace '`', '' }) }
+    elseif ($apiTab) { $paths = @($apiTab.Rows | Where-Object { $_.Count -ge 2 } | ForEach-Object { ([string](Format-AppDocCell $_[1])) -replace '`', '' }) }
     $byArea = [ordered]@{}
     foreach ($p in @($paths | Where-Object { -not [string]::IsNullOrWhiteSpace($_) -and $_ -ne '—' })) {
         $pp = (($p -replace '^[A-Z]+\s+', '') -replace '^/', '')
@@ -432,7 +433,7 @@ function Get-EntryPointAreas {
 $out = New-Object System.Collections.Generic.List[string]
 # section-status ledger for the evidence file
 $sectionsLedger = New-Object System.Collections.Generic.List[object]
-function Ledger {
+function Add-SectionLedgerEntry {
     param([string]$Title, [string]$Status, [string[]]$Sources)
     $sectionsLedger.Add([pscustomobject]@{
         section = $Title; status = $Status; sources = @($Sources)
@@ -447,7 +448,7 @@ function Ledger {
 # the composer inserts into the owner-pending cell. Every line carries a
 # `Verified-source-doc` tag + a real file:line provenance (no fabrication).
 # $Cap bounds how many representative citations are surfaced (deterministic).
-function Render-SourceDocCitations {
+function Add-SourceDocCitations {
     param(
         [System.Collections.Generic.List[string]]$Out,
         [object[]]$Recs,
@@ -463,7 +464,7 @@ function Render-SourceDocCitations {
     $prov = @()
     foreach ($i in 0..($shown - 1)) {
         $r = $list[$i]
-        $claim = Clean-Cell ([string]$r.claim)
+        $claim = Format-AppDocCell ([string]$r.claim)
         if ([string]::IsNullOrWhiteSpace($claim)) { $claim = '—' }
         $ls = [int]$r.lineStart
         $le = [int]$r.lineEnd
@@ -546,9 +547,9 @@ if ($apiUseEvidence) {
     $qri = 1
     foreach ($r in $qrRows) {
         if ($r.Count -ge 3) {
-            $ep = Clean-Cell ($r[1])
-            $feat = Humanize-FileName $ep
-            $out.Add("| $qri | $feat | $(Clean-Cell $r[1]) | $(Clean-Cell $r[2]) | Inferred |")
+            $ep = Format-AppDocCell ($r[1])
+            $feat = Format-FileNameAsTitle $ep
+            $out.Add("| $qri | $feat | $(Format-AppDocCell $r[1]) | $(Format-AppDocCell $r[2]) | Inferred |")
         }
         $qri++
     }
@@ -557,7 +558,7 @@ if ($apiUseEvidence) {
 $out.Add("")
 $out.Add("*Top 10 of $endpointCount request-addressable entry points (see Functional Inventory for the capped detail table).*")
 $out.Add("")
-Ledger "Application Index" "populated" @("api-inventory")
+Add-SectionLedgerEntry "Application Index" "populated" @("api-inventory")
 
 # ===========================================================================
 # 2. Coverage and Executive Overview
@@ -591,7 +592,7 @@ if ($ovBullets.Count -gt 0) {
     $out.Add("*From System Overview:*")
     $out.Add("")
     $show = @($ovBullets | Select-Object -First 4)
-    foreach ($b in $show) { $out.Add("- $(Clean-Cell $b) _(Inferred — overview narrative)_") }
+    foreach ($b in $show) { $out.Add("- $(Format-AppDocCell $b) _(Inferred — overview narrative)_") }
     $out.Add("")
 } else {
     $out.Add("- *(System Overview narrative not available for projection.)*")
@@ -628,7 +629,7 @@ $out.Add("|--------|-------|--------|")
 $out.Add("| API endpoints documented | $endpointCount | Verified |")
 $out.Add("| Database object records (models) | $dmModelCount | Verified |")
 $out.Add("")
-Ledger "Coverage and Executive Overview" "populated" @("overview", "api-inventory", "data-model", "build-cookbook")
+Add-SectionLedgerEntry "Coverage and Executive Overview" "populated" @("overview", "api-inventory", "data-model", "build-cookbook")
 
 # ===========================================================================
 # 3. Architecture
@@ -647,7 +648,7 @@ if ($isClassicAspTarget) {
         $out.Add("|-----------|-------|---------------------|--------|")
         $codeRows = @($bcCodeTab.Rows | Select-Object -First 12)
         foreach ($r in $codeRows) {
-            if ($r.Count -ge 3) { $out.Add("| $(Clean-Cell $r[0]) | $(Clean-Cell $r[1]) | $(Clean-Cell $r[2]) | Verified |") }
+            if ($r.Count -ge 3) { $out.Add("| $(Format-AppDocCell $r[0]) | $(Format-AppDocCell $r[1]) | $(Format-AppDocCell $r[2]) | Verified |") }
         }
     } else { $out.Add("| — | not detected | — | Unknown |") }
 } else {
@@ -656,7 +657,7 @@ if ($isClassicAspTarget) {
     # markdown that hangs the HTML renderer's Convert-MarkdownFile loop (table branch
     # requires a separator row; the paragraph branch then breaks on the row without
     # advancing $i -> infinite loop). A paragraph renders cleanly and is renderer-safe.
-    $out.Add($(NDA 'the classic-ASP code-inventory (file-type distribution from .asp/.aspx/.inc scanning) does not apply to this framework') + " — status: N/A (not applicable to the detected framework).")
+    $out.Add($(Get-NotDetectedText 'the classic-ASP code-inventory (file-type distribution from .asp/.aspx/.inc scanning) does not apply to this framework') + " — status: N/A (not applicable to the detected framework).")
 }
 $out.Add("")
 $out.Add("**Subsystems (entry points grouped by top-level directory)** — status Verified (counts) / Inferred (naming):")
@@ -684,7 +685,7 @@ if ($apiUseEvidence) {
     $byDir = @{}
     foreach ($r in $apiTab.Rows) {
         if ($r.Count -ge 2) {
-            $ep = Clean-Cell $r[1]
+            $ep = Format-AppDocCell $r[1]
             $dir = ($ep -split '/')[0]
             if ($dir -match '^\.') { $dir = '(root)' }
             if ($byDir.ContainsKey($dir)) { $byDir[$dir]++ } else { $byDir[$dir] = 1 }
@@ -728,7 +729,7 @@ if ($authnText) {
     if ($isClassicAspTarget) {
         $out.Add("| Model | Per-page authentication via session/cookie checks and ADO credential handling; no centralized controller/middleware policy. | Partly verified |")
     } else {
-        $out.Add("| Model | $(NDA 'per-page session/cookie + ADO credential model does not apply to this framework') | Unknown |")
+        $out.Add("| Model | $(Get-NotDetectedText 'per-page session/cookie + ADO credential model does not apply to this framework') | Unknown |")
     }
     $out.Add("| Detail | $authnText | Inferred |")
     $out.Add("")
@@ -740,7 +741,7 @@ if ($authnText) {
     $out.Add("")
     Add-Question "§3.3 — Authentication/authorization model is Unknown; no signals extracted."
 }
-Ledger "Architecture" "populated" @("build-cookbook", "api-inventory", "diagrams/c4-context.md")
+Add-SectionLedgerEntry "Architecture" "populated" @("build-cookbook", "api-inventory", "diagrams/c4-context.md")
 
 # ===========================================================================
 # 4. Functional Inventory
@@ -774,11 +775,11 @@ if ($apiUseEvidence) {
     foreach ($r in $invRows) {
         $fid = ('F-{0:D2}' -f $invIdx)
         if ($r.Count -ge 4) {
-            $ep = Clean-Cell $r[1]
-            $feat = Humanize-FileName $ep
-            $inputs = Clean-Cell $r[3]
-            $deps   = if ($r.Count -ge 5) { Clean-Cell $r[4] } else { '' }
-            $out.Add("| $fid | $feat | $(Clean-Cell $r[1]) | $(if ($inputs) { $inputs } else { '—' }) | $(if ($deps) { $deps } else { '—' }) | Verified |")
+            $ep = Format-AppDocCell $r[1]
+            $feat = Format-FileNameAsTitle $ep
+            $inputs = Format-AppDocCell $r[3]
+            $deps   = if ($r.Count -ge 5) { Format-AppDocCell $r[4] } else { '' }
+            $out.Add("| $fid | $feat | $(Format-AppDocCell $r[1]) | $(if ($inputs) { $inputs } else { '—' }) | $(if ($deps) { $deps } else { '—' }) | Verified |")
         }
         $invIdx++
     }
@@ -787,7 +788,7 @@ if ($apiUseEvidence) {
 $out.Add("")
 $out.Add("*Showing $([Math]::Min(60, $endpointCount)) of $endpointCount total entry points.*")
 $out.Add("")
-Ledger "Functional Inventory" "populated" @("api-inventory")
+Add-SectionLedgerEntry "Functional Inventory" "populated" @("api-inventory")
 
 # ===========================================================================
 # 5. Roles and Access Model
@@ -835,7 +836,7 @@ if ($isClassicAspTarget) {
         }
     }
     $roleRowsShown = @($roleRows | Select-Object -First 12)
-    foreach ($rr in $roleRowsShown) { $out.Add("| $(Clean-Cell $rr.token) | $(Clean-Cell $rr.cap) | ``$($rr.ev)`` | Verified |") }
+    foreach ($rr in $roleRowsShown) { $out.Add("| $(Format-AppDocCell $rr.token) | $(Format-AppDocCell $rr.cap) | ``$($rr.ev)`` | Verified |") }
     if ($roleRowsShown.Count -eq 0) { $out.Add("| — | none | no authorization signals located in source | Unknown |") }
     if ($roleRows.Count -gt $roleRowsShown.Count) { $out.Add(""); $out.Add("*Showing $($roleRowsShown.Count) of $($roleRows.Count) distinct authorization signals.*") }
     $out.Add("")
@@ -848,7 +849,7 @@ if ($isClassicAspTarget) {
     $out.Add("| Area \ Role | " + ($roleCols -join ' | ') + " |")
     $out.Add("|" + ("---|" * ($roleCols.Count + 1)))
     $roleAreas = @(Get-EntryPointAreas | Select-Object -First 8)
-    foreach ($ra in $roleAreas) { $out.Add("| $(Clean-Cell $ra.area) | " + ((@($roleCols | ForEach-Object { '?' })) -join ' | ') + " |") }
+    foreach ($ra in $roleAreas) { $out.Add("| $(Format-AppDocCell $ra.area) | " + ((@($roleCols | ForEach-Object { '?' })) -join ' | ') + " |") }
     if ($roleAreas.Count -eq 0) { $out.Add("| (no entry points extracted) | " + ((@($roleCols | ForEach-Object { '?' })) -join ' | ') + " |") }
     $out.Add("")
     $out.Add("*The role→capability mapping is **owner-required**: permission logic is data-driven and not enumerated in source. Do not infer a permission from a visible button.*")
@@ -863,12 +864,12 @@ if ($isClassicAspTarget) {
         $out.Add("")
         $out.Add("The classic-ASP data-driven matrix above remains owner-required (data-driven, not source-enumerable), but the following role/authorization facts are documented in the repo's hand-authored docs:")
         $out.Add("")
-        Render-SourceDocCitations -Out $out -Recs (Sd-Records 'role-access') -Caption '§5.2 role/authorization model' -Cap 14
+        Add-SourceDocCitations -Out $out -Recs (Get-SourceDocRecords 'role-access') -Caption '§5.2 role/authorization model' -Cap 14
     }
 } else {
     # Non-classic-ASP: no classic-ASP role tokens apply. Emit as an italic paragraph (a lone
     # "| ... |" row with no header+separator row would hang the HTML renderer's markdown loop).
-    $out.Add($(NDA 'the classic-ASP authorization-signal scan (session flags / access-check routines) does not apply to this framework') + " — status: N/A (no role/authorization tokens located for this framework).")
+    $out.Add($(Get-NotDetectedText 'the classic-ASP authorization-signal scan (session flags / access-check routines) does not apply to this framework') + " — status: N/A (no role/authorization tokens located for this framework).")
     $out.Add("")
     $out.Add("### Role-capability matrix")
     $out.Add("")
@@ -879,18 +880,18 @@ if ($isClassicAspTarget) {
         # Verified-source-doc. The classic-ASP data-driven matrix is N/A for this framework.
         $out.Add("The classic-ASP data-driven role matrix is N/A for this framework; however, the role/authorization model IS documented in the repo's hand-authored docs:")
         $out.Add("")
-        Render-SourceDocCitations -Out $out -Recs (Sd-Records 'role-access') -Caption '§5.2 role/authorization model (cited from hand-authored docs)' -Cap 16
+        Add-SourceDocCitations -Out $out -Recs (Get-SourceDocRecords 'role-access') -Caption '§5.2 role/authorization model (cited from hand-authored docs)' -Cap 16
         $out.Add("*``Verified-source-doc``: the role→purpose mapping, the authorization model (position→ERP roles + AD-groups), and the capability-flag interface are each cited to a real hand-authored file:line above. No permission is inferred beyond what is documented.*")
         $out.Add("")
     } else {
-        $out.Add($(NDA 'the classic-ASP role-capability matrix does not apply to this framework') + " — status: N/A (owner-required for a framework-appropriate role matrix).")
+        $out.Add($(Get-NotDetectedText 'the classic-ASP role-capability matrix does not apply to this framework') + " — status: N/A (owner-required for a framework-appropriate role matrix).")
         $out.Add("")
         $out.Add("*Role model not detected for this framework — the classic-ASP role/privilege concepts are N/A; a framework-appropriate role matrix would be owner-required.*")
         $out.Add("")
     }
 }
 Add-Question "§5 — Which roles exist at runtime and what each is authorized to do (role-capability matrix) is Unknown; owner-required."
-Ledger "Roles and Access Model" "placeholder" @("api-inventory", "data-model", "overview")
+Add-SectionLedgerEntry "Roles and Access Model" "placeholder" @("api-inventory", "data-model", "overview")
 
 # ===========================================================================
 # 6. UI Catalog
@@ -918,17 +919,17 @@ if ($apiUseEvidence) {
     if ($apiTab) {
         foreach ($r in $apiTab.Rows) {
             if ($r.Count -ge 4) {
-                $inputs = Clean-Cell $r[3]
+                $inputs = Format-AppDocCell $r[3]
                 if ($inputs) { $uiRows += ,$r; if ($uiRows.Count -ge 40) { break } }
             }
         }
     }
     $uii = 1
     foreach ($r in $uiRows) {
-        $ep = Clean-Cell $r[1]
-        $feat = Humanize-FileName $ep
-        $inputs = Clean-Cell $r[3]
-        $out.Add("| $feat | $(Clean-Cell $r[1]) | $inputs | Unknown | Verified source ($ep) — states Unknown |")
+        $ep = Format-AppDocCell $r[1]
+        $feat = Format-FileNameAsTitle $ep
+        $inputs = Format-AppDocCell $r[3]
+        $out.Add("| $feat | $(Format-AppDocCell $r[1]) | $inputs | Unknown | Verified source ($ep) — states Unknown |")
         $uii++
     }
     if ($uiRows.Count -eq 0) { $out.Add("| — | none with fields extracted | — | Unknown | Unknown |") }
@@ -937,7 +938,7 @@ $out.Add("")
 $out.Add("*Showing $($uiRows.Count) screens with extracted input fields.*")
 $out.Add("")
 Add-Question "§6 — UI screen *states* (loading/empty/error/validated) are Unknown; runtime was not observed."
-Ledger "UI Catalog" "populated" @("api-inventory")
+Add-SectionLedgerEntry "UI Catalog" "populated" @("api-inventory")
 
 # ===========================================================================
 # 7. Operational Workflows
@@ -956,7 +957,7 @@ $out.Add("")
 $out.Add("| Area | Entry points | Example | Status |")
 $out.Add("|------|--------------|---------|--------|")
 $wfAreas = @(Get-EntryPointAreas | Select-Object -First 12)
-foreach ($wa in $wfAreas) { $out.Add("| $(Clean-Cell $wa.area) | $($wa.count) | ``$(Clean-Cell $wa.example)`` | Verified |") }
+foreach ($wa in $wfAreas) { $out.Add("| $(Format-AppDocCell $wa.area) | $($wa.count) | ``$(Format-AppDocCell $wa.example)`` | Verified |") }
 if ($wfAreas.Count -eq 0) { $out.Add("| — | 0 | none extracted | Unknown |") }
 $out.Add("")
 $out.Add("### 7.2 Procedure contracts behind operator actions")
@@ -974,13 +975,13 @@ if ($pdContracts.Count -gt 0) {
     foreach ($pc in @($pdContracts | Select-Object -First 20)) {
         $codes = (@($pc.returnCodes) | ForEach-Object { [string]$_ }) -join '; '
         $calls = (@($pc.callSites) | Select-Object -First 3 | ForEach-Object { [string]$_ }) -join ', '
-        $out.Add("| ``$(Clean-Cell ([string]$pc.name))`` | $(Clean-Cell ([string]$pc.file)) | $(Clean-Cell $codes) | $(Clean-Cell $calls) | Verified |")
+        $out.Add("| ``$(Format-AppDocCell ([string]$pc.name))`` | $(Format-AppDocCell ([string]$pc.file)) | $(Format-AppDocCell $codes) | $(Format-AppDocCell $calls) | Verified |")
     }
     if ($pdContracts.Count -gt 20) { $out.Add(""); $out.Add("*Showing 20 of $($pdContracts.Count) documented procedure contracts.*") }
 } elseif ($isClassicAspTarget) {
     $out.Add("*No stored-procedure contract blocks (parameters / return codes) were documented in source.*")
 } else {
-    $out.Add($(NDA 'stored-procedure contract blocks are a classic-ASP data point; not applicable to the detected framework'))
+    $out.Add($(Get-NotDetectedText 'stored-procedure contract blocks are a classic-ASP data point; not applicable to the detected framework'))
 }
 $out.Add("")
 $out.Add("### 7.3 Sequencing, policy, authorization and escalation")
@@ -998,12 +999,12 @@ if ($sdHasServiceProcedure) {
     $out.Add("")
     $out.Add("The sequencing/policy cells above remain owner-required, but the following procedure/policy statements are documented in the repository's hand-authored docs:")
     $out.Add("")
-    Render-SourceDocCitations -Out $out -Recs $sdServiceProc -Caption '§7 service procedures' -Cap 14
+    Add-SourceDocCitations -Out $out -Recs $sdServiceProc -Caption '§7 service procedures' -Cap 14
     $out.Add("*``Verified-source-doc``: each line above is cited to a real hand-authored file:line.*")
     $out.Add("")
 }
 Add-Question "§7 — Workflow sequencing, authorization, evidence-retention and escalation policy are Unknown (owner-required); §7 projects only entry-point areas and documented procedure contracts."
-Ledger "Operational Workflows" $(if ($wfAreas.Count -gt 0 -or $pdContracts.Count -gt 0) { "populated" } else { "placeholder" }) @("api-inventory", "procdict")
+Add-SectionLedgerEntry "Operational Workflows" $(if ($wfAreas.Count -gt 0 -or $pdContracts.Count -gt 0) { "populated" } else { "placeholder" }) @("api-inventory", "procdict")
 
 # ===========================================================================
 # 8. Data and Integrations
@@ -1024,7 +1025,7 @@ $dbShow = if ($dbTab) { @($dbTab.Rows | Select-Object -First 15) } else { @() }
 foreach ($r in $dbShow) {
     # db table: | ID | Provider | Server | Database | Connection-String Shape | Files Referencing | Status |
     if ($r.Count -ge 6) {
-        $out.Add("| $(Clean-Cell $r[0]) | $(Clean-Cell $r[1]) | $(Clean-Cell $r[2]) | $(Clean-Cell $r[3]) | $(Clean-Cell $r[4]) | Verified |")
+        $out.Add("| $(Format-AppDocCell $r[0]) | $(Format-AppDocCell $r[1]) | $(Format-AppDocCell $r[2]) | $(Format-AppDocCell $r[3]) | $(Format-AppDocCell $r[4]) | Verified |")
     }
 }
 if ($dbShow.Count -eq 0) {
@@ -1042,7 +1043,7 @@ if ($dbShow.Count -eq 0) {
             # so a literal backtick must be built by concatenation, not typed in the string).
             $csKeyBacktick    = [string]([char]96 + $csKey + [char]96)
             $csFullKeyBacktick = [string]([char]96 + 'ConnectionStrings.' + $csKey + [char]96)
-            $out.Add("| $csIdx | config ($csKeyBacktick) | Inferred | Inferred | key $csFullKeyBacktick — $(Clean-Cell $csFile) | Verified (redacted) |")
+            $out.Add("| $csIdx | config ($csKeyBacktick) | Inferred | Inferred | key $csFullKeyBacktick — $(Format-AppDocCell $csFile) | Verified (redacted) |")
             $csIdx++
         }
         $out.Add("")
@@ -1064,7 +1065,7 @@ $out.Add("|----|----|--------|------|-------------|-----------------|--------|")
 $tableShow = if ($tableTab) { @($tableTab.Rows | Select-Object -First 25) } else { @() }
 foreach ($r in $tableShow) {
     if ($r.Count -ge 5) {
-        $out.Add("| $(Clean-Cell $r[0]) | $(Clean-Cell $r[1]) | $(Clean-Cell $r[2]) | $(Clean-Cell $r[3]) | Inferred | $(Clean-Cell $r[4]) | Verified |")
+        $out.Add("| $(Format-AppDocCell $r[0]) | $(Format-AppDocCell $r[1]) | $(Format-AppDocCell $r[2]) | $(Format-AppDocCell $r[3]) | Inferred | $(Format-AppDocCell $r[4]) | Verified |")
     }
 }
 if ($tableShow.Count -eq 0) {
@@ -1117,12 +1118,12 @@ if (-not $dmHasAdoSurface) {
     $out.Add("|---|--------|------|--------|-------------|--------|")
     $idx8 = 1
     foreach ($r in $dmEntSorted) {
-        $entName   = Clean-Cell ([string]$r.name)
-        $entSrc    = Clean-Cell ([string]$r.source)
+        $entName   = Format-AppDocCell ([string]$r.name)
+        $entSrc    = Format-AppDocCell ([string]$r.source)
         $entType   = 'class'
         $entFields = 0
         if ($null -ne $r.metadata -and $r.metadata -is [PSCustomObject]) {
-            if ($r.metadata.modelType) { $entType = Clean-Cell ([string]$r.metadata.modelType) }
+            if ($r.metadata.modelType) { $entType = Format-AppDocCell ([string]$r.metadata.modelType) }
             if ($null -ne $r.metadata.propertyCount) { $entFields = [int]$r.metadata.propertyCount }
         }
         $out.Add("| $idx8 | $entName | $entType | $entFields | $entSrc | Inferred |")
@@ -1133,7 +1134,7 @@ if (-not $dmHasAdoSurface) {
     $out.Add("*Showing $([Math]::Min(25, $dmEntTotal)) of $dmEntTotal domain-model entities (representative sample; deterministic). Sensitivity Inferred.*")
     $out.Add("")
 }
-Ledger "Data and Integrations" "populated" @("data-model")
+Add-SectionLedgerEntry "Data and Integrations" "populated" @("data-model")
 
 # ===========================================================================
 # 9. External Call Register
@@ -1149,7 +1150,7 @@ $out.Add("|----|----------|--------|----------|-------------------------|-------
 $dbShow91 = if ($dbTab) { @($dbTab.Rows | Select-Object -First 20) } else { @() }
 foreach ($r in $dbShow91) {
     if ($r.Count -ge 7) {
-        $out.Add("| $(Clean-Cell $r[0]) | $(Clean-Cell $r[1]) | $(Clean-Cell $r[2]) | $(Clean-Cell $r[3]) | $(Clean-Cell $r[4]) | $(Clean-Cell $r[5]) | Verified |")
+        $out.Add("| $(Format-AppDocCell $r[0]) | $(Format-AppDocCell $r[1]) | $(Format-AppDocCell $r[2]) | $(Format-AppDocCell $r[3]) | $(Format-AppDocCell $r[4]) | $(Format-AppDocCell $r[5]) | Verified |")
     }
 }
 if ($dbShow91.Count -eq 0) { $out.Add("| — | not detected | — | — | — | — | Unknown |") }
@@ -1164,8 +1165,8 @@ $spShow92 = if ($procTab) { @($procTab.Rows | Select-Object -First 40) } else { 
 foreach ($r in $spShow92) {
     # proc table: | ID | DB | Procedure | Type | Call Sites (files) | Status |
     if ($r.Count -ge 5) {
-        $proc = Clean-Cell $r[2]; $calls = Clean-Cell $r[4]
-        $out.Add("| $(Clean-Cell $r[0]) | $proc | $(if ($calls) { $calls } else { '—' }) | Inferred | Verified (present) |")
+        $proc = Format-AppDocCell $r[2]; $calls = Format-AppDocCell $r[4]
+        $out.Add("| $(Format-AppDocCell $r[0]) | $proc | $(if ($calls) { $calls } else { '—' }) | Inferred | Verified (present) |")
     }
 }
 if ($spShow92.Count -eq 0) { $out.Add("| — | not detected | — | Unknown | Unknown |") }
@@ -1180,7 +1181,7 @@ $out.Add("| ID | DB | Object | Type | Referenced from | Status |")
 $out.Add("|----|----|--------|------|-----------------|--------|")
 $tableShow93 = if ($tableTab) { @($tableTab.Rows | Select-Object -First 40) } else { @() }
 foreach ($r in $tableShow93) {
-    if ($r.Count -ge 5) { $out.Add("| $(Clean-Cell $r[0]) | $(Clean-Cell $r[1]) | $(Clean-Cell $r[2]) | $(Clean-Cell $r[3]) | $(Clean-Cell $r[4]) | Verified |") }
+    if ($r.Count -ge 5) { $out.Add("| $(Format-AppDocCell $r[0]) | $(Format-AppDocCell $r[1]) | $(Format-AppDocCell $r[2]) | $(Format-AppDocCell $r[3]) | $(Format-AppDocCell $r[4]) | Verified |") }
 }
 if ($tableShow93.Count -eq 0) { $out.Add("| — | not detected | — | — | — | Unknown |") }
 $out.Add("")
@@ -1200,7 +1201,7 @@ if ($extHttpTab -and $extHttpTab.Rows.Count -gt 0) {
     foreach ($r in $extHttpShow) {
         # | ID | Endpoint | Mechanism | Source file:line | Data/behavior | Status |
         if ($r.Count -ge 6) {
-            $out.Add("| $(Clean-Cell $r[0]) | $(Clean-Cell $r[1]) | $(Clean-Cell $r[2]) | $(Clean-Cell $r[3]) | $(Clean-Cell $r[4]) | $(Clean-Cell $r[5]) |")
+            $out.Add("| $(Format-AppDocCell $r[0]) | $(Format-AppDocCell $r[1]) | $(Format-AppDocCell $r[2]) | $(Format-AppDocCell $r[3]) | $(Format-AppDocCell $r[4]) | $(Format-AppDocCell $r[5]) |")
         }
     }
     $out.Add("")
@@ -1208,7 +1209,7 @@ if ($extHttpTab -and $extHttpTab.Rows.Count -gt 0) {
 } elseif ($isClassicAspTarget) {
     $out.Add('*Not detected in this codebase.* No outbound HTTP/XML call sites were extracted in the evidence (no `ServerXMLHTTP`/`FreeThreadedDOMDocument` issuing a remote request was found).')
 } else {
-    $out.Add("*Not detected in this codebase.* No outbound HTTP/XML call sites were extracted in the available evidence for this framework. $(NDA 'the classic-ASP outbound HTTP/XML register (ServerXMLHTTP / FreeThreadedDOMDocument call sites) does not apply to this framework')")
+    $out.Add("*Not detected in this codebase.* No outbound HTTP/XML call sites were extracted in the available evidence for this framework. $(Get-NotDetectedText 'the classic-ASP outbound HTTP/XML register (ServerXMLHTTP / FreeThreadedDOMDocument call sites) does not apply to this framework')")
 }
 $out.Add("")
 $out.Add("### 9.5 Email / COM / file-system boundaries")
@@ -1222,7 +1223,7 @@ if ($extBndTab -and $extBndTab.Rows.Count -gt 0) {
     foreach ($r in $extBndShow) {
         # | ID | Boundary type | Observed call | Source file:line | Behavior | Status |
         if ($r.Count -ge 6) {
-            $out.Add("| $(Clean-Cell $r[0]) | $(Clean-Cell $r[1]) | $(Clean-Cell $r[2]) | $(Clean-Cell $r[3]) | $(Clean-Cell $r[4]) | $(Clean-Cell $r[5]) |")
+            $out.Add("| $(Format-AppDocCell $r[0]) | $(Format-AppDocCell $r[1]) | $(Format-AppDocCell $r[2]) | $(Format-AppDocCell $r[3]) | $(Format-AppDocCell $r[4]) | $(Format-AppDocCell $r[5]) |")
         }
     }
     $out.Add("")
@@ -1230,7 +1231,7 @@ if ($extBndTab -and $extBndTab.Rows.Count -gt 0) {
 } elseif ($isClassicAspTarget) {
     $out.Add("*Not detected in this codebase.* No email / COM / file-system boundary call sites were extracted in the evidence.")
 } else {
-    $out.Add("*Not detected in this codebase.* No email / COM / file-system boundaries were extracted in the available evidence for this framework. $(NDA 'the classic-ASP send_mail / ADO / UNC boundary register does not apply to this framework')")
+    $out.Add("*Not detected in this codebase.* No email / COM / file-system boundaries were extracted in the available evidence for this framework. $(Get-NotDetectedText 'the classic-ASP send_mail / ADO / UNC boundary register does not apply to this framework')")
 }
 $out.Add("")
 $out.Add("### 9.6 Failure / observability")
@@ -1241,11 +1242,11 @@ $out.Add("| Signal | Count | Files (sample) | Status |")
 $out.Add("|--------|-------|----------------|--------|")
 $errShow = if ($errTab) { @($errTab.Rows) } else { @() }
 foreach ($r in $errShow) {
-    if ($r.Count -ge 3) { $out.Add("| $(Clean-Cell $r[0]) | $(Clean-Cell $r[1]) | $(Clean-Cell $r[2]) | Verified |") }
+    if ($r.Count -ge 3) { $out.Add("| $(Format-AppDocCell $r[0]) | $(Format-AppDocCell $r[1]) | $(Format-AppDocCell $r[2]) | Verified |") }
 }
 $out.Add("| Auto-refresh timers (auto-refresh) | $refreshTimers | see test-catalog | Verified |")
 $out.Add("")
-Ledger "External Call Register" "populated" @("data-model", "test-catalog", "api-inventory", "extcalls")
+Add-SectionLedgerEntry "External Call Register" "populated" @("data-model", "test-catalog", "api-inventory", "extcalls")
 
 # ===========================================================================
 # 10. Stored-procedure data dictionary
@@ -1267,7 +1268,7 @@ if ($pdDocCount -gt 0 -or $pdUndocCount -gt 0) {
         foreach ($r in $pdShow) {
             # | ID | Procedure | File | Parameters | Return Codes | Call Sites | Status |
             if ($r.Count -ge 7) {
-                $pdProc=[string](Clean-Cell $r[1]); $pdFile=[string](Clean-Cell $r[2]); $pdParam=[string](Clean-Cell $r[3]); $pdRet=[string](Clean-Cell $r[4]); $pdCall=[string](Clean-Cell $r[5]); $pdStat=[string](Clean-Cell $r[6])
+                $pdProc=[string](Format-AppDocCell $r[1]); $pdFile=[string](Format-AppDocCell $r[2]); $pdParam=[string](Format-AppDocCell $r[3]); $pdRet=[string](Format-AppDocCell $r[4]); $pdCall=[string](Format-AppDocCell $r[5]); $pdStat=[string](Format-AppDocCell $r[6])
                 $out.Add("| $pdProc | $pdFile | $pdParam | $pdRet | $pdCall | $pdStat |")
             }
         }
@@ -1285,7 +1286,7 @@ if ($pdDocCount -gt 0 -or $pdUndocCount -gt 0) {
         foreach ($r in $pdUndocShow) {
             # | ID | Procedure | Call Sites | Status |
             if ($r.Count -ge 4) {
-                $uProc=[string](Clean-Cell $r[1]); $uCall=[string](Clean-Cell $r[2]); $uStat=[string](Clean-Cell $r[3])
+                $uProc=[string](Format-AppDocCell $r[1]); $uCall=[string](Format-AppDocCell $r[2]); $uStat=[string](Format-AppDocCell $r[3])
                 $out.Add("| $uProc | $uCall | $uStat |")
             }
         }
@@ -1295,17 +1296,17 @@ if ($pdDocCount -gt 0 -or $pdUndocCount -gt 0) {
     $out.Add("*Totals: $pdDocCount documented procedures (parameter + return-code ladder observed in source), $pdUndocCount called-but-undocumented.*")
     $out.Add("")
     Add-Question "§10 — Documented procedures carry verbatim in-source contract ladders (Verified); called-but-undocumented procedures have no in-source contract (Partly verified). Authoritative procedure definitions require database-owner confirmation."
-    Ledger "Stored-procedure data dictionary" "populated" @("procdict", "data-model")
+    Add-SectionLedgerEntry "Stored-procedure data dictionary" "populated" @("procdict", "data-model")
 } else {
     # Fallback: procdict.md absent (e.g. non-classic-ASP target) — honest NDA.
-    $out.Add($(NDA 'the stored-procedure data dictionary is produced only for classic-ASP codebases from in-source contract blocks; this target has no classic-ASP signal, so no contract ladders were extracted'))
+    $out.Add($(Get-NotDetectedText 'the stored-procedure data dictionary is produced only for classic-ASP codebases from in-source contract blocks; this target has no classic-ASP signal, so no contract ladders were extracted'))
     $out.Add("")
     $out.Add("| Procedure | Parameters observed | Return / output | Source file (call site) | Status |")
     $out.Add("|-----------|--------------------|-----------------|-------------------------|--------|")
     $spShow10 = if ($procTab) { @($procTab.Rows | Select-Object -First 40) } else { @() }
     foreach ($r in $spShow10) {
         if ($r.Count -ge 5) {
-            $proc = Clean-Cell $r[2]; $calls = Clean-Cell $r[4]
+            $proc = Format-AppDocCell $r[2]; $calls = Format-AppDocCell $r[4]
             $out.Add("| $proc | Unknown | Unknown | $(if ($calls) { $calls } else { '—' }) | Verified (present) / Unknown (params) |")
         }
     }
@@ -1314,7 +1315,7 @@ if ($pdDocCount -gt 0 -or $pdUndocCount -gt 0) {
     $out.Add("*Parameter/return details are Unknown where not present in the evidence.*")
     $out.Add("")
     Add-Question "§10 — Stored-procedure parameter signatures and return-code ladders are Unknown (not in the evidence); not fabricated."
-    Ledger "Stored-procedure data dictionary" "placeholder" @("data-model")
+    Add-SectionLedgerEntry "Stored-procedure data dictionary" "placeholder" @("data-model")
 }
 
 # ===========================================================================
@@ -1335,7 +1336,7 @@ $failRows = New-Object System.Collections.Generic.List[string]   # display-ready
 $scratchExcluded = 0
 $distinct = 0
 foreach ($r in $failShow) {
-    $file = Clean-Cell $r[1]; $pattern = Clean-Cell $r[2]; $obs = Clean-Cell $r[3]
+    $file = Format-AppDocCell $r[1]; $pattern = Format-AppDocCell $r[2]; $obs = Format-AppDocCell $r[3]
     if (-not $file -or $file -eq '—') { continue }
     $basename = ($file -split '/')[-1]
     if ($basename -match $scratchRe) { $scratchExcluded++; continue }
@@ -1364,26 +1365,26 @@ $out.Add("")
 # the repo documents them, but a KB is not an authoritative policy). The
 # 'escalate-when' column stays Unknown unless a doc states it. Where no citations
 # exist (e.g. a legacy C# MVC 5 target with no escalation doc), this subsection is absent.
-$sdEscRecs = @(Sd-Records 'escalation')
-$sdTrbRecs = @(Sd-Records 'troubleshooting')
+$sdEscRecs = @(Get-SourceDocRecords 'escalation')
+$sdTrbRecs = @(Get-SourceDocRecords 'troubleshooting')
 if (($sdEscRecs.Count -gt 0) -or ($sdTrbRecs.Count -gt 0)) {
     if ($sdEscRecs.Count -gt 0) {
         $out.Add("### Escalation / on-call contacts (cited from hand-authored docs — Verified-source-doc)")
         $out.Add("")
         $out.Add("The escalation routes / on-call contacts below are documented in the repo's hand-authored docs. The 'escalate-when' thresholds remain `Unknown` unless a doc states them:")
         $out.Add("")
-        Render-SourceDocCitations -Out $out -Recs $sdEscRecs -Caption '§11 escalation / on-call contacts' -Cap 16 -Tag 'Verified-source-doc'
+        Add-SourceDocCitations -Out $out -Recs $sdEscRecs -Caption '§11 escalation / on-call contacts' -Cap 16 -Tag 'Verified-source-doc'
     }
     if ($sdTrbRecs.Count -gt 0) {
         $out.Add("### Troubleshooting KB (cited from hand-authored docs — Inferred)")
         $out.Add("")
         $out.Add("The following symptom→fix / incident entries come from the repo's hand-authored troubleshooting KB (documented, but a KB is not an authoritative policy — tagged Inferred):")
         $out.Add("")
-        Render-SourceDocCitations -Out $out -Recs $sdTrbRecs -Caption '§11 troubleshooting KB' -Cap 12 -Tag 'Inferred'
+        Add-SourceDocCitations -Out $out -Recs $sdTrbRecs -Caption '§11 troubleshooting KB' -Cap 12 -Tag 'Inferred'
     }
 }
 Add-Question "§11 — Escalation points / on-call paths are Unknown (not extracted)."
-Ledger "Troubleshooting Matrix" "populated" @("test-catalog")
+Add-SectionLedgerEntry "Troubleshooting Matrix" "populated" @("test-catalog")
 
 # ===========================================================================
 # 12. Security and Operational Risks
@@ -1404,7 +1405,7 @@ if ($secFindCount -gt 0) {
     foreach ($r in $secShow) {
         # | ID | Finding | Evidence | Severity | Secret Value | Status |
         if ($r.Count -ge 6) {
-            $fId=[string](Clean-Cell $r[0]); $fFinding=[string](Clean-Cell $r[1]); $fEv=[string](Clean-Cell $r[2]); $fSev=[string](Clean-Cell $r[3]); $fSec=[string](Clean-Cell $r[4]); $fStat=[string](Clean-Cell $r[5])
+            $fId=[string](Format-AppDocCell $r[0]); $fFinding=[string](Format-AppDocCell $r[1]); $fEv=[string](Format-AppDocCell $r[2]); $fSev=[string](Format-AppDocCell $r[3]); $fSec=[string](Format-AppDocCell $r[4]); $fStat=[string](Format-AppDocCell $r[5])
             $out.Add("| $fId | $fFinding | $fEv | $fSev | $fSec | $fStat |")
         }
     }
@@ -1419,7 +1420,7 @@ if ($secFindCount -gt 0) {
         $secUnkShow = @($secUnkTab.Rows | Select-Object -First 40)
         foreach ($r in $secUnkShow) {
             if ($r.Count -ge 3) {
-                $uProp=[string](Clean-Cell $r[0]); $uEst=[string](Clean-Cell $r[1]); $uStat2=[string](Clean-Cell $r[2])
+                $uProp=[string](Format-AppDocCell $r[0]); $uEst=[string](Format-AppDocCell $r[1]); $uStat2=[string](Format-AppDocCell $r[2])
                 $out.Add("| $uProp | $uEst | $uStat2 |")
             }
         }
@@ -1435,7 +1436,7 @@ if ($secFindCount -gt 0) {
     }
     $out.Add("")
     Add-Question "§12 — Documented findings are Verified present in source with secrets redacted; runtime reachability and the listed security controls are Unknown and must not be treated as controls."
-    Ledger "Security and Operational Risks" "populated" @("security", "test-catalog", "data-model")
+    Add-SectionLedgerEntry "Security and Operational Risks" "populated" @("security", "test-catalog", "data-model")
 } else {
     # Fallback: security.md absent (non-classic-ASP target) — honest NDA rows.
     $out.Add("Projected from the test-catalog security findings and the data-model connection-string inventory. Credential values are **redacted** (shown only as opaque sanitized tokens).")
@@ -1449,11 +1450,11 @@ if ($secFindCount -gt 0) {
         $out.Add("| Hardcoded ADO connection strings (credential-exposure) | $dmDbCount connection strings across many files; credential values redacted | Verified (presence) / Inferred (risk) |")
         $out.Add("| Multiple distinct SQL Server hosts referenced | $instanceCount SQL Server instances | Verified |")
     } else {
-        $out.Add("| Errors swallowed silently | $(NDA 'the `On Error Resume Next` (VBScript) silent-swallowing pattern is classic-ASP-specific; not detected in this framework') | N/A |")
-        $out.Add("| Silent redirect on DB failure hides root cause | $(NDA 'the `Response.Redirect`-after-query-failure pattern is classic-ASP-specific; not detected in this framework') | N/A |")
-        $out.Add("| ADO/recordset errors inspected at runtime | $(NDA 'the `parseError` ADO error-inspection pattern is classic-ASP-specific; not detected in this framework') | N/A |")
-        $out.Add("| Hardcoded connection strings (credential-exposure) | $(NDA 'the hardcoded ADO connection-string pattern is classic-ASP-specific; not detected in this framework') | N/A |")
-        $out.Add("| Multiple distinct SQL Server hosts referenced | $(NDA 'the multi-host SQL Server instance inventory is classic-ASP-specific; not detected in this framework') | N/A |")
+        $out.Add("| Errors swallowed silently | $(Get-NotDetectedText 'the `On Error Resume Next` (VBScript) silent-swallowing pattern is classic-ASP-specific; not detected in this framework') | N/A |")
+        $out.Add("| Silent redirect on DB failure hides root cause | $(Get-NotDetectedText 'the `Response.Redirect`-after-query-failure pattern is classic-ASP-specific; not detected in this framework') | N/A |")
+        $out.Add("| ADO/recordset errors inspected at runtime | $(Get-NotDetectedText 'the `parseError` ADO error-inspection pattern is classic-ASP-specific; not detected in this framework') | N/A |")
+        $out.Add("| Hardcoded connection strings (credential-exposure) | $(Get-NotDetectedText 'the hardcoded ADO connection-string pattern is classic-ASP-specific; not detected in this framework') | N/A |")
+        $out.Add("| Multiple distinct SQL Server hosts referenced | $(Get-NotDetectedText 'the multi-host SQL Server instance inventory is classic-ASP-specific; not detected in this framework') | N/A |")
     }
     $out.Add("")
     $out.Add("### Unknowns that must not be treated as controls")
@@ -1470,7 +1471,7 @@ if ($secFindCount -gt 0) {
     $out.Add("- Credential rotation / secrets-management practice (Unknown)")
     $out.Add("")
     Add-Question "§12 — Runtime security controls (auth strength, input validation, TLS, credential rotation) are Unknown; must not be treated as verified controls."
-    Ledger "Security and Operational Risks" "populated" @("test-catalog", "data-model")
+    Add-SectionLedgerEntry "Security and Operational Risks" "populated" @("test-catalog", "data-model")
 }
 
 # ===========================================================================
@@ -1495,22 +1496,22 @@ $out.Add("")
 # change-process). When such citations exist, surface them ADDITIVELY as
 # Verified-source-doc. Where none exist (the classic-ASP test target: no ownership doc), §13 stays
 # honest-Unknown / owner-required (no fabrication).
-$sdOwnRecs = @(Sd-Records 'ownership')
-$sdChangePol = @(Sd-Records 'operational-policy' | Where-Object { [string]$_.sub -eq 'change-process' })
+$sdOwnRecs = @(Get-SourceDocRecords 'ownership')
+$sdChangePol = @(Get-SourceDocRecords 'operational-policy' | Where-Object { [string]$_.sub -eq 'change-process' })
 if (($sdOwnRecs.Count -gt 0) -or ($sdChangePol.Count -gt 0)) {
     if ($sdOwnRecs.Count -gt 0) {
         $out.Add("### Ownership (cited from hand-authored docs — Verified-source-doc)")
         $out.Add("")
         $out.Add("The ownership / division / department lines below are documented in the repo's hand-authored docs (the table above remains a structure placeholder — ownership is not extractable as a normalized table):")
         $out.Add("")
-        Render-SourceDocCitations -Out $out -Recs $sdOwnRecs -Caption '§13 ownership' -Cap 12
+        Add-SourceDocCitations -Out $out -Recs $sdOwnRecs -Caption '§13 ownership' -Cap 12
     }
     if ($sdChangePol.Count -gt 0) {
         $out.Add("### Change / release process (cited from hand-authored docs — Verified-source-doc)")
         $out.Add("")
         $out.Add("The change/release process below is documented in the repo's hand-authored docs:")
         $out.Add("")
-        Render-SourceDocCitations -Out $out -Recs $sdChangePol -Caption '§13 change/release process' -Cap 6
+        Add-SourceDocCitations -Out $out -Recs $sdChangePol -Caption '§13 change/release process' -Cap 6
     }
     $out.Add("*SLO / availability targets and on-call rotation stay `Unknown` / owner-required — they are not stated in the hand-authored docs (no fabrication).*")
     $out.Add("")
@@ -1587,7 +1588,7 @@ if ($goEv) {
     }
 }
 Add-Question "§13 — Ownership and maintenance (owners, on-call, SLOs, change process) are all Unknown / owner-required."
-Ledger "Ownership and Maintenance" "placeholder" @()
+Add-SectionLedgerEntry "Ownership and Maintenance" "placeholder" @()
 
 # ===========================================================================
 # 14. Architecture and Data-Flow Diagrams
@@ -1618,7 +1619,7 @@ if (-not $dataFlow -and -not $c4ctx14) {
     $out.Add("*No diagram was detected in this codebase.*")
     $out.Add("")
 }
-Ledger "Architecture and Data-Flow Diagrams" "populated" @("diagrams/data-flow.md", "diagrams/c4-context.md")
+Add-SectionLedgerEntry "Architecture and Data-Flow Diagrams" "populated" @("diagrams/data-flow.md", "diagrams/c4-context.md")
 
 # ===========================================================================
 # 15. Glossary
@@ -1649,16 +1650,16 @@ $glossCount = 0
 foreach ($g in $gloss) {
     # only include if the token actually appears somewhere in the extracted evidence
     $present = [bool]($glossCorpus -match [regex]::Escape($g.t))
-    if ($present) { $out.Add("| $($(Clean-Cell $g.t)) | $($g.d) | term present in extracted evidence | Inferred |"); $glossCount++ }
+    if ($present) { $out.Add("| $($(Format-AppDocCell $g.t)) | $($g.d) | term present in extracted evidence | Inferred |"); $glossCount++ }
 }
 if ($glossCount -eq 0 -and $isClassicAspTarget) {
     $out.Add("| — | No recurring domain terms matched the inspected artifacts in this run; concrete identifiers appear in the section bodies. | none | Unknown |")
 }
 if ($glossCount -eq 0 -and -not $isClassicAspTarget) {
-    $out.Add("| — | $(NDA 'the classic-ASP technology glossary (ADO providers / ASP Session) does not apply to this framework') | N/A |")
+    $out.Add("| — | $(Get-NotDetectedText 'the classic-ASP technology glossary (ADO providers / ASP Session) does not apply to this framework') | N/A |")
 }
 $out.Add("")
-Ledger "Glossary" "populated" @("api-inventory", "data-model", "build-cookbook", "test-catalog")
+Add-SectionLedgerEntry "Glossary" "populated" @("api-inventory", "data-model", "build-cookbook", "test-catalog")
 
 # ===========================================================================
 # 16. Evidence Register
@@ -1691,7 +1692,7 @@ if ($evRegMd) {
     $out.Add("*Evidence register not available in this run.*")
     $out.Add("")
 }
-Ledger "Evidence Register" "populated" @("evidence-register.md")
+Add-SectionLedgerEntry "Evidence Register" "populated" @("evidence-register.md")
 
 # ===========================================================================
 # 17. Open Questions and Documentation Gaps
@@ -1712,7 +1713,7 @@ $out.Add("")
 $out.Add("- Runtime behavior (session timeout, real-world latency, actual DB state) was not observed — all *states/timing* remain Unknown.")
 $out.Add("- Production topology (the diagrams show observed calls, not the live system).")
 $out.Add("")
-Ledger "Open Questions and Documentation Gaps" "populated" @("auto-fed from sections 3,5,6,7,10,11,12,13")
+Add-SectionLedgerEntry "Open Questions and Documentation Gaps" "populated" @("auto-fed from sections 3,5,6,7,10,11,12,13")
 
 # ===========================================================================
 # 18. Recommendations
@@ -1747,7 +1748,7 @@ foreach ($r in $recs) {
     $ri++
 }
 $out.Add("")
-Ledger "Recommendations" "populated" @("test-catalog", "data-model")
+Add-SectionLedgerEntry "Recommendations" "populated" @("test-catalog", "data-model")
 
 # ===========================================================================
 # 19. Operations Runbook
@@ -1765,13 +1766,13 @@ if ($isClassicAspTarget) {
     # filter out malformed rows (empty version) but keep the real platform rows
     foreach ($r in $platShow) {
         if ($r.Count -ge 3) {
-            $comp = Clean-Cell $r[0]; $ver = Clean-Cell $r[1]; $ev = Clean-Cell $r[2]
+            $comp = Format-AppDocCell $r[0]; $ver = Format-AppDocCell $r[1]; $ev = Format-AppDocCell $r[2]
             if ($comp -and $ver) { $out.Add("| $comp | $ver | $ev | Verified |") }
         }
     }
     if ($platShow.Count -eq 0) { $out.Add("| — | not detected | — | Unknown |") }
 } else {
-    $out.Add("| — | $(NDA 'the classic-ASP platform requirement (IIS / IIS-hosted Classic ASP) does not apply to this framework') | N/A |")
+    $out.Add("| — | $(Get-NotDetectedText 'the classic-ASP platform requirement (IIS / IIS-hosted Classic ASP) does not apply to this framework') | N/A |")
 }
 $out.Add("")
 $out.Add("### Deployment / deployment steps")
@@ -1781,11 +1782,11 @@ $out.Add("|------|--------|----------|--------|")
 if ($isClassicAspTarget) {
     $stepShow = if ($bcStepsTab) { @($bcStepsTab.Rows) } else { @() }
     foreach ($r in $stepShow) {
-        if ($r.Count -ge 3) { $out.Add("| $(Clean-Cell $r[0]) | $(Clean-Cell $r[1]) | $(Clean-Cell $r[2]) | Verified |") }
+        if ($r.Count -ge 3) { $out.Add("| $(Format-AppDocCell $r[0]) | $(Format-AppDocCell $r[1]) | $(Format-AppDocCell $r[2]) | Verified |") }
     }
     if ($stepShow.Count -eq 0) { $out.Add("| — | not detected | — | Unknown |") }
 } else {
-    $out.Add("| — | $(NDA 'the classic-ASP IIS deployment steps (copy .asp tree to virtual directory, enable Classic ASP app pool) do not apply to this framework') | N/A |")
+    $out.Add("| — | $(Get-NotDetectedText 'the classic-ASP IIS deployment steps (copy .asp tree to virtual directory, enable Classic ASP app pool) do not apply to this framework') | N/A |")
 }
 $out.Add("")
 $out.Add("### SQL Server instances")
@@ -1795,11 +1796,11 @@ $out.Add("|----|--------|-----------|-------|--------|")
 if ($isClassicAspTarget) {
     $sqlShow19 = if ($bcSqlTab) { @($bcSqlTab.Rows | Select-Object -First 17) } else { @() }
     foreach ($r in $sqlShow19) {
-        if ($r.Count -ge 4) { $out.Add("| $(Clean-Cell $r[0]) | $(Clean-Cell $r[1]) | $(Clean-Cell $r[2]) | $(Clean-Cell $r[3]) | Verified |") }
+        if ($r.Count -ge 4) { $out.Add("| $(Format-AppDocCell $r[0]) | $(Format-AppDocCell $r[1]) | $(Format-AppDocCell $r[2]) | $(Format-AppDocCell $r[3]) | Verified |") }
     }
     if ($sqlShow19.Count -eq 0) { $out.Add("| — | not detected | — | — | Unknown |") }
 } else {
-    $out.Add("| — | $(NDA 'the ADO/SQL-Server instance inventory does not apply to this framework') | N/A |")
+    $out.Add("| — | $(Get-NotDetectedText 'the ADO/SQL-Server instance inventory does not apply to this framework') | N/A |")
 }
 $out.Add("")
 $out.Add("### Failure responses (observed)")
@@ -1811,9 +1812,9 @@ if ($isClassicAspTarget) {
     $out.Add("| ADO/recordset error | parseError inspected at runtime | Verified |")
     $out.Add("| Auto-refresh expiry | Page reloads on a timer | Verified |")
 } else {
-    $out.Add("| DB query failure | $(NDA 'the `Response.Redirect`-on-query-failure response is classic-ASP-specific; not detected in this framework') | N/A |")
-    $out.Add("| ADO/recordset error | $(NDA 'the `parseError` ADO error-inspection response is classic-ASP-specific; not detected in this framework') | N/A |")
-    $out.Add("| Auto-refresh expiry | $(NDA 'the auto-refresh timer behavior is classic-ASP-specific; not detected in this framework') | N/A |")
+    $out.Add("| DB query failure | $(Get-NotDetectedText 'the `Response.Redirect`-on-query-failure response is classic-ASP-specific; not detected in this framework') | N/A |")
+    $out.Add("| ADO/recordset error | $(Get-NotDetectedText 'the `parseError` ADO error-inspection response is classic-ASP-specific; not detected in this framework') | N/A |")
+    $out.Add("| Auto-refresh expiry | $(Get-NotDetectedText 'the auto-refresh timer behavior is classic-ASP-specific; not detected in this framework') | N/A |")
 }
 $out.Add("")
 $out.Add("### Rollback / deployment procedures")
@@ -1824,7 +1825,7 @@ $out.Add("| Rollback | Unknown — no deploy/rollback tooling extracted from the
 $out.Add("| Blue/green | Unknown — no deploy abstraction extracted. | Unknown |")
 $out.Add("")
 Add-Question "§19 — Deployment and rollback procedures are Unknown (no deploy tooling extracted)."
-Ledger "Operations Runbook" "populated" @("build-cookbook", "test-catalog")
+Add-SectionLedgerEntry "Operations Runbook" "populated" @("build-cookbook", "test-catalog")
 
 # ===========================================================================
 # 20. Verification Appendix
@@ -1854,7 +1855,7 @@ if ($verAppMd) {
     $out.Add("*Verification appendix not available in this run.*")
     $out.Add("")
 }
-Ledger "Verification Appendix" "populated" @("verification-appendix.md")
+Add-SectionLedgerEntry "Verification Appendix" "populated" @("verification-appendix.md")
 
 # --- footer provenance -------------------------------------------------------
 $out.Add("---")

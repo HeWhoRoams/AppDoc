@@ -1,4 +1,5 @@
 #requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
@@ -11,7 +12,7 @@ param(
     #   measurement that NEVER blocks; pristineGate.enabled=false.
     # -PristineGate ON (OPT-IN): the pristine check becomes a real gate that BLOCKS
     #   the run when any section is EMPTY (emptyCount>0) OR pristine subScore < floor.
-    #   OWNER_REQUIRED cells are EXCLUDED (pending /appdoc.enhance, not failures).
+    #   OWNER_REQUIRED cells are EXCLUDED (pending owner input, not failures).
     # -PristineFloor: the floor the pristine sub-score must meet (default 80).
     [switch]$PristineGate,
     [ValidateRange(1,100)]
@@ -703,7 +704,7 @@ function Get-AppDocIsClassicAspTarget {
 }
 
 function Test-AppDocClassicAspConnValue {
-    # Mirror of the datamodel extractor's Normalize-ConnValue so the gate's
+    # Mirror of the datamodel extractor's ConvertTo-NormalizedConnValue so the gate's
     # connection identity matches what data-model.md actually documents.
     param([string]$Raw)
     $dq = [char]34; $sq = [char]39
@@ -2277,7 +2278,7 @@ $result = [ordered]@{
 #       blocked=false. NEVER changes status or overallScore.
 #   BLOCKING (OPT-IN, -PristineGate ON): the pristine check becomes a real gate
 #       that BLOCKS the run when emptyCount>0 OR subScore<floor (-PristineFloor).
-#       OWNER_REQUIRED cells are EXCLUDED (pending /appdoc.enhance, not failures).
+#       OWNER_REQUIRED cells are EXCLUDED (pending owner input, not failures).
 #       The decision is the PURE FUNCTION Test-AppDocPristineGate (unit-testable).
 #       When it blocks, status flips to 'blocked' (a NEW additive blocking
 #       condition); overallScore is UNCHANGED (structural conformance untouched).
@@ -2346,7 +2347,7 @@ if ($hasPristine) {
             floorMet       = [bool]$pristineGateDec.floorMet
             blocked        = [bool]$pristineGateDec.blocked
             blockingIssues = @($pristineGateDec.blockingIssues)
-            note           = if ($pristineGateEnabled) { 'BLOCKING mode (OPT-IN, -PristineGate): the run is blocked when emptyCount>0 OR subScore<floor; OWNER_REQUIRED is excluded (pending /appdoc.enhance, not a failure).' } else { 'REPORT-ONLY mode (DEFAULT): depth measurement, never blocks — pristineGate.blocked=false; status/overallScore unchanged.' }
+            note           = if ($pristineGateEnabled) { 'BLOCKING mode (OPT-IN, -PristineGate): the run is blocked when emptyCount>0 OR subScore<floor; OWNER_REQUIRED is excluded (pending owner input, not a failure).' } else { 'REPORT-ONLY mode (DEFAULT): depth measurement, never blocks — pristineGate.blocked=false; status/overallScore unchanged.' }
         }
         # BLOCK path (additive): when blocking mode AND a violation, flip the run's
         # status to 'blocked' (a NEW blocking condition). overallScore is UNCHANGED —

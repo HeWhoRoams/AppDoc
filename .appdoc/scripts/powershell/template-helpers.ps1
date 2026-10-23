@@ -170,7 +170,7 @@ function Add-GenerationMetadata {
     return $Content
 }
 
-function Normalize-AppDocTemplateInstructionText {
+function Format-AppDocTemplateInstructionText {
     <#
     .SYNOPSIS
     Replaces template instructional prose with deterministic, non-placeholder language.
@@ -217,7 +217,7 @@ function Normalize-AppDocTemplateInstructionText {
     return $updated
 }
 
-function Normalize-AppDocMarkdownStructure {
+function Format-AppDocMarkdownStructure {
     <#
     .SYNOPSIS
     Applies cross-artifact markdown structure normalization after template population.
@@ -262,8 +262,8 @@ function Normalize-AppDocMarkdownStructure {
     )
 
     # Normalize summary-style sections to exactly one Summary section.
-    if (Get-Command Normalize-AppDocSingleSummarySection -ErrorAction SilentlyContinue) {
-        $updated = Normalize-AppDocSingleSummarySection -Content $updated
+    if (Get-Command Format-AppDocSingleSummarySection -ErrorAction SilentlyContinue) {
+        $updated = Format-AppDocSingleSummarySection -Content $updated
     }
 
     # Trim redundant blank lines introduced by cleanup.
@@ -271,7 +271,7 @@ function Normalize-AppDocMarkdownStructure {
     return $updated
 }
 
-function Normalize-AppDocSingleSummarySection {
+function Format-AppDocSingleSummarySection {
     <#
     .SYNOPSIS
     Ensures markdown contains exactly one summary section titled 'Summary'.
@@ -390,11 +390,11 @@ function Normalize-AppDocSingleSummarySection {
 #   - Section vocabulary is defined in one place (Get-AppDocSectionVocabulary).
 #   - Tables: key column first, evidence/status column last, numeric columns
 #     right-aligned (---:), em dash (—) for nulls, no captions.
-#   - Empty state: ONE convention (Emit-AppDocEmptyState) — a bold semantic
+#   - Empty state: ONE convention (Get-AppDocEmptyStateText) — a bold semantic
 #     label in prose; replaces the historical 3-way split (italic
 #     `_No ... detected._` filler / `| N/A |` row / truly-empty row) and avoids
 #     the banned `_No ... detected\.` pattern.
-#   - Provenance: ONE placement, always last (Emit-AppDocProvenance).
+#   - Provenance: ONE placement, always last (Add-AppDocProvenanceBlock).
 # =============================================================================
 
 function Get-AppDocSectionVocabulary {
@@ -514,7 +514,7 @@ function Build-AppDocTable {
     return ($output -join "`n")
 }
 
-function Emit-AppDocEmptyState {
+function Get-AppDocEmptyStateText {
     <#
     .SYNOPSIS
     Emits the single canonical empty-state convention for a section.
@@ -548,7 +548,7 @@ function Emit-AppDocEmptyState {
     return ("**" + $label + "**")
 }
 
-function Emit-AppDocProvenance {
+function Add-AppDocProvenanceBlock {
     <#
     .SYNOPSIS
     Emits a single, always-last `## Provenance` block in a markdown document.
@@ -654,7 +654,7 @@ function Get-MarkdownSectionBlock {
 # generate-evidence-register.ps1, and generate-verification-appendix.ps1. One canonical
 # definition here; each generator consumes the shared copy (verified byte-identical bodies).
 
-function Md-Clean {
+function Format-MarkdownCellText {
     param([string]$v)
     $v = [string]$v
     $v = $v -replace '\|', '/'
@@ -662,9 +662,9 @@ function Md-Clean {
     return $v.Trim()
 }
 
-function Md-Back { param([string]$x) return ('`' + $x + '`') }
+function Format-CodeSpan { param([string]$x) return ('`' + $x + '`') }
 
-function Esc-MdCell {
+function ConvertTo-AppDocMarkdownCell {
     param([string]$Text)
     if ($null -eq $Text) { $Text = '' }
     $Text = $Text -replace '[|]', '\|' -replace "`r", '' -replace "`n", ' '

@@ -10,6 +10,7 @@
 # Output: Writes to AppDoc/docs/index.md (relative to RootPath)
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath

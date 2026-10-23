@@ -1,4 +1,4 @@
-function Sanitize-AppDocConfigMarkdownCell {
+function ConvertTo-AppDocSafeConfigMarkdownCell {
     [CmdletBinding()]
     param(
         [AllowNull()]
@@ -106,7 +106,7 @@ function Get-AppDocConfigCatalogMarkdown {
     }
 
     # Helper: Infer type from value
-    function Infer-AppDocConfigType($value) {
+    function Get-AppDocInferredConfigType($value) {
         if ($null -eq $value) { return "unknown" }
         if ($value -is [bool] -or $value -eq $true -or $value -eq $false) { return "boolean" }
         if ($value -is [int] -or $value -match '^-?\d+$') { return "integer" }
@@ -120,7 +120,7 @@ function Get-AppDocConfigCatalogMarkdown {
     }
 
     # Helper: Synthesize description for config key
-    function Synthesize-AppDocConfigDescription($key, $parent, $settingsComments) {
+    function New-AppDocConfigDescription($key, $parent, $settingsComments) {
         # Try to find a comment for this key
         $lookup = $key
         if ($parent) { $lookup = "$parent.$key" }
@@ -222,7 +222,7 @@ function Get-AppDocConfigCatalogMarkdown {
             if ($k -match '(?i)\b(password|secret|token|credential|key|apikey|private|certificate|cert|passwd|pwd)\b') {
                 return "***masked***"
             }
-            return (Sanitize-AppDocConfigMarkdownCell -Value $v -MaxLength 80)
+            return (ConvertTo-AppDocSafeConfigMarkdownCell -Value $v -MaxLength 80)
         }
 
         $renderRows = {
@@ -236,17 +236,17 @@ function Get-AppDocConfigCatalogMarkdown {
                 $rawRequired = & $getField $item 'required' $false
                 $rawRequiredForDeployment = & $getField $item 'requiredForDeployment' $null
 
-                $key = Sanitize-AppDocConfigMarkdownCell -Value $rawKey -MaxLength 120
+                $key = ConvertTo-AppDocSafeConfigMarkdownCell -Value $rawKey -MaxLength 120
                 $displayValue = & $maskValue $rawKey $rawValue
-                $inferredType = if ([string]::IsNullOrWhiteSpace($rawType)) { Infer-AppDocConfigType $rawValue } else { $rawType }
-                $type = Sanitize-AppDocConfigMarkdownCell -Value $inferredType -MaxLength 40
-                $source = Sanitize-AppDocConfigMarkdownCell -Value $rawSource -MaxLength 120
+                $inferredType = if ([string]::IsNullOrWhiteSpace($rawType)) { Get-AppDocInferredConfigType $rawValue } else { $rawType }
+                $type = ConvertTo-AppDocSafeConfigMarkdownCell -Value $inferredType -MaxLength 40
+                $source = ConvertTo-AppDocSafeConfigMarkdownCell -Value $rawSource -MaxLength 120
                 $parent = $null
                 if ($key -match '^(.*?)\.[^.]+$') { $parent = $Matches[1] }
                 $description = if (-not [string]::IsNullOrWhiteSpace($rawBusinessPurpose)) {
-                    Sanitize-AppDocConfigMarkdownCell -Value $rawBusinessPurpose -MaxLength 180
+                    ConvertTo-AppDocSafeConfigMarkdownCell -Value $rawBusinessPurpose -MaxLength 180
                 } else {
-                    Synthesize-AppDocConfigDescription $key $parent $settingsComments
+                    New-AppDocConfigDescription $key $parent $settingsComments
                 }
 
                 $required = if ([string]::IsNullOrWhiteSpace([string]$rawRequiredForDeployment)) {
@@ -307,9 +307,9 @@ function Get-AppDocConfigCatalogMarkdown {
     $envVarsContent = if ($EnvVars.Count -gt 0) {
         $tableHeader = "| Variable | Default | Description | Sensitive | Required |`n|----------|---------|-------------|-----------|----------|"
         $tableRows = $EnvVars | ForEach-Object {
-            $envKey = Sanitize-AppDocConfigMarkdownCell -Value $_.key -MaxLength 120
-            $displayValue = Sanitize-AppDocConfigMarkdownCell -Value $_.value -MaxLength 80
-            $description = if ($_.description) { Sanitize-AppDocConfigMarkdownCell -Value $_.description -MaxLength 120 } else { "Environment variable" }
+            $envKey = ConvertTo-AppDocSafeConfigMarkdownCell -Value $_.key -MaxLength 120
+            $displayValue = ConvertTo-AppDocSafeConfigMarkdownCell -Value $_.value -MaxLength 80
+            $description = if ($_.description) { ConvertTo-AppDocSafeConfigMarkdownCell -Value $_.description -MaxLength 120 } else { "Environment variable" }
             $sensitivePattern = '(?i)\b(password|secret|key|token|credential|auth|apikey|api[_-]?key|private|cert|certificate|passwd|pwd|rsa|pem)\b'
             $sensitive = if ($envKey -match $sensitivePattern) { "Yes" } else { "No" }
             $required = if ($_.required) { "Yes" } else { "No" }

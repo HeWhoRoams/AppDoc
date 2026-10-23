@@ -34,7 +34,7 @@ Fills the owner-required narrative cells (purpose, data flows, ownership) that s
 - **No-fabrication** — fields left un-provided stay `Unknown`.
 - **An input-hash cache** — re-runs skip unchanged records.
 
-It is **OFF by default** and no-ops to deterministic-only output when not enabled. The layer's contract is documented in the AI prompts under `.github/prompts/` (`appdoc.begin`, `appdoc.enrich`, `appdoc.enhance`, `appdoc.diagrams`).
+It is **OFF by default** and no-ops to deterministic-only output when not enabled. The layer's contract is in [`references/enrichment-contract.md`](references/enrichment-contract.md); GitHub Copilot slash-command wrappers (`/appdoc.begin`, `/appdoc.enrich`, `/appdoc.diagrams`) live in `.github/prompts/`.
 
 ## Using AppDoc as a skill
 

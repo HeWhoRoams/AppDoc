@@ -6,6 +6,7 @@
 #          the api-inventory template.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
@@ -325,8 +326,8 @@ if ($endpoints.Count -eq 0) {
 Write-Progress -Activity "Generating API Inventory" -Status "Populating template..." -PercentComplete 80
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocApiInventoryContent -Content $content -Endpoints $endpoints
-$content = Normalize-AppDocTemplateInstructionText -Content $content
-$content = Normalize-AppDocMarkdownStructure -Content $content
+$content = Format-AppDocTemplateInstructionText -Content $content
+$content = Format-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 

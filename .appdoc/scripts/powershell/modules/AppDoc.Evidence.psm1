@@ -41,7 +41,7 @@ function Get-AppDocEvidenceFilePath {
 
     # Get invalid characters for filenames
     $invalidChars = [System.IO.Path]::GetInvalidFileNameChars()
-    
+
     # Check for path traversal attempts (parent directory references)
     if ($Artifact -match '\.\.' -or $Artifact -match '[/\\]\.\.') {
         throw "Artifact parameter contains invalid path traversal sequence: $Artifact"

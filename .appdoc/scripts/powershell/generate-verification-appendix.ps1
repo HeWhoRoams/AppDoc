@@ -23,6 +23,7 @@
 #          Reads docs/evidence/*.evidence.enriched.json first and falls back to
 #          docs/evidence/*.evidence.json. Deterministic. No network. No LLM.
 #
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
@@ -93,7 +94,7 @@ foreach ($file in $filesToRead) {
 }
 
 # --- helpers -------------------------------------------------------------------
-function Esc-Quote {
+function Format-QuotedText {
     param([string]$Text)
     # single-quoted PS string: escape embedded single quotes by doubling them.
     if ($null -eq $Text) { $Text = '' }
@@ -164,13 +165,13 @@ foreach ($rec in $allRecords) {
     }
 
     if ($fileExists -and -not [string]::IsNullOrWhiteSpace($pattern)) {
-        $fileEsc = Esc-Quote $file
+        $fileEsc = Format-QuotedText $file
         if (Test-AppDocRegexSafe $pattern) {
-            $cmd = ("Select-String -Path '{0}' -SimpleMatch '{1}'" -f $fileEsc, (Esc-Quote $pattern))
+            $cmd = ("Select-String -Path '{0}' -SimpleMatch '{1}'" -f $fileEsc, (Format-QuotedText $pattern))
         }
         else {
             $regexEsc = [regex]::Escape($pattern)
-            $cmd = ("Select-String -Path '{0}' -Pattern '{1}'" -f $fileEsc, (Esc-Quote $regexEsc))
+            $cmd = ("Select-String -Path '{0}' -Pattern '{1}'" -f $fileEsc, (Format-QuotedText $regexEsc))
         }
         $rowStatus = 'Verified'
         $withCommand++
@@ -184,7 +185,7 @@ foreach ($rec in $allRecords) {
     $claimText = $finding
     if (-not [string]::IsNullOrWhiteSpace($artifactName)) { $claimText = ($finding + '  ' + '[' + $artifactName + ']') }
 
-    $rowLines += ('| ' + (Esc-MdCell $claimText) + ' | ' + (Esc-MdCell $rowStatus) + ' | ' + (Esc-MdCell $cmd) + ' |')
+    $rowLines += ('| ' + (ConvertTo-AppDocMarkdownCell $claimText) + ' | ' + (ConvertTo-AppDocMarkdownCell $rowStatus) + ' | ' + (ConvertTo-AppDocMarkdownCell $cmd) + ' |')
 }
 
 # --- render markdown -----------------------------------------------------------

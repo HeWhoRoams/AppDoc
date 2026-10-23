@@ -11,7 +11,7 @@
 #   * the target is classified as ASP.NET Web Forms (a real C# framework)
 #   * the composed unified master carries the SAME 20-section spine as classic ASP
 #   * NO banned empty-artifact placeholder residue
-#   * NO residual PowerShell garbage (0x `$(`, 0x `Clean-Cell`, 0x literal `$var`)
+#   * NO residual PowerShell garbage (0x `$(`, 0x `Format-AppDocCell`, 0x literal `$var`)
 #   * REDACTION: the fixture's fake DB credential is redacted -- it is ABSENT from
 #     every generated artifact and `[REDACTED]` is present in config-catalog.md
 #   * HONEST FLOOR: no section is a truly-empty header; the doc carries an explicit
@@ -150,13 +150,13 @@ Describe "Golden-file structural regression: C# / ASP.NET Web Forms pipeline" {
             $hits = @($script:BannedPatterns | Where-Object { [regex]::IsMatch($content, $_) })
             $hits.Count | Should -Be 0 -Because "unified master must not carry banned/empty placeholders"
         }
-        It "has no residual PowerShell garbage (dollar-paren, Clean-Cell, literal dollar-var)" {
+        It "has no residual PowerShell garbage (dollar-paren, Format-AppDocCell, literal dollar-var)" {
             $content = Get-Content (Join-Path $script:docs "application-documentation.md") -Raw
             $dollarParens = ([regex]::Matches($content, '\$\(')).Count
-            $cleanCell    = ([regex]::Matches($content, 'Clean-Cell')).Count
+            $cleanCell    = ([regex]::Matches($content, 'Format-AppDocCell')).Count
             $literalVar   = ([regex]::Matches($content, '\$[A-Za-z_]\w*')).Count
             if ($dollarParens -gt 0 -or $cleanCell -gt 0 -or $literalVar -gt 0) {
-                throw "PowerShell garbage leaked into the composed doc: dollar-paren=$dollarParens, Clean-Cell=$cleanCell, dollar-var=$literalVar"
+                throw "PowerShell garbage leaked into the composed doc: dollar-paren=$dollarParens, Format-AppDocCell=$cleanCell, dollar-var=$literalVar"
             }
             $true | Should -Be $true
         }

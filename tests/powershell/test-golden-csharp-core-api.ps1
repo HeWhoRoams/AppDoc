@@ -203,13 +203,13 @@ Describe "Golden-file structural regression: C# / ASP.NET Core Web API pipeline"
             $hits = @($script:BannedPatterns | Where-Object { [regex]::IsMatch($content, $_) })
             $hits.Count | Should -Be 0
         }
-        It "has no residual PowerShell garbage (dollar-paren, Clean-Cell, literal dollar-var)" {
+        It "has no residual PowerShell garbage (dollar-paren, Format-AppDocCell, literal dollar-var)" {
             $content = Get-Content (Join-Path $script:docs "application-documentation.md") -Raw
             $dollarParens = ([regex]::Matches($content, '\$\(')).Count
-            $cleanCell    = ([regex]::Matches($content, 'Clean-Cell')).Count
+            $cleanCell    = ([regex]::Matches($content, 'Format-AppDocCell')).Count
             $literalVar   = ([regex]::Matches($content, '\$[A-Za-z_]\w*')).Count
             if ($dollarParens -gt 0 -or $cleanCell -gt 0 -or $literalVar -gt 0) {
-                throw "PowerShell garbage leaked: dollar-paren=$dollarParens, Clean-Cell=$cleanCell, dollar-var=$literalVar"
+                throw "PowerShell garbage leaked: dollar-paren=$dollarParens, Format-AppDocCell=$cleanCell, dollar-var=$literalVar"
             }
             $true | Should -Be $true
         }

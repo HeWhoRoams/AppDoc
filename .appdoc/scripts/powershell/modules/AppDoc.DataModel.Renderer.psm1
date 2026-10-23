@@ -345,7 +345,7 @@ function Update-AppDocDataModelContent {
     )
 
     # Ensure stale empty-detection placeholder text is fully removed after population.
-    # Matches the single bold-callout empty-state convention (see Emit-AppDocEmptyState).
+    # Matches the single bold-callout empty-state convention (see Get-AppDocEmptyStateText).
     $updated = $updated -replace '(?im)^\*\*No data models were detected in this scan\.\*\*.*$', ''
     return $updated
 }

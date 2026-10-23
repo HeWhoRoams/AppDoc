@@ -16,6 +16,7 @@
 #          docs/evidence/*.evidence.json so it works whether or not enrichment has
 #          been run. Deterministic. No network. No LLM.
 #
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
@@ -147,7 +148,7 @@ foreach ($rec in $allRecords) {
     if ($null -eq $statusTally[$status]) { $statusTally[$status] = 0 }
     $statusTally[$status] = $statusTally[$status] + 1
 
-    $rowLines += ('| ' + (Esc-MdCell $finding) + ' | ' + (Esc-MdCell $status) + ' | ' + (Esc-MdCell $artifact) + ' | ' + (Esc-MdCell $limitation) + ' |')
+    $rowLines += ('| ' + (ConvertTo-AppDocMarkdownCell $finding) + ' | ' + (ConvertTo-AppDocMarkdownCell $status) + ' | ' + (ConvertTo-AppDocMarkdownCell $artifact) + ' | ' + (ConvertTo-AppDocMarkdownCell $limitation) + ' |')
 }
 
 # --- framework note ------------------------------------------------------------

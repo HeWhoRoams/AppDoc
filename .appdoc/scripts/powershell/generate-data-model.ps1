@@ -6,6 +6,7 @@
 #          the data-model template.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
@@ -141,7 +142,7 @@ if (Get-Command Get-AppDocArchitectureFingerprint -ErrorAction SilentlyContinue)
         }
     }
     catch {
-        Write-Verbose "Get-AppDocArchitectureFingerprint failed: $($_.Exception.Message)" 
+        Write-Verbose "Get-AppDocArchitectureFingerprint failed: $($_.Exception.Message)"
         # Keep default expected=true when fingerprinting fails.
     }
 }
@@ -161,8 +162,8 @@ Write-Progress -Activity "Generating Data Model" -Status "Populating template...
 $modelContent = Get-AppDocDataModelMarkdown -Models $models -MaxDetailedModels $MaxDetailedModels
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocDataModelContent -Content $content -ModelContent $modelContent
-$content = Normalize-AppDocTemplateInstructionText -Content $content
-$content = Normalize-AppDocMarkdownStructure -Content $content
+$content = Format-AppDocTemplateInstructionText -Content $content
+$content = Format-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 

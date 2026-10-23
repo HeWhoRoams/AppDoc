@@ -285,4 +285,3 @@ This style guide can be customized per project. Add overrides between these mark
 
 **Version**: 1.0.0
 **Last Updated**: 2025-11-11
-

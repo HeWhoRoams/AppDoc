@@ -30,6 +30,7 @@
 #          so the composer + pristine check can read the citations. It is additive:
 #          it never changes status/overallScore.
 #
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,

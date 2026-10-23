@@ -1,4 +1,4 @@
-function Escape-Markdown {
+function ConvertTo-EscapedMarkdown {
     param(
         [Parameter(Mandatory)]
         [string]$Text
@@ -33,8 +33,8 @@ function Get-AppDocBuildStepsMarkdown {
     $index = 1
     foreach ($command in $Commands) {
         $desc = if ($command.command -and $command.command -ne "No description") { [string]$command.command } else { "{0} command" -f [string]$command.type }
-        $invocationEscaped = Escape-Markdown -Text ([string]$command.invocation)
-        $descEscaped = Escape-Markdown -Text $desc
+        $invocationEscaped = ConvertTo-EscapedMarkdown -Text ([string]$command.invocation)
+        $descEscaped = ConvertTo-EscapedMarkdown -Text $desc
         $rows += "| $index | ``$invocationEscaped`` | $descEscaped | N/A |"
         $index++
     }
@@ -100,9 +100,9 @@ function Update-AppDocBuildCookbookContent {
     if ($CicdInfo -and $CicdInfo.Count -gt 0) {
         $cicdContent = "**Detected CI/CD Platforms:**`n`n"
         foreach ($ci in $CicdInfo) {
-            $pathEscaped = Escape-Markdown -Text ([string]$ci.path)
-            $detailsEscaped = Escape-Markdown -Text ([string]$ci.details)
-            $platformEscaped = Escape-Markdown -Text ([string]$ci.platform)
+            $pathEscaped = ConvertTo-EscapedMarkdown -Text ([string]$ci.path)
+            $detailsEscaped = ConvertTo-EscapedMarkdown -Text ([string]$ci.details)
+            $platformEscaped = ConvertTo-EscapedMarkdown -Text ([string]$ci.platform)
             $cicdContent += "- **$platformEscaped**: ``$pathEscaped`` - $detailsEscaped`n"
         }
     } else {

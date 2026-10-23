@@ -6,6 +6,7 @@
 #
 
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
@@ -73,8 +74,8 @@ Write-Host "  Found $($testData.testFileCount) test files" -ForegroundColor Gray
 Write-Progress -Activity "Generating Test Catalog" -Status "Populating template..." -PercentComplete 60
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocTestCatalogContent -Content $content -Tests $tests -MaxTestCases $MaxTestCases
-$content = Normalize-AppDocTemplateInstructionText -Content $content
-$content = Normalize-AppDocMarkdownStructure -Content $content
+$content = Format-AppDocTemplateInstructionText -Content $content
+$content = Format-AppDocMarkdownStructure -Content $content
 $content = Add-GenerationMetadata -Content $content
 $content | Out-File -FilePath $outputPath -Encoding UTF8 -NoNewline
 

@@ -5,6 +5,7 @@
 # Purpose: Scans project files and populates the dependencies-catalog template.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath

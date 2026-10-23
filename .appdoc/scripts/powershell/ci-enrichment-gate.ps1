@@ -1,4 +1,5 @@
 #requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$false)]
     [string]$RootPath = (Get-Location).Path,

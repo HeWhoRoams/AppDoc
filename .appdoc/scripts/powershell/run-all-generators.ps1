@@ -1,4 +1,5 @@
 #requires -Version 7.2
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath,
@@ -20,7 +21,7 @@ param(
     #   measurement that NEVER blocks; status/overallScore unchanged.
     # -PristineGate ON (OPT-IN): the pristine check becomes a real gate that BLOCKS
     #   the run when any section is EMPTY (emptyCount>0) OR pristine subScore < floor.
-    #   OWNER_REQUIRED cells are EXCLUDED (pending /appdoc.enhance, not failures).
+    #   OWNER_REQUIRED cells are EXCLUDED (pending owner input, not failures).
     # Passed through to validate-documentation.ps1, which records the decision in
     # validation-report.json as `pristineGate`.
     [Parameter(Mandatory=$false)]
@@ -63,7 +64,7 @@ Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1'
 .PARAMETER PristineGate
     OPT-IN (default OFF): make the PRISTINE CHECK a real gate that BLOCKS the run
     when any section is EMPTY (emptyCount>0) OR the pristine sub-score < -PristineFloor.
-    OWNER_REQUIRED cells are EXCLUDED (pending /appdoc.enhance, not failures). When
+    OWNER_REQUIRED cells are EXCLUDED (pending owner input, not failures). When
     OFF (default), the pristine check is report-only (a non-blocking DEPTH measurement;
     status/overallScore are unchanged). The decision is recorded in
     docs/validation-report.json as `pristineGate`.
@@ -559,7 +560,7 @@ function Write-AppDocCanonicalMetrics {
 # It is a surgical no-op: it only rewrites the truth pack when a count actually
 # disagrees with the canonical, so already-consistent frameworks are byte-untouched.
 # It does NOT change the canonical metrics, the gate check, or any threshold.
-function Realign-AppDocOverviewTruthPackToCanonical {
+function Sync-AppDocOverviewTruthPackToCanonical {
     param(
         [Parameter(Mandatory=$true)]
         [string]$RootPath,
@@ -872,7 +873,7 @@ function Test-GeneratedDoc {
         [AllowNull()]
         [hashtable]$Expectations = @{}
     )
-    
+
     if (-not (Test-Path $FilePath)) {
         return @{
             docType = $DocType
@@ -883,7 +884,7 @@ function Test-GeneratedDoc {
             issues = @("File does not exist")
         }
     }
-    
+
     $content = Get-Content $FilePath -Raw
     $placeholders = @()
     $issues = @()
@@ -892,7 +893,7 @@ function Test-GeneratedDoc {
     $allowNoDependencySurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoDependencySurface" -Default $false)
     $allowNoTestSurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoTestSurface" -Default $false)
     $allowNoDebtSurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoDebtSurface" -Default $false)
-    
+
     # Detect common placeholder patterns
     $placeholderPatterns = @(
         @{ Pattern = '_No .* detected'; Description = "Empty detection placeholder" }
@@ -905,7 +906,7 @@ function Test-GeneratedDoc {
         @{ Pattern = '\[PLACEHOLDER\]|\[TODO\]|\[TBD\]'; Description = "Explicit placeholder marker" }
         @{ Pattern = '(?im)^\s*This (section|codebase) may'; Description = "Uncertain filler text" }
     )
-    
+
     foreach ($pattern in $placeholderPatterns) {
         $patternMatches = [regex]::Matches($content, $pattern.Pattern)
         if ($pattern.Description -eq "Empty detection placeholder") {
@@ -919,12 +920,12 @@ function Test-GeneratedDoc {
             $placeholders += "$($patternMatches.Count)x $($pattern.Description)"
         }
     }
-    
+
     # Count critical sections (table rows, list items)
     $tableRowCount = ([regex]::Matches($content, '^\|[^|]+\|', 'Multiline')).Count
     $listItemCount = ([regex]::Matches($content, '^[-*]\s+', 'Multiline')).Count
     $codeBlockCount = ([regex]::Matches($content, '```', 'Multiline')).Count
-    
+
     # Detect empty critical sections
     if ($content -match '\|\s*---\s*\|[\r\n]+[\r\n]+_No') {
         if (($DocType -eq "Test Catalog" -and $allowNoTestSurface) -or ($DocType -eq "Dependencies Catalog" -and $allowNoDependencySurface)) {
@@ -934,7 +935,7 @@ function Test-GeneratedDoc {
             $issues += "Empty table with placeholder"
         }
     }
-    
+
     if ($tableRowCount -le 2 -and $DocType -in @('API Inventory', 'Data Model', 'Config Catalog', 'Test Catalog')) {
         if ($DocType -eq "API Inventory" -and $allowNoApiSurface) {
             # Allowed in no-API-surface repositories.
@@ -952,24 +953,24 @@ function Test-GeneratedDoc {
 
     # Doc-type specific structural checks
     $issues += Get-DocSpecificIssues -DocType $DocType -Content $content -Expectations $Expectations
-    
+
     # Calculate quality score (0-100)
     $score = 100
     $score -= ($placeholders.Count * 15)  # -15 per placeholder type
     $score -= ($issues.Count * 20)        # -20 per issue
-    
+
     # Bonus for having content
     if ($tableRowCount -gt 5) { $score += 10 }
     if ($listItemCount -gt 10) { $score += 5 }
     if ($codeBlockCount -gt 2) { $score += 5 }
-    
+
     $score = [Math]::Max(0, [Math]::Min(100, $score))
-    
+
     # Determine quality level
-    $quality = if ($score -ge 80) { "HIGH" } 
+    $quality = if ($score -ge 80) { "HIGH" }
                elseif ($score -ge 40) { "MEDIUM" }
                else { "LOW" }
-    
+
     return @{
         docType = $DocType
         exists = $true
@@ -1380,7 +1381,7 @@ catch {
 # count source. This is a no-op when they already agree.)
 if (Test-Path $canonicalMetricsPath) {
     try {
-        $realignedOverview = Realign-AppDocOverviewTruthPackToCanonical -RootPath $RootPath -DocsPath $docsPath
+        $realignedOverview = Sync-AppDocOverviewTruthPackToCanonical -RootPath $RootPath -DocsPath $docsPath
         if ($realignedOverview) {
             Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Overview truth-pack re-aligned to canonical metrics" -Component "Generation" -FilePath (Join-Path $docsPath "evidence\overview-truth-pack.json")
             Write-Host "📄 Overview truth-pack counts re-aligned to canonical metrics." -ForegroundColor Cyan
@@ -1504,24 +1505,24 @@ foreach ($result in $validationResults) {
         "LOW"    { "🔴" }
         "MISSING" { "❌" }
     }
-    
+
     $color = switch ($result.quality) {
         "HIGH"   { "Green" }
         "MEDIUM" { "Yellow" }
         "LOW"    { "Red" }
         "MISSING" { "DarkRed" }
     }
-    
+
     Write-Host "$emoji " -NoNewline
     Write-Host "$($result.docType): " -NoNewline -ForegroundColor White
     Write-Host "$($result.quality) ($($result.score)%)" -ForegroundColor $color
-    
+
     if ($result.placeholders.Count -gt 0) {
         foreach ($placeholder in $result.placeholders) {
             Write-Host "   ⚠️  $placeholder" -ForegroundColor DarkYellow
         }
     }
-    
+
     if ($result.issues.Count -gt 0) {
         foreach ($issue in $result.issues) {
             Write-Host "   ❌ $issue" -ForegroundColor DarkRed
@@ -1824,7 +1825,7 @@ catch {
 # Exit with warning if majority are low quality
 if ($lowQuality -gt ($totalDocs / 2)) {
     Write-Host "`n⚠️  WARNING: More than 50% of documentation is LOW quality!" -ForegroundColor Red
-    Write-Host "   Consider running AppDoc enhancement workflow or manual review." -ForegroundColor Yellow
+    Write-Host "   Consider manual review, or supplying owner context as an operator overlay." -ForegroundColor Yellow
 }
 
 if ($scriptFailures.Count -gt 0) {
@@ -1835,9 +1836,7 @@ if ($scriptFailures.Count -gt 0) {
 }
 
 Write-Host "`nAll generators completed." -ForegroundColor Green
-Write-Host "Next step: bootstrap enriched evidence with run-appdoc-enrich.ps1." -ForegroundColor Cyan
-Write-Host "  pwsh ./.appdoc/scripts/powershell/run-appdoc-enrich.ps1 -RootPath \"$RootPath\"" -ForegroundColor Gray
-Write-Host "After enrichment, run /appdoc.enhance for editorial polish." -ForegroundColor Cyan
+Write-Host "Optional next step: the quarantined enrichment loop (SKILL.md, Layer 2)." -ForegroundColor Cyan
 
 if (-not $DryRun) {
     Remove-Item -Path $runSessionPath -Force -ErrorAction SilentlyContinue

@@ -11,7 +11,7 @@ survive into the input — a secret never reaches you). Keys/names are kept.
 (the `.cs`/`.config`/`readme` under the target) and fill ONLY the fields you can **ground** in
 source. Write the same-stem file to `<target>/docs/evidence/semantic/output/<artifact>.semantic.output.json`.
 
-The **contract** (shape + rules are authoritative in `.github/prompts/appdoc.enrich.prompt.md`):
+The **contract** (shape + rules are authoritative in [`enrichment-contract.md`](enrichment-contract.md)):
 
 - **Input** record = `{ source, name, kind, confidence, metadata{…redacted…}, expectedFields[16] }`.
   **Join key = `source|name|kind` (lowercase).**

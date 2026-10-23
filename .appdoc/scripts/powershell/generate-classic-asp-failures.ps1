@@ -14,6 +14,7 @@
 # framework-detection.json reports Classic ASP or ASP.NET Web Forms.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
@@ -41,7 +42,7 @@ function Write-NotApplicablePlaceholder {
     $body = "# $Title`n`n**Generated**: $((Get-Date).ToString('yyyy-MM-dd HH:mm:ss'))`n`n## Summary`n`nNot applicable for this framework. This artifact is produced only for Classic ASP / ASP.NET Web Forms codebases; the detected framework has no matching classic-ASP signal, so no content was extracted.`n`n## Test Suites`n`nNo test suites were extracted for this framework.`n`n## Test Cases`n`nNo test cases were extracted for this framework.`n`n---"
     $body | Out-File -FilePath $OutputPath -Encoding UTF8 -NoNewline
 }
-function Wrap-Backtick { param([string]$Text) return ('`' + $Text + '`') }
+function Format-CodeSpan { param([string]$Text) return ('`' + $Text + '`') }
 
 if (-not (Test-Path $RootPath)) { Write-Error "Root path does not exist: $RootPath"; exit 1 }
 $outputPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "test-catalog.md"
@@ -81,7 +82,7 @@ function Show-Files {
     return "$head (+$($Files.Count - $Max) more)"
 }
 
-function Process-FailuresFile {
+function Invoke-FailuresFileScan {
     param([string]$FullPath)
     $rel = Get-RelativePath -FullPath $FullPath -Base $rootPrefix
     $content = Get-Content $FullPath -Raw -ErrorAction SilentlyContinue
@@ -126,12 +127,12 @@ function Process-FailuresFile {
         # Purpose context = a window of the raw text around the tag.
         $start = [Math]::Max(0, $m.Index - 400); $end = [Math]::Min($content.Length, $m.Index + 400)
         $window = $content.Substring($start, ($end - $start))
-        $purpose = Infer-RefreshPurpose -Window $window
+        $purpose = Get-InferredRefreshPurpose -Window $window
         $script:refreshTimers.Add([ordered]@{ file=$rel; seconds=$sec; purpose=$purpose })
     }
 }
 
-function Infer-RefreshPurpose {
+function Get-InferredRefreshPurpose {
     param([string]$Window)
     $w = $Window.ToLowerInvariant()
     if ($w -match 'status|poll') { return "Status auto-refresh/polling" }
@@ -143,8 +144,8 @@ function Infer-RefreshPurpose {
     return "Auto-refresh (page reload)"
 }
 
-foreach ($f in $aspFiles) { Process-FailuresFile -FullPath $f.FullName }
-foreach ($p in $htmRefreshPaths) { Process-FailuresFile -FullPath $p }
+foreach ($f in $aspFiles) { Invoke-FailuresFileScan -FullPath $f.FullName }
+foreach ($p in $htmRefreshPaths) { Invoke-FailuresFileScan -FullPath $p }
 
 # De-duplicate refresh timers by (file, seconds, purpose): a file with the same
 # interval+purpose multiple times is one observable signal, not N. Keeps the
@@ -204,14 +205,14 @@ $lines.Add("|------|------|---------|-------------------|--------|")
 $fmId = 0
 foreach ($r in $script:redirectAfterFailure) {
     $fmId++
-    $relDisp = Wrap-Backtick -Text $r.file
+    $relDisp = Format-CodeSpan -Text $r.file
     $fmLine = "| {0} | {1} | Response.Redirect after query failure (line {2}) | Redirects user away on DB error | Verified |" -f ("fm-$( $fmId.ToString('000') )"), $relDisp, $r.line
     $lines.Add($fmLine)
 }
 $tmId = 0
 foreach ($t in $script:refreshTimers) {
     $tmId++
-    $relDisp = Wrap-Backtick -Text $t.file
+    $relDisp = Format-CodeSpan -Text $t.file
     $fmLine = "| {0} | {1} | Auto-refresh timer ({2}s) | Page reloads every {2}s | Verified |" -f ("tm-$( $tmId.ToString('000') )"), $relDisp, $t.seconds
     $lines.Add($fmLine)
 }
@@ -222,7 +223,7 @@ $lines.Add("## Auto-Refresh Timers"); $lines.Add("")
 $lines.Add("| File | Interval (sec) | Purpose (inferred) | Status |")
 $lines.Add("|------|----------------|--------------------|--------|")
 foreach ($t in ($script:refreshTimers | Sort-Object { [string]$_.file })) {
-    $relDisp = Wrap-Backtick -Text $t.file
+    $relDisp = Format-CodeSpan -Text $t.file
     $tLine = "| {0} | {1} | {2} | Verified |" -f $relDisp, $t.seconds, $t.purpose
     $lines.Add($tLine)
 }

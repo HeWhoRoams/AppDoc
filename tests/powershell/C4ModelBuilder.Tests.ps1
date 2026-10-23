@@ -15,7 +15,7 @@ BeforeAll {
 }
 
 Describe "C4ModelBuilder Module" {
-    
+
     Context "Get-ProjectFiles" {
         It "Should find projects from solution file" {
             $projects = Get-ProjectFiles -Path $script:SolutionPath
@@ -32,7 +32,7 @@ Describe "C4ModelBuilder Module" {
         It "Should parse project file and extract metadata" {
             $webProjectPath = Join-Path $script:FixturesPath "SampleApp.Web/SampleApp.Web.csproj"
             $projectData = Read-CsprojFile -ProjectPath $webProjectPath
-            
+
             $projectData | Should -Not -BeNullOrEmpty
             $projectData.Name | Should -Be "SampleApp.Web"
             $projectData.Packages.Count | Should -BeGreaterThan 0
@@ -41,7 +41,7 @@ Describe "C4ModelBuilder Module" {
         It "Should extract NuGet package references" {
             $webProjectPath = Join-Path $script:FixturesPath "SampleApp.Web/SampleApp.Web.csproj"
             $projectData = Read-CsprojFile -ProjectPath $webProjectPath
-            
+
             $projectData.Packages.Count | Should -BeGreaterThan 0
             $httpPackage = $projectData.Packages | Where-Object { $_.Name -like "*Http*" }
             $httpPackage | Should -Not -BeNullOrEmpty
@@ -50,7 +50,7 @@ Describe "C4ModelBuilder Module" {
         It "Should extract project references" {
             $webProjectPath = Join-Path $script:FixturesPath "SampleApp.Web/SampleApp.Web.csproj"
             $projectData = Read-CsprojFile -ProjectPath $webProjectPath
-            
+
             $projectData.ProjectReferences.Count | Should -BeGreaterThan 0
             $projectData.ProjectReferences -contains "..\SampleApp.Common\SampleApp.Common.csproj" | Should -Be $true
         }
@@ -64,7 +64,7 @@ Describe "C4ModelBuilder Module" {
     Context "Get-SolutionInfo" {
         It "Should extract system name from .sln file" {
             $systemInfo = Get-SolutionInfo -SolutionPath $script:SolutionPath
-            
+
             $systemInfo | Should -Not -BeNullOrEmpty
             $systemInfo.Name | Should -Be "SampleApp"
             $systemInfo.Path | Should -Be $script:SolutionPath
@@ -104,21 +104,21 @@ Describe "C4ModelBuilder Module" {
         It "Should detect Web App container from .csproj with Microsoft.AspNetCore" {
             $webProjectPath = Join-Path $script:FixturesPath "SampleApp.Web/SampleApp.Web.csproj"
             $containerType = Get-ContainerType -ProjectPath $webProjectPath
-            
+
             $containerType | Should -Be "WebApp"
         }
 
         It "Should detect Background Service container from Windows Service project" {
             $serviceProjectPath = Join-Path $script:FixturesPath "SampleApp.Service/SampleApp.Service.csproj"
             $containerType = Get-ContainerType -ProjectPath $serviceProjectPath
-            
+
             $containerType | Should -Be "Service"
         }
 
         It "Should detect Database container from Entity Framework references" {
             $commonProjectPath = Join-Path $script:FixturesPath "SampleApp.Common/SampleApp.Common.csproj"
             $containerType = Get-ContainerType -ProjectPath $commonProjectPath
-            
+
             # Common project should be detected as Library (no EF, no ASP.NET)
             $containerType | Should -Be "Library"
         }
@@ -126,7 +126,7 @@ Describe "C4ModelBuilder Module" {
         It "Should default to Library for unrecognized project types" {
             $commonProjectPath = Join-Path $script:FixturesPath "SampleApp.Common/SampleApp.Common.csproj"
             $containerType = Get-ContainerType -ProjectPath $commonProjectPath
-            
+
             $containerType | Should -Be "Library"
         }
     }
@@ -135,7 +135,7 @@ Describe "C4ModelBuilder Module" {
         It "Should extract project references as container relationships" {
             $webProjectPath = Join-Path $script:FixturesPath "SampleApp.Web/SampleApp.Web.csproj"
             $dependencies = Find-ProjectDependencies -ProjectPath $webProjectPath
-            
+
             $dependencies | Should -Not -BeNullOrEmpty
             $dependencies.Count | Should -BeGreaterThan 0
             $dependencies -contains "SampleApp.Common" | Should -Be $true
@@ -144,14 +144,14 @@ Describe "C4ModelBuilder Module" {
         It "Should return empty array for project with no dependencies" {
             $commonProjectPath = Join-Path $script:FixturesPath "SampleApp.Common/SampleApp.Common.csproj"
             $dependencies = Find-ProjectDependencies -ProjectPath $commonProjectPath
-            
+
             $dependencies.Count | Should -Be 0
         }
 
         It "Should handle multiple project references" {
             $serviceProjectPath = Join-Path $script:FixturesPath "SampleApp.Service/SampleApp.Service.csproj"
             $dependencies = Find-ProjectDependencies -ProjectPath $serviceProjectPath
-            
+
             $dependencies | Should -Not -BeNullOrEmpty
             $dependencies.Count | Should -Be 1
         }

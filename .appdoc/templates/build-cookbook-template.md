@@ -75,4 +75,3 @@ _Operational checklist populated from detected build and validation commands._
 - Profile: [PROFILE]
 - Scope: [SCOPE]
 - Confidence/Inference Flags: deterministic, evidence-backed
-

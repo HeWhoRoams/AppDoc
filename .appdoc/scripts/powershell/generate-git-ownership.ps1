@@ -28,6 +28,7 @@
 #          never changes status/overallScore or the pristine sub-score (section 13 is
 #          an owner-pending cell that scores 100 whether PASS or OWNER_REQUIRED).
 #
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath

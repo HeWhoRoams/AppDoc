@@ -13,6 +13,7 @@
 # Connection-string values are never printed (structure is parsed, values ignored).
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
@@ -34,7 +35,7 @@ if ((Test-Path $contractsModule) -and (Test-Path $evidenceModule)) {
     Import-Module $evidenceModule  -Force -ErrorAction SilentlyContinue
 }
 
-function Trim-Quotes {
+function Remove-SurroundingQuotes {
     param([string]$Text)
     if ([string]::IsNullOrWhiteSpace($Text)) { return "" }
     $t = $Text.Trim()
@@ -53,9 +54,9 @@ function Trim-Quotes {
 # Connection-string values are often built with VBScript string concatenation
 # (Data Source=" & dbHost & "), so a literal value may not be present. Detect and
 # mark those as dynamic rather than leaking raw concatenation tokens into the doc.
-function Normalize-ConnValue {
+function ConvertTo-NormalizedConnValue {
     param([string]$Raw)
-    $v = if ([string]::IsNullOrWhiteSpace($Raw)) { "" } else { Trim-Quotes -Text $Raw }
+    $v = if ([string]::IsNullOrWhiteSpace($Raw)) { "" } else { Remove-SurroundingQuotes -Text $Raw }
     # Strip a trailing VBScript concatenation operator fragment ( & ...) if present.
     if ($v -match ' & \S') { $v = $v -replace '\s*&\s*$' -replace '(?s).*&\s*', '' }
     if ($v -match ' & ' -or $v -match '^\s*&' -or $v -match '"\s*&' -or $v -match '^\s*"' -or $v -match '\s*&\s*$') {
@@ -178,7 +179,7 @@ function Add-FileRef {
     if (-not ($Map[$Key].files -contains $RelPath)) { $Map[$Key].files.Add($RelPath) }
 }
 
-function Process-DataModelFile {
+function Invoke-DataModelFileScan {
     param([string]$FullPath)
     $rel = Get-RelativePath -FullPath $FullPath -Base $rootPrefix
     $content = Get-Content $FullPath -Raw -ErrorAction SilentlyContinue
@@ -198,8 +199,8 @@ function Process-DataModelFile {
         # If the value was empty, the line likely builds it by concatenation (" & x & ").
         if ([string]::IsNullOrWhiteSpace($catalog) -and $line -match '(?i)Initial Catalog\s*=\s*["&]') { $catalog = "dynamic" }
         if ([string]::IsNullOrWhiteSpace($server)  -and $line -match '(?i)Data Source\s*=\s*["&]')     { $server  = "dynamic" }
-        $catalog = Normalize-ConnValue -Raw $catalog
-        $server  = Normalize-ConnValue -Raw $server
+        $catalog = ConvertTo-NormalizedConnValue -Raw $catalog
+        $server  = ConvertTo-NormalizedConnValue -Raw $server
         $key = ("{0}|{1}|{2}" -f $provider, $server, $catalog).ToLowerInvariant()
         if (-not $script:dbs.ContainsKey($key)) {
             $script:dbs[$key] = [ordered]@{ provider=$provider; server=$server; catalog=$catalog; files=(New-Object System.Collections.Generic.List[string]) }
@@ -268,9 +269,9 @@ function Add-Proc {
     if (-not ($script:procCalls[$key].files -contains $RelPath)) { $script:procCalls[$key].files.Add($RelPath) }
 }
 
-foreach ($f in $aspFiles) { Process-DataModelFile -FullPath $f.FullName }
-foreach ($f in $incFiles) { Process-DataModelFile -FullPath $f.FullName }
-foreach ($p in $htmSignalPaths) { Process-DataModelFile -FullPath $p }
+foreach ($f in $aspFiles) { Invoke-DataModelFileScan -FullPath $f.FullName }
+foreach ($f in $incFiles) { Invoke-DataModelFileScan -FullPath $f.FullName }
+foreach ($p in $htmSignalPaths) { Invoke-DataModelFileScan -FullPath $p }
 
 # Sort aggregates deterministically.
 # Sort by the full dedup key (provider|server|catalog) so rows with the same

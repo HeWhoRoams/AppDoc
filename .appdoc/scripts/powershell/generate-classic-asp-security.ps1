@@ -29,6 +29,7 @@
 # when framework-detection.json reports Classic ASP or ASP.NET Web Forms.
 #
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
     [string]$RootPath
@@ -63,7 +64,7 @@ function Write-NotApplicablePlaceholder {
 # Return a value wrapped in literal markdown backticks (for inline code spans).
 # Redact: any non-empty secret value becomes [REDACTED]; values matching the target's
 # configured opaque-token pattern (if any) pass through unchanged.
-function Redact-Value {
+function Protect-SecretValue {
     param([string]$v)
     $t = ([string]$v).Trim()
     if ([string]::IsNullOrWhiteSpace($t)) { return "[REDACTED]" }
@@ -120,7 +121,7 @@ foreach ($list in @($incFiles, $aspFiles)) {
                 if ($authSet) {
                     $idNum = ($findings.Count + 1)
                     $fid = "SEC-$( $idNum.ToString('000') )"
-                    $ev = (Md-Back $rel) + (" line {0} (auth set line {1})" -f ($i + 1), $setLine)
+                    $ev = (Format-CodeSpan $rel) + (" line {0} (auth set line {1})" -f ($i + 1), $setLine)
                     Add-Finding -Id $fid -Finding "A hardcoded guest login bypasses `SimpleVerify` — a fixed username/password pair authenticates before the normal verify path." -Evidence $ev -Severity "Critical" -Secret "username=$userLiteral; password=[REDACTED]" -Status "Verified"
                 }
             }
@@ -132,7 +133,7 @@ foreach ($list in @($incFiles, $aspFiles)) {
             if ($L -notmatch '(?i)setRequestHeader\s+"Authorization"') { continue }
             $idNum = ($findings.Count + 1)
             $fid = "SEC-$( $idNum.ToString('000') )"
-            $ev = (Md-Back $rel) + " line " + ($i + 1)
+            $ev = (Format-CodeSpan $rel) + " line " + ($i + 1)
             Add-Finding -Id $fid -Finding "A hardcoded authorization header is present (a credential is sent on an outbound HTTP request)." -Evidence $ev -Severity "Critical" -Secret "apikey=[REDACTED]" -Status "Verified"
         }
 
@@ -147,7 +148,7 @@ foreach ($list in @($incFiles, $aspFiles)) {
                 if ($dump) {
                     $idNum = ($findings.Count + 1)
                     $fid = "SEC-$( $idNum.ToString('000') )"
-                    $ev = (Md-Back $rel) + " line " + ($i + 1)
+                    $ev = (Format-CodeSpan $rel) + " line " + ($i + 1)
                     Add-Finding -Id $fid -Finding "A per-user debug backdoor dumps raw SQL to the response for one specific operator Global ID." -Evidence $ev -Severity "High" -Secret "operatorGid=[REDACTED]" -Status "Verified"
                 }
             }
@@ -166,7 +167,7 @@ foreach ($list in @($incFiles, $aspFiles)) {
         if ($hasPwdOut -and $rendersPwd) {
             $idNum = ($findings.Count + 1)
             $fid = "SEC-$( $idNum.ToString('000') )"
-            Add-Finding -Id $fid -Finding "Generated passwords are rendered in the HTML response (a password OUT parameter is written to the page)." -Evidence (Md-Back $rel) -Severity "High" -Secret "generatedPassword=[REDACTED]" -Status "Verified"
+            Add-Finding -Id $fid -Finding "Generated passwords are rendered in the HTML response (a password OUT parameter is written to the page)." -Evidence (Format-CodeSpan $rel) -Severity "High" -Secret "generatedPassword=[REDACTED]" -Status "Verified"
         }
 
         # ---- (e) On Error Resume Next ------------------------------------------
@@ -201,7 +202,7 @@ foreach ($list in @($incFiles, $aspFiles)) {
 #     in N copy/test file(s)".
 # Distinct primary files each keep their own row (e.g. the same API-key literal in four
 # different status/feeds files is four real exposures, not a scratch dup).
-function Is-ScratchFile {
+function Test-ScratchFile {
     param([string]$Path)
     $name = Split-Path $Path -Leaf
     return ($name -match '(?i).*_copy.*|.*copy_.*|.*_old.*|.*_test.*|^testing.*|.*bak.*')
@@ -218,8 +219,8 @@ foreach ($fnd in $findings) {
 }
 $findings = New-Object System.Collections.Generic.List[object]
 foreach ($grp in $byType) {
-    $primaryItems = @($grp.items | Where-Object { -not (Is-ScratchFile ([string]$_.evidence)) })
-    $scratchItems = @($grp.items | Where-Object { Is-ScratchFile ([string]$_.evidence) })
+    $primaryItems = @($grp.items | Where-Object { -not (Test-ScratchFile ([string]$_.evidence)) })
+    $scratchItems = @($grp.items | Where-Object { Test-ScratchFile ([string]$_.evidence) })
     $scratchNote = ''
     if ($scratchItems.Count -gt 0) { $scratchNote = " [also present in $($scratchItems.Count) copy/test file(s)]" }
     # one row per distinct primary FILE (stable order)
@@ -278,7 +279,7 @@ $lines.Add("")
 $lines.Add("| ID | Finding | Evidence (file:line) | Severity | Secret Value (redacted) | Status |")
 $lines.Add("|------|---------|----------------------|----------|-------------------------|--------|")
 foreach ($fnd in $findings) {
-    $row = "| {0} | {1} | {2} | {3} | {4} | {5} |" -f $fnd.id, (Md-Clean $fnd.finding), (Md-Clean $fnd.evidence), $fnd.severity, (Md-Clean $fnd.secret), $fnd.status
+    $row = "| {0} | {1} | {2} | {3} | {4} | {5} |" -f $fnd.id, (Format-MarkdownCellText $fnd.finding), (Format-MarkdownCellText $fnd.evidence), $fnd.severity, (Format-MarkdownCellText $fnd.secret), $fnd.status
     $lines.Add($row)
 }
 if ($findings.Count -eq 0) { $lines.Add("| — | none detected | — | — | — | Unknown |") }
@@ -299,7 +300,7 @@ $unknowns = @(
     "Backup / recovery and vulnerability-scanning posture"
 )
 foreach ($u in $unknowns) {
-    $lines.Add("| {0} | No — not derivable from source | Unknown |" -f (Md-Clean $u))
+    $lines.Add("| {0} | No — not derivable from source | Unknown |" -f (Format-MarkdownCellText $u))
 }
 $lines.Add("")
 $lines.Add("## Evidence Traceability"); $lines.Add("")
