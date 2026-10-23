@@ -1,3 +1,6 @@
+# Shared secret vocabulary (single source of truth for credential key names).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.SecretPolicy.psm1') -ErrorAction Stop
+
 function Test-AppDocRequiredConfig {
     [CmdletBinding()]
     param(
@@ -41,7 +44,7 @@ function Test-AppDocSensitiveConfigKey {
     )
 
     $combined = ("{0} {1}" -f ($Key ?? ""), ($Type ?? "")).ToLowerInvariant()
-    return ($combined -match '(password|passwd|pwd|secret|token|api[_-]?key|client[_-]?secret|private[_-]?key|connectionstring|connection string|sas(?:token)?|thumbprint|cert(?:ificate)?[_-]?(password|secret|key))')
+    return ($combined -match ('(' + (Get-AppDocCredentialKeywordPattern) + ')'))
 }
 
 function Test-AppDocSecretLikeValue {

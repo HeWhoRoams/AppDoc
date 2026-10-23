@@ -4,6 +4,9 @@ param(
     [string]$RootPath
 )
 
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.SecretPolicy.psm1') -Force -ErrorAction Stop
+$credentialKeyPattern = '(?i)(' + (Get-AppDocCredentialKeywordPattern) + ')'
+
 $helpersPath = Join-Path $PSScriptRoot "template-helpers.ps1"
 if (Test-Path $helpersPath) {
     . $helpersPath
@@ -197,7 +200,7 @@ function Protect-AppDocSensitiveMarkdown {
 
         $keyCell = ($cells[0] -replace '`', '')
         $typeCell = if ($cells.Count -ge 2) { ($cells[1] -replace '`', '') } else { '' }
-        $isSensitive = ($keyCell -match '(?i)password|passwd|pwd|secret|token|api[_-]?key|client[_-]?secret|private[_-]?key|connection\s*string' -or
+        $isSensitive = ($keyCell -match $credentialKeyPattern -or
                        $typeCell -match '(?i)connection\s*string')
 
         $defaultIndex = -1

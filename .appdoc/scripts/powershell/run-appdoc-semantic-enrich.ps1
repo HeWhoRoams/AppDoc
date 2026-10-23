@@ -11,6 +11,8 @@ param(
     # generic credential patterns), so an operator-listed secret the redaction did not
     # neutralize is caught and the stage is BLOCKED (fail-closed).
     [string[]]$RedactionPatterns = @(),
+    # Operator regular expressions (the config redactionRegexes), scanned by the gate.
+    [string[]]$RedactionRegexes = @(),
     # When $true (default), the secret-redaction hard gate is enforced before any
     # LLM-facing input is written. Set $false only for debugging a suspected gate hit.
     [switch]$DisableRedactionGate
@@ -55,16 +57,21 @@ if (-not $DryRun) {
 # aware of them even when invoked standalone (not via run-appdoc-build.ps1). A no-
 # config target behaves exactly as today (no operator patterns).
 $operatorPatterns = @()
-$configModule = Join-Path $PSScriptRoot "modules\AppDoc.Config.psm1"
+$operatorRegexes = @()
+$configModule = Join-Path (Join-Path $PSScriptRoot "modules") "AppDoc.Config.psm1"
 if (Test-Path $configModule) {
-    try {
-        Import-Module $configModule -Force -ErrorAction SilentlyContinue
-        $cfg = Get-AppDocConfig -RootPath $RootPath
-        if ($cfg) { $operatorPatterns = @($cfg.values.redactionPatterns | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) }) }
-    } catch { /* config load is additive; a failure falls back to the built-in gate */ }
+    # Fail-closed: an unreadable config would silently drop the operator's secrets.
+    Import-Module $configModule -Force -ErrorAction Stop
+    $cfg = Get-AppDocConfig -RootPath $RootPath
+    if ($cfg -and $cfg.error) { throw "SECRET-REDACTION HARD GATE BLOCKED the semantic stage: $($cfg.error)" }
+    if ($cfg) {
+        $operatorPatterns = @($cfg.values.redactionPatterns | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+        $operatorRegexes = @($cfg.values.redactionRegexes | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+    }
 }
-# Any patterns passed on the command line take precedence / are additive.
+# Any patterns passed on the command line are additive.
 $gateExtraKnownSecrets = @($operatorPatterns + @($RedactionPatterns) | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
+$gateExtraRegexes = @($operatorRegexes + @($RedactionRegexes) | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
 
 function Get-FieldValue {
     param(
@@ -353,7 +360,7 @@ foreach ($file in $enrichedFiles) {
     # BLOCKED: the input is NOT written and the file does not proceed to the
     # LLM/apply step (it is not silently dropped -- it is skipped with a clear error
     # and reported in the gate block list).
-    $gateResult = Test-AppDocSemanticRedactionGate -Envelope $semanticInput -ExtraKnownSecrets $gateExtraKnownSecrets
+    $gateResult = Test-AppDocSemanticRedactionGate -Envelope $semanticInput -ExtraKnownSecrets $gateExtraKnownSecrets -ExtraRedactionRegexes $gateExtraRegexes
 
     $inputPath = Join-Path $inputDir ($file.Name.Replace('.evidence.enriched.json', '.semantic.input.json'))
 
@@ -604,6 +611,7 @@ foreach ($file in $enrichedFiles) {
         enforced = -not [bool]$DisableRedactionGate
         passed = $true
         operatorPatterns = $gateExtraKnownSecrets.Count
+        operatorRegexes = $gateExtraRegexes.Count
     }
     $meta['cache'] = [ordered]@{
         path = ($cachePath.Replace($RootPath, '.').TrimStart('\').Replace('\','/'))

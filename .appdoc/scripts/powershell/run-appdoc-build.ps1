@@ -64,19 +64,37 @@ Write-Host "==========================================" -ForegroundColor Cyan
 # --- (1) load config (sensible defaults when absent) -------------------------
 $themePath = ''
 $redactionPatterns = @()
+$redactionRegexes = @()
 $pristineFloor = 80
 $cfg = $null
 if (Test-Path $configModule) {
     Import-Module $configModule -Force -ErrorAction Stop
     $cfg = Get-AppDocConfig -RootPath $RootPath
+    if ($cfg -and $cfg.error) {
+        Write-Error "[Config] $($cfg.error). Fix the file (or remove it to use defaults); refusing to build without the operator's redaction settings." -ErrorAction Continue
+        exit 1
+    }
     if ($cfg) {
         $themePath = [string]$cfg.themePath
         $redactionPatterns = @($cfg.values.redactionPatterns | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+        $redactionRegexes = @($cfg.values.redactionRegexes | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
         $pristineFloor = [int]$cfg.values.pristineFloor
-        Write-Host "   config: $($cfg.configPath) (loaded=$([bool]$cfg.loaded))  theme=$([string]$cfg.values.theme)  pristineFloor=$pristineFloor  redactionPatterns=$($redactionPatterns.Count)" -ForegroundColor Gray
+        Write-Host "   config: $($cfg.configPath) (loaded=$([bool]$cfg.loaded))  theme=$([string]$cfg.values.theme)  pristineFloor=$pristineFloor  redactionPatterns=$($redactionPatterns.Count)  redactionRegexes=$($redactionRegexes.Count)" -ForegroundColor Gray
     }
 } else {
     Write-Error "AppDoc.Config module not found: $configModule"; exit 1
+}
+
+# Compile operator redaction now so an invalid regex stops the build before any output is
+# written (fail-closed, exit 3).
+$secretPolicyModule = Join-Path $scriptDir "modules/AppDoc.SecretPolicy.psm1"
+try {
+    Import-Module $secretPolicyModule -Force -ErrorAction Stop
+    $operatorMatchers = Get-AppDocOperatorRedactionMatchers -Literals $redactionPatterns -Regexes $redactionRegexes
+}
+catch {
+    Write-Error "[Redaction] FAIL-CLOSED: $($_.Exception.Message)" -ErrorAction Continue
+    exit 3
 }
 
 # --- (2) run the EXISTING pipeline (the real work) ---------------------------
@@ -182,7 +200,7 @@ catch {
     exit 3
 }
 
-if ($redactionPatterns.Count -gt 0 -or $uriCredPatterns.Count -gt 0) {
+if ($operatorMatchers.Count -gt 0 -or $uriCredPatterns.Count -gt 0) {
     $sweepFiles = @()
     foreach ($ext in @('*.md', '*.html', '*.json')) {
         $sweepFiles += @(Get-ChildItem -Path $docsPath -Filter $ext -File -Recurse -ErrorAction SilentlyContinue)
@@ -192,9 +210,8 @@ if ($redactionPatterns.Count -gt 0 -or $uriCredPatterns.Count -gt 0) {
         $content = Get-Content -LiteralPath $f.FullName -Raw -ErrorAction SilentlyContinue
         if ([string]::IsNullOrWhiteSpace($content)) { continue }
         $orig = $content
-        foreach ($pat in $redactionPatterns) {
-            $content = [regex]::Replace($content, [regex]::Escape([string]$pat), '[REDACTED]')
-        }
+        # Operator redaction: redactionPatterns (literal values) + redactionRegexes.
+        $content = Invoke-AppDocOperatorRedaction -Text $content -Matchers $operatorMatchers
         # Built-in URI-credential sweep (value-scoped; single source of truth = semantic module).
         foreach ($uriPat in $uriCredPatterns) {
             $content = [regex]::Replace($content, $uriPat, '[REDACTED]')
@@ -204,7 +221,7 @@ if ($redactionPatterns.Count -gt 0 -or $uriCredPatterns.Count -gt 0) {
             $changed++
         }
     }
-    Write-Host "[Redaction] config redactionPatterns=$($redactionPatterns.Count) uriCredPatterns=$($uriCredPatterns.Count); $changed file(s) swept." -ForegroundColor Gray
+    Write-Host "[Redaction] config redactionPatterns=$($redactionPatterns.Count) redactionRegexes=$($redactionRegexes.Count) uriCredPatterns=$($uriCredPatterns.Count); $changed file(s) swept." -ForegroundColor Gray
 } else {
     Write-Host "[Redaction] no config redactionPatterns -> sweep is a no-op (built-in extractors still redact known secrets)." -ForegroundColor Gray
 }

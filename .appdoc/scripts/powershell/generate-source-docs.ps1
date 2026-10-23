@@ -38,7 +38,9 @@ param(
     # A no-config / no-CLI target passes empty -> behavior identical to before. This closes
     # the DETERMINISTIC-path operator channel so a per-target live credential value is
     # redacted in source-docs output even though AppDoc ships shape-patterns only.
-    [string[]]$RedactionPatterns = @()
+    [string[]]$RedactionPatterns = @(),
+    # Operator regular expressions (the config `redactionRegexes`), additive.
+    [string[]]$RedactionRegexes = @()
 )
 
 $ErrorActionPreference = "Stop"
@@ -58,14 +60,18 @@ Import-Module $modulePath -Force -ErrorAction Stop
 # A no-config / no-CLI target yields an EMPTY list -> behavior identical to before
 # (AppDoc ships shape-patterns only; the built-in verbatim list is intentionally empty).
 $sourceDocsExtra = @()
+$sourceDocsRegexes = @()
 $configModule = Join-Path $PSScriptRoot "modules/AppDoc.Config.psm1"
 if (Test-Path $configModule) {
-    try {
-        Import-Module $configModule -Force -ErrorAction SilentlyContinue
-        $cfg = Get-AppDocConfig -RootPath $RootPath
-        if ($cfg) { $sourceDocsExtra = @($cfg.values.redactionPatterns | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) }) }
-    } catch { /* config read is additive; a failure falls back to CLI-only */ }
+    Import-Module $configModule -Force -ErrorAction Stop
+    $cfg = Get-AppDocConfig -RootPath $RootPath
+    if ($cfg -and $cfg.error) { throw "[Config] $($cfg.error)" }
+    if ($cfg) {
+        $sourceDocsExtra = @($cfg.values.redactionPatterns | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+        $sourceDocsRegexes = @($cfg.values.redactionRegexes | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+    }
 }
+$sourceDocsRegexes = @($sourceDocsRegexes + @($RedactionRegexes) | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
 $sourceDocsExtra = @($sourceDocsExtra + @($RedactionPatterns) | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
 if ($sourceDocsExtra.Count -gt 0) {
     Write-Host ("   Source-docs operator channel: {0} redactionPattern(s) forwarded into the redactor (shape-patterns only; per-target values operator-supplied)." -f $sourceDocsExtra.Count) -ForegroundColor Gray
@@ -93,7 +99,7 @@ if (Test-Path -LiteralPath $mdPathIn) {
 }
 
 # --- Discover + extract (deterministic) --------------------------------------
-$result = Get-AppDocSourceDocs -RootPath $RootPath -ExtraKnownSecrets $sourceDocsExtra
+$result = Get-AppDocSourceDocs -RootPath $RootPath -ExtraKnownSecrets $sourceDocsExtra -ExtraRedactionRegexes $sourceDocsRegexes
 $categories = $result.categories
 $records    = @($result.records)
 $byFile     = $result.byFile

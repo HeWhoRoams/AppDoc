@@ -59,6 +59,11 @@ $script:AppDocSourceDocsVersion = "1.0.0"
 # the single generator process (which discovers + redacts in one process) sees the value
 # at every redaction site. Default empty -> behavior identical to a no-config target.
 $script:AppDocSourceDocsExtraKnownSecrets = @()
+# Operator regexes (the config `redactionRegexes`), same channel as above.
+$script:AppDocSourceDocsExtraRegexes = @()
+
+# Shared secret vocabulary + operator redaction (single source of truth).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.SecretPolicy.psm1') -ErrorAction Stop
 
 # The 6 citable categories (fixed, ordered for determinism).
 $script:AppDocSourceDocsCategories = @(
@@ -108,7 +113,9 @@ function Get-AppDocSourceDocsRedacted {
         # channel: AppDoc ships shape-patterns only; live credential VALUES for a specific
         # target are supplied here by the operator (the build's config `redactionPatterns`
         # key), mirroring the enrichment gate's additive hardcoded+ExtraKnownSecrets merge.
-        [string[]]$ExtraKnownSecrets = @()
+        [string[]]$ExtraKnownSecrets = @(),
+        # Operator regular expressions (the config `redactionRegexes`), additive.
+        [string[]]$ExtraRedactionRegexes = @()
     )
 
     if ($null -eq $Text) { return '' }
@@ -126,13 +133,15 @@ function Get-AppDocSourceDocsRedacted {
     # value supplied twice is still redacted exactly once. These must never appear in any
     # emitted artifact.
     $knownSecrets = @() + @(($ExtraKnownSecrets + $script:AppDocSourceDocsExtraKnownSecrets) | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
-    foreach ($s in $knownSecrets) {
-        if ($s) { $t = [regex]::Replace($t, [regex]::Escape([string]$s), '[REDACTED]') }
+    $knownRegexes = @() + @(($ExtraRedactionRegexes + $script:AppDocSourceDocsExtraRegexes) | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
+    if ($knownSecrets.Count -gt 0 -or $knownRegexes.Count -gt 0) {
+        $matchers = Get-AppDocOperatorRedactionMatchers -Literals $knownSecrets -Regexes $knownRegexes
+        $t = Invoke-AppDocOperatorRedaction -Text $t -Matchers $matchers
     }
 
     # (b) Keyed credential values: <key> = <value> / <key>: <value> where the key
     # is credential-shaped and the value is a non-empty literal.
-    $keyed = '(?i)((?<=\b)(password|passwd|pwd|secret|token|apikey|api[_-]?key|client[_-]?secret|private[_-]?key|connectionstring|connection[_-]?string|credential|credentials|cert(?:ificate)?[_-]?(?:password|secret|key)|sas(?:token)?|thumbprint)\s*(?:[=:]|value)\s*)([" ]*\S+)'
+    $keyed = '(?i)((?<=\b)(' + (Get-AppDocCredentialKeywordPattern) + ')\s*(?:[=:]|value)\s*)([" ]*\S+)'
     $t = [regex]::Replace($t, $keyed, [System.Text.RegularExpressions.MatchEvaluator]{
         param($m) $m.Groups[1].Value + '[REDACTED]'
     })
@@ -641,7 +650,9 @@ function Get-AppDocSourceDocs {
         # Operator-supplied per-target secret VALUES (the build's config `redactionPatterns`
         # key), merged additively with the (intentionally empty) built-in list at redaction
         # time. Default empty -> behavior identical to a no-config target.
-        [string[]]$ExtraKnownSecrets = @()
+        [string[]]$ExtraKnownSecrets = @(),
+        # Operator regular expressions (the config `redactionRegexes`), additive.
+        [string[]]$ExtraRedactionRegexes = @()
     )
 
     # Publish the operator value to the module-scope channel so every line redactor in
@@ -649,6 +660,7 @@ function Get-AppDocSourceDocs {
     # additively. (The public Get-AppDocSourceDocsRedacted keeps its own -ExtraKnownSecrets
     # param for direct calls; this script-scope var covers the generator call chain.)
     $script:AppDocSourceDocsExtraKnownSecrets = @($ExtraKnownSecrets | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
+    $script:AppDocSourceDocsExtraRegexes = @($ExtraRedactionRegexes | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
     if (-not (Test-Path $RootPath)) { throw "Root path does not exist: $RootPath" }
     $rootFull = (Resolve-Path $RootPath).Path
 

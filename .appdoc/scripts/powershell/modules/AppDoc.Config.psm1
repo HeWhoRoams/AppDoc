@@ -4,7 +4,8 @@
 #
 #          The single command (run-appdoc-build.ps1) reads this config to drive:
 #            - theme            : HTML report theme (default: CMU Maroon & Gold #6a0032/#ffc82e)
-#            - redactionPatterns: extra secret literals / regexes to redact (additive)
+#            - redactionPatterns: extra secret VALUES to redact, matched literally (additive)
+#            - redactionRegexes : extra regular expressions to redact (additive; invalid = error)
 #            - pristineFloor    : pristine gate floor (default 80)
 #            - outputDir        : docs output dir (default 'docs')
 #            - minCommitsForOwnership: git-history depth floor for real ownership
@@ -32,7 +33,8 @@ $script:AppDocConfigDefaults = [ordered]@{
     schemaVersion            = 'appdoc-config/v1'
     theme                    = 'cmu'              # name -> .appdoc/templates/html/<name>.json ; or an absolute path
     themeFile                = ''                # explicit theme .json path (overrides 'theme' when set)
-    redactionPatterns        = @()               # extra secret literals OR regexes (each redacted verbatim/regex)
+    redactionPatterns        = @()               # extra secret VALUES, matched literally
+    redactionRegexes         = @()               # extra regular expressions; every match is redacted
     pristineFloor            = 80                # pristine gate floor (1..100)
     outputDir                = 'docs'            # docs output dir name under the target root
     minCommitsForOwnership   = 2                 # git history depth floor for real ownership (default 2)
@@ -101,8 +103,9 @@ function Get-AppDocConfig {
     $config = @{}
     foreach ($k in $script:AppDocConfigDefaults.Keys) { $config[$k] = $script:AppDocConfigDefaults[$k] }
 
-    $configPath = Join-Path $RootPath ".appdoc\config.json"
+    $configPath = Join-Path (Join-Path $RootPath ".appdoc") "config.json"
     $loaded = $false
+    $loadError = ''
     if (Test-Path -LiteralPath $configPath) {
         try {
             $raw = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json -Depth 30
@@ -113,20 +116,27 @@ function Get-AppDocConfig {
             if ($raw.PSObject.Properties['redactionPatterns']) {
                 $config['redactionPatterns'] = @($raw.redactionPatterns | ForEach-Object { [string]$_ } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
             }
+            if ($raw.PSObject.Properties['redactionRegexes']) {
+                $config['redactionRegexes'] = @($raw.redactionRegexes | ForEach-Object { [string]$_ } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+            }
             if ($raw.PSObject.Properties['pristineFloor'] -and $raw.pristineFloor) { $config['pristineFloor'] = [int]$raw.pristineFloor }
             if ($raw.PSObject.Properties['outputDir'] -and $raw.outputDir) { $config['outputDir'] = [string]$raw.outputDir }
             if ($raw.PSObject.Properties['minCommitsForOwnership'] -and $raw.minCommitsForOwnership) { $config['minCommitsForOwnership'] = [int]$raw.minCommitsForOwnership }
             if ($null -ne $raw.PSObject.Properties['enableSemanticEnrich'] -and $null -ne $raw.enableSemanticEnrich) { $config['enableSemanticEnrich'] = [bool]$raw.enableSemanticEnrich }
         }
         catch {
-            # Invalid JSON -> fall back to defaults (backward-compat, never crash the build).
+            # Invalid JSON: report it. The build treats this as an error (fail-closed),
+            # because silently using defaults would drop the operator's redaction lists.
             $loaded = $false
+            $loadError = "invalid config file ${configPath}: $($_.Exception.Message)"
         }
     }
 
     return [pscustomobject]@{
         configPath     = $configPath
         loaded         = [bool]$loaded
+        # Non-empty when the config file exists but could not be parsed.
+        error          = [string]$loadError
         # $config is a plain hashtable with every default key present.
         values         = $config
         # Resolved theme file path (default cmu when absent). $null if unresolvable.

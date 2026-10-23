@@ -48,6 +48,7 @@ if (-not (Test-Path $validationCoreModule)) {
     exit 1
 }
 Import-Module $validationCoreModule -Force -ErrorAction Stop
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.SecretPolicy.psm1') -Force -ErrorAction Stop
 
 if (Test-Path $architectureModule) {
     Import-Module $architectureModule -Force -ErrorAction Stop
@@ -924,7 +925,7 @@ function Get-RedactionSafetyScore {
 
     $sensitiveRows = [regex]::Matches(
         $content,
-        '(?im)^\|[^\r\n]*(password|passwd|pwd|secret|token|api[_-]?key|client[_-]?secret|private[_-]?key|connection\s*string)[^\r\n]*\|[^\r\n]*$'
+        ('(?im)^\|[^\r\n]*(' + (Get-AppDocCredentialKeywordPattern) + ')[^\r\n]*\|[^\r\n]*$')
     )
 
     if ($sensitiveRows.Count -eq 0) { return 100 }

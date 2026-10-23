@@ -66,3 +66,14 @@ per-target operator channel (`-RedactionPatterns` CLI param and the target's `.a
   values. The LLM stage is fail-closed against a surviving secret.
 - **Docs-as-code (direction, see ADR 0002):** `docs/` is the stable, non-wiped, committed home for
   generated documentation; a commit hook that regenerates docs is the long-term sync mechanism.
+
+## Amendment (2026-10-22): literal values and regexes are separate keys
+
+`redactionPatterns` was documented as "exact values / regexes" but every consumer escaped it, so a
+regex never matched. It now means **exact values only** (unchanged behaviour for existing configs),
+and a new `redactionRegexes` key carries regular expressions. Both are compiled in one place
+(`AppDoc.SecretPolicy.psm1`), applied by the final sweep and the source-docs path, and scanned for by
+the semantic gate. An invalid regex or an unparseable `config.json` stops the build instead of
+silently running without the operator's redaction (fail-closed). The credential key-name vocabulary
+the extractors, the gate and the docs remediator use also lives in that module, so the lists cannot
+drift apart.
