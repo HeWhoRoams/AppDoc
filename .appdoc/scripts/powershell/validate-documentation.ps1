@@ -575,15 +575,37 @@ foreach ($validator in $validatorScripts) {
         continue
     }
 
+    # Sub-validators report a failed check with `exit 1` (which sets $LASTEXITCODE in this
+    # scope) and report unusable input with Write-Error (which throws under -ErrorAction
+    # Stop). Reset $LASTEXITCODE first so a stale value from an earlier native command can
+    # never be mistaken for this validator's result. See docs/adr/0003.
+    $global:LASTEXITCODE = 0
     try {
-        & $scriptPath -RootPath $RootPath -ErrorAction Stop | Out-Null
-        $validatorResults += @{ script = $scriptName; passed = $true; message = "OK" }
+        $validatorOutput = & $scriptPath -RootPath $RootPath -ErrorAction Stop *>&1 | Out-String
+        $validatorExitCode = $global:LASTEXITCODE
+        if ($validatorExitCode -ne 0) {
+            $issueLines = @(($validatorOutput -split "`r?`n") | Where-Object { $_ -match '^\s*-\s+\S' } | ForEach-Object { $_.Trim().TrimStart('-').Trim() } | Select-Object -First 10)
+            $internal = @($issueLines | Where-Object { $_ -match 'internal-error' }).Count -gt 0
+            $message = if ($issueLines.Count -gt 0) { "Failed: " + ($issueLines -join '; ') } else { "Failed (exit code $validatorExitCode)" }
+            $validatorResults += @{ script = $scriptName; passed = $false; exitCode = $validatorExitCode; internalError = $internal; message = $message }
+            Write-AppDocDiagnostic -Category "VALIDATION_ERROR" -Severity "Warning" -Message "Validator failed: $scriptName" -Component "validation" -FilePath $scriptPath -Details @{ exitCode = $validatorExitCode; issues = ($issueLines -join '; ') } | Out-Null
+        }
+        else {
+            $validatorResults += @{ script = $scriptName; passed = $true; exitCode = 0; internalError = $false; message = "OK" }
+        }
     }
     catch {
-        $validatorResults += @{ script = $scriptName; passed = $false; message = $_.Exception.Message }
-        Write-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Validator failed: $scriptName" -Component "validation" -FilePath $scriptPath -Details @{ exception = $_.Exception.Message } | Out-Null
+        # Write-Error from the validator = a validation failure (e.g. unreadable artifact).
+        # Any other exception is a defect in the validator itself (internal error).
+        $isValidationError = ([string]$_.FullyQualifiedErrorId) -like '*WriteErrorException*'
+        $validatorResults += @{ script = $scriptName; passed = $false; exitCode = $null; internalError = (-not $isValidationError); message = $_.Exception.Message }
+        Write-AppDocDiagnostic -Category $(if ($isValidationError) { "VALIDATION_ERROR" } else { "INTERNAL_ERROR" }) -Severity "Warning" -Message "Validator failed: $scriptName" -Component "validation" -FilePath $scriptPath -Details @{ exception = $_.Exception.Message } | Out-Null
+    }
+    finally {
+        $global:LASTEXITCODE = 0
     }
 }
+$validatorInternalErrors = @($validatorResults | Where-Object { $_.internalError } | ForEach-Object { "validator-internal-error:$($_.script)" })
 
 $contractValidationResults = @()
 foreach ($artifact in $expectedEvidenceArtifacts) {
@@ -2140,7 +2162,10 @@ $overallScore = [Math]::Max(0, [Math]::Round(($overallScoreRaw - $penaltyDeducti
 
 $hasBlockingIssues = (@($policyGates.blockingIssues).Count -gt 0)
 $weakCoverage = ($evidencePresence -lt 70 -or $semanticContractScore -lt 65 -or $evidenceContractScore -lt 65 -or $claimGroundingScore -lt 50 -or $sectionSpineCoverageScore -lt 50 -or $epistemicCoverageScore -lt 50 -or $reVerifiabilityScore -lt 50)
-$validationStatus = if ($hasBlockingIssues -or $overallScore -lt $Threshold) {
+# ADR 0003: a validator that CRASHED (internal error) is a tool defect, so the gate
+# cannot vouch for the package -> fail. A validator that reports failed checks lowers
+# validatorPassRate and the threshold decides.
+$validationStatus = if ($hasBlockingIssues -or $overallScore -lt $Threshold -or $validatorInternalErrors.Count -gt 0) {
     "fail"
 }
 elseif ($weakCoverage) {
@@ -2186,6 +2211,7 @@ $result = [ordered]@{
     missingArtifacts = $missing
     missingEvidenceArtifacts = $missingEvidence
     validators = $validatorResults
+    validatorInternalErrors = @($validatorInternalErrors)
     contractValidation = $contractValidationResults
     evidenceContractValidation = $evidenceContractResults
     contradictions = @($allContradictionIssues)
@@ -2305,20 +2331,9 @@ if ($hasPristine) {
 }
 
 
-# Write only the JSON payload to the output file, suppressing any console/table output.
-# Ensure the scratch dir exists (fresh checkouts may not have tmp/logs) and guard
-# the write so a failure to log the temp file can never block the canonical report.
-$jsonOutPath = Join-Path $RootPath "tmp\logs\validate-documentation.out.json"
-$jsonOutDir = Split-Path $jsonOutPath -Parent
-if (-not (Test-Path $jsonOutDir)) {
-    try { New-Item -Path $jsonOutDir -ItemType Directory -Force | Out-Null } catch { }
-}
-try {
-    $result | ConvertTo-Json -Depth 20 | Out-File -FilePath $jsonOutPath -Encoding UTF8
-}
-catch {
-    Write-Warning ("Could not write scratch validation log {0}: {1}" -f $jsonOutPath, $_.Exception.Message)
-}
+# (A scratch copy used to be written to <target>/tmp/logs/. It polluted the target
+# repository and fed back into the next run's file scan, so it was removed; the
+# canonical report below is the single output.)
 
 # Write the CANONICAL validation report to docs/validation-report.json. This is the
 # authoritative, committed validation result (referenced by the prompts, the
@@ -2358,7 +2373,7 @@ if ($Json) {
 }
 else {
     Write-Host "Validation score: $overallScore" -ForegroundColor Cyan
-    Write-Host "Validation report: $reportPath"
+    Write-Host "Validation report: $canonicalReportPath"
 }
 
 if ($Strict -and $overallScore -lt $Threshold) {
@@ -2369,6 +2384,11 @@ if ($Strict -and $overallScore -lt $Threshold) {
 if ($Strict -and @($policyGates.blockingIssues).Count -gt 0) {
     $issueSummary = (@($policyGates.blockingIssues) -join "; ")
     Write-Error "Validation policy gates failed: $issueSummary"
+    exit 1
+}
+
+if ($Strict -and $validatorInternalErrors.Count -gt 0) {
+    Write-Error ("Validator internal error(s): " + ($validatorInternalErrors -join "; "))
     exit 1
 }
 

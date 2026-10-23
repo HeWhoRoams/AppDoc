@@ -1289,7 +1289,17 @@ function Get-AppDocApiInventoryData {
 
     $endpointByKey = @{}
     foreach ($endpoint in $normalizedEndpoints) {
-        $dedupeKey = "{0}|{1}|{2}|{3}" -f $endpoint.method, $endpoint.path.ToLowerInvariant(), $endpoint.controller.ToLowerInvariant(), $endpoint.direction
+        # One endpoint = one (method, path, source file, direction). The AST and regex
+        # extractors can both find the same route and may label its controller differently,
+        # so the controller is NOT part of the key; the higher-signal record (AST) wins.
+        $fileKey = [string]$endpoint.filePath
+        if ($fileKey -and $fileKey -ne 'unknown') {
+            if (-not [System.IO.Path]::IsPathRooted($fileKey)) { $fileKey = Join-Path $RootPath $fileKey }
+            $fileKey = ([System.IO.Path]::GetFullPath($fileKey) -replace '\\', '/').ToLowerInvariant()
+        } else {
+            $fileKey = ([string]$endpoint.controller).ToLowerInvariant()
+        }
+        $dedupeKey = "{0}|{1}|{2}|{3}" -f $endpoint.method, $endpoint.path.ToLowerInvariant(), $fileKey, $endpoint.direction
         if (-not $endpointByKey.ContainsKey($dedupeKey)) {
             $endpointByKey[$dedupeKey] = $endpoint
             continue

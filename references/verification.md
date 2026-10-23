@@ -2,6 +2,20 @@
 
 Run these before reporting a build or enrichment run as done.
 
+## Build exit codes
+
+`run-appdoc-build.ps1` reports the outcome in its exit code (ADR 0003):
+
+| Code | Meaning |
+|---|---|
+| 0 | Gate passed (`pass`, or `pass-with-weak-coverage` without `-StrictValidation`), or `-AllowGateFail` was given |
+| 1 | Tool error: bad path, missing module, no or unreadable `validation-report.json` |
+| 2 | Gate failed: docs were written but did not pass the gate |
+| 3 | Fail-closed stop: the final redaction sweep could not run, or the semantic secret-redaction gate blocked |
+
+Sub-validator results are recorded truthfully in `validation-report.json` (`validators[].passed`,
+`exitCode`, `message`); a sub-validator crash is listed in `validatorInternalErrors` and fails the gate.
+
 ## The deterministic hard bars (must hold on every run)
 - **Gate:** `status=pass`, `overallScore` ≥ threshold, pristine sub-score reported (additive,
   non-blocking — it must not change pass/fail).

@@ -334,6 +334,16 @@ $mdParts.Add("## API Endpoints")
 $mdParts.Add("")
 $mdParts.Add("Classic-ASP pages are addressable endpoints; the full appendix (operation intent, auth boundary, timeout/retry, idempotency, confidence) is in [API Inventory Appendix](api-inventory.appendix.md).")
 $mdParts.Add("")
+# Coverage snapshot (same shape the generic renderer emits; validate-api-inventory.ps1
+# cross-checks it against the evidence). Classic-ASP pages are inbound request endpoints;
+# outbound calls are documented in extcalls, not here. It lives under "API Endpoints"
+# because remediate-generated-docs.ps1 rewrites the Summary section.
+$mdParts.Add("### Coverage Snapshot")
+$mdParts.Add("")
+$mdParts.Add(("- Total endpoints detected: **{0}**" -f $epCount))
+$mdParts.Add(("- Inbound endpoints: **{0}**" -f $epCount))
+$mdParts.Add("- Outbound API integrations: **0**")
+$mdParts.Add("")
 $mdParts.Add($tableHeader)
 $mdParts.Add($tableSep)
 foreach ($r in $rows) { $mdParts.Add($r) }

@@ -62,16 +62,30 @@ if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
 
 $rootPrefix = $RootPath.TrimEnd('\', '/')
 
+# Never count AppDoc's own output (docs/), the skill folder (.appdoc/) or VCS metadata as
+# target source: on a re-run, docs/report.html from the previous run was being counted as
+# an .html source file, so a first run and a re-run produced different inventories.
+$platformOutputDirRe = '^(docs|\.appdoc|\.git)([\\/]|$)'
+function Get-PlatformTargetFiles {
+    param([string[]]$Include, [string]$Filter = '')
+    $gciArgs = @{ Path = $RootPath; Recurse = $true; File = $true; ErrorAction = 'SilentlyContinue' }
+    if ($Filter) { $gciArgs['Filter'] = $Filter } else { $gciArgs['Include'] = $Include }
+    @(Get-ChildItem @gciArgs | Where-Object {
+        $rel = [System.IO.Path]::GetRelativePath($RootPath, $_.FullName)
+        $rel -notmatch $platformOutputDirRe
+    })
+}
+
 # --- File inventory (counts by type + top-level dirs) ---------------------------
 $extCounts = @{}
 foreach ($ext in @("asp","aspx","inc","htm","html","js","css","asa","gif","jpg")) {
-    $n = @(Get-ChildItem -Path $RootPath -Recurse -Filter "*.$ext" -File -ErrorAction SilentlyContinue).Count
+    $n = @(Get-PlatformTargetFiles -Filter "*.$ext").Count
     $extCounts[$ext] = $n
 }
 $topDirs = New-Object System.Collections.Generic.List[object]
 $topDirItems = Get-ChildItem -Path $RootPath -Directory -ErrorAction SilentlyContinue | Sort-Object Name
 foreach ($d in $topDirItems) {
-    if ($d.Name -eq "docs") { continue }
+    if ($d.Name -match '^(docs|\.appdoc|\.git)$') { continue }
     $fileCount = @(Get-ChildItem -Path $d.FullName -Recurse -File -ErrorAction SilentlyContinue).Count
     if ($fileCount -gt 0) {
         $topDirs.Add([ordered]@{ name = $d.Name; fileCount = $fileCount })
@@ -80,17 +94,17 @@ foreach ($d in $topDirItems) {
 $topDirs = @($topDirs | Sort-Object { -[int]$_.fileCount })
 
 # --- IIS / ASP indicators -------------------------------------------------------
-$webConfigs = @(Get-ChildItem -Path $RootPath -Recurse -Filter "web.config" -File -ErrorAction SilentlyContinue | ForEach-Object { Get-RelativePath -FullPath $_.FullName -Base $rootPrefix })
-$globalAsa = @(Get-ChildItem -Path $RootPath -Recurse -Filter "global.asa" -File -ErrorAction SilentlyContinue | ForEach-Object { Get-RelativePath -FullPath $_.FullName -Base $rootPrefix })
+$webConfigs = @(Get-PlatformTargetFiles -Filter "web.config" | ForEach-Object { Get-RelativePath -FullPath $_.FullName -Base $rootPrefix })
+$globalAsa = @(Get-PlatformTargetFiles -Filter "global.asa" | ForEach-Object { Get-RelativePath -FullPath $_.FullName -Base $rootPrefix })
 
 # --- ADO provider versions + SQL Server instances (from connection strings) -----
 $script:providers = @{}        # provider -> filecount
 $script:instances = @{}        # host -> {host, catalogs=[...], files=[...]}
 $script:sqlFiles = New-Object System.Collections.Generic.List[string]
 
-$aspFiles = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.asp" -File -ErrorAction SilentlyContinue | Sort-Object FullName)
-$incFiles = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.inc" -File -ErrorAction SilentlyContinue | Sort-Object FullName)
-$htmPaths = @(Get-ChildItem -Path $RootPath -Recurse -Include "*.htm","*.html" -File -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
+$aspFiles = @(Get-PlatformTargetFiles -Include "*.asp" | Sort-Object FullName)
+$incFiles = @(Get-PlatformTargetFiles -Include "*.inc" | Sort-Object FullName)
+$htmPaths = @(Get-PlatformTargetFiles -Include "*.htm","*.html" | ForEach-Object { $_.FullName })
 $htmSignalPaths = @()
 if ($htmPaths.Count -gt 0) {
     $htmSignalPaths = @(Select-String -Path $htmPaths -Pattern 'Provider\s*=|Data Source\s*=|Initial Catalog\s*=' -List -ErrorAction SilentlyContinue | ForEach-Object { $_.Path } | Sort-Object)

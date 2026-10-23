@@ -51,6 +51,13 @@ if (Test-Path $evidencePath) {
     $enriched = @(Get-ChildItem -Path $evidencePath -Filter "*.evidence.enriched.json" -File -ErrorAction SilentlyContinue | Sort-Object Name)
     $base = @(Get-ChildItem -Path $evidencePath -Filter "*.evidence.json" -File -ErrorAction SilentlyContinue | Sort-Object Name)
 }
+# Reports ABOUT the generated documentation are not source evidence and are written after
+# this register (pristine scores the composed doc). Including them made a re-run list the
+# previous run's report rows, so a first run and a re-run differed.
+$derivedReportArtifacts = @('pristine')
+$isSourceEvidence = { param($f) $k = ([IO.Path]::GetFileNameWithoutExtension($f.Name) -replace '\.evidence(\.enriched)?$', ''); $derivedReportArtifacts -notcontains $k }
+$enriched = @($enriched | Where-Object { & $isSourceEvidence $_ })
+$base = @($base | Where-Object { & $isSourceEvidence $_ })
 
 # Build an artifact-keyed list of source files to read (enriched wins over base).
 $enrichedArtifacts = @{}
@@ -65,7 +72,7 @@ foreach ($f in $base) {
     else { $filesToRead += $f.FullName }
 }
 # Include enriched files that have no base counterpart.
-foreach ($key in $enrichedArtifacts.Keys) {
+foreach ($key in @($enrichedArtifacts.Keys | Sort-Object)) {
     $covered = $false
     foreach ($f in $base) {
         $bkey = [IO.Path]::GetFileNameWithoutExtension($f.Name) -replace '\.evidence$', ''

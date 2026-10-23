@@ -9,32 +9,22 @@
 #          report.html, all per-artifact + evidence JSON (incl. git-ownership), pristine-report.md,
 #          and validation-report.json.
 #
-#          This is a THIN WRAPPER that ORCHESTRATES the existing pipeline — it does NOT
-#          re-implement or fork the extractors / composer / gate. Concretely it:
-#            (1) loads <target>/.appdoc/config.json (AppDoc.Config) — theme, redaction
-#                patterns, pristine floor (sensible defaults when absent -> backward-compat:
-#                a no-config target behaves exactly as today);
-#            (2) invokes the existing run-all-generators.ps1 pipeline (the real work, now
-#                including the NEW generate-git-ownership.ps1 + the composer + pristine +
-#                validation), passing the config pristineFloor through;
-#            (3) regenerates the HTML report with the CONFIG THEME (a no-op when the config
-#                is the default CMU theme -> byte-identical);
-#            (4) applies a CONFIG-DRIVEN redaction sweep to the final artifacts
-#                (config redactionPatterns -> [REDACTED]; a byte-identical no-op when the
-#                config has no patterns, i.e. the default -> backward-compatible).
+#          This is a THIN WRAPPER that ORCHESTRATES the existing pipeline; it does not
+#          re-implement the extractors / composer / gate. Steps:
+#            (1) load <target>/.appdoc/config.json (AppDoc.Config) - theme, redaction
+#                patterns, pristine floor (defaults when absent);
+#            (2) run-all-generators.ps1 (the real work: extractors, git-ownership, composer,
+#                pristine, validation);
+#            (3) second pass: composer + pristine + validation once diagrams exist;
+#            (4) HTML report with the config theme;
+#            (5) redaction sweep over the final artifacts (fail-closed);
+#            (6) optional semantic (LLM) enrichment stage (default OFF).
 #
-#          Why NOT re-run the composer: the pipeline's own composer run already reads the
-#          git-ownership evidence (generate-git-ownership.ps1 now runs in the Generation
-#          phase before the composer), and the pipeline stamps the Provenance footer AFTER
-#          the composer. Re-running the composer here would drop that provenance stamp and
-#          risk a gate regression. The wrapper therefore only touches the HTML (a
-#          presentation artifact the gate does not score) and the final redaction sweep.
-#
-#          The gate pass/fail logic/threshold, the extractors' core logic, Get-SectionTable,
-#          the §1/§3/§4/§6/§8/§10 fixes, the BUILD-1 source-doc citation logic, and the
-#          pristine N/A + owner-pending logic are ALL UNCHANGED. Deterministic: the only
-#          wall-clock in the package is the provenance stamp (Generated At) applied by the
-#          pipeline (excluded from the determinism check).
+# Exit codes (see docs/adr/0003-sub-validator-failure-policy.md):
+#   0  gate passed (or -AllowGateFail was given)
+#   1  tool error (bad path, missing module, no validation report)
+#   2  gate failed: docs were written but did not pass the gate
+#   3  fail-closed stop: the redaction sweep or the semantic secret-redaction gate blocked
 #
 param(
     [Parameter(Mandatory=$true, Position=0)]
@@ -51,7 +41,9 @@ param(
     [Parameter(Mandatory=$false)]
     [switch]$StrictValidation,
     [Parameter(Mandatory=$false)]
-    [switch]$EnableSemanticEnrich
+    [switch]$EnableSemanticEnrich,
+    [Parameter(Mandatory=$false)]
+    [switch]$AllowGateFail
 )
 
 $ErrorActionPreference = "Stop"
@@ -73,8 +65,9 @@ Write-Host "==========================================" -ForegroundColor Cyan
 $themePath = ''
 $redactionPatterns = @()
 $pristineFloor = 80
+$cfg = $null
 if (Test-Path $configModule) {
-    Import-Module $configModule -Force -ErrorAction SilentlyContinue
+    Import-Module $configModule -Force -ErrorAction Stop
     $cfg = Get-AppDocConfig -RootPath $RootPath
     if ($cfg) {
         $themePath = [string]$cfg.themePath
@@ -83,7 +76,7 @@ if (Test-Path $configModule) {
         Write-Host "   config: $($cfg.configPath) (loaded=$([bool]$cfg.loaded))  theme=$([string]$cfg.values.theme)  pristineFloor=$pristineFloor  redactionPatterns=$($redactionPatterns.Count)" -ForegroundColor Gray
     }
 } else {
-    Write-Warning "AppDoc.Config module not found; using defaults (theme=cmu, pristineFloor=80)."
+    Write-Error "AppDoc.Config module not found: $configModule"; exit 1
 }
 
 # --- (2) run the EXISTING pipeline (the real work) ---------------------------
@@ -98,11 +91,15 @@ if ($SkipSyntaxGate) { $pipelineArgs['SkipSyntaxGate'] = $true }
 if ($StrictValidation){ $pipelineArgs['StrictValidation'] = $true }
 
 Write-Host "`n[Pipeline] running run-all-generators.ps1 (incl. git-ownership + composer + pristine + validation) ..." -ForegroundColor Cyan
+# The orchestrator's own exit code is not used: native commands it runs (git) also set
+# $LASTEXITCODE, so the value is ambiguous. The authoritative outcome is the final
+# validation-report.json, which decides the build exit code at the end of this script.
 try {
     & $orchestrator @pipelineArgs
 } catch {
-    Write-Warning "Pipeline reported a non-fatal issue: $($_.Exception.Message)"
+    Write-Warning "Pipeline reported an issue: $($_.Exception.Message)"
 }
+$global:LASTEXITCODE = 0
 
 if (-not (Test-Path $docsPath)) {
     Write-Error "Pipeline did not produce a docs directory: $docsPath"; exit 1
@@ -171,13 +168,18 @@ if (Test-Path $htmlGen) {
 # committed baselines (verified 0 hits) and every fixture -- while it
 # closes a leak that the extractor-level redaction (Protect-AppDocConfigValue) missed.
 $semanticRedactionModule = Join-Path $scriptDir "modules/AppDoc.SemanticRedaction.psm1"
+# FAIL-CLOSED: if the redaction module cannot be loaded the build stops (exit 3); it never
+# continues without the built-in URI-credential patterns.
 $uriCredPatterns = @()
-if (Test-Path $semanticRedactionModule) {
-    try {
-        Import-Module $semanticRedactionModule -Force -ErrorAction Stop
-        $uriCredPatterns = @(Get-AppDocSemanticUriCredentialPatterns)
-    }
-    catch { Write-Warning "[Redaction] could not load semantic redaction module; skipping built-in URI-credential sweep: $($_.Exception.Message)" }
+try {
+    if (-not (Test-Path $semanticRedactionModule)) { throw "module not found: $semanticRedactionModule" }
+    Import-Module $semanticRedactionModule -Force -ErrorAction Stop
+    $uriCredPatterns = @(Get-AppDocSemanticUriCredentialPatterns)
+    if ($uriCredPatterns.Count -eq 0) { throw "no URI-credential patterns returned" }
+}
+catch {
+    Write-Error "[Redaction] FAIL-CLOSED: cannot load the redaction module ($($_.Exception.Message)). The final docs were NOT swept; do not publish them." -ErrorAction Continue
+    exit 3
 }
 
 if ($redactionPatterns.Count -gt 0 -or $uriCredPatterns.Count -gt 0) {
@@ -233,19 +235,18 @@ if ($semEnable) {
         try {
             # -SkipGate: the enrichment bootstrap's own ci-enrichment-gate.ps1 is a
             # separate legacy gate; the authoritative documentation gate is the one the
-            # pipeline already ran (and -SkipReRender keeps the gate-scored artifacts
-            # untouched). -SkipReRender: do not re-render the 4 .md catalogs.
-            # We do NOT read $LASTEXITCODE after this .ps1 call: it is only updated by
-            # native executables, so it would observe a STALE value from a prior native
-            # command (e.g. git in a non-repo) and false-alarm. A real stage failure
-            # (including the fail-closed secret-redaction gate) throws, which the catch
-            # below surfaces as a warning without clobbering the deterministic output.
+            # pipeline already ran. -SkipReRender keeps the 4 gate-scored .md catalogs
+            # untouched. A fail-closed secret-redaction block throws; it stops the build
+            # with exit 3 (the deterministic docs remain, the LLM input is NOT written).
             & $enrichScript -RootPath $RootPath -SkipGate -SkipReRender
         } catch {
-            # Fail-closed: a secret-redaction gate block (or any stage failure) surfaces
-            # as a warning here; it does NOT clobber the deterministic-only output.
+            if ($_.Exception.Message -match 'SECRET-REDACTION HARD GATE') {
+                Write-Error "[SemanticEnrich] FAIL-CLOSED: $($_.Exception.Message)" -ErrorAction Continue
+                exit 3
+            }
             Write-Warning "Semantic enrichment stage failed: $($_.Exception.Message)"
         }
+        $global:LASTEXITCODE = 0
     }
     else {
         Write-Warning "Semantic enrichment script not found: $enrichScript (stage skipped)."
@@ -255,14 +256,31 @@ else {
     Write-Host "[SemanticEnrich] OFF (default) -> no-op; deterministic-only output is exactly today's (no LLM call, no enrichment applied)." -ForegroundColor Gray
 }
 
-# --- summary -----------------------------------------------------------------
+# --- summary + exit code -----------------------------------------------------
 Write-Host "`n==========================================" -ForegroundColor Cyan
 Write-Host " AppDoc build complete: $docsPath" -ForegroundColor Cyan
-if (Test-Path (Join-Path $docsPath 'validation-report.json')) {
-    try {
-        $vr = Get-Content -LiteralPath (Join-Path $docsPath 'validation-report.json') -Raw | ConvertFrom-Json -Depth 20
-        $pristineSub = if ($vr.PSObject.Properties['pristine']) { $vr.pristine.subScore } else { 'n/a' }
-        Write-Host ("   gate status={0}  overallScore={1}  pristine sub-score={2}" -f $vr.status, $vr.overallScore, $pristineSub) -ForegroundColor Green
-    } catch { Write-Warning "Could not read validation-report.json for the summary." }
+$reportPath = Join-Path $docsPath 'validation-report.json'
+if (-not (Test-Path $reportPath)) {
+    Write-Error "No validation-report.json was produced; the build cannot be trusted." -ErrorAction Continue
+    exit 1
 }
+try {
+    $vr = Get-Content -LiteralPath $reportPath -Raw | ConvertFrom-Json -Depth 20
+} catch {
+    Write-Error "validation-report.json is unreadable: $($_.Exception.Message)" -ErrorAction Continue
+    exit 1
+}
+$pristineSub = if ($vr.PSObject.Properties['pristine']) { $vr.pristine.subScore } else { 'n/a' }
+Write-Host ("   gate status={0}  overallScore={1}  pristine sub-score={2}" -f $vr.status, $vr.overallScore, $pristineSub) -ForegroundColor Green
 Write-Host "==========================================" -ForegroundColor Cyan
+
+$gatePassed = ($vr.status -eq 'pass') -or ((-not $StrictValidation) -and $vr.status -eq 'pass-with-weak-coverage')
+if (-not $gatePassed) {
+    if ($AllowGateFail) {
+        Write-Warning "Gate status is '$($vr.status)'; continuing because -AllowGateFail was given."
+        exit 0
+    }
+    Write-Warning "Gate status is '$($vr.status)'. The docs were written but did not pass the gate (exit 2)."
+    exit 2
+}
+exit 0

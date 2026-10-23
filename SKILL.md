@@ -45,6 +45,9 @@ It orchestrates the pipeline (framework detection → architecture fingerprint �
 | `-SkipSyntaxGate` | off | Skip the syntax gate. |
 | `-StrictValidation` | off | Strict validation mode. |
 | `-EnableSemanticEnrich` | **off** | Enable the Layer-2 enrichment stage. Off = deterministic-only. |
+| `-AllowGateFail` | off | Exit 0 even when the gate fails (exploratory runs only; never in CI). |
+
+**Exit codes:** `0` gate passed · `2` gate failed (docs written but not trustworthy) · `3` fail-closed stop (redaction sweep or semantic secret-redaction gate) · `1` tool error. Treat any non-zero code as "not done". See `docs/adr/0003-sub-validator-failure-policy.md`.
 
 Optional per-target configuration (`<target>/.appdoc/config.json`: theme and branding, extra redaction patterns, pristine floor, output directory) is documented in `references/config-schema.md`. No config means defaults.
 

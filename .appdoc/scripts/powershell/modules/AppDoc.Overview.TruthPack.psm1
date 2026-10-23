@@ -63,6 +63,19 @@ function Get-AppDocOverviewEvidenceGraphData {
     $graphPath = Join-Path $RootPath (Join-Path "docs" (Join-Path "evidence" "evidence-graph.json"))
     $graph = Read-AppDocOverviewJsonFile -Path $graphPath
     if (-not $graph) {
+        # The pipeline writes evidence-graph.json only after all generators ran. Build the
+        # same graph in memory from the evidence present now, so the truth pack counts with
+        # the graph's identity rules (one entity per type|name) on every run, instead of
+        # falling back to raw record counts on a first run and graph counts on a re-run.
+        $graphModule = Join-Path $PSScriptRoot "AppDoc.EvidenceGraph.psm1"
+        if (-not (Get-Command Get-AppDocEvidenceGraphData -ErrorAction SilentlyContinue) -and (Test-Path -LiteralPath $graphModule)) {
+            Import-Module $graphModule -ErrorAction Stop
+        }
+        if (Get-Command Get-AppDocEvidenceGraphData -ErrorAction SilentlyContinue) {
+            $graph = Get-AppDocEvidenceGraphData -RootPath $RootPath
+        }
+    }
+    if (-not $graph) {
         return [ordered]@{
             exists = $false
             path = 'docs/evidence/evidence-graph.json'

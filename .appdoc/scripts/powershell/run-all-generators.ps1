@@ -1191,6 +1191,16 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
     Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Warning" -Message "PowerShell 7+ is recommended for AppDoc generators" -Details @{ version = $PSVersionTable.PSVersion.ToString() }
 }
 
+# Determinism across re-runs: some generators (overview, start-here) read DERIVED evidence
+# that this pipeline only rebuilds later in the run (the evidence graph, the canonical
+# metrics). On a first run those files do not exist yet; on a re-run a stale copy from the
+# previous run would be read instead, so the two runs produced different counts. Remove the
+# stale copies up front so every run sees the same inputs in the same order.
+foreach ($staleDerived in @('evidence-graph.json', 'metrics-canonical.json')) {
+    $stalePath = Join-Path (Join-Path $docsPath 'evidence') $staleDerived
+    if (Test-Path -LiteralPath $stalePath) { Remove-Item -LiteralPath $stalePath -Force }
+}
+
 $pipelinePhases = @(
     @{
         Name = "Analysis"
@@ -1214,8 +1224,6 @@ $pipelinePhases = @(
             "generate-start-here.ps1",
             "generate-task-guides.ps1",
             "generate-docs-index.ps1",
-            "generate-evidence-register.ps1",
-            "generate-verification-appendix.ps1",
             "generate-classic-asp-endpoints.ps1",
             "generate-classic-asp-datamodel.ps1",
             "generate-classic-asp-platform.ps1",
@@ -1226,6 +1234,11 @@ $pipelinePhases = @(
             "generate-classic-asp-extcalls.ps1",
             "generate-source-docs.ps1",
             "generate-git-ownership.ps1",
+            # The evidence register and verification appendix summarise EVERY evidence
+            # file, so they run after all evidence producers (extcalls, source-docs,
+            # git-ownership, ...). Running them earlier made a first run and a re-run differ.
+            "generate-evidence-register.ps1",
+            "generate-verification-appendix.ps1",
             "generate-unified-master.ps1"
         )
     }

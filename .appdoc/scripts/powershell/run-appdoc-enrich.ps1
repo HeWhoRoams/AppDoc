@@ -166,12 +166,10 @@ if (-not $DryRun) {
             throw "Semantic enrichment script not found: $semanticApplyScript"
         }
 
-        # A .ps1 child that `throw`s (e.g. the fail-closed secret-redaction gate) propagates
-        # the terminating error to this caller under $ErrorActionPreference=Stop. We do NOT
-        # rely on $LASTEXITCODE here -- it is only updated by native executables, not .ps1
-        # calls, so reading it would observe a STALE value (a prior native cmd like git can
-        # leave it non-zero) and false-alarm. Natural throw-propagation is the correct,
-        # fail-closed signal; the caller (run-appdoc-build.ps1) catches it and reports it.
+        # The semantic stage signals the fail-closed secret-redaction gate by THROWING; the
+        # terminating error propagates to this caller under $ErrorActionPreference=Stop and
+        # run-appdoc-build.ps1 turns it into exit code 3. (The script never uses `exit N`,
+        # so $LASTEXITCODE carries no information here.)
         & $semanticApplyScript -RootPath $RootPath
     }
 
