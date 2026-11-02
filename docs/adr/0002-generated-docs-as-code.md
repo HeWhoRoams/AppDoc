@@ -1,6 +1,6 @@
 # ADR 0002: Generated documentation is treated as code — committed to a stable, non-wiped home
 
-- **Status:** Accepted (2026-10-21)
+- **Status:** Superseded by ADR-0004 (2026-11-02)
 - **Decision area:** Docs-as-code; repository layout; sync/regeneration
 
 ## Context

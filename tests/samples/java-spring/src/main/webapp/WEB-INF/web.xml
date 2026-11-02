@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" version="3.0">
+  <!-- <servlet-mapping><servlet-name>ghost</servlet-name><url-pattern>/ghost</url-pattern></servlet-mapping> -->
+  <servlet>
+    <servlet-name>report</servlet-name>
+    <servlet-class>com.acme.web.ReportServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>report</servlet-name>
+    <url-pattern>/reports/*</url-pattern>
+  </servlet-mapping>
+  <security-constraint>
+    <web-resource-collection><url-pattern>/admin/*</url-pattern></web-resource-collection>
+    <auth-constraint><role-name>ops</role-name></auth-constraint>
+  </security-constraint>
+</web-app>

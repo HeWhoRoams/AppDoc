@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans">
+  <bean id="legacyDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+    <property name="url" value="jdbc:oracle:thin:@db.internal:1521:LEG"/>
+    <property name="username" value="legacy_user"/>
+    <property name="password" value="XmlDsP@ss555"/>
+  </bean>
+  <bean name="/legacy/orders.htm" class="com.acme.web.LegacyOrdersController"/>
+  <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"/>
+</beans>

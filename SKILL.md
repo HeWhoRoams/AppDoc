@@ -1,93 +1,52 @@
 ---
 name: appdoc
-description: "Generate evidence-traceable codebase documentation with AppDoc: a deterministic PowerShell 7 build plus an optional, quarantined LLM-session enrichment loop. Use when asked to document, re-document, or enrich documentation for a codebase."
-license: MIT
-version: 1.1.0
-compatibility: "Requires PowerShell 7.2+ (pwsh). Optional .NET SDK 8 for the Roslyn C# AST parser (regex fallback when absent). Works with any agent that can read this file and run pwsh."
+description: Document an unfamiliar or legacy codebase for a human developer. Extracts reproducible Facts with Python scripts, then writes a cited Markdown document from a fixed Template, checks it, and renders HTML. Use when asked to document, inventory, or onboard someone to an application.
 ---
 
-# AppDoc — Documentation Generator Skill
+# AppDoc
 
-AppDoc is a **local-first, deterministic** PowerShell 7 documentation generator. It scans a codebase and emits an evidence-traceable `docs/` package: a 20-section master document, per-artifact catalogs, Mermaid C4 diagrams, a self-contained themed HTML report, and pristine/gate reports. Every claim is tagged `Verified` / `Inferred` / `Unknown` / `Partly-verified`. Sections the deterministic layer cannot source-ground are emitted as honest `Unknown / owner-required` — **the tool never fabricates.**
+Produces onboarding documentation for a **Target** (the codebase being documented). Scripts extract **Facts** (what exists, with `file:line`). You write the **Narrative** from them. A **Check** verifies it. Read `CONTEXT.md` for the exact terms.
 
-It runs in two layers:
+`SKILL_DIR` below is the folder that contains this file. Requires Python 3.10+ (standard library only). On Windows use `py -3` if `python` is not on PATH.
 
-1. **Deterministic core** (the gate-able source of truth) — one command, no LLM.
-2. **Quarantined enrichment loop** (optional) — the *LLM session running this skill* fills pending interpretation fields from source. AppDoc's deterministic apply-merge validates and applies that output under a quarantine (provenance tags, a Verified-fact lock, no-fabrication, a fail-closed secret-redaction gate). AppDoc holds **no API key, no provider, no HTTP client.**
+## Run
 
-For a stage-by-stage view of one build, with its gates and exit codes, start at [`docs/pipeline/README.md`](docs/pipeline/README.md).
+1. **Extract.** From `SKILL_DIR`:
+   `python -m appdoc extract <target>`
+   Writes `<target>/docs/appdoc/facts.json` and `facts-summary.md`. Re-running gives identical output.
+2. **Orient.** Read `facts-summary.md` first. If `<target>/appdoc-context.md` exists, read it: it is the owner's notes (purpose, owners, environments) and the only source for things the code cannot show. Then drill into `facts.json` by kind or folder, and open source files to understand behavior.
+3. **Write.** Copy `SKILL_DIR/appdoc/assets/template.md` to `<target>/docs/appdoc/application-documentation.md` and fill every section, keeping all 16 headings in order.
+4. **Check.** `python -m appdoc check <target>`. Fix every problem it lists and run it again. After 3 failed checks, stop and report the remaining problems to the user verbatim.
+5. **Render.** `python -m appdoc render <target>`. Writes `application-documentation.html` next to the Markdown.
+6. **Tell the user** where the files are and whether the Check passed.
 
-## When to use
+Optional flags: `--out DIR` (inside the target) on every command; `--css FILE` on `render` to replace the theme.
 
-- The user wants a codebase documented, or re-documented after changes.
-- The user wants the optional LLM enrichment applied to `Unknown` / interpretation fields.
-- You are operating a clone of this repo and must build and verify a `docs/` package.
+## Writing rules
 
-## Prerequisites and setup
+- **Cite everything.** A Citation is a backticked Target-relative path, with a line where the claim is specific: `` `portal/verify.asp:6` ``, `` `src/App.java:40-52` ``, `` `portal/HelpWeb/search.asp` ``. Routes (`/api/x`) and absolute paths are not Citations.
+- **Section 10 (Security and Operational Risks): every Citation needs a line.**
+- **Three claim statuses only.** *Cited* (has a Citation), *Inferred* (start the paragraph or item with `**Inferred:**` and still cite what it rests on), *Unknown* (list it in section 14; elsewhere write "Unknown - see Open questions.").
+- **Never write a secret value**: passwords, tokens, keys, connection-string credentials. Write "value omitted" and cite the location. The Check scans for secret shapes and fails.
+- Do not invent owners, environments, deployment steps or business purpose. If the code and `appdoc-context.md` do not say, it is Unknown.
+- Read source for the parts that need explanation (workflows, error handling, security findings). The Facts tell you where to look; they do not replace reading.
+- Section 7 (Workflows) has no fixed subsections: name each `###` after a real workflow in the Target. Write it and section 1 (Index) last.
+- Name every unsupported Stack (listed in the Facts summary) in section 2.
+- Put diagrams in ```` ```mermaid ```` fences, each with a one-line cited caption.
+- Never edit `facts.json`. Never weaken the Check to make it pass: fix the document.
 
-1. **Skill root.** `SKILL_ROOT` is the directory that contains this `SKILL.md`. All commands below are relative to it.
-2. **PowerShell 7.2+.** Check `pwsh --version`. If missing, install from <https://github.com/PowerShell/PowerShell/releases> (Windows, Linux, macOS). Do not use Windows PowerShell 5.1.
-3. **Optional:** .NET SDK 8 enables the Roslyn AST path for C#; without it AppDoc falls back to regex extraction.
-4. **Work on a scratch copy.** Real targets write into `<target>/docs/`. Copy the target (`cp -a` / `Copy-Item -Recurse`) and point every run at the copy so a target's committed `docs/` is never clobbered.
+## Large Targets
 
-## Layer 1 — deterministic build (one command)
+Read `facts-summary.md` and work subsystem by subsystem. For each folder in the top-folders table, pull its entry points and data access from `facts.json`, read the files that matter, and write that part of sections 4 to 8 before moving on. Do not try to read the whole Target.
 
-```bash
-pwsh -NoProfile -File "$SKILL_ROOT/.appdoc/scripts/powershell/run-appdoc-build.ps1" -Path <target-repo>
-```
+## When a Stack is not supported
 
-It orchestrates the pipeline (framework detection → architecture fingerprint → evidence extractors incl. git ownership → 20-section composer → themed HTML → pristine → conformance gate → config-driven redaction sweep). It writes `application-documentation.md`, `report.html`, `evidence/*.json`, `pristine-report.md` and `validation-report.json` into `<target>/docs/`.
+Facts for it are generic only (files, dependencies, config keys, secret locations). Say so in section 2, rely on reading source, and mark what you could not establish as Unknown. To add a Stack, see "Add a Stack" in `README.md`.
 
-| Parameter | Default | Meaning |
-|---|---|---|
-| `-Path <repo>` | required | Target repository to document. |
-| `-Profile` | `default` | Artifact-set profile. |
-| `-QualityThreshold` | `80` | Gate pass threshold. Never lower it to force a pass. |
-| `-SkipDiagrams` | off | Skip C4/Mermaid diagram generation. |
-| `-SkipSyntaxGate` | off | Skip the syntax gate. |
-| `-StrictValidation` | off | Strict validation mode. |
-| `-EnableSemanticEnrich` | **off** | Enable the Layer-2 enrichment stage. Off = deterministic-only. |
-| `-AllowGateFail` | off | Exit 0 even when the gate fails (exploratory runs only; never in CI). |
+## What the Check enforces
 
-**Exit codes:** `0` gate passed · `2` gate failed (docs written but not trustworthy) · `3` fail-closed stop (redaction sweep or semantic secret-redaction gate) · `1` tool error. Treat any non-zero code as "not done". See `docs/adr/0003-sub-validator-failure-policy.md`.
+C1 every Citation resolves to a real file and line. C2 section 10 Citations have lines. C3 all 16 sections exist and have content. C4 gaps are declared in section 14. C5 each paragraph in sections 3 to 10 is cited, Inferred or Unknown. C6 no secret-shaped strings and no `never-mention` terms. C7 unsupported Stacks are named in section 2. The result is in `check-report.md`, which also holds the Citation register.
 
-Optional per-target configuration (`<target>/.appdoc/config.json`: theme and branding, extra redaction patterns, pristine floor, output directory) is documented in `references/config-schema.md`. No config means defaults.
+## Owner context (optional)
 
-### Hard bars that must hold on every run
-
-- **Gate:** `status=pass` and `overallScore` ≥ threshold; the pristine sub-score is reported (non-blocking).
-- **No fabrication:** every section is real content or an honest `Unknown / owner-required`.
-- **Redaction — 0 leaks of secret values.** Discover the target's real secrets from its config files and grep the built `docs/` for each; none may appear.
-- **Deterministic:** the gate result and the 4 gate-scored `.md` catalogs are stable across re-runs.
-- **No literal generator text** (`$(...)` / `$var` residue) in the composed doc.
-
-Details, test suites and how to verify on a real target: `references/verification.md`.
-
-## Layer 2 — quarantined enrichment loop (LLM-session protocol)
-
-AppDoc has already produced the ground truth. You, the LLM session, enrich the pending interpretation fields of a **redacted** evidence envelope, grounded in source. A fabricated or over-reaching field is **refused, not trusted.**
-
-```
-1. EMIT   (deterministic)  build with -EnableSemanticEnrich   -> docs/evidence/semantic/input/*.semantic.input.json   (redacted)
-2. ENRICH (you)            read input/ + the real source      -> write docs/evidence/semantic/output/*.semantic.output.json
-3. APPLY  (deterministic)  re-run with -EnableSemanticEnrich  -> quarantined apply-merge
-4. VERIFY (deterministic)  hard bars still hold; confirm your fields show provenance=llm in semantic/applied/
-```
-
-- **The contract** (input/output shape, the 16 fields, the join key `source|name|kind`, quarantine rules, an example) is in `references/enrichment-contract.md`. Read it before step 2.
-- **Rules:** leave a field `null`/omitted when evidence is insufficient; never set `schemaSource`; copy `source`/`name`/`kind` verbatim; secrets stay `[REDACTED]`.
-- Scoping a large pending set, checking that enrichment actually applied (silent join-key drops), the opt-in re-render of gate-scored catalogs, and what the quarantine guarantees: `references/enrichment-operations.md`.
-- A 1-point `overallScore` movement with enrichment ON is expected; the stable invariants are `status=pass` and the pristine sub-score.
-
-## Hard constraints
-
-- **Never fabricate.** Every enrichment field must be groundable in a real source file you read; otherwise leave it null.
-- **Never override a Verified deterministic fact** (`schemaSource`, real config values, real endpoint paths). If one looks wrong, report it.
-- **Never weaken redaction or the gate** to make output pass (no lowering the threshold, no loosening the fail-closed redaction).
-- **Never clobber a target's committed `docs/`** — use a scratch copy.
-- **Do not modify the deterministic core** (extractors, composer, gate, quarantine) to make enrichment "work"; report a real bug instead.
-- **No network LLM call, no API key, no provider** — you are the LLM; AppDoc only emits redacted input and applies your output.
-
-## Harness adapters
-
-This skill is harness-agnostic. Thin wrappers may exist for specific tools — for example `.github/prompts/appdoc.*.prompt.md` for GitHub Copilot slash commands — and must only point back to this file and `references/`.
+The owner may add `<target>/appdoc-context.md` with purpose, owners, environments and known history. Cite it as `` `appdoc-context.md` ``. A fenced block with info string `never-mention` lists internal terms (one per line) that must not appear in the document.
