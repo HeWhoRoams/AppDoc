@@ -1,5 +1,4 @@
 {
-  "languageCount": {},
   "evidence_refs": [
     {
       "id": "ev-0001",
@@ -225,6 +224,16 @@
       "id": "ev-0023",
       "artifact": "config-catalog",
       "kind": "configuration",
+      "name": "jobs.hygiene.steps[9]",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[9]",
+      "metadata": {
+        "required": false
+      }
+    },
+    {
+      "id": "ev-0024",
+      "artifact": "config-catalog",
+      "kind": "configuration",
       "name": "jobs.lint.name",
       "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.name",
       "metadata": {
@@ -232,7 +241,7 @@
       }
     },
     {
-      "id": "ev-0024",
+      "id": "ev-0025",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.lint.runs-on",
@@ -242,7 +251,7 @@
       }
     },
     {
-      "id": "ev-0025",
+      "id": "ev-0026",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.lint.steps.shell",
@@ -252,7 +261,7 @@
       }
     },
     {
-      "id": "ev-0026",
+      "id": "ev-0027",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.lint.steps[0]",
@@ -262,7 +271,7 @@
       }
     },
     {
-      "id": "ev-0027",
+      "id": "ev-0028",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.lint.steps[1]",
@@ -272,7 +281,7 @@
       }
     },
     {
-      "id": "ev-0028",
+      "id": "ev-0029",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.name",
@@ -282,7 +291,7 @@
       }
     },
     {
-      "id": "ev-0029",
+      "id": "ev-0030",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.needs",
@@ -292,7 +301,7 @@
       }
     },
     {
-      "id": "ev-0030",
+      "id": "ev-0031",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.runs-on",
@@ -302,7 +311,7 @@
       }
     },
     {
-      "id": "ev-0031",
+      "id": "ev-0032",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.steps.if",
@@ -312,7 +321,7 @@
       }
     },
     {
-      "id": "ev-0032",
+      "id": "ev-0033",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.steps.run",
@@ -322,7 +331,7 @@
       }
     },
     {
-      "id": "ev-0033",
+      "id": "ev-0034",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.steps.shell",
@@ -332,7 +341,7 @@
       }
     },
     {
-      "id": "ev-0034",
+      "id": "ev-0035",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.steps.with.dotnet-version",
@@ -342,7 +351,7 @@
       }
     },
     {
-      "id": "ev-0035",
+      "id": "ev-0036",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.steps.with.fetch-depth",
@@ -352,7 +361,7 @@
       }
     },
     {
-      "id": "ev-0036",
+      "id": "ev-0037",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.steps[0]",
@@ -362,7 +371,7 @@
       }
     },
     {
-      "id": "ev-0037",
+      "id": "ev-0038",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.steps[1]",
@@ -372,7 +381,7 @@
       }
     },
     {
-      "id": "ev-0038",
+      "id": "ev-0039",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.steps[2]",
@@ -382,7 +391,7 @@
       }
     },
     {
-      "id": "ev-0039",
+      "id": "ev-0040",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.steps[3]",
@@ -392,7 +401,7 @@
       }
     },
     {
-      "id": "ev-0040",
+      "id": "ev-0041",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.steps[4]",
@@ -402,7 +411,7 @@
       }
     },
     {
-      "id": "ev-0041",
+      "id": "ev-0042",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.steps[5]",
@@ -412,7 +421,7 @@
       }
     },
     {
-      "id": "ev-0042",
+      "id": "ev-0043",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.strategy.fail-fast",
@@ -422,7 +431,7 @@
       }
     },
     {
-      "id": "ev-0043",
+      "id": "ev-0044",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.strategy.matrix.dotnet",
@@ -432,7 +441,7 @@
       }
     },
     {
-      "id": "ev-0044",
+      "id": "ev-0045",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.strategy.matrix.include.dotnet",
@@ -442,7 +451,7 @@
       }
     },
     {
-      "id": "ev-0045",
+      "id": "ev-0046",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.strategy.matrix.include[0]",
@@ -452,7 +461,7 @@
       }
     },
     {
-      "id": "ev-0046",
+      "id": "ev-0047",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "jobs.tests.strategy.matrix.os",
@@ -462,7 +471,7 @@
       }
     },
     {
-      "id": "ev-0047",
+      "id": "ev-0048",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "name",
@@ -472,7 +481,7 @@
       }
     },
     {
-      "id": "ev-0048",
+      "id": "ev-0049",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "on.push.branches",
@@ -482,7 +491,7 @@
       }
     },
     {
-      "id": "ev-0049",
+      "id": "ev-0050",
       "artifact": "config-catalog",
       "kind": "configuration",
       "name": "permissions.contents",
@@ -492,7 +501,7 @@
       }
     },
     {
-      "id": "ev-0050",
+      "id": "ev-0051",
       "artifact": "overview",
       "kind": "summary",
       "name": "system-purpose",
@@ -502,41 +511,8 @@
       }
     }
   ],
-  "version": "1.2.0",
-  "generatedAt": "2026-10-23T01:55:33-04:00",
-  "counts": {
-    "codeFiles": 1,
-    "endpointRecords": 0,
-    "inboundEndpoints": 0,
-    "outboundEndpoints": 0,
-    "outboundMappedEndpoints": 0,
-    "modelRecords": 0,
-    "configurationRecords": 49,
-    "dependencyRecords": 0
-  },
-  "architecture": {
-    "primaryStyle": "no-api-surface",
-    "styles": [
-      "no-api-surface"
-    ],
-    "frameworks": [
-      "ASP.NET Core",
-      "ASP.NET MVC 5",
-      "Flask",
-      "Spring Boot"
-    ],
-    "detectionWarning": "Framework detected without code scan hit; counts patched for consistency."
-  },
-  "rootPath": ".",
-  "projectName": "selfbuild",
-  "graph": {
-    "enabled": true,
-    "path": "docs/evidence/evidence-graph.json",
-    "schemaVersion": "appdoc-evidence-graph/v1",
-    "graphVersion": "1.0.0",
-    "entityCount": 51,
-    "edgeCount": 49
-  },
+  "projectName": "self2",
+  "generatedAt": "2026-10-23T15:18:14+00:00",
   "facts": {
     "what_it_does": [
       {
@@ -563,7 +539,7 @@
       {
         "text": "Processing flow could not be inferred beyond repository-level summaries in this scan.",
         "evidence_refs": [
-          "ev-0050"
+          "ev-0051"
         ]
       }
     ],
@@ -571,7 +547,7 @@
       {
         "text": "Output contracts are not strongly represented in current deterministic evidence.",
         "evidence_refs": [
-          "ev-0050"
+          "ev-0051"
         ]
       }
     ],
@@ -579,13 +555,13 @@
       {
         "text": "No clear external system integration evidence was detected.",
         "evidence_refs": [
-          "ev-0050"
+          "ev-0051"
         ]
       }
     ],
     "confidence_notes": [
       {
-        "text": "Evidence coverage includes 0 endpoint records, 0 model records, 49 configuration records, and 0 dependency records.",
+        "text": "Evidence coverage includes 0 endpoint records, 0 model records, 50 configuration records, and 0 dependency records.",
         "evidence_refs": [
           "ev-0001",
           "ev-0002",
@@ -594,17 +570,51 @@
         ]
       },
       {
-        "text": "Canonical evidence graph captured 51 entities and 49 relationships for this run.",
+        "text": "Canonical evidence graph captured 52 entities and 50 relationships for this run.",
         "evidence_refs": [
-          "ev-0050"
+          "ev-0051"
         ]
       },
       {
         "text": "Architecture fingerprint indicates 'no-api-surface' style with confidence 0.55.",
         "evidence_refs": [
-          "ev-0050"
+          "ev-0051"
         ]
       }
     ]
+  },
+  "counts": {
+    "codeFiles": 1,
+    "endpointRecords": 0,
+    "inboundEndpoints": 0,
+    "outboundEndpoints": 0,
+    "outboundMappedEndpoints": 0,
+    "modelRecords": 0,
+    "configurationRecords": 50,
+    "dependencyRecords": 0
+  },
+  "graph": {
+    "enabled": true,
+    "path": "docs/evidence/evidence-graph.json",
+    "schemaVersion": "appdoc-evidence-graph/v1",
+    "graphVersion": "1.0.0",
+    "entityCount": 52,
+    "edgeCount": 50
+  },
+  "languageCount": {},
+  "version": "1.2.0",
+  "rootPath": ".",
+  "architecture": {
+    "primaryStyle": "no-api-surface",
+    "styles": [
+      "no-api-surface"
+    ],
+    "frameworks": [
+      "ASP.NET Core",
+      "ASP.NET MVC 5",
+      "Flask",
+      "Spring Boot"
+    ],
+    "detectionWarning": "Framework detected without code scan hit; counts patched for consistency."
   }
 }

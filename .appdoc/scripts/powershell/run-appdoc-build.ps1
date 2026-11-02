@@ -118,12 +118,29 @@ Write-Host "`n[Pipeline] running run-all-generators.ps1 (incl. git-ownership + c
 # The orchestrator's own exit code is not used: native commands it runs (git) also set
 # $LASTEXITCODE, so the value is ambiguous. The authoritative outcome is the final
 # validation-report.json, which decides the build exit code at the end of this script.
+# A throw from the orchestrator (failed syntax pre-check, another run active, a strict-mode check, a
+# missing module) means the pipeline did not finish, so the build stops here with a tool error. It
+# used to be reported as a warning and the build carried on.
 try {
     & $orchestrator @pipelineArgs
 } catch {
-    Write-Warning "Pipeline reported an issue: $($_.Exception.Message)"
+    Write-Error "[Pipeline] The pipeline stopped: $($_.Exception.Message) (exit 1)" -ErrorAction Continue
+    # Remove a run lock that this aborted run left behind. Never remove one held by another live run.
+    $lockPath = Join-Path $docsPath '.appdoc-run.session.json'
+    if (Test-Path -LiteralPath $lockPath) {
+        $lockPid = 0
+        try { $lockPid = [int]((Get-Content -LiteralPath $lockPath -Raw | ConvertFrom-Json).pid) } catch { $lockPid = 0 }
+        if ($lockPid -le 0 -or $lockPid -eq $PID -or -not (Get-Process -Id $lockPid -ErrorAction SilentlyContinue)) {
+            Remove-Item -LiteralPath $lockPath -Force -ErrorAction SilentlyContinue
+        }
+    }
+    exit 1
 }
 $global:LASTEXITCODE = 0
+
+# Crashes in this script's own generator steps (second pass, themed report, enrichment) are recorded here
+# and added to the orchestrator's list at close-out (ADR 0003 section 4).
+$buildFailures = @()
 
 if (-not (Test-Path $docsPath)) {
     Write-Error "Pipeline did not produce a docs directory: $docsPath"; exit 1
@@ -149,16 +166,25 @@ $validate     = Join-Path $scriptDir "validate-documentation.ps1"
 
 Write-Host "`n[2nd pass] re-running composer + pristine + validation (diagrams are now present) ..." -ForegroundColor Cyan
 if (Test-Path $composer) {
-    try { & $composer -RootPath $RootPath } catch { Write-Warning "Composer 2nd-pass re-run failed: $($_.Exception.Message)" }
+    try { & $composer -RootPath $RootPath } catch {
+        Write-Warning "Composer 2nd-pass re-run failed: $($_.Exception.Message)"
+        $buildFailures += [ordered]@{ phase = '2nd pass'; script = 'generate-unified-master.ps1'; error = $_.Exception.Message }
+    }
 }
 if (Test-Path $pristineGen) {
-    try { & $pristineGen -RootPath $RootPath } catch { Write-Warning "Pristine 2nd-pass re-run failed (non-fatal): $($_.Exception.Message)" }
+    try { & $pristineGen -RootPath $RootPath } catch {
+        Write-Warning "Pristine 2nd-pass re-run failed: $($_.Exception.Message)"
+        $buildFailures += [ordered]@{ phase = '2nd pass'; script = 'generate-pristine-report.ps1'; error = $_.Exception.Message }
+    }
 }
 if (Test-Path $validate) {
     try {
         if ($StrictValidation) { & $validate -RootPath $RootPath -Strict -Threshold $QualityThreshold -PristineFloor $pristineFloor -Json | Out-Null }
         else { & $validate -RootPath $RootPath -Threshold $QualityThreshold -PristineFloor $pristineFloor -Json | Out-Null }
-    } catch { Write-Warning "Structured validation 2nd-pass re-run failed (non-fatal): $($_.Exception.Message)" }
+    } catch {
+        Write-Warning "Structured validation 2nd-pass re-run failed: $($_.Exception.Message)"
+        $buildFailures += [ordered]@{ phase = '2nd pass'; script = 'validate-documentation.ps1'; error = $_.Exception.Message }
+    }
 }
 
 # --- (4) HTML report with the CONFIG THEME ------------------------------------
@@ -170,7 +196,10 @@ if (Test-Path $htmlGen) {
     try {
         if ($themePath -and (Test-Path -LiteralPath $themePath)) { & $htmlGen -RootPath $RootPath -ThemePath $themePath }
         else { & $htmlGen -RootPath $RootPath }
-    } catch { Write-Warning "HTML report generation failed (non-fatal): $($_.Exception.Message)" }
+    } catch {
+        Write-Warning "HTML report generation failed: $($_.Exception.Message)"
+        $buildFailures += [ordered]@{ phase = 'themed report'; script = 'generate-html-report.ps1'; error = $_.Exception.Message }
+    }
 }
 
 # --- (4b) Provenance footer on every generated doc (final stamp) -------------
@@ -211,7 +240,8 @@ catch {
     exit 3
 }
 
-if ($operatorMatchers.Count -gt 0 -or $uriCredPatterns.Count -gt 0) {
+# The built-in shapes are never empty, so the sweep always runs.
+if ($true) {
     $sweepFiles = @()
     foreach ($ext in @('*.md', '*.html', '*.json')) {
         $sweepFiles += @(Get-ChildItem -Path $docsPath -Filter $ext -File -Recurse -ErrorAction SilentlyContinue)
@@ -235,6 +265,8 @@ if ($operatorMatchers.Count -gt 0 -or $uriCredPatterns.Count -gt 0) {
             foreach ($uriPat in $uriCredPatterns) {
                 $parts[$pi] = [regex]::Replace($parts[$pi], $uriPat, '[REDACTED]')
             }
+            # Vendor key shapes, `key = value` for credential key names, Bearer tokens.
+            $parts[$pi] = Protect-AppDocFreeText -Text $parts[$pi]
         }
         $content = -join $parts
         if ($content -cne $orig) {
@@ -243,8 +275,19 @@ if ($operatorMatchers.Count -gt 0 -or $uriCredPatterns.Count -gt 0) {
         }
     }
     Write-Host "[Redaction] config redactionPatterns=$($redactionPatterns.Count) redactionRegexes=$($redactionRegexes.Count) uriCredPatterns=$($uriCredPatterns.Count); $changed file(s) swept." -ForegroundColor Gray
-} else {
-    Write-Host "[Redaction] no config redactionPatterns -> sweep is a no-op (built-in extractors still redact known secrets)." -ForegroundColor Gray
+    # Fail-closed post-check: a vendor secret shape that survived the sweep stops the build.
+    $leaks = @()
+    foreach ($f in $sweepFiles) {
+        $c = Get-Content -LiteralPath $f.FullName -Raw -ErrorAction SilentlyContinue
+        if ([string]::IsNullOrWhiteSpace($c)) { continue }
+        if (Test-AppDocHandAuthoredDoc -Path $f.FullName -DocsPath $docsPath -Content $c) { continue }
+        $visible = [regex]::Replace($c, '/\*appdoc-vendor:begin [a-z0-9-]+\*/.*?/\*appdoc-vendor:end [a-z0-9-]+\*/', '', [System.Text.RegularExpressions.RegexOptions]::Singleline)
+        if (Test-AppDocVendorSecret -Text $visible) { $leaks += $f.FullName.Substring($docsPath.Length).TrimStart('\','/') }
+    }
+    if ($leaks.Count -gt 0) {
+        Write-Error "[Redaction] FAIL-CLOSED: a secret shape survived the sweep in: $($leaks -join ', '). Do not publish these docs." -ErrorAction Continue
+        exit 3
+    }
 }
 
 # --- (6) OPT-IN semantic (LLM) enrichment stage (Phase 2a; default OFF) ---------
@@ -283,11 +326,13 @@ if ($semEnable) {
                 exit 3
             }
             Write-Warning "Semantic enrichment stage failed: $($_.Exception.Message)"
+            $buildFailures += [ordered]@{ phase = 'enrichment'; script = 'run-appdoc-enrich.ps1'; error = $_.Exception.Message }
         }
         $global:LASTEXITCODE = 0
     }
     else {
         Write-Warning "Semantic enrichment script not found: $enrichScript (stage skipped)."
+        $buildFailures += [ordered]@{ phase = 'enrichment'; script = 'run-appdoc-enrich.ps1'; error = 'script not found' }
     }
 }
 else {
@@ -321,6 +366,8 @@ Write-Host "==========================================" -ForegroundColor Cyan
 # A generator that crashed is a tool error even when the gate passes: the docs it should have
 # written are missing or stale, and the gate cannot always tell. (This used to be a warning only.)
 $diagPath = Join-Path $docsPath 'diagnostics-report.json'
+$failedScripts = @()
+$diag = $null
 if (Test-Path -LiteralPath $diagPath) {
     try {
         $diag = Get-Content -LiteralPath $diagPath -Raw | ConvertFrom-Json -Depth 20
@@ -330,11 +377,23 @@ if (Test-Path -LiteralPath $diagPath) {
         Write-Error "diagnostics-report.json is unreadable: $($_.Exception.Message)" -ErrorAction Continue
         exit 1
     }
-    if ($failedScripts.Count -gt 0) {
-        foreach ($f in $failedScripts) { Write-Warning ("Generator failed: {0} ({1})" -f $f.script, (([string]$f.error) -split "`n")[0]) }
-        Write-Error "$($failedScripts.Count) generator(s) failed; the output is incomplete (exit 1)." -ErrorAction Continue
-        exit 1
+}
+if ($buildFailures.Count -gt 0) {
+    $failedScripts += @($buildFailures)
+    # Keep the diagnostics report complete: add this script's failures to metadata.scriptFailures.
+    if ($diag) {
+        try {
+            $diag.metadata.scriptFailures = @($failedScripts)
+            $diagJson = ($diag | ConvertTo-Json -Depth 20) -replace "`r`n", "`n"
+            [System.IO.File]::WriteAllText($diagPath, $diagJson + "`n", [System.Text.UTF8Encoding]::new($false))
+        }
+        catch { Write-Warning "Could not add the build's generator failures to diagnostics-report.json: $($_.Exception.Message)" }
     }
+}
+if ($failedScripts.Count -gt 0) {
+    foreach ($f in $failedScripts) { Write-Warning ("Generator failed: {0} ({1})" -f $f.script, (([string]$f.error) -split "`n")[0]) }
+    Write-Error "$($failedScripts.Count) generator(s) failed; the output is incomplete (exit 1)." -ErrorAction Continue
+    exit 1
 }
 
 $gatePassed = ($vr.status -eq 'pass') -or ((-not $StrictValidation) -and $vr.status -eq 'pass-with-weak-coverage')

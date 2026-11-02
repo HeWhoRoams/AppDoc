@@ -1,38 +1,12 @@
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Values.psm1') -ErrorAction Stop
 
 # AppDoc.Overview.ContextPack Module
 # Purpose: Build a versioned, normalized narrative context pack from deterministic overview truth data.
 
 $script:AppDocOverviewContextPackVersion = "3.0.0"
-
-function Get-AppDocOverviewContextPackValue {
-    [CmdletBinding()]
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) {
-            return $Object[$Name]
-        }
-        return $Default
-    }
-
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) {
-        return $prop.Value
-    }
-
-    return $Default
-}
 
 function ConvertTo-AppDocOverviewContextArray {
     [CmdletBinding()]
@@ -131,11 +105,11 @@ function Get-AppDocOverviewContextPackData {
         [string]$StyleProfile = "standard"
     )
 
-    $projectName = [string](Get-AppDocOverviewContextPackValue -Object $TruthPack -Name "projectName" -Default (Split-Path $RootPath -Leaf))
-    $evidenceRefs = @(Get-AppDocOverviewContextPackValue -Object $TruthPack -Name "evidence_refs" -Default @())
-    $facts = Get-AppDocOverviewContextPackValue -Object $TruthPack -Name "facts" -Default @{}
-    $counts = Get-AppDocOverviewContextPackValue -Object $TruthPack -Name "counts" -Default @{}
-    $graph = Get-AppDocOverviewContextPackValue -Object $TruthPack -Name "graph" -Default @{}
+    $projectName = [string](Get-AppDocValue -Object $TruthPack -Name "projectName" -Default (Split-Path $RootPath -Leaf))
+    $evidenceRefs = @(Get-AppDocValue -Object $TruthPack -Name "evidence_refs" -Default @())
+    $facts = Get-AppDocValue -Object $TruthPack -Name "facts" -Default @{}
+    $counts = Get-AppDocValue -Object $TruthPack -Name "counts" -Default @{}
+    $graph = Get-AppDocValue -Object $TruthPack -Name "graph" -Default @{}
 
     $entities = @()
     $entityIndex = @{}
@@ -144,11 +118,11 @@ function Get-AppDocOverviewContextPackData {
     foreach ($evidence in $evidenceRefs) {
         if (-not $evidence) { continue }
 
-        $kind = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "kind" -Default "")
+        $kind = [string](Get-AppDocValue -Object $evidence -Name "kind" -Default "")
         $entityType = Get-AppDocOverviewEntityType -Kind $kind
-        $name = ConvertTo-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default ""))
-        $source = ConvertTo-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default ""))
-        $evidenceId = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "id" -Default "")
+        $name = ConvertTo-AppDocOverviewPath ([string](Get-AppDocValue -Object $evidence -Name "name" -Default ""))
+        $source = ConvertTo-AppDocOverviewPath ([string](Get-AppDocValue -Object $evidence -Name "source" -Default ""))
+        $evidenceId = [string](Get-AppDocValue -Object $evidence -Name "id" -Default "")
         if ([string]::IsNullOrWhiteSpace($evidenceId)) { continue }
 
         $key = "{0}|{1}|{2}" -f $entityType, $name, $source
@@ -178,16 +152,16 @@ function Get-AppDocOverviewContextPackData {
     foreach ($evidence in $evidenceRefs) {
         if (-not $evidence) { continue }
 
-        $kind = [string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "kind" -Default "")
+        $kind = [string](Get-AppDocValue -Object $evidence -Name "kind" -Default "")
         if ($kind -ne "endpoint") { continue }
 
-        $name = ConvertTo-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "name" -Default ""))
-        $source = ConvertTo-AppDocOverviewPath ([string](Get-AppDocOverviewContextPackValue -Object $evidence -Name "source" -Default ""))
+        $name = ConvertTo-AppDocOverviewPath ([string](Get-AppDocValue -Object $evidence -Name "name" -Default ""))
+        $source = ConvertTo-AppDocOverviewPath ([string](Get-AppDocValue -Object $evidence -Name "source" -Default ""))
         $entityKey = "endpoint|{0}|{1}" -f $name, $source
         if (-not $entityIndex.ContainsKey($entityKey)) { continue }
 
-        $metadata = Get-AppDocOverviewContextPackValue -Object $evidence -Name "metadata" -Default @{}
-        $integrationUrl = [string](Get-AppDocOverviewContextPackValue -Object $metadata -Name "integrationUrl" -Default "")
+        $metadata = Get-AppDocValue -Object $evidence -Name "metadata" -Default @{}
+        $integrationUrl = [string](Get-AppDocValue -Object $metadata -Name "integrationUrl" -Default "")
         if ([string]::IsNullOrWhiteSpace($integrationUrl)) { continue }
 
         $hostName = ""
@@ -240,15 +214,15 @@ function Get-AppDocOverviewContextPackData {
 
     $sectionEvidenceMap = [ordered]@{}
     foreach ($factSection in @("what_it_does","inputs","processing_steps","outputs","external_systems","confidence_notes")) {
-        $items = @(Get-AppDocOverviewContextPackValue -Object $facts -Name $factSection -Default @())
+        $items = @(Get-AppDocValue -Object $facts -Name $factSection -Default @())
         $sectionEvidenceMap[$factSection] = @()
         foreach ($item in $items) {
             if (-not $item) { continue }
-            $text = [string](Get-AppDocOverviewContextPackValue -Object $item -Name "text" -Default "")
+            $text = [string](Get-AppDocValue -Object $item -Name "text" -Default "")
             if ([string]::IsNullOrWhiteSpace($text)) { continue }
 
             $ids = @(
-                ConvertTo-AppDocOverviewContextArray -Value (Get-AppDocOverviewContextPackValue -Object $item -Name "evidence_refs" -Default @()) |
+                ConvertTo-AppDocOverviewContextArray -Value (Get-AppDocValue -Object $item -Name "evidence_refs" -Default @()) |
                     ForEach-Object { [string]$_ } |
                     Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
                     Select-Object -Unique
@@ -282,14 +256,14 @@ function Get-AppDocOverviewContextPackData {
         evidence_refs = @(
             $evidenceRefs |
                 ForEach-Object {
-                    $rawName = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "name" -Default "")
-                    $rawSource = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "source" -Default "")
+                    $rawName = [string](Get-AppDocValue -Object $_ -Name "name" -Default "")
+                    $rawSource = [string](Get-AppDocValue -Object $_ -Name "source" -Default "")
                     $normalizedName = ConvertTo-AppDocOverviewPath $rawName
                     $normalizedSource = ConvertTo-AppDocOverviewPath $rawSource
                     [ordered]@{
-                        id = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "id" -Default "")
-                        artifact = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "artifact" -Default "")
-                        kind = [string](Get-AppDocOverviewContextPackValue -Object $_ -Name "kind" -Default "")
+                        id = [string](Get-AppDocValue -Object $_ -Name "id" -Default "")
+                        artifact = [string](Get-AppDocValue -Object $_ -Name "artifact" -Default "")
+                        kind = [string](Get-AppDocValue -Object $_ -Name "kind" -Default "")
                         name = $rawName
                         source = $rawSource
                         normalized_name = $normalizedName
@@ -304,13 +278,13 @@ function Get-AppDocOverviewContextPackData {
             section_level_evidence_allowed = $true
         }
         graph_summary = [ordered]@{
-            enabled = [bool](Get-AppDocOverviewContextPackValue -Object $graph -Name "enabled" -Default $false)
-            entity_count = [int](Get-AppDocOverviewContextPackValue -Object $graph -Name "entityCount" -Default 0)
-            edge_count = [int](Get-AppDocOverviewContextPackValue -Object $graph -Name "edgeCount" -Default 0)
-            endpoint_count = [int](Get-AppDocOverviewContextPackValue -Object $counts -Name "endpointRecords" -Default 0)
-            model_count = [int](Get-AppDocOverviewContextPackValue -Object $counts -Name "modelRecords" -Default 0)
-            config_count = [int](Get-AppDocOverviewContextPackValue -Object $counts -Name "configurationRecords" -Default 0)
-            dependency_count = [int](Get-AppDocOverviewContextPackValue -Object $counts -Name "dependencyRecords" -Default 0)
+            enabled = [bool](Get-AppDocValue -Object $graph -Name "enabled" -Default $false)
+            entity_count = [int](Get-AppDocValue -Object $graph -Name "entityCount" -Default 0)
+            edge_count = [int](Get-AppDocValue -Object $graph -Name "edgeCount" -Default 0)
+            endpoint_count = [int](Get-AppDocValue -Object $counts -Name "endpointRecords" -Default 0)
+            model_count = [int](Get-AppDocValue -Object $counts -Name "modelRecords" -Default 0)
+            config_count = [int](Get-AppDocValue -Object $counts -Name "configurationRecords" -Default 0)
+            dependency_count = [int](Get-AppDocValue -Object $counts -Name "dependencyRecords" -Default 0)
         }
     }
 }

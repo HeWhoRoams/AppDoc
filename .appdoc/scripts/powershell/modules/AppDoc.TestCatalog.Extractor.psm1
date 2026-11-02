@@ -1,3 +1,5 @@
+# Source-file selection and repo-relative paths (AppDoc.Scope).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop
 function Get-AppDocTestCatalogSourceFiles {
     [CmdletBinding()]
     param(
@@ -5,20 +7,7 @@ function Get-AppDocTestCatalogSourceFiles {
         [string]$RootPath
     )
 
-    $patterns = @("*.test.js", "*.test.ts", "*.spec.js", "*.spec.ts", "*Test.cs", "*Tests.cs", "test_*.py", "*_test.py")
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Include $patterns)
-    }
-
-    return @(Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $patterns -ErrorAction SilentlyContinue)
-}
-
-function Get-AppDocTestCatalogRelativePath {
-    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
-    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
-    param([string]$RootPath, [string]$Path)
-    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
-    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
+    return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Set source)
 }
 
 function Get-AppDocTestCatalogData {
@@ -35,7 +24,7 @@ function Get-AppDocTestCatalogData {
         $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
         if (-not $content) { continue }
 
-        $relativePath = Get-AppDocTestCatalogRelativePath -RootPath $RootPath -Path $file.FullName
+        $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
 
         # Regex: (it|test|describe)\((['"])((?:\\.|(?!\2).)*)\2
         $jsPattern = '(it|test|describe)\(([''"])((?:\\.|(?!\2).)*?)\2'

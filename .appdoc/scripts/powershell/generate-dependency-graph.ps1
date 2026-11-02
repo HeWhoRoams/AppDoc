@@ -44,11 +44,7 @@ if (Test-Path $packageJsonPath) {
 }
 
 # Parse imports from code files (simple regex)
-$codeFiles = if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-    @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "dependency-graph" -Include @("*.js","*.ts","*.jsx","*.tsx"))
-} else {
-    @(Get-ChildItem -Path $RootPath -Recurse -Include "*.js","*.ts","*.jsx","*.tsx" | Where-Object { $_.FullName -notmatch '\\node_modules\\' })
-}
+$codeFiles = @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "dependency-graph" -Set source)
 foreach ($file in $codeFiles) {
     $content = Get-Content $file.FullName -Raw
     $imports = [regex]::Matches($content, "import\s+.*?\s+from\s+['""]([^'""]+)['""]") | ForEach-Object { $_.Groups[1].Value }

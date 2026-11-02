@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-10-23T01:55:42-04:00",
+  "generatedAt": "2026-10-23T15:18:21+00:00",
   "summary": {
     "total": 5,
     "byCategory": {
       "INITIALIZATION": 1,
-      "ENVIRONMENT_ERROR": 2,
-      "DETECTION_PATTERN_MISMATCH": 2
+      "DETECTION_PATTERN_MISMATCH": 2,
+      "ENVIRONMENT_ERROR": 2
     },
     "bySeverity": {
       "Warning": 2,
@@ -16,7 +16,7 @@
   },
   "events": [
     {
-      "timestamp": "2026-10-23T01:55:41-04:00",
+      "timestamp": "2026-10-23T15:18:20+00:00",
       "category": "INITIALIZATION",
       "severity": "Info",
       "component": "orchestrator",
@@ -28,7 +28,7 @@
       }
     },
     {
-      "timestamp": "2026-10-23T01:55:42-04:00",
+      "timestamp": "2026-10-23T15:18:21+00:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "validation",
@@ -37,7 +37,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-10-23T01:55:42-04:00",
+      "timestamp": "2026-10-23T15:18:21+00:00",
       "category": "ENVIRONMENT_ERROR",
       "severity": "Info",
       "component": "Validation",
@@ -46,7 +46,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-10-23T01:55:42-04:00",
+      "timestamp": "2026-10-23T15:18:21+00:00",
       "category": "ENVIRONMENT_ERROR",
       "severity": "Info",
       "component": "Validation",
@@ -55,7 +55,7 @@
       "details": {}
     },
     {
-      "timestamp": "2026-10-23T01:55:42-04:00",
+      "timestamp": "2026-10-23T15:18:21+00:00",
       "category": "DETECTION_PATTERN_MISMATCH",
       "severity": "Warning",
       "component": "Narrative",
@@ -70,9 +70,41 @@
     }
   ],
   "metadata": {
+    "evidenceGraphPath": "./docs/evidence/evidence-graph.json",
+    "frameworks": [
+      "ASP.NET Core",
+      "ASP.NET MVC 5",
+      "Flask",
+      "Spring Boot"
+    ],
+    "narrativeReviewRequired": true,
+    "localOnly": true,
+    "scriptFailures": null,
+    "validationGate": {
+      "passed": true,
+      "reason": "Structured validation gate passed",
+      "averageScore": 99.0,
+      "belowThreshold": 0,
+      "strict": false,
+      "qualityThreshold": 80,
+      "evaluatedDocuments": 8
+    },
+    "evidenceGraphIntegrity": {
+      "passed": true,
+      "issues": null,
+      "warnings": null,
+      "metrics": {
+        "entityCount": 52,
+        "edgeCount": 50,
+        "inboundEndpointCount": 0,
+        "outboundEndpointCount": 0
+      }
+    },
+    "qualityThreshold": 80,
+    "outputPath": "./docs",
     "architecture": {
       "version": "1.1.0",
-      "generatedAt": "2026-10-23T01:55:25-04:00",
+      "generatedAt": "2026-10-23T15:18:09+00:00",
       "primaryStyle": "no-api-surface",
       "primaryStyleLabel": "No API Surface",
       "styles": "no-api-surface",
@@ -95,20 +127,17 @@
         "sampledCodeFileCount": 0
       }
     },
-    "qualityThreshold": 80,
-    "narrativeReviewRequired": true,
-    "localOnly": true,
-    "narrativeRunReportPath": "./docs/evidence/narrative-run-report.json",
+    "rootPath": "./",
     "evidenceGraphMetrics": {
-      "entityCount": 51,
-      "edgeCount": 49,
+      "entityCount": 52,
+      "edgeCount": 50,
       "entityTypeCount": {
         "system": 1,
         "component": 1,
         "endpoint_inbound": 0,
         "endpoint_outbound": 0,
         "data_model": 0,
-        "config_key": 49,
+        "config_key": 50,
         "dependency": 0,
         "test_case": 0
       },
@@ -116,51 +145,22 @@
       "outboundEndpointCount": 0,
       "componentCount": 1,
       "modelCount": 0,
-      "configCount": 49,
+      "configCount": 50,
       "dependencyCount": 0,
       "testCaseCount": 0
     },
-    "evidenceGraphPath": "./docs/evidence/evidence-graph.json",
-    "rootPath": "./",
-    "evidenceGraphIntegrity": {
-      "passed": true,
-      "issues": null,
-      "warnings": null,
-      "metrics": {
-        "entityCount": 51,
-        "edgeCount": 49,
-        "inboundEndpointCount": 0,
-        "outboundEndpointCount": 0
-      }
-    },
-    "scriptFailures": null,
-    "frameworks": [
-      "ASP.NET Core",
-      "ASP.NET MVC 5",
-      "Flask",
-      "Spring Boot"
-    ],
-    "validationGate": {
-      "passed": true,
-      "reason": "Structured validation gate passed",
-      "averageScore": 99.0,
-      "belowThreshold": 0,
-      "strict": false,
-      "qualityThreshold": 80,
-      "evaluatedDocuments": 8
-    },
+    "profile": "default",
     "narrativeReviewReasons": [
       "style-business-verb-coverage-low:1",
       "style-what-it-does-purpose-verb-low:0"
     ],
-    "outputPath": "./docs",
-    "profile": "default",
-    "strictValidation": false
+    "strictValidation": false,
+    "narrativeRunReportPath": "./docs/evidence/narrative-run-report.json"
   },
   "provenance": {
     "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "17cdd36",
-    "generatedAt": "2026-10-23T01:55:45-04:00",
+    "commitHash": "5e53b62",
+    "generatedAt": "2026-10-23T15:18:23+00:00",
     "profile": "default",
     "scope": ".",
     "confidenceInferenceFlags": [

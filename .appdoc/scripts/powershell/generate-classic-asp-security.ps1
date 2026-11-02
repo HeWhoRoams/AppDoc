@@ -41,6 +41,8 @@ Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1'
 
 # Shared classic-ASP helpers (single definition; see modules/AppDoc.ClassicAsp.psm1).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+# Shared repo-relative path (Get-AppDocRelativePath).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Scope.psm1') -ErrorAction Stop
 # Test-AppDocScratchFile lives in the Scope module; import it here rather than relying on
 # an earlier generator having loaded it into the session.
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Scope.psm1') -ErrorAction Stop
@@ -103,7 +105,7 @@ function Add-Finding {
 
 foreach ($list in @($incFiles, $aspFiles)) {
     foreach ($f in $list) {
-        $rel = Get-RelativePath -FullPath $f.FullName -Base $rootPrefix
+        $rel = Get-AppDocRelativePath -Path $f.FullName -RootPath $rootPrefix
         $content = Get-Content $f.FullName -Raw -ErrorAction SilentlyContinue
         if ($null -eq $content) { continue }
         $lines = @($content -split "`r?`n")

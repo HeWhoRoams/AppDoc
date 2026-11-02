@@ -614,17 +614,6 @@ function Get-ClassicAspFrameworkApplicable {
     return (Test-AppDocClassicAspTarget -RootPath $RootPath)
 }
 
-function Get-RelativePath {
-    # Removes the base path only as a PREFIX (the old .Replace() also removed it from the
-    # middle of a path, e.g. /r/proj/sub/r/proj/x).
-    param([string]$FullPath, [string]$Base)
-    $rel = $FullPath
-    $b = $Base.TrimEnd('\', '/')
-    if ($b -and $rel.StartsWith($b, [System.StringComparison]::OrdinalIgnoreCase)) { $rel = $rel.Substring($b.Length) }
-    $rel = $rel.TrimStart('\', '/')
-    return ($rel -replace '\\', '/')
-}
-
 function Test-AppDocArtifactIsClassicAspPlaceholder {
     param([string]$Path)
     if (-not (Test-Path $Path)) { return $false }

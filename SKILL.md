@@ -15,6 +15,8 @@ It runs in two layers:
 1. **Deterministic core** (the gate-able source of truth) — one command, no LLM.
 2. **Quarantined enrichment loop** (optional) — the *LLM session running this skill* fills pending interpretation fields from source. AppDoc's deterministic apply-merge validates and applies that output under a quarantine (provenance tags, a Verified-fact lock, no-fabrication, a fail-closed secret-redaction gate). AppDoc holds **no API key, no provider, no HTTP client.**
 
+For a stage-by-stage view of one build, with its gates and exit codes, start at [`docs/pipeline/README.md`](docs/pipeline/README.md).
+
 ## When to use
 
 - The user wants a codebase documented, or re-documented after changes.

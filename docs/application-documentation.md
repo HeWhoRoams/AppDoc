@@ -1,6 +1,6 @@
 # Application Documentation
 
-**Evidence date**: 10/23/2026 01:55:38  
+**Evidence date**: 10/23/2026 15:18:18  
 **Framework**: ASP.NET Core, ASP.NET MVC 5, Flask, Spring Boot  
 **Composed from**: 11 per-artifact files + machine evidence (deterministic, no LLM).
 
@@ -101,10 +101,10 @@ Components are projected from two deterministic sources: the build-cookbook code
 
 ```mermaid
 C4Context
-title selfbuild - System Context
+title self2 - System Context
 Person(user, "User", "Primary caller of the system")
-System(selfbuild, "selfbuild", "Software system: selfbuild (repository root; no in-scope .sln)")
-Rel(user, selfbuild, "Uses")
+System(self2, "self2", "Software system: self2 (repository root; no in-scope .sln)")
+Rel(user, self2, "Uses")
 ```
 
 ### 3.3 Authentication / Authorization
@@ -271,10 +271,12 @@ Projected from the test-catalog known-failure-mode records. Each row is a real p
 
 The following symptom→fix / incident entries come from the repo's hand-authored troubleshooting KB (documented, but a KB is not an authoritative policy — tagged Inferred):
 
+- | 10 | Troubleshooting Matrix | 20 | Provenance |  
+  - Source: `README.md`:179 — `Inferred` (confidence: medium)
 - ## Troubleshooting  
-  - Source: `README.md`:146 — `Inferred` (confidence: medium)
+  - Source: `README.md`:368 — `Inferred` (confidence: medium)
 
-*§11 troubleshooting KB: `README.md`: 146. All claims are `Inferred` (each backed by a real hand-authored file:line; no fabrication).*
+*§11 troubleshooting KB: `README.md`: 179, `README.md`: 368. All claims are `Inferred` (each backed by a real hand-authored file:line; no fabrication).*
 
 ## Security and Operational Risks
 
@@ -315,20 +317,20 @@ Ownership and maintenance information is **not extractable** from the codebase (
 
 ### Ownership (git-derived — last-change author / churn, Verified-git-history)
 
-The target's git history is real and sufficient (53 commit(s)). Per-file ownership below is the **last-change author** with churn (instability = commit count); it is a deterministic projection of git log (plus CODEOWNERS when present), cited to docs/evidence/git-ownership.evidence.json. The table above remains a structure placeholder (application-level ownership stays owner-required unless a CODEOWNERS default declares it).
+The target's git history is real and sufficient (56 commit(s)). Per-file ownership below is the **last-change author** with churn (instability = commit count); it is a deterministic projection of git log (plus CODEOWNERS when present), cited to docs/evidence/git-ownership.evidence.json. The table above remains a structure placeholder (application-level ownership stays owner-required unless a CODEOWNERS default declares it).
 
-Declared owner (CODEOWNERS *): **Unknown (not declared)**  ·  top author: Tim Niles (53 commit(s)).
+Declared owner (CODEOWNERS *): **Unknown (not declared)**  ·  top author: Tim Niles (56 commit(s)).
 
 | File | Owner (last-change author) | Last change | Churn |
 |------|----------------------------|-------------|-------|
-| `README.md` | Tim Niles | 2026-10-23 | 14 |
+| `README.md` | Tim Niles | 2026-10-23 | 15 |
 | `.gitignore` | Tim Niles | 2026-10-23 | 9 |
+| `ROADMAP.md` | Tim Niles | 2026-10-23 | 9 |
 | `.github/prompts/appdoc.begin.prompt.md` | Tim Niles | 2026-10-23 | 8 |
-| `ROADMAP.md` | Tim Niles | 2026-10-23 | 8 |
+| `.github/workflows/appdoc-ci.yml` | Tim Niles | 2026-10-23 | 7 |
 | `.github/copilot-instructions.md` | Tim Niles | 2026-10-23 | 6 |
 | `.github/prompts/appdoc.diagrams.prompt.md` | Tim Niles | 2026-02-26 | 6 |
-| `.github/workflows/appdoc-ci.yml` | Tim Niles | 2026-10-23 | 6 |
-| `references/config-schema.md` | Tim Niles | 2026-10-23 | 5 |
+| `references/config-schema.md` | Tim Niles | 2026-10-23 | 6 |
 | `references/verification.md` | Tim Niles | 2026-10-23 | 4 |
 | `SKILL.md` | Tim Niles | 2026-10-23 | 4 |
 | `.github/prompts/appdoc.enrich.prompt.md` | Tim Niles | 2026-10-23 | 3 |
@@ -393,10 +395,10 @@ classDef dependency fill:#ede9fe,stroke:#4338ca,color:#4338ca,stroke-width:1px
 
 ```mermaid
 C4Context
-title selfbuild - System Context
+title self2 - System Context
 Person(user, "User", "Primary caller of the system")
-System(selfbuild, "selfbuild", "Software system: selfbuild (repository root; no in-scope .sln)")
-Rel(user, selfbuild, "Uses")
+System(self2, "self2", "Software system: self2 (repository root; no in-scope .sln)")
+Rel(user, self2, "Uses")
 ```
 
 ## Glossary
@@ -580,8 +582,8 @@ This appendix lists the exact, re-runnable PowerShell commands used to verify ea
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 17cdd36
-- Generated At: 2026-10-23T01:55:45-04:00
+- Commit Hash: 5e53b62
+- Generated At: 2026-10-23T15:18:23+00:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

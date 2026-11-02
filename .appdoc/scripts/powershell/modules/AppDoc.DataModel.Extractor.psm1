@@ -1,4 +1,6 @@
 # Output folder resolution (config outputDir).
+# Source-file selection and repo-relative paths (AppDoc.Scope).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop
 Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 function Invoke-AppDocDataModelAstParserScript {
@@ -78,16 +80,14 @@ function Add-AppDocAstModels {
                 }
             }
 
-            if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {
-                $pathFilterArgs = @{
-                    Path = $filePath
-                    RootPath = $RootPath
-                    Artifact = "data-model"
-                    AdditionalExcludePatterns = @(Get-AppDocDataModelAdditionalExcludePatterns)
-                }
-                if (-not (Test-AppDocPathIncluded @pathFilterArgs)) {
-                    continue
-                }
+            $pathFilterArgs = @{
+                Path = $filePath
+                RootPath = $RootPath
+                Artifact = "data-model"
+                AdditionalExcludePatterns = @(Get-AppDocDataModelAdditionalExcludePatterns)
+            }
+            if (-not (Test-AppDocPathIncluded @pathFilterArgs)) {
+                continue
             }
         }
 
@@ -146,28 +146,7 @@ function Get-AppDocDataModelSourceFiles {
 
     $additionalExcludePatterns = @(Get-AppDocDataModelAdditionalExcludePatterns)
 
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "data-model" -Include $Include -AdditionalExcludePatterns $additionalExcludePatterns)
-    }
-
-    return @(
-        Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $Include -ErrorAction SilentlyContinue |
-            Where-Object {
-                $normalized = $_.FullName -replace '/', '\'
-                foreach ($pattern in $additionalExcludePatterns) {
-                    if ($normalized -match $pattern) { return $false }
-                }
-                return $true
-            }
-    )
-}
-
-function Get-AppDocDataModelRelativePath {
-    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
-    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
-    param([string]$RootPath, [string]$Path)
-    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
-    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
+    return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "data-model" -Include $Include -AdditionalExcludePatterns $additionalExcludePatterns)
 }
 
 function Test-AppDocDataModelCandidate {
@@ -185,9 +164,7 @@ function Test-AppDocDataModelCandidate {
     $type = if ($Model.type) { ([string]$Model.type).ToLowerInvariant() } else { "class" }
     $propertyCount = @($Model.properties).Count
 
-    if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {
-        if ($path -and -not (Test-AppDocPathIncluded -Path $path -RootPath $RootPath -Artifact "data-model" -AdditionalExcludePatterns (Get-AppDocDataModelAdditionalExcludePatterns))) { return $false }
-    }
+    if ($path -and -not (Test-AppDocPathIncluded -Path $path -RootPath $RootPath -Artifact "data-model" -AdditionalExcludePatterns (Get-AppDocDataModelAdditionalExcludePatterns))) { return $false }
 
     if (Get-Command Test-AppDocGeneratedProxyPath -ErrorAction SilentlyContinue) {
         if ($path -and (Test-AppDocGeneratedProxyPath -Path $path -RootPath $RootPath)) { return $false }
@@ -325,7 +302,7 @@ function Get-AppDocDataModelData {
                     if ($endIdx -le $startIdx) { continue }
                     $classBody = $content.Substring($startIdx + 1, $endIdx - $startIdx - 1)
                     $lineNumber = ($content.Substring(0, $match.Index) -split "`n").Count
-                    $relativePath = Get-AppDocDataModelRelativePath -RootPath $RootPath -Path $file.FullName
+                    $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
                     $properties = @()
                     $propMatches = [regex]::Matches($classBody, "(\w+)\s*(\?)?\s*:\s*([^;\n]+)")
                     foreach ($prop in $propMatches) {
@@ -349,7 +326,7 @@ function Get-AppDocDataModelData {
 
             if ($file.Extension -eq ".cs") {
                 $lines = $content -split "`n"
-                $relativePath = Get-AppDocDataModelRelativePath -RootPath $RootPath -Path $file.FullName
+                $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
                 for ($i = 0; $i -lt $lines.Count; $i++) {
                     $line = $lines[$i]
                     if ($line -match '^\s*(?:public|internal|private|protected)?\s*(class|interface|record)\s+(\w+)(?:<[^>]+>)?') {
@@ -401,7 +378,7 @@ function Get-AppDocDataModelData {
                 # (an ORM class with __tablename__ is a real model even when its columns carry
                 # no PEP-484 annotation).
                 $pyLines = $content -split "`n"
-                $relativePath = Get-AppDocDataModelRelativePath -RootPath $RootPath -Path $file.FullName
+                $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
                 $pyLineCount = $pyLines.Count
                 for ($i = 0; $i -lt $pyLineCount; $i++) {
                     $line = $pyLines[$i]
@@ -497,7 +474,7 @@ function Get-AppDocDataModelData {
 
             if ($file.Extension -eq '.java') {
                 $lines = $content -split "`n"
-                $relativePath = Get-AppDocDataModelRelativePath -RootPath $RootPath -Path $file.FullName
+                $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
                 for ($i = 0; $i -lt $lines.Count; $i++) {
                     $line = $lines[$i]
                     if ($line -match '^(\s*)(?:public|protected|private|abstract|final|static)\s+(class|interface|enum)\s+(\w+)(?:\s+extends\s.*)?') {
@@ -562,7 +539,7 @@ function Get-AppDocDataModelData {
                 $ns = @{hbm='urn:nhibernate-mapping-2.2'}
                 $classes = Select-Xml -Xml $xmlContent -XPath "//hbm:class" -Namespace $ns
                 foreach ($class in $classes) {
-                    $relativePath = Get-AppDocDataModelRelativePath -RootPath $RootPath -Path $file.FullName
+                    $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
                     $properties = @()
                     $propNodes = Select-Xml -Xml $class.Node -XPath ".//hbm:property" -Namespace $ns
                     foreach ($prop in $propNodes) {
@@ -592,7 +569,7 @@ function Get-AppDocDataModelData {
                 $content = Get-Content $file.FullName -Raw -ErrorAction Stop
                 if ($content -match 'class\s+(\w*Map)\s*:\s*(?:ClassMap|EntityMap)<(\w+)>') {
                     $entityName = $Matches[2]
-                    $relativePath = Get-AppDocDataModelRelativePath -RootPath $RootPath -Path $file.FullName
+                    $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
                     $properties = @()
                     # Enhanced regex: capture property name and look for .CustomType<YourType>() or .CustomType(typeof(YourType)) after Map(...)
                     $propMappings = [regex]::Matches($content, 'Map\(\w+\s*=>\s*\w+\.(\w+)\)(?:[^;]*?\.CustomType(?:<([\w\.]+)>|\(typeof\(([^")]+)\)\)))?')

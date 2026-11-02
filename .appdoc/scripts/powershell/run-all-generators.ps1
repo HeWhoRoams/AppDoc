@@ -34,6 +34,10 @@ param(
 
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Values.psm1') -ErrorAction Stop
+# Source-file selection (Get-AppDocSourceFiles).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Scope.psm1') -ErrorAction Stop
 
 <#
 .SYNOPSIS
@@ -161,26 +165,6 @@ function Get-MarkdownDataRowCount {
     return 0
 }
 
-function Get-AppDocValidationObjectValue {
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) { return $Object[$Name] }
-        return $Default
-    }
-
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
-}
-
 function Get-AppDocValidationExpectations {
     param(
         [Parameter(Mandatory=$true)]
@@ -207,11 +191,11 @@ function Get-AppDocValidationExpectations {
     $dependencyCount = 0
     $testRecordCount = 0
     $debtRecordCount = 0
-    $counts = Get-AppDocValidationObjectValue -Object $overviewTruth -Name "counts" -Default $null
+    $counts = Get-AppDocValue -Object $overviewTruth -Name "counts" -Default $null
     if ($counts) {
-        $apiCount = [int](Get-AppDocValidationObjectValue -Object $counts -Name "endpointRecords" -Default 0)
-        $modelCount = [int](Get-AppDocValidationObjectValue -Object $counts -Name "modelRecords" -Default 0)
-        $dependencyCount = [int](Get-AppDocValidationObjectValue -Object $counts -Name "dependencyRecords" -Default 0)
+        $apiCount = [int](Get-AppDocValue -Object $counts -Name "endpointRecords" -Default 0)
+        $modelCount = [int](Get-AppDocValue -Object $counts -Name "modelRecords" -Default 0)
+        $dependencyCount = [int](Get-AppDocValue -Object $counts -Name "dependencyRecords" -Default 0)
     }
 
     if ($apiCount -eq 0 -and (Test-Path $apiEvidencePath)) {
@@ -257,12 +241,12 @@ function Get-AppDocValidationExpectations {
     $primaryStyle = ""
     $apiSurfaceExpected = $null
     if ($ArchitectureFingerprint) {
-        $primaryStyle = [string](Get-AppDocValidationObjectValue -Object $ArchitectureFingerprint -Name "primaryStyle" -Default "")
-        $apiSurfaceExpected = Get-AppDocValidationObjectValue -Object $ArchitectureFingerprint -Name "apiSurfaceExpected" -Default $null
+        $primaryStyle = [string](Get-AppDocValue -Object $ArchitectureFingerprint -Name "primaryStyle" -Default "")
+        $apiSurfaceExpected = Get-AppDocValue -Object $ArchitectureFingerprint -Name "apiSurfaceExpected" -Default $null
     }
     if ([string]::IsNullOrWhiteSpace($primaryStyle)) {
-        $architectureBlock = Get-AppDocValidationObjectValue -Object $overviewTruth -Name "architecture" -Default $null
-        $primaryStyle = [string](Get-AppDocValidationObjectValue -Object $architectureBlock -Name "primaryStyle" -Default "")
+        $architectureBlock = Get-AppDocValue -Object $overviewTruth -Name "architecture" -Default $null
+        $primaryStyle = [string](Get-AppDocValue -Object $architectureBlock -Name "primaryStyle" -Default "")
     }
 
     if ($null -eq $apiSurfaceExpected) {
@@ -283,42 +267,14 @@ function Get-AppDocValidationExpectations {
     $allowNoModelSurface = (-not $modelSurfaceExpected) -and ($modelCount -eq 0)
 
     $dependencySignalFiles = @()
-    $dependencySignalPatterns = @(
-        "*.csproj",
-        "*.vbproj",
-        "packages.config",
-        "package.json",
-        "pom.xml",
-        "build.gradle",
-        "build.gradle.kts",
-        "requirements.txt",
-        "Pipfile",
-        "poetry.lock",
-        "*.nuspec"
+    $dependencySignalFiles = @(
+        Get-AppDocSourceFiles -RootPath $RootPath -Artifact "dependencies-catalog" -Set signals
     )
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        $dependencySignalFiles = @(
-            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "dependencies-catalog" -Include $dependencySignalPatterns
-        )
-    }
-    else {
-        $dependencySignalFiles = @(
-            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $dependencySignalPatterns -ErrorAction SilentlyContinue
-        )
-    }
     $dependencySignalCount = @($dependencySignalFiles).Count
 
-    $testSignalCandidates = @()
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        $testSignalCandidates = @(
-            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Include @("*.cs","*.ts","*.js","*.py","*.java","*.go","*.feature")
-        )
-    }
-    else {
-        $testSignalCandidates = @(
-            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include @("*.cs","*.ts","*.js","*.py","*.java","*.go","*.feature") -ErrorAction SilentlyContinue
-        )
-    }
+    $testSignalCandidates = @(
+        Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Set signalSource
+    )
     $testSignalFiles = @(
         $testSignalCandidates |
             Where-Object {
@@ -327,42 +283,20 @@ function Get-AppDocValidationExpectations {
                 $p -match '(?i)(?:^|[\\/]).*(?:\.test|\.tests|\.spec|_test|_tests)\.[A-Za-z0-9]+$'
             }
     )
-    $testProjectSignals = @()
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        $testProjectSignals = @(
-            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Include @("*.csproj","*.vbproj","*.fsproj") |
-                Where-Object {
-                    $p = [string]$_.FullName
-                    $n = [string]$_.Name
-                    $p -match '(?i)(?:^|[\\/])(?:test|tests|spec|specs)(?:[\\/]|$)' -or
-                    $n -match '(?i)\.(tests?|specs?)\.(csproj|vbproj|fsproj)$'
-                Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Syntax gate passed" -Component "Validation" -FilePath $syntaxGateScriptPath -Details @{ checkedFiles = $checkedFilesCount }
-            }        )
-    }
-    else {
-        $testProjectSignals = @(
-            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include @("*.csproj","*.vbproj","*.fsproj") -ErrorAction SilentlyContinue |
-                Where-Object {
-                    $p = [string]$_.FullName
-                    $n = [string]$_.Name
-                    $p -match '(?i)(?:^|[\\/])(?:test|tests|spec|specs)(?:[\\/]|$)' -or
-                    $n -match '(?i)\.(tests?|specs?)\.(csproj|vbproj|fsproj)$'
-                }
-        )
-    }
+    $testProjectSignals = @(
+        Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Set signalProjects |
+            Where-Object {
+                $p = [string]$_.FullName
+                $n = [string]$_.Name
+                $p -match '(?i)(?:^|[\\/])(?:test|tests|spec|specs)(?:[\\/]|$)' -or
+                $n -match '(?i)\.(tests?|specs?)\.(csproj|vbproj|fsproj)$'
+            Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Syntax gate passed" -Component "Validation" -FilePath $syntaxGateScriptPath -Details @{ checkedFiles = $checkedFilesCount }
+        }        )
     $testSignalCount = @($testSignalFiles).Count + @($testProjectSignals).Count
 
-    $debtSignalCandidates = @()
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        $debtSignalCandidates = @(
-            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "debt-register" -Include @("*.js","*.ts","*.cs","*.py","*.java")
-        )
-    }
-    else {
-        $debtSignalCandidates = @(
-            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include @("*.js","*.ts","*.cs","*.py","*.java") -ErrorAction SilentlyContinue
-        )
-    }
+    $debtSignalCandidates = @(
+        Get-AppDocSourceFiles -RootPath $RootPath -Artifact "debt-register" -Set source
+    )
 
     # Configurable file size threshold (in bytes, e.g., 1MB)
     $maxDebtFileSize = 1MB
@@ -464,14 +398,14 @@ function Write-AppDocCanonicalMetrics {
                 @($apiPayload.records) |
                     Where-Object {
                         $_ -and [string]$_.kind -eq 'endpoint' -and
-                        [string](Get-AppDocValidationObjectValue -Object $_.metadata -Name 'direction' -Default 'inbound') -ne 'outbound'
+                        [string](Get-AppDocValue -Object $_.metadata -Name 'direction' -Default 'inbound') -ne 'outbound'
                     }
             ).Count
             $outboundEndpointCount = @(
                 @($apiPayload.records) |
                     Where-Object {
                         $_ -and [string]$_.kind -eq 'endpoint' -and
-                        [string](Get-AppDocValidationObjectValue -Object $_.metadata -Name 'direction' -Default '') -eq 'outbound'
+                        [string](Get-AppDocValue -Object $_.metadata -Name 'direction' -Default '') -eq 'outbound'
                     }
             ).Count
         }
@@ -485,7 +419,7 @@ function Write-AppDocCanonicalMetrics {
     if (Test-Path $graphPath) {
         try {
             $graph = Get-Content $graphPath -Raw | ConvertFrom-Json -Depth 80
-            $graphMetrics = Get-AppDocValidationObjectValue -Object $graph -Name "metrics" -Default @{}
+            $graphMetrics = Get-AppDocValue -Object $graph -Name "metrics" -Default @{}
         }
         catch {
             $graphMetrics = @{}
@@ -496,7 +430,7 @@ function Write-AppDocCanonicalMetrics {
     if (Test-Path $overviewTruthPath) {
         try {
             $truthPack = Get-Content $overviewTruthPath -Raw | ConvertFrom-Json -Depth 80
-            $truthPackCounts = Get-AppDocValidationObjectValue -Object $truthPack -Name "counts" -Default @{}
+            $truthPackCounts = Get-AppDocValue -Object $truthPack -Name "counts" -Default @{}
         }
         catch {
             $truthPackCounts = @{}
@@ -523,17 +457,17 @@ function Write-AppDocCanonicalMetrics {
         }
         crossChecks = [ordered]@{
             evidenceGraph = [ordered]@{
-                endpointCount = [int](Get-AppDocValidationObjectValue -Object $graphMetrics -Name "endpointCount" -Default 0)
-                inboundEndpointCount = [int](Get-AppDocValidationObjectValue -Object $graphMetrics -Name "inboundEndpointCount" -Default 0)
-                outboundEndpointCount = [int](Get-AppDocValidationObjectValue -Object $graphMetrics -Name "outboundEndpointCount" -Default 0)
-                modelCount = [int](Get-AppDocValidationObjectValue -Object $graphMetrics -Name "modelCount" -Default 0)
-                dependencyCount = [int](Get-AppDocValidationObjectValue -Object $graphMetrics -Name "dependencyCount" -Default 0)
-                testCaseCount = [int](Get-AppDocValidationObjectValue -Object $graphMetrics -Name "testCaseCount" -Default 0)
+                endpointCount = [int](Get-AppDocValue -Object $graphMetrics -Name "endpointCount" -Default 0)
+                inboundEndpointCount = [int](Get-AppDocValue -Object $graphMetrics -Name "inboundEndpointCount" -Default 0)
+                outboundEndpointCount = [int](Get-AppDocValue -Object $graphMetrics -Name "outboundEndpointCount" -Default 0)
+                modelCount = [int](Get-AppDocValue -Object $graphMetrics -Name "modelCount" -Default 0)
+                dependencyCount = [int](Get-AppDocValue -Object $graphMetrics -Name "dependencyCount" -Default 0)
+                testCaseCount = [int](Get-AppDocValue -Object $graphMetrics -Name "testCaseCount" -Default 0)
             }
             overviewTruthPack = [ordered]@{
-                endpointCount = [int](Get-AppDocValidationObjectValue -Object $truthPackCounts -Name "endpointRecords" -Default 0)
-                modelCount = [int](Get-AppDocValidationObjectValue -Object $truthPackCounts -Name "modelRecords" -Default 0)
-                dependencyCount = [int](Get-AppDocValidationObjectValue -Object $truthPackCounts -Name "dependencyRecords" -Default 0)
+                endpointCount = [int](Get-AppDocValue -Object $truthPackCounts -Name "endpointRecords" -Default 0)
+                modelCount = [int](Get-AppDocValue -Object $truthPackCounts -Name "modelRecords" -Default 0)
+                dependencyCount = [int](Get-AppDocValue -Object $truthPackCounts -Name "dependencyRecords" -Default 0)
             }
         }
     }
@@ -576,28 +510,28 @@ function Sync-AppDocOverviewTruthPackToCanonical {
     if (-not (Test-Path $truthPackPath)) { return $false }
 
     $canonical = Get-Content $canonicalPath -Raw | ConvertFrom-Json -Depth 80
-    $totals = Get-AppDocValidationObjectValue -Object $canonical -Name "totals" -Default @{}
+    $totals = Get-AppDocValue -Object $canonical -Name "totals" -Default @{}
     if (-not $totals) { return $false }
 
-    $canonicalEndpoint   = [int](Get-AppDocValidationObjectValue -Object $totals -Name "endpointCount" -Default 0)
-    $canonicalInbound    = [int](Get-AppDocValidationObjectValue -Object $totals -Name "inboundEndpointCount" -Default 0)
-    $canonicalOutbound   = [int](Get-AppDocValidationObjectValue -Object $totals -Name "outboundEndpointCount" -Default 0)
-    $canonicalModel      = [int](Get-AppDocValidationObjectValue -Object $totals -Name "modelCount" -Default 0)
-    $canonicalDependency = [int](Get-AppDocValidationObjectValue -Object $totals -Name "dependencyCount" -Default 0)
+    $canonicalEndpoint   = [int](Get-AppDocValue -Object $totals -Name "endpointCount" -Default 0)
+    $canonicalInbound    = [int](Get-AppDocValue -Object $totals -Name "inboundEndpointCount" -Default 0)
+    $canonicalOutbound   = [int](Get-AppDocValue -Object $totals -Name "outboundEndpointCount" -Default 0)
+    $canonicalModel      = [int](Get-AppDocValue -Object $totals -Name "modelCount" -Default 0)
+    $canonicalDependency = [int](Get-AppDocValue -Object $totals -Name "dependencyCount" -Default 0)
 
     $truthPack = Get-Content $truthPackPath -Raw | ConvertFrom-Json -Depth 80
-    $counts = Get-AppDocValidationObjectValue -Object $truthPack -Name "counts" -Default @{}
+    $counts = Get-AppDocValue -Object $truthPack -Name "counts" -Default @{}
     if (-not $counts) {
         $counts = [ordered]@{}
         $truthPack | Add-Member -NotePropertyName "counts" -NotePropertyValue $counts
     }
 
     # Current truth-pack counts (-1 sentinel so a missing key is treated as "differ").
-    $currentEndpoint   = [int](Get-AppDocValidationObjectValue -Object $counts -Name "endpointRecords" -Default -1)
-    $currentInbound    = [int](Get-AppDocValidationObjectValue -Object $counts -Name "inboundEndpoints" -Default -1)
-    $currentOutbound   = [int](Get-AppDocValidationObjectValue -Object $counts -Name "outboundEndpoints" -Default -1)
-    $currentModel      = [int](Get-AppDocValidationObjectValue -Object $counts -Name "modelRecords" -Default -1)
-    $currentDependency = [int](Get-AppDocValidationObjectValue -Object $counts -Name "dependencyRecords" -Default -1)
+    $currentEndpoint   = [int](Get-AppDocValue -Object $counts -Name "endpointRecords" -Default -1)
+    $currentInbound    = [int](Get-AppDocValue -Object $counts -Name "inboundEndpoints" -Default -1)
+    $currentOutbound   = [int](Get-AppDocValue -Object $counts -Name "outboundEndpoints" -Default -1)
+    $currentModel      = [int](Get-AppDocValue -Object $counts -Name "modelRecords" -Default -1)
+    $currentDependency = [int](Get-AppDocValue -Object $counts -Name "dependencyRecords" -Default -1)
 
     $needsAlign = ($currentEndpoint   -ne $canonicalEndpoint) -or
                   ($currentInbound    -ne $canonicalInbound) -or
@@ -726,11 +660,11 @@ function Get-DocSpecificIssues {
     )
 
     $issues = @()
-    $allowNoApiSurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoApiSurface" -Default $false)
-    $allowNoModelSurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoModelSurface" -Default $false)
-    $allowNoDependencySurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoDependencySurface" -Default $false)
-    $allowNoTestSurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoTestSurface" -Default $false)
-    $allowNoDebtSurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoDebtSurface" -Default $false)
+    $allowNoApiSurface = [bool](Get-AppDocValue -Object $Expectations -Name "allowNoApiSurface" -Default $false)
+    $allowNoModelSurface = [bool](Get-AppDocValue -Object $Expectations -Name "allowNoModelSurface" -Default $false)
+    $allowNoDependencySurface = [bool](Get-AppDocValue -Object $Expectations -Name "allowNoDependencySurface" -Default $false)
+    $allowNoTestSurface = [bool](Get-AppDocValue -Object $Expectations -Name "allowNoTestSurface" -Default $false)
+    $allowNoDebtSurface = [bool](Get-AppDocValue -Object $Expectations -Name "allowNoDebtSurface" -Default $false)
 
     switch ($DocType) {
         "Overview" {
@@ -888,11 +822,11 @@ function Test-GeneratedDoc {
     $content = Get-Content $FilePath -Raw
     $placeholders = @()
     $issues = @()
-    $allowNoApiSurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoApiSurface" -Default $false)
-    $allowNoModelSurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoModelSurface" -Default $false)
-    $allowNoDependencySurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoDependencySurface" -Default $false)
-    $allowNoTestSurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoTestSurface" -Default $false)
-    $allowNoDebtSurface = [bool](Get-AppDocValidationObjectValue -Object $Expectations -Name "allowNoDebtSurface" -Default $false)
+    $allowNoApiSurface = [bool](Get-AppDocValue -Object $Expectations -Name "allowNoApiSurface" -Default $false)
+    $allowNoModelSurface = [bool](Get-AppDocValue -Object $Expectations -Name "allowNoModelSurface" -Default $false)
+    $allowNoDependencySurface = [bool](Get-AppDocValue -Object $Expectations -Name "allowNoDependencySurface" -Default $false)
+    $allowNoTestSurface = [bool](Get-AppDocValue -Object $Expectations -Name "allowNoTestSurface" -Default $false)
+    $allowNoDebtSurface = [bool](Get-AppDocValue -Object $Expectations -Name "allowNoDebtSurface" -Default $false)
 
     # Detect common placeholder patterns
     $placeholderPatterns = @(
@@ -1033,8 +967,7 @@ if (-not $DryRun) {
             }
 
             if ($activePid -gt 0 -and (Get-Process -Id $activePid -ErrorAction SilentlyContinue)) {
-                Write-Error "Another AppDoc run is already active for this output path (PID $activePid). Stop that run first."
-                exit 1
+                throw "Another AppDoc run is already active for this output path (PID $activePid). Stop that run first."
             }
         }
     }
@@ -1136,6 +1069,10 @@ foreach ($staleDerived in @('evidence-graph.json', 'metrics-canonical.json')) {
     if (Test-Path -LiteralPath $stalePath) { Remove-Item -LiteralPath $stalePath -Force }
 }
 
+# Generator crashes and missing generators are recorded here and written to diagnostics-report.json
+# (metadata.scriptFailures). run-appdoc-build.ps1 turns a non-empty list into exit 1 (ADR 0003 section 4).
+$scriptFailures = @()
+
 $pipelinePhases = @(
     @{
         Name = "Analysis"
@@ -1199,6 +1136,7 @@ foreach ($phase in $pipelinePhases) {
         $scriptPath = Join-Path $PSScriptRoot $script
         if (-not (Test-Path $scriptPath)) {
             Add-AppDocDiagnostic -Category "IO_ERROR" -Severity "Warning" -Message "Script not found: $script" -Component $phase.Name -FilePath $scriptPath
+            $scriptFailures += [ordered]@{ phase = $phase.Name; script = $script; error = 'script not found' }
             Write-Warning "Script $script not found"
             continue
         }
@@ -1245,6 +1183,7 @@ if (-not $SkipDiagrams) {
             } catch {
                 Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to generate Mermaid C4 diagrams" -Component "Generation" -FilePath $c4Script -Details @{ exception = $_.Exception.Message }
                 Write-Warning "Failed to generate Mermaid C4 diagrams: $_"
+                $scriptFailures += [ordered]@{ phase = "Generation"; script = "generate-c4-mermaid-diagrams.ps1"; error = $_.Exception.Message }
             }
         }
     } else {
@@ -1272,6 +1211,7 @@ if (-not $SkipDiagrams) {
             catch {
                 Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to generate deterministic architecture diagram suite" -Component "Generation" -FilePath $diagramSuiteScript -Details @{ exception = $_.Exception.Message }
                 Write-Warning "Failed to generate deterministic architecture diagram suite: $_"
+                $scriptFailures += [ordered]@{ phase = "Generation"; script = "generate-mermaid-architecture-suite.ps1"; error = $_.Exception.Message }
             }
         }
     }
@@ -1348,7 +1288,7 @@ if (Get-Command Write-AppDocEvidenceGraph -ErrorAction SilentlyContinue) {
     try {
         $evidenceGraphData = Get-AppDocEvidenceGraphData -RootPath $RootPath
         $evidenceGraphPath = Write-AppDocEvidenceGraph -RootPath $RootPath -GraphData $evidenceGraphData
-        $evidenceGraphMetrics = Get-AppDocValidationObjectValue -Object $evidenceGraphData -Name "metrics" -Default $null
+        $evidenceGraphMetrics = Get-AppDocValue -Object $evidenceGraphData -Name "metrics" -Default $null
         $evidenceGraphIntegrity = Test-AppDocEvidenceGraphIntegrity -RootPath $RootPath -GraphData $evidenceGraphData
 
         if ($evidenceGraphIntegrity -and -not $evidenceGraphIntegrity.passed) {
@@ -1368,8 +1308,8 @@ if (Get-Command Write-AppDocEvidenceGraph -ErrorAction SilentlyContinue) {
         }
         else {
             Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Evidence graph compiled" -Component "Generation" -FilePath $evidenceGraphPath -Details @{
-                entityCount = [int](Get-AppDocValidationObjectValue -Object $evidenceGraphMetrics -Name "entityCount" -Default 0)
-                edgeCount = [int](Get-AppDocValidationObjectValue -Object $evidenceGraphMetrics -Name "edgeCount" -Default 0)
+                entityCount = [int](Get-AppDocValue -Object $evidenceGraphMetrics -Name "entityCount" -Default 0)
+                edgeCount = [int](Get-AppDocValue -Object $evidenceGraphMetrics -Name "edgeCount" -Default 0)
             }
         }
     }
@@ -1445,20 +1385,20 @@ Write-Host "`n=== Documentation Quality Report ===" -ForegroundColor Cyan
 $validationResults = @()
 $validationExpectations = Get-AppDocValidationExpectations -RootPath $RootPath -ArchitectureFingerprint $architectureFingerprint
 Add-AppDocDiagnostic -Category "ENVIRONMENT_ERROR" -Severity "Info" -Message "Validation expectations computed" -Component "Validation" -Details @{
-    primaryStyle = [string](Get-AppDocValidationObjectValue -Object $validationExpectations -Name "primaryStyle" -Default "")
-    apiSurfaceExpected = [bool](Get-AppDocValidationObjectValue -Object $validationExpectations -Name "apiSurfaceExpected" -Default $true)
-    allowNoApiSurface = [bool](Get-AppDocValidationObjectValue -Object $validationExpectations -Name "allowNoApiSurface" -Default $false)
-    allowNoModelSurface = [bool](Get-AppDocValidationObjectValue -Object $validationExpectations -Name "allowNoModelSurface" -Default $false)
-    dependencySurfaceExpected = [bool](Get-AppDocValidationObjectValue -Object $validationExpectations -Name "dependencySurfaceExpected" -Default $true)
-    testSurfaceExpected = [bool](Get-AppDocValidationObjectValue -Object $validationExpectations -Name "testSurfaceExpected" -Default $true)
-    allowNoDependencySurface = [bool](Get-AppDocValidationObjectValue -Object $validationExpectations -Name "allowNoDependencySurface" -Default $false)
-    allowNoTestSurface = [bool](Get-AppDocValidationObjectValue -Object $validationExpectations -Name "allowNoTestSurface" -Default $false)
-    allowNoDebtSurface = [bool](Get-AppDocValidationObjectValue -Object $validationExpectations -Name "allowNoDebtSurface" -Default $false)
-    endpointRecordCount = [int](Get-AppDocValidationObjectValue -Object $validationExpectations -Name "endpointRecordCount" -Default 0)
-    modelRecordCount = [int](Get-AppDocValidationObjectValue -Object $validationExpectations -Name "modelRecordCount" -Default 0)
-    dependencyRecordCount = [int](Get-AppDocValidationObjectValue -Object $validationExpectations -Name "dependencyRecordCount" -Default 0)
-    testRecordCount = [int](Get-AppDocValidationObjectValue -Object $validationExpectations -Name "testRecordCount" -Default 0)
-    debtRecordCount = [int](Get-AppDocValidationObjectValue -Object $validationExpectations -Name "debtRecordCount" -Default 0)
+    primaryStyle = [string](Get-AppDocValue -Object $validationExpectations -Name "primaryStyle" -Default "")
+    apiSurfaceExpected = [bool](Get-AppDocValue -Object $validationExpectations -Name "apiSurfaceExpected" -Default $true)
+    allowNoApiSurface = [bool](Get-AppDocValue -Object $validationExpectations -Name "allowNoApiSurface" -Default $false)
+    allowNoModelSurface = [bool](Get-AppDocValue -Object $validationExpectations -Name "allowNoModelSurface" -Default $false)
+    dependencySurfaceExpected = [bool](Get-AppDocValue -Object $validationExpectations -Name "dependencySurfaceExpected" -Default $true)
+    testSurfaceExpected = [bool](Get-AppDocValue -Object $validationExpectations -Name "testSurfaceExpected" -Default $true)
+    allowNoDependencySurface = [bool](Get-AppDocValue -Object $validationExpectations -Name "allowNoDependencySurface" -Default $false)
+    allowNoTestSurface = [bool](Get-AppDocValue -Object $validationExpectations -Name "allowNoTestSurface" -Default $false)
+    allowNoDebtSurface = [bool](Get-AppDocValue -Object $validationExpectations -Name "allowNoDebtSurface" -Default $false)
+    endpointRecordCount = [int](Get-AppDocValue -Object $validationExpectations -Name "endpointRecordCount" -Default 0)
+    modelRecordCount = [int](Get-AppDocValue -Object $validationExpectations -Name "modelRecordCount" -Default 0)
+    dependencyRecordCount = [int](Get-AppDocValue -Object $validationExpectations -Name "dependencyRecordCount" -Default 0)
+    testRecordCount = [int](Get-AppDocValue -Object $validationExpectations -Name "testRecordCount" -Default 0)
+    debtRecordCount = [int](Get-AppDocValue -Object $validationExpectations -Name "debtRecordCount" -Default 0)
 }
 
 $documents = @(
@@ -1475,7 +1415,7 @@ $documents = @(
     # are NOT scored in the pass/fail gate (Gated = $false). Reason: task-guides can
     # be thin/empty on small codebases and index.md is a link list, so including them
     # in the gate would add noise. The authoritative pass/fail boundary is
-    # validate-documentation.ps1's fixed 15-component composite, which is unchanged by
+    # validate-documentation.ps1's fixed 18-component composite, which is unchanged by
     # producing these artifacts.
     @{ File = "start-here.md"; Type = "Start Here"; Gated = $false }
     @{ File = "task-guides.md"; Type = "Task Guides"; Gated = $false }
@@ -1604,6 +1544,7 @@ if (Test-Path $htmlReportScriptPath) {
         catch {
             Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to generate HTML report: $_" -Component "Generation" -FilePath $htmlReportScriptPath -Details @{ exception = $_.Exception.Message }
             Write-Warning "Failed to generate HTML report: $_"
+            $scriptFailures += [ordered]@{ phase = "Generation"; script = "generate-html-report.ps1"; error = $_.Exception.Message }
         }
     }
 }
@@ -1670,6 +1611,7 @@ if (Test-Path $pristineReportScriptPath) {
         catch {
             Add-AppDocDiagnostic -Category "PARSING_ERROR" -Severity "Warning" -Message "Failed to generate pristine report: $_" -Component "Validation" -FilePath $pristineReportScriptPath
             Write-Warning "Failed to generate pristine report: $_"
+            $scriptFailures += [ordered]@{ phase = "Validation"; script = "generate-pristine-report.ps1"; error = $_.Exception.Message }
         }
     }
 }

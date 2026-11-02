@@ -1,3 +1,6 @@
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Values.psm1') -ErrorAction Stop
+
 function Get-AppDocOverviewTechnologyName {
     [CmdletBinding()]
     param([string]$Extension)
@@ -72,14 +75,14 @@ function Get-AppDocOverviewEvidenceRefs {
         [int]$Limit = 4
     )
 
-    $records = @(Get-AppDocOverviewRendererValue -Object $TruthPack -Name "evidence_refs" -Default @())
+    $records = @(Get-AppDocValue -Object $TruthPack -Name "evidence_refs" -Default @())
     $ids = New-Object System.Collections.Generic.List[string]
 
     foreach ($record in $records) {
         if (-not $record) { continue }
-        $recordKind = [string](Get-AppDocOverviewRendererValue -Object $record -Name "kind" -Default "")
-        $recordArtifact = [string](Get-AppDocOverviewRendererValue -Object $record -Name "artifact" -Default "")
-        $recordId = [string](Get-AppDocOverviewRendererValue -Object $record -Name "id" -Default "")
+        $recordKind = [string](Get-AppDocValue -Object $record -Name "kind" -Default "")
+        $recordArtifact = [string](Get-AppDocValue -Object $record -Name "artifact" -Default "")
+        $recordId = [string](Get-AppDocValue -Object $record -Name "id" -Default "")
         if ([string]::IsNullOrWhiteSpace($recordId)) { continue }
 
         if (-not [string]::IsNullOrWhiteSpace($Kind) -and $recordKind -ne $Kind) { continue }
@@ -139,31 +142,6 @@ function Set-AppDocOverviewSectionContent {
     return ($Content + $nl + "## $SectionName" + $nl + $nl + $SectionContent + $nl)
 }
 
-function Get-AppDocOverviewRendererValue {
-    [CmdletBinding()]
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) {
-            return $Object[$Name]
-        }
-        return $Default
-    }
-
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
-}
-
 function Get-AppDocOverviewArchitectureContent {
     [CmdletBinding()]
     param(
@@ -175,10 +153,10 @@ function Get-AppDocOverviewArchitectureContent {
         return "_Architecture analysis pending. Review code structure and dependencies._"
     }
 
-    $arch = Get-AppDocOverviewRendererValue -Object $TruthPack -Name "architecture" -Default @{}
-    $counts = Get-AppDocOverviewRendererValue -Object $TruthPack -Name "counts" -Default @{}
-    $style = [string](Get-AppDocOverviewRendererValue -Object $arch -Name "primaryStyle" -Default "unknown")
-    $frameworksRaw = Get-AppDocOverviewRendererValue -Object $arch -Name "frameworks" -Default @()
+    $arch = Get-AppDocValue -Object $TruthPack -Name "architecture" -Default @{}
+    $counts = Get-AppDocValue -Object $TruthPack -Name "counts" -Default @{}
+    $style = [string](Get-AppDocValue -Object $arch -Name "primaryStyle" -Default "unknown")
+    $frameworksRaw = Get-AppDocValue -Object $arch -Name "frameworks" -Default @()
     $frameworks = @(
         ConvertTo-AppDocOverviewArray -Value $frameworksRaw |
             ForEach-Object { [string]$_ } |
@@ -186,9 +164,9 @@ function Get-AppDocOverviewArchitectureContent {
             Select-Object -Unique
     )
 
-    $inboundCount = [int](Get-AppDocOverviewRendererValue -Object $counts -Name "inboundEndpoints" -Default 0)
-    $outboundCount = [int](Get-AppDocOverviewRendererValue -Object $counts -Name "outboundEndpoints" -Default 0)
-    $mappedOutboundCount = [int](Get-AppDocOverviewRendererValue -Object $counts -Name "outboundMappedEndpoints" -Default 0)
+    $inboundCount = [int](Get-AppDocValue -Object $counts -Name "inboundEndpoints" -Default 0)
+    $outboundCount = [int](Get-AppDocValue -Object $counts -Name "outboundEndpoints" -Default 0)
+    $mappedOutboundCount = [int](Get-AppDocValue -Object $counts -Name "outboundMappedEndpoints" -Default 0)
 
     $summaryRefs = @(Get-AppDocOverviewEvidenceRefs -TruthPack $TruthPack -Artifact "overview" -Limit 2)
     $endpointRefs = @(Get-AppDocOverviewEvidenceRefs -TruthPack $TruthPack -Kind "endpoint" -Limit 4)
@@ -228,23 +206,23 @@ function Get-AppDocOverviewKeyComponentsContent {
         return "_Components not yet cataloged. Scan codebase for module structure._"
     }
 
-    $records = @(Get-AppDocOverviewRendererValue -Object $TruthPack -Name "evidence_refs" -Default @())
+    $records = @(Get-AppDocValue -Object $TruthPack -Name "evidence_refs" -Default @())
     $componentIndex = @{}
     $modelProjectIndex = @{}
 
     foreach ($record in $records) {
         if (-not $record) { continue }
 
-        $kind = [string](Get-AppDocOverviewRendererValue -Object $record -Name "kind" -Default "")
-        $id = [string](Get-AppDocOverviewRendererValue -Object $record -Name "id" -Default "")
+        $kind = [string](Get-AppDocValue -Object $record -Name "kind" -Default "")
+        $id = [string](Get-AppDocValue -Object $record -Name "id" -Default "")
         if ([string]::IsNullOrWhiteSpace($id)) { continue }
 
         if ($kind -eq "endpoint") {
-            $metadata = Get-AppDocOverviewRendererValue -Object $record -Name "metadata" -Default @{}
-            $controller = [string](Get-AppDocOverviewRendererValue -Object $metadata -Name "controller" -Default "")
-            $direction = [string](Get-AppDocOverviewRendererValue -Object $metadata -Name "direction" -Default "")
-            $sourceType = [string](Get-AppDocOverviewRendererValue -Object $metadata -Name "sourceType" -Default "")
-            $name = [string](Get-AppDocOverviewRendererValue -Object $record -Name "name" -Default "")
+            $metadata = Get-AppDocValue -Object $record -Name "metadata" -Default @{}
+            $controller = [string](Get-AppDocValue -Object $metadata -Name "controller" -Default "")
+            $direction = [string](Get-AppDocValue -Object $metadata -Name "direction" -Default "")
+            $sourceType = [string](Get-AppDocValue -Object $metadata -Name "sourceType" -Default "")
+            $name = [string](Get-AppDocValue -Object $record -Name "name" -Default "")
 
             if ([string]::IsNullOrWhiteSpace($controller) -and $name -match '^/soap-client/([^/]+)/') {
                 $controller = [string]$Matches[1]
@@ -272,7 +250,7 @@ function Get-AppDocOverviewKeyComponentsContent {
             }
         }
         elseif ($kind -eq "model") {
-            $source = [string](Get-AppDocOverviewRendererValue -Object $record -Name "source" -Default "")
+            $source = [string](Get-AppDocValue -Object $record -Name "source" -Default "")
             if ([string]::IsNullOrWhiteSpace($source)) { continue }
             $pathParts = $source -split '[\\/]'
             if ($pathParts.Count -eq 0) { continue }
@@ -357,7 +335,7 @@ function Get-AppDocOverviewWelcomeMarkdown {
 
         $items = @()
         if ($WelcomeNarrative) {
-            $items = @(Get-AppDocOverviewRendererValue -Object $WelcomeNarrative -Name $sectionName -Default @())
+            $items = @(Get-AppDocValue -Object $WelcomeNarrative -Name $sectionName -Default @())
         }
 
         if ($items.Count -eq 0) {
@@ -389,7 +367,7 @@ function Get-AppDocOverviewWelcomeMarkdown {
     $lines += "| ID | Artifact | Kind | Name | Source |"
     $lines += "|---|---|---|---|---|"
 
-    $evidenceRows = @(Get-AppDocOverviewRendererValue -Object $WelcomeNarrative -Name "evidence_refs" -Default @())
+    $evidenceRows = @(Get-AppDocValue -Object $WelcomeNarrative -Name "evidence_refs" -Default @())
     $evidenceIndex = @{}
     foreach ($row in $evidenceRows) {
         if (-not $row) { continue }

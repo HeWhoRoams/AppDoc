@@ -1,7 +1,7 @@
 # Pristine Check Report
 
 **Benchmark**: AppDoc 20-section reference structure (18 shared sections + 2 discipline additions)  
-**Report date**: 10/23/2026 01:55:38  
+**Report date**: 10/23/2026 15:18:18  
 **Composed doc**: docs/application-documentation.md (20 sections)  
 
 > **What this is:** a per-section rubric that scores each of the 20 composed sections against the HELP_DESK benchmark, so "up to the standard" is MEASURABLE per section. Each section is classified exactly once:
@@ -32,7 +32,7 @@
 | 8 | Data and Integrations | **EMPTY** | no real content (placeholder only) | 0 | 8 |
 | 9 | External Call Register | **PASS** | at benchmark depth; real content; epistemic-tagged | 1 | 8A |
 | 10 | Stored-procedure data dictionary | **N/A** | framework-N/A (stored-procedure data dictionary is classic-ASP-specific (ADO stored procedures transcribed from live `.inc` files); target is ASP.NET Core — no ADO data surface detected) | 0 | 8B |
-| 11 | Troubleshooting Matrix | **PASS** | Verified-source-doc — populated from `README.md`: 146 (cited hand-authored docs; owner-pending cell resolved from source-of-truth) | 0 | 9 (11 escalation-paths owner-required) |
+| 11 | Troubleshooting Matrix | **PASS** | Verified-source-doc — populated from `README.md`: 179, `README.md`: 368 (cited hand-authored docs; owner-pending cell resolved from source-of-truth) | 0 | 9 (11 escalation-paths owner-required) |
 | 12 | Security and Operational Risks | **PASS** | at benchmark depth; real content; epistemic-tagged | 5 | 10 |
 | 13 | Ownership and Maintenance | **OWNER-REQUIRED** | owner-pending cell (correctly Unknown; pending owner input); also carries 23 verified source-derivable row(s) | 23 | 11 (13 ownership/SLO owner-required) |
 | 14 | Architecture and Data-Flow Diagrams | **PASS** | at benchmark depth; real content; epistemic-tagged | 0 | 12 |
@@ -61,7 +61,7 @@
 | **Denominator (scored sections, excl. N/A)** | 19 |
 | PASS ratio (of scored) | 57.9% |
 | Re-verifiable (>=1 re-runnable command in Verification Appendix) | yes |
-| Determinism hash (over the per-section records, excl. timestamp) | `512611b2fde6fcb3d216eafb450d6ca04069ebff9bfb3b1595fc558302bc77a2` |
+| Determinism hash (over the per-section records, excl. timestamp) | `8a57ce0d5b23a453aa653b359ba2ea40ade6c27465cf46f22b13ede2841910af` |
 
 
 ## Owner-pending checklist
@@ -93,8 +93,8 @@
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 17cdd36
-- Generated At: 2026-10-23T01:55:45-04:00
+- Commit Hash: 5e53b62
+- Generated At: 2026-10-23T15:18:23+00:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

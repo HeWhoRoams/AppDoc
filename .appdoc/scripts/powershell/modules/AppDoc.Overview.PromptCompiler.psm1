@@ -1,29 +1,10 @@
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Values.psm1') -ErrorAction Stop
+
 # AppDoc.Overview.PromptCompiler Module
 # Purpose: Compile audience/style-aware prompts for multi-pass overview narrative generation.
 
 $script:AppDocOverviewPromptCompilerVersion = "1.1.0"
-
-function Get-AppDocOverviewPromptCompilerValue {
-    [CmdletBinding()]
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) { return $Object[$Name] }
-        return $Default
-    }
-
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
-}
 
 function Get-AppDocOverviewAudienceDescription {
     [CmdletBinding()]
@@ -64,8 +45,8 @@ function Get-AppDocOverviewPromptSet {
         [string]$StyleProfile = "standard"
     )
 
-    $project = Get-AppDocOverviewPromptCompilerValue -Object $ContextPack -Name "project" -Default @{}
-    $projectName = [string](Get-AppDocOverviewPromptCompilerValue -Object $project -Name "name" -Default "application")
+    $project = Get-AppDocValue -Object $ContextPack -Name "project" -Default @{}
+    $projectName = [string](Get-AppDocValue -Object $project -Name "name" -Default "application")
     $audienceText = Get-AppDocOverviewAudienceDescription -Audience $Audience
     $styleText = Get-AppDocOverviewStyleDescription -StyleProfile $StyleProfile
 

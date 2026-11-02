@@ -1,4 +1,6 @@
 # Shared secret vocabulary (single source of truth for credential key names).
+# Source-file selection and repo-relative paths (AppDoc.Scope).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop
 Import-Module (Join-Path $PSScriptRoot 'AppDoc.SecretPolicy.psm1') -ErrorAction Stop
 
 function Test-AppDocRequiredConfig {
@@ -254,14 +256,6 @@ function ConvertFrom-AppDocYamlFallback {
     return $flattened
 }
 
-function Get-AppDocConfigRelativePath {
-    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
-    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
-    param([string]$RootPath, [string]$Path)
-    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
-    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-}
-
 function ConvertTo-AppDocSafeConfigKey {
     [CmdletBinding()]
     param([string]$Key)
@@ -322,13 +316,6 @@ function Get-AppDocConfigSourceFiles {
         [string[]]$Include
     )
 
-    if (-not (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue)) {
-        $scopeModulePath = Join-Path $PSScriptRoot "AppDoc.Scope.psm1"
-        if (Test-Path $scopeModulePath) {
-            Import-Module $scopeModulePath -Force -ErrorAction SilentlyContinue
-        }
-    }
-
     # Discover config source files cross-platform. Configuration legitimately lives in
     # hidden (dot) directories -- e.g. .github/workflows/*.yml (CI pipeline config) and
     # .vscode/settings.json -- so -Force is required; on non-Windows hosts Get-ChildItem
@@ -338,15 +325,12 @@ function Get-AppDocConfigSourceFiles {
     # only surfaces real, in-scope configuration.
     $files = @(Get-ChildItem -Path $RootPath -Recurse -File -Force -Include $Include -ErrorAction SilentlyContinue)
 
-    if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {
-        return @(
-            $files | Where-Object {
-                Test-AppDocPathIncluded -Path $_.FullName -RootPath $RootPath -Artifact "config-catalog"
-            }
-        )
-    }
+    return @(
+        $files | Where-Object {
+            Test-AppDocPathIncluded -Path $_.FullName -RootPath $RootPath -Artifact "config-catalog"
+        }
+    )
 
-    return @($files)
 }
 
 function Add-AppDocJsonConfigProperties {
@@ -423,7 +407,7 @@ function Get-AppDocConfigCatalogData {
             $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
             if (-not $content) { continue }
 
-            $relativePath = Get-AppDocConfigRelativePath -RootPath $RootPath -Path $file.FullName
+            $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
             $discoveredConfigFiles += @{
                 path = $relativePath
                 type = $fileType
@@ -664,30 +648,23 @@ function Get-AppDocConfigCatalogData {
     # redaction) so secrets never leak; a legit non-secret value (e.g. sqlite:///database.db)
     # renders as-is. Scope-aware: the scope policy excludes tests//fixtures//docs//
     # node_modules//sample, so this only surfaces real, in-scope Python configuration.
-    if (-not (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue)) {
-        $scopeModulePathPy = Join-Path $PSScriptRoot "AppDoc.Scope.psm1"
-        if (Test-Path $scopeModulePathPy) { Import-Module $scopeModulePathPy -Force -ErrorAction SilentlyContinue }
-    }
-
     $pyConfigFiles = @(
         Get-ChildItem -Path $RootPath -Recurse -File -Force -Filter '*.py' -ErrorAction SilentlyContinue | Where-Object {
             $parentLeaf = Split-Path $_.DirectoryName -Leaf
             ($parentLeaf -in @('config','configs')) -or ($_.Name -in @('config.py','settings.py'))
         }
     )
-    if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {
-        $pyConfigFiles = @(
-            $pyConfigFiles | Where-Object {
-                Test-AppDocPathIncluded -Path $_.FullName -RootPath $RootPath -Artifact "config-catalog"
-            }
-        )
-    }
+    $pyConfigFiles = @(
+        $pyConfigFiles | Where-Object {
+            Test-AppDocPathIncluded -Path $_.FullName -RootPath $RootPath -Artifact "config-catalog"
+        }
+    )
 
     foreach ($pyFile in $pyConfigFiles) {
         $pyContent = Get-Content $pyFile.FullName -Raw -ErrorAction SilentlyContinue
         if (-not $pyContent) { continue }
 
-        $pyRelativePath = Get-AppDocConfigRelativePath -RootPath $RootPath -Path $pyFile.FullName
+        $pyRelativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $pyFile.FullName
         $discoveredConfigFiles += @{
             path = $pyRelativePath
             type = "Python Configuration"

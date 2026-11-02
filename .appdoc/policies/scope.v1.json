@@ -33,15 +33,44 @@
     "default": {},
     "overview": {
       "includeTests": false,
-      "includeFixtures": false
+      "includeFixtures": false,
+      "patternSets": {
+        "source": [
+          "*.cs",
+          "*.js",
+          "*.ts",
+          "*.py",
+          "*.java"
+        ]
+      }
     },
     "start-here": {
       "includeTests": false,
-      "includeFixtures": false
+      "includeFixtures": false,
+      "patternSets": {
+        "source": [
+          "*.cs",
+          "*.js",
+          "*.ts",
+          "*.py",
+          "*.java"
+        ]
+      }
     },
     "api-inventory": {
       "includeTests": false,
-      "includeFixtures": false
+      "includeFixtures": false,
+      "patternSets": {
+        "source": [
+          "*.js",
+          "*.ts",
+          "*.cs",
+          "*.py",
+          "*.java",
+          "*.svc",
+          "*.asmx"
+        ]
+      }
     },
     "data-model": {
       "includeTests": false,
@@ -56,7 +85,33 @@
     },
     "test-catalog": {
       "includeTests": true,
-      "includeFixtures": false
+      "includeFixtures": false,
+      "patternSets": {
+        "source": [
+          "*.test.js",
+          "*.test.ts",
+          "*.spec.js",
+          "*.spec.ts",
+          "*Test.cs",
+          "*Tests.cs",
+          "test_*.py",
+          "*_test.py"
+        ],
+        "signalSource": [
+          "*.cs",
+          "*.ts",
+          "*.js",
+          "*.py",
+          "*.java",
+          "*.go",
+          "*.feature"
+        ],
+        "signalProjects": [
+          "*.csproj",
+          "*.vbproj",
+          "*.fsproj"
+        ]
+      }
     },
     "build-cookbook": {
       "includeTests": false,
@@ -64,15 +119,60 @@
     },
     "dependencies-catalog": {
       "includeTests": false,
-      "includeFixtures": false
+      "includeFixtures": false,
+      "patternSets": {
+        "signals": [
+          "*.csproj",
+          "*.vbproj",
+          "packages.config",
+          "package.json",
+          "pom.xml",
+          "build.gradle",
+          "build.gradle.kts",
+          "requirements.txt",
+          "Pipfile",
+          "poetry.lock",
+          "*.nuspec"
+        ]
+      }
     },
     "debt-register": {
       "includeTests": false,
-      "includeFixtures": false
+      "includeFixtures": false,
+      "patternSets": {
+        "source": [
+          "*.js",
+          "*.ts",
+          "*.cs",
+          "*.py",
+          "*.java"
+        ]
+      }
     },
     "dependency-graph": {
       "includeTests": false,
-      "includeFixtures": false
+      "includeFixtures": false,
+      "patternSets": {
+        "source": [
+          "*.js",
+          "*.ts",
+          "*.jsx",
+          "*.tsx"
+        ]
+      }
+    },
+    "external-call": {
+      "includeTests": false,
+      "includeFixtures": false,
+      "patternSets": {
+        "source": [
+          "*.ts",
+          "*.js",
+          "*.cs",
+          "*.py",
+          "*.java"
+        ]
+      }
     }
   }
 }

@@ -1,7 +1,7 @@
 {
   "artifact": "config-catalog",
-  "generatedAt": "2026-10-23T01:55:31-04:00",
-  "recordCount": 49,
+  "generatedAt": "2026-10-23T15:18:12+00:00",
+  "recordCount": 50,
   "records": [
     {
       "artifact": "config-catalog",
@@ -10,15 +10,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "true",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -27,15 +27,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "ci-${{ github.ref }}",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -44,15 +44,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "Committed docs/ match a fresh build",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -61,15 +61,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "hygiene",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -78,15 +78,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "ubuntu-latest",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -95,15 +95,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "pwsh",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -112,15 +112,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "0",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -129,15 +129,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -146,15 +146,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "name: Rebuild the self-dogfood docs in a scratch copy and compare",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -163,15 +163,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "Repo hygiene and static gates",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -180,15 +180,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "ubuntu-latest",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -197,15 +197,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
-        "value": "./.appdoc/scripts/powershell/ci-doc-integrity-gate.ps1 -RootPath .",
+        "file": ".github/workflows/appdoc-ci.yml",
+        "value": "./.appdoc/scripts/powershell/ci-pipeline-docs-gate.ps1 -RootPath .",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -214,15 +214,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "pwsh",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -231,15 +231,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -248,15 +248,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "name: No tracked files that .gitignore excludes",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -265,15 +265,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "name: Skill docs are harness-agnostic and frontmatter is valid",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -282,15 +282,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "name: Core is harness-neutral and carries no target-specific names",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -299,15 +299,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "name: Entry scripts declare PowerShell 7.2 and CmdletBinding",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -316,15 +316,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "name: Scripts named in docs, prompts and editor settings exist",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -333,15 +333,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "name: No absolute host paths and no CR line endings in committed docs/",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -350,15 +350,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "name: PowerShell syntax gate",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -367,15 +367,32 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "name: Documentation integrity gate",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
+    },
+    {
+      "artifact": "config-catalog",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[9]",
+      "name": "jobs.hygiene.steps[9]",
+      "kind": "configuration",
+      "confidence": 1.0,
+      "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
+        "value": "name: Pipeline docs gate (docs/pipeline/)",
+        "type": "YAML Configuration",
+        "required": false
+      },
+      "provider": "generator",
+      "providerType": "deterministic",
+      "status": "Detected",
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -384,15 +401,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "PSScriptAnalyzer",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -401,15 +418,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "ubuntu-latest",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -418,15 +435,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "pwsh",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -435,15 +452,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -452,15 +469,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "name: Analyze (enforced rules fail the job; the rest are reported)",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -469,15 +486,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "Pester + proof harness (${{ matrix.os }}, dotnet ${{ matrix.dotnet }})",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -486,15 +503,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "hygiene",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -503,15 +520,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "${{ matrix.os }}",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -520,15 +537,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "matrix.dotnet == 'without'",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -537,15 +554,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "./tests/powershell/test-semantic-quarantine.ps1",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -554,15 +571,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "pwsh",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -571,15 +588,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "8.0.x",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -588,15 +605,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "0",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -605,15 +622,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -622,15 +639,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -639,15 +656,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "name: Hide dotnet (regex-fallback leg)",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -656,15 +673,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "name: Install Pester 5",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -673,15 +690,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "name: Pester (unit suites + golden suites)",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -690,15 +707,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "name: Semantic quarantine proof harness (plain script, not Pester)",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -707,15 +724,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "false",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -724,15 +741,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "[with]",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -741,15 +758,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "without",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -758,15 +775,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "os: ubuntu-latest",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -775,15 +792,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "[ubuntu-latest, windows-latest]",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -792,15 +809,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "appdoc-ci",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -809,15 +826,15 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "[main]",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     },
     {
       "artifact": "config-catalog",
@@ -826,27 +843,27 @@
       "kind": "configuration",
       "confidence": 1.0,
       "metadata": {
+        "file": ".github/workflows/appdoc-ci.yml",
         "value": "read",
         "type": "YAML Configuration",
-        "required": false,
-        "file": ".github/workflows/appdoc-ci.yml"
+        "required": false
       },
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:31-04:00"
+      "timestamp": "2026-10-23T15:18:12+00:00"
     }
   ],
   "metadata": {
     "requiredEvidenceKeys": [
       "configurations"
     ],
+    "generator": "generate-config-catalog.ps1",
+    "configCount": 50,
     "requiredSections": [
       "Summary",
       "Configuration Options"
-    ],
-    "generator": "generate-config-catalog.ps1",
-    "configCount": 49
+    ]
   },
   "determinism": {
     "hashAlgorithm": "SHA256",
@@ -855,6 +872,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "2b46a9d58748341fbbc998223446602c6fe107be7df3544dc01baec7d473d621"
+    "contentHash": "d63df201d465424466d49c1bf832e0537fa30e743f5ef4691189724d5e238432"
   }
 }

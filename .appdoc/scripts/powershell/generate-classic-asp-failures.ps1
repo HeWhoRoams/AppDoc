@@ -26,6 +26,8 @@ Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1'
 
 # Shared classic-ASP helpers (single definition; see modules/AppDoc.ClassicAsp.psm1).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+# Shared repo-relative path (Get-AppDocRelativePath).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Scope.psm1') -ErrorAction Stop
 
 $ErrorActionPreference = "Stop"
 $helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
@@ -48,6 +50,15 @@ $evidencePath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "test-catalog
 
 Write-Host "⚠️  Generating Classic ASP failure-mode catalog..." -ForegroundColor Cyan
 if (-not (Get-ClassicAspFrameworkApplicable -RootPath $RootPath)) {
+    # Ownership of the shared artifact is decided by provenance, not by the framework label: the generic
+    # test-catalog generator runs earlier. If docs/test-catalog.md exists and is not this generator's own
+    # "not applicable" placeholder, a prior owner populated it and this generator must yield, not clobber.
+    # (Same rule as generate-classic-asp-extcalls.ps1.)
+    if ((Test-Path -LiteralPath $outputPath) -and (-not (Test-AppDocArtifactIsClassicAspPlaceholder -Path $outputPath))) {
+        Write-Host "  Framework not Classic ASP and a prior (generic) test catalog exists; yielding (not clobbering)." -ForegroundColor Yellow
+        Write-Host "✅ test-catalog.md retained (non-ASP guard)." -ForegroundColor Green
+        exit 0
+    }
     Write-Host "  Framework not Classic ASP - writing placeholder." -ForegroundColor Yellow
     Write-AppDocNotApplicablePlaceholder -OutputPath $outputPath -Title "Test Catalog" -ExtraSections ([ordered]@{ 'Test Suites' = 'No test suites were extracted for this framework.'; 'Test Cases' = 'No test cases were extracted for this framework.' })
     @() | ConvertTo-Json -Depth 5 | Out-File -FilePath $evidencePath -Encoding UTF8
@@ -82,7 +93,7 @@ function Show-Files {
 
 function Invoke-FailuresFileScan {
     param([string]$FullPath)
-    $rel = Get-RelativePath -FullPath $FullPath -Base $rootPrefix
+    $rel = Get-AppDocRelativePath -Path $FullPath -RootPath $rootPrefix
     $content = Get-Content $FullPath -Raw -ErrorAction SilentlyContinue
     if ($null -eq $content) { return }
     $lines = @($content -split "`r?`n")

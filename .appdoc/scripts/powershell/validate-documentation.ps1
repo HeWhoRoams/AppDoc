@@ -22,6 +22,8 @@ param(
 
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Values.psm1') -ErrorAction Stop
 
 $diagnosticsModule = Join-Path $PSScriptRoot "modules\AppDoc.Diagnostics.psm1"
 $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
@@ -163,27 +165,6 @@ $artifactMap = @{
     "dependencies-catalog" = "dependencies-catalog.md"
 }
 
-function Get-AppDocValidationContentValue {
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) { return $Object[$Name] }
-        return $Default
-    }
-
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
-}
-
 function Get-AppDocValidationContentExpectations {
     param(
         [Parameter(Mandatory=$true)]
@@ -272,43 +253,14 @@ function Get-AppDocValidationContentExpectations {
     }
     $allowNoModelSurface = (-not $modelSurfaceExpected) -and ($modelCount -eq 0)
 
-    $dependencySignalFiles = @()
-    $dependencySignalPatterns = @(
-        "*.csproj",
-        "*.vbproj",
-        "packages.config",
-        "package.json",
-        "pom.xml",
-        "build.gradle",
-        "build.gradle.kts",
-        "requirements.txt",
-        "Pipfile",
-        "poetry.lock",
-        "*.nuspec"
+    $dependencySignalFiles = @(
+        Get-AppDocSourceFiles -RootPath $RootPath -Artifact "dependencies-catalog" -Set signals
     )
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        $dependencySignalFiles = @(
-            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "dependencies-catalog" -Include $dependencySignalPatterns
-        )
-    }
-    else {
-        $dependencySignalFiles = @(
-            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $dependencySignalPatterns -ErrorAction SilentlyContinue
-        )
-    }
     $dependencySignalCount = @($dependencySignalFiles).Count
 
-    $testSignalCandidates = @()
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        $testSignalCandidates = @(
-            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Include @("*.cs","*.ts","*.js","*.py","*.java","*.go","*.feature")
-        )
-    }
-    else {
-        $testSignalCandidates = @(
-            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include @("*.cs","*.ts","*.js","*.py","*.java","*.go","*.feature") -ErrorAction SilentlyContinue
-        )
-    }
+    $testSignalCandidates = @(
+        Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Set signalSource
+    )
     $testSignalFiles = @(
         $testSignalCandidates |
             Where-Object {
@@ -317,43 +269,23 @@ function Get-AppDocValidationContentExpectations {
                 $p -match '(?i)(?:^|[\\/]).*(?:\.test|\.tests|\.spec|_test|_tests)\.[A-Za-z0-9]+$'
             }
     )
-    $testProjectSignals = @()
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        $testProjectSignals = @(
-            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Include @("*.csproj","*.vbproj","*.fsproj") |
-                Where-Object {
-                    $p = [string]$_.FullName
-                    $n = [string]$_.Name
-                    $p -match '(?i)(?:^|[\\/])(?:test|tests|spec|specs)(?:[\\/]|$)' -or
-                    $n -match '(?i)\.(tests?|specs?)\.(csproj|vbproj|fsproj)$'
-                }
-        )
-    }
-    else {
-        $testProjectSignals = @(
-            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include @("*.csproj","*.vbproj","*.fsproj") -ErrorAction SilentlyContinue |
-                Where-Object {
-                    $p = [string]$_.FullName
-                    $n = [string]$_.Name
-                    $p -match '(?i)(?:^|[\\/])(?:test|tests|spec|specs)(?:[\\/]|$)' -or
-                    $n -match '(?i)\.(tests?|specs?)\.(csproj|vbproj|fsproj)$'
-                }
-        )
-    }
+    $testProjectSignals = @(
+        Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Set signalProjects |
+            Where-Object {
+                $p = [string]$_.FullName
+                $n = [string]$_.Name
+                $p -match '(?i)(?:^|[\\/])(?:test|tests|spec|specs)(?:[\\/]|$)' -or
+                $n -match '(?i)\.(tests?|specs?)\.(csproj|vbproj|fsproj)$'
+            }
+    )
     $testSignalCount = @($testSignalFiles).Count + @($testProjectSignals).Count
 
-    $debtSignalCandidates = @()
+    # Wider than the debt-register source set (also *.go, *.rb, *.php, *.kt, *.swift): kept local so the
+    # validator keeps its current expectations. See the Phase 1 findings in the remediation plan.
     $debtExtensions = @("*.js","*.ts","*.cs","*.py","*.java","*.go","*.rb","*.php","*.kt","*.kts","*.swift")
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        $debtSignalCandidates = @(
-            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "debt-register" -Include $debtExtensions
-        )
-    }
-    else {
-        $debtSignalCandidates = @(
-            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $debtExtensions -ErrorAction SilentlyContinue
-        )
-    }
+    $debtSignalCandidates = @(
+        Get-AppDocSourceFiles -RootPath $RootPath -Artifact "debt-register" -Include $debtExtensions
+    )
     $debtSignalCount = 0
     foreach ($file in @($debtSignalCandidates | Select-Object -First 300)) {
         if ((Get-Item $file.FullName).Length -gt 1MB) { continue }
@@ -925,17 +857,28 @@ function Get-DataModelCoverage {
 function Get-RedactionSafetyScore {
     param([string]$ConfigDocPath)
 
-    if (-not (Test-Path $ConfigDocPath)) { return 100 }
+    # Vendor secret shapes anywhere in the generated Markdown cost 25 points each.
+    $vendorLeaks = 0
+    if ($ConfigDocPath) {
+        $docsDir = Split-Path $ConfigDocPath -Parent
+        foreach ($md in @(Get-ChildItem -Path $docsDir -Filter '*.md' -File -Recurse -ErrorAction SilentlyContinue)) {
+            $mdText = Get-Content -LiteralPath $md.FullName -Raw -ErrorAction SilentlyContinue
+            if ($mdText -and (Test-AppDocVendorSecret -Text $mdText)) { $vendorLeaks++ }
+        }
+    }
+    $vendorPenalty = 25 * $vendorLeaks
+
+    if (-not (Test-Path $ConfigDocPath)) { return [Math]::Max(0, 100 - $vendorPenalty) }
 
     $content = Get-Content $ConfigDocPath -Raw
-    if (-not $content) { return 100 }
+    if (-not $content) { return [Math]::Max(0, 100 - $vendorPenalty) }
 
     $sensitiveRows = [regex]::Matches(
         $content,
         ('(?im)^\|[^\r\n]*(' + (Get-AppDocCredentialKeywordPattern) + ')[^\r\n]*\|[^\r\n]*$')
     )
 
-    if ($sensitiveRows.Count -eq 0) { return 100 }
+    if ($sensitiveRows.Count -eq 0) { return [Math]::Max(0, 100 - $vendorPenalty) }
 
     # (This check silently matched nothing while generated docs had CRLF line endings,
     # because `[^\r\n]*$` cannot cross the \r; with LF output it now runs.) Both redaction
@@ -947,7 +890,7 @@ function Get-RedactionSafetyScore {
         }
     }
 
-    return [Math]::Max(0, (100 - ($unredacted * 10)))
+    return [Math]::Max(0, (100 - ($unredacted * 10) - $vendorPenalty))
 }
 
 function Get-ConformanceScore {
@@ -1603,11 +1546,11 @@ function Get-CrossArtifactMetricDriftAnalysis {
         }
     }
 
-    $totals = Get-AppDocValidationContentValue -Object $canonical -Name "totals" -Default @{}
-    $canonicalEndpointCount = [int](Get-AppDocValidationContentValue -Object $totals -Name "endpointCount" -Default 0)
-    $canonicalModelCount = [int](Get-AppDocValidationContentValue -Object $totals -Name "modelCount" -Default 0)
-    $canonicalDependencyCount = [int](Get-AppDocValidationContentValue -Object $totals -Name "dependencyCount" -Default 0)
-    $canonicalTestCaseCount = [int](Get-AppDocValidationContentValue -Object $totals -Name "testCaseCount" -Default 0)
+    $totals = Get-AppDocValue -Object $canonical -Name "totals" -Default @{}
+    $canonicalEndpointCount = [int](Get-AppDocValue -Object $totals -Name "endpointCount" -Default 0)
+    $canonicalModelCount = [int](Get-AppDocValue -Object $totals -Name "modelCount" -Default 0)
+    $canonicalDependencyCount = [int](Get-AppDocValue -Object $totals -Name "dependencyCount" -Default 0)
+    $canonicalTestCaseCount = [int](Get-AppDocValue -Object $totals -Name "testCaseCount" -Default 0)
 
     $signals.canonical = [ordered]@{
         endpointCount = $canonicalEndpointCount
@@ -1645,10 +1588,10 @@ function Get-CrossArtifactMetricDriftAnalysis {
     if (Test-Path $overviewTruthPath) {
         try {
             $truthPack = Get-Content $overviewTruthPath -Raw | ConvertFrom-Json -Depth 80
-            $counts = Get-AppDocValidationContentValue -Object $truthPack -Name "counts" -Default @{}
-            $overviewEndpoint = [int](Get-AppDocValidationContentValue -Object $counts -Name "endpointRecords" -Default 0)
-            $overviewModel = [int](Get-AppDocValidationContentValue -Object $counts -Name "modelRecords" -Default 0)
-            $overviewDependency = [int](Get-AppDocValidationContentValue -Object $counts -Name "dependencyRecords" -Default 0)
+            $counts = Get-AppDocValue -Object $truthPack -Name "counts" -Default @{}
+            $overviewEndpoint = [int](Get-AppDocValue -Object $counts -Name "endpointRecords" -Default 0)
+            $overviewModel = [int](Get-AppDocValue -Object $counts -Name "modelRecords" -Default 0)
+            $overviewDependency = [int](Get-AppDocValue -Object $counts -Name "dependencyRecords" -Default 0)
             $signals.overviewTruthPack = [ordered]@{
                 endpointCount = $overviewEndpoint
                 modelCount = $overviewModel

@@ -1,10 +1,10 @@
 # C4 System Context
 
-**Generated**: 2026-10-23 01:55:37
+**Generated**: 2026-10-23 15:18:17
 
 ## Summary
 
-- System: selfbuild (repository root)
+- System: self2 (repository root)
 - External systems detected: 0
 - Note: no in-scope .NET solution file found; context reflects the repository itself
 
@@ -12,10 +12,10 @@
 
 ```mermaid
 C4Context
-title selfbuild - System Context
+title self2 - System Context
 Person(user, "User", "Primary caller of the system")
-System(selfbuild, "selfbuild", "Software system: selfbuild (repository root; no in-scope .sln)")
-Rel(user, selfbuild, "Uses")
+System(self2, "self2", "Software system: self2 (repository root; no in-scope .sln)")
+Rel(user, self2, "Uses")
 ```
 
 ---
@@ -25,8 +25,8 @@ Rel(user, selfbuild, "Uses")
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 17cdd36
-- Generated At: 2026-10-23T01:55:45-04:00
+- Commit Hash: 5e53b62
+- Generated At: 2026-10-23T15:18:23+00:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

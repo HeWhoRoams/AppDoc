@@ -14,27 +14,8 @@ param(
 
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
-
-function Get-AppDocOverviewGeneratorValue {
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) { return $Object[$Name] }
-        return $Default
-    }
-
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
-}
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Values.psm1') -ErrorAction Stop
 
 function ConvertTo-AppDocPortableRelativePath {
     param(
@@ -115,11 +96,11 @@ function Get-AppDocOverviewFactTexts {
         [string[]]$Fallback = @()
     )
 
-    $facts = Get-AppDocOverviewGeneratorValue -Object $TruthPack -Name "facts" -Default $null
-    $factItems = Get-AppDocOverviewGeneratorValue -Object $facts -Name $FactName -Default @()
+    $facts = Get-AppDocValue -Object $TruthPack -Name "facts" -Default $null
+    $factItems = Get-AppDocValue -Object $facts -Name $FactName -Default @()
     $texts = @(
         @($factItems) |
-            ForEach-Object { [string](Get-AppDocOverviewGeneratorValue -Object $_ -Name "text" -Default "") } |
+            ForEach-Object { [string](Get-AppDocValue -Object $_ -Name "text" -Default "") } |
             Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
     )
 
@@ -228,13 +209,13 @@ if ($null -eq $truthPack) {
     if (Test-Path $canonicalMetricsPath) {
         try {
             $canonical = Get-Content $canonicalMetricsPath -Raw | ConvertFrom-Json -Depth 50
-            $totals = Get-AppDocOverviewGeneratorValue -Object $canonical -Name "totals" -Default $null
+            $totals = Get-AppDocValue -Object $canonical -Name "totals" -Default $null
             if ($totals -and $truthPack.counts) {
-                $truthPack.counts.endpointRecords = [int](Get-AppDocOverviewGeneratorValue -Object $totals -Name "endpointCount" -Default $truthPack.counts.endpointRecords)
-                $truthPack.counts.inboundEndpoints = [int](Get-AppDocOverviewGeneratorValue -Object $totals -Name "inboundEndpointCount" -Default $truthPack.counts.inboundEndpoints)
-                $truthPack.counts.outboundEndpoints = [int](Get-AppDocOverviewGeneratorValue -Object $totals -Name "outboundEndpointCount" -Default $truthPack.counts.outboundEndpoints)
-                $truthPack.counts.modelRecords = [int](Get-AppDocOverviewGeneratorValue -Object $totals -Name "modelCount" -Default $truthPack.counts.modelRecords)
-                $truthPack.counts.dependencyRecords = [int](Get-AppDocOverviewGeneratorValue -Object $totals -Name "dependencyCount" -Default $truthPack.counts.dependencyRecords)
+                $truthPack.counts.endpointRecords = [int](Get-AppDocValue -Object $totals -Name "endpointCount" -Default $truthPack.counts.endpointRecords)
+                $truthPack.counts.inboundEndpoints = [int](Get-AppDocValue -Object $totals -Name "inboundEndpointCount" -Default $truthPack.counts.inboundEndpoints)
+                $truthPack.counts.outboundEndpoints = [int](Get-AppDocValue -Object $totals -Name "outboundEndpointCount" -Default $truthPack.counts.outboundEndpoints)
+                $truthPack.counts.modelRecords = [int](Get-AppDocValue -Object $totals -Name "modelCount" -Default $truthPack.counts.modelRecords)
+                $truthPack.counts.dependencyRecords = [int](Get-AppDocValue -Object $totals -Name "dependencyCount" -Default $truthPack.counts.dependencyRecords)
             }
         }
         catch {
@@ -265,8 +246,8 @@ Write-Progress -Activity "Generating System Overview" -Status "Populating templa
 $content = Get-Content -Path $outputPath -Raw
 $content = Update-AppDocOverviewContent -Content $content -CodeFileCount ([int]$overviewData.codeFileCount) -LanguageCount $languageCount -WelcomeNarrative $welcomeNarrative -TruthPack $truthPack
 
-$primaryStyle = [string](Get-AppDocOverviewGeneratorValue -Object (Get-AppDocOverviewGeneratorValue -Object $truthPack -Name "architecture" -Default @{}) -Name "primaryStyle" -Default "unknown")
-$confidence = [string](Get-AppDocOverviewGeneratorValue -Object (Get-AppDocOverviewGeneratorValue -Object $truthPack -Name "architecture" -Default @{}) -Name "confidence" -Default "")
+$primaryStyle = [string](Get-AppDocValue -Object (Get-AppDocValue -Object $truthPack -Name "architecture" -Default @{}) -Name "primaryStyle" -Default "unknown")
+$confidence = [string](Get-AppDocValue -Object (Get-AppDocValue -Object $truthPack -Name "architecture" -Default @{}) -Name "confidence" -Default "")
 $confidenceSuffix = if ([string]::IsNullOrWhiteSpace($confidence)) { "" } else { " (confidence $confidence)" }
 $systemBoundaryLines = @(
     "System scope is documented for this repository run and bounded to generated artifacts under docs/ and evidence/."
@@ -342,21 +323,21 @@ $evidenceMetadata = @{
     generator = "generate-overview.ps1"
     truthPackPath = (ConvertTo-AppDocPortableRelativePath -RootPath $RootPath -Value $truthPackPath)
     contextPackPath = (ConvertTo-AppDocPortableRelativePath -RootPath $RootPath -Value $contextPackPath)
-    welcomeNarrativeProvider = [string](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult -Name "provider" -Default "")
-    welcomeNarrativeVerified = [bool](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.verification -Name "passed" -Default $false)
-    welcomeNarrativeIssues = @(Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.verification -Name "issues" -Default @())
-    welcomeSectionCoveragePassed = [bool](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.sectionCoverage -Name "passed" -Default $false)
-    welcomeSectionCoverageIssues = @(Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.sectionCoverage -Name "issues" -Default @())
-    welcomeStyleGatePassed = [bool](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.styleGate -Name "passed" -Default $false)
-    welcomeStyleGateIssues = @(Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.styleGate -Name "issues" -Default @())
-    welcomeStyleGateMetrics = (Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult.styleGate -Name "metrics" -Default @{})
-    narrativeReviewRequired = [bool](Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult -Name "narrativeReviewRequired" -Default $false)
-    welcomeNarrativePassSources = (Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult -Name "passSources" -Default @())
-    narrativeArtifacts = (ConvertTo-AppDocPortablePathMap -RootPath $RootPath -Object (Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult -Name "artifactPaths" -Default @{}))
-    narrativeRunReport = (Get-AppDocOverviewGeneratorValue -Object $welcomeNarrativeResult -Name "runReport" -Default @{})
-    evidenceGraphPath = [string](Get-AppDocOverviewGeneratorValue -Object (Get-AppDocOverviewGeneratorValue -Object $truthPack -Name "graph" -Default @{}) -Name "path" -Default "")
-    evidenceGraphEntityCount = [int](Get-AppDocOverviewGeneratorValue -Object (Get-AppDocOverviewGeneratorValue -Object $truthPack -Name "graph" -Default @{}) -Name "entityCount" -Default 0)
-    evidenceGraphEdgeCount = [int](Get-AppDocOverviewGeneratorValue -Object (Get-AppDocOverviewGeneratorValue -Object $truthPack -Name "graph" -Default @{}) -Name "edgeCount" -Default 0)
+    welcomeNarrativeProvider = [string](Get-AppDocValue -Object $welcomeNarrativeResult -Name "provider" -Default "")
+    welcomeNarrativeVerified = [bool](Get-AppDocValue -Object $welcomeNarrativeResult.verification -Name "passed" -Default $false)
+    welcomeNarrativeIssues = @(Get-AppDocValue -Object $welcomeNarrativeResult.verification -Name "issues" -Default @())
+    welcomeSectionCoveragePassed = [bool](Get-AppDocValue -Object $welcomeNarrativeResult.sectionCoverage -Name "passed" -Default $false)
+    welcomeSectionCoverageIssues = @(Get-AppDocValue -Object $welcomeNarrativeResult.sectionCoverage -Name "issues" -Default @())
+    welcomeStyleGatePassed = [bool](Get-AppDocValue -Object $welcomeNarrativeResult.styleGate -Name "passed" -Default $false)
+    welcomeStyleGateIssues = @(Get-AppDocValue -Object $welcomeNarrativeResult.styleGate -Name "issues" -Default @())
+    welcomeStyleGateMetrics = (Get-AppDocValue -Object $welcomeNarrativeResult.styleGate -Name "metrics" -Default @{})
+    narrativeReviewRequired = [bool](Get-AppDocValue -Object $welcomeNarrativeResult -Name "narrativeReviewRequired" -Default $false)
+    welcomeNarrativePassSources = (Get-AppDocValue -Object $welcomeNarrativeResult -Name "passSources" -Default @())
+    narrativeArtifacts = (ConvertTo-AppDocPortablePathMap -RootPath $RootPath -Object (Get-AppDocValue -Object $welcomeNarrativeResult -Name "artifactPaths" -Default @{}))
+    narrativeRunReport = (Get-AppDocValue -Object $welcomeNarrativeResult -Name "runReport" -Default @{})
+    evidenceGraphPath = [string](Get-AppDocValue -Object (Get-AppDocValue -Object $truthPack -Name "graph" -Default @{}) -Name "path" -Default "")
+    evidenceGraphEntityCount = [int](Get-AppDocValue -Object (Get-AppDocValue -Object $truthPack -Name "graph" -Default @{}) -Name "entityCount" -Default 0)
+    evidenceGraphEdgeCount = [int](Get-AppDocValue -Object (Get-AppDocValue -Object $truthPack -Name "graph" -Default @{}) -Name "edgeCount" -Default 0)
 }
 if ($contract) {
     $evidenceMetadata.requiredEvidenceKeys = @($contract.requiredEvidenceKeys)

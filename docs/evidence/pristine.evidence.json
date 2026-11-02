@@ -2,7 +2,7 @@
   "artifact": "pristine-report",
   "generator": "generate-pristine-report.ps1",
   "module": "AppDoc.Pristine.psm1",
-  "reportDate": "10/23/2026 01:55:38",
+  "reportDate": "10/23/2026 15:18:18",
   "benchmarkRef": "AppDoc 20-section reference structure (18 shared sections + 2 discipline additions)",
   "subScore": 78.9,
   "counts": {
@@ -237,10 +237,10 @@
       "section": "Troubleshooting Matrix",
       "headingPresent": true,
       "status": "PASS",
-      "reason": "Verified-source-doc — populated from `README.md`: 146 (cited hand-authored docs; owner-pending cell resolved from source-of-truth)",
+      "reason": "Verified-source-doc — populated from `README.md`: 179, `README.md`: 368 (cited hand-authored docs; owner-pending cell resolved from source-of-truth)",
       "populated": false,
       "rowCount": 0,
-      "textPopulation": 4,
+      "textPopulation": 6,
       "hasMermaid": false,
       "sourceSupport": 0,
       "epistemicTagged": true,
@@ -404,5 +404,5 @@
       "sectionScore": 100
     }
   ],
-  "determinismHash": "512611b2fde6fcb3d216eafb450d6ca04069ebff9bfb3b1595fc558302bc77a2"
+  "determinismHash": "8a57ce0d5b23a453aa653b359ba2ea40ade6c27465cf46f22b13ede2841910af"
 }

@@ -85,6 +85,10 @@ jobs:
         shell: pwsh
         run: ./.appdoc/scripts/powershell/ci-doc-integrity-gate.ps1 -RootPath .
 
+      - name: Pipeline docs gate (docs/pipeline/)
+        shell: pwsh
+        run: ./.appdoc/scripts/powershell/ci-pipeline-docs-gate.ps1 -RootPath .
+
   lint:
     name: PSScriptAnalyzer
     runs-on: ubuntu-latest
@@ -159,6 +163,13 @@ jobs:
           $result = Invoke-Pester -Configuration $cfg
           "Passed=$($result.PassedCount) Failed=$($result.FailedCount) Skipped=$($result.SkippedCount) Total=$($result.TotalCount)"
           if ($result.FailedCount -gt 0 -or $result.FailedContainersCount -gt 0 -or $result.TotalCount -eq 0) { exit 1 }
+
+      - name: Output snapshot harness (every generated file unchanged)
+        # Baselines exist for the regex path only (tests/powershell/snapshots/no-dotnet), so the
+        # harness runs on the leg that hides dotnet.
+        if: matrix.dotnet == 'without'
+        shell: pwsh
+        run: ./tests/powershell/test-output-snapshot.ps1
 
       - name: Semantic quarantine proof harness (plain script, not Pester)
         shell: pwsh

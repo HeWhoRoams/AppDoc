@@ -22,7 +22,7 @@ There are two layers:
 - **The core is deterministic.** One PowerShell command, no LLM, no network calls, no API key. A validation gate scores the output, and the build reports the result in its exit code.
 - **AI enrichment is optional and quarantined.** The AI session that runs the skill can fill owner-knowledge gaps such as purpose and data flows, but only through a quarantine that fails closed. It never overrides a verified fact, and secrets never reach it.
 
-> **Status:** 1.1.0 is on branch `remediation/skill-portability` and not yet tagged. See [CHANGELOG.md](CHANGELOG.md) for what changed and [ROADMAP.md](ROADMAP.md) for what's next. The open gaps are listed under [Known limitations](#known-limitations).
+> **Status:** 1.1.0 is on branch `remediation/skill-portability` and not yet tagged. A code audit (2026-10-28) is being worked through on the same branch: secrets in free text and the slow scope filter are fixed, and the remaining items are listed under [Known limitations](#known-limitations). See [CHANGELOG.md](CHANGELOG.md) for what changed and [ROADMAP.md](ROADMAP.md) for what's next.
 
 ---
 
@@ -70,37 +70,29 @@ flowchart LR
 
 ### The build pipeline
 
-`run-appdoc-build.ps1` is the only supported entry point. It wraps the orchestrator and adds the steps that make the output safe to share:
-
-1. loading the config;
-2. a second composition pass;
-3. the provenance footer;
-4. the redaction sweep;
-5. line-ending normalisation;
-6. the exit code.
+`run-appdoc-build.ps1` is the only supported entry point. One build passes through seven stages. Each stage has its own page, and the gate criteria are written once, in [gates.md](docs/pipeline/gates.md).
 
 ```mermaid
-flowchart TD
-    A["Load config<br/><i>invalid JSON → exit 1</i>"] --> B
-    subgraph B["run-all-generators.ps1"]
-        direction TB
-        B1["Analysis<br/>repository scan · dependency graph · config"] --> B2
-        B2["Evidence producers<br/>API · data model · config · build · tests · debt ·<br/>dependencies · framework-specific (Classic ASP) · external calls"] --> B3
-        B3["Summaries<br/>overview · start-here · task guides · index ·<br/>source docs · git ownership · evidence register"] --> B4
-        B4["Composer → application-documentation.md"] --> B5
-        B5["Diagrams · evidence graph · canonical metrics ·<br/>integrity gate · HTML report · validation"]
-    end
-    B --> C2["Second pass: composer + pristine + validation<br/>(now that diagrams exist)"]
-    C2 --> P[Provenance footer on every generated file]
-    P --> RS{"Redaction sweep<br/>(fail-closed)"}
-    RS -- module missing / bad regex --> X3([exit 3])
-    RS --> EN{"-EnableSemanticEnrich?"}
-    EN -- yes --> SG{"Secret-redaction gate<br/>on the LLM envelope"}
-    SG -- secret would leak --> X3
-    SG --> LF
-    EN -- no --> LF[Normalise to UTF-8 + LF]
-    LF --> EX[[Exit code]]
+---
+title: "L0 · AppDoc build pipeline overview"
+---
+flowchart LR
+  accTitle: AppDoc build pipeline overview
+  accDescr: One build run passes through seven stages. Stop gates G1, G4 and G5 end the run with exit code 1 or 3. Score gates G2 and G3 record an outcome and let the run continue; the close-out stage turns them into exit code 0, 1 or 2. Enrichment is optional. Filter gate G6 refuses individual unsafe values and the run continues.
+
+  S1("1 Configure") --> G1{"G1 STOP<br/>config and redaction<br/>patterns valid"}
+  G1 --> S2("2 Collect evidence") --> G2{{"G2 SCORE<br/>generator crash<br/>recorded"}}
+  G2 --> S3("3 Compose") --> S4("4 Validate") --> G3{{"G3 SCORE<br/>gate status"}}
+  G3 --> S5("5 Finalize") --> G4{"G4 STOP<br/>redaction sweep"}
+  G4 -->|"default"| S7("7 Close out<br/>exit 0, 1 or 2")
+  G4 -->|"enrichment on"| S6("6 Enrich<br/>optional") --> G5{"G5 STOP<br/>secret gate on<br/>LLM input"}
+  G5 --> G6[/"G6 FILTER<br/>quarantine merge"/] --> S7
+  G1 -.->|"exit 1 or 3"| STOP(["Run stops"])
+  G4 -.->|"exit 3"| STOP
+  G5 -.->|"exit 3"| STOP
 ```
+
+Start at the [pipeline overview](docs/pipeline/README.md) and drill down: [Configure](docs/pipeline/01-configure.md), [Collect evidence](docs/pipeline/02-collect-evidence.md), [Compose](docs/pipeline/03-compose.md), [Validate](docs/pipeline/04-validate.md), [Finalize](docs/pipeline/05-finalize.md), [Enrich](docs/pipeline/06-enrich.md), [Close out](docs/pipeline/07-close-out.md). Every step in execution order is on the [run order](docs/pipeline/detail/run-order.md) page.
 
 Every evidence producer runs **before** the steps that summarise evidence, so the overview and the master document see everything that was found. Each shared artifact (API inventory, data model, build cookbook) has **one owner per target**. On a Classic ASP target with `.asp`/`.inc` sources, the Classic ASP generators own it. On any other target, the generic generators do.
 
@@ -136,27 +128,14 @@ To change where the output goes, set `outputDir` in the target's `.appdoc/config
 
 The build reports its outcome in the exit code ([ADR 0003](docs/adr/0003-sub-validator-failure-policy.md)). **Treat any non-zero code as "not done".**
 
-```mermaid
-flowchart LR
-    S([build finishes]) --> R{validation-report.json<br/>readable?}
-    R -- no --> E1([1 · tool error])
-    R -- yes --> F{any pipeline<br/>generator crashed?}
-    F -- yes --> E1
-    F -- no --> G{gate status}
-    G -- pass --> E0([0 · passed])
-    G -- "pass-with-weak-coverage<br/>(not -StrictValidation)" --> E0
-    G -- fail --> A{-AllowGateFail?}
-    A -- yes --> E0
-    A -- no --> E2([2 · gate failed])
-    X["redaction sweep can't run,<br/>or secret-redaction gate blocks"] --> E3([3 · fail-closed stop])
-```
+The decision is made in the last stage. [Close out](docs/pipeline/07-close-out.md) shows it step by step, and [gates.md](docs/pipeline/gates.md#exit-codes) lists every path that sets each code.
 
 | Code | Meaning |
 |---|---|
 | `0` | The gate passed. Without `-StrictValidation`, `pass-with-weak-coverage` also exits 0, as does any run with `-AllowGateFail`. |
 | `1` | Tool error: bad path, missing module, invalid config JSON, a generator in the main pipeline crashed, or no validation report was produced. |
 | `2` | The gate failed: the docs were written but are not trustworthy. |
-| `3` | Fail-closed stop: the redaction sweep could not run, a `redactionRegexes` entry is invalid, or the secret-redaction gate blocked enrichment. |
+| `3` | Fail-closed stop: the redaction sweep could not run, a vendor-shaped secret (an AWS or GitHub key, say) was still in a generated file after the sweep, a `redactionRegexes` entry is invalid, or the secret-redaction gate blocked enrichment. |
 
 A sub-validator that fails lowers the gate score. One that crashes forces the gate to `fail`. The gate result also depends on blocking **policy** checks (for example `provenance-missing`), so read `validation-report.json`, not just the score.
 
@@ -207,6 +186,8 @@ docs/
 - Every generated file ends with a single `## Provenance` footer. JSON files carry a `provenance` object instead.
 - Hand-written files are never stamped, normalised or rewritten. That covers `docs/adr/` and any file containing `<!-- appdoc:hand-authored -->`.
 - Generated text is UTF-8 without a BOM, with LF line endings.
+- No host path appears in the output. Paths inside the target are relative; any other path is written as `<external>/<file name>`.
+- Source files are read in ordinal path order, so the output does not depend on the operating system's file listing order.
 - Re-running on the same target gives the same content and the same gate result. Only timestamps change.
 
 **Docs as code ([ADR 0002](docs/adr/0002-generated-docs-as-code.md)).** `docs/` is a stable, committed home. Generated files are overwritten in place, and hand-written material is preserved. AppDoc's own `docs/` folder is a dogfood run of AppDoc on itself, and CI checks it stays in sync with a fresh build.
@@ -275,6 +256,8 @@ Configuration is optional and lives in `<target>/.appdoc/config.json`. Without a
 | `ownership.showEmails` | Show author emails in `git-ownership.md`. Off by default: names only, `.mailmap` honoured. |
 | `pristineFloor`, `minCommitsForOwnership` | Thresholds for the pristine report and ownership rows. |
 
+**Scope policy.** Which files each artifact reads is set in `.appdoc/policies/scope.v1.json`: exclusions (`node_modules`, `bin`, `obj`, tests, fixtures, the output folder, and so on) and, per artifact, named `patternSets` of file names (for example the `source` set of the debt register). A target can ship its own `<target>/.appdoc/policies/scope.v1.json`, which takes precedence over the one in AppDoc. A target policy without `patternSets` falls back to the built-in sets. Excluded folders are skipped during the walk, not listed and then filtered.
+
 **Branding.** AppDoc is CMU-first: reports default to the CMU theme and mark. Another organisation can copy `.appdoc/templates/html/theme.json`, change its colours, fonts and `masthead`, set `masthead.logoSvg` to `none` or its own SVG, and point `themeFile` at it.
 
 **Target narrative belongs to the target.** AppDoc ships no knowledge of any particular application. Workflow descriptions, business context and internal system names go in that target's overlay files ([ADR 0001](docs/adr/0001-redaction-externalize-per-target-secrets.md) amendment).
@@ -287,7 +270,7 @@ Configuration is optional and lives in `<target>/.appdoc/config.json`. Without a
 flowchart LR
     SRC[Target source] --> X1["Extractors<br/>redact by shape and key name"]
     X1 --> X2["Operator redaction<br/>redactionPatterns · redactionRegexes"]
-    X2 --> X3["Final sweep over docs/<br/>(fail-closed, skips vendored + hand-written files)"]
+    X2 --> X3["Final sweep over docs/<br/>free-text + vendor shapes<br/>(fail-closed, skips vendored + hand-written files)"]
     X3 --> DOCS[(docs/)]
     DOCS -. enrichment .-> X4{"Secret-redaction gate<br/>scans raw strings and JSON"}
     X4 -- clean --> LLM[AI session]
@@ -295,11 +278,13 @@ flowchart LR
 ```
 
 - **Shape patterns only in the tool.** AppDoc recognises high-entropy, base64, named-key and URI-credential (`user:pass@`) shapes. It never contains a target's real secret values ([ADR 0001](docs/adr/0001-redaction-externalize-per-target-secrets.md)).
+- **Free text is redacted too.** Comment text (TODO, FIXME, HACK) and every generated file in the final sweep pass through `Protect-AppDocFreeText`. It removes vendor-shaped secrets (AWS, GitHub, Slack, Stripe and Google keys, JWTs, PEM private keys) and the value of any `name = value` pair whose name looks like a secret (`password`, `token`, `apiKey`, …). After the sweep, any vendor shape still present stops the build with exit 3, and the gate's redaction score counts leaks in generated Markdown.
 - **The secret's location is shown, never its value.** The key name and location appear in the docs; the value renders as `[REDACTED]`.
 - **Per-target secrets come from the operator.** Supply them through `redactionPatterns` and `redactionRegexes` in the config, or through the `-RedactionPatterns` and `-RedactionRegexes` options of `generate-source-docs.ps1` and `run-appdoc-semantic-enrich.ps1`.
 - **Fail-closed by default.** These conditions stop the build with exit 3 instead of continuing with weaker redaction:
   - the redaction module is missing;
   - a regex is invalid;
+  - a vendor-shaped secret survives the final sweep;
   - a known secret appears in the LLM envelope (including secrets that contain `"` or `\`).
 
 ---
@@ -344,22 +329,32 @@ flowchart LR
     PR --> L[lint]
     H --> T[tests]
     H --> D[drift]
-    H -.- H1["tracked-but-ignored files · harness and target names in core ·<br/>#requires + CmdletBinding · referenced scripts exist ·<br/>no host paths / CR in docs · syntax + integrity gates"]
+    H -.- H1["tracked-but-ignored files · harness and target names in core ·<br/>#requires + CmdletBinding · referenced scripts exist ·<br/>no host paths / CR in docs · syntax + integrity gates · pipeline docs gate"]
     L -.- L1["PSScriptAnalyzer: approved verbs, trailing whitespace,<br/>no empty catch in .appdoc/ (others reported)"]
-    T -.- T1["Pester unit + golden suites on Ubuntu and Windows,<br/>plus Ubuntu without .NET · quarantine proof harness"]
+    T -.- T1["Pester unit + golden suites on Ubuntu and Windows,<br/>plus Ubuntu without .NET · quarantine proof harness ·<br/>output snapshot harness (Ubuntu without .NET)"]
     D -.- D1["rebuild AppDoc's own docs/ and compare catalogs,<br/>section headings and gate result"]
 ```
 
-What each job checks:
+What each job checks (see also [what CI checks on this repository](docs/pipeline/ci.md)):
 
-- **Gate:** `validate-documentation.ps1` computes a composite score from 15 components and applies blocking policy checks.
+- **Pipeline docs gate:** `ci-pipeline-docs-gate.ps1` checks the pages under [`docs/pipeline/`](docs/pipeline/README.md): diagram size and accessibility, links, gate IDs, and the code they name.
+- **Gate:** `validate-documentation.ps1` computes a composite score from 18 components ([how it is scored](docs/pipeline/detail/validation-scoring.md)) and applies blocking policy checks.
 - **Golden suites:** one per framework class, each locking extractor output to its committed baseline.
 - **Unit tests:**
   - gate validator failures and build exit codes;
   - re-run determinism;
   - operator redaction and leak prevention for target-specific text;
+  - free-text redaction, and a full build of a fixture with planted secrets (`tests/fixtures/secret-in-comments-sample`) that must leak none;
+  - the scope filter (same files as list-then-filter, excluded folders never entered, ordinal order) and policy pattern sets;
+  - the shared value accessor `Get-AppDocValue`;
   - provenance footer, git ownership, `outputDir`, themes;
   - module import (approved verbs).
+- **Output snapshot harness:** builds every fixture and checks that each generated file, the exit code and the gate result match the committed baseline ([how it works](docs/pipeline/ci.md#the-output-snapshot-harness)):
+  ```bash
+  pwsh -NoProfile -File tests/powershell/test-output-snapshot.ps1
+  ```
+  Baselines exist only for the `no-dotnet` profile, so run it with `dotnet` off `PATH` and `node` on it (the profile is picked from `PATH`). An intended output change is taken with `-Update` and reviewed with `-SaveTree` / `-CompareTree`.
+- **Scope benchmark** (run by hand, not in CI): `.appdoc/scripts/powershell/bench-scope.ps1` times source-file selection on 10,000 generated files and exits 1 if it takes longer than 1 s.
 - **Quarantine proof harness:** run as a plain script, not under Pester:
   ```bash
   pwsh -NoProfile -File tests/powershell/test-semantic-quarantine.ps1
@@ -372,15 +367,17 @@ What each job checks:
 ```text
 SKILL.md                         # the skill contract (entry point for any AI harness)
 references/                      # config schema, verification, enrichment contract + operations
+.appdoc/policies/scope.v1.json   # scope policy: exclusions and per-artifact file patternSets
 .appdoc/scripts/powershell/      # run-appdoc-build.ps1, run-all-generators.ps1, generate-*, validate-*, ci-*
-.appdoc/scripts/powershell/modules/   # AppDoc.*.psm1 shared modules (Config, Paths, Scope, SecretPolicy,
+.appdoc/scripts/powershell/modules/   # AppDoc.*.psm1 shared modules (Config, Paths, Scope, Values, SecretPolicy,
                                       #   SemanticRedaction, Provenance, ClassicAsp, EvidenceGraph, …)
 .appdoc/templates/               # Markdown templates, HTML themes, vendored Mermaid (templates/html/vendor)
 .github/prompts/                 # Copilot wrappers: /appdoc.begin, /appdoc.enrich, /appdoc.diagrams
 .github/workflows/appdoc-ci.yml  # CI (hygiene, lint, tests, drift)
 docs/                            # AppDoc's own generated docs (dogfood) + docs/adr/
-tests/powershell/                # Pester suites, golden suites, quarantine harness
-tests/fixtures/                  # one sample target per framework class
+tests/powershell/                # Pester suites, golden suites, quarantine and output snapshot harnesses
+tests/powershell/snapshots/      # committed snapshot baselines (no-dotnet profile)
+tests/fixtures/                  # one sample target per framework class, plus a planted-secrets fixture
 ```
 
 Coding conventions are in [`.github/copilot-instructions.md`](.github/copilot-instructions.md) and [`PSScriptAnalyzerSettings.psd1`](PSScriptAnalyzerSettings.psd1).
@@ -394,13 +391,19 @@ Coding conventions are in [`.github/copilot-instructions.md`](.github/copilot-in
 
 ## Known limitations
 
-These are open items from the 2026-10-23 review, tracked for 1.1.x / 1.2.0:
+These are open items from the 2026-10-23 review and the 2026-10-28 audit, tracked for 1.1.x / 1.2.0:
 
-- If the C4 generator, the diagram suite or the HTML report crashes, the build still exits 0. Only crashes in the main generator pipeline give exit 1. Check `diagnostics-report.json` until this is fixed.
+- If the C4 generator, the diagram suite or the HTML report crashes, the build still exits 0. Only crashes in the main generator pipeline give exit 1. Check `diagnostics-report.json` (`metadata.scriptFailures`) until this is fixed.
+- The doc-integrity CI gate runs the diagram stability gate, which rewrites `docs/diagrams/` and `docs/evidence/diagram-truth-pack.json` in the repository it checks. Run it on a copy.
+- A `|` inside a table cell is escaped by the renderers, but several readers (the HTML report, the unified master, the validator and the pristine report) still split rows on every `|`.
+- TypeScript property types with a union, a literal or a space are cut short (`owner: string | null` becomes `owner: string`).
+- JSON files built from plain hashtables can write their keys in a different order on each run. The content is the same, and the snapshot harness compares canonical JSON.
+- Whether some evidence files carry a `determinism` block depends on which modules happen to be loaded.
+- Free-text redaction runs in the debt register and in the final sweep. The other extractors that copy free text rely on the sweep, and the enrichment redaction module does not yet share the vendor shapes.
 - Generated catalogs repeat their content exactly between runs, but their timestamps change.
 - The `/appdoc.diagrams` Copilot prompt edits generated diagrams in place, so the next build overwrites those edits.
 - Many internal error paths fall back to defaults or `Write-Verbose` instead of reporting a diagnostic.
-- Pester has not yet been run against the 1.1.0 changes; the first CI run will be the first.
+- Pester has not yet been run against the 1.1.0 changes; the first CI run will be the first. The snapshot harness covers only the path without .NET, so the Roslyn C# parser path is checked by the golden suites alone.
 
 ## Contributing
 

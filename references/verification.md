@@ -4,6 +4,8 @@ Run these before reporting a build or enrichment run as done.
 
 ## Build exit codes
 
+The decision step by step, with every path that sets each code: [close out](../docs/pipeline/07-close-out.md) and [gates](../docs/pipeline/gates.md#exit-codes).
+
 `run-appdoc-build.ps1` reports the outcome in its exit code (ADR 0003):
 
 | Code | Meaning |

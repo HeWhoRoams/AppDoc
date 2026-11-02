@@ -19,8 +19,8 @@ The generated evidence artifact `config-catalog.evidence.json` is committed to v
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 17cdd36
-- Generated At: 2026-10-23T01:55:45-04:00
+- Commit Hash: 5e53b62
+- Generated At: 2026-10-23T15:18:23+00:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

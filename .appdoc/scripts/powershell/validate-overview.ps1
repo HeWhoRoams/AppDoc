@@ -8,6 +8,8 @@ param(
 
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Values.psm1') -ErrorAction Stop
 
 function Get-OverviewSectionContent {
     param(
@@ -25,26 +27,6 @@ function Get-OverviewSectionContent {
     return ""
 }
 
-
-function Get-OverviewValue {
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) { return $Object[$Name] }
-        return $Default
-    }
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
-}
 
 Write-Progress -Activity "Validating Overview" -Status "Checking overview sections..." -PercentComplete 0
 
@@ -75,7 +57,7 @@ $fingerprintPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "architect
 if (Test-Path $fingerprintPath) {
     try {
         $fingerprint = Get-Content $fingerprintPath -Raw | ConvertFrom-Json -Depth 40
-        $primaryStyle = [string](Get-OverviewValue -Object $fingerprint -Name "primaryStyle" -Default "")
+        $primaryStyle = [string](Get-AppDocValue -Object $fingerprint -Name "primaryStyle" -Default "")
         if (-not [string]::IsNullOrWhiteSpace($primaryStyle) -and $overview -notmatch [regex]::Escape($primaryStyle)) {
             $issues += "architecture-statement-missing-primary-style"
         }
@@ -96,20 +78,20 @@ if ((Test-Path $truthPackPath) -and (Test-Path $graphPath)) {
         $truthPack = Get-Content $truthPackPath -Raw | ConvertFrom-Json -Depth 100
         $graph = Get-Content $graphPath -Raw | ConvertFrom-Json -Depth 100
 
-        $counts = Get-OverviewValue -Object $truthPack -Name "counts" -Default @{}
-        $graphMetrics = Get-OverviewValue -Object $graph -Name "metrics" -Default @{}
+        $counts = Get-AppDocValue -Object $truthPack -Name "counts" -Default @{}
+        $graphMetrics = Get-AppDocValue -Object $graph -Name "metrics" -Default @{}
 
-        $truthInbound = [int](Get-OverviewValue -Object $counts -Name "inboundEndpoints" -Default 0)
-        $truthOutbound = [int](Get-OverviewValue -Object $counts -Name "outboundEndpoints" -Default 0)
-        $truthModel = [int](Get-OverviewValue -Object $counts -Name "modelRecords" -Default 0)
-        $truthConfig = [int](Get-OverviewValue -Object $counts -Name "configurationRecords" -Default 0)
-        $truthDependency = [int](Get-OverviewValue -Object $counts -Name "dependencyRecords" -Default 0)
+        $truthInbound = [int](Get-AppDocValue -Object $counts -Name "inboundEndpoints" -Default 0)
+        $truthOutbound = [int](Get-AppDocValue -Object $counts -Name "outboundEndpoints" -Default 0)
+        $truthModel = [int](Get-AppDocValue -Object $counts -Name "modelRecords" -Default 0)
+        $truthConfig = [int](Get-AppDocValue -Object $counts -Name "configurationRecords" -Default 0)
+        $truthDependency = [int](Get-AppDocValue -Object $counts -Name "dependencyRecords" -Default 0)
 
-        $graphInbound = [int](Get-OverviewValue -Object $graphMetrics -Name "inboundEndpointCount" -Default 0)
-        $graphOutbound = [int](Get-OverviewValue -Object $graphMetrics -Name "outboundEndpointCount" -Default 0)
-        $graphModel = [int](Get-OverviewValue -Object $graphMetrics -Name "modelCount" -Default 0)
-        $graphConfig = [int](Get-OverviewValue -Object $graphMetrics -Name "configCount" -Default 0)
-        $graphDependency = [int](Get-OverviewValue -Object $graphMetrics -Name "dependencyCount" -Default 0)
+        $graphInbound = [int](Get-AppDocValue -Object $graphMetrics -Name "inboundEndpointCount" -Default 0)
+        $graphOutbound = [int](Get-AppDocValue -Object $graphMetrics -Name "outboundEndpointCount" -Default 0)
+        $graphModel = [int](Get-AppDocValue -Object $graphMetrics -Name "modelCount" -Default 0)
+        $graphConfig = [int](Get-AppDocValue -Object $graphMetrics -Name "configCount" -Default 0)
+        $graphDependency = [int](Get-AppDocValue -Object $graphMetrics -Name "dependencyCount" -Default 0)
 
         if ($truthInbound -ne $graphInbound) { $issues += "graph-count-mismatch:inboundEndpoints:$truthInbound/$graphInbound" }
         if ($truthOutbound -ne $graphOutbound) { $issues += "graph-count-mismatch:outboundEndpoints:$truthOutbound/$graphOutbound" }

@@ -1,4 +1,6 @@
 # Output folder resolution (config outputDir).
+# Source-file selection and repo-relative paths (AppDoc.Scope).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop
 Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 # AppDoc.EvidenceGraph Module
@@ -16,6 +18,8 @@ if (Test-Path $determinismModulePath) {
         Write-Verbose ("Failed to import determinism module: {0}" -f $_.Exception.Message)
     }
 }
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Values.psm1') -ErrorAction Stop
 
 $scopeModulePath = Join-Path $PSScriptRoot "AppDoc.Scope.psm1"
 if (Test-Path $scopeModulePath) {
@@ -25,28 +29,6 @@ if (Test-Path $scopeModulePath) {
     catch {
         Write-Verbose ("Failed to import scope module: {0}" -f $_.Exception.Message)
     }
-}
-
-function Get-AppDocEvidenceGraphValue {
-    [CmdletBinding()]
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) { return $Object[$Name] }
-        return $Default
-    }
-
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
 }
 
 function Get-AppDocEvidenceGraphContract {
@@ -119,14 +101,6 @@ function ConvertTo-AppDocEvidenceGraphId {
     return "{0}_{1}_{2}" -f $Prefix, $slug, $hashShort
 }
 
-function Get-AppDocEvidenceGraphRelativePath {
-    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
-    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
-    param([string]$RootPath, [string]$Path)
-    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
-    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-}
-
 function Get-AppDocEvidenceGraphArtifactPayload {
     [CmdletBinding()]
     param(
@@ -142,7 +116,7 @@ function Get-AppDocEvidenceGraphArtifactPayload {
         return [ordered]@{
             artifact = $Artifact
             path = $path
-            relativePath = (Get-AppDocEvidenceGraphRelativePath -RootPath $RootPath -Path $path)
+            relativePath = (Get-AppDocRelativePath -RootPath $RootPath -Path $path)
             exists = $false
             records = @()
             recordCount = 0
@@ -152,13 +126,13 @@ function Get-AppDocEvidenceGraphArtifactPayload {
     try {
         $payload = Get-Content -Path $path -Raw | ConvertFrom-Json -Depth 120
         $records = @(
-            Get-AppDocEvidenceGraphValue -Object $payload -Name "records" -Default @() |
+            Get-AppDocValue -Object $payload -Name "records" -Default @() |
                 Where-Object { $_ }
         )
         return [ordered]@{
             artifact = $Artifact
             path = $path
-            relativePath = (Get-AppDocEvidenceGraphRelativePath -RootPath $RootPath -Path $path)
+            relativePath = (Get-AppDocRelativePath -RootPath $RootPath -Path $path)
             exists = $true
             records = $records
             recordCount = $records.Count
@@ -168,7 +142,7 @@ function Get-AppDocEvidenceGraphArtifactPayload {
         return [ordered]@{
             artifact = $Artifact
             path = $path
-            relativePath = (Get-AppDocEvidenceGraphRelativePath -RootPath $RootPath -Path $path)
+            relativePath = (Get-AppDocRelativePath -RootPath $RootPath -Path $path)
             exists = $true
             records = @()
             recordCount = 0
@@ -184,15 +158,15 @@ function Get-AppDocEvidenceGraphEndpointDirection {
         [object]$Record
     )
 
-    $metadata = Get-AppDocEvidenceGraphValue -Object $Record -Name "metadata" -Default @{}
-    $direction = [string](Get-AppDocEvidenceGraphValue -Object $metadata -Name "direction" -Default "")
+    $metadata = Get-AppDocValue -Object $Record -Name "metadata" -Default @{}
+    $direction = [string](Get-AppDocValue -Object $metadata -Name "direction" -Default "")
     if ($direction -match '^(?i)(inbound|outbound)$') {
         return $direction.ToLowerInvariant()
     }
 
-    $sourceType = [string](Get-AppDocEvidenceGraphValue -Object $metadata -Name "sourceType" -Default "")
-    $name = [string](Get-AppDocEvidenceGraphValue -Object $Record -Name "name" -Default "")
-    $source = [string](Get-AppDocEvidenceGraphValue -Object $Record -Name "source" -Default "")
+    $sourceType = [string](Get-AppDocValue -Object $metadata -Name "sourceType" -Default "")
+    $name = [string](Get-AppDocValue -Object $Record -Name "name" -Default "")
+    $source = [string](Get-AppDocValue -Object $Record -Name "source" -Default "")
 
     if ($sourceType -match '^(?i)(soap-client|wcf-client|asmx-client|proxy-client)$' -or
         $name -match '^/soap-client/' -or
@@ -210,13 +184,13 @@ function Get-AppDocEvidenceGraphComponentName {
         [object]$Record
     )
 
-    $metadata = Get-AppDocEvidenceGraphValue -Object $Record -Name "metadata" -Default @{}
+    $metadata = Get-AppDocValue -Object $Record -Name "metadata" -Default @{}
     $componentCandidates = @(
-        [string](Get-AppDocEvidenceGraphValue -Object $metadata -Name "component" -Default ""),
-        [string](Get-AppDocEvidenceGraphValue -Object $metadata -Name "controller" -Default ""),
-        [string](Get-AppDocEvidenceGraphValue -Object $metadata -Name "service" -Default ""),
-        [string](Get-AppDocEvidenceGraphValue -Object $metadata -Name "class" -Default ""),
-        [string](Get-AppDocEvidenceGraphValue -Object $metadata -Name "className" -Default "")
+        [string](Get-AppDocValue -Object $metadata -Name "component" -Default ""),
+        [string](Get-AppDocValue -Object $metadata -Name "controller" -Default ""),
+        [string](Get-AppDocValue -Object $metadata -Name "service" -Default ""),
+        [string](Get-AppDocValue -Object $metadata -Name "class" -Default ""),
+        [string](Get-AppDocValue -Object $metadata -Name "className" -Default "")
     )
 
     foreach ($candidate in $componentCandidates) {
@@ -325,17 +299,17 @@ function Get-AppDocEvidenceGraphData {
         }
 
         $existing = $entityMap[$id]
-        $existingConfidence = [double](Get-AppDocEvidenceGraphValue -Object $existing -Name "confidence" -Default 0)
-        $newConfidence = [double](Get-AppDocEvidenceGraphValue -Object $Entity -Name "confidence" -Default 0)
+        $existingConfidence = [double](Get-AppDocValue -Object $existing -Name "confidence" -Default 0)
+        $newConfidence = [double](Get-AppDocValue -Object $Entity -Name "confidence" -Default 0)
         if ($newConfidence -gt $existingConfidence) {
             $existing.confidence = [Math]::Round($newConfidence, 4)
         }
 
         $existingSources = @(
-            (Get-AppDocEvidenceGraphValue -Object $existing -Name "attributes" -Default @{}).sources
+            (Get-AppDocValue -Object $existing -Name "attributes" -Default @{}).sources
         )
         $incomingSources = @(
-            (Get-AppDocEvidenceGraphValue -Object $Entity -Name "attributes" -Default @{}).sources
+            (Get-AppDocValue -Object $Entity -Name "attributes" -Default @{}).sources
         )
         $mergedSources = @($existingSources + $incomingSources | Where-Object { $_ } | Select-Object -Unique | Sort-Object)
         if ($mergedSources.Count -gt 0) {
@@ -353,8 +327,8 @@ function Get-AppDocEvidenceGraphData {
         }
 
         $existing = $edgeMap[$id]
-        $existingConfidence = [double](Get-AppDocEvidenceGraphValue -Object $existing -Name "confidence" -Default 0)
-        $newConfidence = [double](Get-AppDocEvidenceGraphValue -Object $Edge -Name "confidence" -Default 0)
+        $existingConfidence = [double](Get-AppDocValue -Object $existing -Name "confidence" -Default 0)
+        $newConfidence = [double](Get-AppDocValue -Object $Edge -Name "confidence" -Default 0)
         if ($newConfidence -gt $existingConfidence) {
             $existing.confidence = [Math]::Round($newConfidence, 4)
         }
@@ -396,26 +370,26 @@ function Get-AppDocEvidenceGraphData {
             path = [string]$payload.relativePath
             exists = [bool]$payload.exists
             recordCount = [int]$payload.recordCount
-            parseError = [string](Get-AppDocEvidenceGraphValue -Object $payload -Name "parseError" -Default "")
+            parseError = [string](Get-AppDocValue -Object $payload -Name "parseError" -Default "")
         }
 
         $records = @($payload.records)
         foreach ($record in $records) {
             if (-not $record) { continue }
-            $kind = ([string](Get-AppDocEvidenceGraphValue -Object $record -Name "kind" -Default "")).Trim().ToLowerInvariant()
+            $kind = ([string](Get-AppDocValue -Object $record -Name "kind" -Default "")).Trim().ToLowerInvariant()
             if ([string]::IsNullOrWhiteSpace($kind)) { continue }
 
-            $name = [string](Get-AppDocEvidenceGraphValue -Object $record -Name "name" -Default "")
-            $source = [string](Get-AppDocEvidenceGraphValue -Object $record -Name "source" -Default "")
-            $confidence = [double](Get-AppDocEvidenceGraphValue -Object $record -Name "confidence" -Default 1.0)
-            $metadata = Get-AppDocEvidenceGraphValue -Object $record -Name "metadata" -Default @{}
+            $name = [string](Get-AppDocValue -Object $record -Name "name" -Default "")
+            $source = [string](Get-AppDocValue -Object $record -Name "source" -Default "")
+            $confidence = [double](Get-AppDocValue -Object $record -Name "confidence" -Default 1.0)
+            $metadata = Get-AppDocValue -Object $record -Name "metadata" -Default @{}
 
             switch -Regex ($kind) {
                 '^endpoint$' {
                     $direction = Get-AppDocEvidenceGraphEndpointDirection -Record $record
-                    $method = [string](Get-AppDocEvidenceGraphValue -Object $metadata -Name "method" -Default "ANY")
+                    $method = [string](Get-AppDocValue -Object $metadata -Name "method" -Default "ANY")
                     if ([string]::IsNullOrWhiteSpace($method)) { $method = "ANY" }
-                    $path = [string](Get-AppDocEvidenceGraphValue -Object $metadata -Name "path" -Default "")
+                    $path = [string](Get-AppDocValue -Object $metadata -Name "path" -Default "")
                     if ([string]::IsNullOrWhiteSpace($path)) { $path = $name }
                     $endpointName = "{0} {1}" -f $method.ToUpperInvariant(), $path
 
@@ -424,7 +398,7 @@ function Get-AppDocEvidenceGraphData {
                         method = $method.ToUpperInvariant()
                         path = $path
                         direction = $direction
-                        sourceType = [string](Get-AppDocEvidenceGraphValue -Object $metadata -Name "sourceType" -Default "")
+                        sourceType = [string](Get-AppDocValue -Object $metadata -Name "sourceType" -Default "")
                         sources = @($source)
                     }
                     & $addEntity $endpointEntity
@@ -455,10 +429,10 @@ function Get-AppDocEvidenceGraphData {
                     continue
                 }
                 '^(configuration|environment-variable)$' {
-                    $configName = if ([string]::IsNullOrWhiteSpace($name)) { [string](Get-AppDocEvidenceGraphValue -Object $metadata -Name "key" -Default "") } else { $name }
+                    $configName = if ([string]::IsNullOrWhiteSpace($name)) { [string](Get-AppDocValue -Object $metadata -Name "key" -Default "") } else { $name }
                     if ([string]::IsNullOrWhiteSpace($configName)) { $configName = "unknown-config" }
                     $configEntity = New-AppDocEvidenceGraphEntity -Type "config_key" -Name $configName -Artifact $artifactName -Source $source -Confidence $confidence -Attributes @{
-                        classification = [string](Get-AppDocEvidenceGraphValue -Object $metadata -Name "classification" -Default "")
+                        classification = [string](Get-AppDocValue -Object $metadata -Name "classification" -Default "")
                         sources = @($source)
                     }
                     & $addEntity $configEntity
@@ -472,7 +446,7 @@ function Get-AppDocEvidenceGraphData {
                 '^dependency$' {
                     $depName = if ([string]::IsNullOrWhiteSpace($name)) { "unknown-dependency" } else { $name }
                     $depEntity = New-AppDocEvidenceGraphEntity -Type "dependency" -Name $depName -Artifact $artifactName -Source $source -Confidence $confidence -Attributes @{
-                        version = [string](Get-AppDocEvidenceGraphValue -Object $metadata -Name "version" -Default "")
+                        version = [string](Get-AppDocValue -Object $metadata -Name "version" -Default "")
                         sources = @($source)
                     }
                     & $addEntity $depEntity
@@ -487,7 +461,7 @@ function Get-AppDocEvidenceGraphData {
                     $testName = if ([string]::IsNullOrWhiteSpace($name)) { "unnamed-test" } else { $name }
                     $testEntity = New-AppDocEvidenceGraphEntity -Type "test_case" -Name $testName -Artifact $artifactName -Source $source -Confidence $confidence -Attributes @{
                         testKind = $kind
-                        framework = [string](Get-AppDocEvidenceGraphValue -Object $metadata -Name "framework" -Default "")
+                        framework = [string](Get-AppDocValue -Object $metadata -Name "framework" -Default "")
                         sources = @($source)
                     }
                     & $addEntity $testEntity
@@ -634,24 +608,24 @@ function Test-AppDocEvidenceGraphIntegrity {
     $issues = @()
     $warnings = @()
 
-    $schemaVersion = [string](Get-AppDocEvidenceGraphValue -Object $GraphData -Name "schemaVersion" -Default "")
+    $schemaVersion = [string](Get-AppDocValue -Object $GraphData -Name "schemaVersion" -Default "")
     if ($schemaVersion -ne [string]$contract.schemaVersion) {
         $issues += ("schemaVersion mismatch (expected '{0}', got '{1}')" -f [string]$contract.schemaVersion, $schemaVersion)
     }
 
     $entities = @(
-        Get-AppDocEvidenceGraphValue -Object $GraphData -Name "entities" -Default @() |
+        Get-AppDocValue -Object $GraphData -Name "entities" -Default @() |
             Where-Object { $_ }
     )
     $edges = @(
-        Get-AppDocEvidenceGraphValue -Object $GraphData -Name "edges" -Default @() |
+        Get-AppDocValue -Object $GraphData -Name "edges" -Default @() |
             Where-Object { $_ }
     )
 
     $entityIds = @{}
     foreach ($entity in $entities) {
-        $id = [string](Get-AppDocEvidenceGraphValue -Object $entity -Name "id" -Default "")
-        $type = [string](Get-AppDocEvidenceGraphValue -Object $entity -Name "type" -Default "")
+        $id = [string](Get-AppDocValue -Object $entity -Name "id" -Default "")
+        $type = [string](Get-AppDocValue -Object $entity -Name "type" -Default "")
         if ([string]::IsNullOrWhiteSpace($id)) {
             $issues += "Entity with missing id detected."
             continue
@@ -668,9 +642,9 @@ function Test-AppDocEvidenceGraphIntegrity {
     }
 
     foreach ($edge in $edges) {
-        $edgeType = [string](Get-AppDocEvidenceGraphValue -Object $edge -Name "type" -Default "")
-        $from = [string](Get-AppDocEvidenceGraphValue -Object $edge -Name "from" -Default "")
-        $to = [string](Get-AppDocEvidenceGraphValue -Object $edge -Name "to" -Default "")
+        $edgeType = [string](Get-AppDocValue -Object $edge -Name "type" -Default "")
+        $from = [string](Get-AppDocValue -Object $edge -Name "from" -Default "")
+        $to = [string](Get-AppDocValue -Object $edge -Name "to" -Default "")
 
         if (-not ($contract.edgeTypes -contains $edgeType)) {
             $issues += ("Unsupported edge type detected: {0}" -f $edgeType)
@@ -683,15 +657,15 @@ function Test-AppDocEvidenceGraphIntegrity {
         }
     }
 
-    $metrics = Get-AppDocEvidenceGraphValue -Object $GraphData -Name "metrics" -Default @{}
-    $inboundEndpointCount = [int](Get-AppDocEvidenceGraphValue -Object $metrics -Name "inboundEndpointCount" -Default 0)
-    $outboundEndpointCount = [int](Get-AppDocEvidenceGraphValue -Object $metrics -Name "outboundEndpointCount" -Default 0)
+    $metrics = Get-AppDocValue -Object $GraphData -Name "metrics" -Default @{}
+    $inboundEndpointCount = [int](Get-AppDocValue -Object $metrics -Name "inboundEndpointCount" -Default 0)
+    $outboundEndpointCount = [int](Get-AppDocValue -Object $metrics -Name "outboundEndpointCount" -Default 0)
 
     $fingerprintPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "architecture-fingerprint.json"
     if (Test-Path $fingerprintPath) {
         try {
             $fingerprint = Get-Content -Path $fingerprintPath -Raw | ConvertFrom-Json -Depth 60
-            $apiExpected = [bool](Get-AppDocEvidenceGraphValue -Object $fingerprint -Name "apiSurfaceExpected" -Default $true)
+            $apiExpected = [bool](Get-AppDocValue -Object $fingerprint -Name "apiSurfaceExpected" -Default $true)
             if ($apiExpected -and ($inboundEndpointCount + $outboundEndpointCount -eq 0)) {
                 $issues += "Architecture fingerprint expects API surface but evidence graph contains zero endpoints."
             }

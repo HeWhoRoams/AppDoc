@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-02-18T13:07:16-05:00",
+  "generatedAt": "2026-02-18T18:07:16+00:00",
   "provider": "typescript-compiler-bridge",
   "providerReady": true,
   "records": [],
   "note": "TypeScript Compiler Bridge active.",
   "provenance": {
     "generatorVersion": "appdoc-run-all-generators/3.0.0",
-    "commitHash": "17cdd36",
-    "generatedAt": "2026-10-23T01:55:45-04:00",
+    "commitHash": "5e53b62",
+    "generatedAt": "2026-10-23T15:18:23+00:00",
     "profile": "default",
     "scope": ".",
     "confidenceInferenceFlags": [

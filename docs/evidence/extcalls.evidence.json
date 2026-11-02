@@ -1,13 +1,13 @@
 {
   "artifact": "extcalls",
-  "generatedAt": "2026-10-23T01:55:32-04:00",
+  "generatedAt": "2026-10-23T15:18:13+00:00",
   "recordCount": 0,
   "records": [],
   "metadata": {
+    "httpEndpointCount": 0,
     "generator": "generate-external-calls.ps1",
-    "scannedFileCount": 0,
     "httpEndpointSamples": [],
-    "httpEndpointCount": 0
+    "scannedFileCount": 0
   },
   "determinism": {
     "mode": "deterministic"

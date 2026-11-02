@@ -4,6 +4,17 @@ All notable changes to AppDoc. Dates are ISO 8601. ADRs are in `docs/adr/`.
 
 ## 1.1.0 — 2026-10-23 (unreleased until tagged)
 
+### Changed (audit remediation)
+
+- **Secrets in free text are redacted** (audit finding 1). TODO/FIXME/HACK text, and every generated
+  file in the final sweep, now pass through `Protect-AppDocFreeText`: vendor-shaped secrets (AWS, GitHub,
+  Slack, Stripe, Google, JWT, PEM) and `name = value` pairs whose name looks like a secret. The sweep
+  fails the build (exit 3) if a vendor shape survives, and the validator scores a leak.
+- **Faster scope filter** (finding 2). `Get-AppDocSourceFiles` skips excluded folders instead of listing
+  and then filtering every file (10,000 files in about 0.3 s, down from about 17 s). It returns files
+  in ordinal path order on every OS. Two AST-cache snapshot hashes changed because their file lists are
+  now ordered that way; the content is the same.
+
 ### Breaking changes
 
 - **Build exit codes** (ADR 0003). `run-appdoc-build.ps1` now reports the outcome: `0` gate passed,
@@ -23,6 +34,10 @@ All notable changes to AppDoc. Dates are ISO 8601. ADRs are in `docs/adr/`.
   new `redactionRegexes` key for patterns.
 
 ### Added
+
+- Output snapshot harness (`tests/powershell/test-output-snapshot.ps1`): builds every fixture and
+  compares each generated file, the exit code and the gate result with a committed baseline
+  (`tests/powershell/snapshots/no-dotnet/`). Runs in CI on the Linux leg without .NET.
 
 - `redactionRegexes` (case-insensitive, 2 s timeout); an invalid regex stops the build with exit 3.
 - Operator overlays (`<target>/.appdoc/overlays/<section-slug>.md`, or an explicit `overlays` map in `.appdoc/config.json`):
@@ -53,6 +68,13 @@ All notable changes to AppDoc. Dates are ISO 8601. ADRs are in `docs/adr/`.
   `Redact-AppDocSemantic*` and `Sanitize-AppDocExternalCallUrl` until 1.2.0.
 - `.github/prompts/appdoc.begin.prompt.md` is a thin wrapper over `SKILL.md`;
   `.github/copilot-instructions.md` rewritten as adapter notes.
+- Internal: one object accessor, `Get-AppDocValue` (new `AppDoc.Values.psm1`), replaces 21 copies of the
+  property getters (666 call sites). Nine per-extractor relative-path wrappers are gone; callers use
+  `Get-AppDocRelativePath`; the Classic ASP generators' `Get-RelativePath` is gone too. Six extractors no longer
+  fall back to an unfiltered `Get-ChildItem` when the scope module is missing (it is imported eagerly).
+  Per-artifact file patterns now live in `.appdoc/policies/scope.v1.json` (`patternSets`; read with
+  `Get-AppDocScopePatterns`, or `Get-AppDocSourceFiles -Set`). A repo-local policy without `patternSets`
+  falls back to the built-in sets. Generated output is byte-identical (snapshot harness).
 
 ### Fixed
 

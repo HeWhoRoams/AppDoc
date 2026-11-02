@@ -1,11 +1,7 @@
-function Get-AppDocDebtRelativePath {
-    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
-    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
-    param([string]$RootPath, [string]$Path)
-    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
-    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-}
-
+# Free-text redaction (Protect-AppDocFreeText).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.SecretPolicy.psm1') -ErrorAction Stop
+# Source-file selection and repo-relative paths (AppDoc.Scope).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop
 function Get-AppDocDebtSourceFiles {
     [CmdletBinding()]
     param(
@@ -13,11 +9,7 @@ function Get-AppDocDebtSourceFiles {
         [string]$RootPath
     )
 
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "debt-register" -Include @("*.js","*.ts","*.cs","*.py","*.java"))
-    }
-
-    return @(Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include @("*.js","*.ts","*.cs","*.py","*.java") -ErrorAction SilentlyContinue)
+    return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "debt-register" -Set source)
 }
 
 function Get-AppDocDebtPriority {
@@ -63,6 +55,9 @@ function Add-AppDocDebtMarkers {
         if ([string]::IsNullOrWhiteSpace($description)) {
             $description = "Review needed - no description provided"
         }
+
+        # Comment text is copied from the target: redact secrets before it is stored.
+        $description = Protect-AppDocFreeText -Text $description
 
         $debtType = [string]$match.Groups[1].Value
         $results += @{
@@ -273,7 +268,7 @@ function Get-AppDocDebtRegisterData {
         $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
         if (-not $content) { continue }
 
-        $relativePath = Get-AppDocDebtRelativePath -RootPath $RootPath -Path $file.FullName
+        $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
         $debts += Add-AppDocDebtMarkers -Content $content -RelativePath $relativePath -FileName $file.Name
 
         if ($file.Extension -eq ".cs") {

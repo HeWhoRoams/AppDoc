@@ -8,29 +8,11 @@ param(
 
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Values.psm1') -ErrorAction Stop
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
-
-function Get-TestValidationValue {
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) { return $Object[$Name] }
-        return $Default
-    }
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
-}
 
 function Get-TestSectionContent {
     param(
@@ -56,44 +38,22 @@ function Get-TestSignalStrength {
 
     $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
     if (Test-Path $scopeModule) {
-        Import-Module $scopeModule -Force -ErrorAction SilentlyContinue
+        Import-Module $scopeModule -Force -ErrorAction Stop
     }
 
-    $candidateFiles = @()
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        $candidateFiles = @(
-            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Include @("*.cs","*.ts","*.js","*.py","*.java","*.go","*.feature")
-        )
-    }
-    else {
-        $candidateFiles = @(
-            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include @("*.cs","*.ts","*.js","*.py","*.java","*.go","*.feature") -ErrorAction SilentlyContinue
-        )
-    }
+    $candidateFiles = @(
+        Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Set signalSource
+    )
 
-    $projectSignals = @()
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        $projectSignals = @(
-            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Include @("*.csproj","*.vbproj","*.fsproj") |
-                Where-Object {
-                    $p = [string]$_.FullName
-                    $n = [string]$_.Name
-                    $p -match '(?i)(?:^|[\\/])(?:test|tests|spec|specs)(?:[\\/]|$)' -or
-                    $n -match '(?i)\.(tests?|specs?)\.(csproj|vbproj|fsproj)$'
-                }
-        )
-    }
-    else {
-        $projectSignals = @(
-            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include @("*.csproj","*.vbproj","*.fsproj") -ErrorAction SilentlyContinue |
-                Where-Object {
-                    $p = [string]$_.FullName
-                    $n = [string]$_.Name
-                    $p -match '(?i)(?:^|[\\/])(?:test|tests|spec|specs)(?:[\\/]|$)' -or
-                    $n -match '(?i)\.(tests?|specs?)\.(csproj|vbproj|fsproj)$'
-                }
-        )
-    }
+    $projectSignals = @(
+        Get-AppDocSourceFiles -RootPath $RootPath -Artifact "test-catalog" -Set signalProjects |
+            Where-Object {
+                $p = [string]$_.FullName
+                $n = [string]$_.Name
+                $p -match '(?i)(?:^|[\\/])(?:test|tests|spec|specs)(?:[\\/]|$)' -or
+                $n -match '(?i)\.(tests?|specs?)\.(csproj|vbproj|fsproj)$'
+            }
+    )
 
     $signalCount = 0
     $testLikeFileCount = 0
@@ -137,10 +97,10 @@ function Get-TestGraphAlignedEntityCount {
     $uniqueNames = New-Object 'System.Collections.Generic.HashSet[string]'
     foreach ($record in @($Records)) {
         if (-not $record) { continue }
-        $kind = ([string](Get-TestValidationValue -Object $record -Name "kind" -Default "")).Trim().ToLowerInvariant()
+        $kind = ([string](Get-AppDocValue -Object $record -Name "kind" -Default "")).Trim().ToLowerInvariant()
         if ($kind -notin @("test-case","test-suite","test","suite","parameterized test")) { continue }
 
-        $name = [string](Get-TestValidationValue -Object $record -Name "name" -Default "")
+        $name = [string](Get-AppDocValue -Object $record -Name "name" -Default "")
         if ([string]::IsNullOrWhiteSpace($name)) { $name = "unnamed-test" }
         [void]$uniqueNames.Add($name.Trim().ToLowerInvariant())
     }
@@ -172,8 +132,8 @@ if (Test-Path $canonicalPath) {
     try {
         $canonical = Get-Content $canonicalPath -Raw | ConvertFrom-Json -Depth 60
         if ($canonical.totals) {
-            $canonicalTestCaseCount = [int](Get-TestValidationValue -Object $canonical.totals -Name "testCaseCount" -Default 0)
-            $canonicalTestSuiteCount = [int](Get-TestValidationValue -Object $canonical.totals -Name "testSuiteCount" -Default 0)
+            $canonicalTestCaseCount = [int](Get-AppDocValue -Object $canonical.totals -Name "testCaseCount" -Default 0)
+            $canonicalTestSuiteCount = [int](Get-AppDocValue -Object $canonical.totals -Name "testSuiteCount" -Default 0)
         }
     }
     catch {
@@ -189,7 +149,7 @@ if (Test-Path $evidencePath) {
     try {
         $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json -Depth 120
         $records = @(
-            Get-TestValidationValue -Object $evidence -Name "records" -Default @() |
+            Get-AppDocValue -Object $evidence -Name "records" -Default @() |
                 Where-Object { $_ }
         )
         $testCaseCount = @(
@@ -225,8 +185,8 @@ $graphTestCaseCount = -1
 if (Test-Path $graphPath) {
     try {
         $graph = Get-Content $graphPath -Raw | ConvertFrom-Json -Depth 120
-        $metrics = Get-TestValidationValue -Object $graph -Name "metrics" -Default @{}
-        $graphTestCaseCount = [int](Get-TestValidationValue -Object $metrics -Name "testCaseCount" -Default 0)
+        $metrics = Get-AppDocValue -Object $graph -Name "metrics" -Default @{}
+        $graphTestCaseCount = [int](Get-AppDocValue -Object $metrics -Name "testCaseCount" -Default 0)
     }
     catch {
         $issues += "evidence-graph-unparseable"

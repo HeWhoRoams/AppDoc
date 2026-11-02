@@ -1,40 +1,12 @@
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Values.psm1') -ErrorAction Stop
 
 # AppDoc.Overview.TruthPack Module
 # Purpose: Build deterministic overview truth data used by narrative rendering.
 
 $script:AppDocOverviewTruthPackVersion = "1.2.0"
-
-function Get-AppDocOverviewObjectValue {
-    [CmdletBinding()]
-    param(
-        [Parameter(ValueFromPipeline=$true, Mandatory=$false)]
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-    process {
-        if ($null -eq $Object) { return $Default }
-
-        if ($Object -is [System.Collections.IDictionary]) {
-            if ($Object.Contains($Name)) {
-                return $Object[$Name]
-            }
-            return $Default
-        }
-
-        $prop = $Object.PSObject.Properties[$Name]
-        if ($null -ne $prop) {
-            return $prop.Value
-        }
-
-        return $Default
-    }
-}
 
 function Read-AppDocOverviewJsonFile {
     [CmdletBinding()]
@@ -102,10 +74,10 @@ function Get-AppDocOverviewGraphEntitiesByType {
         [string]$Type
     )
 
-    $entities = @(Get-AppDocOverviewObjectValue -Object $Graph -Name "entities" -Default @())
+    $entities = @(Get-AppDocValue -Object $Graph -Name "entities" -Default @())
     return @(
         $entities |
-            Where-Object { [string](Get-AppDocOverviewObjectValue -Object $_ -Name "type" -Default "") -eq $Type }
+            Where-Object { [string](Get-AppDocValue -Object $_ -Name "type" -Default "") -eq $Type }
     )
 }
 
@@ -119,8 +91,8 @@ function Get-AppDocOverviewGraphMetricsValue {
         [int]$Default = 0
     )
 
-    $metrics = Get-AppDocOverviewObjectValue -Object $Graph -Name "metrics" -Default @{}
-    return [int](Get-AppDocOverviewObjectValue -Object $metrics -Name $Name -Default $Default)
+    $metrics = Get-AppDocValue -Object $Graph -Name "metrics" -Default @{}
+    return [int](Get-AppDocValue -Object $metrics -Name $Name -Default $Default)
 }
 
 function Get-AppDocOverviewGraphComponentNames {
@@ -135,7 +107,7 @@ function Get-AppDocOverviewGraphComponentNames {
     $names = @(
         $components |
             ForEach-Object {
-                ConvertTo-AppDocOverviewFriendlyLabel -Value ([string](Get-AppDocOverviewObjectValue -Object $_ -Name "name" -Default ""))
+                ConvertTo-AppDocOverviewFriendlyLabel -Value ([string](Get-AppDocValue -Object $_ -Name "name" -Default ""))
             } |
             Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
     )
@@ -161,10 +133,10 @@ function Get-AppDocOverviewEvidenceRecords {
 
             $records += [ordered]@{
                 artifact = [string]$artifact
-                kind = [string](Get-AppDocOverviewObjectValue -Object $record -Name "kind" -Default "")
-                name = [string](Get-AppDocOverviewObjectValue -Object $record -Name "name" -Default "")
-                source = [string](Get-AppDocOverviewObjectValue -Object $record -Name "source" -Default "")
-                metadata = (Get-AppDocOverviewObjectValue -Object $record -Name "metadata" -Default @{})
+                kind = [string](Get-AppDocValue -Object $record -Name "kind" -Default "")
+                name = [string](Get-AppDocValue -Object $record -Name "name" -Default "")
+                source = [string](Get-AppDocValue -Object $record -Name "source" -Default "")
+                metadata = (Get-AppDocValue -Object $record -Name "metadata" -Default @{})
             }
         }
     }
@@ -258,7 +230,7 @@ function Get-AppDocOverviewCompactMetadata {
     }
 
     foreach ($key in $allowKeys) {
-        $value = Get-AppDocOverviewObjectValue -Object $meta -Name $key -Default $null
+        $value = Get-AppDocValue -Object $meta -Name $key -Default $null
         if ($null -eq $value) { continue }
 
         if ($value -is [bool] -or $value -is [int] -or $value -is [long] -or $value -is [double]) {
@@ -285,8 +257,8 @@ function Get-AppDocOverviewParameterNames {
 
     $names = @()
     foreach ($endpoint in @($EndpointRefs | Where-Object { $_ })) {
-        $metadata = Get-AppDocOverviewObjectValue -Object $endpoint -Name "metadata" -Default @{}
-        $parameterString = [string](Get-AppDocOverviewObjectValue -Object $metadata -Name "parameters" -Default "")
+        $metadata = Get-AppDocValue -Object $endpoint -Name "metadata" -Default @{}
+        $parameterString = [string](Get-AppDocValue -Object $metadata -Name "parameters" -Default "")
         if ([string]::IsNullOrWhiteSpace($parameterString) -or $parameterString -eq "None") { continue }
 
         foreach ($part in ($parameterString -split ',')) {
@@ -316,8 +288,8 @@ function Get-AppDocOverviewIntegrationHosts {
 
     $hosts = @()
     foreach ($endpoint in @($EndpointRefs | Where-Object { $_ })) {
-        $metadata = Get-AppDocOverviewObjectValue -Object $endpoint -Name "metadata" -Default @{}
-        $url = [string](Get-AppDocOverviewObjectValue -Object $metadata -Name "integrationUrl" -Default "")
+        $metadata = Get-AppDocValue -Object $endpoint -Name "metadata" -Default @{}
+        $url = [string](Get-AppDocValue -Object $metadata -Name "integrationUrl" -Default "")
         if ([string]::IsNullOrWhiteSpace($url)) { continue }
 
         try {
@@ -411,9 +383,9 @@ function Get-AppDocOverviewDomainNames {
 
     $domains = @()
     foreach ($endpoint in @($EndpointRefs | Where-Object { $_ })) {
-        $metadata = Get-AppDocOverviewObjectValue -Object $endpoint -Name "metadata" -Default @{}
-        $controller = [string](Get-AppDocOverviewObjectValue -Object $metadata -Name "controller" -Default "")
-        $name = [string](Get-AppDocOverviewObjectValue -Object $endpoint -Name "name" -Default "")
+        $metadata = Get-AppDocValue -Object $endpoint -Name "metadata" -Default @{}
+        $controller = [string](Get-AppDocValue -Object $metadata -Name "controller" -Default "")
+        $name = [string](Get-AppDocValue -Object $endpoint -Name "name" -Default "")
 
         $candidate = ""
         if (-not [string]::IsNullOrWhiteSpace($controller)) {
@@ -448,8 +420,8 @@ function Get-AppDocOverviewTruthPackData {
     $frameworks = Read-AppDocOverviewJsonFile -Path $frameworkDetectionPath
     $architecture = Read-AppDocOverviewJsonFile -Path $architectureFingerprintPath
     $evidenceGraphData = Get-AppDocOverviewEvidenceGraphData -RootPath $RootPath
-    $evidenceGraph = Get-AppDocOverviewObjectValue -Object $evidenceGraphData -Name "graph" -Default $null
-    $hasEvidenceGraph = [bool](Get-AppDocOverviewObjectValue -Object $evidenceGraphData -Name "exists" -Default $false)
+    $evidenceGraph = Get-AppDocValue -Object $evidenceGraphData -Name "graph" -Default $null
+    $hasEvidenceGraph = [bool](Get-AppDocValue -Object $evidenceGraphData -Name "exists" -Default $false)
 
     $baseRecords = @(Get-AppDocOverviewEvidenceRecords -RootPath $RootPath)
     $baseRecords = @(
@@ -466,7 +438,7 @@ function Get-AppDocOverviewTruthPackData {
             kind = [string]$record.kind
             name = [string]$record.name
             source = [string]$record.source
-            metadata = (Get-AppDocOverviewCompactMetadata -Metadata (Get-AppDocOverviewObjectValue -Object $record -Name "metadata" -Default @{}) -Kind ([string]$record.kind))
+            metadata = (Get-AppDocOverviewCompactMetadata -Metadata (Get-AppDocValue -Object $record -Name "metadata" -Default @{}) -Kind ([string]$record.kind))
         }
         $counter++
     }
@@ -498,10 +470,10 @@ function Get-AppDocOverviewTruthPackData {
     $inboundEndpoints = @()
     $outboundEndpoints = @()
     foreach ($endpoint in $endpointRecords) {
-        $metadata = Get-AppDocOverviewObjectValue -Object $endpoint -Name "metadata" -Default @{}
-        $direction = [string](Get-AppDocOverviewObjectValue -Object $metadata -Name "direction" -Default "")
-        $name = [string](Get-AppDocOverviewObjectValue -Object $endpoint -Name "name" -Default "")
-        $sourceType = [string](Get-AppDocOverviewObjectValue -Object $metadata -Name "sourceType" -Default "")
+        $metadata = Get-AppDocValue -Object $endpoint -Name "metadata" -Default @{}
+        $direction = [string](Get-AppDocValue -Object $metadata -Name "direction" -Default "")
+        $name = [string](Get-AppDocValue -Object $endpoint -Name "name" -Default "")
+        $sourceType = [string](Get-AppDocValue -Object $metadata -Name "sourceType" -Default "")
 
         if ([string]::IsNullOrWhiteSpace($direction)) {
             if ($sourceType -eq "soap-client" -or $name -match '^/soap-client/') {
@@ -522,8 +494,8 @@ function Get-AppDocOverviewTruthPackData {
 
     $mappedOutbound = @(
         $outboundEndpoints | Where-Object {
-            $meta = Get-AppDocOverviewObjectValue -Object $_ -Name "metadata" -Default @{}
-            -not [string]::IsNullOrWhiteSpace([string](Get-AppDocOverviewObjectValue -Object $meta -Name "integrationUrl" -Default ""))
+            $meta = Get-AppDocValue -Object $_ -Name "metadata" -Default @{}
+            -not [string]::IsNullOrWhiteSpace([string](Get-AppDocValue -Object $meta -Name "integrationUrl" -Default ""))
         }
     )
 
@@ -545,14 +517,14 @@ function Get-AppDocOverviewTruthPackData {
     $inputParams = Get-AppDocOverviewParameterNames -EndpointRefs $endpointRecords -Limit 8
     $returnTypes = Get-AppDocOverviewDistinctValues -Values @(
         $endpointRecords | ForEach-Object {
-            $meta = Get-AppDocOverviewObjectValue -Object $_ -Name "metadata" -Default @{}
-            [string](Get-AppDocOverviewObjectValue -Object $meta -Name "returnType" -Default "")
+            $meta = Get-AppDocValue -Object $_ -Name "metadata" -Default @{}
+            [string](Get-AppDocValue -Object $meta -Name "returnType" -Default "")
         }
     ) -Limit 6
     $controllerNames = Get-AppDocOverviewDistinctValues -Values @(
         $endpointRecords | ForEach-Object {
-            $meta = Get-AppDocOverviewObjectValue -Object $_ -Name "metadata" -Default @{}
-            [string](Get-AppDocOverviewObjectValue -Object $meta -Name "controller" -Default "")
+            $meta = Get-AppDocValue -Object $_ -Name "metadata" -Default @{}
+            [string](Get-AppDocValue -Object $meta -Name "controller" -Default "")
         }
     ) -Limit 8
     if ($controllerNames.Count -eq 0 -and $graphComponentNames.Count -gt 0 -and $endpointRecordCount -gt 0) {
@@ -571,14 +543,14 @@ function Get-AppDocOverviewTruthPackData {
         }
     }
     $modelNames = @(Get-AppDocOverviewDistinctValues -Values @(
-        $modelRecords | ForEach-Object { ConvertTo-AppDocOverviewFriendlyLabel -Value ([string](Get-AppDocOverviewObjectValue -Object $_ -Name "name" -Default "")) }
+        $modelRecords | ForEach-Object { ConvertTo-AppDocOverviewFriendlyLabel -Value ([string](Get-AppDocValue -Object $_ -Name "name" -Default "")) }
     ) -Limit 8)
     if ($modelNames.Count -eq 0 -and $graphModelEntities.Count -gt 0) {
         $modelNames = @(
             Get-AppDocOverviewDistinctValues -Values @(
                 $graphModelEntities |
                     ForEach-Object {
-                        ConvertTo-AppDocOverviewFriendlyLabel -Value ([string](Get-AppDocOverviewObjectValue -Object $_ -Name "name" -Default ""))
+                        ConvertTo-AppDocOverviewFriendlyLabel -Value ([string](Get-AppDocValue -Object $_ -Name "name" -Default ""))
                     }
             ) -Limit 8
         )
@@ -586,20 +558,20 @@ function Get-AppDocOverviewTruthPackData {
     $integrationHosts = Get-AppDocOverviewIntegrationHosts -EndpointRefs $outboundEndpoints -Limit 6
 
     $topDependencies = Get-AppDocOverviewDistinctValues -Values @(
-        $dependencyRecords | ForEach-Object { [string](Get-AppDocOverviewObjectValue -Object $_ -Name "name" -Default "") }
+        $dependencyRecords | ForEach-Object { [string](Get-AppDocValue -Object $_ -Name "name" -Default "") }
     ) -Limit 8
     if ($topDependencies.Count -eq 0 -and $graphDependencyEntities.Count -gt 0) {
         $topDependencies = @(
             Get-AppDocOverviewDistinctValues -Values @(
                 $graphDependencyEntities |
-                    ForEach-Object { [string](Get-AppDocOverviewObjectValue -Object $_ -Name "name" -Default "") }
+                    ForEach-Object { [string](Get-AppDocValue -Object $_ -Name "name" -Default "") }
             ) -Limit 8
         )
     }
 
     $languageCount = @{}
-    if ($OverviewData -and (Get-AppDocOverviewObjectValue -Object $OverviewData -Name "languageCount")) {
-        $languageCount = Get-AppDocOverviewObjectValue -Object $OverviewData -Name "languageCount" -Default @{}
+    if ($OverviewData -and (Get-AppDocValue -Object $OverviewData -Name "languageCount")) {
+        $languageCount = Get-AppDocValue -Object $OverviewData -Name "languageCount" -Default @{}
     }
 
     $whatItDoes = @()
@@ -634,7 +606,7 @@ function Get-AppDocOverviewTruthPackData {
             $whatItDoes += New-AppDocOverviewFact -Text "This repository primarily defines tooling, automation, and configuration behavior rather than an exposed runtime API surface." -EvidenceRefs @($configRecords | Select-Object -First 4 | ForEach-Object { [string]$_.id })
         }
         else {
-            $codeFileCount = if ($OverviewData) { [int](Get-AppDocOverviewObjectValue -Object $OverviewData -Name "codeFileCount" -Default 0) } else { 0 }
+            $codeFileCount = if ($OverviewData) { [int](Get-AppDocValue -Object $OverviewData -Name "codeFileCount" -Default 0) } else { 0 }
             $whatItDoes += New-AppDocOverviewFact -Text ("The repository contains implementation code, but current deterministic evidence is not strong enough to confidently describe business behavior yet (files scanned: {0})." -f $codeFileCount) -EvidenceRefs $defaultRefIds
         }
     }
@@ -696,8 +668,8 @@ function Get-AppDocOverviewTruthPackData {
         if ($hasEvidenceGraph -and $evidenceGraph) {
             # Use graph-derived mapped count and outbound endpoint count/refs
             $graphMappedCount = @($graphOutboundEndpoints | Where-Object {
-                $meta = Get-AppDocOverviewObjectValue -Object $_ -Name "metadata" -Default @{}
-                -not [string]::IsNullOrWhiteSpace([string](Get-AppDocOverviewObjectValue -Object $meta -Name "integrationUrl" -Default ""))
+                $meta = Get-AppDocValue -Object $_ -Name "metadata" -Default @{}
+                -not [string]::IsNullOrWhiteSpace([string](Get-AppDocValue -Object $meta -Name "integrationUrl" -Default ""))
             }).Count
             $graphCoverageRefs = @(
                 $outboundEndpoints |
@@ -719,14 +691,14 @@ function Get-AppDocOverviewTruthPackData {
         $confidenceNotes += New-AppDocOverviewFact -Text ("Canonical evidence graph captured {0} entities and {1} relationships for this run." -f $graphEntityCount, $graphEdgeCount) -EvidenceRefs $defaultRefIds
     }
     if ($architecture) {
-        $primaryStyle = [string](Get-AppDocOverviewObjectValue -Object $architecture -Name "primaryStyle" -Default "unknown")
-        $confidenceValue = [double](Get-AppDocOverviewObjectValue -Object $architecture -Name "confidence" -Default 0.0)
+        $primaryStyle = [string](Get-AppDocValue -Object $architecture -Name "primaryStyle" -Default "unknown")
+        $confidenceValue = [double](Get-AppDocValue -Object $architecture -Name "confidence" -Default 0.0)
         $confidenceNotes += New-AppDocOverviewFact -Text ("Architecture fingerprint indicates '{0}' style with confidence {1}." -f $primaryStyle, $confidenceValue) -EvidenceRefs $defaultRefIds
     }
 
     $frameworkList = @()
     foreach ($framework in @($frameworks)) {
-        $frameworkName = [string](Get-AppDocOverviewObjectValue -Object $framework -Name "framework" -Default "")
+        $frameworkName = [string](Get-AppDocValue -Object $framework -Name "framework" -Default "")
         if (-not [string]::IsNullOrWhiteSpace($frameworkName)) {
             $frameworkList += $frameworkName
         }
@@ -736,13 +708,13 @@ function Get-AppDocOverviewTruthPackData {
     $architectureStyles = @()
     if ($architecture) {
         $architectureStyles = @(
-            ConvertTo-AppDocOverviewStringArray -Value (Get-AppDocOverviewObjectValue -Object $architecture -Name "styles" -Default @()) |
+            ConvertTo-AppDocOverviewStringArray -Value (Get-AppDocValue -Object $architecture -Name "styles" -Default @()) |
                 ForEach-Object { [string]$_ } |
                 Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
                 Select-Object -Unique
         )
         if ($architectureStyles.Count -eq 0) {
-            $fallbackStyle = [string](Get-AppDocOverviewObjectValue -Object $architecture -Name "primaryStyle" -Default "")
+            $fallbackStyle = [string](Get-AppDocValue -Object $architecture -Name "primaryStyle" -Default "")
             if (-not [string]::IsNullOrWhiteSpace($fallbackStyle)) {
                 $architectureStyles = @($fallbackStyle)
             }
@@ -750,11 +722,11 @@ function Get-AppDocOverviewTruthPackData {
     }
 
     # --- Patch: Ensure counts reflect framework detection and code scan ---
-    $codeFileCount = if ($OverviewData) { [int](Get-AppDocOverviewObjectValue -Object $OverviewData -Name "codeFileCount" -Default 0) } else { 0 }
+    $codeFileCount = if ($OverviewData) { [int](Get-AppDocValue -Object $OverviewData -Name "codeFileCount" -Default 0) } else { 0 }
     $patchedDependencyCount = $dependencyRecordCount
     $patchedCodeFileCount = $codeFileCount
     $hasFrameworkButNoCode = $false
-    $architectureDetectionWarning = [string](Get-AppDocOverviewObjectValue -Object $architecture -Name "detectionWarning" -Default "")
+    $architectureDetectionWarning = [string](Get-AppDocValue -Object $architecture -Name "detectionWarning" -Default "")
     if ($frameworkList.Count -gt 0 -and $codeFileCount -eq 0) {
         # Heuristic: Framework detected (e.g., ASP.NET Core) but no code files found
         $hasFrameworkButNoCode = $true
@@ -774,7 +746,7 @@ function Get-AppDocOverviewTruthPackData {
         projectName = $projectName
         rootPath = "."
         architecture = [ordered]@{
-            primaryStyle = if ($architecture) { [string](Get-AppDocOverviewObjectValue -Object $architecture -Name "primaryStyle" -Default "unknown") } else { "unknown" }
+            primaryStyle = if ($architecture) { [string](Get-AppDocValue -Object $architecture -Name "primaryStyle" -Default "unknown") } else { "unknown" }
             styles = [string[]]$architectureStyles
             frameworks = @($frameworkList)
             detectionWarning = if ([string]::IsNullOrWhiteSpace($architectureDetectionWarning)) { $null } else { $architectureDetectionWarning }
@@ -792,8 +764,8 @@ function Get-AppDocOverviewTruthPackData {
         graph = [ordered]@{
             enabled = [bool]$hasEvidenceGraph
             path = if ($hasEvidenceGraph -and $evidenceGraphData -and $evidenceGraphData.Path) { $evidenceGraphData.Path } else { "" }
-            schemaVersion = if ($hasEvidenceGraph -and $evidenceGraph) { [string](Get-AppDocOverviewObjectValue -Object $evidenceGraph -Name "schemaVersion" -Default "") } else { "" }
-            graphVersion = if ($hasEvidenceGraph -and $evidenceGraph) { [string](Get-AppDocOverviewObjectValue -Object $evidenceGraph -Name "graphVersion" -Default "") } else { "" }
+            schemaVersion = if ($hasEvidenceGraph -and $evidenceGraph) { [string](Get-AppDocValue -Object $evidenceGraph -Name "schemaVersion" -Default "") } else { "" }
+            graphVersion = if ($hasEvidenceGraph -and $evidenceGraph) { [string](Get-AppDocValue -Object $evidenceGraph -Name "graphVersion" -Default "") } else { "" }
             entityCount = $graphEntityCount
             edgeCount = $graphEdgeCount
         }

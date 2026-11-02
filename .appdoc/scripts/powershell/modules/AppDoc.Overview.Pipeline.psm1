@@ -1,5 +1,7 @@
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Values.psm1') -ErrorAction Stop
 
 # AppDoc.Overview.Pipeline Module
 # Purpose: Execute a persisted, multi-pass narrative workflow on top of deterministic context.
@@ -12,28 +14,6 @@ if (Test-Path $script:AppDocOverviewNarrativeModule) {
     Import-Module $script:AppDocOverviewNarrativeModule -Force -ErrorAction Stop
 }
 
-function Get-AppDocOverviewPipelineValue {
-    [CmdletBinding()]
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) { return $Object[$Name] }
-        return $Default
-    }
-
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
-}
-
 function Get-AppDocOverviewDefaultSectionEvidenceMap {
     [CmdletBinding()]
     param(
@@ -41,11 +21,11 @@ function Get-AppDocOverviewDefaultSectionEvidenceMap {
         [object]$ContextPack
     )
 
-    $defaults = Get-AppDocOverviewPipelineValue -Object $ContextPack -Name "section_evidence_defaults" -Default @{}
+    $defaults = Get-AppDocValue -Object $ContextPack -Name "section_evidence_defaults" -Default @{}
     $map = [ordered]@{}
     foreach ($section in @("what_it_does","inputs","processing_steps","outputs","external_systems","confidence_notes")) {
         $refs = @(
-            Get-AppDocOverviewPipelineValue -Object $defaults -Name $section -Default @() |
+            Get-AppDocValue -Object $defaults -Name $section -Default @() |
                 ForEach-Object { [string]$_ } |
                 Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
                 Select-Object -Unique
@@ -93,18 +73,18 @@ function Test-AppDocOverviewSectionEvidenceCoverage {
     $issues = @()
     foreach ($section in @("what_it_does","inputs","processing_steps","outputs","external_systems","confidence_notes")) {
         $expectedRefs = @(
-            Get-AppDocOverviewPipelineValue -Object $SectionEvidenceMap -Name $section -Default @() |
+            Get-AppDocValue -Object $SectionEvidenceMap -Name $section -Default @() |
                 ForEach-Object { [string]$_ } |
                 Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
                 Select-Object -Unique
         )
 
         if ($expectedRefs.Count -eq 0) { continue }
-        $items = @(Get-AppDocOverviewPipelineValue -Object $Narrative -Name $section -Default @())
+        $items = @(Get-AppDocValue -Object $Narrative -Name $section -Default @())
         $actualRefs = @()
         foreach ($item in $items) {
             $actualRefs += @(
-                Get-AppDocOverviewPipelineValue -Object $item -Name "evidence_refs" -Default @() |
+                Get-AppDocValue -Object $item -Name "evidence_refs" -Default @() |
                     ForEach-Object { [string]$_ } |
                     Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
             )
@@ -138,9 +118,9 @@ function Test-AppDocOverviewNarrativeStyleQuality {
     $texts = @()
     foreach ($section in @("what_it_does","inputs","processing_steps","outputs","external_systems","confidence_notes")) {
         $sectionTexts[$section] = @()
-        $items = @(Get-AppDocOverviewPipelineValue -Object $Narrative -Name $section -Default @())
+        $items = @(Get-AppDocValue -Object $Narrative -Name $section -Default @())
         foreach ($item in $items) {
-            $text = [string](Get-AppDocOverviewPipelineValue -Object $item -Name "text" -Default "")
+            $text = [string](Get-AppDocValue -Object $item -Name "text" -Default "")
             if (-not [string]::IsNullOrWhiteSpace($text)) {
                 $clean = $text.Trim()
                 $sectionTexts[$section] = @($sectionTexts[$section] + $clean)
@@ -242,7 +222,7 @@ function ConvertTo-AppDocOverviewNarrativeMarkdown {
     $lines = @()
     foreach ($section in @("what_it_does","inputs","processing_steps","outputs","external_systems","confidence_notes")) {
         $lines += "### $section"
-        $items = @(Get-AppDocOverviewPipelineValue -Object $Narrative -Name $section -Default @())
+        $items = @(Get-AppDocValue -Object $Narrative -Name $section -Default @())
         if ($items.Count -eq 0) {
             $lines += ""
             $lines += "No grounded narrative content generated for this section."
@@ -251,9 +231,9 @@ function ConvertTo-AppDocOverviewNarrativeMarkdown {
         }
 
         foreach ($item in $items) {
-            $text = [string](Get-AppDocOverviewPipelineValue -Object $item -Name "text" -Default "")
+            $text = [string](Get-AppDocValue -Object $item -Name "text" -Default "")
             $refs = @(
-                Get-AppDocOverviewPipelineValue -Object $item -Name "evidence_refs" -Default @() |
+                Get-AppDocValue -Object $item -Name "evidence_refs" -Default @() |
                     ForEach-Object { [string]$_ } |
                     Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
                     Select-Object -Unique
@@ -302,20 +282,20 @@ function Write-AppDocOverviewNarrativeArtifacts {
     $runReportPath = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) (Join-Path "evidence" "narrative-run-report.json")
 
     $compactPass1 = [ordered]@{
-        outline = (Get-AppDocOverviewPipelineValue -Object $Pass1Result -Name "outline" -Default @{})
+        outline = (Get-AppDocValue -Object $Pass1Result -Name "outline" -Default @{})
         section_evidence_map = [ordered]@{}
         missing_evidence = @(
-            Get-AppDocOverviewPipelineValue -Object $Pass1Result -Name "missing_evidence" -Default @() |
+            Get-AppDocValue -Object $Pass1Result -Name "missing_evidence" -Default @() |
                 ForEach-Object { [string]$_ } |
                 Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
                 Select-Object -Unique
         )
-        provider = [string](Get-AppDocOverviewPipelineValue -Object $Pass1Result -Name "provider" -Default "deterministic")
+        provider = [string](Get-AppDocValue -Object $Pass1Result -Name "provider" -Default "deterministic")
     }
-    $sectionEvidenceMap = Get-AppDocOverviewPipelineValue -Object $Pass1Result -Name "section_evidence_map" -Default @{}
+    $sectionEvidenceMap = Get-AppDocValue -Object $Pass1Result -Name "section_evidence_map" -Default @{}
     foreach ($section in @("what_it_does","inputs","processing_steps","outputs","external_systems","confidence_notes")) {
         $refs = @(
-            Get-AppDocOverviewPipelineValue -Object $sectionEvidenceMap -Name $section -Default @() |
+            Get-AppDocValue -Object $sectionEvidenceMap -Name $section -Default @() |
                 ForEach-Object { [string]$_ } |
                 Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
                 Select-Object -Unique |
@@ -338,13 +318,13 @@ function Write-AppDocOverviewNarrativeArtifacts {
         $usedRefs = New-Object System.Collections.Generic.HashSet[string]
 
         foreach ($section in @("what_it_does","inputs","processing_steps","outputs","external_systems","confidence_notes")) {
-            $items = @(Get-AppDocOverviewPipelineValue -Object $Narrative -Name $section -Default @())
+            $items = @(Get-AppDocValue -Object $Narrative -Name $section -Default @())
             $normalized = @()
             foreach ($item in ($items | Select-Object -First $maxItemsPerSection)) {
-                $text = [string](Get-AppDocOverviewPipelineValue -Object $item -Name "text" -Default "")
+                $text = [string](Get-AppDocValue -Object $item -Name "text" -Default "")
                 if ([string]::IsNullOrWhiteSpace($text)) { continue }
                 $refs = @(
-                    Get-AppDocOverviewPipelineValue -Object $item -Name "evidence_refs" -Default @() |
+                    Get-AppDocValue -Object $item -Name "evidence_refs" -Default @() |
                         ForEach-Object { [string]$_ } |
                         Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
                         Select-Object -Unique |
@@ -360,8 +340,8 @@ function Write-AppDocOverviewNarrativeArtifacts {
         }
 
         $refMap = @{}
-        foreach ($ref in @(Get-AppDocOverviewPipelineValue -Object $Narrative -Name "evidence_refs" -Default @())) {
-            $id = [string](Get-AppDocOverviewPipelineValue -Object $ref -Name "id" -Default "")
+        foreach ($ref in @(Get-AppDocValue -Object $Narrative -Name "evidence_refs" -Default @())) {
+            $id = [string](Get-AppDocValue -Object $ref -Name "id" -Default "")
             if ([string]::IsNullOrWhiteSpace($id)) { continue }
             if (-not $refMap.ContainsKey($id)) { $refMap[$id] = $ref }
         }
@@ -371,11 +351,11 @@ function Write-AppDocOverviewNarrativeArtifacts {
             if ($refMap.ContainsKey($id)) {
                 $ref = $refMap[$id]
                 $compactRefs += [ordered]@{
-                    id = [string](Get-AppDocOverviewPipelineValue -Object $ref -Name "id" -Default "")
-                    artifact = [string](Get-AppDocOverviewPipelineValue -Object $ref -Name "artifact" -Default "")
-                    kind = [string](Get-AppDocOverviewPipelineValue -Object $ref -Name "kind" -Default "")
-                    name = [string](Get-AppDocOverviewPipelineValue -Object $ref -Name "name" -Default "")
-                    source = [string](Get-AppDocOverviewPipelineValue -Object $ref -Name "source" -Default "")
+                    id = [string](Get-AppDocValue -Object $ref -Name "id" -Default "")
+                    artifact = [string](Get-AppDocValue -Object $ref -Name "artifact" -Default "")
+                    kind = [string](Get-AppDocValue -Object $ref -Name "kind" -Default "")
+                    name = [string](Get-AppDocValue -Object $ref -Name "name" -Default "")
+                    source = [string](Get-AppDocValue -Object $ref -Name "source" -Default "")
                 }
             }
         }
@@ -440,7 +420,7 @@ function Get-AppDocOverviewWelcomeNarrativeFromPipeline {
     $finalNarrative = $pass2Narrative
 
     $groundingVerification = Test-AppDocOverviewNarrativeGrounding -Narrative $finalNarrative -TruthPack $TruthPack
-    $sectionEvidenceMap = Get-AppDocOverviewPipelineValue -Object $pass1Result -Name "section_evidence_map" -Default @{}
+    $sectionEvidenceMap = Get-AppDocValue -Object $pass1Result -Name "section_evidence_map" -Default @{}
     $sectionCoverage = Test-AppDocOverviewSectionEvidenceCoverage -Narrative $finalNarrative -SectionEvidenceMap $sectionEvidenceMap
     $styleGate = Test-AppDocOverviewNarrativeStyleQuality -Narrative $finalNarrative
 
