@@ -1,6 +1,6 @@
 # AppDoc configuration reference
 
-Optional per-target file: `<target>/.appdoc/config.json`. No config file means built-in defaults (CMU maroon/gold theme, `docs` output directory, enrichment off).
+Optional per-target file: `<target>/.appdoc/config.json`. No config file means built-in defaults (CMU maroon/gold theme, `docs` output directory).
 
 `outputDir` (default `docs`) is the folder, inside the target, that receives the whole package; every generator and validator honours it and it is excluded from source scanning. A value that points outside the target is ignored with a warning. (Prose inside some generated documents still names `docs/` when describing where an artifact lives.)
 

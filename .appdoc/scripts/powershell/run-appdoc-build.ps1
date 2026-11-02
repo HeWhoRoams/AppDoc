@@ -18,7 +18,8 @@
 #            (3) second pass: composer + pristine + validation once diagrams exist;
 #            (4) HTML report with the config theme;
 #            (5) redaction sweep over the final artifacts (fail-closed);
-#            (6) optional semantic (LLM) enrichment stage (default OFF).
+#            (6) semantic (LLM) enrichment stage (always runs; emits the redacted input and
+#                applies any output the surrounding AI session wrote).
 #
 # Exit codes (see docs/adr/0003-sub-validator-failure-policy.md):
 #   0  gate passed (or -AllowGateFail was given)
@@ -42,8 +43,6 @@ param(
     [switch]$SkipSyntaxGate,
     [Parameter(Mandatory=$false)]
     [switch]$StrictValidation,
-    [Parameter(Mandatory=$false)]
-    [switch]$EnableSemanticEnrich,
     [Parameter(Mandatory=$false)]
     [switch]$AllowGateFail
 )
@@ -290,11 +289,10 @@ if ($true) {
     }
 }
 
-# --- (6) OPT-IN semantic (LLM) enrichment stage (Phase 2a; default OFF) ---------
-# When OFF (the default), this is a clean NO-OP: no LLM call, no enrichment applied,
-# and the deterministic-only output is EXACTLY today's output (the deterministic layer
-# remains the gate-able core). When ON (the -EnableSemanticEnrich switch OR the
-# config enableSemanticEnrich key) the DETERMINISTIC substrate runs:
+# --- (6) semantic (LLM) enrichment stage (Phase 2a; always runs) ---------------
+# The stage is a required part of every build. It makes no LLM call itself: the DETERMINISTIC
+# substrate runs, and the surrounding AI session fills the output between two builds. With no
+# output present nothing is applied and the deterministic layer remains the gate-able core.
 #   (a) run-appdoc-enrich.ps1 bootstraps the schema-bootstrap enriched evidence and
 #       applies the deterministic apply-merge, which (under the quarantine) writes the
 #       redacted LLM-facing input envelope to docs/evidence/semantic/input/ and reads
@@ -305,38 +303,29 @@ if ($true) {
 # The stage is FAIL-CLOSED on the secret-redaction hard gate: if a known secret
 # survives redaction in the would-be input, it BLOCKS with a clear error (no silent
 # proceed, no un-redacted write).
-$semEnable = [bool]$EnableSemanticEnrich
-if (-not $semEnable -and $cfg -and $null -ne $cfg.values.enableSemanticEnrich) {
-    $semEnable = [bool]$cfg.values.enableSemanticEnrich
-}
-if ($semEnable) {
-    Write-Host "`n[SemanticEnrich] OPT-IN semantic (LLM) enrichment stage enabled..." -ForegroundColor Cyan
-    $enrichScript = Join-Path $scriptDir "run-appdoc-enrich.ps1"
-    if (Test-Path $enrichScript) {
-        try {
-            # -SkipGate: the enrichment bootstrap's own ci-enrichment-gate.ps1 is a
-            # separate legacy gate; the authoritative documentation gate is the one the
-            # pipeline already ran. -SkipReRender keeps the 4 gate-scored .md catalogs
-            # untouched. A fail-closed secret-redaction block throws; it stops the build
-            # with exit 3 (the deterministic docs remain, the LLM input is NOT written).
-            & $enrichScript -RootPath $RootPath -SkipGate -SkipReRender
-        } catch {
-            if ($_.Exception.Message -match 'SECRET-REDACTION HARD GATE') {
-                Write-Error "[SemanticEnrich] FAIL-CLOSED: $($_.Exception.Message)" -ErrorAction Continue
-                exit 3
-            }
-            Write-Warning "Semantic enrichment stage failed: $($_.Exception.Message)"
-            $buildFailures += [ordered]@{ phase = 'enrichment'; script = 'run-appdoc-enrich.ps1'; error = $_.Exception.Message }
+Write-Host "`n[SemanticEnrich] semantic (LLM) enrichment stage ..." -ForegroundColor Cyan
+$enrichScript = Join-Path $scriptDir "run-appdoc-enrich.ps1"
+if (Test-Path $enrichScript) {
+    try {
+        # -SkipGate: the enrichment bootstrap's own ci-enrichment-gate.ps1 is a
+        # separate legacy gate; the authoritative documentation gate is the one the
+        # pipeline already ran. -SkipReRender keeps the 4 gate-scored .md catalogs
+        # untouched. A fail-closed secret-redaction block throws; it stops the build
+        # with exit 3 (the deterministic docs remain, the LLM input is NOT written).
+        & $enrichScript -RootPath $RootPath -SkipGate -SkipReRender
+    } catch {
+        if ($_.Exception.Message -match 'SECRET-REDACTION HARD GATE') {
+            Write-Error "[SemanticEnrich] FAIL-CLOSED: $($_.Exception.Message)" -ErrorAction Continue
+            exit 3
         }
-        $global:LASTEXITCODE = 0
+        Write-Warning "Semantic enrichment stage failed: $($_.Exception.Message)"
+        $buildFailures += [ordered]@{ phase = 'enrichment'; script = 'run-appdoc-enrich.ps1'; error = $_.Exception.Message }
     }
-    else {
-        Write-Warning "Semantic enrichment script not found: $enrichScript (stage skipped)."
-        $buildFailures += [ordered]@{ phase = 'enrichment'; script = 'run-appdoc-enrich.ps1'; error = 'script not found' }
-    }
+    $global:LASTEXITCODE = 0
 }
 else {
-    Write-Host "[SemanticEnrich] OFF (default) -> no-op; deterministic-only output is exactly today's (no LLM call, no enrichment applied)." -ForegroundColor Gray
+    Write-Warning "Semantic enrichment script not found: $enrichScript (stage skipped)."
+    $buildFailures += [ordered]@{ phase = 'enrichment'; script = 'run-appdoc-enrich.ps1'; error = 'script not found' }
 }
 
 # --- (7) line endings: UTF-8 (no BOM), LF, one final newline -----------------

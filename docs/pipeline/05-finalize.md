@@ -53,7 +53,7 @@ The sweep runs before [stage 6](06-enrich.md). Values the AI session writes into
 ## Go deeper
 
 - All four redaction layers and who owns each: [redaction layers](detail/redaction-layers.md)
-- Next: [Stage 6 Enrich](06-enrich.md), or [Stage 7 Close out](07-close-out.md) when enrichment is off
+- Next: [Stage 6 Enrich](06-enrich.md)
 
 <details>
 <summary>Code</summary>

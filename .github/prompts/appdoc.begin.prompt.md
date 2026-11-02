@@ -33,6 +33,6 @@ Do not call `run-all-generators.ps1` or individual generators directly: the buil
 - Summarise from `<output>/validation-report.json` (status, overallScore, pristine sub-score, any failed validators) and `<output>/diagnostics-report.json`.
 - Do not invent output; only report files and metrics that exist.
 
-## Optional next step
+## Required next step
 
-The quarantined enrichment loop (SKILL.md, Layer 2; Copilot adapter: `/appdoc.enrich`).
+The quarantined enrichment loop (SKILL.md, Layer 2; Copilot adapter: `/appdoc.enrich`). A documentation run is not finished until it has been run.

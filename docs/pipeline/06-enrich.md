@@ -2,11 +2,11 @@
 
 [Overview](README.md) › 6 Enrich
 
-# Stage 6: Enrich (optional)
+# Stage 6: Enrich
 
 **How can an AI session add meaning to the evidence without being able to overwrite a verified fact or see a secret?**
 
-Enrichment is **off by default**. When it is off, the build prints one line and moves on. When it is on, the work is split across **two builds** with an AI session in between. AppDoc never calls a language model itself. The session that runs AppDoc does the reading and writing between the two builds.
+Enrichment is a **required stage**: every build runs it and there is no switch to turn it off. The work is split across **two builds** with an AI session in between. With no session output present, the stage writes the redacted input and applies nothing. AppDoc never calls a language model itself. The session that runs AppDoc does the reading and writing between the two builds.
 
 ```mermaid
 ---
@@ -14,14 +14,14 @@ title: "L1 · Stage 6 Enrich"
 ---
 sequenceDiagram
   accTitle: Stage 6 Enrich
-  accDescr: In build 1 with enrichment on, the stage bootstraps enriched evidence and writes a redacted input file, after secret gate G5, which stops the build with exit 3 if a secret survived. The AI session reads the input and the real source files and writes an output file. In build 2 the stage reads that output and merges it through filter gate G6, which refuses any attempt to overwrite a verified fact and logs it. The merged result and the refusal log are written.
+  accDescr: In build 1 the stage bootstraps enriched evidence and writes a redacted input file, after secret gate G5, which stops the build with exit 3 if a secret survived. The AI session reads the input and the real source files and writes an output file. In build 2 the stage reads that output and merges it through filter gate G6, which refuses any attempt to overwrite a verified fact and logs it. The merged result and the refusal log are written.
 
   participant B as Build
   participant E as Enrich stage
   participant S as AI session
   participant F as docs/evidence/semantic
 
-  Note over B,F: Build 1, enrichment on
+  Note over B,F: Build 1
   B->>E: stages 1 to 5 done, start stage 6
   E->>E: 6.1 bootstrap enriched evidence
   E->>E: 6.2 redact the pending fields
@@ -37,7 +37,7 @@ sequenceDiagram
   S->>F: read input, read real source
   S->>F: write output/*.semantic.output.json
 
-  Note over B,F: Build 2, enrichment on
+  Note over B,F: Build 2
   B->>E: stages 1 to 5 done, start stage 6
   E->>F: read output
   E->>E: 6.4 G6 FILTER: merge under quarantine

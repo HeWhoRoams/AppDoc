@@ -1780,7 +1780,7 @@ if ($scriptFailures.Count -gt 0) {
 }
 
 Write-Host "`nAll generators completed." -ForegroundColor Green
-Write-Host "Optional next step: the quarantined enrichment loop (SKILL.md, Layer 2)." -ForegroundColor Cyan
+Write-Host "Next step: the quarantined enrichment loop (SKILL.md, Layer 2)." -ForegroundColor Cyan
 
 if (-not $DryRun) {
     Remove-Item -Path $runSessionPath -Force -ErrorAction SilentlyContinue

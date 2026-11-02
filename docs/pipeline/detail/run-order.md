@@ -14,7 +14,7 @@ title: "L2 · Who runs what, in time order"
 ---
 sequenceDiagram
   accTitle: Run order between the build script and the orchestrator
-  accDescr: The build loads config and compiles redaction patterns, then calls the orchestrator. The orchestrator takes the run lock, runs the syntax check, detects the framework, runs all generators, validates, and returns. The build then runs a second composer and validation pass, rebuilds the HTML report, stamps footers, sweeps for secrets, optionally runs enrichment, normalises line endings and decides the exit code.
+  accDescr: The build loads config and compiles redaction patterns, then calls the orchestrator. The orchestrator takes the run lock, runs the syntax check, detects the framework, runs all generators, validates, and returns. The build then runs a second composer and validation pass, rebuilds the HTML report, stamps footers, sweeps for secrets, runs enrichment, normalises line endings and decides the exit code.
 
   participant B as Build
   participant O as Orchestrator
@@ -34,7 +34,7 @@ sequenceDiagram
   Note over B: Stages 3 to 7
   B->>B: second pass: composer, pristine, validation
   B->>B: themed HTML, footer stamp, sweep (G4)
-  B->>B: enrichment if on (G5, G6)
+  B->>B: enrichment (G5, G6)
   B->>B: line endings, exit code (G2, G3)
 ```
 
@@ -96,7 +96,7 @@ The **Step** column links the row to the numbered step on the stage page.
 | 36 | Provenance footer on generated Markdown | 5.1 | |
 | 37 | Load sweep rules | 5.2 | **G4**, exit 3 |
 | 38 | Sweep generated files | 5.3 | |
-| 39 | Enrichment, if on | 6.1 to 6.4 | **G5**, exit 3. **G6** |
+| 39 | Enrichment | 6.1 to 6.4 | **G5**, exit 3. **G6** |
 | 40 | Normalise line endings | 7.1 | |
 | 41 | Read the reports and decide the exit code | 7.2 to 7.6 | Exit 0, 1 or 2 |
 

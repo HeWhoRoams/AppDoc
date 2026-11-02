@@ -6,7 +6,7 @@
 
 **Where in a build is a secret removed, and what is each point's blind spot?**
 
-AppDoc redacts at four points. Each catches what the one before can miss. Do not confuse these with "Layer 1" and "Layer 2" in SKILL.md, which mean the deterministic build and the optional enrichment loop.
+AppDoc redacts at four points. Each catches what the one before can miss. Do not confuse these with "Layer 1" and "Layer 2" in SKILL.md, which mean the deterministic build and the required enrichment loop.
 
 ```mermaid
 ---

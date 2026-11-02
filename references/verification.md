@@ -47,7 +47,7 @@ Sub-validator results are recorded truthfully in `validation-report.json` (`vali
   ```
   Run it as a **plain script** (`pwsh -File`), NOT `Invoke-Pester` — it is a standalone proof harness,
   not `It/Should` blocks. All proofs must pass (redaction 0 in input, fail-closed block, provenance
-  tagging, Verified-fact refusal, no-fabrication, input-hash cache HIT/MISS, opt-in no-op).
+  tagging, Verified-fact refusal, no-fabrication, input-hash cache HIT/MISS, enrichment-always-runs no-op).
 - **Golden regression** (the pipeline is unchanged): `Invoke-Pester` over the 6
   `tests/powershell/test-golden-*.ps1` — all assertions must pass (the suites are the source of truth for the count; do not hardcode it).
 - **On a real target:** grep the final `docs/` (and `semantic/input|output|applied/`) for the

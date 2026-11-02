@@ -145,17 +145,17 @@ Assert-Proof $blocked                                              "fail-closed 
 Assert-Proof ($errMsg -match "HARD GATE BLOCKED")                  "block message is the explicit HARD GATE error"
 Assert-Proof ($fcInputCount -eq 0)                                 "input NOT written (blocked before the un-redacted write)"
 
-Write-Host "`n=== PROOF 6: opt-in no-op (enrichment OFF = deterministic-only; ON w/o LLM = 0 llm fields) ===" -ForegroundColor Cyan
-# OFF: a fresh build with NO -EnableSemanticEnrich must not create the semantic dir.
-$off = Join-Path $work "off"
-Copy-Item $fixture $off -Recurse
-& $build -Path $off *> $null
-$offSemanticDir = Test-Path (Join-Path $off "docs\evidence\semantic")
-Assert-Proof (-not $offSemanticDir)                                "enrichment OFF (default): no semantic/ dir created (clean no-op)"
-# ON but no LLM output present: 0 llm-tagged fields applied.
+Write-Host "`n=== PROOF 6: enrichment is not optional (every build runs it; no LLM output = 0 llm fields) ===" -ForegroundColor Cyan
+# The removed switch must be rejected, not silently ignored.
+$buildParams = (Get-Command $build).Parameters.Keys
+Assert-Proof (-not ($buildParams -contains 'EnableSemanticEnrich')) "run-appdoc-build.ps1 has no -EnableSemanticEnrich switch (stage cannot be turned off)"
+# A plain build (no switch) must run the stage and write the redacted input.
 $on = Join-Path $work "on-noLLM"
 Copy-Item $fixture $on -Recurse
-& $build -Path $on -EnableSemanticEnrich *> $null
+& $build -Path $on *> $null
+$onInputCount = (Get-ChildItem (Join-Path $on "docs\evidence\semantic\input") -Filter "*.json" -File -ErrorAction SilentlyContinue | Measure-Object).Count
+Assert-Proof ($onInputCount -gt 0)                                 "plain build runs the enrichment stage (semantic/input written)"
+# No LLM output present: 0 llm-tagged fields applied.
 $llmCount = 0
 $detCount = 0
 Get-ChildItem (Join-Path $on "docs\evidence\semantic\applied") -Filter "*.json" -File -ErrorAction SilentlyContinue | ForEach-Object {
@@ -165,7 +165,7 @@ Get-ChildItem (Join-Path $on "docs\evidence\semantic\applied") -Filter "*.json" 
         }
     }
 }
-Assert-Proof ($llmCount -eq 0)                                     "ON but no LLM output: 0 'llm'-tagged fields applied (no-op to deterministic-only)"
+Assert-Proof ($llmCount -eq 0)                                     "no LLM output: 0 'llm'-tagged fields applied (no-op to deterministic-only)"
 Assert-Proof ($detCount -gt 0)                                      "deterministic fields still present (the gate-able core)"
 
 Remove-Item $work -Recurse -Force -ErrorAction SilentlyContinue

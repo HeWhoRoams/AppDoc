@@ -2,7 +2,7 @@
 
 Details for the quarantined LLM-session enrichment loop summarized in `SKILL.md`. The field-level contract the LLM must follow is in `enrichment-contract.md`. How the two builds, the secret gate and the quarantine fit together: [stage 6](../docs/pipeline/06-enrich.md) and [enrichment quarantine](../docs/pipeline/detail/enrichment-quarantine.md).
 
-**Step 1 — Emit the redacted input.** Run the single command with enrichment ON. AppDoc writes the
+**Step 1 — Emit the redacted input.** Run the single command (enrichment is part of every build). AppDoc writes the
 redacted pending-field envelope to `<target>/docs/evidence/semantic/input/<artifact>.semantic.input.json`.
 Secret **values** are `[REDACTED]` (the fail-closed gate blocks the whole stage if a real secret would
 survive into the input — a secret never reaches you). Keys/names are kept.
@@ -42,7 +42,7 @@ enrichment actually APPLIED, open `docs/evidence/semantic/applied/<artifact>.sem
 confirm the fields you set carry `provenance=llm` (not `open`). A record you enriched that shows `open`
 for your fields was dropped — re-check the join key against the input verbatim.
 
-**Step 3 — Apply (quarantine).** Re-run the single command with `-EnableSemanticEnrich`. AppDoc's
+**Step 3 — Apply (quarantine).** Re-run the single command. AppDoc's
 deterministic apply-merge reads `output/` and applies it under the quarantine (Step 4 properties).
 
 **Step 4 — Verify.** Confirm the hard bars still hold (below). If a record you enriched did **not**
@@ -50,7 +50,7 @@ apply, check `docs/evidence/semantic/quarantine-refusals.json` for a refusal (yo
 Verified fact) and `semantic-pending.json` for the still-pending fields. Also run the positive
 applied-vs-dropped check (above): confirm your fields show `provenance=llm` in `applied/`.
 
-**Score caveat:** enrichment ON may move `overallScore` by a point or two (e.g. 92 → 91) — the
+**Score caveat:** enrichment may move `overallScore` by a point or two (e.g. 92 → 91) — the
 `-SkipReRender` default keeps the 4 gate-scored `.md` catalogs identical, but the full pipeline re-run
 (narrative / diagram / validation) can shift the composite. The stable invariants are `status=pass` +
 the **pristine sub-score**, NOT `overallScore`. Do not treat a 1-point `overallScore` movement as a

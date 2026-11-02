@@ -14,7 +14,7 @@ $ARGUMENTS
 
 1. Read `references/enrichment-contract.md` completely and follow it exactly.
 2. Target repository root: argument 1 (a scratch copy of the real target).
-3. Emit the redacted input: `pwsh ./.appdoc/scripts/powershell/run-appdoc-build.ps1 -Path <target> -EnableSemanticEnrich`.
+3. Emit the redacted input: `pwsh ./.appdoc/scripts/powershell/run-appdoc-build.ps1 -Path <target>`.
 4. Read `<target>/docs/evidence/semantic/input/*.semantic.input.json`, ground each field in the real source, and write
    `<target>/docs/evidence/semantic/output/<artifact>.semantic.output.json`.
 5. Re-run the same command to apply under the quarantine, then verify per `references/verification.md`.

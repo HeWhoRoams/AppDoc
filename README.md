@@ -20,7 +20,7 @@ Every claim cites its source (`file:line`). Anything AppDoc can't ground is tagg
 There are two layers:
 
 - **The core is deterministic.** One PowerShell command, no LLM, no network calls, no API key. A validation gate scores the output, and the build reports the result in its exit code.
-- **AI enrichment is optional and quarantined.** The AI session that runs the skill can fill owner-knowledge gaps such as purpose and data flows, but only through a quarantine that fails closed. It never overrides a verified fact, and secrets never reach it.
+- **AI enrichment is required and quarantined.** Every build runs the enrichment stage. The AI session that runs the skill fills owner-knowledge gaps such as purpose and data flows, but only through a quarantine that fails closed. It never overrides a verified fact, and secrets never reach it.
 
 > **Status:** 1.1.0 is on branch `remediation/skill-portability` and not yet tagged. A code audit (2026-10-28) is being worked through on the same branch: secrets in free text and the slow scope filter are fixed, and the remaining items are listed under [Known limitations](#known-limitations). See [CHANGELOG.md](CHANGELOG.md) for what changed and [ROADMAP.md](ROADMAP.md) for what's next.
 
@@ -59,7 +59,7 @@ flowchart LR
         M --> V{Validation gate}
     end
     V --> O[(docs/ package)]
-    O -. opt-in .-> L2
+    O --> L2
     subgraph L2["Layer 2 · quarantined enrichment"]
         direction TB
         R[Redacted pending-field<br/>envelope] --> S[Surrounding AI session<br/>fills gaps]
@@ -78,15 +78,14 @@ title: "L0 · AppDoc build pipeline overview"
 ---
 flowchart LR
   accTitle: AppDoc build pipeline overview
-  accDescr: One build run passes through seven stages. Stop gates G1, G4 and G5 end the run with exit code 1 or 3. Score gates G2 and G3 record an outcome and let the run continue; the close-out stage turns them into exit code 0, 1 or 2. Enrichment is optional. Filter gate G6 refuses individual unsafe values and the run continues.
+  accDescr: One build run passes through seven stages. Stop gates G1, G4 and G5 end the run with exit code 1 or 3. Score gates G2 and G3 record an outcome and let the run continue; the close-out stage turns them into exit code 0, 1 or 2. Enrichment always runs. Filter gate G6 refuses individual unsafe values and the run continues.
 
   S1("1 Configure") --> G1{"G1 STOP<br/>config and redaction<br/>patterns valid"}
   G1 --> S2("2 Collect evidence") --> G2{{"G2 SCORE<br/>generator crash<br/>recorded"}}
   G2 --> S3("3 Compose") --> S4("4 Validate") --> G3{{"G3 SCORE<br/>gate status"}}
   G3 --> S5("5 Finalize") --> G4{"G4 STOP<br/>redaction sweep"}
-  G4 -->|"default"| S7("7 Close out<br/>exit 0, 1 or 2")
-  G4 -->|"enrichment on"| S6("6 Enrich<br/>optional") --> G5{"G5 STOP<br/>secret gate on<br/>LLM input"}
-  G5 --> G6[/"G6 FILTER<br/>quarantine merge"/] --> S7
+  G4 --> S6("6 Enrich") --> G5{"G5 STOP<br/>secret gate on<br/>LLM input"}
+  G5 --> G6[/"G6 FILTER<br/>quarantine merge"/] --> S7("7 Close out<br/>exit 0, 1 or 2")
   G1 -.->|"exit 1 or 3"| STOP(["Run stops"])
   G4 -.->|"exit 3"| STOP
   G5 -.->|"exit 3"| STOP
@@ -119,8 +118,9 @@ pwsh -NoProfile -File ./.appdoc/scripts/powershell/run-appdoc-build.ps1 -Path <t
 | `-SkipDiagrams` | off | Skip the C4 and flow diagrams (faster). |
 | `-SkipSyntaxGate` | off | Skip the PowerShell syntax pre-check. |
 | `-Profile` | `default` | Generation profile. |
-| `-EnableSemanticEnrich` | off | Run the optional Layer 2 enrichment stage. |
 | `-AllowGateFail` | off | For exploratory runs: log a failed gate but exit 0. Never use it in CI. |
+
+The enrichment stage always runs; there is no switch for it.
 
 To change where the output goes, set `outputDir` in the target's `.appdoc/config.json`. There is no command-line option for it.
 
@@ -291,7 +291,7 @@ flowchart LR
 
 ## The enrichment layer
 
-Enrichment is opt-in with `-EnableSemanticEnrich`. It fills owner-knowledge fields that parsing the source can't, using the **surrounding** AI session. AppDoc itself holds no API key and makes no LLM network calls.
+Enrichment is a required stage of every build, with no switch to turn it off. It fills owner-knowledge fields that parsing the source can't, using the **surrounding** AI session. AppDoc itself holds no API key and makes no LLM network calls.
 
 ```mermaid
 sequenceDiagram

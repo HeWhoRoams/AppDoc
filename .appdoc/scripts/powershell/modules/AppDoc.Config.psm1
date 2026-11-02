@@ -12,15 +12,6 @@
 #                                      attribution (default 2). Below this, git-derived
 #                                      owner/churn are honest-Unknown (a 1-commit / squashed
 #                                      history is NOT meaningful ownership).
-#            - enableSemanticEnrich : opt-in semantic (LLM) enrichment stage (Phase 2a,
-#                                      default OFF). When OFF, the deterministic pipeline
-#                                      produces exactly today's output (no LLM call, no
-#                                      enrichment applied, the deterministic layer stays
-#                                      the gate-able core). When ON the deterministic
-#                                      apply-merge reads docs/evidence/semantic/output/
-#                                      (written by the EXTERNAL LLM session) and applies it
-#                                      under the quarantine (provenance + Verified-fact
-#                                      lock). A provider-agnostic, deterministic substrate.
 #
 #          BACKWARD-COMPAT: when <target>/.appdoc/config.json is absent (the common case),
 #          every field returns its default, so a target with NO config behaves EXACTLY as
@@ -41,7 +32,6 @@ $script:AppDocConfigDefaults = [ordered]@{
     pristineFloor            = 80                # pristine gate floor (1..100)
     outputDir                = 'docs'            # docs output dir name under the target root
     minCommitsForOwnership   = 2                 # git history depth floor for real ownership (default 2)
-    enableSemanticEnrich     = $false            # opt-in semantic (LLM) enrichment stage (default OFF)
 }
 
 # Canonical default theme resolution (relative to this module's templates dir).
@@ -155,7 +145,6 @@ function Get-AppDocConfig {
             if ($raw.PSObject.Properties['pristineFloor'] -and $raw.pristineFloor) { $config['pristineFloor'] = [int]$raw.pristineFloor }
             if ($raw.PSObject.Properties['outputDir'] -and $raw.outputDir) { $config['outputDir'] = [string]$raw.outputDir }
             if ($raw.PSObject.Properties['minCommitsForOwnership'] -and $raw.minCommitsForOwnership) { $config['minCommitsForOwnership'] = [int]$raw.minCommitsForOwnership }
-            if ($null -ne $raw.PSObject.Properties['enableSemanticEnrich'] -and $null -ne $raw.enableSemanticEnrich) { $config['enableSemanticEnrich'] = [bool]$raw.enableSemanticEnrich }
         }
         catch {
             # Invalid JSON: report it. The build treats this as an error (fail-closed),

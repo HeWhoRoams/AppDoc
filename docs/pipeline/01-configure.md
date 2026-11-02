@@ -34,7 +34,7 @@ Shapes and lines: [legend](legend.md).
 | Step | What it does | Output |
 |---|---|---|
 | 1.1 | Resolves the target path and works out where the docs folder is. Exit 1 if the path does not exist | Resolved paths |
-| 1.2 | Loads `<target>/.appdoc/config.json`. An absent file means defaults. A missing config module is exit 1 | Theme, pristine floor, redaction settings, enrichment switch |
+| 1.2 | Loads `<target>/.appdoc/config.json`. An absent file means defaults. A missing config module is exit 1 | Theme, pristine floor, redaction settings |
 | 1.3 | Compiles `redactionPatterns` (escaped literals) and `redactionRegexes` (case-insensitive, 2 s match timeout) into matchers held in memory | Operator matchers for stage 5 |
 
 ## Gates
@@ -48,7 +48,7 @@ Shapes and lines: [legend](legend.md).
 
 The settings are read once and reused. The matchers compiled here are the ones the stage 5 sweep applies. A bad pattern therefore stops the build now, not after twenty minutes of generation.
 
-Stage 6 enrichment can also be switched on by the `enableSemanticEnrich` config key. That is the only config key that changes which stages run.
+No config key changes which stages run. Stage 6 enrichment always runs.
 
 ## Go deeper
 

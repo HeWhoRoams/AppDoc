@@ -17,6 +17,10 @@ All notable changes to AppDoc. Dates are ISO 8601. ADRs are in `docs/adr/`.
 
 ### Breaking changes
 
+- **Enrichment is no longer optional.** The Layer 2 enrichment stage runs on every build. The
+  `-EnableSemanticEnrich` switch and the `enableSemanticEnrich` config key are removed (a leftover
+  config key is ignored). The stage writes the redacted input and applies any output the AI session
+  left; with none present it applies nothing, and the four gate-scored catalogs are unchanged.
 - **Build exit codes** (ADR 0003). `run-appdoc-build.ps1` now reports the outcome: `0` gate passed,
   `2` gate failed, `3` fail-closed stop (redaction sweep or semantic secret-redaction gate), `1` tool
   error (bad path, missing module, a generator that crashed, missing or unreadable
