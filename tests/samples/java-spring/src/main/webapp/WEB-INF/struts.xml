@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<struts>
+  <package name="default" namespace="/billing">
+    <action name="invoice" class="com.acme.web.InvoiceAction" method="view"/>
+  </package>
+</struts>

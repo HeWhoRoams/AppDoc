@@ -1,6 +1,6 @@
 # ADR 0003: Sub-validator failures count against the gate, and the build exit code reports the gate
 
-- **Status:** Accepted (2026-10-22)
+- **Status:** Superseded by ADR-0004 (2026-11-02)
 - **Decision area:** Validation gate; build contract; CI and harness integration
 
 ## Context

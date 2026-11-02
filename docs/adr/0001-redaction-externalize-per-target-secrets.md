@@ -1,6 +1,6 @@
 # ADR 0001: AppDoc ships shape-patterns only; per-target secrets are operator-supplied
 
-- **Status:** Accepted (2026-10-21)
+- **Status:** Superseded by ADR-0004 (2026-11-02)
 - **Decision area:** Redaction / secret handling; reusable-tool boundary; docs-as-code
 
 ## Context

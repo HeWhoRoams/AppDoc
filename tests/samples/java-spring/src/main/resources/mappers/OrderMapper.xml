@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapper namespace="com.acme.OrderMapper">
+  <select id="findOpen" resultType="map">
+    SELECT * FROM open_orders WHERE status = #{status}
+  </select>
+  <update id="close">
+    UPDATE orders SET status = 'CLOSED' WHERE id = #{id}
+  </update>
+</mapper>
