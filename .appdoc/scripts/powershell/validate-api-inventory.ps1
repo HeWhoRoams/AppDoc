@@ -8,29 +8,11 @@ param(
 
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Values.psm1') -ErrorAction Stop
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
-
-function Get-ApiValidationValue {
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) { return $Object[$Name] }
-        return $Default
-    }
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
-}
 
 function Get-ApiSectionContent {
     param(
@@ -87,16 +69,16 @@ if (Test-Path $evidencePath) {
     try {
         $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json -Depth 120
         $endpointRecords = @(
-            Get-ApiValidationValue -Object $evidence -Name "records" -Default @() |
+            Get-AppDocValue -Object $evidence -Name "records" -Default @() |
                 Where-Object { $_ -and [string]$_.kind -eq "endpoint" }
         )
         $evidenceEndpointCount = $endpointRecords.Count
         foreach ($record in $endpointRecords) {
-            $metadata = Get-ApiValidationValue -Object $record -Name "metadata" -Default @{}
-            $direction = [string](Get-ApiValidationValue -Object $metadata -Name "direction" -Default "")
+            $metadata = Get-AppDocValue -Object $record -Name "metadata" -Default @{}
+            $direction = [string](Get-AppDocValue -Object $metadata -Name "direction" -Default "")
             if ([string]::IsNullOrWhiteSpace($direction)) {
-                $sourceType = [string](Get-ApiValidationValue -Object $metadata -Name "sourceType" -Default "")
-                $name = [string](Get-ApiValidationValue -Object $record -Name "name" -Default "")
+                $sourceType = [string](Get-AppDocValue -Object $metadata -Name "sourceType" -Default "")
+                $name = [string](Get-AppDocValue -Object $record -Name "name" -Default "")
                 if ($sourceType -match '^(?i)(soap-client|wcf-client|asmx-client|proxy-client)$' -or $name -match '^/soap-client/') {
                     $direction = "outbound"
                 }
@@ -128,9 +110,9 @@ $graphEndpointCount = -1
 if (Test-Path $graphPath) {
     try {
         $graph = Get-Content $graphPath -Raw | ConvertFrom-Json -Depth 120
-        $metrics = Get-ApiValidationValue -Object $graph -Name "metrics" -Default @{}
-        $graphInboundCount = [int](Get-ApiValidationValue -Object $metrics -Name "inboundEndpointCount" -Default 0)
-        $graphOutboundCount = [int](Get-ApiValidationValue -Object $metrics -Name "outboundEndpointCount" -Default 0)
+        $metrics = Get-AppDocValue -Object $graph -Name "metrics" -Default @{}
+        $graphInboundCount = [int](Get-AppDocValue -Object $metrics -Name "inboundEndpointCount" -Default 0)
+        $graphOutboundCount = [int](Get-AppDocValue -Object $metrics -Name "outboundEndpointCount" -Default 0)
         $graphEndpointCount = $graphInboundCount + $graphOutboundCount
     }
     catch {

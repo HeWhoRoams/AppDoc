@@ -8,29 +8,11 @@ param(
 
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Values.psm1') -ErrorAction Stop
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
-
-function Get-DependencyValidationValue {
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) { return $Object[$Name] }
-        return $Default
-    }
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
-}
 
 function Get-DependencySectionContent {
     param(
@@ -74,7 +56,7 @@ function Get-DependencySignalStrength {
 
     $scopeModule = Join-Path $PSScriptRoot "modules\AppDoc.Scope.psm1"
     if (Test-Path $scopeModule) {
-        Import-Module $scopeModule -Force -ErrorAction SilentlyContinue
+        Import-Module $scopeModule -Force -ErrorAction Stop
     }
 
     $patterns = @(
@@ -98,16 +80,9 @@ function Get-DependencySignalStrength {
     )
 
     $files = @()
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        $files = @(
-            Get-AppDocSourceFiles -RootPath $RootPath -Artifact "dependencies-catalog" -Include $patterns
-        )
-    }
-    else {
-        $files = @(
-            Get-ChildItem -Path (Join-Path $RootPath "*") -Recurse -File -Include $patterns -ErrorAction SilentlyContinue
-        )
-    }
+    $files = @(
+        Get-AppDocSourceFiles -RootPath $RootPath -Artifact "dependencies-catalog" -Include $patterns
+    )
 
     return [ordered]@{
         signalCount = @($files).Count
@@ -125,10 +100,10 @@ function Get-DependencyGraphAlignedEntityCount {
     $recordIndex = 0
     foreach ($record in @($Records)) {
         if (-not $record) { $recordIndex++; continue }
-        $kind = ([string](Get-DependencyValidationValue -Object $record -Name "kind" -Default "")).Trim().ToLowerInvariant()
+        $kind = ([string](Get-AppDocValue -Object $record -Name "kind" -Default "")).Trim().ToLowerInvariant()
         if ($kind -ne "dependency") { $recordIndex++; continue }
 
-        $name = [string](Get-DependencyValidationValue -Object $record -Name "name" -Default "")
+        $name = [string](Get-AppDocValue -Object $record -Name "name" -Default "")
         if ([string]::IsNullOrWhiteSpace($name)) {
             $name = "unknown-dependency-$recordIndex"
             Write-Warning "Dependency record at index $recordIndex is missing a name. Assigned placeholder: $name."
@@ -163,7 +138,7 @@ if (Test-Path $canonicalPath) {
     try {
         $canonical = Get-Content $canonicalPath -Raw | ConvertFrom-Json -Depth 120
         if ($canonical.totals) {
-            $canonicalDependencyCount = [int](Get-DependencyValidationValue -Object $canonical.totals -Name "dependencyCount" -Default 0)
+            $canonicalDependencyCount = [int](Get-AppDocValue -Object $canonical.totals -Name "dependencyCount" -Default 0)
         }
     }
     catch {
@@ -178,7 +153,7 @@ if (Test-Path $evidencePath) {
     try {
         $evidence = Get-Content $evidencePath -Raw | ConvertFrom-Json -Depth 120
         $records = @(
-            Get-DependencyValidationValue -Object $evidence -Name "records" -Default @() |
+            Get-AppDocValue -Object $evidence -Name "records" -Default @() |
                 Where-Object { $_ -and [string]$_.kind -eq "dependency" }
         )
         $dependencyCount = $records.Count
@@ -186,7 +161,7 @@ if (Test-Path $evidencePath) {
 
         $duplicateDependencies = @(
             $records |
-                Group-Object -Property @{ Expression = { "{0}|{1}|{2}" -f [string]$_.name, [string]$_.source, [string](Get-DependencyValidationValue -Object $_.metadata -Name "version" -Default "") } } |
+                Group-Object -Property @{ Expression = { "{0}|{1}|{2}" -f [string]$_.name, [string]$_.source, [string](Get-AppDocValue -Object $_.metadata -Name "version" -Default "") } } |
                 Where-Object { $_.Count -gt 1 }
         )
         # Sum manually: under Set-StrictMode, (Measure-Object -Property Count -Sum).Sum throws on an
@@ -216,8 +191,8 @@ $graphDependencyCount = -1
 if (Test-Path $graphPath) {
     try {
         $graph = Get-Content $graphPath -Raw | ConvertFrom-Json -Depth 120
-        $metrics = Get-DependencyValidationValue -Object $graph -Name "metrics" -Default @{}
-        $graphDependencyCount = [int](Get-DependencyValidationValue -Object $metrics -Name "dependencyCount" -Default 0)
+        $metrics = Get-AppDocValue -Object $graph -Name "metrics" -Default @{}
+        $graphDependencyCount = [int](Get-AppDocValue -Object $metrics -Name "dependencyCount" -Default 0)
     }
     catch {
         $issues += "evidence-graph-unparseable"

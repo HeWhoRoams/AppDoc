@@ -46,7 +46,7 @@ Import-Module (Join-Path $modulesPath "C4ModelBuilder.psm1") -Force
 # generator never models a test-fixture solution that lives under tests/ or fixtures/).
 $scopeModulePath = Join-Path $modulesPath "AppDoc.Scope.psm1"
 if (Test-Path $scopeModulePath) {
-    Import-Module $scopeModulePath -Force -ErrorAction SilentlyContinue
+    Import-Module $scopeModulePath -Force -ErrorAction Stop
 }
 
 function ConvertTo-MermaidNodeId {
@@ -452,16 +452,11 @@ else {
     # unrelated system. When the Scope module is available, keep only in-scope paths;
     # otherwise fall back to the raw list.
     $candidateSlnFiles = Get-ChildItem -Path $CodebasePath -Filter "*.sln" -File -Recurse -Force -ErrorAction SilentlyContinue
-    if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {
-        $slnFiles = @(
-            $candidateSlnFiles | Where-Object {
-                Test-AppDocPathIncluded -Path $_.FullName -RootPath $CodebasePath -Artifact "default"
-            }
-        )
-    }
-    else {
-        $slnFiles = @($candidateSlnFiles)
-    }
+    $slnFiles = @(
+        $candidateSlnFiles | Where-Object {
+            Test-AppDocPathIncluded -Path $_.FullName -RootPath $CodebasePath -Artifact "default"
+        }
+    )
 
     # Honest target name (the actual repository) used when no in-scope solution exists,
     # so the placeholder models the real target instead of a generic or fixture system.

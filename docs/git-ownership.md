@@ -6,36 +6,36 @@
 
 > **Honest-Unknown guarantee:** a **non-git** directory (no .git) and **shallow** history (fewer than 2 commits — e.g. a single squashed commit) are **NOT** meaningful ownership, so every owner field degrades to Unknown rather than passing a single commit's author off as ownership. Git is never invoked on a non-git directory.
 
-## Result: Derived (real git history — 53 commit(s), 1 author(s))
+## Result: Derived (real git history — 56 commit(s), 1 author(s))
 
 | Field | Value |
 |-------|-------|
 | isGitRepo | true |
-| commitCount | 53 |
+| commitCount | 56 |
 | authors | 1 |
 | first date | 2025-11-14 |
 | last date | 2026-10-23 |
 | declared owner (CODEOWNERS *) | Unknown |
-| top author | Tim Niles (53 commits) |
+| top author | Tim Niles (56 commits) |
 
 ### Authors
 
 | Author | Commits |
 |--------|---------|
-| Tim Niles | 53 |
+| Tim Niles | 56 |
 
 ### Per-file ownership (owner = last-change author; churn = commit count)
 
 | File | Owner (last-change) | Last change | Churn |
 |------|---------------------|-------------|-------|
-| `README.md` | Tim Niles | 2026-10-23 | 14 |
+| `README.md` | Tim Niles | 2026-10-23 | 15 |
 | `.gitignore` | Tim Niles | 2026-10-23 | 9 |
+| `ROADMAP.md` | Tim Niles | 2026-10-23 | 9 |
 | `.github/prompts/appdoc.begin.prompt.md` | Tim Niles | 2026-10-23 | 8 |
-| `ROADMAP.md` | Tim Niles | 2026-10-23 | 8 |
+| `.github/workflows/appdoc-ci.yml` | Tim Niles | 2026-10-23 | 7 |
 | `.github/copilot-instructions.md` | Tim Niles | 2026-10-23 | 6 |
 | `.github/prompts/appdoc.diagrams.prompt.md` | Tim Niles | 2026-02-26 | 6 |
-| `.github/workflows/appdoc-ci.yml` | Tim Niles | 2026-10-23 | 6 |
-| `references/config-schema.md` | Tim Niles | 2026-10-23 | 5 |
+| `references/config-schema.md` | Tim Niles | 2026-10-23 | 6 |
 | `references/verification.md` | Tim Niles | 2026-10-23 | 4 |
 | `SKILL.md` | Tim Niles | 2026-10-23 | 4 |
 | `.github/prompts/appdoc.enrich.prompt.md` | Tim Niles | 2026-10-23 | 3 |
@@ -43,6 +43,7 @@
 | `.gitattributes` | Tim Niles | 2026-10-23 | 2 |
 | `.editorconfig` | Tim Niles | 2026-10-23 | 1 |
 | `.vscode/settings.example.json` | Tim Niles | 2026-10-23 | 1 |
+| `CHANGELOG.md` | Tim Niles | 2026-10-23 | 1 |
 | `LICENSE` | Tim Niles | 2026-10-23 | 1 |
 | `NOTICE` | Tim Niles | 2026-10-23 | 1 |
 | `PSScriptAnalyzerSettings.psd1` | Tim Niles | 2026-10-23 | 1 |
@@ -55,8 +56,8 @@
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 17cdd36
-- Generated At: 2026-10-23T01:55:45-04:00
+- Commit Hash: 5e53b62
+- Generated At: 2026-10-23T15:18:23+00:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

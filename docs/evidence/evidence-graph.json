@@ -8,1426 +8,1454 @@
   },
   "edges": [
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_concurrency_cancel_in_progress_4184c67a",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_947ca7cf",
+      "confidence": 1.0,
       "label": "concurrency.cancel-in-progress",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_concurrency_cancel_in_progress_4184c67a"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_947ca7cf"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_concurrency_group_4353a474",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_5a9fabfb",
+      "confidence": 1.0,
       "label": "concurrency.group",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_concurrency_group_4353a474"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_5a9fabfb"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_drift_name_84d8c2e6",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_e3dbfce2",
+      "confidence": 1.0,
       "label": "jobs.drift.name",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_drift_name_84d8c2e6"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_e3dbfce2"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_drift_needs_98e6a433",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_ea117c76",
+      "confidence": 1.0,
       "label": "jobs.drift.needs",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_drift_needs_98e6a433"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_ea117c76"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_drift_runs_on_589e2ca4",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_208c7b19",
+      "confidence": 1.0,
       "label": "jobs.drift.runs-on",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_drift_runs_on_589e2ca4"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_208c7b19"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_drift_steps_0_99a79b90",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_ec541f44",
+      "confidence": 1.0,
       "label": "jobs.drift.steps[0]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_drift_steps_0_99a79b90"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_ec541f44"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_drift_steps_1_38332dfa",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_b76197b9",
+      "confidence": 1.0,
       "label": "jobs.drift.steps[1]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_drift_steps_1_38332dfa"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_b76197b9"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_drift_steps_shell_ed460ba6",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_8e2c24e2",
+      "confidence": 1.0,
       "label": "jobs.drift.steps.shell",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_drift_steps_shell_ed460ba6"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_8e2c24e2"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_drift_steps_with_fetch_depth_d2da89f4",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_bdc176bb",
+      "confidence": 1.0,
       "label": "jobs.drift.steps.with.fetch-depth",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_drift_steps_with_fetch_depth_d2da89f4"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_bdc176bb"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_hygiene_name_a7867886",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_ccaee36a",
+      "confidence": 1.0,
       "label": "jobs.hygiene.name",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_hygiene_name_a7867886"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_ccaee36a"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_hygiene_runs_on_f616492a",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_76e8f5bb",
+      "confidence": 1.0,
       "label": "jobs.hygiene.runs-on",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_hygiene_runs_on_f616492a"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_76e8f5bb"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_hygiene_steps_0_81f99013",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_c5ce11f2",
+      "confidence": 1.0,
       "label": "jobs.hygiene.steps[0]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_hygiene_steps_0_81f99013"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_c5ce11f2"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_hygiene_steps_1_1f5e909e",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_511854dc",
+      "confidence": 1.0,
       "label": "jobs.hygiene.steps[1]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_hygiene_steps_1_1f5e909e"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_511854dc"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_hygiene_steps_2_93e42ea2",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_e639c21e",
+      "confidence": 1.0,
       "label": "jobs.hygiene.steps[2]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_hygiene_steps_2_93e42ea2"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_e639c21e"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_hygiene_steps_3_74378ec2",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_22d4b7f9",
+      "confidence": 1.0,
       "label": "jobs.hygiene.steps[3]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_hygiene_steps_3_74378ec2"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_22d4b7f9"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_hygiene_steps_4_1bd3fb5c",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_496a865f",
+      "confidence": 1.0,
       "label": "jobs.hygiene.steps[4]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_hygiene_steps_4_1bd3fb5c"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_496a865f"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_hygiene_steps_5_5c7edb77",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_208d3a18",
+      "confidence": 1.0,
       "label": "jobs.hygiene.steps[5]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_hygiene_steps_5_5c7edb77"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_208d3a18"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_hygiene_steps_6_2e87a799",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_505f2d6d",
+      "confidence": 1.0,
       "label": "jobs.hygiene.steps[6]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_hygiene_steps_6_2e87a799"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_505f2d6d"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_hygiene_steps_7_4139c3df",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_47712093",
+      "confidence": 1.0,
       "label": "jobs.hygiene.steps[7]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_hygiene_steps_7_4139c3df"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_47712093"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_hygiene_steps_8_7842ae0c",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_42908d51",
+      "confidence": 1.0,
       "label": "jobs.hygiene.steps[8]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_hygiene_steps_8_7842ae0c"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_42908d51"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_hygiene_steps_9_c5700d1b",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_458fd7b2",
+      "confidence": 1.0,
+      "label": "jobs.hygiene.steps[9]",
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_46b9d5d1"
+    },
+    {
+      "to": "config_key_jobs_hygiene_steps_run_348a44cb",
+      "type": "maps_to_config",
+      "artifact": "config-catalog",
+      "confidence": 1.0,
       "label": "jobs.hygiene.steps.run",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_hygiene_steps_run_348a44cb"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_458fd7b2"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_hygiene_steps_shell_e80f611f",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_9c8a8c5a",
+      "confidence": 1.0,
       "label": "jobs.hygiene.steps.shell",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_hygiene_steps_shell_e80f611f"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_9c8a8c5a"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_lint_name_82302cba",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_4c08c2fa",
+      "confidence": 1.0,
       "label": "jobs.lint.name",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_lint_name_82302cba"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_4c08c2fa"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_lint_runs_on_e25e4e9e",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_24deb544",
+      "confidence": 1.0,
       "label": "jobs.lint.runs-on",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_lint_runs_on_e25e4e9e"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_24deb544"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_lint_steps_0_ce155e3b",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_a6e61607",
+      "confidence": 1.0,
       "label": "jobs.lint.steps[0]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_lint_steps_0_ce155e3b"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_a6e61607"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_lint_steps_1_257cccbd",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_eb880e2c",
+      "confidence": 1.0,
       "label": "jobs.lint.steps[1]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_lint_steps_1_257cccbd"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_eb880e2c"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_lint_steps_shell_9b85d286",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_baa0ffe0",
+      "confidence": 1.0,
       "label": "jobs.lint.steps.shell",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_lint_steps_shell_9b85d286"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_baa0ffe0"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_name_93d08342",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_6a460fda",
+      "confidence": 1.0,
       "label": "jobs.tests.name",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_name_93d08342"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_6a460fda"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_needs_bb33400d",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_e2bc6e12",
+      "confidence": 1.0,
       "label": "jobs.tests.needs",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_needs_bb33400d"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_e2bc6e12"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_runs_on_8cfea4ce",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_9d0c4a4e",
+      "confidence": 1.0,
       "label": "jobs.tests.runs-on",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_runs_on_8cfea4ce"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_9d0c4a4e"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_steps_0_f9df4784",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_a62d6c72",
+      "confidence": 1.0,
       "label": "jobs.tests.steps[0]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_steps_0_f9df4784"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_a62d6c72"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_steps_1_adcf69aa",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_6638ad0d",
+      "confidence": 1.0,
       "label": "jobs.tests.steps[1]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_steps_1_adcf69aa"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_6638ad0d"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_steps_2_f5574b35",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_7506cd60",
+      "confidence": 1.0,
       "label": "jobs.tests.steps[2]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_steps_2_f5574b35"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_7506cd60"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_steps_3_faf57995",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_200993b7",
+      "confidence": 1.0,
       "label": "jobs.tests.steps[3]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_steps_3_faf57995"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_200993b7"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_steps_4_aa9f362f",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_93f18b50",
+      "confidence": 1.0,
       "label": "jobs.tests.steps[4]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_steps_4_aa9f362f"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_93f18b50"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_steps_5_03c9fe17",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_59df4af8",
+      "confidence": 1.0,
       "label": "jobs.tests.steps[5]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_steps_5_03c9fe17"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_59df4af8"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_steps_if_a41fc015",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_ebd9cfd0",
+      "confidence": 1.0,
       "label": "jobs.tests.steps.if",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_steps_if_a41fc015"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_ebd9cfd0"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_steps_run_cff2a6d0",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_975287a5",
+      "confidence": 1.0,
       "label": "jobs.tests.steps.run",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_steps_run_cff2a6d0"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_975287a5"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_steps_shell_b409e835",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_580e26eb",
+      "confidence": 1.0,
       "label": "jobs.tests.steps.shell",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_steps_shell_b409e835"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_580e26eb"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_steps_with_dotnet_version_52c96497",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_849f5d8b",
+      "confidence": 1.0,
       "label": "jobs.tests.steps.with.dotnet-version",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_steps_with_dotnet_version_52c96497"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_849f5d8b"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_steps_with_fetch_depth_11360ac2",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_5ba84782",
+      "confidence": 1.0,
       "label": "jobs.tests.steps.with.fetch-depth",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_steps_with_fetch_depth_11360ac2"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_5ba84782"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_strategy_fail_fast_40b9ba2c",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_751317c5",
+      "confidence": 1.0,
       "label": "jobs.tests.strategy.fail-fast",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_strategy_fail_fast_40b9ba2c"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_751317c5"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_strategy_matrix_dotnet_c8b39bc5",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_01faa08d",
+      "confidence": 1.0,
       "label": "jobs.tests.strategy.matrix.dotnet",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_strategy_matrix_dotnet_c8b39bc5"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_01faa08d"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_strategy_matrix_include_0_48102db0",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_ab30cb2c",
+      "confidence": 1.0,
       "label": "jobs.tests.strategy.matrix.include[0]",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_strategy_matrix_include_0_48102db0"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_ab30cb2c"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_strategy_matrix_include_dotnet_c0865372",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_96ef0e57",
+      "confidence": 1.0,
       "label": "jobs.tests.strategy.matrix.include.dotnet",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_strategy_matrix_include_dotnet_c0865372"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_96ef0e57"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_jobs_tests_strategy_matrix_os_3b027fe6",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_f01c6426",
+      "confidence": 1.0,
       "label": "jobs.tests.strategy.matrix.os",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_jobs_tests_strategy_matrix_os_3b027fe6"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_f01c6426"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_name_6ae99955",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_acd4cc39",
+      "confidence": 1.0,
       "label": "name",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_name_6ae99955"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_acd4cc39"
     },
     {
-      "from": "component_core_processing_6d28d771",
+      "to": "config_key_on_push_branches_d3f37fbe",
+      "type": "maps_to_config",
       "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_53cb0b4f",
+      "confidence": 1.0,
       "label": "on.push.branches",
-      "type": "maps_to_config",
-      "confidence": 1.0,
-      "to": "config_key_on_push_branches_d3f37fbe"
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_53cb0b4f"
     },
     {
-      "from": "component_core_processing_6d28d771",
-      "artifact": "config-catalog",
-      "id": "edge_maps_to_config_component_core_processing_6_adaea5d0",
-      "label": "permissions.contents",
+      "to": "config_key_permissions_contents_79f4a4c2",
       "type": "maps_to_config",
+      "artifact": "config-catalog",
       "confidence": 1.0,
-      "to": "config_key_permissions_contents_79f4a4c2"
+      "label": "permissions.contents",
+      "from": "component_core_processing_6d28d771",
+      "id": "edge_maps_to_config_component_core_processing_6_adaea5d0"
     }
   ],
   "entities": [
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/concurrency.cancel-in-progress",
+      "id": "component_core_processing_6d28d771",
+      "dedupeKey": "component|Core Processing",
       "attributes": {
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/concurrency.cancel-in-progress"
         ]
       },
-      "type": "component",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/concurrency.cancel-in-progress",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "component|Core Processing",
       "artifact": "config-catalog",
       "sensitivity": "normal",
       "name": "Core Processing",
-      "id": "component_core_processing_6d28d771",
+      "type": "component",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/concurrency.cancel-in-progress",
+      "id": "config_key_concurrency_cancel_in_progress_4184c67a",
+      "dedupeKey": "config_key|concurrency.cancel-in-progress",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/concurrency.cancel-in-progress"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/concurrency.cancel-in-progress",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|concurrency.cancel-in-progress",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "concurrency.cancel-in-progress",
-      "id": "config_key_concurrency_cancel_in_progress_4184c67a",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/concurrency.group",
+      "id": "config_key_concurrency_group_4353a474",
+      "dedupeKey": "config_key|concurrency.group",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/concurrency.group"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/concurrency.group",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|concurrency.group",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "concurrency.group",
-      "id": "config_key_concurrency_group_4353a474",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.name",
+      "id": "config_key_jobs_drift_name_84d8c2e6",
+      "dedupeKey": "config_key|jobs.drift.name",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.name"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.name",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.drift.name",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.drift.name",
-      "id": "config_key_jobs_drift_name_84d8c2e6",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.needs",
+      "id": "config_key_jobs_drift_needs_98e6a433",
+      "dedupeKey": "config_key|jobs.drift.needs",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.needs"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.needs",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.drift.needs",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.drift.needs",
-      "id": "config_key_jobs_drift_needs_98e6a433",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.runs-on",
+      "id": "config_key_jobs_drift_runs_on_589e2ca4",
+      "dedupeKey": "config_key|jobs.drift.runs-on",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.runs-on"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.runs-on",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.drift.runs-on",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.drift.runs-on",
-      "id": "config_key_jobs_drift_runs_on_589e2ca4",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps.shell",
+      "id": "config_key_jobs_drift_steps_shell_ed460ba6",
+      "dedupeKey": "config_key|jobs.drift.steps.shell",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps.shell"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps.shell",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.drift.steps.shell",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.drift.steps.shell",
-      "id": "config_key_jobs_drift_steps_shell_ed460ba6",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps.with.fetch-depth",
+      "id": "config_key_jobs_drift_steps_with_fetch_depth_d2da89f4",
+      "dedupeKey": "config_key|jobs.drift.steps.with.fetch-depth",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps.with.fetch-depth"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps.with.fetch-depth",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.drift.steps.with.fetch-depth",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.drift.steps.with.fetch-depth",
-      "id": "config_key_jobs_drift_steps_with_fetch_depth_d2da89f4",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps[0]",
+      "id": "config_key_jobs_drift_steps_0_99a79b90",
+      "dedupeKey": "config_key|jobs.drift.steps[0]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps[0]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps[0]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.drift.steps[0]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.drift.steps[0]",
-      "id": "config_key_jobs_drift_steps_0_99a79b90",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps[1]",
+      "id": "config_key_jobs_drift_steps_1_38332dfa",
+      "dedupeKey": "config_key|jobs.drift.steps[1]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps[1]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps[1]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.drift.steps[1]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.drift.steps[1]",
-      "id": "config_key_jobs_drift_steps_1_38332dfa",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.name",
+      "id": "config_key_jobs_hygiene_name_a7867886",
+      "dedupeKey": "config_key|jobs.hygiene.name",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.name"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.name",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.hygiene.name",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.hygiene.name",
-      "id": "config_key_jobs_hygiene_name_a7867886",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.runs-on",
+      "id": "config_key_jobs_hygiene_runs_on_f616492a",
+      "dedupeKey": "config_key|jobs.hygiene.runs-on",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.runs-on"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.runs-on",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.hygiene.runs-on",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.hygiene.runs-on",
-      "id": "config_key_jobs_hygiene_runs_on_f616492a",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps.run",
+      "id": "config_key_jobs_hygiene_steps_run_348a44cb",
+      "dedupeKey": "config_key|jobs.hygiene.steps.run",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps.run"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps.run",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.hygiene.steps.run",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.hygiene.steps.run",
-      "id": "config_key_jobs_hygiene_steps_run_348a44cb",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps.shell",
+      "id": "config_key_jobs_hygiene_steps_shell_e80f611f",
+      "dedupeKey": "config_key|jobs.hygiene.steps.shell",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps.shell"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps.shell",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.hygiene.steps.shell",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.hygiene.steps.shell",
-      "id": "config_key_jobs_hygiene_steps_shell_e80f611f",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[0]",
+      "id": "config_key_jobs_hygiene_steps_0_81f99013",
+      "dedupeKey": "config_key|jobs.hygiene.steps[0]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[0]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[0]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.hygiene.steps[0]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.hygiene.steps[0]",
-      "id": "config_key_jobs_hygiene_steps_0_81f99013",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[1]",
+      "id": "config_key_jobs_hygiene_steps_1_1f5e909e",
+      "dedupeKey": "config_key|jobs.hygiene.steps[1]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[1]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[1]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.hygiene.steps[1]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.hygiene.steps[1]",
-      "id": "config_key_jobs_hygiene_steps_1_1f5e909e",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[2]",
+      "id": "config_key_jobs_hygiene_steps_2_93e42ea2",
+      "dedupeKey": "config_key|jobs.hygiene.steps[2]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[2]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[2]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.hygiene.steps[2]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.hygiene.steps[2]",
-      "id": "config_key_jobs_hygiene_steps_2_93e42ea2",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[3]",
+      "id": "config_key_jobs_hygiene_steps_3_74378ec2",
+      "dedupeKey": "config_key|jobs.hygiene.steps[3]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[3]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[3]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.hygiene.steps[3]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.hygiene.steps[3]",
-      "id": "config_key_jobs_hygiene_steps_3_74378ec2",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[4]",
+      "id": "config_key_jobs_hygiene_steps_4_1bd3fb5c",
+      "dedupeKey": "config_key|jobs.hygiene.steps[4]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[4]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[4]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.hygiene.steps[4]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.hygiene.steps[4]",
-      "id": "config_key_jobs_hygiene_steps_4_1bd3fb5c",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[5]",
+      "id": "config_key_jobs_hygiene_steps_5_5c7edb77",
+      "dedupeKey": "config_key|jobs.hygiene.steps[5]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[5]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[5]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.hygiene.steps[5]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.hygiene.steps[5]",
-      "id": "config_key_jobs_hygiene_steps_5_5c7edb77",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[6]",
+      "id": "config_key_jobs_hygiene_steps_6_2e87a799",
+      "dedupeKey": "config_key|jobs.hygiene.steps[6]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[6]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[6]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.hygiene.steps[6]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.hygiene.steps[6]",
-      "id": "config_key_jobs_hygiene_steps_6_2e87a799",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[7]",
+      "id": "config_key_jobs_hygiene_steps_7_4139c3df",
+      "dedupeKey": "config_key|jobs.hygiene.steps[7]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[7]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[7]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.hygiene.steps[7]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.hygiene.steps[7]",
-      "id": "config_key_jobs_hygiene_steps_7_4139c3df",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[8]",
+      "id": "config_key_jobs_hygiene_steps_8_7842ae0c",
+      "dedupeKey": "config_key|jobs.hygiene.steps[8]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[8]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[8]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.hygiene.steps[8]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.hygiene.steps[8]",
-      "id": "config_key_jobs_hygiene_steps_8_7842ae0c",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[9]",
+      "id": "config_key_jobs_hygiene_steps_9_c5700d1b",
+      "dedupeKey": "config_key|jobs.hygiene.steps[9]",
       "attributes": {
+        "classification": "",
+        "sources": [
+          ".github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[9]"
+        ]
+      },
+      "artifact": "config-catalog",
+      "sensitivity": "potentially-sensitive",
+      "name": "jobs.hygiene.steps[9]",
+      "type": "config_key",
+      "inferred": false,
+      "ownership": "first-party"
+    },
+    {
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.name",
+      "id": "config_key_jobs_lint_name_82302cba",
+      "dedupeKey": "config_key|jobs.lint.name",
+      "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.name"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.name",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.lint.name",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.lint.name",
-      "id": "config_key_jobs_lint_name_82302cba",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.runs-on",
+      "id": "config_key_jobs_lint_runs_on_e25e4e9e",
+      "dedupeKey": "config_key|jobs.lint.runs-on",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.runs-on"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.runs-on",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.lint.runs-on",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.lint.runs-on",
-      "id": "config_key_jobs_lint_runs_on_e25e4e9e",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps.shell",
+      "id": "config_key_jobs_lint_steps_shell_9b85d286",
+      "dedupeKey": "config_key|jobs.lint.steps.shell",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps.shell"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps.shell",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.lint.steps.shell",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.lint.steps.shell",
-      "id": "config_key_jobs_lint_steps_shell_9b85d286",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps[0]",
+      "id": "config_key_jobs_lint_steps_0_ce155e3b",
+      "dedupeKey": "config_key|jobs.lint.steps[0]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps[0]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps[0]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.lint.steps[0]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.lint.steps[0]",
-      "id": "config_key_jobs_lint_steps_0_ce155e3b",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps[1]",
+      "id": "config_key_jobs_lint_steps_1_257cccbd",
+      "dedupeKey": "config_key|jobs.lint.steps[1]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps[1]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps[1]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.lint.steps[1]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.lint.steps[1]",
-      "id": "config_key_jobs_lint_steps_1_257cccbd",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.name",
+      "id": "config_key_jobs_tests_name_93d08342",
+      "dedupeKey": "config_key|jobs.tests.name",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.name"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.name",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.name",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.name",
-      "id": "config_key_jobs_tests_name_93d08342",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.needs",
+      "id": "config_key_jobs_tests_needs_bb33400d",
+      "dedupeKey": "config_key|jobs.tests.needs",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.needs"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.needs",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.needs",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.needs",
-      "id": "config_key_jobs_tests_needs_bb33400d",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.runs-on",
+      "id": "config_key_jobs_tests_runs_on_8cfea4ce",
+      "dedupeKey": "config_key|jobs.tests.runs-on",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.runs-on"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.runs-on",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.runs-on",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.runs-on",
-      "id": "config_key_jobs_tests_runs_on_8cfea4ce",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.if",
+      "id": "config_key_jobs_tests_steps_if_a41fc015",
+      "dedupeKey": "config_key|jobs.tests.steps.if",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.if"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.if",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.steps.if",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.steps.if",
-      "id": "config_key_jobs_tests_steps_if_a41fc015",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.run",
+      "id": "config_key_jobs_tests_steps_run_cff2a6d0",
+      "dedupeKey": "config_key|jobs.tests.steps.run",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.run"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.run",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.steps.run",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.steps.run",
-      "id": "config_key_jobs_tests_steps_run_cff2a6d0",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.shell",
+      "id": "config_key_jobs_tests_steps_shell_b409e835",
+      "dedupeKey": "config_key|jobs.tests.steps.shell",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.shell"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.shell",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.steps.shell",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.steps.shell",
-      "id": "config_key_jobs_tests_steps_shell_b409e835",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.with.dotnet-version",
+      "id": "config_key_jobs_tests_steps_with_dotnet_version_52c96497",
+      "dedupeKey": "config_key|jobs.tests.steps.with.dotnet-version",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.with.dotnet-version"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.with.dotnet-version",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.steps.with.dotnet-version",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.steps.with.dotnet-version",
-      "id": "config_key_jobs_tests_steps_with_dotnet_version_52c96497",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.with.fetch-depth",
+      "id": "config_key_jobs_tests_steps_with_fetch_depth_11360ac2",
+      "dedupeKey": "config_key|jobs.tests.steps.with.fetch-depth",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.with.fetch-depth"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps.with.fetch-depth",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.steps.with.fetch-depth",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.steps.with.fetch-depth",
-      "id": "config_key_jobs_tests_steps_with_fetch_depth_11360ac2",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[0]",
+      "id": "config_key_jobs_tests_steps_0_f9df4784",
+      "dedupeKey": "config_key|jobs.tests.steps[0]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[0]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[0]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.steps[0]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.steps[0]",
-      "id": "config_key_jobs_tests_steps_0_f9df4784",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[1]",
+      "id": "config_key_jobs_tests_steps_1_adcf69aa",
+      "dedupeKey": "config_key|jobs.tests.steps[1]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[1]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[1]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.steps[1]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.steps[1]",
-      "id": "config_key_jobs_tests_steps_1_adcf69aa",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[2]",
+      "id": "config_key_jobs_tests_steps_2_f5574b35",
+      "dedupeKey": "config_key|jobs.tests.steps[2]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[2]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[2]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.steps[2]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.steps[2]",
-      "id": "config_key_jobs_tests_steps_2_f5574b35",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[3]",
+      "id": "config_key_jobs_tests_steps_3_faf57995",
+      "dedupeKey": "config_key|jobs.tests.steps[3]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[3]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[3]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.steps[3]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.steps[3]",
-      "id": "config_key_jobs_tests_steps_3_faf57995",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[4]",
+      "id": "config_key_jobs_tests_steps_4_aa9f362f",
+      "dedupeKey": "config_key|jobs.tests.steps[4]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[4]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[4]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.steps[4]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.steps[4]",
-      "id": "config_key_jobs_tests_steps_4_aa9f362f",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[5]",
+      "id": "config_key_jobs_tests_steps_5_03c9fe17",
+      "dedupeKey": "config_key|jobs.tests.steps[5]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[5]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.steps[5]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.steps[5]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.steps[5]",
-      "id": "config_key_jobs_tests_steps_5_03c9fe17",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.fail-fast",
+      "id": "config_key_jobs_tests_strategy_fail_fast_40b9ba2c",
+      "dedupeKey": "config_key|jobs.tests.strategy.fail-fast",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.fail-fast"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.fail-fast",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.strategy.fail-fast",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.strategy.fail-fast",
-      "id": "config_key_jobs_tests_strategy_fail_fast_40b9ba2c",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.dotnet",
+      "id": "config_key_jobs_tests_strategy_matrix_dotnet_c8b39bc5",
+      "dedupeKey": "config_key|jobs.tests.strategy.matrix.dotnet",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.dotnet"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.dotnet",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.strategy.matrix.dotnet",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.strategy.matrix.dotnet",
-      "id": "config_key_jobs_tests_strategy_matrix_dotnet_c8b39bc5",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.include.dotnet",
+      "id": "config_key_jobs_tests_strategy_matrix_include_dotnet_c0865372",
+      "dedupeKey": "config_key|jobs.tests.strategy.matrix.include.dotnet",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.include.dotnet"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.include.dotnet",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.strategy.matrix.include.dotnet",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.strategy.matrix.include.dotnet",
-      "id": "config_key_jobs_tests_strategy_matrix_include_dotnet_c0865372",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.include[0]",
+      "id": "config_key_jobs_tests_strategy_matrix_include_0_48102db0",
+      "dedupeKey": "config_key|jobs.tests.strategy.matrix.include[0]",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.include[0]"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.include[0]",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.strategy.matrix.include[0]",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.strategy.matrix.include[0]",
-      "id": "config_key_jobs_tests_strategy_matrix_include_0_48102db0",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.os",
+      "id": "config_key_jobs_tests_strategy_matrix_os_3b027fe6",
+      "dedupeKey": "config_key|jobs.tests.strategy.matrix.os",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.os"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/jobs.tests.strategy.matrix.os",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|jobs.tests.strategy.matrix.os",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "jobs.tests.strategy.matrix.os",
-      "id": "config_key_jobs_tests_strategy_matrix_os_3b027fe6",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/name",
+      "id": "config_key_name_6ae99955",
+      "dedupeKey": "config_key|name",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/name"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/name",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|name",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "name",
-      "id": "config_key_name_6ae99955",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches",
+      "id": "config_key_on_push_branches_d3f37fbe",
+      "dedupeKey": "config_key|on.push.branches",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/on.push.branches"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/on.push.branches",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|on.push.branches",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "on.push.branches",
-      "id": "config_key_on_push_branches_d3f37fbe",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "runtime",
+      "source": ".github/workflows/appdoc-ci.yml:yaml/permissions.contents",
+      "id": "config_key_permissions_contents_79f4a4c2",
+      "dedupeKey": "config_key|permissions.contents",
       "attributes": {
+        "classification": "",
         "sources": [
           ".github/workflows/appdoc-ci.yml:yaml/permissions.contents"
-        ],
-        "classification": ""
+        ]
       },
-      "type": "config_key",
-      "source": ".github/workflows/appdoc-ci.yml:yaml/permissions.contents",
-      "runtimeRelevance": "runtime",
-      "dedupeKey": "config_key|permissions.contents",
       "artifact": "config-catalog",
       "sensitivity": "potentially-sensitive",
       "name": "permissions.contents",
-      "id": "config_key_permissions_contents_79f4a4c2",
+      "type": "config_key",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     },
     {
-      "ownership": "first-party",
+      "confidence": 1.0,
+      "runtimeRelevance": "supporting",
+      "source": "repository",
+      "id": "system_self2_a91453d3",
+      "dedupeKey": "system|self2",
       "attributes": {
         "role": "root-system"
       },
-      "type": "system",
-      "source": "repository",
-      "runtimeRelevance": "supporting",
-      "dedupeKey": "system|selfbuild",
       "artifact": "overview",
       "sensitivity": "normal",
-      "name": "selfbuild",
-      "id": "system_selfbuild_71d7fdc5",
+      "name": "self2",
+      "type": "system",
       "inferred": false,
-      "confidence": 1.0
+      "ownership": "first-party"
     }
   ],
-  "generatedAt": "2026-10-23T01:55:38-04:00",
+  "generatedAt": "2026-10-23T15:18:18+00:00",
   "graphVersion": "1.0.0",
   "metrics": {
-    "entityCount": 51,
-    "edgeCount": 49,
+    "entityCount": 52,
+    "edgeCount": 50,
     "entityTypeCount": {
       "system": 1,
       "component": 1,
       "endpoint_inbound": 0,
       "endpoint_outbound": 0,
       "data_model": 0,
-      "config_key": 49,
+      "config_key": 50,
       "dependency": 0,
       "test_case": 0
     },
@@ -1435,12 +1463,12 @@
     "outboundEndpointCount": 0,
     "componentCount": 1,
     "modelCount": 0,
-    "configCount": 49,
+    "configCount": 50,
     "dependencyCount": 0,
     "testCaseCount": 0
   },
   "project": {
-    "name": "selfbuild",
+    "name": "self2",
     "rootPath": "."
   },
   "schemaVersion": "appdoc-evidence-graph/v1",
@@ -1456,7 +1484,7 @@
       "artifact": "config-catalog",
       "path": "docs/evidence/config-catalog.evidence.json",
       "exists": true,
-      "recordCount": 49,
+      "recordCount": 50,
       "parseError": ""
     },
     {
@@ -1488,6 +1516,6 @@
       "updatedAt",
       "timestamp"
     ],
-    "contentHash": "b372a2142834fabc5772521f453a42bc7dc038a393c0cc8688447ffb319484c2"
+    "contentHash": "54a98eacfcfca74cd21fc3140fa1d1fd9ab99075532509b85c72fd957ba32dec"
   }
 }

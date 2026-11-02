@@ -1,6 +1,6 @@
 {
   "artifact": "start-here",
-  "generatedAt": "2026-10-23T01:55:34-04:00",
+  "generatedAt": "2026-10-23T15:18:14+00:00",
   "recordCount": 3,
   "records": [
     {
@@ -15,7 +15,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:34-04:00"
+      "timestamp": "2026-10-23T15:18:14+00:00"
     },
     {
       "artifact": "start-here",
@@ -29,7 +29,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:34-04:00"
+      "timestamp": "2026-10-23T15:18:14+00:00"
     },
     {
       "artifact": "start-here",
@@ -44,7 +44,7 @@
       "provider": "generator",
       "providerType": "deterministic",
       "status": "Detected",
-      "timestamp": "2026-10-23T01:55:34-04:00"
+      "timestamp": "2026-10-23T15:18:14+00:00"
     }
   ],
   "metadata": {
@@ -53,13 +53,13 @@
       "endpoints",
       "models"
     ],
+    "generator": "generate-start-here.ps1",
     "requiredSections": [
       "Who This Is For",
       "15-Minute Orientation",
       "Role-Based Paths",
       "System Signals"
-    ],
-    "generator": "generate-start-here.ps1"
+    ]
   },
   "determinism": {
     "hashAlgorithm": "SHA256",

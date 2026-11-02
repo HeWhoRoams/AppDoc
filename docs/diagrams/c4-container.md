@@ -1,10 +1,10 @@
 # C4 Container
 
-**Generated**: 2026-10-23 01:55:37
+**Generated**: 2026-10-23 15:18:17
 
 ## Summary
 
-- System: selfbuild (repository root)
+- System: self2 (repository root)
 - Containers detected: 0
 - Relationships detected: 0
 - Note: no in-scope .NET solution file found; no deployable containers detected
@@ -13,9 +13,9 @@
 
 ```mermaid
 C4Container
-title selfbuild - Container View
+title self2 - Container View
 Person(user, "User", "Primary caller of the system")
-System_Boundary(system_boundary, "selfbuild") {
+System_Boundary(system_boundary, "self2") {
   Container(no_containers, "No deployable containers detected", "N/A", "No in-scope solution file")
 }
 Rel(user, no_containers, "Inspects")
@@ -28,8 +28,8 @@ Rel(user, no_containers, "Inspects")
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 17cdd36
-- Generated At: 2026-10-23T01:55:45-04:00
+- Commit Hash: 5e53b62
+- Generated At: 2026-10-23T15:18:23+00:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

@@ -1,6 +1,6 @@
 # AppDoc enrichment loop — operating notes
 
-Details for the quarantined LLM-session enrichment loop summarized in `SKILL.md`. The field-level contract the LLM must follow is in `enrichment-contract.md`.
+Details for the quarantined LLM-session enrichment loop summarized in `SKILL.md`. The field-level contract the LLM must follow is in `enrichment-contract.md`. How the two builds, the secret gate and the quarantine fit together: [stage 6](../docs/pipeline/06-enrich.md) and [enrichment quarantine](../docs/pipeline/detail/enrichment-quarantine.md).
 
 **Step 1 — Emit the redacted input.** Run the single command with enrichment ON. AppDoc writes the
 redacted pending-field envelope to `<target>/docs/evidence/semantic/input/<artifact>.semantic.input.json`.

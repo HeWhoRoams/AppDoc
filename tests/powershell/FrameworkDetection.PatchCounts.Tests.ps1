@@ -65,19 +65,6 @@ New-Item -ItemType Directory -Path $docsPath -Force | Out-Null
     styles = @('no-api-surface')
 } | ConvertTo-Json -Depth 8 | Out-File -FilePath (Join-Path $docsPath "architecture-fingerprint.json") -Encoding UTF8
 
-# Patch Get-AppDocOverviewObjectValue to return test data
-function global:Get-AppDocOverviewObjectValue {
-    param([object]$Object, [string]$Name, [object]$Default = $null)
-    if ($null -eq $Object) { return $Default }
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) { return $Object[$Name] }
-        return $Default
-    }
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($null -ne $prop) { return $prop.Value }
-    return $Default
-}
-
 # Call the function under test
 $truthPack = Get-AppDocOverviewTruthPackData -RootPath $tempRoot -OverviewData $overviewData
 

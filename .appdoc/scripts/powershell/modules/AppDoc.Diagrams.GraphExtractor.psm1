@@ -1,27 +1,9 @@
 # Output folder resolution (config outputDir).
+# Source-file selection and repo-relative paths (AppDoc.Scope).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop
 Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
-
-function Get-AppDocDiagramValue {
-    [CmdletBinding()]
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) { return $Object[$Name] }
-        return $Default
-    }
-
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
-}
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Values.psm1') -ErrorAction Stop
 
 function Get-AppDocDiagramEvidencePayload {
     [CmdletBinding()]
@@ -44,7 +26,7 @@ function Get-AppDocDiagramEvidencePayload {
     try {
         $payload = Get-Content $path -Raw | ConvertFrom-Json -Depth 80
         $records = @(
-            Get-AppDocDiagramValue -Object $payload -Name "records" -Default @() |
+            Get-AppDocValue -Object $payload -Name "records" -Default @() |
                 Where-Object { $_ }
         )
         return [ordered]@{
@@ -119,14 +101,14 @@ function Get-AppDocDiagramDirection {
         [object]$Record
     )
 
-    $metadata = Get-AppDocDiagramValue -Object $Record -Name "metadata" -Default @{}
-    $direction = [string](Get-AppDocDiagramValue -Object $metadata -Name "direction" -Default "")
+    $metadata = Get-AppDocValue -Object $Record -Name "metadata" -Default @{}
+    $direction = [string](Get-AppDocValue -Object $metadata -Name "direction" -Default "")
     if (-not [string]::IsNullOrWhiteSpace($direction)) {
         return $direction.Trim().ToLowerInvariant()
     }
 
-    $sourceType = [string](Get-AppDocDiagramValue -Object $metadata -Name "sourceType" -Default "")
-    $path = [string](Get-AppDocDiagramValue -Object $metadata -Name "path" -Default "")
+    $sourceType = [string](Get-AppDocValue -Object $metadata -Name "sourceType" -Default "")
+    $path = [string](Get-AppDocValue -Object $metadata -Name "path" -Default "")
     if ($sourceType -eq "soap-client" -or $path -match '^/soap-client/') {
         return "outbound"
     }
@@ -152,12 +134,12 @@ function Get-AppDocDiagramEndpointClassification {
         [object]$Record
     )
 
-    $metadata = Get-AppDocDiagramValue -Object $Record -Name "metadata" -Default @{}
-    $sourceType = [string](Get-AppDocDiagramValue -Object $metadata -Name "sourceType" -Default "")
-    $path = [string](Get-AppDocDiagramValue -Object $metadata -Name "path" -Default "")
-    $method = [string](Get-AppDocDiagramValue -Object $metadata -Name "method" -Default "")
-    $explicitDirection = [string](Get-AppDocDiagramValue -Object $metadata -Name "direction" -Default "")
-    $source = [string](Get-AppDocDiagramValue -Object $Record -Name "source" -Default "")
+    $metadata = Get-AppDocValue -Object $Record -Name "metadata" -Default @{}
+    $sourceType = [string](Get-AppDocValue -Object $metadata -Name "sourceType" -Default "")
+    $path = [string](Get-AppDocValue -Object $metadata -Name "path" -Default "")
+    $method = [string](Get-AppDocValue -Object $metadata -Name "method" -Default "")
+    $explicitDirection = [string](Get-AppDocValue -Object $metadata -Name "direction" -Default "")
+    $source = [string](Get-AppDocValue -Object $Record -Name "source" -Default "")
 
     $sourceTypeLower = $sourceType.Trim().ToLowerInvariant()
     $pathLower = $path.Trim().ToLowerInvariant()
@@ -255,10 +237,10 @@ function Get-AppDocDiagramEndpointDedupeKey {
         [object]$Entry
     )
 
-    $method = [string](Get-AppDocDiagramValue -Object $Entry -Name "method" -Default "")
-    $path = [string](Get-AppDocDiagramValue -Object $Entry -Name "path" -Default "")
-    $component = [string](Get-AppDocDiagramValue -Object $Entry -Name "component" -Default "")
-    $label = [string](Get-AppDocDiagramValue -Object $Entry -Name "label" -Default "")
+    $method = [string](Get-AppDocValue -Object $Entry -Name "method" -Default "")
+    $path = [string](Get-AppDocValue -Object $Entry -Name "path" -Default "")
+    $component = [string](Get-AppDocValue -Object $Entry -Name "component" -Default "")
+    $label = [string](Get-AppDocValue -Object $Entry -Name "label" -Default "")
 
     $methodKey = if ([string]::IsNullOrWhiteSpace($method)) { "any" } else { $method.ToLowerInvariant() }
     $pathKey = if ([string]::IsNullOrWhiteSpace($path)) { $label.ToLowerInvariant() } else { $path.ToLowerInvariant() }
@@ -278,25 +260,25 @@ function Get-AppDocDiagramApiEndpointEntries {
     $index = 0
     foreach ($record in @($ApiRecords)) {
         $index++
-        $metadata = Get-AppDocDiagramValue -Object $record -Name "metadata" -Default @{}
+        $metadata = Get-AppDocValue -Object $record -Name "metadata" -Default @{}
         $classification = Get-AppDocDiagramEndpointClassification -Record $record
-        $method = [string](Get-AppDocDiagramValue -Object $metadata -Name "method" -Default "")
-        $path = [string](Get-AppDocDiagramValue -Object $metadata -Name "path" -Default "")
-        $sourceType = [string](Get-AppDocDiagramValue -Object $metadata -Name "sourceType" -Default "")
+        $method = [string](Get-AppDocValue -Object $metadata -Name "method" -Default "")
+        $path = [string](Get-AppDocValue -Object $metadata -Name "path" -Default "")
+        $sourceType = [string](Get-AppDocValue -Object $metadata -Name "sourceType" -Default "")
         if ([string]::IsNullOrWhiteSpace($sourceType)) { $sourceType = "api-evidence" }
 
         $entry = [ordered]@{
             record = $record
             ref = (ConvertTo-AppDocDiagramRecordRef -Record $record -Artifact "api" -Index $index)
-            direction = [string](Get-AppDocDiagramValue -Object $classification -Name "direction" -Default "inbound")
+            direction = [string](Get-AppDocValue -Object $classification -Name "direction" -Default "inbound")
             label = (Get-AppDocDiagramEndpointLabel -Record $record)
             component = (Get-AppDocDiagramComponentName -Record $record)
             sourceType = $sourceType
-            style = [string](Get-AppDocDiagramValue -Object $classification -Name "style" -Default "inferred")
-            confidence = [int](Get-AppDocDiagramValue -Object $classification -Name "confidence" -Default 0)
-            trustedLegacyHost = [bool](Get-AppDocDiagramValue -Object $classification -Name "trustedLegacyHost" -Default $false)
-            isLegacyPathSignal = [bool](Get-AppDocDiagramValue -Object $classification -Name "legacyPathSignal" -Default $false)
-            isProxyEvidence = [bool](Get-AppDocDiagramValue -Object $classification -Name "proxyEvidence" -Default $false)
+            style = [string](Get-AppDocValue -Object $classification -Name "style" -Default "inferred")
+            confidence = [int](Get-AppDocValue -Object $classification -Name "confidence" -Default 0)
+            trustedLegacyHost = [bool](Get-AppDocValue -Object $classification -Name "trustedLegacyHost" -Default $false)
+            isLegacyPathSignal = [bool](Get-AppDocValue -Object $classification -Name "legacyPathSignal" -Default $false)
+            isProxyEvidence = [bool](Get-AppDocValue -Object $classification -Name "proxyEvidence" -Default $false)
             method = $method
             path = $path
         }
@@ -308,16 +290,16 @@ function Get-AppDocDiagramApiEndpointEntries {
         }
 
         $existing = $endpointMap[$key]
-        $existingConfidence = [int](Get-AppDocDiagramValue -Object $existing -Name "confidence" -Default 0)
-        $newConfidence = [int](Get-AppDocDiagramValue -Object $entry -Name "confidence" -Default 0)
+        $existingConfidence = [int](Get-AppDocValue -Object $existing -Name "confidence" -Default 0)
+        $newConfidence = [int](Get-AppDocValue -Object $entry -Name "confidence" -Default 0)
         if ($newConfidence -gt $existingConfidence) {
             $endpointMap[$key] = $entry
             continue
         }
 
         if ($newConfidence -eq $existingConfidence) {
-            $existingPriority = Get-AppDocDiagramEndpointStylePriority -Style ([string](Get-AppDocDiagramValue -Object $existing -Name "style" -Default ""))
-            $newPriority = Get-AppDocDiagramEndpointStylePriority -Style ([string](Get-AppDocDiagramValue -Object $entry -Name "style" -Default ""))
+            $existingPriority = Get-AppDocDiagramEndpointStylePriority -Style ([string](Get-AppDocValue -Object $existing -Name "style" -Default ""))
+            $newPriority = Get-AppDocDiagramEndpointStylePriority -Style ([string](Get-AppDocValue -Object $entry -Name "style" -Default ""))
             if ($newPriority -gt $existingPriority) {
                 $endpointMap[$key] = $entry
                 continue
@@ -343,8 +325,8 @@ function Get-AppDocDiagramIntegrationName {
         [object]$Record
     )
 
-    $metadata = Get-AppDocDiagramValue -Object $Record -Name "metadata" -Default @{}
-    $integrationUrl = [string](Get-AppDocDiagramValue -Object $metadata -Name "integrationUrl" -Default "")
+    $metadata = Get-AppDocValue -Object $Record -Name "metadata" -Default @{}
+    $integrationUrl = [string](Get-AppDocValue -Object $metadata -Name "integrationUrl" -Default "")
     if (-not [string]::IsNullOrWhiteSpace($integrationUrl)) {
         try {
             $uri = [Uri]$integrationUrl
@@ -358,7 +340,7 @@ function Get-AppDocDiagramIntegrationName {
         return $integrationUrl
     }
 
-    $name = [string](Get-AppDocDiagramValue -Object $Record -Name "name" -Default "")
+    $name = [string](Get-AppDocValue -Object $Record -Name "name" -Default "")
     if ($name -match '^/soap-client/([^/]+)') {
         return [string]$Matches[1]
     }
@@ -373,18 +355,18 @@ function Get-AppDocDiagramComponentName {
         [object]$Record
     )
 
-    $metadata = Get-AppDocDiagramValue -Object $Record -Name "metadata" -Default @{}
-    $controller = [string](Get-AppDocDiagramValue -Object $metadata -Name "controller" -Default "")
+    $metadata = Get-AppDocValue -Object $Record -Name "metadata" -Default @{}
+    $controller = [string](Get-AppDocValue -Object $metadata -Name "controller" -Default "")
     if (-not [string]::IsNullOrWhiteSpace($controller)) {
         return $controller
     }
 
-    $domain = [string](Get-AppDocDiagramValue -Object $metadata -Name "domain" -Default "")
+    $domain = [string](Get-AppDocValue -Object $metadata -Name "domain" -Default "")
     if (-not [string]::IsNullOrWhiteSpace($domain)) {
         return ("{0} Domain" -f $domain)
     }
 
-    $source = [string](Get-AppDocDiagramValue -Object $Record -Name "source" -Default "")
+    $source = [string](Get-AppDocValue -Object $Record -Name "source" -Default "")
     if ($source -match '([^\\/]+)\.(cs|ts|js)') {
         return [string]$Matches[1]
     }
@@ -399,10 +381,10 @@ function Get-AppDocDiagramEndpointLabel {
         [object]$Record
     )
 
-    $metadata = Get-AppDocDiagramValue -Object $Record -Name "metadata" -Default @{}
-    $method = [string](Get-AppDocDiagramValue -Object $metadata -Name "method" -Default "")
-    $path = [string](Get-AppDocDiagramValue -Object $metadata -Name "path" -Default "")
-    $name = [string](Get-AppDocDiagramValue -Object $Record -Name "name" -Default "")
+    $metadata = Get-AppDocValue -Object $Record -Name "metadata" -Default @{}
+    $method = [string](Get-AppDocValue -Object $metadata -Name "method" -Default "")
+    $path = [string](Get-AppDocValue -Object $metadata -Name "path" -Default "")
+    $name = [string](Get-AppDocValue -Object $Record -Name "name" -Default "")
 
     if (-not [string]::IsNullOrWhiteSpace($method) -and -not [string]::IsNullOrWhiteSpace($path)) {
         return ("{0} {1}" -f $method.ToUpperInvariant(), $path)
@@ -419,11 +401,11 @@ function Get-AppDocDiagramModelLabel {
         [object]$Record
     )
 
-    $name = [string](Get-AppDocDiagramValue -Object $Record -Name "name" -Default "")
+    $name = [string](Get-AppDocValue -Object $Record -Name "name" -Default "")
     if (-not [string]::IsNullOrWhiteSpace($name)) { return $name }
 
-    $metadata = Get-AppDocDiagramValue -Object $Record -Name "metadata" -Default @{}
-    $type = [string](Get-AppDocDiagramValue -Object $metadata -Name "type" -Default "")
+    $metadata = Get-AppDocValue -Object $Record -Name "metadata" -Default @{}
+    $type = [string](Get-AppDocValue -Object $metadata -Name "type" -Default "")
     if (-not [string]::IsNullOrWhiteSpace($type)) { return $type }
     return "Data Model"
 }
@@ -521,17 +503,9 @@ function ConvertTo-AppDocDiagramRecordRef {
         [int]$Index = 0
     )
 
-    $id = [string](Get-AppDocDiagramValue -Object $Record -Name "id" -Default "")
+    $id = [string](Get-AppDocValue -Object $Record -Name "id" -Default "")
     if (-not [string]::IsNullOrWhiteSpace($id)) { return $id }
     return "{0}-{1:d4}" -f $Artifact, $Index
-}
-
-function Get-AppDocDiagramRelativePath {
-    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
-    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
-    param([string]$RootPath, [string]$FullPath)
-    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
-    return (Get-AppDocRelativePath -RootPath $RootPath -Path $FullPath)
 }
 
 function Get-AppDocDiagramConfigGroup {
@@ -541,9 +515,9 @@ function Get-AppDocDiagramConfigGroup {
         [object]$ConfigRecord
     )
 
-    $metadata = Get-AppDocDiagramValue -Object $ConfigRecord -Name "metadata" -Default @{}
-    $file = [string](Get-AppDocDiagramValue -Object $metadata -Name "file" -Default "")
-    $name = [string](Get-AppDocDiagramValue -Object $ConfigRecord -Name "name" -Default "")
+    $metadata = Get-AppDocValue -Object $ConfigRecord -Name "metadata" -Default @{}
+    $file = [string](Get-AppDocValue -Object $metadata -Name "file" -Default "")
+    $name = [string](Get-AppDocValue -Object $ConfigRecord -Name "name" -Default "")
     $path = ($file -replace '\\', '/').ToLowerInvariant()
     $nameLower = $name.ToLowerInvariant()
 
@@ -566,8 +540,8 @@ function Test-AppDocDiagramConfigRecordInScope {
         [object]$ConfigRecord
     )
 
-    $metadata = Get-AppDocDiagramValue -Object $ConfigRecord -Name "metadata" -Default @{}
-    $file = [string](Get-AppDocDiagramValue -Object $metadata -Name "file" -Default "")
+    $metadata = Get-AppDocValue -Object $ConfigRecord -Name "metadata" -Default @{}
+    $file = [string](Get-AppDocValue -Object $metadata -Name "file" -Default "")
     if ([string]::IsNullOrWhiteSpace($file)) { return $true }
 
     $path = ("/" + ($file -replace '\\', '/')).ToLowerInvariant()
@@ -676,7 +650,7 @@ function Get-AppDocLegacyInboundFallbackEntries {
     foreach ($file in $serviceHostFiles) {
         if ($entries.Count -ge $MaxCount) { break }
 
-        $relativePath = Get-AppDocDiagramRelativePath -RootPath $RootPath -FullPath $file.FullName
+        $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
         if (-not (Test-AppDocDiagramLegacyInboundPath -RelativePath $relativePath)) { continue }
 
         $virtualPath = "/" + ($relativePath -replace '\\', '/')
@@ -694,7 +668,7 @@ function Get-AppDocLegacyInboundFallbackEntries {
         foreach ($file in $contractFiles) {
             if ($entries.Count -ge $MaxCount) { break }
 
-            $relativePath = Get-AppDocDiagramRelativePath -RootPath $RootPath -FullPath $file.FullName
+            $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
             if (-not (Test-AppDocDiagramLegacyInboundPath -RelativePath $relativePath)) { continue }
 
             $content = ""
@@ -753,7 +727,7 @@ function Get-AppDocLegacyInboundFallbackEntries {
         foreach ($file in $pathSignalFiles) {
             if ($entries.Count -ge $MaxCount) { break }
 
-            $relativePath = Get-AppDocDiagramRelativePath -RootPath $RootPath -FullPath $file.FullName
+            $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
             if (-not (Test-AppDocDiagramLegacyInboundPath -RelativePath $relativePath)) { continue }
 
             $content = ""
@@ -809,7 +783,7 @@ function Get-AppDocDiagramGraphData {
         Import-Module $normalizerModulePath -Force -ErrorAction SilentlyContinue
     }
 
-    $limits = Get-AppDocDiagramValue -Object $Contract -Name "limits" -Default @{}
+    $limits = Get-AppDocValue -Object $Contract -Name "limits" -Default @{}
     $evidenceRoot = Join-Path (Get-AppDocDocsPath -RootPath $RootPath) "evidence"
     $projectName = Split-Path $RootPath -Leaf
 
@@ -828,7 +802,7 @@ function Get-AppDocDiagramGraphData {
 
     $apiRecords = @(
         $apiPayload.records |
-            Where-Object { [string](Get-AppDocDiagramValue -Object $_ -Name "kind" -Default "") -eq "endpoint" }
+            Where-Object { [string](Get-AppDocValue -Object $_ -Name "kind" -Default "") -eq "endpoint" }
     )
     $apiEntries = @(
         Get-AppDocDiagramApiEndpointEntries -ApiRecords $apiRecords
@@ -847,14 +821,14 @@ function Get-AppDocDiagramGraphData {
     $inbound = if ($hasTrustedLegacyInboundEvidence) {
         @(
             $inboundCandidates |
-                Select-Object -First ([int](Get-AppDocDiagramValue -Object $limits -Name "maxInboundEndpoints" -Default 24))
+                Select-Object -First ([int](Get-AppDocValue -Object $limits -Name "maxInboundEndpoints" -Default 24))
         )
     }
     else {
         @(
             $inboundCandidates |
                 Where-Object { -not $_.isLegacyPathSignal } |
-                Select-Object -First ([int](Get-AppDocDiagramValue -Object $limits -Name "maxInboundEndpoints" -Default 24))
+                Select-Object -First ([int](Get-AppDocValue -Object $limits -Name "maxInboundEndpoints" -Default 24))
         )
     }
 
@@ -862,11 +836,11 @@ function Get-AppDocDiagramGraphData {
         $apiEntries |
             Where-Object { $_.direction -eq "outbound" } |
             Sort-Object @{ Expression = { [string]$_.label } }, @{ Expression = { [string]$_.component } } |
-            Select-Object -First ([int](Get-AppDocDiagramValue -Object $limits -Name "maxOutboundEndpoints" -Default 12))
+            Select-Object -First ([int](Get-AppDocValue -Object $limits -Name "maxOutboundEndpoints" -Default 12))
     )
 
     if (@($inbound).Count -eq 0) {
-        $maxInbound = [int](Get-AppDocDiagramValue -Object $limits -Name "maxInboundEndpoints" -Default 24)
+        $maxInbound = [int](Get-AppDocValue -Object $limits -Name "maxInboundEndpoints" -Default 24)
         $knownLabels = @(
             $apiEntries |
                 ForEach-Object { [string]$_.label } |
@@ -908,7 +882,7 @@ function Get-AppDocDiagramGraphData {
     $selectedComponents = @(
         $componentUsage.GetEnumerator() |
             Sort-Object @{ Expression = { [int]$_.Value }; Descending = $true }, @{ Expression = { [string]$_.Key } } |
-            Select-Object -First ([int](Get-AppDocDiagramValue -Object $limits -Name "maxComponents" -Default 18)) |
+            Select-Object -First ([int](Get-AppDocValue -Object $limits -Name "maxComponents" -Default 18)) |
             ForEach-Object { [string]$_.Key }
     )
     if ($selectedComponents.Count -eq 0) { $selectedComponents = @("Core Processing") }
@@ -926,7 +900,7 @@ function Get-AppDocDiagramGraphData {
     }
 
     foreach ($entry in $inbound) {
-        $entrySourceType = [string](Get-AppDocDiagramValue -Object $entry -Name "sourceType" -Default "")
+        $entrySourceType = [string](Get-AppDocValue -Object $entry -Name "sourceType" -Default "")
         if ($entrySourceType -eq "legacy-path-signal" -and -not $hasTrustedLegacyInboundEvidence) { continue }
 
         if ([string]::IsNullOrWhiteSpace([string]$actorId)) {
@@ -938,8 +912,8 @@ function Get-AppDocDiagramGraphData {
         $componentName = if ($componentNodeMap.ContainsKey($entry.component)) { $entry.component } else { "Core Processing" }
         Add-AppDocDiagramEdge -GraphState $graphState -From $endpointId -To $componentNodeMap[$componentName] -Type "routes" -Label "routes" -EvidenceRefs @($entry.ref)
 
-        $meta = Get-AppDocDiagramValue -Object $entry.record -Name "metadata" -Default @{}
-        $returnType = [string](Get-AppDocDiagramValue -Object $meta -Name "returnType" -Default "")
+        $meta = Get-AppDocValue -Object $entry.record -Name "metadata" -Default @{}
+        $returnType = [string](Get-AppDocValue -Object $meta -Name "returnType" -Default "")
         if (-not [string]::IsNullOrWhiteSpace($returnType)) {
             $modelId = Add-AppDocDiagramNode -GraphState $graphState -Type "data" -Label $returnType -Group "data" -EvidenceRefs @($entry.ref)
             Add-AppDocDiagramEdge -GraphState $graphState -From $componentNodeMap[$componentName] -To $modelId -Type "returns" -Label "returns" -EvidenceRefs @($entry.ref)
@@ -958,9 +932,9 @@ function Get-AppDocDiagramGraphData {
 
     $modelRecords = @(
         $modelPayload.records |
-            Where-Object { [string](Get-AppDocDiagramValue -Object $_ -Name "kind" -Default "") -eq "model" } |
+            Where-Object { [string](Get-AppDocValue -Object $_ -Name "kind" -Default "") -eq "model" } |
             Sort-Object @{ Expression = { [string](Get-AppDocDiagramModelLabel -Record $_) } } |
-            Select-Object -First ([int](Get-AppDocDiagramValue -Object $limits -Name "maxModels" -Default 24))
+            Select-Object -First ([int](Get-AppDocValue -Object $limits -Name "maxModels" -Default 24))
     )
     $modelIndex = 0
     foreach ($model in $modelRecords) {
@@ -973,20 +947,20 @@ function Get-AppDocDiagramGraphData {
 
     $configRecords = @(
         $configPayload.records |
-            Where-Object { [string](Get-AppDocDiagramValue -Object $_ -Name "kind" -Default "") -eq "configuration" } |
+            Where-Object { [string](Get-AppDocValue -Object $_ -Name "kind" -Default "") -eq "configuration" } |
             Where-Object { Test-AppDocDiagramConfigRecordInScope -ConfigRecord $_ } |
             Where-Object {
-                $name = [string](Get-AppDocDiagramValue -Object $_ -Name "name" -Default "")
+                $name = [string](Get-AppDocValue -Object $_ -Name "name" -Default "")
                 $name -and ($name -notmatch '^chat\.tools\.')
             } |
-            Sort-Object @{ Expression = { [string](Get-AppDocDiagramValue -Object $_ -Name "name" -Default "") } } |
-            Select-Object -First ([int](Get-AppDocDiagramValue -Object $limits -Name "maxConfigs" -Default 12))
+            Sort-Object @{ Expression = { [string](Get-AppDocValue -Object $_ -Name "name" -Default "") } } |
+            Select-Object -First ([int](Get-AppDocValue -Object $limits -Name "maxConfigs" -Default 12))
     )
     $configIndex = 0
     foreach ($config in $configRecords) {
         $configIndex++
         $ref = ConvertTo-AppDocDiagramRecordRef -Record $config -Artifact "cfg" -Index $configIndex
-        $label = [string](Get-AppDocDiagramValue -Object $config -Name "name" -Default "Configuration")
+        $label = [string](Get-AppDocValue -Object $config -Name "name" -Default "Configuration")
         $configGroup = Get-AppDocDiagramConfigGroup -ConfigRecord $config
         $configId = Add-AppDocDiagramNode -GraphState $graphState -Type "config" -Label $label -Group $configGroup -EvidenceRefs @($ref)
         if ($configGroup -eq "config-runtime") {
@@ -996,15 +970,15 @@ function Get-AppDocDiagramGraphData {
 
     $dependencyRecords = @(
         $dependencyPayload.records |
-            Where-Object { [string](Get-AppDocDiagramValue -Object $_ -Name "kind" -Default "") -eq "dependency" } |
-            Sort-Object @{ Expression = { [string](Get-AppDocDiagramValue -Object $_ -Name "name" -Default "") } } |
-            Select-Object -First ([int](Get-AppDocDiagramValue -Object $limits -Name "maxDependencies" -Default 12))
+            Where-Object { [string](Get-AppDocValue -Object $_ -Name "kind" -Default "") -eq "dependency" } |
+            Sort-Object @{ Expression = { [string](Get-AppDocValue -Object $_ -Name "name" -Default "") } } |
+            Select-Object -First ([int](Get-AppDocValue -Object $limits -Name "maxDependencies" -Default 12))
     )
     $depIndex = 0
     foreach ($dependency in $dependencyRecords) {
         $depIndex++
         $ref = ConvertTo-AppDocDiagramRecordRef -Record $dependency -Artifact "dep" -Index $depIndex
-        $depName = [string](Get-AppDocDiagramValue -Object $dependency -Name "name" -Default "")
+        $depName = [string](Get-AppDocValue -Object $dependency -Name "name" -Default "")
         if ([string]::IsNullOrWhiteSpace($depName)) { continue }
         $depId = Add-AppDocDiagramNode -GraphState $graphState -Type "dependency" -Label $depName -Group "dependency" -EvidenceRefs @($ref)
         Add-AppDocDiagramEdge -GraphState $graphState -From $coreId -To $depId -Type "uses" -Label "uses" -EvidenceRefs @($ref)
@@ -1013,10 +987,10 @@ function Get-AppDocDiagramGraphData {
     $nodes = @($graphState.nodeMap.Values)
     $edges = @($graphState.edgeMap.Values)
     $sources = [ordered]@{
-        apiEvidencePath = (Get-AppDocDiagramRelativePath -RootPath $RootPath -FullPath ([string]$apiPayload.path)) -replace '\\', '/'
-        modelEvidencePath = (Get-AppDocDiagramRelativePath -RootPath $RootPath -FullPath ([string]$modelPayload.path)) -replace '\\', '/'
-        configEvidencePath = (Get-AppDocDiagramRelativePath -RootPath $RootPath -FullPath ([string]$configPayload.path)) -replace '\\', '/'
-        dependencyEvidencePath = (Get-AppDocDiagramRelativePath -RootPath $RootPath -FullPath ([string]$dependencyPayload.path)) -replace '\\', '/'
+        apiEvidencePath = (Get-AppDocRelativePath -RootPath $RootPath -Path ([string]$apiPayload.path)) -replace '\\', '/'
+        modelEvidencePath = (Get-AppDocRelativePath -RootPath $RootPath -Path ([string]$modelPayload.path)) -replace '\\', '/'
+        configEvidencePath = (Get-AppDocRelativePath -RootPath $RootPath -Path ([string]$configPayload.path)) -replace '\\', '/'
+        dependencyEvidencePath = (Get-AppDocRelativePath -RootPath $RootPath -Path ([string]$dependencyPayload.path)) -replace '\\', '/'
     }
 
     if (Get-Command ConvertTo-AppDocGraphV1 -ErrorAction SilentlyContinue) {
@@ -1081,7 +1055,7 @@ function Write-AppDocDiagramTruthPack {
 
     if (Get-Command Get-AppDocDeterministicHash -ErrorAction SilentlyContinue) {
         $excludeKeys = @("generatedAt", "updatedAt", "timestamp")
-        $determinism = Get-AppDocDiagramValue -Object $payload -Name "determinism" -Default ([ordered]@{})
+        $determinism = Get-AppDocValue -Object $payload -Name "determinism" -Default ([ordered]@{})
         if (-not ($determinism -is [System.Collections.IDictionary])) {
             $determinism = [ordered]@{}
         }

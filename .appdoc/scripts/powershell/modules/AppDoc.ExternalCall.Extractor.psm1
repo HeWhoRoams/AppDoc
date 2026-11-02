@@ -51,33 +51,8 @@
 # is redacted to [REDACTED] before output (defense-in-depth, mirrors the
 # classic-ASP register's ConvertTo-SafeText).
 #
-
-function Get-AppDocExternalCallRelativePath {
-    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
-    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
-    param([string]$RootPath, [string]$Path)
-    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
-    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-}
-
-function Get-AppDocExternalCallScopedFiles {
-    [CmdletBinding()]
-    param(
-        [string]$RootPath,
-        [string[]]$Include
-    )
-
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "external-call" -Include $Include)
-    }
-
-    return @(
-        (Get-ChildItem -Path $RootPath -Recurse -Include $Include -File -ErrorAction SilentlyContinue) | Where-Object {
-            $normalized = $_.FullName -replace '/', '\\'
-            $normalized -notmatch '(?i)(\\node_modules\\|\\bin\\|\\obj\\|\\dist\\|\\build\\|\\docs\\|\\.git\\|\\test\\|\\tests\\|\\spec\\|\\specs\\|\\__tests__\\|\\fixture\\|\\fixtures\\|\\mock\\|\\mocks\\|\\sample\\|\\samples\\|\\example\\|\\examples\\|\\__pycache__\\|\\.venv\\|\\.tox\\)'
-        }
-    )
-}
+# Source-file selection and repo-relative paths (AppDoc.Scope).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop
 
 # Redact any real secret value inside a URL / endpoint string. Defense-in-depth:
 # even if a credential-bearing URL literal is captured, it is redacted here.
@@ -260,14 +235,14 @@ function Get-AppDocExternalCallData {
     )
 
     $hits = New-Object System.Collections.Generic.List[object]
-    $files = @(Get-AppDocExternalCallScopedFiles -RootPath $RootPath -Include @("*.ts", "*.js", "*.cs", "*.py", "*.java"))
+    $files = @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "external-call" -Set source)
 
     $q = '[' + "'" + '"' + ']'   # a class of both quote chars: ['"']
 
     foreach ($file in ($files | Sort-Object FullName)) {
         $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
         if ([string]::IsNullOrWhiteSpace($content)) { continue }
-        $rel = Get-AppDocExternalCallRelativePath -RootPath $RootPath -Path $file.FullName
+        $rel = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
         $ext = [System.IO.Path]::GetExtension($file.Name).TrimStart('.')
 
         switch ($ext) {
@@ -394,8 +369,6 @@ function Get-AppDocExternalCallData {
 
 Export-ModuleMember -Function @(
     'Get-AppDocExternalCallData',
-    'Get-AppDocExternalCallRelativePath',
-    'Get-AppDocExternalCallScopedFiles',
     'ConvertTo-AppDocSafeExternalCallUrl',
     'Resolve-AppDocExternalCallEndpoint',
     'Get-AppDocExternalCallMethod',

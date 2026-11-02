@@ -25,6 +25,8 @@ Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1'
 
 # Shared classic-ASP helpers (single definition; see modules/AppDoc.ClassicAsp.psm1).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+# Shared repo-relative path (Get-AppDocRelativePath).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Scope.psm1') -ErrorAction Stop
 
 $ErrorActionPreference = "Stop"
 
@@ -206,7 +208,7 @@ function Invoke-EntryFileScan {
         if (-not $signal) { return }
     }
 
-    $relPath = Get-RelativePath -FullPath $FullPath -Base $RootPrefix
+    $relPath = Get-AppDocRelativePath -Path $FullPath -RootPath $RootPrefix
     $method = Get-HttpMethod -Content $content
     $fields = @(Get-InputFields -Content $content)
     $includes = @(Get-IncludeFiles -Content $content)

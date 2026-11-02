@@ -1,3 +1,5 @@
+# Source-file selection and repo-relative paths (AppDoc.Scope).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop
 function Get-AppDocBuildCookbookData {
     [CmdletBinding()]
     param(
@@ -15,40 +17,7 @@ function Get-AppDocBuildCookbookData {
             [string[]]$Include
         )
 
-        if (-not (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue)) {
-            $scopeModulePath = Join-Path $PSScriptRoot "AppDoc.Scope.psm1"
-            if (Test-Path $scopeModulePath) {
-                Import-Module $scopeModulePath -Force -ErrorAction SilentlyContinue
-                if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-                    Write-Verbose "Successfully imported AppDoc.Scope.psm1 from $scopeModulePath; Get-AppDocSourceFiles is now available."
-                } else {
-                    Write-Verbose "Attempted to import AppDoc.Scope.psm1 from $scopeModulePath, but Get-AppDocSourceFiles is still unavailable. Import may have failed or the command is missing."
-                }
-            }
-        }
-
-        if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-            return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "build-cookbook" -Include $Include)
-        }
-
-        $files = @(Get-ChildItem -Path (Join-Path $RootPath '*') -Recurse -File -Include $Include -ErrorAction SilentlyContinue)
-        if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {
-            return @(
-                $files | Where-Object {
-                    Test-AppDocPathIncluded -Path $_.FullName -RootPath $RootPath -Artifact "build-cookbook"
-                }
-            )
-        }
-
-        return $files
-    }
-
-    function Get-AppDocBuildRelativePath {
-        # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
-        # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
-        param([string]$RootPath, [string]$Path)
-        if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
-        return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
+        return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "build-cookbook" -Include $Include)
     }
 
     # Prerequisites from first project file.
@@ -208,7 +177,7 @@ function Get-AppDocBuildCookbookData {
 
     $csprojFiles = Get-AppDocBuildSourceFiles -RootPath $RootPath -Include @("*.csproj") | Select-Object -First 5
     foreach ($proj in $csprojFiles) {
-        $relativePath = Get-AppDocBuildRelativePath -RootPath $RootPath -Path $proj.FullName
+        $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $proj.FullName
         $commands += @{
             name = "Build $($proj.BaseName)"
             command = "Build individual project"

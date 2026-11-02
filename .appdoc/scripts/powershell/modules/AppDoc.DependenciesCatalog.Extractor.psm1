@@ -1,3 +1,5 @@
+# Source-file selection and repo-relative paths (AppDoc.Scope).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop
 function Get-AppDocDependenciesSourceFiles {
     [CmdletBinding()]
     param(
@@ -7,43 +9,7 @@ function Get-AppDocDependenciesSourceFiles {
         [string[]]$Include
     )
 
-
-    if (-not (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue)) {
-        $scopeModulePath = Join-Path $PSScriptRoot "AppDoc.Scope.psm1"
-        if (Test-Path $scopeModulePath) {
-            try {
-                Import-Module $scopeModulePath -Force
-            } catch {
-                Write-Verbose ("Failed to import AppDoc.Scope.psm1 from {0}: {1}" -f $scopeModulePath, $_.Exception.Message)
-                # Optionally, use a logger if available: $AppDocLogger?.LogError(...)
-            }
-        }
-        if (-not (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue)) {
-            Write-Verbose "Get-AppDocSourceFiles is not available after attempting to import AppDoc.Scope.psm1 from $scopeModulePath. Falling back to Get-ChildItem."
-        }
-    }
-
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "dependencies-catalog" -Include $Include)
-    }
-    $files = @(Get-ChildItem -Path (Join-Path $RootPath '') -Recurse -File -Include $Include -ErrorAction SilentlyContinue)
-    if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {
-        return @(
-            $files | Where-Object {
-                Test-AppDocPathIncluded -Path $_.FullName -RootPath $RootPath -Artifact "dependencies-catalog"
-            }
-        )
-    }
-
-    return $files
-}
-
-function Get-AppDocDependenciesRelativePath {
-    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
-    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
-    param([string]$RootPath, [string]$Path)
-    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
-    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
+    return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "dependencies-catalog" -Include $Include)
 }
 
 function Get-AppDocDependenciesCatalogData {
@@ -61,7 +27,7 @@ function Get-AppDocDependenciesCatalogData {
         $content = Get-Content $proj.FullName -Raw -ErrorAction SilentlyContinue
         if (-not $content) { continue }
 
-        $relativePath = Get-AppDocDependenciesRelativePath -RootPath $RootPath -Path $proj.FullName
+        $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $proj.FullName
         $projectName = $proj.BaseName
 
         try {
@@ -131,7 +97,7 @@ function Get-AppDocDependenciesCatalogData {
         $content = Get-Content $pkgConfig.FullName -Raw -ErrorAction SilentlyContinue
         if (-not $content) { continue }
 
-        $relativePath = Get-AppDocDependenciesRelativePath -RootPath $RootPath -Path $pkgConfig.FullName
+        $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $pkgConfig.FullName
         $projectName = $pkgConfig.Directory.Name
 
         try {

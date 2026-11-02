@@ -51,3 +51,7 @@ passing build from a failing one without parsing `validation-report.json` themse
 - Wrappers that assumed exit 0 must treat 2 and 3 as failures (or pass `-AllowGateFail`).
 - Regression tests: `tests/powershell/Gate.ValidatorFailure.Tests.ps1`,
   `tests/powershell/Build.ExitCodes.Tests.ps1`.
+
+## Related
+
+- How a build reaches each exit code, step by step: [pipeline/gates.md](../pipeline/gates.md#exit-codes) and [pipeline/07-close-out.md](../pipeline/07-close-out.md).

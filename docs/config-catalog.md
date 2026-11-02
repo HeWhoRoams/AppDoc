@@ -1,5 +1,5 @@
 # Configuration Catalog
-**Generated**: 2026-10-23 01:55:31
+**Generated**: 2026-10-23 15:18:12
 
 ## Summary
 
@@ -36,7 +36,7 @@ No runtime configuration entries detected.
 | jobs.drift.steps[1] | YAML Configuration | name: Rebuild the self-dogfood docs in a scratch copy and compare | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.drift.steps[1] |
 | jobs.hygiene.name | YAML Configuration | Repo hygiene and static gates | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.name |
 | jobs.hygiene.runs-on | YAML Configuration | ubuntu-latest | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.runs-on |
-| jobs.hygiene.steps.run | YAML Configuration | ./.appdoc/scripts/powershell/ci-doc-integrity-gate.ps1 -RootPath . | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps.run |
+| jobs.hygiene.steps.run | YAML Configuration | ./.appdoc/scripts/powershell/ci-pipeline-docs-gate.ps1 -RootPath . | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps.run |
 | jobs.hygiene.steps.shell | YAML Configuration | pwsh | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps.shell |
 | jobs.hygiene.steps[0] | YAML Configuration | uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0 | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[0] |
 | jobs.hygiene.steps[1] | YAML Configuration | name: No tracked files that .gitignore excludes | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[1] |
@@ -47,6 +47,7 @@ No runtime configuration entries detected.
 | jobs.hygiene.steps[6] | YAML Configuration | name: No absolute host paths and no CR line endings in committed docs/ | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[6] |
 | jobs.hygiene.steps[7] | YAML Configuration | name: PowerShell syntax gate | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[7] |
 | jobs.hygiene.steps[8] | YAML Configuration | name: Documentation integrity gate | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[8] |
+| jobs.hygiene.steps[9] | YAML Configuration | name: Pipeline docs gate (docs/pipeline/) | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.hygiene.steps[9] |
 | jobs.lint.name | YAML Configuration | PSScriptAnalyzer | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.lint.name |
 | jobs.lint.runs-on | YAML Configuration | ubuntu-latest | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.lint.runs-on |
 | jobs.lint.steps.shell | YAML Configuration | pwsh | Purpose unclear from available evidence — review source usage. | No | Tooling/workflow | Build pipeline | .github/workflows/appdoc-ci.yml:yaml/jobs.lint.steps.shell |
@@ -103,7 +104,7 @@ Environment-specific examples are not emitted automatically to avoid accidental 
 | Field | Value |
 |------|-------|
 | Evidence Artifact | evidence/config-catalog.evidence.json |
-| Record Count | 49 |
+| Record Count | 50 |
 | Generator | generate-config-catalog.ps1 |
 | Required Evidence Keys | configurations |
 | Grounding Mode | Deterministic extraction records |
@@ -113,8 +114,8 @@ Environment-specific examples are not emitted automatically to avoid accidental 
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 17cdd36
-- Generated At: 2026-10-23T01:55:45-04:00
+- Commit Hash: 5e53b62
+- Generated At: 2026-10-23T15:18:23+00:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

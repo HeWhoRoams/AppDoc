@@ -24,6 +24,8 @@ Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1'
 
 # Shared classic-ASP helpers (single definition; see modules/AppDoc.ClassicAsp.psm1).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.ClassicAsp.psm1') -ErrorAction Stop
+# Shared repo-relative path (Get-AppDocRelativePath).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Scope.psm1') -ErrorAction Stop
 
 $ErrorActionPreference = "Stop"
 $helpersPath = Join-Path $PSScriptRoot 'template-helpers.ps1'
@@ -85,8 +87,8 @@ foreach ($d in $topDirItems) {
 $topDirs = @($topDirs | Sort-Object { -[int]$_.fileCount })
 
 # --- IIS / ASP indicators -------------------------------------------------------
-$webConfigs = @(Get-PlatformTargetFiles -Filter "web.config" | ForEach-Object { Get-RelativePath -FullPath $_.FullName -Base $rootPrefix })
-$globalAsa = @(Get-PlatformTargetFiles -Filter "global.asa" | ForEach-Object { Get-RelativePath -FullPath $_.FullName -Base $rootPrefix })
+$webConfigs = @(Get-PlatformTargetFiles -Filter "web.config" | ForEach-Object { Get-AppDocRelativePath -Path $_.FullName -RootPath $rootPrefix })
+$globalAsa = @(Get-PlatformTargetFiles -Filter "global.asa" | ForEach-Object { Get-AppDocRelativePath -Path $_.FullName -RootPath $rootPrefix })
 
 # --- ADO provider versions + SQL Server instances (from connection strings) -----
 $script:providers = @{}        # provider -> filecount
@@ -103,7 +105,7 @@ if ($htmPaths.Count -gt 0) {
 
 function Invoke-PlatformFileScan {
     param([string]$FullPath)
-    $rel = Get-RelativePath -FullPath $FullPath -Base $rootPrefix
+    $rel = Get-AppDocRelativePath -Path $FullPath -RootPath $rootPrefix
     $content = Get-Content $FullPath -Raw -ErrorAction SilentlyContinue
     if ($null -eq $content) { return }
     $hasConn = $false

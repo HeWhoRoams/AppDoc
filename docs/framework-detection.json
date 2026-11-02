@@ -1,49 +1,49 @@
 [
   {
+    "language": "C#",
+    "supportLevel": "full",
+    "framework": "ASP.NET Core",
     "detectionSignals": [
       "*.csproj",
       "[ApiController]",
       "MapControllers"
     ],
-    "language": "C#",
     "versionRange": "2.1+",
-    "framework": "ASP.NET Core",
-    "coveragePercent": 90,
-    "supportLevel": "full"
+    "coveragePercent": 90
   },
   {
+    "language": "C#",
+    "supportLevel": "partial",
+    "framework": "ASP.NET MVC 5",
     "detectionSignals": [
       "System.Web.Mvc",
       "*Controller.cs"
     ],
-    "language": "C#",
     "versionRange": "5.x",
-    "framework": "ASP.NET MVC 5",
-    "coveragePercent": 75,
-    "supportLevel": "partial"
+    "coveragePercent": 75
   },
   {
+    "language": "Python",
+    "supportLevel": "partial",
+    "framework": "Flask",
     "detectionSignals": [
       "requirements.txt:flask",
       "@app.route",
       "app = Flask(",
       "create_app"
     ],
-    "language": "Python",
     "versionRange": "2.x+",
-    "framework": "Flask",
-    "coveragePercent": 65,
-    "supportLevel": "partial"
+    "coveragePercent": 65
   },
   {
+    "language": "Java",
+    "supportLevel": "partial",
+    "framework": "Spring Boot",
     "detectionSignals": [
       "pom.xml:spring-boot",
       "@RestController"
     ],
-    "language": "Java",
     "versionRange": "2.x+",
-    "framework": "Spring Boot",
-    "coveragePercent": 60,
-    "supportLevel": "partial"
+    "coveragePercent": 60
   }
 ]

@@ -12,6 +12,8 @@ param(
 
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Values.psm1') -ErrorAction Stop
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -33,28 +35,6 @@ function Add-GateIssue {
     }) | Out-Null
 }
 
-function Get-ObjectValue {
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) { return $Object[$Name] }
-        return $Default
-    }
-
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
-}
-
 function Get-RecordsByKind {
     param(
         [AllowNull()]
@@ -62,7 +42,7 @@ function Get-RecordsByKind {
         [string[]]$Kinds = @()
     )
 
-    $records = @((Get-ObjectValue -Object $Payload -Name "records" -Default @()))
+    $records = @((Get-AppDocValue -Object $Payload -Name "records" -Default @()))
     if ($Kinds.Count -eq 0) { return $records }
     return @($records | Where-Object { [string]$_.'kind' -in $Kinds })
 }
@@ -123,7 +103,7 @@ $expectedFingerprint = ""
 if (Test-Path $fingerprintPath) {
     try {
         $fingerprintPayload = Get-Content -Path $fingerprintPath -Raw | ConvertFrom-Json -Depth 50
-        $expectedFingerprint = [string](Get-ObjectValue -Object $fingerprintPayload -Name "primaryStyle" -Default "")
+        $expectedFingerprint = [string](Get-AppDocValue -Object $fingerprintPayload -Name "primaryStyle" -Default "")
     }
     catch {
         Add-GateIssue -Issues $issues -Severity "warning" -Code "architecture_fingerprint_unreadable" -Message "Failed to parse architecture-fingerprint.json" -Path $fingerprintPath
@@ -142,11 +122,11 @@ foreach ($file in $enrichedFiles) {
         continue
     }
 
-    $artifact = [string](Get-ObjectValue -Object $payload -Name "artifact" -Default "")
-    $records = @((Get-ObjectValue -Object $payload -Name "records" -Default @()))
+    $artifact = [string](Get-AppDocValue -Object $payload -Name "artifact" -Default "")
+    $records = @((Get-AppDocValue -Object $payload -Name "records" -Default @()))
     $summary.recordsChecked += $records.Count
 
-    $payloadFingerprint = [string](Get-ObjectValue -Object $payload -Name "architectureFingerprint" -Default "")
+    $payloadFingerprint = [string](Get-AppDocValue -Object $payload -Name "architectureFingerprint" -Default "")
     if ([string]::IsNullOrWhiteSpace($payloadFingerprint)) {
         Add-GateIssue -Issues $issues -Severity "error" -Code "missing_architecture_fingerprint" -Message "architectureFingerprint is missing on enriched payload." -Path $file.FullName
     }
@@ -170,11 +150,11 @@ foreach ($file in $enrichedFiles) {
             }
         }
 
-        $confidenceValue = Get-ObjectValue -Object $record -Name "confidence" -Default $null
+        $confidenceValue = Get-AppDocValue -Object $record -Name "confidence" -Default $null
         [double]$confidence = 0.0
         if ($null -ne $confidenceValue -and [double]::TryParse([string]$confidenceValue, [ref]$confidence)) {
             if ($confidence -lt 0.8) {
-                $note = [string](Get-ObjectValue -Object $record -Name "confidenceNote" -Default "")
+                $note = [string](Get-AppDocValue -Object $record -Name "confidenceNote" -Default "")
                 if ([string]::IsNullOrWhiteSpace($note)) {
                     $severity = if ($Strict) { "error" } else { "warning" }
                     Add-GateIssue -Issues $issues -Severity $severity -Code "missing_confidence_note" -Message "confidence < 0.80 requires confidenceNote." -Path $file.FullName
@@ -183,14 +163,14 @@ foreach ($file in $enrichedFiles) {
         }
     }
 
-    $metadata = Get-ObjectValue -Object $payload -Name "metadata" -Default $null
-    $mode = [string](Get-ObjectValue -Object $metadata -Name "enrichmentMode" -Default "")
+    $metadata = Get-AppDocValue -Object $payload -Name "metadata" -Default $null
+    $mode = [string](Get-AppDocValue -Object $metadata -Name "enrichmentMode" -Default "")
     $isBootstrapMode = ($mode -eq "schema-bootstrap")
 
     if (-not $isBootstrapMode -or $Strict) {
         if ($artifact -eq "config-catalog") {
             $configRecords = @(Get-RecordsByKind -Payload $payload -Kinds @("configuration"))
-            $nonNullTiers = @($configRecords | ForEach-Object { [string](Get-ObjectValue -Object $_ -Name "tier" -Default "") } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
+            $nonNullTiers = @($configRecords | ForEach-Object { [string](Get-AppDocValue -Object $_ -Name "tier" -Default "") } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
             if ($configRecords.Count -ge 3 -and $nonNullTiers.Count -lt 2) {
                 Add-GateIssue -Issues $issues -Severity "error" -Code "insufficient_tier_diversity" -Message "Expected at least 2 config tier values for repositories with 3+ config records." -Path $file.FullName
             }
@@ -198,7 +178,7 @@ foreach ($file in $enrichedFiles) {
 
         if ($artifact -eq "data-model") {
             $modelRecords = @(Get-RecordsByKind -Payload $payload -Kinds @("model"))
-            $nonNullRoles = @($modelRecords | ForEach-Object { [string](Get-ObjectValue -Object $_ -Name "role" -Default "") } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
+            $nonNullRoles = @($modelRecords | ForEach-Object { [string](Get-AppDocValue -Object $_ -Name "role" -Default "") } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique)
             if ($modelRecords.Count -ge 20 -and $nonNullRoles.Count -lt 2) {
                 Add-GateIssue -Issues $issues -Severity "error" -Code "insufficient_role_diversity" -Message "Expected at least 2 model roles for repositories with 20+ models." -Path $file.FullName
             }
@@ -206,7 +186,7 @@ foreach ($file in $enrichedFiles) {
 
         if ($artifact -eq "dependencies-catalog") {
             $depRecords = @(Get-RecordsByKind -Payload $payload -Kinds @("dependency"))
-            $assessed = @($depRecords | Where-Object { $null -ne (Get-ObjectValue -Object $_ -Name "criticalPath" -Default $null) }).Count
+            $assessed = @($depRecords | Where-Object { $null -ne (Get-AppDocValue -Object $_ -Name "criticalPath" -Default $null) }).Count
             if ($depRecords.Count -gt 0 -and $assessed -lt $depRecords.Count) {
                 $severity = if ($Strict) { "error" } else { "warning" }
                 Add-GateIssue -Issues $issues -Severity $severity -Code "critical_path_not_assessed" -Message "Not all dependency records have criticalPath assessment." -Path $file.FullName
@@ -216,7 +196,7 @@ foreach ($file in $enrichedFiles) {
         if ($artifact -eq "test-catalog") {
             $testRecords = @(Get-RecordsByKind -Payload $payload -Kinds @("test-case", "test-suite"))
             foreach ($testRecord in $testRecords) {
-                $diag = Get-ObjectValue -Object $testRecord -Name "testDiagnosis" -Default $null
+                $diag = Get-AppDocValue -Object $testRecord -Name "testDiagnosis" -Default $null
                 if ($null -eq $diag) {
                     $severity = if ($Strict) { "error" } else { "warning" }
                     Add-GateIssue -Issues $issues -Severity $severity -Code "missing_test_diagnosis" -Message "testDiagnosis missing on test-catalog enriched record." -Path $file.FullName

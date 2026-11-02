@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "reportDate": "2026-10-23",
   "isGitRepo": true,
-  "commitCount": 53,
+  "commitCount": 56,
   "minCommitsForOwnership": 2,
   "historySufficient": true,
   "status": "Derived",
@@ -18,24 +18,30 @@
   "lastDate": "2026-10-23",
   "topAuthorEmail": "",
   "topAuthorName": "Tim Niles",
-  "topAuthorCommits": 53,
+  "topAuthorCommits": 56,
   "authors": [
     {
       "email": "",
       "name": "Tim Niles",
-      "commits": 53
+      "commits": 56
     }
   ],
-  "fileCount": 19,
+  "fileCount": 20,
   "files": [
     {
       "path": "README.md",
       "owner": "Tim Niles",
       "lastChange": "2026-10-23",
-      "churn": 14
+      "churn": 15
     },
     {
       "path": ".gitignore",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 9
+    },
+    {
+      "path": "ROADMAP.md",
       "owner": "Tim Niles",
       "lastChange": "2026-10-23",
       "churn": 9
@@ -47,10 +53,10 @@
       "churn": 8
     },
     {
-      "path": "ROADMAP.md",
+      "path": ".github/workflows/appdoc-ci.yml",
       "owner": "Tim Niles",
       "lastChange": "2026-10-23",
-      "churn": 8
+      "churn": 7
     },
     {
       "path": ".github/copilot-instructions.md",
@@ -65,16 +71,10 @@
       "churn": 6
     },
     {
-      "path": ".github/workflows/appdoc-ci.yml",
-      "owner": "Tim Niles",
-      "lastChange": "2026-10-23",
-      "churn": 6
-    },
-    {
       "path": "references/config-schema.md",
       "owner": "Tim Niles",
       "lastChange": "2026-10-23",
-      "churn": 5
+      "churn": 6
     },
     {
       "path": "references/verification.md",
@@ -114,6 +114,12 @@
     },
     {
       "path": ".vscode/settings.example.json",
+      "owner": "Tim Niles",
+      "lastChange": "2026-10-23",
+      "churn": 1
+    },
+    {
+      "path": "CHANGELOG.md",
       "owner": "Tim Niles",
       "lastChange": "2026-10-23",
       "churn": 1

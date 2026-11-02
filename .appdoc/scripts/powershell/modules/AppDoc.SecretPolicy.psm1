@@ -106,9 +106,78 @@ function Test-AppDocOperatorRedactionHit {
     return $hits
 }
 
+# Vendor secret SHAPES (never real values; ADR 0001). Value-scoped: each shape needs a literal
+# prefix or a full header, so it cannot match a file path, a key name or an identifier.
+$script:AppDocVendorSecretShapes = @(
+    '\b(?:AKIA|ASIA)[0-9A-Z]{16}\b',                                        # AWS access key id
+    '\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}\b',                         # GitHub tokens
+    '\bgithub_pat_[A-Za-z0-9_]{22,}\b',                                     # GitHub fine-grained
+    '\bxox[baprs]-[A-Za-z0-9-]{10,}\b',                                     # Slack
+    '\bsk_live_[A-Za-z0-9]{16,}\b',                                         # Stripe
+    '\bAIza[0-9A-Za-z_\-]{35}\b',                                           # Google API key
+    '-----BEGIN (?:RSA |EC |OPENSSH |DSA |)PRIVATE KEY-----[\s\S]*?-----END (?:RSA |EC |OPENSSH |DSA |)PRIVATE KEY-----',
+    'eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9._\-]{5,}'                          # JWT
+)
+$script:AppDocVendorSecretRegexes = $null
+
+function Get-AppDocVendorSecretRegexes {
+    [CmdletBinding()]
+    param()
+    if ($null -eq $script:AppDocVendorSecretRegexes) {
+        $timeout = [timespan]::FromSeconds(2)
+        $script:AppDocVendorSecretRegexes = @($script:AppDocVendorSecretShapes | ForEach-Object {
+            [regex]::new($_, [System.Text.RegularExpressions.RegexOptions]::CultureInvariant, $timeout)
+        })
+    }
+    return $script:AppDocVendorSecretRegexes
+}
+
+function Get-AppDocVendorSecretShapes {
+    [CmdletBinding()]
+    param()
+    return @($script:AppDocVendorSecretShapes)
+}
+
+function Test-AppDocVendorSecret {
+    <#
+    .SYNOPSIS
+        True when Text still contains a vendor secret shape. Used by the build's post-sweep check.
+    #>
+    [CmdletBinding()]
+    param([AllowNull()][string]$Text)
+    if ([string]::IsNullOrEmpty($Text)) { return $false }
+    foreach ($rx in (Get-AppDocVendorSecretRegexes)) { if ($rx.IsMatch($Text)) { return $true } }
+    return $false
+}
+
+function Protect-AppDocFreeText {
+    <#
+    .SYNOPSIS
+        Redacts secrets in free text copied from a target (comments, README text, notes):
+        vendor shapes, `key = value` for credential key names (key kept, value redacted),
+        and Bearer tokens. Idempotent; pure.
+    #>
+    [CmdletBinding()]
+    param([AllowNull()][string]$Text)
+    if ([string]::IsNullOrEmpty($Text)) { return '' }
+    $t = [string]$Text
+    foreach ($rx in (Get-AppDocVendorSecretRegexes)) { $t = $rx.Replace($t, '[REDACTED]') }
+    $keywords = 'Secret|Password|Passwd|Pwd|Token|ApiKey|ApiSecret|AccessKey|AccessSecret|PrivateKey|ConnStr|Cipher'
+    $t = [regex]::Replace($t, '(?i)\b([A-Za-z0-9_.]*(?:' + $keywords + ')[A-Za-z0-9_.]*\s*=\s*)(["'']?)([^;\s"''\[\]]{4,})', [System.Text.RegularExpressions.MatchEvaluator]{
+        param($m) $m.Groups[1].Value + $m.Groups[2].Value + '[REDACTED]'
+    })
+    $t = [regex]::Replace($t, '(?i)\b(Bearer\s+)[A-Za-z0-9._\-]{20,}', [System.Text.RegularExpressions.MatchEvaluator]{
+        param($m) $m.Groups[1].Value + '[REDACTED]'
+    })
+    return [regex]::Replace($t, '\[REDACTED\](?:\s*\[REDACTED\])+', '[REDACTED]')
+}
+
 Export-ModuleMember -Function @(
     'Get-AppDocCredentialKeywordPattern',
     'Get-AppDocOperatorRedactionMatchers',
     'Invoke-AppDocOperatorRedaction',
-    'Test-AppDocOperatorRedactionHit'
+    'Test-AppDocOperatorRedactionHit',
+    'Get-AppDocVendorSecretShapes',
+    'Test-AppDocVendorSecret',
+    'Protect-AppDocFreeText'
 )

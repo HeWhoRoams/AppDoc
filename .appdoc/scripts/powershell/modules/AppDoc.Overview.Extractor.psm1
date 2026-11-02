@@ -1,3 +1,5 @@
+# Source-file selection and repo-relative paths (AppDoc.Scope).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop
 function Get-AppDocOverviewSourceFiles {
     [CmdletBinding()]
     param(
@@ -5,12 +7,7 @@ function Get-AppDocOverviewSourceFiles {
         [string]$RootPath
     )
 
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "overview" -Include @("*.cs","*.js","*.ts","*.py","*.java"))
-    }
-
-    $searchPath = Join-Path -Path $RootPath -ChildPath '*'
-    return @(Get-ChildItem -Path $searchPath -Recurse -File -Include @("*.cs","*.js","*.ts","*.py","*.java") -ErrorAction SilentlyContinue)
+    return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "overview" -Set source)
 }
 
 function Get-AppDocOverviewData {

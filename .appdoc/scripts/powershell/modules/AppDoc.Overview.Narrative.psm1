@@ -1,35 +1,10 @@
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Values.psm1') -ErrorAction Stop
+
 # AppDoc.Overview.Narrative Module
 # Purpose: Build grounded overview narrative from deterministic truth data.
 
 $script:AppDocOverviewNarrativeVersion = "1.0.0"
-
-function Get-AppDocOverviewNarrativeValue {
-    [CmdletBinding()]
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) {
-            return $Object[$Name]
-        }
-        return $Default
-    }
-
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($null -ne $prop) {
-        return $prop.Value
-    }
-
-    return $Default
-}
 
 function Get-AppDocOverviewRequiredNarrativeKeys {
     [CmdletBinding()]
@@ -54,9 +29,9 @@ function Get-AppDocOverviewEvidenceRefMap {
     )
 
     $map = @{}
-    $refs = @(Get-AppDocOverviewNarrativeValue -Object $TruthPack -Name "evidence_refs" -Default @())
+    $refs = @(Get-AppDocValue -Object $TruthPack -Name "evidence_refs" -Default @())
     foreach ($ref in $refs) {
-        $id = [string](Get-AppDocOverviewNarrativeValue -Object $ref -Name "id" -Default "")
+        $id = [string](Get-AppDocValue -Object $ref -Name "id" -Default "")
         if ([string]::IsNullOrWhiteSpace($id)) { continue }
         if (-not $map.ContainsKey($id)) {
             $map[$id] = $ref
@@ -72,19 +47,19 @@ function Get-AppDocOverviewDeterministicWelcomeNarrative {
         [object]$TruthPack
     )
 
-    $facts = Get-AppDocOverviewNarrativeValue -Object $TruthPack -Name "facts" -Default @{}
+    $facts = Get-AppDocValue -Object $TruthPack -Name "facts" -Default @{}
     $requiredKeys = Get-AppDocOverviewRequiredNarrativeKeys
     $narrative = [ordered]@{}
 
     foreach ($key in $requiredKeys) {
         if ($key -eq "evidence_refs") { continue }
-        $items = @(Get-AppDocOverviewNarrativeValue -Object $facts -Name $key -Default @())
+        $items = @(Get-AppDocValue -Object $facts -Name $key -Default @())
         $normalized = @()
         foreach ($item in $items) {
-            $text = [string](Get-AppDocOverviewNarrativeValue -Object $item -Name "text" -Default "")
+            $text = [string](Get-AppDocValue -Object $item -Name "text" -Default "")
             if ([string]::IsNullOrWhiteSpace($text)) { continue }
             $refs = @(
-                Get-AppDocOverviewNarrativeValue -Object $item -Name "evidence_refs" -Default @() |
+                Get-AppDocValue -Object $item -Name "evidence_refs" -Default @() |
                     ForEach-Object { [string]$_ } |
                     Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
                     Select-Object -Unique
@@ -97,9 +72,9 @@ function Get-AppDocOverviewDeterministicWelcomeNarrative {
 
         if ($normalized.Count -eq 0) {
             $fallbackRef = @()
-            $truthRefs = @(Get-AppDocOverviewNarrativeValue -Object $TruthPack -Name "evidence_refs" -Default @())
+            $truthRefs = @(Get-AppDocValue -Object $TruthPack -Name "evidence_refs" -Default @())
             if ($truthRefs.Count -gt 0) {
-                $fallbackRef = @([string](Get-AppDocOverviewNarrativeValue -Object $truthRefs[0] -Name "id" -Default ""))
+                $fallbackRef = @([string](Get-AppDocValue -Object $truthRefs[0] -Name "id" -Default ""))
             }
             $normalized += [ordered]@{
                 text = "Deterministic evidence for this section is limited in the current scan."
@@ -149,7 +124,7 @@ function Test-AppDocOverviewNarrativeGrounding {
 
     $requiredKeys = Get-AppDocOverviewRequiredNarrativeKeys
     foreach ($key in $requiredKeys) {
-        $value = Get-AppDocOverviewNarrativeValue -Object $Narrative -Name $key -Default $null
+        $value = Get-AppDocValue -Object $Narrative -Name $key -Default $null
         if ($null -eq $value) {
             $issues += "missing-key:$key"
             continue
@@ -157,10 +132,10 @@ function Test-AppDocOverviewNarrativeGrounding {
     }
 
     $truthRefMap = Get-AppDocOverviewEvidenceRefMap -TruthPack $TruthPack
-    $narrativeRefs = @(Get-AppDocOverviewNarrativeValue -Object $Narrative -Name "evidence_refs" -Default @())
+    $narrativeRefs = @(Get-AppDocValue -Object $Narrative -Name "evidence_refs" -Default @())
     $narrativeRefMap = @{}
     foreach ($ref in $narrativeRefs) {
-        $id = [string](Get-AppDocOverviewNarrativeValue -Object $ref -Name "id" -Default "")
+        $id = [string](Get-AppDocValue -Object $ref -Name "id" -Default "")
         if ([string]::IsNullOrWhiteSpace($id)) {
             $issues += "narrative-evidence-ref-missing-id"
             continue
@@ -175,7 +150,7 @@ function Test-AppDocOverviewNarrativeGrounding {
     }
 
     foreach ($key in @("what_it_does", "inputs", "processing_steps", "outputs", "external_systems", "confidence_notes")) {
-        $items = @(Get-AppDocOverviewNarrativeValue -Object $Narrative -Name $key -Default @())
+        $items = @(Get-AppDocValue -Object $Narrative -Name $key -Default @())
         if ($items.Count -eq 0) {
             $issues += "empty-section:$key"
             continue
@@ -184,9 +159,9 @@ function Test-AppDocOverviewNarrativeGrounding {
         $index = 0
         foreach ($item in $items) {
             $index++
-            $text = [string](Get-AppDocOverviewNarrativeValue -Object $item -Name "text" -Default "")
+            $text = [string](Get-AppDocValue -Object $item -Name "text" -Default "")
             $refs = @(
-                Get-AppDocOverviewNarrativeValue -Object $item -Name "evidence_refs" -Default @() |
+                Get-AppDocValue -Object $item -Name "evidence_refs" -Default @() |
                     ForEach-Object { [string]$_ } |
                     Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
                     Select-Object -Unique

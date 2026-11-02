@@ -1,11 +1,11 @@
 # Cited Source Documents (Source-of-Truth Appendix)
 
-**Report date**: 10/23/2026 01:54:17  
+**Report date**: 10/23/2026 14:41:56  
 **Source**: hand-authored operational docs in the target (README* / docs (excl. AppDoc-generated) / doc / Archive / External Documentation / *.adr / CODEOWNERS + operational-signal files).  
 
 > **What this is:** the deterministic source-of-truth citations the AppDoc pipeline found in the target hand-authored docs. Every cited fact below carries a **file:line** provenance into a hand-authored doc that exists in the target. This is the evidence that backs the owner-pending cells (ownership section 13, roles and access section 5.2, help-desk policy section 7, troubleshooting/escalation section 11) with `Verified-source-doc` provenance - so a cell the repo actually documents is *populated with the citation* instead of an honest-Unknown placeholder. Where the repo has NO hand-authored source for a category, that category is listed as **not found** and the corresponding cell stays honest-Unknown (never fabricated). All values are **redacted** (no secrets).
 
-**Scanned**: 1 hand-authored file(s); **citations**: 1 across 1 category.
+**Scanned**: 1 hand-authored file(s); **citations**: 2 across 1 category.
 
 ## Ownership (owners / teams / divisions / department)
 
@@ -25,12 +25,14 @@ _Not found in the target hand-authored docs - the corresponding owner cell stays
 
 ## Troubleshooting (KB / symptom-to-fix)
 
-**Found** in 1 citation record(s):
+**Found** in 2 citation record(s):
 
 ### `README.md`
 
+- | 10 | Troubleshooting Matrix | 20 | Provenance |  
+  - Source: `README.md`:179 (confidence: medium)
 - ## Troubleshooting  
-  - Source: `README.md`:146 (confidence: medium)
+  - Source: `README.md`:368 (confidence: medium)
 
 ## SLO / SLA (service-level / uptime targets)
 
@@ -49,8 +51,8 @@ _Not found in the target hand-authored docs - the corresponding owner cell stays
 ## Provenance
 
 - Generator Version: appdoc-run-all-generators/3.0.0
-- Commit Hash: 17cdd36
-- Generated At: 2026-10-23T01:55:45-04:00
+- Commit Hash: 5e53b62
+- Generated At: 2026-10-23T15:18:23+00:00
 - Profile: default
 - Scope: .
 - Confidence/Inference Flags: deterministic, evidence-backed

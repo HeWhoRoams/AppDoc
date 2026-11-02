@@ -1,3 +1,5 @@
+# Source scope policy (Test-AppDocPathIncluded).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop
 # AppDoc.GitOwnership Module
 # Purpose: Deterministic, git-derived per-file ownership metadata (owner / last-change
 #          date / churn=instability) from `git log` + CODEOWNERS (when present).
@@ -201,10 +203,7 @@ function Get-AppDocGitFileOwnership {
     $tracked = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
     try { foreach ($t in @(& git -C $RootPath ls-files 2>$null)) { if ($t) { [void]$tracked.Add([string]$t) } } } catch { Write-Verbose ("git ls-files unavailable: {0}" -f $_.Exception.Message) }
     $global:LASTEXITCODE = 0
-    $inScope = { param($rel) $true }
-    if (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue) {
-        $inScope = { param($rel) Test-AppDocPathIncluded -Path (Join-Path $RootPath $rel) -RootPath $RootPath -Artifact 'default' }
-    }
+    $inScope = { param($rel) Test-AppDocPathIncluded -Path (Join-Path $RootPath $rel) -RootPath $RootPath -Artifact 'default' }
 
     $sufficient = [bool]$HistorySufficient
     $records = @()

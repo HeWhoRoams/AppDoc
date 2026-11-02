@@ -1,18 +1,5 @@
 {
-  "determinism": {
-    "canonicalOrdering": [
-      "nodes:type,label,id",
-      "edges:from,to,type,label,id"
-    ],
-    "stableIdAlgorithm": "sha1(prefix|seed)[0:8]",
-    "hashAlgorithm": "SHA256",
-    "excludeKeys": [
-      "generatedAt",
-      "updatedAt",
-      "timestamp"
-    ],
-    "contentHash": "2e14d7fd716cc98df24c52cf3c0846167a1615cd603f19819d4a9b58beb3ae22"
-  },
+  "apiEntries": [],
   "nodes": [
     {
       "id": "component_core_processing_6d28d771",
@@ -107,8 +94,7 @@
     }
   ],
   "schemaVersion": "appdoc-graph/v1",
-  "generatedAt": "2026-10-23T01:55:39-04:00",
-  "edges": [],
+  "generatedAt": "2026-10-23T15:18:18+00:00",
   "metrics": {
     "nodeCount": 13,
     "edgeCount": 0,
@@ -119,15 +105,29 @@
     "configCount": 12,
     "dependencyCount": 0
   },
-  "apiEntries": [],
   "sources": {
     "dependencyEvidencePath": "docs/evidence/dependencies-catalog.evidence.json",
     "modelEvidencePath": "docs/evidence/data-model.evidence.json",
-    "configEvidencePath": "docs/evidence/config-catalog.evidence.json",
-    "apiEvidencePath": "docs/evidence/api-inventory.evidence.json"
+    "apiEvidencePath": "docs/evidence/api-inventory.evidence.json",
+    "configEvidencePath": "docs/evidence/config-catalog.evidence.json"
   },
+  "determinism": {
+    "canonicalOrdering": [
+      "nodes:type,label,id",
+      "edges:from,to,type,label,id"
+    ],
+    "stableIdAlgorithm": "sha1(prefix|seed)[0:8]",
+    "hashAlgorithm": "SHA256",
+    "excludeKeys": [
+      "generatedAt",
+      "updatedAt",
+      "timestamp"
+    ],
+    "contentHash": "0c6b03c7863f046fe27581766c3fe1686ea0f59913408bf4ffa6a6b6b28503cf"
+  },
+  "edges": [],
   "project": {
-    "name": "selfbuild",
+    "name": "self2",
     "rootPath": "."
   }
 }

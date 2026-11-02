@@ -12,6 +12,8 @@ param(
 
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Values.psm1') -ErrorAction Stop
 
 $contractModule = Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Diagrams.Contract.psm1'
 $normalizerModule = Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Diagrams.Normalizer.psm1'
@@ -22,26 +24,6 @@ if (-not (Test-Path $contractModule)) {
 Import-Module $contractModule -Force -ErrorAction Stop
 if (Test-Path $normalizerModule) {
     Import-Module $normalizerModule -Force -ErrorAction SilentlyContinue
-}
-
-function Get-DiagramValidationValue {
-    param(
-        [AllowNull()]
-        [object]$Object,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        [AllowNull()]
-        [object]$Default = $null
-    )
-
-    if ($null -eq $Object) { return $Default }
-    if ($Object -is [System.Collections.IDictionary]) {
-        if ($Object.Contains($Name)) { return $Object[$Name] }
-        return $Default
-    }
-    $prop = $Object.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
 }
 
 function Get-MermaidBlockContent {
@@ -287,10 +269,10 @@ else {
         if (Get-Command Test-AppDocGraphV1 -ErrorAction SilentlyContinue) {
             $truthPackValidation = Test-AppDocGraphV1 -Graph $truthPack
             if (-not $truthPackValidation.passed) {
-                $truthMetricsForContract = Get-DiagramValidationValue -Object $truthPack -Name "metrics" -Default @{}
-                $truthEdgeCountForContract = [int](Get-DiagramValidationValue -Object $truthMetricsForContract -Name "edgeCount" -Default 0)
-                $truthInboundForContract = [int](Get-DiagramValidationValue -Object $truthMetricsForContract -Name "inboundEndpointCount" -Default 0)
-                $truthOutboundForContract = [int](Get-DiagramValidationValue -Object $truthMetricsForContract -Name "outboundEndpointCount" -Default 0)
+                $truthMetricsForContract = Get-AppDocValue -Object $truthPack -Name "metrics" -Default @{}
+                $truthEdgeCountForContract = [int](Get-AppDocValue -Object $truthMetricsForContract -Name "edgeCount" -Default 0)
+                $truthInboundForContract = [int](Get-AppDocValue -Object $truthMetricsForContract -Name "inboundEndpointCount" -Default 0)
+                $truthOutboundForContract = [int](Get-AppDocValue -Object $truthMetricsForContract -Name "outboundEndpointCount" -Default 0)
                 foreach ($graphIssue in @($truthPackValidation.issues)) {
                     if ([string]$graphIssue -eq "edges-empty" -and $truthEdgeCountForContract -eq 0 -and $truthInboundForContract -eq 0 -and $truthOutboundForContract -eq 0) {
                         continue
@@ -300,11 +282,11 @@ else {
             }
         }
 
-        $truthMetrics = Get-DiagramValidationValue -Object $truthPack -Name "metrics" -Default @{}
-        $truthNodeCount = [int](Get-DiagramValidationValue -Object $truthMetrics -Name "nodeCount" -Default 0)
-        $truthEdgeCount = [int](Get-DiagramValidationValue -Object $truthMetrics -Name "edgeCount" -Default 0)
-        $truthInboundCount = [int](Get-DiagramValidationValue -Object $truthMetrics -Name "inboundEndpointCount" -Default 0)
-        $truthOutboundCount = [int](Get-DiagramValidationValue -Object $truthMetrics -Name "outboundEndpointCount" -Default 0)
+        $truthMetrics = Get-AppDocValue -Object $truthPack -Name "metrics" -Default @{}
+        $truthNodeCount = [int](Get-AppDocValue -Object $truthMetrics -Name "nodeCount" -Default 0)
+        $truthEdgeCount = [int](Get-AppDocValue -Object $truthMetrics -Name "edgeCount" -Default 0)
+        $truthInboundCount = [int](Get-AppDocValue -Object $truthMetrics -Name "inboundEndpointCount" -Default 0)
+        $truthOutboundCount = [int](Get-AppDocValue -Object $truthMetrics -Name "outboundEndpointCount" -Default 0)
 
         foreach ($diagramFile in @("internal-flow.md")) {
             if (-not $diagramCoverageSnapshotMap.ContainsKey($diagramFile)) {

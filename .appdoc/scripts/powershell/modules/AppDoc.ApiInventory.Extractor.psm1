@@ -1,4 +1,6 @@
 # Output folder resolution (config outputDir).
+# Source-file selection and repo-relative paths (AppDoc.Scope).
+Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop
 Import-Module (Join-Path $PSScriptRoot 'AppDoc.Paths.psm1') -ErrorAction Stop
 
 function Invoke-AppDocApiAstParserScript {
@@ -74,7 +76,7 @@ function Add-AppDocAstEndpointsToInventory {
         }
 
         $filePath = [string]$record.file
-        if ($filePath -and (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue)) {
+        if ($filePath) {
             $scopeArgs = @{
                 Path = $filePath
                 Artifact = "api-inventory"
@@ -106,35 +108,6 @@ function Add-AppDocAstEndpointsToInventory {
     }
 
     return $added
-}
-
-function Get-AppDocApiRelativePath {
-    # Thin wrapper: the single implementation is Get-AppDocRelativePath (AppDoc.Scope),
-    # which delegates to ConvertTo-AppDocRelativePath (AppDoc.Determinism).
-    param([string]$RootPath, [string]$Path)
-    if (-not (Get-Command Get-AppDocRelativePath -ErrorAction SilentlyContinue)) { Import-Module (Join-Path $PSScriptRoot 'AppDoc.Scope.psm1') -ErrorAction Stop }
-    return (Get-AppDocRelativePath -RootPath $RootPath -Path $Path)
-}
-
-function Get-AppDocApiScopedFiles {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$RootPath,
-        [Parameter(Mandatory=$true)]
-        [string[]]$Include
-    )
-
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        return @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "api-inventory" -Include $Include)
-    }
-
-    return @(
-        (Get-ChildItem -Path $RootPath -Recurse -Include $Include -File -ErrorAction SilentlyContinue) | Where-Object {
-            $normalized = $_.FullName -replace '/', '\\'
-            $normalized -notmatch '(?i)(\\node_modules\\|\\bin\\|\\obj\\|\\dist\\|\\build\\|\\docs\\|\\\.git\\|\\test\\|\\tests\\|\\spec\\|\\specs\\|\\__tests__\\|\\fixture\\|\\fixtures\\|\\mock\\|\\mocks\\|\\sample\\|\\samples\\|\\example\\|\\examples\\)'
-        }
-    )
 }
 
 function Test-AppDocApiGeneratedProxyPath {
@@ -204,13 +177,7 @@ function Get-AppDocSoapClientConfigEndpoints {
         [string]$RootPath
     )
 
-    $configFiles = @()
-    if (Get-Command Get-AppDocSourceFiles -ErrorAction SilentlyContinue) {
-        $configFiles = @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "config-catalog" -Include @("*.config"))
-    }
-    else {
-        $configFiles = @(Get-ChildItem -Path $RootPath -Recurse -File -Include @("*.config") -ErrorAction SilentlyContinue)
-    }
+    $configFiles = @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "config-catalog" -Include @("*.config"))
 
     if (-not $configFiles -or @($configFiles).Count -eq 0) {
         return @()
@@ -237,7 +204,7 @@ function Get-AppDocSoapClientConfigEndpoints {
         }
         if (-not $nodes) { continue }
 
-        $relativePath = Get-AppDocApiRelativePath -RootPath $RootPath -Path $file.FullName
+        $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
         foreach ($node in $nodes) {
             if (-not $node) { continue }
 
@@ -358,7 +325,7 @@ function Test-AppDocEndpointCandidate {
     if ($Path -match '^/[^/]+/(get|post|put|patch|delete)$') { return $false }
     if ($Path -match '(?i)/(test|tests|spec|specs|fixture|fixtures|mock|mocks|sample|samples|example|examples)(/|$)') { return $false }
 
-    if ($FilePath -and (Get-Command Test-AppDocPathIncluded -ErrorAction SilentlyContinue)) {
+    if ($FilePath) {
         $scopeArgs = @{
             Path = $FilePath
             Artifact = "api-inventory"
@@ -498,7 +465,7 @@ function Add-AppDocRegexEndpointsToInventory {
     foreach ($file in $ApiFiles) {
         $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
         if (-not $content) { continue }
-        $relativePath = Get-AppDocApiRelativePath -RootPath $RootPath -Path $file.FullName
+        $relativePath = Get-AppDocRelativePath -RootPath $RootPath -Path $file.FullName
 
         # WCF/ASMX host descriptor files
         if ($file.Extension -in @(".svc", ".asmx")) {
@@ -1220,7 +1187,7 @@ function Get-AppDocApiInventoryData {
     $astEndpointCount += Add-AppDocAstEndpointsToInventory -AstPayload $astCSharp -Inventory $Inventory -RootPath $RootPath
     $astEndpointCount += Add-AppDocAstEndpointsToInventory -AstPayload $astTs -Inventory $Inventory -RootPath $RootPath
 
-    $apiFiles = @(Get-AppDocApiScopedFiles -RootPath $RootPath -Include @("*.js","*.ts","*.cs","*.py","*.java","*.svc","*.asmx"))
+    $apiFiles = @(Get-AppDocSourceFiles -RootPath $RootPath -Artifact "api-inventory" -Set source)
     $regexEndpointCount = Add-AppDocRegexEndpointsToInventory -ApiFiles $apiFiles -RootPath $RootPath -Inventory $Inventory
 
     $soapClientConfigEndpoints = @(Get-AppDocSoapClientConfigEndpoints -RootPath $RootPath)

@@ -116,14 +116,15 @@ function Get-AppDocSearchPattern {
     if ($Record.PSObject.Properties['metadata']) { $meta = $Record.metadata }
     if ($meta -and $meta.PSObject.Properties['pattern']) {
         $p = [string]$meta.pattern
-        if (-not [string]::IsNullOrWhiteSpace($p)) { return $p }
+        if (-not [string]::IsNullOrWhiteSpace($p) -and $p -notmatch '\[REDACTED\]') { return $p }
     }
     $desc = ''
     if ($meta -and $meta.PSObject.Properties['description']) { $desc = [string]$meta.description }
     if (-not [string]::IsNullOrWhiteSpace($desc)) {
         $m = [regex]::Match($desc, "'([^']{2,60})'")
         if (-not $m.Success) { $m = [regex]::Match($desc, '"([^"]{2,60})"') }
-        if ($m.Success) { return $m.Groups[1].Value }
+        # A redacted description cannot be searched for in the source (and must not leak it).
+        if ($m.Success -and $m.Groups[1].Value -notmatch '\[REDACTED\]') { return $m.Groups[1].Value }
     }
     $name = [string]$Record.name
     $kind = ''

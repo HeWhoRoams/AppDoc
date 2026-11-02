@@ -22,6 +22,8 @@ param(
 
 # Output folder resolution (config outputDir).
 Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Paths.psm1') -ErrorAction Stop
+# Shared object accessor (Get-AppDocValue).
+Import-Module (Join-Path (Join-Path $PSScriptRoot 'modules') 'AppDoc.Values.psm1') -ErrorAction Stop
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -77,27 +79,6 @@ if (Test-Path $configModule) {
 # Any patterns passed on the command line are additive.
 $gateExtraKnownSecrets = @($operatorPatterns + @($RedactionPatterns) | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
 $gateExtraRegexes = @($operatorRegexes + @($RedactionRegexes) | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Select-Object -Unique)
-
-function Get-FieldValue {
-    param(
-        [AllowNull()]
-        [object]$Record,
-        [Parameter(Mandatory=$true)]
-        [string]$Name,
-        $Default = $null
-    )
-
-    if ($null -eq $Record) { return $Default }
-
-    if ($Record -is [System.Collections.IDictionary]) {
-        if ($Record.Contains($Name)) { return $Record[$Name] }
-        return $Default
-    }
-
-    $prop = $Record.PSObject.Properties[$Name]
-    if ($prop) { return $prop.Value }
-    return $Default
-}
 
 function Set-FieldValue {
     param(
@@ -162,7 +143,7 @@ function Test-InferredRequiredForDeployment {
     if ($n -match '(connection|string|smtp|host|server|apiurl|baseurl|token|secret|key)') { return $true }
 
     if ($null -ne $Metadata) {
-        $required = Get-FieldValue -Record $Metadata -Name 'required' -Default $null
+        $required = Get-AppDocValue -Object $Metadata -Name 'required' -Default $null
         if ($null -ne $required) { return [bool]$required }
     }
 
@@ -205,7 +186,7 @@ function Get-InferredModelRole {
 
     $s = ($Source ?? '').ToLowerInvariant()
     $n = ($Name ?? '').ToLowerInvariant()
-    $modelType = [string](Get-FieldValue -Record $Metadata -Name 'modelType' -Default '')
+    $modelType = [string](Get-AppDocValue -Object $Metadata -Name 'modelType' -Default '')
     $t = $modelType.ToLowerInvariant()
 
     if ($s -match '(?i)(?:^|[\\\/])(generated|service references|connected services|reference\.cs|proxy|proxies)(?:[\\\/]|$)' -or $n -match '(proxy|generated|reference)') {
@@ -274,16 +255,16 @@ function Set-AppDocConfidenceNote {
         [hashtable]$Record
     )
 
-    $confidenceRaw = Get-FieldValue -Record $Record -Name 'confidence' -Default $null
+    $confidenceRaw = Get-AppDocValue -Object $Record -Name 'confidence' -Default $null
     if ($null -eq $confidenceRaw) { return }
 
     [double]$confidence = 0.0
     if (-not [double]::TryParse([string]$confidenceRaw, [ref]$confidence)) { return }
 
     if ($confidence -lt 0.8) {
-        $note = [string](Get-FieldValue -Record $Record -Name 'confidenceNote' -Default '')
+        $note = [string](Get-AppDocValue -Object $Record -Name 'confidenceNote' -Default '')
         if ([string]::IsNullOrWhiteSpace($note)) {
-            $source = [string](Get-FieldValue -Record $Record -Name 'source' -Default 'source file')
+            $source = [string](Get-AppDocValue -Object $Record -Name 'source' -Default 'source file')
             Set-FieldValue -Record $Record -Name 'confidenceNote' -Value ("Low-confidence signal from deterministic scan; review {0}." -f $source)
         }
     }
@@ -302,7 +283,7 @@ $cache = @{}
 if (Test-Path $cachePath) {
     try {
         $cacheObj = Get-Content -Path $cachePath -Raw | ConvertFrom-Json -AsHashtable -Depth 100
-        $cacheEntries = Get-FieldValue -Record $cacheObj -Name 'entries' -Default $null
+        $cacheEntries = Get-AppDocValue -Object $cacheObj -Name 'entries' -Default $null
         if ($null -ne $cacheEntries -and $cacheEntries -is [System.Collections.IDictionary]) {
             # Defensive: only accept SHA256-shaped keys (64 hex chars). This ignores any
             # stray metadata keys (generatedAt/entryCount/entries) so a partially-poisoned
@@ -326,8 +307,8 @@ $gateBlockedFiles = @()
 
 foreach ($file in $enrichedFiles) {
     $payload = Get-Content -Path $file.FullName -Raw | ConvertFrom-Json -AsHashtable -Depth 100
-    $artifact = [string](Get-FieldValue -Record $payload -Name 'artifact' -Default '')
-    $records = @((Get-FieldValue -Record $payload -Name 'records' -Default @()))
+    $artifact = [string](Get-AppDocValue -Object $payload -Name 'artifact' -Default '')
+    $records = @((Get-AppDocValue -Object $payload -Name 'records' -Default @()))
 
     # --- Build the semantic INPUT envelope (the LLM-facing contract) -----------
     # Each record carries ONLY the redaction-safe fields the external LLM session
@@ -340,11 +321,11 @@ foreach ($file in $enrichedFiles) {
     foreach ($rec in $records) {
         $recH = ConvertTo-PlainHashtable -InputObject $rec
         $recIn = [ordered]@{
-            source = [string](Get-FieldValue -Record $recH -Name 'source' -Default '')
-            name = [string](Get-FieldValue -Record $recH -Name 'name' -Default '')
-            kind = [string](Get-FieldValue -Record $recH -Name 'kind' -Default '')
-            confidence = (Get-FieldValue -Record $recH -Name 'confidence' -Default $null)
-            metadata = (Get-FieldValue -Record $recH -Name 'metadata' -Default $null)
+            source = [string](Get-AppDocValue -Object $recH -Name 'source' -Default '')
+            name = [string](Get-AppDocValue -Object $recH -Name 'name' -Default '')
+            kind = [string](Get-AppDocValue -Object $recH -Name 'kind' -Default '')
+            confidence = (Get-AppDocValue -Object $recH -Name 'confidence' -Default $null)
+            metadata = (Get-AppDocValue -Object $recH -Name 'metadata' -Default $null)
             expectedFields = $requiredSemanticFields
         }
         # (4) redact this record's values (built-in known secrets + generic patterns)
@@ -405,9 +386,9 @@ foreach ($file in $enrichedFiles) {
     if (Test-Path $outputPath) {
         try {
             $semanticOutput = Get-Content -Path $outputPath -Raw | ConvertFrom-Json -AsHashtable -Depth 100
-            foreach ($outRecord in @((Get-FieldValue -Record $semanticOutput -Name 'records' -Default @()))) {
+            foreach ($outRecord in @((Get-AppDocValue -Object $semanticOutput -Name 'records' -Default @()))) {
                 $outHash = ConvertTo-PlainHashtable -InputObject $outRecord
-                $okey = New-SemanticKey -Source ([string](Get-FieldValue -Record $outHash -Name 'source' -Default '')) -Name ([string](Get-FieldValue -Record $outHash -Name 'name' -Default '')) -Kind ([string](Get-FieldValue -Record $outHash -Name 'kind' -Default ''))
+                $okey = New-SemanticKey -Source ([string](Get-AppDocValue -Object $outHash -Name 'source' -Default '')) -Name ([string](Get-AppDocValue -Object $outHash -Name 'name' -Default '')) -Kind ([string](Get-AppDocValue -Object $outHash -Name 'kind' -Default ''))
                 $outputLookup[$okey] = $outHash
             }
             $outputApplied = $outputLookup.Count -gt 0
@@ -422,17 +403,17 @@ foreach ($file in $enrichedFiles) {
     $inputHashByKey = @{}
     foreach ($inRec in @($inRecords)) {
         $inH = ConvertTo-PlainHashtable -InputObject $inRec
-        $ihKey = New-SemanticKey -Source ([string](Get-FieldValue -Record $inH -Name 'source' -Default '')) -Name ([string](Get-FieldValue -Record $inH -Name 'name' -Default '')) -Kind ([string](Get-FieldValue -Record $inH -Name 'kind' -Default ''))
+        $ihKey = New-SemanticKey -Source ([string](Get-AppDocValue -Object $inH -Name 'source' -Default '')) -Name ([string](Get-AppDocValue -Object $inH -Name 'name' -Default '')) -Kind ([string](Get-AppDocValue -Object $inH -Name 'kind' -Default ''))
         $inputHashByKey[$ihKey] = (Get-AppDocSemanticInputHash -Obj $inH)
     }
 
     $updatedRecords = @(
         $records | ForEach-Object {
             $record = ConvertTo-PlainHashtable -InputObject $_
-            $source = [string](Get-FieldValue -Record $record -Name 'source' -Default '')
-            $name = [string](Get-FieldValue -Record $record -Name 'name' -Default '')
-            $kind = [string](Get-FieldValue -Record $record -Name 'kind' -Default '')
-            $metadata = Get-FieldValue -Record $record -Name 'metadata' -Default $null
+            $source = [string](Get-AppDocValue -Object $record -Name 'source' -Default '')
+            $name = [string](Get-AppDocValue -Object $record -Name 'name' -Default '')
+            $kind = [string](Get-AppDocValue -Object $record -Name 'kind' -Default '')
+            $metadata = Get-AppDocValue -Object $record -Name 'metadata' -Default $null
             $key = New-SemanticKey -Source $source -Name $name -Kind $kind
 
             # (3) cache state for this record (input-hash keyed; HIT -> skip LLM call)
@@ -442,8 +423,8 @@ foreach ($file in $enrichedFiles) {
             if ($null -ne $recInputHash -and $cache.ContainsKey($recInputHash)) {
                 $cacheState = 'hit'
                 $cached = $cache[$recInputHash]
-                if ($null -ne (Get-FieldValue -Record $cached -Name 'llmResult' -Default $null)) {
-                    $llmResult = ConvertTo-PlainHashtable -InputObject (Get-FieldValue -Record $cached -Name 'llmResult' -Default $null)
+                if ($null -ne (Get-AppDocValue -Object $cached -Name 'llmResult' -Default $null)) {
+                    $llmResult = ConvertTo-PlainHashtable -InputObject (Get-AppDocValue -Object $cached -Name 'llmResult' -Default $null)
                 }
                 # A corrected output file for the SAME input supersedes the cached result:
                 # the cache must never hide an edit the LLM session (or a reviewer) made.
@@ -480,7 +461,7 @@ foreach ($file in $enrichedFiles) {
             # (a) Any enrichment field the RAW record already carries a non-open value
             #     for is a VERIFIED source-grounded fact -> LLM-IMMUTABLE + deterministic.
             foreach ($field in $requiredSemanticFields) {
-                $rawVal = Get-FieldValue -Record $record -Name $field -Default $null
+                $rawVal = Get-AppDocValue -Object $record -Name $field -Default $null
                 if (-not (Test-AppDocValueIsOpen $rawVal)) {
                     $detFilled[$field] = $true
                     $verified[$field] = $true
@@ -489,7 +470,7 @@ foreach ($file in $enrichedFiles) {
 
             # --- (2) deterministic fills, tagged deterministic (+ verified when src-grounded)
             # businessPurpose: a heuristic default when open (NOT a real purpose).
-            if ([string]::IsNullOrWhiteSpace([string](Get-FieldValue -Record $record -Name 'businessPurpose' -Default ''))) {
+            if ([string]::IsNullOrWhiteSpace([string](Get-AppDocValue -Object $record -Name 'businessPurpose' -Default ''))) {
                 Set-FieldValue -Record $record -Name 'businessPurpose' -Value ("Purpose unclear from available evidence — review {0}." -f $source)
                 $detFilled['businessPurpose'] = $true
             }
@@ -497,7 +478,7 @@ foreach ($file in $enrichedFiles) {
             # schemaSource: a VERIFIED source-grounded fact = the record's real
             # extraction source (the real path/file the deterministic layer established).
             # The LLM may NOT override it (the Verified-fact lock).
-            $schemaSourceOpen = Test-AppDocValueIsOpen (Get-FieldValue -Record $record -Name 'schemaSource' -Default $null)
+            $schemaSourceOpen = Test-AppDocValueIsOpen (Get-AppDocValue -Object $record -Name 'schemaSource' -Default $null)
             $sourceNonEmpty = -not [string]::IsNullOrWhiteSpace($source)
             if ($schemaSourceOpen -and $sourceNonEmpty) {
                 Set-FieldValue -Record $record -Name 'schemaSource' -Value $source
@@ -506,12 +487,12 @@ foreach ($file in $enrichedFiles) {
             }
 
             if ($kind -eq 'configuration') {
-                if ([string]::IsNullOrWhiteSpace([string](Get-FieldValue -Record $record -Name 'tier' -Default ''))) {
+                if ([string]::IsNullOrWhiteSpace([string](Get-AppDocValue -Object $record -Name 'tier' -Default ''))) {
                     Set-FieldValue -Record $record -Name 'tier' -Value (Get-InferredTier -Source $source -Name $name)
                     $detFilled['tier'] = $true
                 }
-                if ($null -eq (Get-FieldValue -Record $record -Name 'requiredForDeployment' -Default $null)) {
-                    $req = Get-FieldValue -Record $metadata -Name 'required' -Default $null
+                if ($null -eq (Get-AppDocValue -Object $record -Name 'requiredForDeployment' -Default $null)) {
+                    $req = Get-AppDocValue -Object $metadata -Name 'required' -Default $null
                     Set-FieldValue -Record $record -Name 'requiredForDeployment' -Value (Test-InferredRequiredForDeployment -Name $name -Metadata $metadata)
                     $detFilled['requiredForDeployment'] = $true
                     # source-grounded (Verified) when an explicit real metadata.required
@@ -521,32 +502,32 @@ foreach ($file in $enrichedFiles) {
             }
 
             if ($kind -eq 'dependency') {
-                if ([string]::IsNullOrWhiteSpace([string](Get-FieldValue -Record $record -Name 'dependencyKind' -Default ''))) {
-                    $depType = [string](Get-FieldValue -Record $metadata -Name 'type' -Default '')
+                if ([string]::IsNullOrWhiteSpace([string](Get-AppDocValue -Object $record -Name 'dependencyKind' -Default ''))) {
+                    $depType = [string](Get-AppDocValue -Object $metadata -Name 'type' -Default '')
                     Set-FieldValue -Record $record -Name 'dependencyKind' -Value (Get-InferredDependencyKind -Type $depType)
                     $detFilled['dependencyKind'] = $true
                 }
-                if ($null -eq (Get-FieldValue -Record $record -Name 'criticalPath' -Default $null)) {
-                    $project = [string](Get-FieldValue -Record $metadata -Name 'project' -Default '')
+                if ($null -eq (Get-AppDocValue -Object $record -Name 'criticalPath' -Default $null)) {
+                    $project = [string](Get-AppDocValue -Object $metadata -Name 'project' -Default '')
                     Set-FieldValue -Record $record -Name 'criticalPath' -Value (Get-InferredCriticalPath -Name $name -Project $project -Kind $kind)
                     $detFilled['criticalPath'] = $true
                 }
             }
 
             if ($kind -eq 'model') {
-                if ([string]::IsNullOrWhiteSpace([string](Get-FieldValue -Record $record -Name 'role' -Default ''))) {
+                if ([string]::IsNullOrWhiteSpace([string](Get-AppDocValue -Object $record -Name 'role' -Default ''))) {
                     Set-FieldValue -Record $record -Name 'role' -Value (Get-InferredModelRole -Source $source -Name $name -Metadata $metadata)
                     $detFilled['role'] = $true
                 }
-                if ($null -eq (Get-FieldValue -Record $record -Name 'isGenerated' -Default $null)) {
+                if ($null -eq (Get-AppDocValue -Object $record -Name 'isGenerated' -Default $null)) {
                     Set-FieldValue -Record $record -Name 'isGenerated' -Value (Test-InferredGeneratedModel -Source $source -Name $name)
                     $detFilled['isGenerated'] = $true
                 }
             }
 
             if ($kind -in @('test-case','test-suite') -or $artifact -eq 'task-guides') {
-                if ($null -eq (Get-FieldValue -Record $record -Name 'testDiagnosis' -Default $null)) {
-                    $status = [string](Get-FieldValue -Record $record -Name 'status' -Default '')
+                if ($null -eq (Get-AppDocValue -Object $record -Name 'testDiagnosis' -Default $null)) {
+                    $status = [string](Get-AppDocValue -Object $record -Name 'status' -Default '')
                     Set-FieldValue -Record $record -Name 'testDiagnosis' -Value (Build-TestDiagnosis -Status $status -Kind $kind -Metadata $metadata)
                     $detFilled['testDiagnosis'] = $true
                 }
@@ -561,7 +542,7 @@ foreach ($file in $enrichedFiles) {
             # VERIFIED." A null LLM field is a no-op (no-fabrication).
             if ($null -ne $llmResult) {
                 foreach ($field in $requiredSemanticFields) {
-                    $outValue = Get-FieldValue -Record $llmResult -Name $field -Default $null
+                    $outValue = Get-AppDocValue -Object $llmResult -Name $field -Default $null
                     if ($null -eq $outValue) { continue }   # LLM left it open -> no-fabrication
                     if ($verified.ContainsKey($field)) {
                         # VERIFIED-FACT LOCK: refuse the LLM override; keep the value.
@@ -570,7 +551,7 @@ foreach ($file in $enrichedFiles) {
                             key = $key
                             field = $field
                             provenance = 'verified'
-                            verifiedValue = (Get-FieldValue -Record $record -Name $field -Default $null)
+                            verifiedValue = (Get-AppDocValue -Object $record -Name $field -Default $null)
                             llmAttemptedValue = $outValue
                             action = 'refused'
                         }
@@ -615,7 +596,7 @@ foreach ($file in $enrichedFiles) {
     )
 
     $payload['records'] = $updatedRecords
-    $meta = ConvertTo-PlainHashtable -InputObject (Get-FieldValue -Record $payload -Name 'metadata' -Default @{})
+    $meta = ConvertTo-PlainHashtable -InputObject (Get-AppDocValue -Object $payload -Name 'metadata' -Default @{})
     $meta['enriched'] = $true
     $meta['enrichmentMode'] = 'semantic-applied'
     $meta['semanticInputPath'] = $inputPath.Replace($RootPath, '.').TrimStart('\').Replace('\','/')
@@ -635,7 +616,7 @@ foreach ($file in $enrichedFiles) {
         supersededRecords = $cacheSupersededCount
     }
     $meta['quarantine'] = [ordered]@{
-        refusals = (@($globalRefusals | Where-Object { ([string](Get-FieldValue -Record $_ -Name 'artifact' -Default '') -eq $artifact) }).Count)
+        refusals = (@($globalRefusals | Where-Object { ([string](Get-AppDocValue -Object $_ -Name 'artifact' -Default '') -eq $artifact) }).Count)
         verifiedFactLock = $true
         provenanceTagged = $true
     }
@@ -644,12 +625,12 @@ foreach ($file in $enrichedFiles) {
     $missing = @()
     foreach ($rec in $updatedRecords) {
         foreach ($field in $requiredSemanticFields) {
-            if ($null -eq (Get-FieldValue -Record $rec -Name $field -Default $null)) {
+            if ($null -eq (Get-AppDocValue -Object $rec -Name $field -Default $null)) {
                 $missing += [ordered]@{
                     artifact = $artifact
-                    source = [string](Get-FieldValue -Record $rec -Name 'source' -Default '')
-                    name = [string](Get-FieldValue -Record $rec -Name 'name' -Default '')
-                    kind = [string](Get-FieldValue -Record $rec -Name 'kind' -Default '')
+                    source = [string](Get-AppDocValue -Object $rec -Name 'source' -Default '')
+                    name = [string](Get-AppDocValue -Object $rec -Name 'name' -Default '')
+                    kind = [string](Get-AppDocValue -Object $rec -Name 'kind' -Default '')
                     field = $field
                 }
             }
