@@ -8,6 +8,7 @@ import re
 import sys
 
 from .citations import OWNER_CONTEXT, find_citations
+from . import scan
 from .secrets import find_secret_shapes
 
 NARRATIVE = "application-documentation.md"
@@ -144,14 +145,41 @@ def _blocks(lines: list[str], first: int, last: int) -> list[tuple[int, str]]:
     return blocks
 
 
-def _resolve(target: str, cache: dict, c) -> tuple[bool, str]:
-    """(resolved, reason) for one Citation."""
+def _basenames(target: str, cache: dict) -> dict:
+    idx = cache.get("__basenames__")
+    if idx is None:
+        idx = {}
+        for sf in scan.walk(os.path.realpath(target), cache.get("__out__")):
+            idx.setdefault(sf.path.rsplit("/", 1)[-1], []).append(sf.path)
+        cache["__basenames__"] = idx
+    return idx
+
+
+def _resolve(target: str, cache: dict, c) -> tuple[bool | None, str]:
+    """(resolved, reason) for one Citation. resolved None means: not a Citation, ignore it."""
     root = os.path.realpath(target)
     full = os.path.realpath(os.path.join(root, c.path))
     if os.path.commonpath([root, full]) != root:
         return False, f"`{c.path}` escapes the Target"
+    if os.path.isdir(full):
+        if c.start is None:
+            return True, ""
+        return False, f"`{c.path}` is a folder; a line cannot apply"
     if not os.path.isfile(full):
-        return False, f"`{c.path}` does not exist in the Target"
+        name = c.path.rsplit("/", 1)[-1]
+        if "/" not in c.path:
+            hits = _basenames(target, cache).get(name, [])
+            if len(hits) == 1:
+                full = os.path.join(root, hits[0])
+            elif len(hits) > 1:
+                return False, (f"`{c.path}` matches {len(hits)} files ({', '.join(hits[:3])}"
+                               f"{', ...' if len(hits) > 3 else ''}); cite the full path")
+        if not os.path.isfile(full):
+            # No extension, no line and no trailing folder shape: inline code such as an image
+            # name or a command, not a claim about a file.
+            if "." not in name and c.start is None and not c.raw.endswith("/"):
+                return None, ""
+            return False, f"`{c.path}` does not exist in the Target"
     if c.start is None:
         return True, ""
     if full not in cache:
@@ -203,10 +231,12 @@ def run(target: str, out_dir: str) -> int:
 
     # C1 + register
     cites = find_citations(text)
-    cache: dict = {}
+    cache: dict = {"__out__": out_dir}
     register = []
     for c in cites:
         ok, why = _resolve(target, cache, c)
+        if ok is None:
+            continue
         register.append((c, ok))
         if not ok:
             add("C1", c.doc_line, f"citation does not resolve: {why}",
@@ -215,7 +245,7 @@ def run(target: str, out_dir: str) -> int:
     # C2
     s10 = by_num.get(10)
     if s10:
-        for c in cites:
+        for c, _ in register:
             if s10["start"] < c.doc_line <= s10["end"] and c.start is None:
                 add("C2", c.doc_line, f"security citation `{c.path}` has no line number",
                     "cite the exact line, e.g. `path:12`")

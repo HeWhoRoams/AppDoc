@@ -19,6 +19,11 @@ AppDoc is rebuilt as a small, portable skill. See `docs/adr/0004-facts-plus-narr
 - Optional `appdoc-context.md` owner notes and `.appdocignore`.
 - Stack extractors for Classic ASP, ASP.NET (Web Forms and MVC 5), ASP.NET Core, Java Spring (with Struts, JSP and MyBatis), Python Flask and Node/Express, with a generic fallback for everything else.
 
+### Fixed after first install test
+- C1 accepts folders and unique bare filenames; ignores extensionless spans that are not files.
+- Facts summary says empty lists are not proof of absence, shows git history, and excludes test-code Facts.
+- Ownership only with full git history; `target.history` recorded.
+
 ### Removed
 - The scored validation gate and its 15 components, the pristine report, the evidence graph and canonical metrics.
 - The redaction subsystem and exit-3 path, semantic enrichment and quarantine, generation profiles, theme JSON and masthead options.

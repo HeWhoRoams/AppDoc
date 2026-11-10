@@ -9,6 +9,20 @@ AppDoc is a **skill** for any AI harness that can read `SKILL.md` and run Python
 - **Safe.** Extractors never record secret values. The Check fails on secret-shaped text.
 - **Small.** Python 3.10+, standard library only, no packages to install.
 
+## Install as a skill
+
+To install through an AI agent, point it to this full repository (a local folder or GitHub URL) and say **"Install this skill globally."** The agent should obtain the full checkout, choose the current runtime's skills directory, run the installer, and verify the installed launcher. A standalone `SKILL.md` is not a complete install. If the agent cannot access the repository or run Python, use the command directly.
+
+From this checkout, run the installer with the parent skills directory. It creates or repairs the `appdoc/` skill folder and copies `SKILL.md`, `CONTEXT.md`, `run_appdoc.py`, and the complete `appdoc/` package, including its template and renderer assets.
+
+No npm command or additional package installation is needed.
+
+```powershell
+py -3 install_skill.py "$HOME\.copilot\skills"
+```
+
+For other runtimes, pass their skills directory instead, such as `python install_skill.py ~/.claude/skills`. Re-running the installer updates an existing AppDoc skill. The installed launcher works from any current directory; no packages are needed.
+
 ## Quick start
 
 ```
@@ -18,7 +32,7 @@ python -m appdoc check <target>       # exit 0 pass, 2 problems, 1 tool error
 python -m appdoc render <target>      # writes application-documentation.html
 ```
 
-Run these from the AppDoc folder. On Windows use `py -3 -m appdoc ...` if `python` is not on PATH. Run on a **scratch copy** of the Target if you do not want files added to its `docs/appdoc/`. All output goes to `<target>/docs/appdoc/` (override with `--out`, which must stay inside the Target).
+Run these from the AppDoc folder (or call `python run_appdoc.py ...` from anywhere). On Windows use `py -3 -m appdoc ...` if `python` is not on PATH. Run on a **scratch copy** of the Target if you do not want files added to its `docs/appdoc/`. All output goes to `<target>/docs/appdoc/` (override with `--out`, which must stay inside the Target).
 
 ## What you get
 
@@ -54,7 +68,7 @@ Every Target also gets the **generic** extractor: files, dependency manifests, c
 
 | Rule | Fails when |
 |---|---|
-| C1 | a Citation points to a missing file or a line past the end |
+| C1 | a Citation points to a missing file or a line past the end (folders and unique bare filenames resolve; extensionless non-existent spans are not Citations) |
 | C2 | a Citation in section 10 has no line |
 | C3 | a section is missing, out of order, empty or still a placeholder |
 | C4 | section 14 is empty while Unknowns exist, or Data and Integrations is empty though Facts exist |
@@ -91,6 +105,8 @@ Standard library only. CI runs them on Ubuntu and Windows with Python 3.10 and 3
 - Extraction is regex-based per file. Prefixes applied in another file (blueprint and router mounts, Spring `parent=` beans) are flagged `prefix_unresolved` or missed.
 - SQL assembled from variables is only seen where its leading literal is visible.
 - Hard-coded secrets are found by the AI reading source and by the Check's scan, not recorded as Facts.
+- The Check proves Citations resolve, not that the cited line supports the claim; it does not verify section 1 links or Mermaid syntax.
+- Ownership Facts need full git history; shallow clones get none. Facts from test code carry `test: true` and are left out of the summary lists.
 - Section prose is grounded but not byte-identical between runs; only the Facts file is.
 
 ## History

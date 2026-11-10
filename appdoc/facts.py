@@ -48,6 +48,13 @@ class Fact:
             items.append((k, v))
         return Fact(kind, stack, path.replace("\\", "/"), line, str(name), tuple(items))
 
+    def as_test(self) -> "Fact":
+        """Copy of this Fact marked as coming from test code."""
+        if any(k == "test" for k, _ in self.detail):
+            return self
+        return Fact(self.kind, self.stack, self.path, self.line, self.name,
+                    tuple(sorted(self.detail + (("test", True),))))
+
     def detail_dict(self) -> dict:
         return {k: (list(v) if isinstance(v, tuple) else v) for k, v in self.detail}
 
@@ -72,14 +79,14 @@ def _freeze_list(values) -> tuple:
         return tuple(values)
 
 
-def dumps(target_name: str, commit: str | None, facts) -> str:
+def dumps(target_name: str, commit: str | None, facts, history: str | None = None) -> str:
     """Serialize facts to the canonical Facts file text (sorted, de-duplicated, no timestamps)."""
     unique = sorted(set(facts), key=lambda f: f.sort_key())
     stacks = [f.to_json() for f in unique if f.kind == "stack"]
     others = [f.to_json() for f in unique if f.kind != "stack"]
     doc = {
         "schema": SCHEMA,
-        "target": {"name": target_name, "commit": commit},
+        "target": {"name": target_name, "commit": commit, "history": history or "none"},
         "stacks": stacks,
         "facts": others,
     }

@@ -1,0 +1,1055 @@
+{
+ "facts": [
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".md",
+    "lines": 13,
+    "size": 314,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "README.md",
+   "path": "README.md",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".xml",
+    "lines": 34,
+    "size": 1294,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "pom.xml",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 20,
+   "name": "org.springframework.boot:spring-boot-starter-web",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 24,
+   "name": "org.springframework.boot:spring-boot-starter-data-jpa",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 28,
+   "name": "com.mysql:mysql-connector-j",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 16,
+    "size": 451,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/com/acme/Application.java",
+   "path": "src/main/java/com/acme/Application.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 62,
+    "size": 1954,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/com/acme/Ticket.java",
+   "path": "src/main/java/com/acme/Ticket.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "class": "Ticket",
+    "operation": "map",
+    "type": "entity"
+   },
+   "kind": "data_access",
+   "line": 15,
+   "name": "tickets",
+   "path": "src/main/java/com/acme/Ticket.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 13,
+    "size": 289,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/com/acme/TicketRepository.java",
+   "path": "src/main/java/com/acme/TicketRepository.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "entity": "Ticket",
+    "operation": "crud",
+    "type": "repository"
+   },
+   "kind": "data_access",
+   "line": 10,
+   "name": "TicketRepository",
+   "path": "src/main/java/com/acme/TicketRepository.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 61,
+    "size": 2024,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/com/acme/TicketService.java",
+   "path": "src/main/java/com/acme/TicketService.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "context": "error",
+    "exception": "IllegalStateException"
+   },
+   "kind": "message",
+   "line": 35,
+   "name": "ticket not found:",
+   "path": "src/main/java/com/acme/TicketService.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "client": "RestTemplate",
+    "method": "POST",
+    "type": "http"
+   },
+   "kind": "external_call",
+   "line": 42,
+   "name": "/intake/tickets",
+   "path": "src/main/java/com/acme/TicketService.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 57,
+    "size": 2020,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/com/acme/TicketsController.java",
+   "path": "src/main/java/com/acme/TicketsController.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "handler": "TicketsController.list",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 29,
+   "name": "/api/tickets",
+   "path": "src/main/java/com/acme/TicketsController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "TicketsController.get",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 35,
+   "name": "/api/tickets/{id}",
+   "path": "src/main/java/com/acme/TicketsController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "TicketsController.create",
+    "method": "POST",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 41,
+   "name": "/api/tickets",
+   "path": "src/main/java/com/acme/TicketsController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "TicketsController.update",
+    "method": "PUT",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 47,
+   "name": "/api/tickets/{id}",
+   "path": "src/main/java/com/acme/TicketsController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "TicketsController.delete",
+    "method": "DELETE",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 53,
+   "name": "/api/tickets/{id}",
+   "path": "src/main/java/com/acme/TicketsController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 44,
+    "size": 1367,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/com/acme/api/OrderController.java",
+   "path": "src/main/java/com/acme/api/OrderController.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "handler": "OrderController.search",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 18,
+   "name": "/api/orders/find",
+   "path": "src/main/java/com/acme/api/OrderController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "OrderController.search",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 18,
+   "name": "/api/orders/search",
+   "path": "src/main/java/com/acme/api/OrderController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "mechanism": "PreAuthorize",
+    "roles": [
+     "ADMIN",
+     "CLERK"
+    ]
+   },
+   "kind": "auth_check",
+   "line": 25,
+   "name": "hasAnyRole('ADMIN','CLERK')",
+   "path": "src/main/java/com/acme/api/OrderController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "OrderController.cancel",
+    "method": "POST",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 26,
+   "name": "/api/orders/{id}/cancel",
+   "path": "src/main/java/com/acme/api/OrderController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "context": "error"
+   },
+   "kind": "message",
+   "line": 29,
+   "name": "Order id must be positive",
+   "path": "src/main/java/com/acme/api/OrderController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "context": "info"
+   },
+   "kind": "message",
+   "line": 31,
+   "name": "Order already shipped",
+   "path": "src/main/java/com/acme/api/OrderController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "OrderController.nightlySweep",
+    "schedule": "cron = \"0 0 * * * *\"",
+    "type": "job"
+   },
+   "kind": "entry_point",
+   "line": 34,
+   "name": "OrderController.nightlySweep",
+   "path": "src/main/java/com/acme/api/OrderController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "operation": "select",
+    "type": "sql"
+   },
+   "kind": "data_access",
+   "line": 36,
+   "name": "orders",
+   "path": "src/main/java/com/acme/api/OrderController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "OrderController.wildcard",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 40,
+   "name": "/api/orders/wild/*",
+   "path": "src/main/java/com/acme/api/OrderController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 37,
+    "size": 1493,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/com/acme/api/OrderDao.java",
+   "path": "src/main/java/com/acme/api/OrderDao.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "operation": "insert",
+    "type": "sql"
+   },
+   "kind": "data_access",
+   "line": 18,
+   "name": "order_log",
+   "path": "src/main/java/com/acme/api/OrderDao.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "operation": "select",
+    "type": "sql"
+   },
+   "kind": "data_access",
+   "line": 19,
+   "name": "customers",
+   "path": "src/main/java/com/acme/api/OrderDao.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "operation": "call",
+    "type": "stored_procedure"
+   },
+   "kind": "data_access",
+   "line": 20,
+   "name": "sp_close_order",
+   "path": "src/main/java/com/acme/api/OrderDao.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "operation": "access",
+    "type": "file"
+   },
+   "kind": "external_call",
+   "line": 25,
+   "name": "/var/spool/orders.csv",
+   "path": "src/main/java/com/acme/api/OrderDao.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "operation": "read",
+    "type": "file"
+   },
+   "kind": "external_call",
+   "line": 26,
+   "name": "Files",
+   "path": "src/main/java/com/acme/api/OrderDao.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "type": "email"
+   },
+   "kind": "external_call",
+   "line": 27,
+   "name": "JavaMailSender",
+   "path": "src/main/java/com/acme/api/OrderDao.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "client": "WebClient",
+    "type": "http"
+   },
+   "kind": "external_call",
+   "line": 28,
+   "name": "https://pricing.acme.internal/v1",
+   "path": "src/main/java/com/acme/api/OrderDao.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "type": "process"
+   },
+   "kind": "external_call",
+   "line": 29,
+   "name": "/usr/bin/convert",
+   "path": "src/main/java/com/acme/api/OrderDao.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "secret_location": false,
+    "source": "jndi",
+    "type": "database"
+   },
+   "kind": "connection",
+   "line": 30,
+   "name": "jdbc/OrdersDS",
+   "path": "src/main/java/com/acme/api/OrderDao.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "secret_location": true,
+    "type": "database"
+   },
+   "kind": "connection",
+   "line": 33,
+   "name": "ordersDataSource",
+   "path": "src/main/java/com/acme/api/OrderDao.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 14,
+    "size": 461,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/com/acme/api/OrderRepository.java",
+   "path": "src/main/java/com/acme/api/OrderRepository.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "entity": "Object",
+    "operation": "crud",
+    "type": "repository"
+   },
+   "kind": "data_access",
+   "line": 6,
+   "name": "OrderRepository",
+   "path": "src/main/java/com/acme/api/OrderRepository.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "native": true,
+    "operation": "select",
+    "type": "sql"
+   },
+   "kind": "data_access",
+   "line": 8,
+   "name": "order_items",
+   "path": "src/main/java/com/acme/api/OrderRepository.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "operation": "delete",
+    "type": "sql"
+   },
+   "kind": "data_access",
+   "line": 12,
+   "name": "OrderAudit",
+   "path": "src/main/java/com/acme/api/OrderRepository.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 13,
+    "size": 449,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/com/acme/config/SecurityConfig.java",
+   "path": "src/main/java/com/acme/config/SecurityConfig.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "mechanism": "HttpSecurity",
+    "roles": [
+     "ADMIN"
+    ]
+   },
+   "kind": "auth_check",
+   "line": 8,
+   "name": "antMatchers(\"/admin/**\", \"/ops/*\").hasRole(\"ADMIN\")",
+   "path": "src/main/java/com/acme/config/SecurityConfig.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "mechanism": "HttpSecurity"
+   },
+   "kind": "auth_check",
+   "line": 9,
+   "name": "antMatchers(\"/public/**\").permitAll()",
+   "path": "src/main/java/com/acme/config/SecurityConfig.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "mechanism": "HttpSecurity"
+   },
+   "kind": "auth_check",
+   "line": 10,
+   "name": "anyRequest().authenticated()",
+   "path": "src/main/java/com/acme/config/SecurityConfig.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "mechanism": "HttpSecurity"
+   },
+   "kind": "auth_check",
+   "line": 11,
+   "name": "formLogin()",
+   "path": "src/main/java/com/acme/config/SecurityConfig.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 48,
+    "size": 1678,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/com/example/app/AuditLog.java",
+   "path": "src/main/java/com/example/app/AuditLog.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "class": "AuditLog",
+    "operation": "map",
+    "type": "entity"
+   },
+   "kind": "data_access",
+   "line": 19,
+   "name": "audit_logs",
+   "path": "src/main/java/com/example/app/AuditLog.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 22,
+    "size": 860,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/com/example/app/AuditLogController.java",
+   "path": "src/main/java/com/example/app/AuditLogController.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "handler": "AuditLogController.auditLog",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 18,
+   "name": "/audit-log",
+   "path": "src/main/java/com/example/app/AuditLogController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 14,
+    "size": 864,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/application.properties",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "secret_location": false,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 11,
+   "name": "spring.datasource.url",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "secret_location": false,
+    "type": "database"
+   },
+   "kind": "connection",
+   "line": 11,
+   "name": "spring.datasource.url",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "secret_location": false,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 12,
+   "name": "spring.datasource.username",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "secret_location": true,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 13,
+   "name": "spring.datasource.password",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "secret_location": false,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 14,
+   "name": "spring.jpa.hibernate.ddl-auto",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".yml",
+    "lines": 26,
+    "size": 669,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/application.yml",
+   "path": "src/main/resources/application.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "secret_location": false,
+    "source": "application.yml"
+   },
+   "kind": "config_key",
+   "line": 7,
+   "name": "spring.application.name",
+   "path": "src/main/resources/application.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "secret_location": false,
+    "source": "application.yml"
+   },
+   "kind": "config_key",
+   "line": 9,
+   "name": "spring.datasource.url",
+   "path": "src/main/resources/application.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "secret_location": false,
+    "source": "application.yml"
+   },
+   "kind": "config_key",
+   "line": 10,
+   "name": "spring.datasource.username",
+   "path": "src/main/resources/application.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "secret_location": true,
+    "source": "application.yml"
+   },
+   "kind": "config_key",
+   "line": 11,
+   "name": "spring.datasource.password",
+   "path": "src/main/resources/application.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "secret_location": false,
+    "source": "application.yml"
+   },
+   "kind": "config_key",
+   "line": 14,
+   "name": "spring.jpa.hibernate.ddl-auto",
+   "path": "src/main/resources/application.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "secret_location": false,
+    "source": "application.yml"
+   },
+   "kind": "config_key",
+   "line": 17,
+   "name": "server.port",
+   "path": "src/main/resources/application.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "secret_location": false,
+    "source": "application.yml"
+   },
+   "kind": "config_key",
+   "line": 21,
+   "name": "itsm.base-url",
+   "path": "src/main/resources/application.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "secret_location": false,
+    "source": "application.yml"
+   },
+   "kind": "config_key",
+   "line": 26,
+   "name": "logging.level.com.acme",
+   "path": "src/main/resources/application.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".xml",
+    "lines": 9,
+    "size": 300,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/mappers/OrderMapper.xml",
+   "path": "src/main/resources/mappers/OrderMapper.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "namespace": "com.acme.OrderMapper",
+    "operation": "select",
+    "statement": "findOpen",
+    "type": "sql"
+   },
+   "kind": "data_access",
+   "line": 3,
+   "name": "open_orders",
+   "path": "src/main/resources/mappers/OrderMapper.xml",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "namespace": "com.acme.OrderMapper",
+    "operation": "update",
+    "statement": "close",
+    "type": "sql"
+   },
+   "kind": "data_access",
+   "line": 6,
+   "name": "orders",
+   "path": "src/main/resources/mappers/OrderMapper.xml",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".xml",
+    "lines": 10,
+    "size": 564,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/webapp/WEB-INF/applicationContext.xml",
+   "path": "src/main/webapp/WEB-INF/applicationContext.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "class": "BasicDataSource",
+    "secret_location": true,
+    "type": "database"
+   },
+   "kind": "connection",
+   "line": 3,
+   "name": "legacyDataSource",
+   "path": "src/main/webapp/WEB-INF/applicationContext.xml",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "com.acme.web.LegacyOrdersController",
+    "method": "ANY",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 8,
+   "name": "/legacy/orders.htm",
+   "path": "src/main/webapp/WEB-INF/applicationContext.xml",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".xml",
+    "lines": 6,
+    "size": 203,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/webapp/WEB-INF/struts.xml",
+   "path": "src/main/webapp/WEB-INF/struts.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "handler": "com.acme.web.InvoiceAction.view",
+    "method": "ANY",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 4,
+   "name": "/billing/invoice",
+   "path": "src/main/webapp/WEB-INF/struts.xml",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".xml",
+    "lines": 16,
+    "size": 702,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/webapp/WEB-INF/web.xml",
+   "path": "src/main/webapp/WEB-INF/web.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "handler": "com.acme.web.ReportServlet",
+    "method": "ANY",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 10,
+   "name": "/reports/*",
+   "path": "src/main/webapp/WEB-INF/web.xml",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "mechanism": "web.xml security-constraint",
+    "roles": [
+     "ops"
+    ]
+   },
+   "kind": "auth_check",
+   "line": 12,
+   "name": "security-constraint /admin/*",
+   "path": "src/main/webapp/WEB-INF/web.xml",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "inputs": [
+     "query"
+    ],
+    "type": "page"
+   },
+   "kind": "entry_point",
+   "line": null,
+   "name": "src/main/webapp/admin/dashboard.jsp",
+   "path": "src/main/webapp/admin/dashboard.jsp",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".jsp",
+    "lines": 6,
+    "size": 228,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/webapp/admin/dashboard.jsp",
+   "path": "src/main/webapp/admin/dashboard.jsp",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "mechanism": "sec:authorize",
+    "roles": [
+     "ADMIN"
+    ]
+   },
+   "kind": "auth_check",
+   "line": 5,
+   "name": "hasRole('ADMIN')",
+   "path": "src/main/webapp/admin/dashboard.jsp",
+   "stack": "java-spring"
+  }
+ ],
+ "schema": "appdoc-facts/2",
+ "stacks": [
+  {
+   "detail": {
+    "file_count": 17,
+    "marker_files": [
+     "pom.xml",
+     "src/main/webapp/WEB-INF/applicationContext.xml",
+     "src/main/webapp/WEB-INF/struts.xml",
+     "src/main/webapp/admin/dashboard.jsp"
+    ],
+    "supported": true
+   },
+   "kind": "stack",
+   "line": null,
+   "name": "java-spring",
+   "path": "pom.xml",
+   "stack": "java-spring"
+  }
+ ],
+ "target": {
+  "commit": null,
+  "history": "none",
+  "name": "java-spring"
+ }
+}

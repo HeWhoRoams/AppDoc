@@ -190,6 +190,64 @@ class GitScopeTests(unittest.TestCase):
         self.assertEqual([f for f in doc["facts"] if f["kind"] == "ownership"], [])
 
 
+class TestCodeAndHistoryTests(unittest.TestCase):
+    def test_is_test_path(self):
+        for p in ["src/test/java/a/FooTest.java", "tests/test_x.py", "app/__tests__/a.js", "a/b.spec.ts",
+                  "x/FooIT.java", "svc/Foo.Tests.cs", "pkg/foo_test.py", "web/app.test.js"]:
+            self.assertTrue(extract.is_test_path(p), p)
+        for p in ["src/main/java/Foo.java", "app/contest.py", "latest/a.py", "src/Attest.java"]:
+            self.assertFalse(extract.is_test_path(p), p)
+
+    def test_test_facts_are_marked_and_left_out_of_summary(self):
+        root = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, root, True)
+        for rel, body in (("app.py", "import requests\nrequests.get('http://prod.example/api')\n"),
+                          ("tests/test_app.py", "import requests\nrequests.get('http://test.example/x')\n")):
+            p = os.path.join(root, rel)
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            with open(p, "w") as fh:
+                fh.write(body)
+        text, summary = extract.extract(root, os.path.join(root, "docs", "appdoc"))
+        calls = [f for f in json.loads(text)["facts"] if f["kind"] == "external_call"]
+        self.assertTrue(any(f["detail"].get("test") for f in calls) or not calls)
+        for f in calls:
+            self.assertEqual(bool(f["detail"].get("test")), f["path"].startswith("tests/"))
+        self.assertNotIn("tests/test_app.py", summary.split("## Largest source files")[-1].split("## Entry points")[-1])
+
+    def test_summary_wording_for_empty_lists(self):
+        doc = {"schema": "s", "target": {"name": "t", "commit": None, "history": "none"}, "stacks": [], "facts": []}
+        from appdoc.summary import render_summary
+        out = render_summary(doc)
+        self.assertIn("not proof of absence", out)
+        self.assertIn("Git history: none", out)
+
+    @unittest.skipUnless(shutil.which("git"), "git not installed")
+    def test_shallow_clone_has_no_ownership(self):
+        import subprocess
+        src = tempfile.mkdtemp(); dst = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, src, True); self.addCleanup(shutil.rmtree, dst, True)
+        os.makedirs(os.path.join(src, "pkg"))
+        for i in (1, 2):
+            with open(os.path.join(src, "pkg", "a.py"), "w") as fh:
+                fh.write(f"x = {i}\n")
+            for a in (["add", "-A"], ["commit", "-q", "-m", str(i)]):
+                subprocess.run(["git", "-C", src, "-c", "user.name=T", "-c", "user.email=t@e.com", *(["init", "-q"] if False else []), *a],
+                               check=True, capture_output=True) if os.path.isdir(os.path.join(src, ".git")) else None
+            if i == 1 and not os.path.isdir(os.path.join(src, ".git")):
+                subprocess.run(["git", "-C", src, "init", "-q"], check=True, capture_output=True)
+                subprocess.run(["git", "-C", src, "add", "-A"], check=True, capture_output=True)
+                subprocess.run(["git", "-C", src, "-c", "user.name=T", "-c", "user.email=t@e.com", "commit", "-q", "-m", "1"],
+                               check=True, capture_output=True)
+        shutil.rmtree(dst)
+        subprocess.run(["git", "clone", "-q", "--depth", "1", "file://" + src.replace("\\", "/"), dst],
+                       check=True, capture_output=True)
+        doc = json.loads(extract.extract(dst, os.path.join(dst, "docs", "appdoc"))[0])
+        self.assertEqual(doc["target"]["history"], "shallow")
+        self.assertEqual([f for f in doc["facts"] if f["kind"] == "ownership"], [])
+        full = json.loads(extract.extract(src, os.path.join(src, "docs", "appdoc"))[0])
+        self.assertEqual(full["target"]["history"], "full")
+
+
 class GenericTests(unittest.TestCase):
     def names(self, path, text, kind):
         return sorted(f.name for f in generic.extract(path, text) if f.kind == kind)

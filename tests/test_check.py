@@ -95,6 +95,34 @@ class CheckTests(unittest.TestCase):
     def test_c1_line_beyond(self):
         self.assertEqual(self.fired(build_doc().replace("`app/main.py:5` for all", "`app/main.py:500` for all")), {"C1"})
 
+    def _swap(self, new):
+        return build_doc().replace("`app/main.py:5` for all", new + " for all")
+
+    def test_c1_folder_citation_resolves(self):
+        self.assertEqual(self.fired(self._swap("`app/`")), set())
+
+    def test_c1_folder_with_line_fails(self):
+        self.assertEqual(self.fired(self._swap("`app/:3`")), {"C1"})
+
+    def test_c1_unique_bare_filename_resolves(self):
+        self.assertEqual(self.fired(self._swap("`main.py:5`")), set())
+
+    def test_c1_ambiguous_bare_filename_fails(self):
+        os.makedirs(os.path.join(self.target, "other"))
+        with open(os.path.join(self.target, "other", "main.py"), "w") as fh:
+            fh.write("x\n")
+        code, report, _ = self.run_check(self._swap("`main.py:1`"))
+        self.assertEqual(code, 2)
+        self.assertIn("matches 2 files", report)
+
+    def test_c1_extensionless_nonfile_span_is_not_a_citation(self):
+        code, report, _ = self.run_check(self._swap("the `dsyer/petclinic` image"))
+        self.assertEqual(code, 0, report)
+        self.assertNotIn("dsyer/petclinic", report)
+
+    def test_c1_missing_file_with_extension_still_fails(self):
+        self.assertEqual(self.fired(self._swap("`ghost/image.yml`")), {"C1"})
+
     def test_c1_escape(self):
         self.assertEqual(self.fired(build_doc().replace("`app/main.py:5` for all", "`../outside.py:1` for all")), {"C1"})
 

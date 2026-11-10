@@ -5,3 +5,4 @@ __pycache__/
 docs/appdoc/
 obj/
 bin/
+_to_delete/

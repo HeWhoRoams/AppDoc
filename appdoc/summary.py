@@ -29,11 +29,15 @@ def render_summary(doc: dict) -> str:
     stacks = doc["stacks"]
     out = ["# Facts summary", ""]
     t = doc["target"]
-    out += [f"- Target: `{t['name']}`", f"- Commit: `{t['commit'] or 'none'}`", f"- Schema: `{doc['schema']}`", ""]
+    out += [f"- Target: `{t['name']}`", f"- Commit: `{t['commit'] or 'none'}`",
+            f"- Git history: {t.get('history', 'none')}", f"- Schema: `{doc['schema']}`", "",
+            "> Facts show what the extractors found. An empty list is not proof that something is absent: "
+            "the extractors only recognise the patterns of the Stacks below, so read the source before "
+            "writing \"none\". Facts from test code are marked `test` in `facts.json` and left out of the lists.", ""]
 
     out += ["## Stacks", ""]
     if stacks:
-        out += ["| Stack | Supported | Files | Marker files |", "|---|---|---|---|"]
+        out += ["| Stack | Supported | Files read | Marker files |", "|---|---|---|---|"]
         for s in stacks:
             d = s["detail"]
             out.append(f"| {s['name']} | {'yes' if d.get('supported') else 'no (generic only)'} | {d.get('file_count', 0)} | "
@@ -70,17 +74,22 @@ def render_summary(doc: dict) -> str:
     out.append("")
 
     for kind, title in LISTED_KINDS:
-        items = [f for f in facts if f["kind"] == kind]
+        all_items = [f for f in facts if f["kind"] == kind]
+        items = [f for f in all_items if not f["detail"].get("test")]
+        tests = len(all_items) - len(items)
         if kind == "config_key":
             items = [f for f in items if f["detail"].get("secret_location")]
         out += [f"## {title}", ""]
         if not items:
-            out += ["None found.", ""]
+            out += [f"None extracted ({tests} in test code, not listed)." if tests else
+                    "None extracted. This is not proof of absence.", ""]
             continue
         for f in items[:LIST_CAP]:
             out.append(f"- `{f['name']}` — {_cite(f)}")
         if len(items) > LIST_CAP:
             out.append(f"- … {len(items) - LIST_CAP} more in `facts.json`")
+        if tests:
+            out.append(f"- ({tests} more in test code, not listed)")
         out.append("")
 
     return "\n".join(out).rstrip() + "\n"

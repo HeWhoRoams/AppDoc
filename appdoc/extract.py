@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 from collections import Counter
 
@@ -30,9 +31,26 @@ def _is_repo_root(root: str) -> bool:
     return bool(top) and os.path.normcase(os.path.realpath(top)) == os.path.normcase(os.path.realpath(root))
 
 
-def _ownership(root: str, files: list[scan.SourceFile]):
-    """Top authors per top-level folder (names only). Skipped silently without git history."""
+_TEST_DIRS = {"test", "tests", "__tests__", "spec", "specs", "testing"}
+_TEST_FILE_RE = re.compile(
+    r"(^test_.*\.py$|_test\.py$|(Tests?|IT)\.java$|Tests?\.cs$|\.(test|spec)\.[cm]?[jt]sx?$|^conftest\.py$)")
+
+
+def is_test_path(path: str) -> bool:
+    parts = path.split("/")
+    return any(p.lower() in _TEST_DIRS for p in parts[:-1]) or bool(_TEST_FILE_RE.search(parts[-1]))
+
+
+def _history(root: str) -> str:
+    """"full", "shallow" or "none": how much git history the Target has (ownership needs full)."""
     if not _is_repo_root(root):
+        return "none"
+    return "shallow" if _git(root, "rev-parse", "--is-shallow-repository") == "true" else "full"
+
+
+def _ownership(root: str, files: list[scan.SourceFile]):
+    """Top authors per top-level folder (names only). Only with full git history."""
+    if _history(root) != "full":
         return
     folders = sorted({f.path.split("/", 1)[0] for f in files if "/" in f.path})
     for folder in folders:
@@ -70,9 +88,12 @@ def extract(root: str, out_dir: str) -> tuple[str, str]:
         owners = sorted(sid for sid, (st, _) in detected.items() if sf.ext in st.extensions)
         detail["stacks"] = owners
         facts.append(F.Fact.make("file", "generic", sf.path, None, sf.path, **detail))
-        facts.extend(generic.extract(sf.path, text))
+        found = list(generic.extract(sf.path, text))
         for sid in owners:
-            facts.extend(detected[sid][0].extract(sf.path, text))
+            found.extend(detected[sid][0].extract(sf.path, text))
+        if is_test_path(sf.path):
+            found = [f.as_test() for f in found]
+        facts.extend(found)
 
     for sid, (st, markers) in sorted(detected.items()):
         count = sum(1 for sf in files if sf.ext in st.extensions)
@@ -85,7 +106,7 @@ def extract(root: str, out_dir: str) -> tuple[str, str]:
 
     name = os.path.basename(root.rstrip("\\/")) or "target"
     commit = _git(root, "rev-parse", "HEAD") if _is_repo_root(root) else None
-    facts_text = F.dumps(name, commit, facts)
+    facts_text = F.dumps(name, commit, facts, _history(root))
     return facts_text, render_summary(F.loads(facts_text))
 
 
