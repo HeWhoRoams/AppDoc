@@ -6,3 +6,9 @@ docs/appdoc/
 obj/
 bin/
 _to_delete/
+
+# Scratch, generated output, and retired 1.x leftovers — never commit
+tmp/
+.appdoc/
+tests/test-output/
+tests/powershell/
