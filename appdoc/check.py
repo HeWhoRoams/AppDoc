@@ -14,6 +14,7 @@ from .secrets import find_secret_shapes
 NARRATIVE = "application-documentation.md"
 FACTS = "facts.json"
 REPORT = "check-report.md"
+VERIFICATION = "verification.md"  # source-to-claim audit record, written by the AI (see SKILL.md)
 
 SECTIONS = [
     "Application Index", "Coverage and Overview", "Architecture", "Functional Inventory",
@@ -332,8 +333,47 @@ def run(target: str, out_dir: str) -> int:
         rng = "" if c.start is None else (str(c.start) if c.start == c.end else f"{c.start}-{c.end}")
         reg.append(f"| {c.doc_line} | `{c.path}` | {rng} | {'yes' if ok else 'no'} |")
 
+    # Resolution vs support: an honest, additive statement. The Check verifies resolution and
+    # structure only (the register above); it does not verify that a cited line supports its
+    # claim. Support is the source-to-claim audit, recorded separately by the AI.
+    scope = [
+        "**Scope.** This Check verifies **resolution and structure**: every Citation points to a "
+        "real file and line inside the Target (see the Citation register). It does **not** verify "
+        "**support** -- whether the cited line actually backs the claim it is attached to. Support "
+        "is established by the source-to-claim audit, a separate review recorded in the "
+        "Verification section below. A PASS means the citations resolve and the structure holds; "
+        "it is not an accuracy certification.",
+        "",
+    ]
+
+    verification_path = os.path.join(out_dir, VERIFICATION)
+    if os.path.isfile(verification_path):
+        record = _read_text(verification_path).strip()
+        verification = [
+            "## Verification",
+            "",
+            "**Source-to-claim audit:** recorded (from `verification.md`). The Check above "
+            "verifies resolution only; the audit below records whether the cited lines support "
+            "the claims.",
+            "",
+            record,
+        ]
+        verification_status = "Source-to-claim audit: recorded in verification.md"
+    else:
+        verification = [
+            "## Verification",
+            "",
+            "**Source-to-claim audit:** not recorded. This report covers resolution and "
+            "structure only; it does not confirm that the cited lines support the claims. "
+            "Run the source-to-claim audit (see the skill workflow) and write "
+            "`docs/appdoc/verification.md` to record it.",
+        ]
+        verification_status = (
+            "Source-to-claim audit: not recorded -- resolution only; support not confirmed."
+        )
+
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, REPORT), "w", encoding="utf-8", newline="\n") as fh:
-        fh.write("\n".join([head, ""] + body + reg) + "\n")
-    print("\n".join([head] + [b for b in body if b]))
+        fh.write("\n".join([head, ""] + scope + body + reg + [""] + verification) + "\n")
+    print("\n".join([head] + [b for b in body if b] + [verification_status]))
     return 0 if total == 0 else 2

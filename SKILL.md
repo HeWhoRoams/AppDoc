@@ -32,9 +32,10 @@ If the source cannot be accessed or Python cannot be run, explain the blocker an
    Writes `<target>/docs/appdoc/facts.json` and `facts-summary.md`. Re-running gives identical output.
 2. **Orient.** Read `facts-summary.md` first. If `<target>/appdoc-context.md` exists, read it: it is the owner's notes (purpose, owners, environments) and the only source for things the code cannot show. Then drill into `facts.json` by kind or folder, and open source files to understand behavior.
 3. **Write.** Copy `SKILL_DIR/appdoc/assets/template.md` to `<target>/docs/appdoc/application-documentation.md` and fill every section, keeping all 16 headings in order.
-4. **Check.** `python SKILL_DIR/run_appdoc.py check <target>`. Fix every problem it lists and run it again. After 3 failed checks, stop and report the remaining problems to the user verbatim.
-5. **Render.** `python SKILL_DIR/run_appdoc.py render <target>`. Writes `application-documentation.html` next to the Markdown.
-6. **Tell the user** where the files are and whether the Check passed.
+4. **Source-to-claim audit.** Before checking, verify that each Cited claim in sections 3 to 10 is actually **supported** by the lines you cited — not just that they resolve. A citation that resolves but does not support its claim is a **defect**, not a pass: correct the claim to match the source, downgrade it to **Inferred** (state what it rests on), or move it to section 14 as **Unknown**. This step verifies **support**; the Check verifies **resolution** — do not conflate them. Record the outcome in `<target>/docs/appdoc/verification.md` (see Source-to-claim audit).
+5. **Check.** `python SKILL_DIR/run_appdoc.py check <target>`. Fix every problem it lists and run it again. After 3 failed checks, stop and report the remaining problems to the user verbatim.
+6. **Render.** `python SKILL_DIR/run_appdoc.py render <target>`. Writes `application-documentation.html` next to the Markdown.
+7. **Tell the user** where the files are and whether the Check passed.
 
 Optional flags: `--out DIR` (inside the target) on every command; `--css FILE` on `render` to replace the theme.
 
@@ -54,16 +55,18 @@ Optional flags: `--out DIR` (inside the target) on every command; `--css FILE` o
 - Put diagrams in ```` ```mermaid ```` fences, each with a one-line cited caption.
 - Never edit `facts.json`. Never weaken the Check to make it pass: fix the document.
 
-## Accuracy review
+## Source-to-claim audit
 
-Before running the Check, verify the Narrative against source; citation resolution alone does not establish accuracy.
+Before running the Check, verify that every Cited claim is actually **supported** by the lines you cited. This audit is separate from the Check and is not the Check. The Check verifies **resolution** (each Citation points to a real file and line); the audit verifies **support** (the cited lines actually back the claim). A citation that resolves but does not support its claim is a **defect**, not a pass.
 
-- For every factual paragraph, list item, and table row, open the cited source and confirm it supports the exact claim. Identify whether the claim comes from code, repository documentation, or owner context.
+- For every factual paragraph, list item, and table row in sections 3 to 10, open the cited source span and confirm it supports the exact claim. Identify whether the claim comes from code, repository documentation, or owner context.
+- When a cited line does not support the claim, treat it as a defect: correct the claim to match the source, downgrade it to **Inferred** (state what it rests on), or move it to section 14 as **Unknown**. Never leave a Cited claim that the source does not back.
 - Trace behavior through the code that controls the result, including relevant callers, model/service logic, and success or error paths. A route, Facts record, or nearby call site may not establish the outcome.
 - Read build and deployment configuration job by job. Keep restore, build, test, package, and deploy steps attributed to the job that actually runs them.
 - Do not infer why a file was excluded or a behavior is absent. State that it was not reviewed unless an explicit policy source supports the reason; otherwise record the reason as Unknown.
 - Keep inferences visibly marked and list unresolved questions in section 14. An empty Facts list or a passing Check is not evidence that a behavior does not exist or that the Narrative is factually correct.
 - Never copy secret values into the Narrative. If source contains a credential, redact it in documentation and report the source exposure separately; documentation redaction does not remediate the credential.
+- **Record the audit.** Write the outcome to `<target>/docs/appdoc/verification.md`: a one-line summary (claims re-verified, claims corrected, claims downgraded to Inferred/Unknown) plus each correction as section + claim + what changed; if you audited nothing, say the audit was not performed. The Check reads this file and surfaces it in the Check report's Verification section; a missing file is a noted gap, not a Check failure.
 
 ## Large Targets
 
@@ -75,7 +78,7 @@ Facts for it are generic only (files, dependencies, config keys, secret location
 
 ## What the Check enforces
 
-C1 every Citation resolves to a real file and line. C2 section 10 Citations have lines. C3 all 16 sections exist and have content. C4 gaps are declared in section 14. C5 each paragraph in sections 3 to 10 is cited, Inferred or Unknown. C6 no secret-shaped strings and no `never-mention` terms. C7 unsupported Stacks are named in section 2. The Check does not verify that a cited line supports the claim, that section 1 links work, or that Mermaid syntax is valid; review those yourself. The result is in `check-report.md`, which also holds the Citation register.
+C1 every Citation resolves to a real file and line. C2 section 10 Citations have lines. C3 all 16 sections exist and have content. C4 gaps are declared in section 14. C5 each paragraph in sections 3 to 10 is cited, Inferred or Unknown. C6 no secret-shaped strings and no `never-mention` terms. C7 unsupported Stacks are named in section 2. The Check verifies **resolution and structure** only; it does **not** verify that a cited line supports the claim, that section 1 links work, or that Mermaid syntax is valid. **Support** is the source-to-claim audit (step 4): it is recorded in `docs/appdoc/verification.md` and surfaced in the report's Verification section. Do not present a PASS as an accuracy certification. The result is in `check-report.md`, which also holds the Citation register.
 
 ## Owner context (optional)
 

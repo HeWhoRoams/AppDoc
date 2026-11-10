@@ -194,6 +194,57 @@ class CheckTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(check.run(self.target, self.out), 2)
 
+    # --- Resolution vs support: the report must say the Check verifies resolution, not support,
+    # and carry a Verification section that reflects the (optional) source-to-claim audit record. ---
+
+    def _write_verification(self, text):
+        with open(os.path.join(self.out, check.VERIFICATION), "w") as fh:
+            fh.write(text)
+
+    def test_report_scope_statement_and_verification_section_present(self):
+        code, report, out = self.run_check(build_doc())
+        self.assertEqual(code, 0, report)
+        # honest statement: the Check verifies resolution, not support
+        self.assertIn("**Scope.**", report)
+        self.assertIn("does **not** verify **support**", report)
+        self.assertIn("source-to-claim audit", report)
+        # the Verification section is present and the register is untouched
+        self.assertIn("## Verification", report)
+        self.assertIn("## Citation register", report)
+        self.assertNotIn(SECRET, out)
+
+    def test_verification_absent_notes_gap_but_does_not_fail(self):
+        code, report, _ = self.run_check(build_doc())
+        # no verification.md -> the gap is noted, but the Check still passes (exit 0)
+        self.assertEqual(code, 0, report)
+        self.assertIn("## Verification", report)
+        self.assertIn("not recorded", report)
+        self.assertNotIn("recorded (from `verification.md`)", report)
+
+    def test_verification_record_embedded_when_present(self):
+        self._write_verification(
+            "Source-to-claim audit: 3 claims re-verified; 1 corrected.\n"
+            "- Section 7: corrected a line reference.\n")
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(code, 0, report)
+        self.assertIn("## Verification", report)
+        self.assertIn("recorded (from `verification.md`)", report)
+        self.assertIn("Source-to-claim audit: 3 claims re-verified; 1 corrected.", report)
+        self.assertIn("Section 7: corrected a line reference.", report)
+
+    def test_verification_record_does_not_change_exit_code(self):
+        failing = build_doc().replace("`app/main.py:2` and starts", "`app/nope.py:2` and starts")
+        code, report, _ = self.run_check(failing)
+        self.assertEqual(code, 2, report)  # fails on C1 with no record
+        self.assertIn("## Verification", report)
+        self.assertIn("not recorded", report)
+        # a present record must NOT turn a fail into a pass
+        self._write_verification("Source-to-claim audit: 1 claim corrected.\n")
+        code2, report2, _ = self.run_check(failing)
+        self.assertEqual(code2, 2, report2)
+        self.assertIn("recorded (from `verification.md`)", report2)
+        self.assertIn("Source-to-claim audit: 1 claim corrected.", report2)
+
 
 if __name__ == "__main__":
     unittest.main()
