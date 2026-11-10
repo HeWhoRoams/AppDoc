@@ -78,6 +78,14 @@ Every Target also gets the **generic** extractor: files, dependency manifests, c
 
 There is no score. Each rule fails or is not reported.
 
+**Scope.** The Check verifies resolution and structure — Citations resolve, sections are present and populated, and no secret-shaped text appears. It does **not** verify that the cited line supports the claim; a PASS is not an accuracy certification.
+
+**Source-to-claim audit and Verification.** Before the Check, the workflow re-reads each cited claim against its source and records the result in `docs/appdoc/verification.md` (see `SKILL.md`). The check report surfaces that record, or notes the gap when it is absent. An absent `verification.md` is a noted gap, never a failure — the Check's exit code is unaffected.
+
+## Docs-as-code
+
+To keep the generated docs in lockstep with the code, add the deterministic gate (`ci/appdoc-docs-gate.yml`) to the target repo's `.github/workflows/`. On every push and pull request it regenerates the Facts and diffs them against the committed `docs/appdoc/facts.json` (change detection), then runs the AppDoc Check (C1–C7, consistency). If the code changed or the docs are broken, the gate fails until the docs are refreshed. AppDoc holds no LLM key, so the AI-written Narrative is not regenerated in CI — refresh it in a session. See `docs/docs-as-code.md` for the full process.
+
 ## Configuration
 
 All optional, all in the Target:
@@ -105,7 +113,7 @@ Standard library only. CI runs them on Ubuntu and Windows with Python 3.10 and 3
 - Extraction is regex-based per file. Prefixes applied in another file (blueprint and router mounts, Spring `parent=` beans) are flagged `prefix_unresolved` or missed.
 - SQL assembled from variables is only seen where its leading literal is visible.
 - Hard-coded secrets are found by the AI reading source and by the Check's scan, not recorded as Facts.
-- The Check proves Citations resolve, not that the cited line supports the claim; it does not verify section 1 links or Mermaid syntax.
+- The Check proves Citations resolve, not that the cited line supports the claim; the source-to-claim audit (recorded in `verification.md`) covers the support check. Neither verifies section 1 links or Mermaid syntax.
 - Ownership Facts need full git history; shallow clones get none. Facts from test code carry `test: true` and are left out of the summary lists.
 - Section prose is grounded but not byte-identical between runs; only the Facts file is.
 

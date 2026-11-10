@@ -1,0 +1,80 @@
+# appdoc-docs-gate.yml
+#
+# AppDoc docs-as-code gate. Copy this file into a target application's repo at
+# .github/workflows/appdoc-docs-gate.yml to gate merges and pushes on the
+# committed AppDoc documentation staying in lockstep with the code.
+#
+# Requirements on the target repo
+#   - The generated AppDoc docs are committed under docs/appdoc/
+#     (at minimum facts.json and application-documentation.md).
+#   - Python 3.10+ on the runner. The AppDoc Check uses the standard library
+#     only, so there are no packages to install.
+#
+# What this gate does (all deterministic — AppDoc holds no LLM key here)
+#   1. Change detection. Regenerates the Facts (byte-identical across runs) into
+#      a throwaway directory and diffs them against the committed
+#      docs/appdoc/facts.json. If they differ, the code changed since the docs
+#      were last generated, so the gate fails with a clear instruction.
+#   2. Consistency (C1–C7). Runs the AppDoc Check against the committed docs.
+#      Broken Citations, empty or placeholder sections, secret-shaped text, or
+#      an unlisted unsupported stack fail the gate.
+#
+# What this gate does NOT do
+#   - It does NOT rewrite the Narrative (the AI-written sections). AppDoc
+#     deliberately holds no API key, no provider, and makes no network LLM call,
+#     so the Narrative is written by the AI in a session. When the code changes
+#     meaningfully, re-run the AppDoc skill in a session to refresh the
+#     Narrative, then commit the updated docs/appdoc/ files. This workflow is
+#     the deterministic tripwire that tells you when that refresh is due; the
+#     Narrative refresh itself is the AI-in-the-loop step. See docs/docs-as-code.md.
+#
+# Note on the source-to-claim audit: the gate does not run the source-to-claim
+# audit (an AI accuracy pass) and it does not require docs/appdoc/verification.md.
+# A missing verification.md is a noted gap in the check report, never a failure.
+
+name: AppDoc docs gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  appdoc-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the target application
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check out the AppDoc skill
+        uses: actions/checkout@v4
+        with:
+          repository: HeWhoRoams/AppDoc
+          path: appdoc-skill
+
+      - name: Regenerate the Facts into a throwaway directory
+        working-directory: appdoc-skill
+        run: python -m appdoc extract .. --out "$RUNNER_TEMP/appdoc-regen"
+
+      - name: Detect code changes (Facts diff against the committed facts.json)
+        run: |
+          if [ ! -f docs/appdoc/facts.json ]; then
+            echo "::error::Committed docs/appdoc/facts.json is missing."
+            echo "Generate the AppDoc docs in a session and commit docs/appdoc/ before enabling this gate. See docs/docs-as-code.md in the AppDoc repo."
+            exit 1
+          fi
+          if ! diff -u docs/appdoc/facts.json "$RUNNER_TEMP/appdoc-regen/facts.json"; then
+            echo "::error::Facts changed: the code changed since the docs were last generated."
+            echo "Re-run the AppDoc skill in a session to refresh the docs, then commit the updated docs/appdoc/ files."
+            exit 1
+          fi
+          echo "Facts match the committed facts.json — no undetected code changes."
+
+      - name: Run the AppDoc Check (C1–C7, deterministic consistency gate)
+        working-directory: appdoc-skill
+        run: python -m appdoc check ..
