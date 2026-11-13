@@ -1,0 +1,51 @@
+[
+  {
+    "id": "SP-1",
+    "section": "4",
+    "alt_sections": ["3.1"],
+    "must_cite": "",
+    "must_contain": ["six controllers OR 6 controllers"],
+    "must_not_contain": ["five controllers"],
+    "note": "Verified: six *Controller.java files under src/main/java (OwnerController, PetController, VisitController, CrashController, WelcomeController, VetController). The 2.2 section 4 says 'five controllers' while 3.1 lists six."
+  },
+  {
+    "id": "SP-2",
+    "section": "10.1",
+    "alt_sections": [],
+    "must_cite": "src/main/resources/application.properties:13",
+    "must_contain": ["default_batch_fetch_size"],
+    "note": "Verified: application.properties:13 sets hibernate.default_batch_fetch_size=16. The eager-loading finding (V-12) should name it as the mitigating setting; today it appears only in 16.6."
+  },
+  {
+    "id": "SP-3",
+    "section": "8.2",
+    "alt_sections": ["8.4", "10.1"],
+    "must_cite": "src/main/resources/db/postgres/schema.sql:45",
+    "must_contain": ["LOWER(name)"],
+    "note": "Verified: postgres/schema.sql:45 is CREATE UNIQUE INDEX unique_owner_pet_name ON pets (owner_id, LOWER(name)). The Postgres rule is case-insensitive by expression; the doc must say so."
+  },
+  {
+    "id": "SP-4",
+    "section": "7.1",
+    "alt_sections": ["7.2", "10.1"],
+    "must_cite": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:80",
+    "must_contain": ["flash", "not rendered OR not shown OR not displayed OR not visible OR never shown OR is lost"],
+    "note": "Verified: OwnerController.java:80-81 (create) and :157-158 (update) call addFlashAttribute('error', ...) and then return the form view without redirecting. The flash survives to the next request instead of the current page, and createOrUpdateOwnerForm.html has no ${error} block (only ownerDetails.html:13-14 renders it). The plan's ranges 79-82 and 155-158 include the enclosing if and are off by one for the update case."
+  },
+  {
+    "id": "SP-5",
+    "section": "10.1",
+    "alt_sections": ["10.2", "16.6"],
+    "must_cite": "src/main/resources/application.properties:21",
+    "must_contain": ["Inferred", "/health"],
+    "note": "Verified: application.properties:21 is management.endpoints.web.exposure.include=*. With actuator on the classpath the endpoint set (at least /actuator/health) can be listed as Inferred from the dependency, not left Unknown."
+  },
+  {
+    "id": "SP-6",
+    "section": "11",
+    "alt_sections": ["4.1"],
+    "must_cite": "src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java",
+    "must_contain": ["PetClinicConcurrencyTests", "PostgresIntegrationTests"],
+    "note": "Verified: both classes exist under src/test/java/org/springframework/samples/petclinic/ (PetClinicConcurrencyTests.java, PostgresIntegrationTests.java; MySqlIntegrationTests.java is the MySQL dialect test)."
+  }
+]

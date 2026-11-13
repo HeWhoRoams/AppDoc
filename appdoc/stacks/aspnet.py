@@ -677,4 +677,7 @@ class AspNetStack(Stack):
         return Fact.make("entry_point", STACK_ID, path, ctx.line(m.start()) if m else 1, "/" + path, **detail)
 
 
+capabilities = frozenset(
+    "auth_check config_key connection data_access entry_point external_call message smell".split())
+
 STACK = AspNetStack()

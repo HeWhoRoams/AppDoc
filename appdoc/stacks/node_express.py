@@ -8,9 +8,12 @@ and stripped of user info.
 
 from __future__ import annotations
 
+import json
+import os
 import re
 from typing import Iterable
 
+from .. import scan
 from ..facts import Fact
 from ..secrets import find_secret_shapes, is_secret_key
 from .base import Stack, line_of, strip_comments
@@ -33,16 +36,62 @@ class NodeExpressStack(Stack):
     extensions = frozenset({".js", ".ts", ".mjs", ".cjs", ".jsx", ".tsx"})
 
     def detect(self, files: list[str]) -> list[str]:
+        """Path-only check, used when the Target root is unknown. ``detect_in`` is the real test."""
         pkgs = sorted(f for f in files if f.rsplit("/", 1)[-1] == "package.json")
-        if pkgs and any(f.lower().endswith(_CODE_EXT) for f in files):
+        if pkgs and any(_is_source(f) for f in files):
             return pkgs
         return []
+
+    def detect_in(self, files: list[str], root: str) -> list[str]:
+        """package.json files that declare ``express``, when a non-test source file also uses Express."""
+        pkgs = sorted(f for f in files if f.rsplit("/", 1)[-1] == "package.json")
+        marked = [p for p in pkgs if _declares_express(root, p)]
+        if not marked:
+            return []
+        return marked if any(_uses_express(root, f) for f in files if _is_source(f)) else []
 
     def extract(self, path: str, text: str) -> Iterable[Fact]:
         return _extract(path, text)
 
 
 STACK = NodeExpressStack()
+
+_TEST_DIRS = {"test", "tests", "__tests__", "spec", "specs", "testing", "e2e"}
+_TEST_FILE = re.compile(r"(\.(test|spec)\.[cm]?[jt]sx?$|^(playwright|vitest|jest|cypress)\.config\.)")
+_EXPRESS_CODE = re.compile(
+    r"""require\(\s*["']express["']\s*\)|\bfrom\s+["']express["']|\bexpress\s*\(\s*\)|\bRouter\s*\(""")
+_MAX_DETECT_BYTES = 1024 * 1024
+
+
+def _is_source(path: str) -> bool:
+    parts = path.split("/")
+    return (path.lower().endswith(_CODE_EXT) and "node_modules" not in parts
+            and not any(p.lower() in _TEST_DIRS for p in parts[:-1]) and not _TEST_FILE.search(parts[-1]))
+
+
+def _read(root: str, rel: str) -> str:
+    full = os.path.join(root, rel)
+    try:
+        if os.path.getsize(full) > _MAX_DETECT_BYTES:
+            return ""
+        return scan.read_text(root, rel)[0]
+    except OSError:
+        return ""
+
+
+def _declares_express(root: str, pkg: str) -> bool:
+    try:
+        doc = json.loads(_read(root, pkg))
+    except ValueError:
+        return False
+    return isinstance(doc, dict) and any(
+        isinstance(doc.get(k), dict) and "express" in doc[k]
+        for k in ("dependencies", "devDependencies", "optionalDependencies"))
+
+
+def _uses_express(root: str, rel: str) -> bool:
+    text = _read(root, rel)
+    return ("express" in text or "Router" in text) and bool(_EXPRESS_CODE.search(strip_comments(text, "c")))
 
 
 # ---------------------------------------------------------------- lexical helpers
@@ -203,6 +252,7 @@ def _extract(path: str, text: str) -> Iterable[Fact]:
     out.extend(_sql(path, t))
     out.extend(_connections(path, t))
     out.extend(_config(path, t))
+    out.extend(_jobs(path, t))
     out.extend(_external(path, t))
     out.extend(_messages(path, t))
     return list(dict.fromkeys(out))
@@ -443,7 +493,46 @@ def _config(path, t):
 
 
 def _cfg(path, t, off, key):
-    return Fact.make("config_key", STACK_ID, path, line_of(t, off), key, source="code", secret_location=is_secret_key(key))
+    return Fact.make("config_key", STACK_ID, path, line_of(t, off), key, source="code",
+                     secret_location=is_secret_key(key), use="read")
+
+
+# --- scheduled jobs ----------------------------------------------------
+
+_JOB_CALLS = re.compile(
+    r"(?<![\w$.])(?:(?:\w*[Cc]ron\w*)\s*\.\s*schedule|schedule\s*\.\s*scheduleJob|new\s+CronJob|CronJob\s*\.\s*from)\s*\(")
+
+
+def _jobs(path, t):
+    for m in _JOB_CALLS.finditer(t):
+        args, _ = _call_args(t, m.end() - 1)
+        parts = _split_args(args)
+        is_cronjob = "CronJob" in m.group(0)
+        obj = parts[0] if parts and parts[0].startswith("{") else ""
+        if obj:
+            sm = re.search(r"\bcronTime\s*:\s*", obj)
+            rest = obj[sm.end():] if sm else ""
+            vm = re.match(r"[A-Za-z_$][\w$]*", rest)
+            spec = _leading_string(rest) if rest[:1] in "\"'`" else (
+                _resolve_string(t, vm.group(0), m.start()) if vm else None)
+            hm = re.search(r"\bonTick\s*:\s*([\w$.]+)\s*[,}\n]", obj)
+            handler_arg = hm.group(1) if hm else "inline"
+            start = re.search(r"\bstart\s*:\s*(true|false)\b", obj)
+            enabled = None if not start else start.group(1) == "true"
+        else:
+            spec = _resolve_string(t, parts[0], m.start()) if parts else None
+            handler_arg = parts[1] if len(parts) > 1 else ""
+            if is_cronjob:
+                flag = parts[3] if len(parts) > 3 else ""
+                enabled = {"true": True, "false": False}.get(flag)
+            else:
+                opts = re.search(r"\bscheduled\s*:\s*(true|false)\b", " ".join(parts[2:]))
+                enabled = (opts.group(1) == "true") if opts else True
+        if not spec:
+            continue
+        handler = handler_arg if re.fullmatch(r"[\w$.]+", handler_arg) else "inline"
+        yield Fact.make("entry_point", STACK_ID, path, line_of(t, m.start()), handler, type="job", handler=handler,
+                        schedule=spec[:120], enabled=enabled)
 
 
 # --- external calls ----------------------------------------------------
@@ -538,3 +627,7 @@ def _messages(path, t):
             f = _msg(path, t, m.start(), s, _ctx(s))
             if f:
                 yield f
+
+
+capabilities = frozenset(
+    "auth_check config_key connection data_access entry_point external_call message smell".split())

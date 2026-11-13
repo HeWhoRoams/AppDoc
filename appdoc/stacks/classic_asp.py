@@ -467,4 +467,7 @@ class ClassicAsp(Stack):
         return facts
 
 
+capabilities = frozenset(
+    "auth_check connection data_access dependency entry_point external_call message".split())
+
 STACK = ClassicAsp()

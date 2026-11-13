@@ -1,0 +1,75 @@
+[
+  {
+    "id": "ES-1",
+    "section": "4",
+    "alt_sections": [],
+    "must_cite": "src/Ordering.API/Extensions/Extensions.cs:53-60",
+    "must_contain": ["F-18", "section 7.5"],
+    "note": "F-18 is event-driven order progression, which is workflow 7.5 in the 2.2 output (the 2.1 error said 7.3). Present in the 2.2 baseline per the comparison report."
+  },
+  {
+    "id": "ES-2",
+    "section": "10.1",
+    "alt_sections": ["7.5", "7.8", "10.2", "15"],
+    "must_cite": "src/Webhooks.API/IntegrationEvents/OrderStatusChangedToPaidIntegrationEventHandler.cs:6-12",
+    "must_contain": ["log OR logger", "copy OR wrong OR mismatch OR incorrect OR mislabel OR misleading"],
+    "note": "Verified: OrderStatusChangedToPaidIntegrationEventHandler.cs:6 takes ILogger<OrderStatusChangedToShippedIntegrationEventHandler> and :12 logs 'Received OrderStatusChangedToShippedIntegrationEvent' for a Paid event (copy-paste from the Shipped handler). Also answers Q-17: the handler mirrors the shipped one, with those two defects."
+  },
+  {
+    "id": "ES-3",
+    "section": "6",
+    "alt_sections": [],
+    "must_cite": "src/Identity.API/Views/Consent/Index.cshtml",
+    "must_contain": ["consent", "device", "grants"],
+    "note": "Verified views: Views/Consent/Index.cshtml, Views/Device/{Success,UserCodeCapture,UserCodeConfirmation}.cshtml, Views/Grants/Index.cshtml, Views/Diagnostics/Index.cshtml. 2.2 section 6 has only the login and logged-out views (UI-10, UI-11)."
+  },
+  {
+    "id": "ES-4",
+    "section": "4",
+    "alt_sections": ["4.1"],
+    "must_cite": "src/Identity.API/Quickstart/Consent/ConsentController.cs",
+    "must_contain": ["consent"],
+    "note": "Verified controllers: Quickstart/{Account,Consent,Device,Diagnostics,Grants,Home}/*Controller.cs plus ExternalController.cs. Section 4 should carry the consent, device and grants flows as features."
+  },
+  {
+    "id": "ES-5",
+    "section": "6",
+    "alt_sections": [],
+    "must_cite": "src/ClientApp/Views/CatalogView.xaml",
+    "must_contain": ["ClientApp"],
+    "note": "Verified: src/ClientApp/Views has Basket, CatalogItem, Catalog, Checkout, Login, Map, OrderDetail, Profile and Settings XAML pages plus AppShell.xaml. 2.2 section 6 has no ClientApp row (UI-15 is HybridApp)."
+  },
+  {
+    "id": "ES-6",
+    "section": "4",
+    "alt_sections": ["4.1"],
+    "must_cite": "src/ClientApp/AppShell.xaml",
+    "must_contain": ["ClientApp", "Views"],
+    "note": "Verified: AppShell.xaml exists. 2.2 F-22 says 'Not reviewed beyond folder layout'; the key wants the ClientApp pages described."
+  },
+  {
+    "id": "ES-7",
+    "section": "16.6",
+    "alt_sections": ["10.1", "10.2", "15"],
+    "must_cite": "src/Identity.API/appsettings.json:10-11",
+    "must_contain": ["TokenLifetimeMinutes", "unused OR not read OR never read OR no reader OR no code reads OR dead"],
+    "note": "Q-15 answered from source: git grep finds TokenLifetimeMinutes and PermanentTokenLifetimeDays only in src/Identity.API/appsettings.json:10-11; no code reads them. Token lifetimes are hard-coded in Configuration/Config.cs:73-74, 109-110, 141-142 (60*60*2). Section 14 is not an allowed place: a still-open Q-15 is the defect."
+  },
+  {
+    "id": "ES-8",
+    "section": "11",
+    "alt_sections": ["16.5", "10.2", "15"],
+    "must_cite": ".github/dependabot.yml:7",
+    "must_contain": ["npm", "nuget"],
+    "note": "Q-16 answered from source: .github/dependabot.yml:7 (nuget, weekly, limit 15, grouped) and :62 (npm, weekly, limit 5, dev-dependency group)."
+  },
+  {
+    "id": "ES-9",
+    "section": "verification",
+    "alt_sections": [],
+    "must_cite": "",
+    "must_contain": [],
+    "status": "retired",
+    "note": "E-17 re-run command: the 2.1 evidence-register format is gone (2.3 generates Appendix B from the register, anchors proven by C11). Retired; the scorer skips it."
+  }
+]

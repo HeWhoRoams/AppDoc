@@ -1,0 +1,26 @@
+[
+  {
+    "id": "FL-1",
+    "section": "7.3",
+    "alt_sections": ["4", "6"],
+    "must_cite": "project/static/main.js:16-20",
+    "must_contain": ["status === 1", "reload"],
+    "note": "Verified: main.js:16-17 removes the node only when result.status === 1; main.js:20 calls location.reload() unconditionally. The 2.1 key called this 'section 7.5 step 4'; in 2.2 output the delete workflow is section 7.3."
+  },
+  {
+    "id": "FL-2",
+    "section": "10.1",
+    "alt_sections": [],
+    "must_cite": "project/app.py:80-83",
+    "must_contain": ["enumerat"],
+    "note": "Verified: app.py:80-81 sets 'Invalid username', app.py:82-83 sets 'Invalid password', so the two messages let a caller enumerate valid usernames. Must be its own 10.1 finding, not only the V-5 timing row."
+  },
+  {
+    "id": "FL-3",
+    "section": "13",
+    "alt_sections": [],
+    "must_cite": "project/templates/index.html:74",
+    "must_contain": ["safe"],
+    "note": "Verified: index.html:74 and search.html:55 render entry.text|safe. The glossary row should define the filter and cite one of the use sites."
+  }
+]

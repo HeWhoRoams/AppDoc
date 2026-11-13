@@ -1,0 +1,77 @@
+{
+  "summary": {
+    "Present": 1,
+    "Partial": 6,
+    "Absent": 1,
+    "Retired": 1,
+    "scorable": 8
+  },
+  "items": [
+    {
+      "id": "ES-1",
+      "section": "4",
+      "status": "Present",
+      "found_in": "4",
+      "detail": ""
+    },
+    {
+      "id": "ES-2",
+      "section": "10.1",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "terms found elsewhere, no covering citation"
+    },
+    {
+      "id": "ES-3",
+      "section": "6",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "terms found elsewhere, no covering citation"
+    },
+    {
+      "id": "ES-4",
+      "section": "4",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "citation found elsewhere, terms found elsewhere"
+    },
+    {
+      "id": "ES-5",
+      "section": "6",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "terms found elsewhere, no covering citation"
+    },
+    {
+      "id": "ES-6",
+      "section": "4",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "terms found elsewhere, no covering citation"
+    },
+    {
+      "id": "ES-7",
+      "section": "16.6",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "citation found elsewhere, terms found elsewhere"
+    },
+    {
+      "id": "ES-8",
+      "section": "11",
+      "status": "Absent",
+      "found_in": null,
+      "detail": "terms absent: nuget, no covering citation"
+    },
+    {
+      "id": "ES-9",
+      "section": "verification",
+      "status": "Retired",
+      "found_in": null,
+      "detail": ""
+    }
+  ],
+  "repo": "eShop",
+  "document": "C:\\Github\\appdoc-test\\eShop\\docs\\appdoc-2.2\\application-documentation.md",
+  "date": "2026-11-11"
+}

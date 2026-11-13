@@ -235,6 +235,7 @@ def _extract(path: str, text: str) -> Iterable[Fact]:
     out.extend(_sql(path, t))
     out.extend(_connections(path, t))
     out.extend(_config(path, t))
+    out.extend(_jobs(path, t))
     out.extend(_external(path, t))
     out.extend(_messages(path, t))
     return out
@@ -372,17 +373,228 @@ def _connections(path, t):
                         type="database", secret_location=bool(secret))
 
 
+def _split_pos(args: str):
+    """Top-level comma split of an argument list: [(offset, text)] with string-aware nesting."""
+    out, depth, i, start = [], 0, 0, 0
+    while i < len(args):
+        c = args[i]
+        if c in "\"'":
+            r = _parse_string(args, i)
+            if r and r[1]:
+                i = r[1]
+                continue
+        elif c in "([{":
+            depth += 1
+        elif c in ")]}":
+            depth -= 1
+        elif c == "," and depth == 0:
+            out.append((start, args[start:i]))
+            start = i + 1
+        i += 1
+    if args[start:].strip():
+        out.append((start, args[start:]))
+    return out
+
+
+def _cfg(path, t, off, key, use, via):
+    return Fact.make("config_key", STACK_ID, path, line_of(t, off), key, source="code",
+                     secret_location=is_secret_key(key), use=use, via=via)
+
+
+_UPPER_DEF = re.compile(r"(?m)^([A-Z][A-Z0-9_]*)[ \t]*(?::[^=\n]+)?=(?!=)")
+_CFG_ASSIGN = re.compile(r"\s*\]\s*(?:\|=|\+=|=(?!=))")
+_CFG_FROM_OBJECT = re.compile(r"(?<![\w])(?:[A-Za-z_][\w.]*)\.config\.from_object\s*\(")
+
+
+def _class_attr_defs(t, name, seen=None):
+    """(offset, NAME) of UPPER_CASE class attributes of ``name`` and of base classes defined in the same file."""
+    seen = seen if seen is not None else set()
+    if name in seen or len(seen) > 4:
+        return
+    seen.add(name)
+    m = re.search(rf"(?m)^class\s+{re.escape(name)}\b\s*(?:\(([^)]*)\))?\s*:", t)
+    if not m:
+        return
+    nxt = re.search(r"(?m)^\S", t[m.end():])
+    end = m.end() + nxt.start() if nxt else len(t)
+    body = t[m.end():end]
+    first = re.search(r"(?m)^([ \t]+)\S", body)
+    if first:
+        rx = re.compile(rf"(?m)^{re.escape(first.group(1))}([A-Z][A-Z0-9_]*)[ \t]*(?::[^=\n]+)?=(?!=)")
+        for a in rx.finditer(body):
+            yield m.end() + a.start(1), a.group(1)
+    for base in re.findall(r"[\w.]+", m.group(1) or ""):
+        yield from _class_attr_defs(t, base.rsplit(".", 1)[-1], seen)
+
+
+def _from_object_defs(path, t, arg):
+    arg = arg.strip()
+    this_mod = re.sub(r"(?:/__init__)?\.py$", "", path).replace("/", ".")
+
+    def module_level():
+        for a in _UPPER_DEF.finditer(t):
+            yield a.start(1), a.group(1)
+
+    lit = _leading_string(arg) if arg[:1] in "\"'" else None
+    if arg == "__name__":
+        yield from module_level()
+    elif lit is not None:
+        if this_mod == lit or this_mod.endswith("." + lit):
+            yield from module_level()
+        else:
+            yield from _class_attr_defs(t, lit.rsplit(".", 1)[-1])
+    elif re.fullmatch(r"[A-Za-z_][\w.]*", arg):
+        yield from _class_attr_defs(t, arg.rsplit(".", 1)[-1])
+
+
 def _config(path, t):
-    pats = (
-        r"\b(?:current_app|app)\.config(?:\s*\[\s*|\.get\(\s*)[\"'](\w[\w.\-]*)[\"']",
-        r"\b(?:os\.)?environ(?:\s*\[\s*|\.get\(\s*)[\"'](\w+)[\"']",
-        r"\bos\.getenv\(\s*[\"'](\w+)[\"']",
-        r"(?<![\w.])getenv\(\s*[\"'](\w+)[\"']",
-    )
-    for p in pats:
+    # Definitions: values loaded with config.from_object() and writes through app.config.
+    for m in _CFG_FROM_OBJECT.finditer(t):
+        args, _ = _call_args(t, m.end() - 1)
+        for off, key in _from_object_defs(path, t, _first_arg(args)):
+            yield _cfg(path, t, off, key, "define", "from_object")
+    for m in re.finditer(r"\b(?:current_app|app)\.config\s*\.\s*(update|from_mapping|setdefault)\s*\(", t):
+        args, _ = _call_args(t, m.end() - 1)
+        base = m.end()
+        for off, part in _split_pos(args):
+            km = re.match(r"\s*([A-Za-z_]\w*)\s*=(?!=)", part)
+            if km:
+                yield _cfg(path, t, base + off + km.start(1), km.group(1), "define", m.group(1))
+                continue
+            stripped = part.lstrip()
+            lead = base + off + len(part) - len(stripped)
+            if m.group(1) == "setdefault":
+                key = _leading_string(stripped)
+                if key and re.fullmatch(r"\w[\w.\-]*", key) and off == 0:
+                    yield _cfg(path, t, lead, key, "define", "setdefault")
+            elif stripped.startswith("{"):
+                close = stripped.rfind("}")
+                for o2, p2 in _split_pos(stripped[1:close if close > 0 else len(stripped)]):
+                    dm = re.match(r"\s*[\"'](\w[\w.\-]*)[\"']\s*:", p2)
+                    if dm:
+                        yield _cfg(path, t, lead + 1 + o2 + dm.start(1), dm.group(1), "define", m.group(1))
+            elif stripped.startswith("dict("):
+                inner, _end = _call_args(stripped, 4)
+                for o2, p2 in _split_pos(inner):
+                    dm = re.match(r"\s*([A-Za-z_]\w*)\s*=(?!=)", p2)
+                    if dm:
+                        yield _cfg(path, t, lead + 5 + o2 + dm.start(1), dm.group(1), "define", m.group(1))
+    # app.config["X"] / .get("X"): a definition when assigned to, otherwise a read.
+    for m in re.finditer(r"\b(?:current_app|app)\.config(?:\s*\[\s*|\.get\(\s*)[\"'](\w[\w.\-]*)[\"']", t):
+        is_def = "[" in m.group(0) and _CFG_ASSIGN.match(t, m.end())
+        yield _cfg(path, t, m.start(), m.group(1), "define" if is_def else "read", "assign" if is_def else "config")
+    for m in re.finditer(r"\b(?:os\.)?environ\s*\[\s*[\"'](\w+)[\"']", t):
+        is_def = _CFG_ASSIGN.match(t, m.end())
+        yield _cfg(path, t, m.start(), m.group(1), "define" if is_def else "read", "environ")
+    for p in (r"\b(?:os\.)?environ\.get\(\s*[\"'](\w+)[\"']",
+              r"\bos\.getenv\(\s*[\"'](\w+)[\"']",
+              r"(?<![\w.])getenv\(\s*[\"'](\w+)[\"']"):
         for m in re.finditer(p, t):
-            yield Fact.make("config_key", STACK_ID, path, line_of(t, m.start()), m.group(1),
-                            source="code", secret_location=is_secret_key(m.group(1)))
+            yield _cfg(path, t, m.start(), m.group(1), "read", "environ")
+
+
+# --- scheduled jobs ----------------------------------------------------
+
+_APS_SKIP = {"id", "name", "args", "kwargs", "replace_existing", "misfire_grace_time", "coalesce", "max_instances",
+             "next_run_time", "jobstore", "executor", "func", "trigger"}
+
+
+def _kwargs_and_pos(args: str):
+    kw, pos = {}, []
+    for _, part in _split_pos(args):
+        part = part.strip()
+        km = re.match(r"([A-Za-z_]\w*)\s*=(?!=)\s*(.*)$", part, re.S)
+        if km:
+            kw[km.group(1)] = " ".join(km.group(2).split())
+        elif part:
+            pos.append(" ".join(part.split()))
+    return kw, pos
+
+
+def _job_fact(path, t, off, name, handler, schedule, scheduler):
+    return Fact.make("entry_point", STACK_ID, path, line_of(t, off), name, type="job", handler=handler,
+                     schedule=schedule, enabled=None, scheduler=scheduler)
+
+
+def _aps_job(path, t, off, kw, pos, func, trig_idx, scheduler="apscheduler"):
+    trig = kw.get("trigger") or (pos[trig_idx] if len(pos) > trig_idx else None)
+    if not trig:
+        return None
+    lit = _leading_string(trig)
+    if lit is not None and lit.lower() in ("cron", "interval"):
+        rest = ", ".join(f"{k}={v}" for k, v in kw.items() if k not in _APS_SKIP)
+        schedule = (lit.lower() + (" " + rest if rest else ""))[:120]
+    elif re.match(r"(?:\w+\.)*(?:CronTrigger|IntervalTrigger)\b", trig):
+        schedule = trig[:120]
+    else:
+        return None
+    jid = _leading_string(kw["id"]) if "id" in kw else None
+    handler = func.split("(")[0].strip()[:80]
+    return _job_fact(path, t, off, jid or handler or "job", handler, schedule, scheduler)
+
+
+def _matching_brace(t, i):
+    depth = 0
+    while i < len(t):
+        c = t[i]
+        if c in "\"'":
+            r = _parse_string(t, i)
+            if r and r[1]:
+                i = r[1]
+                continue
+        elif c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                return i
+        i += 1
+    return len(t)
+
+
+def _jobs(path, t):
+    has_aps = bool(re.search(r"(?i)apscheduler", t))
+    for m in re.finditer(r"(?<![\w])([\w.]+)\s*\.\s*add_job\s*\(", t):
+        if not (has_aps or re.search(r"(?i)sched", m.group(1))):
+            continue
+        args, _ = _call_args(t, m.end() - 1)
+        kw, pos = _kwargs_and_pos(args)
+        func = kw.get("func") or (pos[0] if pos else "")
+        f = _aps_job(path, t, m.start(), kw, pos, func, 1)
+        if f:
+            yield f
+    for m in re.finditer(r"(?m)^[ \t]*@([\w.]*sched\w*)\s*\.\s*(?:scheduled_job|task)\s*\(", t, re.I):
+        args, end = _call_args(t, m.end() - 1)
+        kw, pos = _kwargs_and_pos(args)
+        kw.setdefault("trigger", pos[0] if pos else "")
+        hm = re.compile(r"\bdef\s+(\w+)").search(t, end)
+        f = _aps_job(path, t, m.start(), kw, [], hm.group(1) if hm else "", 0)
+        if f:
+            yield f
+    for m in re.finditer(r"\b(?:beat_schedule|CELERYBEAT_SCHEDULE)\b[\"']?\s*(?:=|:)\s*\{", t):
+        open_i = m.end() - 1
+        body = t[open_i + 1:_matching_brace(t, open_i)]
+        for off, ent in _split_pos(body):
+            km = re.match(r"\s*[\"']([^\"'\n]+)[\"']\s*:\s*(.*)$", ent, re.S)
+            if not km:
+                continue
+            val = km.group(2).strip()
+            fields = {}
+            if val.startswith("{"):
+                for _, p2 in _split_pos(val[1:val.rfind("}")]):
+                    fm = re.match(r"\s*[\"'](\w+)[\"']\s*:\s*(.*)$", p2, re.S)
+                    if fm:
+                        fields[fm.group(1)] = " ".join(fm.group(2).split())
+            task = _leading_string(fields.get("task", "")) or fields.get("task", "")
+            key_off = open_i + 1 + off + len(ent) - len(ent.lstrip())
+            yield _job_fact(path, t, key_off, km.group(1), task, fields.get("schedule", "")[:120] or None, "celery")
+    for m in re.finditer(r"\.\s*add_periodic_task\s*\(", t):
+        args, _ = _call_args(t, m.end() - 1)
+        kw, pos = _kwargs_and_pos(args)
+        sig = kw.get("sig") or (pos[1] if len(pos) > 1 else "")
+        name = _leading_string(kw["name"]) if "name" in kw else None
+        yield _job_fact(path, t, m.start(), name or sig.split("(")[0] or "periodic task", sig.split("(")[0][:80],
+                        (pos[0] if pos else kw.get("run_every", ""))[:120] or None, "celery")
 
 
 # --- external calls ----------------------------------------------------
@@ -472,3 +684,7 @@ def _messages(path, t):
             f = _msg(path, t, m.start(), s or "", _ctx(s or ""))
             if f:
                 yield f
+
+
+capabilities = frozenset(
+    "auth_check config_key connection data_access entry_point external_call message smell".split())

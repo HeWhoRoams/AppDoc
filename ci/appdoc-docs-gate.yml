@@ -11,13 +11,22 @@
 #     only, so there are no packages to install.
 #
 # What this gate does (all deterministic — AppDoc holds no LLM key here)
-#   1. Change detection. Regenerates the Facts (byte-identical across runs) into
+#   1. Upgrade detection. If the committed facts.json has a different Facts
+#      schema than the pinned AppDoc writes, AppDoc was upgraded: the gate says
+#      so (re-extract and refresh the docs) instead of blaming the code.
+#   2. Change detection. Regenerates the Facts (byte-identical across runs) into
 #      a throwaway directory and diffs them against the committed
 #      docs/appdoc/facts.json. If they differ, the code changed since the docs
 #      were last generated, so the gate fails with a clear instruction.
-#   2. Consistency (C1–C7). Runs the AppDoc Check against the committed docs.
-#      Broken Citations, empty or placeholder sections, secret-shaped text, or
-#      an unlisted unsupported stack fail the gate.
+#   3. Consistency (C1–C12). Runs the AppDoc Check with --require-audit against
+#      the committed docs. Broken Citations or references, tables that do not
+#      match the template, stale generated blocks, secret-shaped text, a finding
+#      candidate that is neither cited nor dismissed, or an Evidence Register row
+#      whose anchor is no longer in its cited lines fail the gate. The last one
+#      names exactly which audited claims went stale after a code change.
+#
+# Pin AppDoc: set APPDOC_REF below to the release tag your docs were written with.
+# Upgrading AppDoc is then a deliberate change (bump the tag, re-extract, refresh).
 #
 # What this gate does NOT do
 #   - It does NOT rewrite the Narrative (the AI-written sections). AppDoc
@@ -28,9 +37,10 @@
 #     the deterministic tripwire that tells you when that refresh is due; the
 #     Narrative refresh itself is the AI-in-the-loop step. See docs/docs-as-code.md.
 #
-# Note on the source-to-claim audit: the gate does not run the source-to-claim
-# audit (an AI accuracy pass) and it does not require docs/appdoc/verification.md.
-# A missing verification.md is a noted gap in the check report, never a failure.
+# Note on the source-to-claim audit: the gate does not run the audit (an AI
+# accuracy pass). --require-audit fails the gate when docs/appdoc/evidence.jsonl
+# declares the audit not performed. To also fail on entry points the document
+# never cites, add --strict to the check step (optional).
 
 name: AppDoc docs gate
 
@@ -38,6 +48,9 @@ on:
   push:
     branches: [main]
   pull_request:
+
+env:
+  APPDOC_REF: v2.4.0
 
 jobs:
   appdoc-gate:
@@ -55,6 +68,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: HeWhoRoams/AppDoc
+          ref: ${{ env.APPDOC_REF }}
           path: appdoc-skill
 
       - name: Regenerate the Facts into a throwaway directory
@@ -68,6 +82,13 @@ jobs:
             echo "Generate the AppDoc docs in a session and commit docs/appdoc/ before enabling this gate. See docs/docs-as-code.md in the AppDoc repo."
             exit 1
           fi
+          committed=$(python -c "import json;print(json.load(open('docs/appdoc/facts.json')).get('schema'))")
+          current=$(python -c "import json,os;print(json.load(open(os.path.join(os.environ['RUNNER_TEMP'],'appdoc-regen','facts.json'))).get('schema'))")
+          if [ "$committed" != "$current" ]; then
+            echo "::error::AppDoc upgraded: committed Facts are $committed, AppDoc $APPDOC_REF writes $current."
+            echo "This is not a code change. Re-extract, refresh the docs to the new template (see the AppDoc CHANGELOG upgrade notes), and commit docs/appdoc/."
+            exit 1
+          fi
           if ! diff -u docs/appdoc/facts.json "$RUNNER_TEMP/appdoc-regen/facts.json"; then
             echo "::error::Facts changed: the code changed since the docs were last generated."
             echo "Re-run the AppDoc skill in a session to refresh the docs, then commit the updated docs/appdoc/ files."
@@ -75,6 +96,6 @@ jobs:
           fi
           echo "Facts match the committed facts.json — no undetected code changes."
 
-      - name: Run the AppDoc Check (C1–C7, deterministic consistency gate)
+      - name: Run the AppDoc Check (C1–C12, deterministic consistency gate)
         working-directory: appdoc-skill
-        run: python -m appdoc check ..
+        run: python -m appdoc check .. --require-audit

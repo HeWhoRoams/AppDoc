@@ -1,8 +1,10 @@
+import json
 import os
 import re
 import tempfile
 import unittest
 
+from appdoc import register
 from appdoc.render import page
 from appdoc.render.markdown import render_markdown as md
 
@@ -119,6 +121,96 @@ class PageTests(unittest.TestCase):
         self.write("application-documentation.md", "# T\ntext\n")
         self.assertEqual(page.run(self.target, self.out, None), 0)
         self.assertNotIn("<script", self.html())
+
+    def test_appendix_block_renders_once(self):
+        title = register.APPENDIX_TITLE
+        self.write("application-documentation.md", "# T\n## 1. Index\ntext\n")
+        self.assertEqual(page.run(self.target, self.out, None), 0)
+        h = self.html()
+        self.assertNotIn(title, h)
+        self.assertNotIn("Audit not performed", h)
+        evidence = '{"type": "audit", "performed": true, "auditor": "independent", "scope": "s"}\n' \
+                   '{"id": "E-1", "ref": "1", "claim": "a|b", "result": "Supported", "cites": ["a.py:1"], ' \
+                   '"anchor": "x = 1", "limitation": "none"}\n'
+        reg = register.parse(evidence)
+        self.write("application-documentation.md",
+                   f"# T\n## 1. Index\ntext\n## {title}\n\n{register.appendix_markdown(reg, {})}\n")
+        self.assertEqual(page.run(self.target, self.out, None), 0)
+        h = self.html()
+        self.assertEqual(h.count(f'<h2 id="appendix-a-evidence-register-and-verification">{title}</h2>'), 1)
+        self.assertEqual(h.count("E-1"), 1)  # the register row only (no root, so no verification bullet)
+        self.assertIn('href="#appendix-a-evidence-register-and-verification"', h)
+        self.assertIn('href="#a1-audit-state"', h)
+        self.assertIn("<td>a|b</td>", h)
+        self.assertNotIn("audit-banner", h.split("</style>", 1)[1])
+        self.assertLess(h.index("1. Index"), h.index(title))
+
+    def test_audit_not_performed_banner(self):
+        title = register.APPENDIX_TITLE
+        reg = register.parse('{"type": "audit", "performed": false, "scope": "time-boxed run"}\n')
+        self.write("application-documentation.md",
+                   f"# T\n## 1. Index\ntext\n## {title}\n\n{register.appendix_markdown(reg, {})}\n")
+        self.assertEqual(page.run(self.target, self.out, None), 0)
+        h = self.html()
+        body = h.split("</style>", 1)[1]
+        self.assertIn('<blockquote class="audit-banner"><p><strong>Audit not performed.</strong>', body)
+        self.assertIn("time-boxed run", h)
+
+    def test_plain_blockquote_has_no_banner_class(self):
+        self.write("application-documentation.md", "# T\n> a note\n")
+        self.assertEqual(page.run(self.target, self.out, None), 0)
+        self.assertNotIn("audit-banner", self.html().split("</style>", 1)[1])
+
+    def test_old_document_without_appendix_has_no_appendix_even_with_register(self):
+        self.write("application-documentation.md", "# T\n## 1. Index\ntext\n")
+        self.write("evidence.jsonl", '{"type": "audit", "performed": false, "scope": "x"}\n')
+        self.assertEqual(page.run(self.target, self.out, None), 0)
+        h = self.html()
+        self.assertNotIn("Appendix A", h)
+        self.assertNotIn("Audit not performed", h)
+
+    def test_render_refuses_stale_generated_block(self):
+        self.write("application-documentation.md",
+                   "# T\n## 2. Coverage\n### 2.1 What was inspected\n"
+                   "<!-- appdoc:generated scan-coverage -->\nstale content\n<!-- /appdoc:generated scan-coverage -->\n")
+        self.write("facts.json", '{"stacks": [], "facts": []}')
+        self.assertEqual(page.run(self.target, self.out, None), 2)
+
+    def test_render_allows_fresh_generated_block(self):
+        from appdoc import fill
+        facts = {"stacks": [], "facts": []}
+        body = fill.render_block("scan-coverage", facts, {"out_dir": self.out, "target": self.target})
+        self.write("application-documentation.md",
+                   f"# T\n## 2. Coverage\n### 2.1 What was inspected\n"
+                   f"<!-- appdoc:generated scan-coverage -->\n{body}\n<!-- /appdoc:generated scan-coverage -->\n")
+        self.write("facts.json", '{"stacks": [], "facts": []}')
+        self.assertEqual(page.run(self.target, self.out, None), 0)
+
+    def test_generated_block_table_reaches_html(self):
+        """Phase 2.6: a generated block's table rows must appear in the rendered HTML."""
+        from appdoc import fill
+        facts = {
+            "stacks": [{"name": "python-flask", "detail": {"supported": True, "file_count": 3,
+                        "capabilities": ["entry_point", "config_key"]}}],
+            "facts": [
+                {"kind": "entry_point", "stack": "python-flask", "path": "app.py", "line": 10,
+                 "name": "index", "detail": {"type": "route", "handler": "index"}},
+                {"kind": "entry_point", "stack": "python-flask", "path": "app.py", "line": 20,
+                 "name": "login", "detail": {"type": "route", "handler": "login"}},
+            ],
+        }
+        body = fill.render_block("entry-points", facts, {"out_dir": self.out, "target": self.target})
+        self.assertIn("| Handler file |", body)
+        self.write("application-documentation.md",
+                   f"# T\n## 4. Features\n### 4.1 Entry points\n"
+                   f"<!-- appdoc:generated entry-points -->\n{body}\n<!-- /appdoc:generated entry-points -->\n")
+        self.write("facts.json", json.dumps(facts))
+        self.assertEqual(page.run(self.target, self.out, None), 0)
+        h = self.html()
+        self.assertIn("Handler file", h)
+        self.assertIn("app.py", h)
+        self.assertIn("route", h)
+        self.assertIn("<td>2</td>", h)  # 2 routes
 
     def test_css_fallback_order(self):
         self.write("application-documentation.md", "# T\n")

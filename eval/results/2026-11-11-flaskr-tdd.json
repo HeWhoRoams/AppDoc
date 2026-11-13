@@ -1,0 +1,35 @@
+{
+  "summary": {
+    "Present": 0,
+    "Partial": 2,
+    "Absent": 1,
+    "Retired": 0,
+    "scorable": 3
+  },
+  "items": [
+    {
+      "id": "FL-1",
+      "section": "7.3",
+      "status": "Absent",
+      "found_in": null,
+      "detail": "terms absent: status === 1; reload, no covering citation"
+    },
+    {
+      "id": "FL-2",
+      "section": "10.1",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "citation found elsewhere, terms absent: enumerat"
+    },
+    {
+      "id": "FL-3",
+      "section": "13",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "citation found elsewhere, terms found elsewhere"
+    }
+  ],
+  "repo": "flaskr-tdd",
+  "document": "C:\\Github\\appdoc-test\\flaskr-tdd\\docs\\appdoc-2.2\\application-documentation.md",
+  "date": "2026-11-11"
+}

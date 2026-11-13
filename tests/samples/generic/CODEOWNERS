@@ -1,0 +1,4 @@
+# Owners are teams and people; the extractor counts lines only.
+*       @example-org/platform alice.example@example.com
+
+/db/    @example-org/data

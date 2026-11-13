@@ -33,6 +33,10 @@ _ASSIGN_RE = re.compile(
 )
 _HEX40 = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
 _GUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE)
+# A file path or Citation (`a/b/c.asp:12`): has a folder separator and a file extension, optional line or range.
+_PATH_VALUE = re.compile(r"^[\w.\-@~$+/\\]*[/\\][\w.\-@~$+/\\]*\.[A-Za-z][A-Za-z0-9]{0,7}(?::\d+(?:-\d+)?)?$")
+# A bare file name with a line (`appsettings.json:12`).
+_FILE_LINE_VALUE = re.compile(r"^[\w.\-@~$+]+\.[A-Za-z][A-Za-z0-9]{0,7}:\d+(?:-\d+)?$")
 
 
 def entropy(s: str) -> float:
@@ -57,8 +61,8 @@ def find_secret_shapes(text: str) -> list[tuple[int, str]]:
             if rx.search(line):
                 hits.append((lineno, name))
         for m in _ASSIGN_RE.finditer(line):
-            val = m.group("val")
-            if _HEX40.match(val) or _GUID.match(val):
+            val = m.group("val").lstrip("`").rstrip("`.)")
+            if _HEX40.match(val) or _GUID.match(val) or _PATH_VALUE.match(val) or _FILE_LINE_VALUE.match(val):
                 continue
             if len(val) >= 32 and entropy(val) >= 4.0:
                 hits.append((lineno, "high-entropy-secret"))

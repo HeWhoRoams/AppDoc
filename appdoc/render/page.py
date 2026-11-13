@@ -63,11 +63,38 @@ def _footer(target_name: str, out_dir: str) -> str:
     return "".join(f"<span>{html.escape(p)}</span>" for p in parts)
 
 
+def _stale_block(target: str, md_path: str, out_dir: str) -> str | None:
+    """The name of a generated block that differs from what fill would write, or None."""
+    from .. import fill as fill_mod
+    from .. import template_spec as spec
+    from .. import docmodel as dm
+    from .. import check
+    with open(os.path.join(out_dir, "facts.json"), encoding="utf-8") as fh:
+        facts = json.load(fh)
+    raw = _read(md_path)
+    lines = check._strip_comments(fill_mod.mask_blocks(raw.replace("\r\n", "\n"), spec.OPAQUE_BLOCKS)).splitlines()
+    heads = dm.headings(lines)
+    ctx = {"out_dir": out_dir, "text": raw, "target": os.path.abspath(target)}
+    found = {name: body for name, body, _ in fill_mod.blocks(raw.replace("\r\n", "\n"))}
+    for key, name in spec.GENERATED.items():
+        if name not in found:
+            continue
+        expected = (fill_mod.render_block(name, facts, ctx) or "").strip()
+        if found[name] != expected:
+            return name
+    return None
+
+
 def run(target: str, out_dir: str, css: str | None) -> int:
     md_path = os.path.join(out_dir, MD_NAME)
     if not os.path.isfile(md_path):
         print(f"appdoc: {md_path} not found; write the Narrative first", file=sys.stderr)
         return 1
+    if os.path.isfile(os.path.join(out_dir, "facts.json")):
+        stale = _stale_block(target, md_path, out_dir)
+        if stale:
+            print(f"appdoc render: generated block '{stale}' is stale; run `appdoc fill` first", file=sys.stderr)
+            return 2
     css_path = pick_css(out_dir, css)
     try:
         css_text = _read(css_path)

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- <Shell x:Class="Commented.Shell"> -->
+<Shell
+    x:Class="HelpDesk.ClientApp.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:HelpDesk.ClientApp.Views">
+    <ShellContent Title="Tickets" Route="tickets" ContentTemplate="{DataTemplate views:MainPage}" />
+    <ShellContent Title="Settings" Route="settings" ContentTemplate="{DataTemplate views:SettingsPage}" />
+</Shell>

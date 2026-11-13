@@ -354,8 +354,14 @@ def _scan_java(path: str, text: str, clean: str | None = None) -> Iterable[Fact]
                 yield _f("entry_point", path, line, p, type="route", method="ANY", handler=a.cls.name)
         elif n == "Scheduled" and a.cls is None:
             sched = re.sub(r"\s+", " ", (a.args or "").strip())
+            guarded = any(x.name == "Profile" or x.name.startswith("ConditionalOn")
+                          for x in list(cls.anns if cls else []) + [x for x in anns if x is not a and x.target == a.target])
+            enabled = False if re.search(r'\bcron\s*=\s*"-"', sched) else (None if guarded else True)
             yield _f("entry_point", path, line, _handler_name(code, a, cls), type="job", handler=_handler_name(code, a, cls),
-                     schedule=sched[:120])
+                     schedule=sched[:120], enabled=enabled)
+        elif n == "Value" and a.args:
+            for key in re.findall(r"\$\{\s*([\w.\-\[\]]+)", _lits(a.args)):
+                yield _f("config_key", path, line, key, source="code", secret_location=is_secret_key(key), use="read")
         elif n in _LISTENERS and a.cls is None:
             dest = next((_first_lit(at.get(k)) for k in (_LISTENERS[n][0], "value") if at.get(k)), None)
             yield _f("entry_point", path, line, _safe(dest) or _handler_name(code, a, cls), type="handler",
@@ -449,6 +455,12 @@ def _scan_java(path: str, text: str, clean: str | None = None) -> Iterable[Fact]
 
     # ---- external calls
     yield from _external_calls(path, clean, code, L)
+
+    # ---- config reads in code
+    for m in re.finditer(r"\.\s*(?:getProperty|getRequiredProperty|getenv)\s*\(\s*(" + _CHAIN + ")", clean):
+        key = _lits(m.group(1))
+        if re.fullmatch(r"[\w.\-]+", key) and not re.match(r"(?:java|user|os|file|line|path|sun|jdk)\.", key):
+            yield _f("config_key", path, L(m.start()), key, source="code", secret_location=is_secret_key(key), use="read")
 
     # ---- auth checks in code
     for m in re.finditer(r"\.\s*(antMatchers|mvcMatchers|regexMatchers|requestMatchers|anyRequest)\s*\(", clean):
@@ -750,7 +762,7 @@ def _spring_xml(path, clean, L):
         if at.get("method"):
             sched = next((f"{k}={at[k]}" for k in ("cron", "fixed-rate", "fixed-delay") if k in at), "")
             h = f"{at.get('ref', '?')}.{at['method']}"
-            yield _f("entry_point", path, L(m.start()), h, type="job", handler=h, schedule=sched)
+            yield _f("entry_point", path, L(m.start()), h, type="job", handler=h, schedule=sched or None, enabled=True)
     for m in re.finditer(r"<(?:\w+:)?jndi-lookup\b([^>]*?)/?>", clean):
         at = _attrs(m.group(1))
         nm = (at.get("jndi-name") or at.get("id") or "").replace("java:comp/env/", "")
@@ -878,5 +890,8 @@ class JavaSpring(Stack):
             return list(_scan_xml(path, text))
         return ()
 
+
+capabilities = frozenset(
+    "auth_check config_key connection data_access entry_point external_call message smell".split())
 
 STACK = JavaSpring()

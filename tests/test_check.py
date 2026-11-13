@@ -3,39 +3,98 @@ import io
 import json
 import os
 import re
+import shutil
 import tempfile
 import unittest
 
-from appdoc import check
+from appdoc import check, fill
+from appdoc import template_spec as spec
 
+HERE = os.path.dirname(os.path.abspath(__file__))
+FIXTURES_21 = os.path.join(HERE, "fixtures", "docs-2.1")
 SECRET = "Xk9fQ2mZp7LwR4tYv8NbC3dHs6JgA1eU"
+STEPS = "\n".join(f"| {s} | Unknown | not in the repository |" for s in spec.RUNBOOK_STEPS)
 
 SECTION_BODY = {
-    1: "- See [Architecture](#3-architecture) and `app/main.py:1`.",
-    2: "The Target is a small Python service in `app/main.py:1`. Stack: python-flask, classic-asp (unsupported, not extracted).",
+    1: "| Support need | Primary screen or file | Workflow |\n|---|---|---|\n"
+       "| Service does not start | `app/main.py:2` | [7.1 Start the service](#71-start-the-service) |",
+    2: "The Target is a small Python service in `app/main.py:1`. Stack: python-flask, classic-asp (unsupported, not extracted).\n\n"
+       "### 2.1 What was inspected\n\n<!-- appdoc:generated scan-coverage -->\n<!-- /appdoc:generated scan-coverage -->",
     3: "- The entry module wires the handlers in `app/main.py:3-5`.\n",
-    4: "- The `run` entry point lives in `app/main.py:2` and starts the service.",
-    5: "| Role | Capability |\n|---|---|\n| admin | Can change settings, see `app/main.py:4` |",
-    6: "- The landing page is rendered by `app/main.py:5` for all visitors.",
-    7: "### 7.1 Start the service\n1. Operators launch the entry point in `app/main.py:2` and wait.",
-    8: "- Connection settings are read at `app/main.py:6`; the value is omitted.",
+    4: "<!-- appdoc:generated entry-points -->\n<!-- /appdoc:generated entry-points -->\n\n"
+       "| ID | Area | Feature | Entry point | Inputs, outputs and rules | Dependencies | Status |\n"
+       "|---|---|---|---|---|---|---|\n"
+       "| F-1 | Service | Run | `app/main.py:2` | The `run` entry point lives in `app/main.py:2` and starts the service. | C-1 | Cited |\n\n"
+       "### 4.1 Subsystem inventory\n\n"
+       "| Subsystem | Files | Features | Primary data and dependencies | Purpose | Status |\n|---|---|---|---|---|---|\n"
+       "| `app/` | 1 | F-1 | C-1 | Holds the service code in `app/main.py:1` | Cited |",
+    5: "### 5.1 Observed role concepts\n\n- An admin role is named at `app/main.py:4`.\n\n"
+       "### 5.2 Authorization enforcement\n\n- The admin check is made at `app/main.py:4`.\n\n"
+       "### 5.3 Role-to-capability matrix\n\n| Capability | admin |\n|---|---|\n| Service: change settings, see `app/main.py:4` | Y |\n\n"
+       + spec.RESTRICTION_LINE,
+    6: "- The landing page is rendered by `app/main.py:5` for all visitors.\n\n"
+       "| ID | Page | Route or entry | Reached from | Visible controls and data | States and effects | Roles and evidence |\n"
+       "|---|---|---|---|---|---|---|\n"
+       "| UI-1 | Landing | / | direct | Welcome text | Static | everyone, `app/main.py:5` |",
+    7: "### 7.1 Start the service\n1. Operators launch the entry point in `app/main.py:2` and wait.\n"
+       "2. Failure and escalation: restart once, as `app/main.py:2` exits on error.",
+    8: "### 8.1 Connections\n\n| ID | Name | Kind | Configured at | Used by |\n|---|---|---|---|---|\n"
+       "| C-1 | db | database | `app/main.py:6`, value omitted | F-1 |\n\n"
+       "### 8.2 Stored procedures and SQL\n\n- No SQL is used; the ORM call is at `app/main.py:7`.\n\n"
+       "### 8.3 External calls\n\n| ID | Call | Direction | Caller | Notes |\n|---|---|---|---|---|\n"
+       "| X-1 | Health ping | Outbound | `app/main.py:8` | none |\n\n"
+       "### 8.4 Data entities and sensitivity\n\n| Entity | Key fields | Defined at | Sensitivity |\n|---|---|---|---|\n"
+       "| Post | id | `app/main.py:9` | public |\n\n"
+       "### 8.5 Failure, fallback and observability\n\n"
+       "| ID | Timeout and retry | On failure | Observability |\n|---|---|---|---|\n"
+       "| C-1 | none, see `app/main.py:6` | startup fails | none |\n"
+       "| X-1 | none, see `app/main.py:8` | logged | none |",
     9: "| Symptom | Checks | Known response | Escalate when |\n|---|---|---|---|\n"
        "| Service will not start | Look at `app/main.py:2` | Restart the process | Twice in a row |",
-    10: "- A password is set at `app/main.py:6`; value omitted.",
-    11: "- Owner context is in `appdoc-context.md:1`.",
+    10: "### 10.1 Verified findings\n\n| ID | Severity | Finding | Evidence | Impact |\n|---|---|---|---|---|\n"
+        "| V-1 | High | A password is set in code | `app/main.py:6`; value omitted. | Credential exposure |\n\n"
+        "### 10.2 Unknowns that must not be treated as controls\n\n"
+        "| Control | Status | Where looked |\n|---|---|---|\n| TLS | Not established | `app/main.py:7` |",
+    11: "| Area | Evidence | Status |\n|---|---|---|\n| Business owner | `appdoc-context.md:1` | Cited |\n"
+        + "\n".join(f"| {r} | not in the repository | Unknown |" for r in spec.OWNERSHIP_ROWS[1:]) + "\n"
+        "| Test suite | none | Unknown |",
     12: "```mermaid\nflowchart LR\n  A --> B\n```",
-    13: "- Handler: a function in `app/main.py:3`.",
-    14: "- Unknown: who deploys the service.",
-    15: "- Move the password out of `app/main.py:6` into configuration.",
-    16: "- **Inferred:** deployment is manual because no scripts exist (see `app/main.py:1`).",
+    13: "| Term | Meaning | Citation |\n|---|---|---|\n| Handler | a function | `app/main.py:3` |",
+    14: "| ID | Question | Why it matters | How to close | Owner | Priority |\n|---|---|---|---|---|---|\n"
+        "| Q-1 | Unknown: who deploys the service | Releases | Ask the team | Unknown | Medium |",
+    15: "| ID | Severity | Effort | Recommendation | Addresses |\n|---|---|---|---|---|\n"
+        "| R-1 | High | S | Move the password out of `app/main.py:6` and enforce TLS | V-1, TLS |\n\n"
+        "### 15.1 Coverage summary\n\n- Sections 3 to 10 were audited against `app/main.py:1`.",
+    16: "### 16.1 Platform requirements\n\n- Python, see `app/main.py:1`.\n\n"
+        "### 16.2 Data stores\n\n- The database configured at `app/main.py:6`.\n\n"
+        "### 16.3 Session and authentication behavior\n\n- No sessions; see `app/main.py:4`.\n\n"
+        "### 16.4 Known failure modes and operator responses\n\n"
+        "| Failure mode | Signal | Operator response |\n|---|---|---|\n| Crash | exit | restart, `app/main.py:2` |\n\n"
+        "### 16.5 Deployment and change process\n\n| Step | Procedure | Evidence |\n|---|---|---|\n" + STEPS + "\n\n"
+        "### 16.6 Configuration reference\n\n"
+        "<!-- appdoc:generated config-reference -->\n<!-- /appdoc:generated config-reference -->\n\n"
+        "### 16.7 Scheduled and background jobs\n\n"
+        "<!-- appdoc:generated scheduled-jobs -->\n<!-- /appdoc:generated scheduled-jobs -->",
 }
+
+APPENDIX = ("## Appendix A. Evidence Register and Verification\n\n"
+            "<!-- appdoc:generated appendix-a -->\n<!-- /appdoc:generated appendix-a -->")
+
+AUDIT = {"type": "audit", "performed": True, "auditor": "independent", "scope": "sections 3-10"}
+ROWS = [
+    {"id": "E-1", "ref": "10.1/V-1", "claim": "A password is set in code", "result": "Supported",
+     "cites": ["app/main.py:6"], "anchor": "line 6", "limitation": "value not shown"},
+    {"id": "E-2", "ref": "7.1", "claim": "Operators launch the entry point", "result": "Supported",
+     "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"},
+]
 
 
 def build_doc(override=None):
     override = override or {}
-    parts = ["# Demo Documentation", "<!-- a comment `nope/missing.py:99` -->", ""]
+    parts = ["# Demo Documentation", spec.STAMP, "<!-- a comment `nope/missing.py:99` -->", ""]
     for n, title in enumerate(check.SECTIONS, 1):
         parts += [f"## {n}. {title}", "", override.get(n, SECTION_BODY[n]), ""]
+    parts += [APPENDIX, ""]
     return "\n".join(parts)
 
 
@@ -52,30 +111,82 @@ class CheckTests(unittest.TestCase):
         self.write_context("# Context\nOwned by someone.\n")
         self.write_facts([{"name": "python-flask", "detail": {"supported": True}},
                           {"name": "classic-asp", "detail": {"supported": False}}],
-                         [{"kind": "connection", "path": "app/main.py", "line": 6, "name": "db"}])
+                         [{"kind": "connection", "path": "app/main.py", "line": 6, "name": "db", "detail": {}},
+                          {"kind": "file", "path": "app/main.py", "line": None, "name": "app/main.py", "detail": {}},
+                          {"kind": "entry_point", "stack": "python-flask", "path": "app/main.py", "line": 2,
+                           "name": "run", "detail": {"type": "route", "method": "GET"}},
+                          {"kind": "entry_point", "stack": "python-flask", "path": "app/main.py", "line": 8,
+                           "name": "nightly", "detail": {"type": "job", "schedule": "0 2 * * *", "enabled": True}}])
+        self.write_register(AUDIT, ROWS)
+        self.base_facts = list(self.facts["facts"])
+
+    def with_facts(self, *extra):
+        """facts.json = the base Facts plus these."""
+        self.write_facts(self.facts["stacks"], self.base_facts + list(extra))
+
+    @staticmethod
+    def smell(fid, line, path="app/main.py", **detail):
+        return {"kind": "smell", "stack": "python-flask", "path": path, "line": line, "name": f"candidate {fid}",
+                "detail": {"pattern": "hardcoded-credential-constant", "fid": fid, **detail}}
+
+    @staticmethod
+    def entry(path, kind="route", line=1, **detail):
+        return {"kind": "entry_point", "stack": "python-flask", "path": path, "line": line,
+                "name": f"{kind}@{line}", "detail": {"type": kind, **detail}}
+
+    @staticmethod
+    def rules(report):
+        return set(re.findall(r"^## (C\d+) ", report, re.M))
 
     def write_context(self, text):
         with open(os.path.join(self.target, "appdoc-context.md"), "w") as fh:
             fh.write(text)
 
     def write_facts(self, stacks, facts):
+        self.facts = {"stacks": stacks, "facts": facts}
         with open(os.path.join(self.out, "facts.json"), "w") as fh:
-            json.dump({"stacks": stacks, "facts": facts}, fh)
+            json.dump(self.facts, fh)
 
-    def run_check(self, doc):
+    def write_register(self, audit, rows):
+        with open(os.path.join(self.out, check.REGISTER), "w") as fh:
+            fh.write("\n".join(json.dumps(r) for r in [audit] + list(rows)) + "\n")
+
+    def fill_doc(self, doc):
+        return fill.fill_text(doc, self.facts, {"out_dir": self.out, "target": self.target})[0]
+
+    def run_check(self, doc, filled=True, require_audit=False, strict=False, seal=True):
+        if filled:
+            doc = self.fill_doc(doc)
         with open(os.path.join(self.out, "application-documentation.md"), "w") as fh:
             fh.write(doc)
+        if seal:
+            # strip existing claim_sha so each call gets a fresh seal against the current doc
+            reg_path = os.path.join(self.out, check.REGISTER)
+            if os.path.isfile(reg_path):
+                with open(reg_path, encoding="utf-8") as fh:
+                    lines = fh.readlines()
+                with open(reg_path, "w", encoding="utf-8") as fh:
+                    for line in lines:
+                        try:
+                            obj = json.loads(line)
+                            if isinstance(obj, dict) and obj.get("type") != "audit":
+                                obj.pop("claim_sha", None)
+                                line = json.dumps(obj, ensure_ascii=False) + "\n"
+                        except (ValueError, TypeError):
+                            pass
+                        fh.write(line)
+            check.seal_register(self.target, self.out)
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
-            code = check.run(self.target, self.out)
+            code = check.run(self.target, self.out, require_audit, strict)
         with open(os.path.join(self.out, "check-report.md")) as fh:
             report = fh.read()
         return code, report, buf.getvalue()
 
-    def fired(self, doc):
-        code, report, _ = self.run_check(doc)
-        rules = set(re.findall(r"^## (C\d) ", report, re.M))
-        self.assertEqual(code, 2 if rules else 0)
+    def fired(self, doc, **kw):
+        code, report, _ = self.run_check(doc, **kw)
+        rules = set(re.findall(r"^## (C\d+) ", report, re.M))
+        self.assertEqual(code, 2 if rules else 0, report)
         return rules
 
     def test_pass(self):
@@ -123,6 +234,55 @@ class CheckTests(unittest.TestCase):
     def test_c1_missing_file_with_extension_still_fails(self):
         self.assertEqual(self.fired(self._swap("`ghost/image.yml`")), {"C1"})
 
+    def _spaced_file(self):
+        os.makedirs(os.path.join(self.target, "To be deleted", "Front Dev"))
+        with open(os.path.join(self.target, "To be deleted", "Front Dev", "logcall.asp"), "w") as fh:
+            fh.write("\n".join(f"call {i}" for i in range(1, 21)) + "\n")
+
+    def test_c1_spaced_path_with_a_line_resolves(self):
+        self._spaced_file()
+        self.assertEqual(self.fired(self._swap("`To be deleted/Front Dev/logcall.asp:12`")), set())
+
+    def test_c1_spaced_path_that_is_missing_or_out_of_range_fails(self):
+        self._spaced_file()
+        code, report, _ = self.run_check(self._swap("`To be deleted/Front Dev/nope.asp:12`"))
+        self.assertEqual(code, 2)
+        self.assertIn("does not exist in the Target", report)
+        code, report, _ = self.run_check(self._swap("`To be deleted/Front Dev/logcall.asp:99`"))
+        self.assertEqual(code, 2)
+        self.assertIn("line 99 is outside", report)
+
+    def test_c1_dotfile_and_data_file_citations_resolve(self):
+        for name in (".gitignore", "test.db"):
+            with open(os.path.join(self.target, name), "w") as fh:
+                fh.write("a\nb\nc\n")
+        self.assertEqual(self.fired(self._swap("`.gitignore:2` and `test.db:3`")), set())
+        self.assertEqual(self.fired(self._swap("`.dockerignore:2`")), {"C1"})
+
+    def test_c1_lined_citation_into_binary_file_fails(self):
+        with open(os.path.join(self.target, "blob.png"), "wb") as fh:
+            fh.write(b"\x00\x01\x02\x03")
+        code, report, _ = self.run_check(self._swap("`blob.png:1`"))
+        self.assertEqual(code, 2)
+        self.assertIn("binary file", report)
+
+    def test_c1_bare_citation_into_binary_file_resolves(self):
+        with open(os.path.join(self.target, "blob.png"), "wb") as fh:
+            fh.write(b"\x00\x01\x02\x03")
+        self.assertEqual(self.fired(self._swap("`blob.png`")), set())
+
+    def test_c11_anchor_in_a_spaced_path(self):
+        self._spaced_file()
+        row = dict(ROWS[0], cites=["To be deleted/Front Dev/logcall.asp:3-4"], anchor="call 3")
+        self.write_register(AUDIT, [row, ROWS[1]])
+        self.assertEqual(self.fired(build_doc()), set())
+        self.write_register(AUDIT, [dict(row, anchor="call 9"), ROWS[1]])
+        code, report, _ = self.run_check(build_doc())
+        self.assertIn("anchor not found", report)
+        self.write_register(AUDIT, [dict(row, cites=["To be deleted/Front Dev/missing.asp:3"]), ROWS[1]])
+        code, report, _ = self.run_check(build_doc())
+        self.assertIn("does not resolve", report)
+
     def test_c1_escape(self):
         self.assertEqual(self.fired(build_doc().replace("`app/main.py:5` for all", "`../outside.py:1` for all")), {"C1"})
 
@@ -130,25 +290,75 @@ class CheckTests(unittest.TestCase):
         doc = build_doc().replace("`app/main.py:6`; value omitted.", "`app/main.py`; value omitted.")
         self.assertEqual(self.fired(doc), {"C2"})
 
+    def _write_narrative(self, doc):
+        with open(os.path.join(self.out, "application-documentation.md"), "w") as fh:
+            fh.write(doc)
+
+    def test_c11_claim_sha_unsealed_fails(self):
+        code, report, _ = self.run_check(build_doc(), seal=False)
+        self.assertEqual(code, 2)
+        self.assertIn("not sealed", report)
+
+    def test_c11_claim_sha_sealed_passes(self):
+        self._write_narrative(build_doc())
+        self.assertEqual(check.seal_register(self.target, self.out), 2)
+        self.assertEqual(self.fired(build_doc()), set())
+
+    def test_c11_claim_sha_stale_fails(self):
+        self._write_narrative(build_doc())
+        self.assertEqual(check.seal_register(self.target, self.out), 2)
+        # change the text of the V-1 finding row so the sealed sha no longer matches
+        doc = build_doc().replace("A password is set in code", "A secret is set in code")
+        code, report, _ = self.run_check(doc, seal=False)
+        self.assertEqual(code, 2)
+        self.assertIn("changed after it was audited", report)
+
     def test_c3_missing_section(self):
         doc = build_doc().replace("## 13. Glossary", "## 13. Terms")
         self.assertEqual(self.fired(doc), {"C3"})
 
     def test_c3_empty_and_placeholder(self):
-        self.assertEqual(self.fired(build_doc().replace(SECTION_BODY[13], "")), {"C3"})
-        self.assertEqual(self.fired(build_doc().replace(SECTION_BODY[13], "<fill me> TODO")), {"C3"})
+        self.assertIn("C3", self.fired(build_doc({12: ""})))
+        self.assertEqual(self.fired(build_doc({12: "<fill me> TODO"})), {"C3"})
+
+    def test_c3_missing_stamp_is_one_upgrade_problem(self):
+        code, report, _ = self.run_check(build_doc().replace(spec.STAMP, ""))
+        self.assertEqual(set(re.findall(r"^## (C\d+) ", report, re.M)), {"C3"})
+        self.assertIn("not on template 2.4", report)
+        code, report, _ = self.run_check(build_doc().replace(spec.STAMP, "<!-- appdoc:template 2.1 -->"))
+        self.assertIn("(stamp: 2.1)", report)
 
     def test_c4_unknown_without_gaps(self):
-        doc = build_doc().replace(SECTION_BODY[14], "").replace(
-            SECTION_BODY[13], SECTION_BODY[13] + "\n- Unknown: the owner of `app/main.py:3`.")
+        doc = build_doc({14: ""}).replace(
+            SECTION_BODY[13], SECTION_BODY[13] + "\n\n- Unknown: the owner of `app/main.py:3`.")
         self.assertIn("C4", self.fired(doc))
 
     def test_c4_section8_empty(self):
-        doc = build_doc().replace(SECTION_BODY[8], "")
-        self.assertIn("C4", self.fired(doc))
+        self.assertIn("C4", self.fired(build_doc({8: ""})))
+
+    def test_c8_missing_subsection(self):
+        doc = build_doc().replace("### 15.1 Coverage summary", "### Coverage summary")
+        code, report, _ = self.run_check(doc)
+        self.assertEqual(set(re.findall(r"^## (C\d+) ", report, re.M)), {"C8"})
+        self.assertIn("subsection 15.1", report)
+
+    def test_c8_empty_subsection(self):
+        doc = build_doc().replace("- No SQL is used; the ORM call is at `app/main.py:7`.", "")
+        code, report, _ = self.run_check(doc)
+        self.assertEqual(set(re.findall(r"^## (C\d+) ", report, re.M)), {"C8"})
+        self.assertIn("subsection 8.2", report)
+
+    def test_c8_subsection_outside_parent_does_not_count(self):
+        doc = build_doc().replace("### 15.1 Coverage summary", "### 14.9 Coverage summary")
+        self.assertEqual(self.fired(doc), {"C8"})
+
+    def test_c8_ignores_fenced_heading(self):
+        doc = build_doc().replace("### 8.2 Stored procedures and SQL", "```\n### 8.2 x\n```\n### 8.9 other")
+        self.assertEqual(self.fired(doc), {"C8"})
 
     def test_c5(self):
-        doc = build_doc().replace(SECTION_BODY[6], "- The landing page is rendered for every single visitor of the site.")
+        doc = build_doc().replace("- The landing page is rendered by `app/main.py:5` for all visitors.",
+                                  "- The landing page is rendered for every single visitor of the site.")
         self.assertEqual(self.fired(doc), {"C5"})
 
     def test_c5_exemptions(self):
@@ -158,92 +368,746 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(self.fired(build_doc({3: extra})), set())
 
     def test_c6_secret_shape_line_only(self):
-        doc = build_doc().replace(SECTION_BODY[10], f"- Config uses password={SECRET} at `app/main.py:6`.")
+        doc = build_doc().replace("A password is set in code", f"Config uses password={SECRET}")
         code, report, out = self.run_check(doc)
         self.assertEqual(code, 2)
-        self.assertEqual(set(re.findall(r"^## (C\d) ", report, re.M)), {"C6"})
+        self.assertEqual(set(re.findall(r"^## (C\d+) ", report, re.M)), {"C6"})
         self.assertNotIn(SECRET, report)
         self.assertNotIn(SECRET, out)
         self.assertRegex(report, r"- line \d+: secret-shaped value")
 
+    def test_c6_scans_the_register(self):
+        rows = [dict(ROWS[0], limitation=f"password={SECRET}"), ROWS[1]]
+        self.write_register(AUDIT, rows)
+        code, report, out = self.run_check(build_doc())
+        self.assertEqual(set(re.findall(r"^## (C\d+) ", report, re.M)), {"C6"})
+        self.assertIn("evidence.jsonl secret-shaped value", report)
+        self.assertNotIn(SECRET, report + out)
+
     def test_c6_never_mention(self):
         self.write_context("# Context\n\n```never-mention\ninternal-host-7\n```\n")
-        doc = build_doc().replace(SECTION_BODY[4], "- Calls INTERNAL-HOST-7 from `app/main.py:2` at startup.")
+        doc = build_doc().replace("- The entry module wires", "- INTERNAL-HOST-7: the entry module wires")
         self.assertEqual(self.fired(doc), {"C6"})
 
     def test_c7(self):
-        doc = build_doc().replace("classic-asp (unsupported, not extracted)", "nothing else")
-        self.assertEqual(self.fired(doc), {"C7"})
+        doc = self.fill_doc(build_doc().replace("classic-asp (unsupported, not extracted)", "nothing else"))
+        self.write_facts(self.facts["stacks"] + [{"name": "go", "detail": {"supported": False}}], self.facts["facts"])
+        code, report, _ = self.run_check(doc, filled=False)
+        self.assertEqual(set(re.findall(r"^## (C\d+) ", report, re.M)), {"C7"})
+        self.assertIn("unsupported stack 'go'", report)
+        self.assertEqual(self.fired(doc), set())  # the refreshed block names every Stack
+
+    def test_c7_retired_candidate_must_be_named_in_section_2(self):
+        doc = self.fill_doc(build_doc())
+        self.write_facts(self.facts["stacks"], self.facts["facts"])
+        self.facts["target"] = {"scan": {"retired_candidates": [{"path": "old/", "signal": "name", "files": 3}]}}
+        with open(os.path.join(self.out, "facts.json"), "w") as fh:
+            json.dump(self.facts, fh)
+        code, report, _ = self.run_check(doc, filled=False)
+        self.assertIn("C7", set(re.findall(r"^## (C\d+) ", report, re.M)))
+        self.assertIn("folder 'old' looks retired", report)
+        # naming it in section 2 clears the problem
+        doc2 = self.fill_doc(build_doc().replace("### 2.1 What was inspected",
+                                                 "The `old/` folder looks retired and is documented as live.\n\n### 2.1 What was inspected"))
+        self.write_facts(self.facts["stacks"], self.facts["facts"])
+        self.facts["target"] = {"scan": {"retired_candidates": [{"path": "old/", "signal": "name", "files": 3}]}}
+        with open(os.path.join(self.out, "facts.json"), "w") as fh:
+            json.dump(self.facts, fh)
+        self.assertNotIn("looks retired", self.run_check(doc2, filled=False)[1])
+
+    def test_c7_content_signal_retired_is_advisory_only(self):
+        doc = self.fill_doc(build_doc())
+        self.write_facts(self.facts["stacks"], self.facts["facts"])
+        self.facts["target"] = {"scan": {"retired_candidates": [{"path": "images/", "signal": "content", "files": 9}]}}
+        with open(os.path.join(self.out, "facts.json"), "w") as fh:
+            json.dump(self.facts, fh)
+        code, report, _ = self.run_check(doc, filled=False)
+        self.assertNotIn("looks retired", report)
 
     def test_c7_skipped_without_facts(self):
+        doc = self.fill_doc(build_doc())
         os.remove(os.path.join(self.out, "facts.json"))
-        doc = build_doc().replace("classic-asp (unsupported, not extracted)", "nothing else")
+        self.assertEqual(self.fired(doc, filled=False), set())
+
+    def test_c7_version_skew_fails_on_major_minor_difference(self):
+        from appdoc import __version__
+        doc = self.fill_doc(build_doc())
+        self.write_facts(self.facts["stacks"], self.facts["facts"])
+        # a different major.minor than the running version
+        major, minor, *_ = __version__.split(".")
+        self.facts["generator"] = f"{int(major) + 1}.{minor}.0"
+        with open(os.path.join(self.out, "facts.json"), "w") as fh:
+            json.dump(self.facts, fh)
+        code, report, _ = self.run_check(doc, filled=False)
+        self.assertIn("C7", set(re.findall(r"^## (C\d+) ", report, re.M)))
+        self.assertIn(f"facts.json was written by AppDoc {self.facts['generator']}; re-run extract", report)
+        self.assertEqual(code, 2)
+
+    def test_c7_version_skew_ignores_patch_difference(self):
+        from appdoc import __version__
+        doc = self.fill_doc(build_doc())
+        self.write_facts(self.facts["stacks"], self.facts["facts"])
+        # same major.minor, different patch: no skew
+        major, minor, *_ = __version__.split(".")
+        self.facts["generator"] = f"{major}.{minor}.99"
+        with open(os.path.join(self.out, "facts.json"), "w") as fh:
+            json.dump(self.facts, fh)
+        code, report, _ = self.run_check(doc, filled=False)
+        self.assertNotIn("re-run extract", report)
+        self.assertNotIn("C7", set(re.findall(r"^## (C\d+) ", report, re.M)))
+        self.assertEqual(code, 0, report)
+
+    def test_c7_version_skew_ignores_missing_generator(self):
+        # the base facts.json has no generator field: treated as no skew
+        doc = self.fill_doc(build_doc())
+        code, report, _ = self.run_check(doc, filled=False)
+        self.assertNotIn("re-run extract", report)
+        self.assertEqual(code, 0, report)
+
+    def test_check_report_prints_running_version(self):
+        from appdoc import __version__
+        code, report, _ = self.run_check(build_doc())
+        self.assertIn(f"Run by AppDoc {__version__}", report)
+
+    def test_c7_stale_and_missing_generated_block(self):
+        doc = self.fill_doc(build_doc())
+        self.write_facts(self.facts["stacks"], self.facts["facts"] + [
+            {"kind": "file", "path": "lib/x.py", "line": None, "name": "lib/x.py", "detail": {}}])
+        code, report, _ = self.run_check(doc, filled=False)
+        self.assertEqual(set(re.findall(r"^## (C\d+) ", report, re.M)), {"C7"})
+        self.assertIn("'scan-coverage' differs from the Facts", report)
+        doc = build_doc().replace("<!-- appdoc:generated scan-coverage -->\n<!-- /appdoc:generated scan-coverage -->", "x")
+        self.assertIn("C7", self.fired(doc))
+
+    def test_c7_subsystem_count_must_match_facts(self):
+        doc = build_doc().replace("| `app/` | 1 |", "| `app/` | 3 |")
+        code, report, _ = self.run_check(doc)
+        self.assertEqual(set(re.findall(r"^## (C\d+) ", report, re.M)), {"C7"})
+        self.assertIn("the Facts count 1", report)
+        self.assertEqual(self.fired(build_doc().replace("| `app/` | 1 |", "| `app/` | 13 (9) |")), {"C7"})
+
+    # --- C9 Tables conform
+
+    def test_c9_row_cell_count(self):
+        doc = build_doc().replace("| Handler | a function | `app/main.py:3` |", "| Handler | a function | `app/main.py:3` | extra |")
+        self.assertEqual(self.fired(doc), {"C9"})
+
+    def test_c9_pipes_in_code_and_escaped_do_not_split(self):
+        doc = build_doc().replace("| Handler | a function |", "| Handler | a `x|y` function \\| more |")
         self.assertEqual(self.fired(doc), set())
 
-    def test_template_is_valid_shape(self):
+    def test_c9_header_must_match_spec(self):
+        doc = build_doc().replace("| Symptom | Checks | Known response | Escalate when |",
+                                  "| Symptom | Checks | Response | Escalate when |")
+        self.assertEqual(self.fired(doc), {"C9"})
+
+    def test_c9_enumerated_values(self):
+        self.assertEqual(self.fired(build_doc().replace("| V-1 | High |", "| V-1 | Severe |")), {"C9"})
+        self.assertEqual(self.fired(build_doc().replace("| TLS | Not established |", "| TLS | Missing |")), {"C9"})
+
+    def test_c9_id_format(self):
+        self.assertIn("C9", self.fired(build_doc().replace("| UI-1 |", "| S1 |")))
+
+    def test_c9_required_runbook_rows(self):
+        doc = build_doc().replace("| Rollback | Unknown | not in the repository |\n", "")
+        code, report, _ = self.run_check(doc)
+        self.assertEqual(set(re.findall(r"^## (C\d+) ", report, re.M)), {"C9"})
+        self.assertIn("16.5 has no 'Rollback' row", report)
+
+    def test_c9_guidance_comment_left(self):
+        doc = build_doc().replace("## 9. Troubleshooting Matrix", "## 9. Troubleshooting Matrix\n<!-- appdoc:guide fill this -->")
+        self.assertEqual(self.fired(doc), {"C9"})
+
+    def test_c9_ignores_tables_in_fences(self):
+        doc = build_doc({12: "```\n| a | b |\n|---|---|\n| 1 | 2 | 3 |\n```"})
+        self.assertEqual(self.fired(doc), set())
+
+    # --- C10 References resolve
+
+    def test_c10_undefined_id(self):
+        doc = build_doc().replace("wires the handlers in", "wires the handlers (see X-9) in")
+        self.assertEqual(self.fired(doc), {"C10"})
+
+    def test_c10_ids_in_code_are_not_references(self):
+        doc = build_doc().replace("wires the handlers in", "wires the `X-9` handlers in")
+        self.assertEqual(self.fired(doc), set())
+
+    def test_c10_broken_anchor(self):
+        doc = build_doc().replace("(#71-start-the-service)", "(#72-stop)")
+        self.assertEqual(self.fired(doc), {"C10"})
+
+    def test_c10_duplicate_id(self):
+        doc = build_doc().replace("| Q-1 | Unknown: who deploys the service | Releases | Ask the team | Unknown | Medium |",
+                                  "| Q-1 | Unknown: who deploys the service | Releases | Ask the team | Unknown | Medium |\n"
+                                  "| Q-1 | Unknown: who owns it | Support | Ask | Unknown | Low |")
+        self.assertEqual(self.fired(doc), {"C10"})
+
+    def test_c10_finding_without_recommendation(self):
+        self.assertEqual(self.fired(build_doc().replace("| V-1, TLS |", "| TLS |")), {"C10"})
+
+    def test_c10_control_not_addressed(self):
+        self.assertEqual(self.fired(build_doc().replace("| V-1, TLS |", "| V-1 |")), {"C10"})
+        doc = build_doc().replace("| V-1, TLS |", "| V-1 |").replace("who deploys the service", "who configures TLS")
+        self.assertEqual(self.fired(doc), set())
+
+    def test_c10_dependency_without_failure_row(self):
+        doc = build_doc().replace("| X-1 | none, see `app/main.py:8` | logged | none |", "")
+        self.assertEqual(self.fired(doc), {"C10"})
+
+    # --- C11 Register valid
+
+    def test_c11_missing_register_fails(self):
+        os.remove(os.path.join(self.out, check.REGISTER))
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(set(re.findall(r"^## (C\d+) ", report, re.M)), {"C11"})
+        self.assertIn("audit state is not declared", report)
+
+    def test_c11_declared_not_performed(self):
+        self.write_register({"type": "audit", "performed": False, "scope": "time-boxed"}, [])
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(code, 0, report)
+        self.assertIn("not performed (time-boxed)", report)
+        self.assertEqual(self.fired(build_doc(), require_audit=True), {"C11"})
+
+    def test_c11_anchor_must_be_in_cited_lines(self):
+        self.write_register(AUDIT, [dict(ROWS[0], anchor="line 7"), ROWS[1]])
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(set(re.findall(r"^## (C\d+) ", report, re.M)), {"C11"})
+        self.assertIn("anchor not found", report)
+        # an anchor that spans two lines is not on a single cited line: it fails
+        self.write_register(AUDIT, [dict(ROWS[0], anchor="line 5 line 6", cites=["app/main.py:5-6"]), ROWS[1]])
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(set(re.findall(r"^## (C\d+) ", report, re.M)), {"C11"})
+        self.assertIn("anchor not found", report)
+        # an anchor that is exactly one cited line passes
+        self.write_register(AUDIT, [dict(ROWS[0], anchor="line 5", cites=["app/main.py:5-6"]), ROWS[1]])
+        self.assertEqual(self.fired(build_doc()), set())
+
+    def test_c11_row_rules(self):
+        bad = [dict(ROWS[0], result="Fine"), dict(ROWS[1], id="E-1"),
+               dict(ROWS[1], id="E-3", ref="99"), dict(ROWS[1], id="E-4", ref="10.1/V-7"),
+               dict(ROWS[1], id="E-5", cites=["app/nope.py:1"]), dict(ROWS[1], id="E-6", anchor="")]
+        self.write_register(AUDIT, bad)
+        code, report, _ = self.run_check(build_doc())
+        for needle in ("result 'Fine'", "id E-1 repeats", "ref '99'", "ref '10.1/V-7'",
+                       "does not resolve", "needs an anchor"):
+            self.assertIn(needle, report)
+
+    def test_c11_mandatory_rows(self):
+        self.write_register(AUDIT, [ROWS[1]])
+        code, report, _ = self.run_check(build_doc())
+        self.assertIn("finding V-1 has no register row", report)
+        self.write_register(AUDIT, [ROWS[0]])
+        code, report, _ = self.run_check(build_doc())
+        self.assertIn("workflow 7.1 has no register row", report)
+
+    def test_c11_bad_json_and_header(self):
+        with open(os.path.join(self.out, check.REGISTER), "w") as fh:
+            fh.write('{"id": "E-1"}\nnot json\n')
+        code, report, _ = self.run_check(build_doc())
+        self.assertIn("line 1 must be the audit record", report)
+        self.assertIn("not valid JSON", report)
+
+    def test_c10_register_ids(self):
+        doc = build_doc().replace("wires the handlers in", "wires the handlers (E-2) in")
+        self.assertEqual(self.fired(doc), set())
+        self.assertEqual(self.fired(doc.replace("(E-2)", "(E-9)")), {"C10"})
+
+    # --- template and upgrade fixtures
+
+    def test_template_matches_spec(self):
+        from appdoc import docmodel as dm
         path = os.path.join(os.path.dirname(check.__file__), "assets", "template.md")
         with open(path, encoding="utf-8") as fh:
             text = fh.read()
+        self.assertIn(spec.STAMP, text)
         heads = re.findall(r"^## (\d+)\. (.+)$", text, re.M)
         self.assertEqual([int(n) for n, _ in heads], list(range(1, 17)))
         for (_, t), want in zip(heads, check.SECTIONS):
             self.assertTrue(t.startswith(want))
-        # an unfilled template must fail C3
+        for key, title in check.REQUIRED_SUBSECTIONS.items():
+            self.assertRegex(text, rf"(?m)^### {re.escape(key)} {re.escape(title)}$")
+        lines = dm.strip_comments(text).splitlines()
+        heads = dm.headings(lines)
+        for key, ts in spec.TABLES.items():
+            if spec.GENERATED.get(key) not in (None, *spec.OPAQUE_BLOCKS):
+                continue  # its first table is the generated one
+            t = dm.first_table(lines, heads[key])
+            self.assertIsNotNone(t, key)
+            self.assertEqual(t.header[:len(ts.columns)], list(ts.columns), key)
+        for name in spec.GENERATED.values():
+            self.assertIn(f"<!-- appdoc:generated {name} -->", text)
+        self.assertIn(spec.RESTRICTION_LINE, text)
+        self.assertIn("## Appendix A. Evidence Register and Verification", text)
+        for label in spec.OWNERSHIP_ROWS:
+            self.assertIn(f"| {label} |", text)
+        for c in re.findall(r"<!--.*?-->", text, re.S):
+            self.assertRegex(c, r"^<!--\s*(/?appdoc:(guide|generated|template))", c[:60])
         with open(os.path.join(self.out, "application-documentation.md"), "w") as fh:
             fh.write(text)
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(check.run(self.target, self.out), 2)
 
-    # --- Resolution vs support: the report must say the Check verifies resolution, not support,
-    # and carry a Verification section that reflects the (optional) source-to-claim audit record. ---
+    def test_2_1_documents_get_one_upgrade_problem(self):
+        for repo in ("flaskr-tdd", "eShop"):
+            with open(os.path.join(FIXTURES_21, repo, "application-documentation.md"), encoding="utf-8") as fh:
+                doc = fh.read()
+            code, report, _ = self.run_check(doc, filled=False)
+            self.assertEqual(code, 2)
+            self.assertIn("not on template 2.4 (stamp: none)", report)
+            self.assertNotRegex(report, r"(?m)^## C(8|9|10|11) ")
 
-    def _write_verification(self, text):
-        with open(os.path.join(self.out, check.VERIFICATION), "w") as fh:
-            fh.write(text)
+    def test_new_rules_catch_the_2_1_defects(self):
+        """Stamped as 2.4, the frozen 2.1 outputs fail on the defects the comparison found."""
+        os.remove(os.path.join(self.out, check.REGISTER))
+        for repo in ("flaskr-tdd", "eShop"):
+            with open(os.path.join(FIXTURES_21, repo, "application-documentation.md"), encoding="utf-8") as fh:
+                doc = fh.read()
+            doc = doc.replace("\n", "\n" + spec.STAMP + "\n", 1)
+            code, report, _ = self.run_check(doc, filled=False)
+            rules = set(re.findall(r"^## (C\d+) ", report, re.M))
+            self.assertTrue({"C7", "C9", "C11"} <= rules, (repo, rules))
+            self.assertIn("4 table header is", report)
+            self.assertIn("audit state is not declared", report)
+            if repo == "flaskr-tdd":  # the malformed glossary `safe` row
+                self.assertIn("table row has 4 cells but its header has 3", report)
 
-    def test_report_scope_statement_and_verification_section_present(self):
+    # --- template 2.4: entry points, 5.3 Restriction, section 11 owners, 16.7
+
+    def test_c9_restriction_line_required(self):
+        code, report, _ = self.run_check(build_doc().replace(spec.RESTRICTION_LINE, ""))
+        self.assertEqual(set(re.findall(r"^## (C\d+) ", report, re.M)), {"C9"})
+        self.assertIn("5.3 lacks the fixed Restriction line", report)
+
+    def test_c9_5_3_first_column_is_capability_and_role_columns_are_free(self):
+        doc = build_doc().replace("| Capability | admin |\n|---|---|\n| Service: change settings, see `app/main.py:4` | Y |",
+                                  "| Capability | admin | guest |\n|---|---|---|\n| Service: change settings, see `app/main.py:4` | Y | |")
+        self.assertEqual(self.fired(doc), set())
+        self.assertEqual(self.fired(build_doc().replace("| Capability | admin |", "| Area | admin |")), {"C9"})
+
+    def test_c9_required_ownership_rows(self):
+        for label in spec.OWNERSHIP_ROWS:
+            doc = build_doc({11: SECTION_BODY[11].replace(f"| {label} | not in the repository | Unknown |\n", "")
+                             .replace(f"| {label} | `appdoc-context.md:1` | Cited |\n", "")})
+            code, report, _ = self.run_check(doc)
+            self.assertIn(f"11 has no '{label}' row", report)
+
+    def test_c7_generated_block_missing_for_each_new_block(self):
+        for name in ("entry-points", "scheduled-jobs", "appendix-a"):
+            marks = f"<!-- appdoc:generated {name} -->\n<!-- /appdoc:generated {name} -->"
+            code, report, _ = self.run_check(build_doc().replace(marks, ""))
+            self.assertIn(f"generated block '{name}' is missing", report)
+
+    def test_generated_entry_points_do_not_disturb_the_section_4_table_or_c5(self):
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(code, 0, report)
+        with open(os.path.join(self.out, "application-documentation.md")) as fh:
+            text = fh.read()
+        self.assertIn("1 route handler files; 1 routes; 0 pages; 0 commands; 1 jobs.", text)
+        self.assertIn("| `app/main.py` | job, route | 1 | 0 | 1 | 0 |", text)
+
+    def test_appendix_is_generated_from_the_register_in_out_dir(self):
+        self.write_register({"type": "audit", "performed": False, "scope": "time-boxed"}, [])
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(code, 0, report)
+        with open(os.path.join(self.out, "application-documentation.md")) as fh:
+            text = fh.read()
+        self.assertIn("time-boxed", text.split("## Appendix A.")[1])
+        # an edit to the register after fill makes the block stale
+        self.write_register(AUDIT, ROWS)
+        code, report, _ = self.run_check(text, filled=False)
+        self.assertIn("generated block 'appendix-a' differs from the Facts", report)
+
+    def test_appendix_heading_is_not_a_numbered_section(self):
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(code, 0, report)
+        self.assertNotIn("C3", report)
+
+    # --- the report states what a PASS means and summarizes the audit
+
+    def test_report_scope_and_verification_summary(self):
         code, report, out = self.run_check(build_doc())
         self.assertEqual(code, 0, report)
-        # honest statement: the Check verifies resolution, not support
         self.assertIn("**Scope.**", report)
-        self.assertIn("does **not** verify **support**", report)
-        self.assertIn("source-to-claim audit", report)
-        # the Verification section is present and the register is untouched
+        self.assertIn("anchor text appears in the lines it cites", report)
         self.assertIn("## Verification", report)
+        self.assertIn("2 rows: 2 Supported, 0 Corrected, 0 Downgraded", report)
+        self.assertIn("| 10.1 | 1 of 1 |", report)
+        self.assertIn("| 7 (workflows) | 1 of 1 |", report)
+        self.assertIn("| 4 | 0 of 1 |", report)
         self.assertIn("## Citation register", report)
-        self.assertNotIn(SECRET, out)
+        self.assertIn("Source-to-claim audit: 2 rows (independent).", out)
 
-    def test_verification_absent_notes_gap_but_does_not_fail(self):
-        code, report, _ = self.run_check(build_doc())
-        # no verification.md -> the gap is noted, but the Check still passes (exit 0)
-        self.assertEqual(code, 0, report)
-        self.assertIn("## Verification", report)
-        self.assertIn("not recorded", report)
-        self.assertNotIn("recorded (from `verification.md`)", report)
-
-    def test_verification_record_embedded_when_present(self):
-        self._write_verification(
-            "Source-to-claim audit: 3 claims re-verified; 1 corrected.\n"
-            "- Section 7: corrected a line reference.\n")
-        code, report, _ = self.run_check(build_doc())
-        self.assertEqual(code, 0, report)
-        self.assertIn("## Verification", report)
-        self.assertIn("recorded (from `verification.md`)", report)
-        self.assertIn("Source-to-claim audit: 3 claims re-verified; 1 corrected.", report)
-        self.assertIn("Section 7: corrected a line reference.", report)
-
-    def test_verification_record_does_not_change_exit_code(self):
+    def test_register_does_not_turn_a_fail_into_a_pass(self):
         failing = build_doc().replace("`app/main.py:2` and starts", "`app/nope.py:2` and starts")
-        code, report, _ = self.run_check(failing)
-        self.assertEqual(code, 2, report)  # fails on C1 with no record
-        self.assertIn("## Verification", report)
-        self.assertIn("not recorded", report)
-        # a present record must NOT turn a fail into a pass
-        self._write_verification("Source-to-claim audit: 1 claim corrected.\n")
-        code2, report2, _ = self.run_check(failing)
-        self.assertEqual(code2, 2, report2)
-        self.assertIn("recorded (from `verification.md`)", report2)
-        self.assertIn("Source-to-claim audit: 1 claim corrected.", report2)
+        self.assertEqual(self.fired(failing), {"C1"})
+
+    def test_fill_command_is_idempotent(self):
+        path = os.path.join(self.out, "application-documentation.md")
+        with open(path, "w") as fh:
+            fh.write(build_doc())
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(fill.run(self.target, self.out), 0)
+            with open(path) as fh:
+                once = fh.read()
+            self.assertEqual(fill.run(self.target, self.out), 0)
+        with open(path) as fh:
+            self.assertEqual(fh.read(), once)
+        self.assertIn("| python-flask | yes | 0 |", once)
+        self.assertIn("| `app/` | 1 |", once)
+        self.assertIn("| `app/main.py` | job, route | 1 | 0 | 1 | 0 |", once)
+        self.assertIn("| nightly | `0 2 * * *` | yes | `app/main.py:8` | python-flask |", once)
+        self.assertIn("### A.1 Audit state", once)
+        with contextlib.redirect_stdout(io.StringIO()):
+            check.seal_register(self.target, self.out)
+            self.assertEqual(check.run(self.target, self.out), 0)  # what `fill` wrote is what the Check expects
+
+    # --- C7 prose counts
+
+    def _with_prose(self, sentence):
+        return build_doc({3: SECTION_BODY[3] + f"\n- {sentence} in `app/main.py:3`."})
+
+    def _routes(self, extra_files):
+        """6 route handler files (app/main.py plus these) and 11 routes."""
+        return [self.entry(f"app/h{i}.py", line=j, method="GET") for i in range(extra_files) for j in (1, 2)]
+
+    def test_c7_prose_counts_must_match_the_facts(self):
+        self.with_facts(*self._routes(5))
+        code, report, _ = self.run_check(self._with_prose("The service has five controllers"))
+        self.assertEqual(self.rules(report), {"C7"})
+        self.assertRegex(report, r'line \d+: states "five controllers" but the Facts have 6 route handler files')
+        for ok in ("six controllers", "6 route handlers", "Six Controllers", "11 routes and 11 endpoints",
+                   "17 route-and-method combinations in six controllers", "1 cron tasks", "1 background jobs"):
+            self.assertEqual(self.fired(self._with_prose(ok)), set(), ok)
+        for bad in ("twelve endpoints", "2 cron tasks", "4 scheduled jobs", "7 routes"):
+            code, report, _ = self.run_check(self._with_prose(bad))
+            self.assertEqual(self.rules(report), {"C7"}, bad)
+            self.assertIn(f'states "{bad}" but the Facts have', report)
+
+    def test_c7_prose_n_of_m_passes_when_m_is_the_total(self):
+        self.with_facts(*self._routes(5))
+        for ok in ("3 of 11 routes shown", "3 routes of 11", "three of six controllers"):
+            self.assertEqual(self.fired(self._with_prose(ok)), set(), ok)
+        code, report, _ = self.run_check(self._with_prose("3 of 12 routes shown"))
+        self.assertEqual(self.rules(report), {"C7"})
+        self.assertIn('states "3 of 12 routes" but the Facts have 11 routes', report)
+        self.assertEqual(report.count("but the Facts have"), 1)
+
+    def test_c7_prose_counts_skip_nouns_the_facts_do_not_have(self):
+        self.write_facts(self.facts["stacks"], [f for f in self.base_facts if f["name"] != "nightly"])
+        self.assertEqual(self.fired(self._with_prose("Four scheduled jobs run nightly")), set())
+        self.write_facts(self.facts["stacks"], [f for f in self.base_facts if f["kind"] != "entry_point"])
+        self.assertEqual(self.fired(self._with_prose("Five controllers and 40 routes")), set())
+
+    def test_c7_prose_counts_ignore_fences_other_sections_and_generated_blocks(self):
+        self.with_facts(*self._routes(5))
+        fenced = build_doc({3: SECTION_BODY[3] + "\n```\nfive controllers\n```"})
+        self.assertEqual(self.fired(fenced), set())
+        self.assertEqual(self.fired(build_doc({12: SECTION_BODY[12] + "\n\nThe diagram shows five controllers."})), set())
+        code, report, _ = self.run_check(build_doc({2: SECTION_BODY[2].replace(
+            "The Target is", "The Target has two controllers and is")}))
+        self.assertEqual(self.rules(report), {"C7"})
+
+    # --- C10: 5.3 coverage and the 16.6 effect table
+
+    def test_c10_5_3_must_cover_every_section_4_area(self):
+        doc = build_doc().replace("| Service: change settings,", "| Change settings,")
+        code, report, _ = self.run_check(doc)
+        self.assertEqual(self.rules(report), {"C10"})
+        self.assertIn("5.3 does not cover the section 4 Area 'Service' (F-1)", report)
+        self.assertEqual(self.fired(doc.replace("| Change settings,", "| the SERVICE settings,")), set())
+        self.assertEqual(self.fired(doc.replace(spec.RESTRICTION_LINE,
+                                                spec.RESTRICTION_LINE + "\n\nF-1 is the admin row.")), set())
+
+    def test_c10_16_6_effect_table_keys_must_be_config_key_facts(self):
+        self.with_facts({"kind": "config_key", "stack": "python-flask", "path": "app/main.py", "line": 3,
+                         "name": "app_mode", "detail": {"role": "app"}})
+        marks = "<!-- /appdoc:generated config-reference -->"
+        table = "\n\n| Key | Effect | Evidence |\n|---|---|---|\n| `{}` | Switches debug output | `app/main.py:3` |"
+        self.assertEqual(self.fired(build_doc().replace(marks, marks + table.format("app_mode"))), set())
+        code, report, _ = self.run_check(build_doc().replace(marks, marks + table.format("app_modes")))
+        self.assertEqual(self.rules(report), {"C10"})
+        self.assertIn("16.6 effect table Key 'app_modes' is not a config_key Fact", report)
+
+    # --- C11: Answerable, Dismissed, anchors
+
+    ANSWER = {"id": "E-3", "ref": "14/Q-1", "claim": "The pipeline file names the deployer", "result": "Answerable",
+              "cites": ["app/main.py:3"], "anchor": "", "limitation": ""}
+
+    def test_c11_answerable_question_fails_until_it_is_removed(self):
+        self.write_register(AUDIT, ROWS + [self.ANSWER])
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(self.rules(report), {"C11"})
+        self.assertIn("Q-1 can be closed from source (app/main.py:3); close it and remove the question", report)
+        closed = build_doc().replace("| Q-1 | Unknown: who deploys the service |", "| Q-2 | Unknown: who owns the service |")
+        self.assertEqual(self.fired(closed), set())
+        counts = self.run_check(closed)[1]
+        self.assertIn("3 rows: 2 Supported, 0 Corrected, 0 Downgraded, 1 Answerable.", counts)
+
+    def test_c11_result_and_ref_must_agree(self):
+        self.with_facts(self.smell("aaaa0009", 9))
+        bad = [dict(self.ANSWER, id="E-3", ref="7.1"),
+               dict(self.ANSWER, id="E-4", result="Dismissed", ref="10.1/V-1", limitation="why"),
+               dict(self.ANSWER, id="E-5", result="Dismissed", ref="smell/aaaa0009", limitation="  "),
+               dict(self.ANSWER, id="E-6", result="Supported", ref="smell/aaaa0009", anchor="line 3")]
+        self.write_register(AUDIT, ROWS + bad)
+        code, report, _ = self.run_check(build_doc())
+        for needle in ("an Answerable row needs ref 14/Q-<n>, not '7.1'",
+                       "a Dismissed row needs ref smell/<fid>, not '10.1/V-1'",
+                       "a Dismissed row needs a limitation",
+                       "ref 'smell/aaaa0009' is for a Dismissed row only"):
+            self.assertIn(needle, report)
+        self.assertIn("one of: Supported, Corrected, Downgraded, Dismissed, Answerable",
+                      self._bad_result_report())
+
+    def _bad_result_report(self):
+        self.write_register(AUDIT, [ROWS[0], dict(ROWS[1], result="Fine")])
+        return self.run_check(build_doc())[1]
+
+    def test_c11_supported_and_corrected_still_need_an_anchor(self):
+        for result in ("Supported", "Corrected"):
+            self.write_register(AUDIT, [ROWS[0], dict(ROWS[1], result=result, anchor="")])
+            self.assertIn("needs an anchor", self.run_check(build_doc())[1])
+
+    def test_c11_anchor_must_be_one_short_line(self):
+        for anchor in ("line 6\nline 7", "line 6\r\nline 7", "line 6 " + "x" * 200):
+            self.write_register(AUDIT, [dict(ROWS[0], anchor=anchor, cites=["app/main.py:6-7"]), ROWS[1]])
+            report = self.run_check(build_doc())[1]
+            self.assertIn("anchor must be one line of at most 200 characters", report, repr(anchor))
+        self.write_register(AUDIT, [dict(ROWS[0], anchor="line 6\n", cites=["app/main.py:6"]), ROWS[1]])
+        self.assertEqual(self.fired(build_doc()), set())  # a trailing newline is not a second line
+
+    # --- C12: finding candidates
+
+    def test_c12_candidate_cited_by_line_or_range(self):
+        self.with_facts(self.smell("aaaa0006", 6))
+        self.assertEqual(self.fired(build_doc()), set())
+        self.with_facts(self.smell("aaaa0007", 7))
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(self.rules(report), {"C12"})
+        ranged = build_doc().replace("`app/main.py:6`; value omitted.", "`app/main.py:5-7`; value omitted.")
+        self.assertEqual(self.fired(ranged), set())
+        self.with_facts(self.smell("aaaa0008", 8))
+        self.assertEqual(self.fired(ranged), {"C12"})
+
+    def test_c12_message_prints_the_fid_pattern_location_and_fix(self):
+        self.with_facts(self.smell("aaaa0009", 9))
+        code, report, out = self.run_check(build_doc())
+        self.assertEqual(code, 2)
+        line = ("smell aaaa0009 (hardcoded-credential-constant) at app/main.py:9 is not cited in 10.1 "
+                "and not dismissed in evidence.jsonl: candidate aaaa0009")
+        self.assertIn(line, report)
+        self.assertIn('"ref": "smell/aaaa0009", "claim": "<why this is not a finding>", "result": "Dismissed"', report)
+        self.assertIn(line, out)
+
+    def test_c12_candidate_dismissed_in_the_register(self):
+        self.with_facts(self.smell("aaaa0009", 9))
+        row = {"id": "E-3", "ref": "smell/aaaa0009", "claim": "A fixture constant, not a credential",
+               "result": "Dismissed", "cites": ["app/main.py:9"], "anchor": "line 9", "limitation": "test fixture"}
+        self.write_register(AUDIT, ROWS + [row])
+        self.assertEqual(self.fired(build_doc()), set())
+        self.write_register(AUDIT, ROWS + [dict(row, limitation="")])
+        self.assertEqual(self.fired(build_doc()), {"C11", "C12"})  # an unexplained dismissal does not count
+
+    def test_c12_dismissal_of_a_candidate_that_does_not_exist(self):
+        row = {"id": "E-3", "ref": "smell/ffffffff", "claim": "x", "result": "Dismissed", "cites": [],
+               "anchor": "", "limitation": "why"}
+        self.write_register(AUDIT, ROWS + [row])
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(self.rules(report), {"C11"})
+        self.assertIn("dismisses a candidate that does not exist (smell/ffffffff)", report)
+
+    def test_c12_without_a_register_candidates_must_still_be_cited(self):
+        os.remove(os.path.join(self.out, check.REGISTER))
+        self.with_facts(self.smell("aaaa0009", 9))
+        self.assertEqual(self.fired(build_doc()), {"C11", "C12"})
+        self.with_facts(self.smell("aaaa0006", 6))
+        self.assertEqual(self.fired(build_doc()), {"C11"})
+
+    def test_c12_ignores_candidates_in_test_files(self):
+        self.with_facts(self.smell("aaaa0009", 9, path="tests/t.py", test=True), self.smell("aaaa0010", 10, test=True))
+        self.assertEqual(self.fired(build_doc()), set())
+
+    def test_c12_is_capped(self):
+        self.with_facts(*[self.smell(f"{i:08x}", 1, path=f"app/s{i:02d}.py") for i in range(60)])
+        report = self.run_check(build_doc())[1]
+        self.assertEqual(len(re.findall(r"^- line \d+: smell ", report, re.M)), 50)
+        self.assertIn("... 10 more", report)
+
+    # --- entry points not cited: advisory and --strict
+
+    def _entry_facts(self):
+        for name in ("a.py", "b.py"):
+            os.makedirs(os.path.join(self.target, "svc"), exist_ok=True)
+            with open(os.path.join(self.target, "svc", name), "w") as fh:
+                fh.write("pass\n")
+        self.with_facts(
+            self.entry("svc/a.py"), self.entry("svc/b.py", "page"), self.entry("run.py", "command"),
+            *[self.entry(f"big/f{i}.py", "job") for i in range(7)],
+            self.entry("tests/t.py", test=True), self.entry("svc/c.py", "handler"))
+
+    def test_advisory_lists_uncited_entry_point_files_by_folder_without_failing(self):
+        self._entry_facts()
+        code, report, out = self.run_check(build_doc())
+        self.assertEqual(code, 0, report)
+        self.assertEqual(report.splitlines()[0], "# Check: PASS")
+        self.assertIn("## Entry points not cited (advisory)", report)
+        self.assertIn("10 entry point files in 3 folders not cited", report)
+        self.assertIn("| `big/` | 7 | `big/f0.py`, `big/f1.py`, `big/f2.py`, `big/f3.py`, `big/f4.py` |", report)
+        self.assertIn("| `svc/` | 2 | `svc/a.py`, `svc/b.py` |", report)
+        self.assertIn("| `(root)` | 1 | `run.py` |", report)
+        for absent in ("f5.py", "tests/t.py", "svc/c.py"):
+            self.assertNotIn(absent, report)
+        self.assertIn("Advisory: 10 entry point files are not cited", out)
+        self.assertNotRegex(report, r"(?m)^## C13")
+
+    def test_advisory_omits_cited_files_and_is_absent_when_empty(self):
+        self._entry_facts()
+        doc = build_doc({3: SECTION_BODY[3] + "\n- Both pages are served from `svc/a.py:1` and `svc/b.py:1`."})
+        report = self.run_check(doc)[1]
+        self.assertNotIn("`svc/`", report)
+        self.assertIn("| `big/` | 7 |", report)
+        self.with_facts(self.entry("svc/a.py"), self.entry("svc/b.py"))
+        code, report, out = self.run_check(doc)
+        self.assertNotIn("advisory", report)
+        self.assertNotIn("Advisory", out)
+
+    def test_advisory_caps_folders(self):
+        self.with_facts(*[self.entry(f"d{i:02d}/x.py") for i in range(35)])
+        report = self.run_check(build_doc())[1]
+        self.assertEqual(len(re.findall(r"^\| `d\d\d/` \|", report, re.M)), check.FOLDER_CAP)
+        self.assertIn("| 5 more folders | | |", report)
+
+    def test_strict_fails_on_uncited_entry_points(self):
+        self._entry_facts()
+        code, report, out = self.run_check(build_doc(), strict=True)
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C13"})
+        self.assertIn("## C13 Entry points not cited", report)
+        self.assertIn("7 entry point files under big/ not cited (first 5: `big/f0.py`, `big/f1.py`, `big/f2.py`, "
+                      "`big/f3.py`, `big/f4.py`)", report)
+        self.assertIn("1 entry point file under (root) not cited", report)
+        self.assertNotIn("(advisory)", report)
+        self.with_facts(self.entry("svc/a.py"), self.entry("svc/b.py"))
+        cited = build_doc({3: SECTION_BODY[3] + "\n- Handlers: `svc/a.py:1` and `svc/b.py:1`."})
+        self.assertEqual(self.run_check(cited, strict=True)[0], 0)
+
+    def test_check_command_has_a_strict_flag(self):
+        from appdoc.__main__ import main
+        self._entry_facts()
+        self.run_check(build_doc())
+        args = ["check", self.target, "--out", self.out]
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(main(args), 0)
+            self.assertEqual(main(args + ["--strict"]), 2)
+
+    # --- appendix-a coverage
+
+    def test_fill_text_does_not_leak_its_text_into_the_caller_ctx(self):
+        ctx = {"out_dir": self.out}
+        fill.fill_text(build_doc(), self.facts, ctx)
+        self.assertEqual(ctx, {"out_dir": self.out})
+
+    def test_appendix_coverage_is_generated_idempotent_and_what_the_check_expects(self):
+        path = os.path.join(self.out, "application-documentation.md")
+        with open(path, "w") as fh:
+            fh.write(build_doc())
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(fill.run(self.target, self.out), 0)
+            with open(path) as fh:
+                once = fh.read()
+            self.assertEqual(fill.run(self.target, self.out), 0)
+            with open(path) as fh:
+                self.assertEqual(fh.read(), once)
+            check.seal_register(self.target, self.out)
+            self.assertEqual(check.run(self.target, self.out), 0)
+        appendix = once.split("### A.2 Coverage")[1].split("### A.3")[0]
+        for row in ("| 10.1 | 1 of 1 |", "| 7 (workflows) | 1 of 1 |", "| 4 | 0 of 1 |"):
+            self.assertIn(row, appendix)
+        # a new row changes the table; the Check demands a re-fill, and fill produces what it accepts
+        self.write_register(AUDIT, ROWS + [{"id": "E-3", "ref": "4/F-1", "claim": "Run is an entry point",
+                                            "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2",
+                                            "limitation": "none"}])
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(check.run(self.target, self.out), 2)
+            self.assertEqual(fill.run(self.target, self.out), 0)
+            check.seal_register(self.target, self.out)
+            self.assertEqual(check.run(self.target, self.out), 0)
+        with open(path) as fh:
+            self.assertIn("| 4 | 1 of 1 |", fh.read())
+
+    # --- a Target built from the smell samples
+
+    def test_smells_extracted_from_the_sample_files_fire_c12_until_cited_or_dismissed(self):
+        from appdoc import extract
+        for rel, dest in (("actuator-all/application.properties", "config/application.properties"),
+                          ("flask_app.py", "app/flask_app.py")):
+            os.makedirs(os.path.dirname(os.path.join(self.target, dest)), exist_ok=True)
+            shutil.copyfile(os.path.join(HERE, "samples", "smells", rel), os.path.join(self.target, dest))
+        found = [f for f in json.loads(extract.extract(self.target, self.out)[0])["facts"]
+                 if f["kind"] == "smell" and not f["detail"].get("test")]
+        patterns = {f["detail"]["pattern"] for f in found}
+        self.assertTrue({"actuator-exposed", "hardcoded-credential-constant"} <= patterns, patterns)
+        self.with_facts(*found)
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(self.rules(report), {"C12"})
+        self.assertEqual(report.count(" is not cited in 10.1 and not dismissed"), len(found))
+        for f in found:
+            self.assertIn(f"smell {f['detail']['fid']} ({f['detail']['pattern']}) at {f['path']}:{f['line']}", report)
+        with open(os.path.join(self.target, "app", "flask_app.py")) as fh:
+            n = len(fh.read().splitlines())
+        cited = build_doc().replace("`app/main.py:6`; value omitted.",
+                                    f"`app/main.py:6`; value omitted. See `config/application.properties:1-3` "
+                                    f"and `app/flask_app.py:1-{n}`.")
+        self.assertEqual(self.fired(cited), set())
+        rows = [{"id": f"E-{i + 3}", "ref": f"smell/{f['detail']['fid']}", "claim": "sample value",
+                 "result": "Dismissed", "cites": [f"{f['path']}:{f['line']}"], "anchor": "",
+                 "limitation": "sample file"} for i, f in enumerate(found)]
+        self.write_register(AUDIT, ROWS + rows)
+        self.assertEqual(self.fired(build_doc()), set())
+
+
+class Frozen22Tests(unittest.TestCase):
+    """The v2.2 outputs of two Targets, kept as they were written."""
+
+    def test_2_2_documents_get_one_upgrade_problem(self):
+        for repo in ("flaskr-tdd", "spring-petclinic"):
+            with tempfile.TemporaryDirectory() as tmp:
+                out = self._copy(repo, tmp)
+                with contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(check.run(os.path.join(tmp, "target"), out), 2)
+                with open(os.path.join(out, "check-report.md")) as fh:
+                    report = fh.read()
+            self.assertIn("not on template 2.4 (stamp: 2.2)", report)
+            self.assertNotRegex(report, r"(?m)^## C(8|9|10|11) ")
+
+    def test_restamped_2_4_still_fails_on_the_missing_blocks_sections_and_line(self):
+        for repo in ("flaskr-tdd", "spring-petclinic"):
+            with tempfile.TemporaryDirectory() as tmp:
+                out = self._copy(repo, tmp, restamp=True)
+                with contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(check.run(os.path.join(tmp, "target"), out), 2)
+                with open(os.path.join(out, "check-report.md")) as fh:
+                    report = fh.read()
+            rules = set(re.findall(r"^## (C\d+) ", report, re.M))
+            self.assertTrue({"C7", "C8", "C9"} <= rules, (repo, rules))
+            for name in ("entry-points", "scheduled-jobs", "appendix-a"):
+                self.assertIn(f"generated block '{name}' is missing", report)
+            self.assertIn("subsection 16.7 'Scheduled and background jobs' is missing", report)
+            self.assertIn("5.3 lacks the fixed Restriction line", report)
+
+    @staticmethod
+    def _copy(repo, tmp, restamp=False):
+        out = os.path.join(tmp, "target", "docs", "appdoc")
+        os.makedirs(out)
+        for name in ("application-documentation.md", "evidence.jsonl", "facts.json"):
+            with open(os.path.join(HERE, "fixtures", "docs-2.2", repo, name), encoding="utf-8", newline="") as fh:
+                text = fh.read()
+            if restamp and name.endswith(".md"):
+                text = text.replace("<!-- appdoc:template 2.2 -->", spec.STAMP)
+            with open(os.path.join(out, name), "w", encoding="utf-8", newline="") as fh:
+                fh.write(text)
+        return out
 
 
 if __name__ == "__main__":

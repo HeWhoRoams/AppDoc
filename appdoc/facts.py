@@ -3,9 +3,20 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import re
 from dataclasses import dataclass, field
 
-SCHEMA = "appdoc-facts/2"
+SCHEMA = "appdoc-facts/5"
+
+_TEST_DIRS = {"test", "tests", "__tests__", "spec", "specs", "testing"}
+_TEST_FILE_RE = re.compile(
+    r"(^test_.*\.py$|_test\.py$|_test\.go$|(Tests?|IT)\.java$|Tests?\.cs$|\.(test|spec)\.[cm]?[jt]sx?$|^conftest\.py$)")
+
+
+def is_test_path(path: str) -> bool:
+    parts = path.split("/")
+    return any(p.lower() in _TEST_DIRS for p in parts[:-1]) or bool(_TEST_FILE_RE.search(parts[-1]))
 
 KINDS = (
     "file",
@@ -19,7 +30,34 @@ KINDS = (
     "auth_check",
     "message",
     "ownership",
+    "smell",          # finding candidate: detail pattern (id), fid (stable id)
+    "schema_object",  # DDL: detail type = table|index|fk, dialect, columns/expression/unique
+    "owner_file",     # CODEOWNERS, MAINTAINERS, ...: detail entries (count only, never names)
+    "ui_page",        # XAML page or similar: detail x_class, route
 )
+
+# Allowed detail keys per kind (conformance guard, Phase 2.3).
+DETAIL_KEYS = {
+    "file": frozenset("encoding ext lines size stacks".split()),
+    "stack": frozenset("capabilities file_count marker_files supported".split()),
+    "entry_point": frozenset(
+        "class codebehind controller enabled exists framework handler inherits inputs "
+        "master method middleware page prefix_unresolved route_name schedule scheduler "
+        "source type usage view".split()),
+    "data_access": frozenset(
+        "builder class entity namespace native operation orm property statement type via".split()),
+    "connection": frozenset("class secret_location source type".split()),
+    "config_key": frozenset("role secret_location source use via".split()),
+    "dependency": frozenset("manager mode version".split()),
+    "external_call": frozenset("call client method mode operation type via".split()),
+    "auth_check": frozenset("applies_to mechanism policy roles scope".split()),
+    "message": frozenset("context exception".split()),
+    "ownership": frozenset(),
+    "smell": frozenset("constant fid pattern".split()),
+    "schema_object": frozenset("columns dialect expression type unique".split()),
+    "owner_file": frozenset(),
+    "ui_page": frozenset("root route x_class".split()),
+}
 
 
 @dataclass(frozen=True)
@@ -72,6 +110,11 @@ class Fact:
         }
 
 
+def fact_id(kind: str, pattern: str, path: str, line: int | None) -> str:
+    """Stable 8-hex id for a Fact that other files refer to (smell/<id> in the register)."""
+    return hashlib.sha1(f"{kind}|{pattern}|{path}|{line or 0}".encode("utf-8")).hexdigest()[:8]
+
+
 def _freeze_list(values) -> tuple:
     try:
         return tuple(sorted(values))
@@ -79,14 +122,20 @@ def _freeze_list(values) -> tuple:
         return tuple(values)
 
 
-def dumps(target_name: str, commit: str | None, facts, history: str | None = None) -> str:
+def dumps(target_name: str, commit: str | None, facts, history: str | None = None,
+          scan: dict | None = None) -> str:
     """Serialize facts to the canonical Facts file text (sorted, de-duplicated, no timestamps)."""
+    from . import __version__
     unique = sorted(set(facts), key=lambda f: f.sort_key())
     stacks = [f.to_json() for f in unique if f.kind == "stack"]
     others = [f.to_json() for f in unique if f.kind != "stack"]
+    target = {"name": target_name, "commit": commit, "history": history or "none"}
+    if scan is not None:
+        target["scan"] = scan
     doc = {
         "schema": SCHEMA,
-        "target": {"name": target_name, "commit": commit, "history": history or "none"},
+        "generator": __version__,
+        "target": target,
         "stacks": stacks,
         "facts": others,
     }

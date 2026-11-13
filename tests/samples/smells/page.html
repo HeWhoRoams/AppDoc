@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+<body>
+  {# {{ commented.text|safe }} #}
+  <!-- {{ html_commented|safe }} -->
+  <div>{{ entry.text|safe }}</div>
+  <div>{{ entry.title }}</div>
+  <div>{{ data|tojson|safe }}</div>
+  <div>{{ "<b>literal</b>"|safe }}</div>
+  <div>{{ message|e }}</div>
+  <span th:utext="${page.bio}">bio</span>
+  <span th:utext="#{message.key}">i18n</span>
+  <span th:text="${page.name}">name</span>
+  <!-- <span th:utext="${hidden.value}">x</span> -->
+</body>
+</html>

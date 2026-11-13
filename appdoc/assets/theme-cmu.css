@@ -56,6 +56,7 @@ blockquote {
   margin: 1.2rem 0; padding: .4rem 1.2rem; border-left: 4px solid var(--brand);
   background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--muted);
 }
+blockquote.audit-banner { border-left-color: var(--accent); background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--text); }
 .inferred { border-left: 3px solid var(--accent); padding-left: .8rem; color: var(--muted); }
 li.inferred { list-style-position: inside; }
 td.inferred { border-left: 3px solid var(--accent); }

@@ -12,6 +12,7 @@ MODULES = (
     "java_spring",
     "python_flask",
     "node_express",
+    "go",
 )
 
 

@@ -24,7 +24,7 @@ class RegistryTests(unittest.TestCase):
     def test_all_six_stacks_load_with_unique_ids(self):
         ids = [s.id for s in load()]
         self.assertEqual(sorted(ids), sorted([
-            "classic-asp", "aspnet", "aspnet-core", "java-spring", "python-flask", "node-express"]))
+            "classic-asp", "aspnet", "aspnet-core", "java-spring", "python-flask", "node-express", "go"]))
         self.assertEqual(len(ids), len(set(ids)))
 
     def test_every_stack_has_a_sample_and_detects_it(self):
@@ -114,6 +114,28 @@ class SecretTests(unittest.TestCase):
         self.assertEqual(secrets.find_secret_shapes("token = 30b662ed4e8a21908a2ade37e63f5e9ff17db4ce"), [])
         self.assertEqual(secrets.find_secret_shapes("api_key = 123e4567-e89b-12d3-a456-426614174000"), [])
 
+    def test_path_citations_after_a_secret_word_are_not_secrets(self):
+        for line in (
+            "The reset token: `portal/HelpWeb/functions/pwreset_long_name.asp:123` is read here.",
+            "password: `To be deleted/FrontCounterDev/logcall_archive.asp:212`",
+            "secret: portal/some/long/path/with/many/segments/file.asp:123",
+            "token = src\\main\\java\\com\\example\\security\\TokenService.java:40-52",
+            "token: `appsettings.Production.environment.override.json:12`",
+            "The token: `portal/some/long/path/file.asp:123`.",
+        ):
+            self.assertEqual(secrets.find_secret_shapes(line), [], line)
+
+    def test_real_secret_values_are_still_found(self):
+        for line in (
+            "token = Xk9fQ2mZp7LwR4tYv8NbC3dHs6JgA1eU",
+            'secret: "dGhpc2lzYXZlcnlsb25nYmFzZTY0c2VjcmV0dmFsdWUxMjM9ISE="',
+            "The token: `Xk9fQ2mZp7LwR4tYv8NbC3dHs6JgA1eU` is used.",
+            "password: Xk9fQ2mZp7LwR4/tYv8NbC3dHs6JgA1eU+Zq",
+            "api_key: AKIAIOSFODNN7EXAMPLE",
+            'api_key: "AKIAIOSFODNN7EXAMPLE"',
+        ):
+            self.assertTrue(secrets.find_secret_shapes(line), line)
+
 
 class ScanTests(unittest.TestCase):
     def setUp(self):
@@ -154,6 +176,91 @@ class ScanTests(unittest.TestCase):
         self.write("docs/appdoc/facts.json", "{}")
         paths = [f.path for f in scan.walk(self.root, os.path.join(self.root, "docs", "appdoc"))]
         self.assertEqual(paths, ["a.py"])
+
+    def walk_stats(self):
+        stats = {}
+        paths = [f.path for f in scan.walk(self.root, None, stats)]
+        return paths, stats
+
+    def test_nested_packages_folder_with_source_is_scanned(self):
+        self.write("routers/api/packages/api.go", "package packages\n")
+        self.write("build/generate.go", "package main\n")
+        paths, stats = self.walk_stats()
+        self.assertEqual(paths, ["build/generate.go", "routers/api/packages/api.go"])
+        self.assertEqual(stats["pruned"], [])
+
+    def test_build_output_is_pruned_on_evidence_and_counted(self):
+        self.write("App.sln", "x\n")
+        self.write("packages/Foo.1.0/Foo.1.0.nupkg", b"\x00", "wb")
+        self.write("src/Web/Web.csproj", "<Project/>\n")
+        self.write("src/Web/bin/Debug/Web.dll", b"\x00", "wb")
+        self.write("src/Web/obj/a.json", "{}")
+        self.write("web/package.json", "{}")
+        self.write("web/dist/app.js", "x\n")
+        self.write("pom.xml", "<project/>\n")
+        self.write("target/classes/A.class", b"\x00", "wb")
+        self.write(".git/HEAD", "ref\n")
+        paths, stats = self.walk_stats()
+        self.assertEqual(paths, ["App.sln", "pom.xml", "src/Web/Web.csproj", "web/package.json"])
+        self.assertEqual([(p["path"], p["files"]) for p in stats["pruned"]],
+                         [("packages/", 1), ("src/Web/bin/", 1), ("src/Web/obj/", 1), ("target/", 1), ("web/dist/", 1)])
+
+    def test_appdocignore_bang_reincludes_a_pruned_folder(self):
+        self.write("web/package.json", "{}")
+        self.write("web/dist/app.js", "x\n")
+        self.write(".appdocignore", "!dist\n")
+        paths, stats = self.walk_stats()
+        self.assertIn("web/dist/app.js", paths)
+        self.assertEqual(stats["pruned"], [])
+
+    def test_facts_reconcile_found_scanned_pruned_ignored(self):
+        self.write("a.py", "x\n")
+        self.write("legacy/b.py", "x\n")
+        self.write(".appdocignore", "legacy\n")
+        self.write("node_modules/c/index.js", "x\n")
+        text, summary = extract.extract(self.root, os.path.join(self.root, "docs", "appdoc"))
+        sc = json.loads(text)["target"]["scan"]
+        self.assertEqual((sc["found"], sc["scanned"], sc["pruned_files"], sc["ignored"]), (4, 2, 1, 1))
+        self.assertIn("Files found: 4 = scanned 2 + pruned 1", summary)
+        self.assertIn("| `node_modules/` | always | 1 |", summary)
+
+    def test_os_and_authoring_metadata_are_dropped_and_counted(self):
+        self.write("a.py", "x\n")
+        self.write("desktop.ini", "[.ShellClassInfo]\n")
+        self.write("Thumbs.db", b"\x00\x01")
+        self.write(".DS_Store", b"\x00")
+        self.write("_vti_cnf/x.asp", "x\n")
+        paths, stats = self.walk_stats()
+        self.assertEqual(paths, ["a.py"])
+        self.assertEqual(stats["metadata"], 4)  # 3 files + 1 in _vti_cnf
+
+    def test_retired_candidate_by_name(self):
+        self.write("a.py", "x\n")
+        self.write("old/legacy.py", "x\n")
+        self.write("To be deleted/Front Dev/logcall.asp", "x\n")
+        _, stats = self.walk_stats()
+        names = {c["path"] for c in stats["retired_candidates"]}
+        self.assertIn("old/", names)
+        self.assertIn("To be deleted/", names)  # the shallowest matching folder
+
+    def test_retired_candidate_by_content(self):
+        self.write("src/a.py", "same content\n")
+        self.write("src/b.py", "same content\n")
+        self.write("src/c.py", "same content\n")
+        self.write("src/d.py", "same content\n")
+        self.write("src/e.py", "same content\n")
+        self.write("other/a.py", "same content\n")
+        _, stats = self.walk_stats()
+        # src has 5 files, all byte-identical to other/a.py -> content signal
+        self.assertIn({"path": "src/", "signal": "content", "files": 5}, stats["retired_candidates"])
+
+    def test_retired_token_matcher(self):
+        from appdoc.scan import _retired_name_signal
+        for name in ("old", "household-old", "site-old", "OLD_site", "To Be Deleted", "tobedeleted",
+                     "deprecated", "bak", "archive", "unused", "trash", "deleteme"):
+            self.assertEqual(_retired_name_signal(name), "name", name)
+        for name in ("household", "older", "copycat", "new", "src"):
+            self.assertIsNone(_retired_name_signal(name), name)
 
 
 @unittest.skipUnless(shutil.which("git"), "git not installed")
@@ -274,6 +381,39 @@ class GenericTests(unittest.TestCase):
 
     def test_supported_ecosystem_is_not_reported(self):
         self.assertEqual(generic.unsupported_stacks(["package.json"], {"node-express"}), [])
+
+    def test_config_roles(self):
+        cases = {
+            "src/main/resources/application.properties": "app",
+            "src/main/resources/messages/messages_de.properties": None,
+            "pnpm-lock.yaml": None,
+            "options/locale/locale_en-US.ini": None,
+            ".github/workflows/ci.yml": "ci",
+            "k8s/db.yml": "orchestration",
+            "docker-compose.yml": "orchestration",
+            ".mvn/wrapper/maven-wrapper.properties": "build",
+            "custom/conf/app.example.ini": "unclassified",
+            "src/Identity.API/appsettings.json": "app",
+            "config/settings.json": "app",
+        }
+        for path, role in cases.items():
+            self.assertEqual(generic.config_role(path), role, path)
+
+    def test_lockfiles_and_message_bundles_yield_no_config_keys(self):
+        self.assertEqual(self.names("pnpm-lock.yaml", "lockfileVersion: '9.0'\n", "config_key"), [])
+        self.assertEqual(self.names("src/messages.properties", "welcome=Hi\n", "config_key"), [])
+        keys = [f for f in generic.extract("src/application.properties", "server.port=8080\n") if f.kind == "config_key"]
+        self.assertEqual([(f.name, f.detail_dict()["role"]) for f in keys], [("server.port", "app")])
+
+    def test_ini_keys_and_documented_defaults_without_values(self):
+        ini = ("APP_NAME = Gitea\n[server]\n;HTTP_PORT = 3000\n; see the docs = here\n"
+               "[database]\nPASSWD = hunter2pw\n")
+        out = [f for f in generic.extract("custom/conf/app.example.ini", ini) if f.kind == "config_key"]
+        got = {f.name: f.detail_dict() for f in out}
+        self.assertEqual(sorted(got), ["APP_NAME", "database.PASSWD", "server.HTTP_PORT"])
+        self.assertTrue(got["server.HTTP_PORT"]["commented"])
+        self.assertTrue(got["database.PASSWD"]["secret_location"])
+        self.assertNotIn("hunter2pw", repr(out))
 
 
 if __name__ == "__main__":

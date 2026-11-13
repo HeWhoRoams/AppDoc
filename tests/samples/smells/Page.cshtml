@@ -1,0 +1,7 @@
+@model Smells.PageModel
+
+@* @Html.Raw(Model.Hidden) *@
+<div>@Html.Raw(Model.Description)</div>
+<div>@Model.Title</div>
+<div>@Html.Raw("<b>literal</b>")</div>
+<script>var data = @Html.Raw(Json.Serialize(Model.Data));</script>

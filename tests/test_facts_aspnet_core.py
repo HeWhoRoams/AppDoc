@@ -108,6 +108,74 @@ class AspNetCoreFacts(unittest.TestCase):
         self.assertNotIn("Commented out", names)
         self.assertNotIn("/ignored", names)
 
+    def test_mvc_actions_returning_view_are_pages_with_resolved_views(self):
+        C = "Controllers/HomeController.cs"
+        self.assertTrue(self.has("entry_point", C, 9, "/Home/Index", type="page", handler="HomeController.Index",
+                                 view="Views/Home/Index.cshtml", exists=True))
+        self.assertTrue(self.has("entry_point", C, 14, "/Home/About", type="page", view="Views/Home/About.cshtml", exists=True))
+        # Falls back to Views/Shared when the controller folder has no such view; expression-bodied action.
+        self.assertTrue(self.has("entry_point", C, 22, "/Home/Fail", type="page", view="Views/Shared/Error.cshtml", exists=True))
+
+    def test_view_that_does_not_exist_reports_expected_path(self):
+        self.assertTrue(self.has("entry_point", "Controllers/HomeController.cs", 19, "/Home/Missing", type="page",
+                                 view="Views/Home/NotThere.cshtml", exists=False))
+
+    def test_view_exists_is_unknown_without_the_file_list(self):
+        from appdoc.stacks import aspnet_core
+        with open(os.path.join(SAMPLE, "Controllers", "HomeController.cs"), encoding="utf-8") as fh:
+            text = fh.read()
+        pages = [f.detail_dict() for f in aspnet_core.AspNetCoreStack().extract("src/Web/Controllers/HomeController.cs", text)
+                 if f.detail_dict().get("type") == "page"]
+        self.assertEqual({p["exists"] for p in pages}, {None})
+        self.assertIn("src/Web/Views/Home/Index.cshtml", {p["view"] for p in pages})
+
+    def test_controller_with_implicit_usings_is_still_extracted(self):
+        from appdoc.stacks import aspnet_core
+        src = ("namespace X;\npublic class DiagController : Controller\n{\n    public async Task<IActionResult> Index()\n"
+               "    {\n        return View(model);\n    }\n}\n")
+        got = [(f.detail_dict()["type"], f.line, f.detail_dict().get("view"))
+               for f in aspnet_core.AspNetCoreStack().extract("src/Id/Quickstart/Diag/DiagController.cs", src)
+               if f.kind == "entry_point"]
+        self.assertEqual(sorted(got, key=str), [("page", 6, "src/Id/Views/Diag/Index.cshtml"), ("route", 4, None)])
+
+    def test_view_files_are_pages(self):
+        self.assertTrue(self.has("entry_point", "Views/Home/Index.cshtml", 1, "Views/Home/Index.cshtml", type="page",
+                                 source="view", controller="Home"))
+        self.assertTrue(self.has("entry_point", "Views/Shared/Error.cshtml", 1, "Views/Shared/Error.cshtml", type="page",
+                                 source="view", controller=None))
+        self.assertFalse([f for f in self.facts if f["path"] == "Views/Shared/_Layout.cshtml" and f["kind"] == "entry_point"])
+
+    def test_xaml_pages(self):
+        self.assertTrue(self.has("ui_page", "ClientApp/AppShell.xaml", 3, "HelpDesk.ClientApp.AppShell",
+                                 x_class="HelpDesk.ClientApp.AppShell", root="Shell", route="settings,tickets"))
+        self.assertTrue(self.has("ui_page", "ClientApp/Views/MainPage.xaml", 2, "HelpDesk.ClientApp.Views.MainPage",
+                                 root="views:ContentPageBase", route=None))
+        self.assertEqual([f for f in self.facts if f["kind"] == "ui_page" and f["path"] == "ClientApp/Styles.xaml"], [])
+        self.assertNotIn("Commented.Shell", " ".join(f["name"] for f in self.facts))
+
+    def test_background_services_and_hangfire_jobs(self):
+        W = "Workers/DigestWorker.cs"
+        self.assertTrue(self.has("entry_point", W, 6, "DigestWorker", type="job", schedule=None, enabled=True))
+        self.assertTrue(self.has("entry_point", W, 25, "CleanupService", type="job", schedule=None, enabled=None))
+        self.assertTrue(self.has("entry_point", W, 36, "close-stale", type="job", schedule="0 */6 * * *", scheduler="hangfire"))
+        self.assertTrue(self.has("entry_point", W, 37, "daily-digest", type="job", schedule="Cron.Daily", handler="SendDigest"))
+
+    def test_primary_constructor_hosted_service_is_a_job_and_abstract_base_is_not(self):
+        W = "Workers/DigestWorker.cs"
+        self.assertTrue(self.has("entry_point", W, 41, "QueueWorker", type="job", schedule=None, enabled=None))
+        self.assertNotIn("WorkerBase", {f["name"] for f in self.facts if f["kind"] == "entry_point"})
+
+    def test_configuration_reads(self):
+        W = "Workers/DigestWorker.cs"
+        self.assertTrue(self.has("config_key", W, 17, "Digest:IntervalMinutes", use="read", secret_location=False))
+        self.assertTrue(self.has("config_key", W, 18, "Smtp:Host", use="read"))
+        self.assertTrue(self.has("config_key", W, 19, "Smtp:ApiKey", use="read", secret_location=True))
+        self.assertTrue(self.has("config_key", W, 20, "Digest", use="read"))
+        self.assertTrue(self.has("config_key", W, 21, "DIGEST_TOKEN", use="read", secret_location=True))
+
+    def test_hardcoded_secret_constant_is_a_define(self):
+        self.assertTrue(self.has("config_key", "Services/NotificationService.cs", 10, "_smtpPassword", use="define"))
+
     def test_kinds_and_types_valid(self):
         for f in self.facts:
             if f["kind"] == "entry_point":

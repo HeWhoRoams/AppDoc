@@ -11,6 +11,7 @@ import re
 from urllib.parse import urlsplit
 
 from ..facts import Fact
+from ..secrets import is_secret_key
 from .aspnet import (STR, Ctx, _join_route, _safe, _strip_markup_comments, _unq, dotnet_common, error_messages,
                      find_classes, find_methods, first_string_arg)
 from .base import Stack, strip_comments
@@ -19,7 +20,8 @@ STACK_ID = "aspnet-core"
 
 _CORE_HINT = re.compile(
     r"Microsoft\.AspNetCore|Microsoft\.EntityFrameworkCore|Dapper|\bWebApplication\b|ControllerBase|IHttpClientFactory|"
-    r"GetConnectionString|\bMap(?:Get|Post|Put|Delete|Patch|Group|Methods)\s*\(|\bPageModel\b|\bDbContext\b")
+    r"GetConnectionString|\bMap(?:Get|Post|Put|Delete|Patch|Group|Methods)\s*\(|\bPageModel\b|\bDbContext\b|"
+    r"\bIActionResult\b|:\s*Controller\b")
 _FRAMEWORK_ONLY = re.compile(r"System\.Web\.(?:Mvc|UI|Http|Routing|Security|Optimization)")
 
 _HTTP_ATTRS = {"HttpGet": "GET", "HttpPost": "POST", "HttpPut": "PUT", "HttpDelete": "DELETE",
@@ -33,7 +35,105 @@ def _norm(route: str) -> str:
 
 # --------------------------------------------------------------------------- controllers
 
-def _controllers(path, ctx: Ctx, classes):
+_STR_AT = re.compile(STR)
+_VIEW_CALL = re.compile(r"(?<![\w.])(?:this\s*\.\s*)?View\s*\(")
+
+
+def _method_body(t: str, start: int) -> tuple[int, str]:
+    """(offset, text) of the block or expression body that follows a method signature ending at ``start``."""
+    i = start
+    while i < len(t) and t[i].isspace():
+        i += 1
+    if t.startswith("=>", i):
+        j = t.find(";", i)
+        return i, t[i:len(t) if j < 0 else j]
+    if i >= len(t) or t[i] != "{":
+        return i, ""
+    depth, j = 0, i
+    while j < len(t):
+        c = t[j]
+        if c == '"':
+            sm = _STR_AT.match(t, j)
+            j = sm.end() if sm else j + 1
+            continue
+        if c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                return i, t[i:j]
+        j += 1
+    return i, t[i:]
+
+
+def _view_candidates(ctrl_path: str, ctrl: str, view: str):
+    """Possible Target-relative view files, deepest project folder first."""
+    name = view if view.lower().endswith(".cshtml") else view + ".cshtml"
+    segs = ctrl_path.split("/")[:-1]
+    for i in range(len(segs), -1, -1):
+        d = "/".join(segs[:i])
+        pre = d + "/" if d else ""
+        if name.startswith(("~/", "/")):
+            yield pre + name.lstrip("~/")
+        else:
+            yield f"{pre}Views/{ctrl}/{name}"
+            yield f"{pre}Views/Shared/{name}"
+
+
+class _Files:
+    """The Target's file list, captured by ``detect`` so a controller can find its view."""
+
+    def __init__(self, files):
+        self.paths = frozenset(files)
+        self.proj_dirs = frozenset(p.rsplit("/", 1)[0] if "/" in p else "" for p in files if p.lower().endswith(".csproj"))
+
+    def __contains__(self, p):
+        return p in self.paths
+
+
+def _project_dir(paths, ctrl_path: str) -> str:
+    """Nearest ancestor folder holding a .csproj, else the folder above ``Controllers``/``Quickstart``."""
+    segs = ctrl_path.split("/")[:-1]
+    if paths is not None:
+        for i in range(len(segs), -1, -1):
+            d = "/".join(segs[:i])
+            if d in paths.proj_dirs:
+                return d
+    for i, s in enumerate(segs):
+        if s.lower() in ("controllers", "quickstart"):
+            return "/".join(segs[:i])
+    return "/".join(segs)
+
+
+def _resolve_view(paths, ctrl_path: str, ctrl: str, view: str):
+    """(view file path, exists). ``exists`` is None when the Target's file list is unknown."""
+    if paths is not None:
+        for c in _view_candidates(ctrl_path, ctrl, view):
+            if c in paths:
+                return c, True
+    proj = _project_dir(paths, ctrl_path)
+    pre = proj + "/" if proj else ""
+    name = view if view.lower().endswith(".cshtml") else view + ".cshtml"
+    expected = pre + name.lstrip("~/") if name.startswith(("~/", "/")) else f"{pre}Views/{ctrl}/{name}"
+    return expected, (False if paths is not None else None)
+
+
+def _views(path, ctx: Ctx, m, ctrl, action, handler, route, verbs, paths):
+    start, body = _method_body(ctx.t, m.end())
+    seen = set()
+    for vm in _VIEW_CALL.finditer(body):
+        rest = body[vm.end():].lstrip()
+        sm = _STR_AT.match(rest)
+        view = _unq(sm.group(0)) if sm and not rest.startswith("$") else action
+        if view in seen:
+            continue
+        seen.add(view)
+        file, exists = _resolve_view(paths, path, ctrl, view)
+        yield Fact.make("entry_point", STACK_ID, path, ctx.line(start + vm.start()), route, type="page",
+                        method=",".join(sorted(set(verbs))) or "GET", handler=handler, view=file, exists=exists)
+
+
+def _controllers(path, ctx: Ctx, classes, paths=None):
     for m, cls, attrs in find_methods(ctx, classes):
         if cls is None or "static" in m.group("mods"):
             continue
@@ -77,6 +177,7 @@ def _controllers(path, ctx: Ctx, classes):
         route = route.replace("[controller]", ctrl).replace("[action]", action)
         yield Fact.make("entry_point", STACK_ID, path, ctx.line(m.start("name")), route, type="route",
                         method=",".join(sorted(set(verbs))) or "ANY", handler=f"{cls.name}.{action}")
+        yield from _views(path, ctx, m, ctrl, action, f"{cls.name}.{action}", route, verbs, paths)
 
 
 def _page_models(path, ctx: Ctx, classes):
@@ -234,13 +335,166 @@ def _razor_pages(path, text):
             yield Fact.make("entry_point", STACK_ID, path, line, _page_route(path, tm), type="page", method="GET,POST")
 
 
+# --------------------------------------------------------------------------- MVC view files
+
+_VIEW_SKIP_DIRS = {"components", "editortemplates", "displaytemplates"}
+
+
+def _view_file(path, text):
+    parts = path.split("/")
+    low = [p.lower() for p in parts]
+    base = parts[-1]
+    if "views" not in low[:-1] or base.startswith("_") or re.search(r"(?m)^[ \t]*@page\b", text):
+        return
+    if _VIEW_SKIP_DIRS & set(low[:-1]):
+        return
+    folder = parts[-2]
+    yield Fact.make("entry_point", STACK_ID, path, 1, path, type="page", method="GET", source="view",
+                    controller=None if folder.lower() in ("shared", "views") else folder,
+                    view=base[:-len(".cshtml")])
+
+
+# --------------------------------------------------------------------------- XAML pages
+
+_XAML_ROOT = re.compile(r"<(?![?!/])([\w:.\-]+)((?:\"[^\"]*\"|'[^']*'|[^>\"'])*)>")
+_XAML_PAGE = re.compile(r"(?:Shell|Window|Page|\w*Page(?:Base)?)")
+_XAML_ROUTED = re.compile(r"<(?:\w+:)?(?:ShellContent|Tab|FlyoutItem|TabBar|ShellItem|ShellSection)\b([^>]*)>")
+
+
+def _xaml_pages(path, text):
+    clean = _strip_markup_comments(text)
+    rm = _XAML_ROOT.search(clean)
+    if not rm:
+        return
+    tag, attrs = rm.group(1), rm.group(2)
+    local = tag.split(":")[-1]
+    if not _XAML_PAGE.fullmatch(local):
+        return
+    cm = re.search(r'\bx:Class\s*=\s*"([^"]+)"', attrs)
+    route = re.search(r'\bRoute\s*=\s*"([^"]+)"', attrs)
+    routes = route.group(1) if route else None
+    if routes is None and local == "Shell":
+        found = sorted({r for blk in _XAML_ROUTED.findall(clean) for r in re.findall(r'\bRoute\s*=\s*"([^"]+)"', blk)})
+        routes = ",".join(found) or None
+    x_class = cm.group(1) if cm else None
+    yield Fact.make("ui_page", STACK_ID, path, clean.count("\n", 0, rm.start()) + 1, x_class or path,
+                    x_class=x_class, route=routes, root=tag)
+
+
+# --------------------------------------------------------------------------- configuration reads
+
+_CFG_RECEIVER = r"(?<![\w])(?:[\w.]*\.)?_?(?:[Cc]onfiguration|[Cc]onfig)\s*\[\s*(" + STR + r")\s*\]"
+_CFG_READS = (
+    re.compile(_CFG_RECEIVER),
+    re.compile(r"\.\s*(?:GetValue|GetRequiredValue)\s*(?:<[^>()]*>)?\s*\(\s*(" + STR + ")"),
+    re.compile(r"\.\s*(?:GetSection|GetRequiredSection)\s*\(\s*(" + STR + ")"),
+    re.compile(r"\bEnvironment\s*\.\s*GetEnvironmentVariable\s*\(\s*(" + STR + ")"),
+)
+
+
+def _config_reads(path, ctx: Ctx):
+    t = ctx.t
+    for rx in _CFG_READS:
+        for m in rx.finditer(t):
+            key = _unq(m.group(1)).strip()
+            if not key or "{" in key or len(key) > 200:
+                continue
+            assigned = rx is _CFG_READS[0] and re.match(r"\s*=(?!=)", t[m.end():])
+            yield Fact.make("config_key", STACK_ID, path, ctx.line(m.start()), key, source="code",
+                            secret_location=is_secret_key(key), use="define" if assigned else "read")
+
+
+def _as_define(f: Fact) -> Fact:
+    """A hard-coded literal assigned to a secret-named variable defines the value; it is not a read."""
+    return Fact.make(f.kind, f.stack, f.path, f.line, f.name, **{**f.detail_dict(), "use": "define"})
+
+
+# --------------------------------------------------------------------------- background jobs
+
+_HOSTED_BASE = re.compile(r"\b(?:BackgroundService|IHostedService|IHostedLifecycleService)\b")
+# Also matches primary-constructor classes: ``class X(IRepo repo) : BackgroundService``.
+_JOB_CLASS = re.compile(
+    r"\bclass\s+(\w+)\s*(?:<[^<>{}]*>)?\s*(?:\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))?\s*:\s*([^{;]*)")
+_CRON_LIT = re.compile(r"[\d*/,\-?LW#A-Za-z]+(?:\s+[\d*/,\-?LW#A-Za-z]+){4,6}")
+_RECURRING = re.compile(r"\b(?:RecurringJob|\w*[Rr]ecurringJob\w*)\s*\.\s*AddOrUpdate\s*(?:<[^>()]*>)?\s*\(")
+
+
+def _split_cs(args: str) -> list[str]:
+    out, depth, i, start = [], 0, 0, 0
+    while i < len(args):
+        c = args[i]
+        if c == '"':
+            sm = _STR_AT.match(args, i)
+            i = sm.end() if sm else i + 1
+            continue
+        if c in "([{":
+            depth += 1
+        elif c in ")]}":
+            depth -= 1
+        elif c == "," and depth == 0:
+            out.append(args[start:i].strip())
+            start = i + 1
+        i += 1
+    if args[start:].strip():
+        out.append(args[start:].strip())
+    return out
+
+
+def _call_text(t: str, open_idx: int) -> str:
+    depth, i = 0, open_idx
+    while i < len(t):
+        c = t[i]
+        if c == '"':
+            sm = _STR_AT.match(t, i)
+            i = sm.end() if sm else i + 1
+            continue
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+            if depth == 0:
+                return t[open_idx + 1:i]
+        i += 1
+    return t[open_idx + 1:]
+
+
+def _jobs(path, ctx: Ctx):
+    t = ctx.t
+    for c in _JOB_CLASS.finditer(t):
+        bases = re.split(r"\bwhere\b", c.group(2))[0]
+        if not _HOSTED_BASE.search(bases) or re.search(r"\babstract\s+(?:(?:partial|sealed)\s+)*$", t[max(0, c.start() - 40):c.start()]):
+            continue
+        name = c.group(1)
+        registered = re.search(r"\bAddHostedService\s*<\s*(?:[\w.]+\.)?" + re.escape(name) + r"\b", t) is not None
+        yield Fact.make("entry_point", STACK_ID, path, ctx.line(c.start()), name, type="job", handler=name,
+                        schedule=None, enabled=True if registered else None, scheduler="hosted-service")
+    for m in _RECURRING.finditer(t):
+        parts = _split_cs(_call_text(t, m.end() - 1))
+        if not parts:
+            continue
+        idm = _STR_AT.fullmatch(parts[0])
+        sched = next((_unq(p) for p in parts[1:] if _STR_AT.fullmatch(p) and _CRON_LIT.fullmatch(_unq(p).strip())), None)
+        if sched is None:
+            sched = next((" ".join(p.split()) for p in parts[1:] if re.match(r"Cron\s*\.", p)), None)
+        expr = next((p for p in parts[1:] if "=>" in p), "")
+        mm = re.findall(r"\.\s*(\w+)\s*(?:<[^>()]*>)?\s*\(", expr)
+        handler = (mm[-1] if mm else " ".join(expr.split())[:80]) or "job"
+        yield Fact.make("entry_point", STACK_ID, path, ctx.line(m.start()), _unq(idm.group(0)) if idm else handler,
+                        type="job", handler=handler, schedule=sched[:120] if sched else None, enabled=True,
+                        scheduler="hangfire")
+
+
 # --------------------------------------------------------------------------- the Stack
 
 class AspNetCoreStack(Stack):
     id = STACK_ID
-    extensions = frozenset({".cs", ".cshtml", ".razor"})
+    extensions = frozenset({".cs", ".cshtml", ".razor", ".xaml"})
+
+    def __init__(self):
+        self._files = None
 
     def detect(self, files):
+        self._files = _Files(files)
         base = lambda p: p.rsplit("/", 1)[-1]
         proj = sorted(p for p in files if p.lower().endswith(".csproj"))
         entry = sorted(p for p in files if base(p) in ("Program.cs", "Startup.cs"))
@@ -248,27 +502,39 @@ class AspNetCoreStack(Stack):
 
     def extract(self, path, text):
         ext = "." + path.rsplit(".", 1)[-1].lower() if "." in path.rsplit("/", 1)[-1] else ""
+        if ext == ".xaml":
+            yield from _xaml_pages(path, text)
+            return
         if _FRAMEWORK_ONLY.search(text) and "Microsoft.AspNetCore" not in text:
             return
         if ext == ".cs":
-            if not _CORE_HINT.search(text):
-                return
             ctx = Ctx(strip_comments(text, "c"))
             classes = find_classes(ctx)
-            yield from dotnet_common(STACK_ID, path, ctx, web_forms=False)
+            yield from _jobs(path, ctx)
+            yield from _config_reads(path, ctx)
+            if not _CORE_HINT.search(text):
+                return
+            for f in dotnet_common(STACK_ID, path, ctx, web_forms=False):
+                yield _as_define(f) if f.kind == "config_key" else f
             yield from error_messages(STACK_ID, path, ctx)
-            yield from _controllers(path, ctx, classes)
+            yield from _controllers(path, ctx, classes, self._files)
             yield from _page_models(path, ctx, classes)
             yield from _minimal_apis(path, ctx)
             yield from _data_and_calls(path, ctx)
             yield from _messages(path, ctx)
         elif ext in (".cshtml", ".razor"):
             clean = strip_comments(_strip_markup_comments(text), "c")
+            if ext == ".cshtml":
+                yield from _view_file(path, text)
             yield from _razor_pages(path, _strip_markup_comments(text))
             ctx = Ctx(clean)
-            yield from dotnet_common(STACK_ID, path, ctx, web_forms=False)
+            for f in dotnet_common(STACK_ID, path, ctx, web_forms=False):
+                yield _as_define(f) if f.kind == "config_key" else f
             yield from error_messages(STACK_ID, path, ctx)
             yield from _messages(path, ctx)
 
+
+capabilities = frozenset(
+    "auth_check config_key connection data_access entry_point external_call message ui_page".split())
 
 STACK = AspNetCoreStack()

@@ -12,3 +12,6 @@ tmp/
 .appdoc/
 tests/test-output/
 tests/powershell/
+
+# Internal-app example — not for the public repo (Decision D5)
+examples/helpweb/

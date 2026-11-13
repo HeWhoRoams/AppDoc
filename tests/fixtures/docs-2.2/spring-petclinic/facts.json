@@ -1,0 +1,4714 @@
+{
+ "facts": [
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": "",
+    "lines": 11,
+    "size": 653,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": ".devcontainer/Dockerfile",
+   "path": ".devcontainer/Dockerfile",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".json",
+    "lines": 25,
+    "size": 648,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": ".devcontainer/devcontainer.json",
+   "path": ".devcontainer/devcontainer.json",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".editorconfig",
+    "lines": 24,
+    "size": 368,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": ".editorconfig",
+   "path": ".editorconfig",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".gitattributes",
+    "lines": 6,
+    "size": 151,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": ".gitattributes",
+   "path": ".gitattributes",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".yml",
+    "lines": 2,
+    "size": 26,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": ".github/dco.yml",
+   "path": ".github/dco.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "dco.yml"
+   },
+   "kind": "config_key",
+   "line": 2,
+   "name": "require.members",
+   "path": ".github/dco.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".yml",
+    "lines": 31,
+    "size": 704,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": ".github/workflows/deploy-and-test-cluster.yml",
+   "path": ".github/workflows/deploy-and-test-cluster.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "deploy-and-test-cluster.yml"
+   },
+   "kind": "config_key",
+   "line": 1,
+   "name": "name",
+   "path": ".github/workflows/deploy-and-test-cluster.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "deploy-and-test-cluster.yml"
+   },
+   "kind": "config_key",
+   "line": 5,
+   "name": "on.push.branches",
+   "path": ".github/workflows/deploy-and-test-cluster.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "deploy-and-test-cluster.yml"
+   },
+   "kind": "config_key",
+   "line": 9,
+   "name": "on.pull_request.branches",
+   "path": ".github/workflows/deploy-and-test-cluster.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "deploy-and-test-cluster.yml"
+   },
+   "kind": "config_key",
+   "line": 15,
+   "name": "jobs.deploy-and-test-cluster.runs-on",
+   "path": ".github/workflows/deploy-and-test-cluster.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "deploy-and-test-cluster.yml"
+   },
+   "kind": "config_key",
+   "line": 18,
+   "name": "jobs.deploy-and-test-cluster.steps.uses",
+   "path": ".github/workflows/deploy-and-test-cluster.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "deploy-and-test-cluster.yml"
+   },
+   "kind": "config_key",
+   "line": 21,
+   "name": "jobs.deploy-and-test-cluster.steps.uses",
+   "path": ".github/workflows/deploy-and-test-cluster.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "deploy-and-test-cluster.yml"
+   },
+   "kind": "config_key",
+   "line": 24,
+   "name": "jobs.deploy-and-test-cluster.steps.run",
+   "path": ".github/workflows/deploy-and-test-cluster.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "deploy-and-test-cluster.yml"
+   },
+   "kind": "config_key",
+   "line": 28,
+   "name": "jobs.deploy-and-test-cluster.steps.run",
+   "path": ".github/workflows/deploy-and-test-cluster.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".yml",
+    "lines": 31,
+    "size": 869,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": ".github/workflows/gradle-build.yml",
+   "path": ".github/workflows/gradle-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "gradle-build.yml"
+   },
+   "kind": "config_key",
+   "line": 4,
+   "name": "name",
+   "path": ".github/workflows/gradle-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "gradle-build.yml"
+   },
+   "kind": "config_key",
+   "line": 8,
+   "name": "on.push.branches",
+   "path": ".github/workflows/gradle-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "gradle-build.yml"
+   },
+   "kind": "config_key",
+   "line": 10,
+   "name": "on.pull_request.branches",
+   "path": ".github/workflows/gradle-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "gradle-build.yml"
+   },
+   "kind": "config_key",
+   "line": 15,
+   "name": "jobs.build.runs-on",
+   "path": ".github/workflows/gradle-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "gradle-build.yml"
+   },
+   "kind": "config_key",
+   "line": 18,
+   "name": "jobs.build.strategy.matrix.java",
+   "path": ".github/workflows/gradle-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "gradle-build.yml"
+   },
+   "kind": "config_key",
+   "line": 23,
+   "name": "jobs.build.steps.uses",
+   "path": ".github/workflows/gradle-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "gradle-build.yml"
+   },
+   "kind": "config_key",
+   "line": 25,
+   "name": "jobs.build.steps.with.java-version",
+   "path": ".github/workflows/gradle-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "gradle-build.yml"
+   },
+   "kind": "config_key",
+   "line": 26,
+   "name": "jobs.build.steps.with.distribution",
+   "path": ".github/workflows/gradle-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "gradle-build.yml"
+   },
+   "kind": "config_key",
+   "line": 27,
+   "name": "jobs.build.steps.with.cache",
+   "path": ".github/workflows/gradle-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "gradle-build.yml"
+   },
+   "kind": "config_key",
+   "line": 29,
+   "name": "jobs.build.steps.uses",
+   "path": ".github/workflows/gradle-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "gradle-build.yml"
+   },
+   "kind": "config_key",
+   "line": 31,
+   "name": "jobs.build.steps.run",
+   "path": ".github/workflows/gradle-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".yml",
+    "lines": 29,
+    "size": 800,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": ".github/workflows/maven-build.yml",
+   "path": ".github/workflows/maven-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "maven-build.yml"
+   },
+   "kind": "config_key",
+   "line": 4,
+   "name": "name",
+   "path": ".github/workflows/maven-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "maven-build.yml"
+   },
+   "kind": "config_key",
+   "line": 8,
+   "name": "on.push.branches",
+   "path": ".github/workflows/maven-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "maven-build.yml"
+   },
+   "kind": "config_key",
+   "line": 10,
+   "name": "on.pull_request.branches",
+   "path": ".github/workflows/maven-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "maven-build.yml"
+   },
+   "kind": "config_key",
+   "line": 15,
+   "name": "jobs.build.runs-on",
+   "path": ".github/workflows/maven-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "maven-build.yml"
+   },
+   "kind": "config_key",
+   "line": 18,
+   "name": "jobs.build.strategy.matrix.java",
+   "path": ".github/workflows/maven-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "maven-build.yml"
+   },
+   "kind": "config_key",
+   "line": 23,
+   "name": "jobs.build.steps.uses",
+   "path": ".github/workflows/maven-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "maven-build.yml"
+   },
+   "kind": "config_key",
+   "line": 25,
+   "name": "jobs.build.steps.with.java-version",
+   "path": ".github/workflows/maven-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "maven-build.yml"
+   },
+   "kind": "config_key",
+   "line": 26,
+   "name": "jobs.build.steps.with.distribution",
+   "path": ".github/workflows/maven-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "maven-build.yml"
+   },
+   "kind": "config_key",
+   "line": 27,
+   "name": "jobs.build.steps.with.cache",
+   "path": ".github/workflows/maven-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "ci",
+    "secret_location": false,
+    "source": "maven-build.yml"
+   },
+   "kind": "config_key",
+   "line": 29,
+   "name": "jobs.build.steps.run",
+   "path": ".github/workflows/maven-build.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".gitignore",
+    "lines": 48,
+    "size": 646,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": ".gitignore",
+   "path": ".gitignore",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".yml",
+    "lines": 9,
+    "size": 295,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": ".gitpod.yml",
+   "path": ".gitpod.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": ".gitpod.yml"
+   },
+   "kind": "config_key",
+   "line": 2,
+   "name": "image.file",
+   "path": ".gitpod.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 3,
+    "size": 171,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": ".mvn/wrapper/maven-wrapper.properties",
+   "path": ".mvn/wrapper/maven-wrapper.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "build",
+    "secret_location": false,
+    "source": "maven-wrapper.properties"
+   },
+   "kind": "config_key",
+   "line": 1,
+   "name": "wrapperVersion",
+   "path": ".mvn/wrapper/maven-wrapper.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "build",
+    "secret_location": false,
+    "source": "maven-wrapper.properties"
+   },
+   "kind": "config_key",
+   "line": 2,
+   "name": "distributionType",
+   "path": ".mvn/wrapper/maven-wrapper.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "build",
+    "secret_location": false,
+    "source": "maven-wrapper.properties"
+   },
+   "kind": "config_key",
+   "line": 3,
+   "name": "distributionUrl",
+   "path": ".mvn/wrapper/maven-wrapper.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".txt",
+    "lines": 202,
+    "size": 11562,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "LICENSE.txt",
+   "path": "LICENSE.txt",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".md",
+    "lines": 181,
+    "size": 10728,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "README.md",
+   "path": "README.md",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".gradle",
+    "lines": 93,
+    "size": 3474,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "build.gradle",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 34,
+   "name": "org.springframework.boot:spring-boot-starter-cache",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 35,
+   "name": "org.springframework.boot:spring-boot-starter-data-jpa",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 36,
+   "name": "org.springframework.boot:spring-boot-starter-thymeleaf",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 37,
+   "name": "org.springframework.boot:spring-boot-starter-webmvc",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 38,
+   "name": "org.springframework.boot:spring-boot-starter-validation",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 39,
+   "name": "javax.cache:cache-api",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 40,
+   "name": "jakarta.xml.bind:jakarta.xml.bind-api",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 41,
+   "name": "org.springframework.boot:spring-boot-starter-actuator",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": "${webjarsLocatorLiteVersion}"
+   },
+   "kind": "dependency",
+   "line": 42,
+   "name": "org.webjars:webjars-locator-lite",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": "${webjarsBootstrapVersion}"
+   },
+   "kind": "dependency",
+   "line": 43,
+   "name": "org.webjars.npm:bootstrap",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": "${webjarsFontawesomeVersion}"
+   },
+   "kind": "dependency",
+   "line": 44,
+   "name": "org.webjars.npm:font-awesome",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 45,
+   "name": "com.github.ben-manes.caffeine:caffeine",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 46,
+   "name": "com.h2database:h2",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 47,
+   "name": "com.mysql:mysql-connector-j",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 48,
+   "name": "org.postgresql:postgresql",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 50,
+   "name": "org.springframework.boot:spring-boot-starter-data-jpa-test",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 51,
+   "name": "org.springframework.boot:spring-boot-starter-restclient-test",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 52,
+   "name": "org.springframework.boot:spring-boot-starter-webmvc-test",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 53,
+   "name": "org.springframework.boot:spring-boot-testcontainers",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 54,
+   "name": "org.springframework.boot:spring-boot-docker-compose",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 55,
+   "name": "org.testcontainers:testcontainers-junit-jupiter",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "gradle",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 56,
+   "name": "org.testcontainers:testcontainers-mysql",
+   "path": "build.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".yml",
+    "lines": 21,
+    "size": 509,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "docker-compose.yml",
+   "path": "docker-compose.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "docker-compose.yml"
+   },
+   "kind": "config_key",
+   "line": 3,
+   "name": "services.mysql.image",
+   "path": "docker-compose.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "docker-compose.yml"
+   },
+   "kind": "config_key",
+   "line": 15,
+   "name": "services.postgres.image",
+   "path": "docker-compose.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "ext": ".html",
+    "size": 3717908,
+    "skipped": "size"
+   },
+   "kind": "file",
+   "line": null,
+   "name": "docs/appdoc/application-documentation.html",
+   "path": "docs/appdoc/application-documentation.html",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".md",
+    "lines": 577,
+    "size": 77950,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "docs/appdoc/application-documentation.md",
+   "path": "docs/appdoc/application-documentation.md",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".md",
+    "lines": 583,
+    "size": 63237,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "docs/appdoc/check-report.md",
+   "path": "docs/appdoc/check-report.md",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".md",
+    "lines": 131,
+    "size": 6943,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "docs/appdoc/facts-summary.md",
+   "path": "docs/appdoc/facts-summary.md",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".json",
+    "lines": 10174,
+    "size": 228805,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "docs/appdoc/facts.json",
+   "path": "docs/appdoc/facts.json",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".md",
+    "lines": 81,
+    "size": 25319,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "docs/appdoc/verification.md",
+   "path": "docs/appdoc/verification.md",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "ext": ".jar",
+    "size": 48462,
+    "skipped": "binary"
+   },
+   "kind": "file",
+   "line": null,
+   "name": "gradle/wrapper/gradle-wrapper.jar",
+   "path": "gradle/wrapper/gradle-wrapper.jar",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 9,
+    "size": 290,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "gradle/wrapper/gradle-wrapper.properties",
+   "path": "gradle/wrapper/gradle-wrapper.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "build",
+    "secret_location": false,
+    "source": "gradle-wrapper.properties"
+   },
+   "kind": "config_key",
+   "line": 1,
+   "name": "distributionBase",
+   "path": "gradle/wrapper/gradle-wrapper.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "build",
+    "secret_location": false,
+    "source": "gradle-wrapper.properties"
+   },
+   "kind": "config_key",
+   "line": 2,
+   "name": "distributionPath",
+   "path": "gradle/wrapper/gradle-wrapper.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "build",
+    "secret_location": false,
+    "source": "gradle-wrapper.properties"
+   },
+   "kind": "config_key",
+   "line": 3,
+   "name": "distributionUrl",
+   "path": "gradle/wrapper/gradle-wrapper.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "build",
+    "secret_location": false,
+    "source": "gradle-wrapper.properties"
+   },
+   "kind": "config_key",
+   "line": 4,
+   "name": "networkTimeout",
+   "path": "gradle/wrapper/gradle-wrapper.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "build",
+    "secret_location": false,
+    "source": "gradle-wrapper.properties"
+   },
+   "kind": "config_key",
+   "line": 5,
+   "name": "retries",
+   "path": "gradle/wrapper/gradle-wrapper.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "build",
+    "secret_location": false,
+    "source": "gradle-wrapper.properties"
+   },
+   "kind": "config_key",
+   "line": 6,
+   "name": "retryBackOffMs",
+   "path": "gradle/wrapper/gradle-wrapper.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "build",
+    "secret_location": false,
+    "source": "gradle-wrapper.properties"
+   },
+   "kind": "config_key",
+   "line": 7,
+   "name": "validateDistributionUrl",
+   "path": "gradle/wrapper/gradle-wrapper.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "build",
+    "secret_location": false,
+    "source": "gradle-wrapper.properties"
+   },
+   "kind": "config_key",
+   "line": 8,
+   "name": "zipStoreBase",
+   "path": "gradle/wrapper/gradle-wrapper.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "build",
+    "secret_location": false,
+    "source": "gradle-wrapper.properties"
+   },
+   "kind": "config_key",
+   "line": 9,
+   "name": "zipStorePath",
+   "path": "gradle/wrapper/gradle-wrapper.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": "",
+    "lines": 248,
+    "size": 8654,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "gradlew",
+   "path": "gradlew",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".bat",
+    "lines": 82,
+    "size": 2846,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "gradlew.bat",
+   "path": "gradlew.bat",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".yml",
+    "lines": 73,
+    "size": 1531,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "k8s/db.yml",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 2,
+   "name": "apiVersion",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 3,
+   "name": "kind",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 5,
+   "name": "metadata.name",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 6,
+   "name": "type",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 8,
+   "name": "stringData.type",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 9,
+   "name": "stringData.provider",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 10,
+   "name": "stringData.host",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 11,
+   "name": "stringData.port",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 12,
+   "name": "stringData.database",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 13,
+   "name": "stringData.username",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": true,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 14,
+   "name": "stringData.password",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 17,
+   "name": "apiVersion",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 18,
+   "name": "kind",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 20,
+   "name": "metadata.name",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 25,
+   "name": "spec.selector.app",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 28,
+   "name": "apiVersion",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 29,
+   "name": "kind",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 31,
+   "name": "metadata.name",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 33,
+   "name": "metadata.labels.app",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 37,
+   "name": "spec.selector.matchLabels.app",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 41,
+   "name": "spec.template.metadata.labels.app",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 45,
+   "name": "spec.template.spec.containers.name",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": true,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 50,
+   "name": "spec.template.spec.containers.env.valueFrom.secretKeyRef.name",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": true,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 51,
+   "name": "spec.template.spec.containers.env.valueFrom.secretKeyRef.key",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": true,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 55,
+   "name": "spec.template.spec.containers.env.valueFrom.secretKeyRef.name",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": true,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 56,
+   "name": "spec.template.spec.containers.env.valueFrom.secretKeyRef.key",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": true,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 60,
+   "name": "spec.template.spec.containers.env.valueFrom.secretKeyRef.name",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": true,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 61,
+   "name": "spec.template.spec.containers.env.valueFrom.secretKeyRef.key",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 64,
+   "name": "spec.template.spec.containers.ports.name",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 67,
+   "name": "spec.template.spec.containers.livenessProbe.tcpSocket.port",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 70,
+   "name": "spec.template.spec.containers.readinessProbe.tcpSocket.port",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "db.yml"
+   },
+   "kind": "config_key",
+   "line": 73,
+   "name": "spec.template.spec.containers.startupProbe.tcpSocket.port",
+   "path": "k8s/db.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".yml",
+    "lines": 64,
+    "size": 1422,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "k8s/petclinic.yml",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 2,
+   "name": "apiVersion",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 3,
+   "name": "kind",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 5,
+   "name": "metadata.name",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 7,
+   "name": "spec.type",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 10,
+   "name": "spec.ports.targetPort",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 12,
+   "name": "spec.selector.app",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 15,
+   "name": "apiVersion",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 16,
+   "name": "kind",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 18,
+   "name": "metadata.name",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 20,
+   "name": "metadata.labels.app",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 22,
+   "name": "spec.replicas",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 25,
+   "name": "spec.selector.matchLabels.app",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 29,
+   "name": "spec.template.metadata.labels.app",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 33,
+   "name": "spec.template.spec.containers.image",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 36,
+   "name": "spec.template.spec.containers.env.value",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 38,
+   "name": "spec.template.spec.containers.env.value",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 40,
+   "name": "spec.template.spec.containers.env.value",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 46,
+   "name": "spec.template.spec.containers.ports.containerPort",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 49,
+   "name": "spec.template.spec.containers.livenessProbe.httpGet.path",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 50,
+   "name": "spec.template.spec.containers.livenessProbe.httpGet.port",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 53,
+   "name": "spec.template.spec.containers.readinessProbe.httpGet.path",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 54,
+   "name": "spec.template.spec.containers.readinessProbe.httpGet.port",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 57,
+   "name": "spec.template.spec.containers.volumeMounts.name",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 58,
+   "name": "spec.template.spec.containers.volumeMounts.readOnly",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "orchestration",
+    "secret_location": false,
+    "source": "petclinic.yml"
+   },
+   "kind": "config_key",
+   "line": 64,
+   "name": "spec.template.spec.volumes.projected.sources.name",
+   "path": "k8s/petclinic.yml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": "",
+    "lines": 295,
+    "size": 11791,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "mvnw",
+   "path": "mvnw",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".cmd",
+    "lines": 189,
+    "size": 8482,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "mvnw.cmd",
+   "path": "mvnw.cmd",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".xml",
+    "lines": 440,
+    "size": 16395,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "pom.xml",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 42,
+   "name": "org.springframework.boot:spring-boot-starter-actuator",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 46,
+   "name": "org.springframework.boot:spring-boot-starter-cache",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 50,
+   "name": "org.springframework.boot:spring-boot-starter-data-jpa",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 54,
+   "name": "org.springframework.boot:spring-boot-starter-thymeleaf",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 58,
+   "name": "org.springframework.boot:spring-boot-starter-validation",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 62,
+   "name": "org.springframework.boot:spring-boot-starter-webmvc",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 67,
+   "name": "javax.cache:cache-api",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 71,
+   "name": "jakarta.xml.bind:jakarta.xml.bind-api",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 76,
+   "name": "com.h2database:h2",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 81,
+   "name": "com.github.ben-manes.caffeine:caffeine",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 86,
+   "name": "com.mysql:mysql-connector-j",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 91,
+   "name": "org.postgresql:postgresql",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": "${webjars-locator.version}"
+   },
+   "kind": "dependency",
+   "line": 96,
+   "name": "org.webjars:webjars-locator-lite",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": "${webjars-bootstrap.version}"
+   },
+   "kind": "dependency",
+   "line": 102,
+   "name": "org.webjars.npm:bootstrap",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": "${webjars-font-awesome.version}"
+   },
+   "kind": "dependency",
+   "line": 108,
+   "name": "org.webjars.npm:font-awesome",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 115,
+   "name": "org.springframework.boot:spring-boot-devtools",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 121,
+   "name": "org.springframework.boot:spring-boot-starter-data-jpa-test",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 126,
+   "name": "org.springframework.boot:spring-boot-starter-restclient",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 131,
+   "name": "org.springframework.boot:spring-boot-starter-restclient-test",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 136,
+   "name": "org.springframework.boot:spring-boot-starter-thymeleaf-test",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 141,
+   "name": "org.springframework.boot:spring-boot-starter-validation-test",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 146,
+   "name": "org.springframework.boot:spring-boot-starter-webmvc-test",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 151,
+   "name": "org.springframework.boot:spring-boot-starter-actuator-test",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 156,
+   "name": "org.springframework.boot:spring-boot-testcontainers",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 161,
+   "name": "org.springframework.boot:spring-boot-docker-compose",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 166,
+   "name": "org.springframework.boot:spring-boot-starter-cache-test",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 171,
+   "name": "org.testcontainers:testcontainers-junit-jupiter",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": ""
+   },
+   "kind": "dependency",
+   "line": 176,
+   "name": "org.testcontainers:testcontainers-mysql",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": "${checkstyle.version}"
+   },
+   "kind": "dependency",
+   "line": 223,
+   "name": "com.puppycrawl.tools:checkstyle",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "manager": "maven",
+    "version": "${nohttp-checkstyle.version}"
+   },
+   "kind": "dependency",
+   "line": 228,
+   "name": "io.spring.nohttp:nohttp-checkstyle",
+   "path": "pom.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".gradle",
+    "lines": 1,
+    "size": 39,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "settings.gradle",
+   "path": "settings.gradle",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".xml",
+    "lines": 11,
+    "size": 481,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/checkstyle/nohttp-checkstyle-suppressions.xml",
+   "path": "src/checkstyle/nohttp-checkstyle-suppressions.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".xml",
+    "lines": 10,
+    "size": 422,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/checkstyle/nohttp-checkstyle.xml",
+   "path": "src/checkstyle/nohttp-checkstyle.xml",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 36,
+    "size": 1144,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 38,
+    "size": 1715,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/PetClinicRuntimeHints.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/PetClinicRuntimeHints.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 51,
+    "size": 1344,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/model/BaseEntity.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/model/BaseEntity.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 51,
+    "size": 1367,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/model/NamedEntity.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/model/NamedEntity.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 57,
+    "size": 1431,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/model/Person.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/model/Person.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 20,
+    "size": 755,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/model/package-info.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/model/package-info.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 188,
+    "size": 4828,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/owner/Owner.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/Owner.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "class": "Owner",
+    "operation": "map",
+    "type": "entity"
+   },
+   "kind": "data_access",
+   "line": 48,
+   "name": "owners",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/Owner.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "context": "validation"
+   },
+   "kind": "message",
+   "line": 64,
+   "name": "{telephone.invalid}",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/Owner.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 188,
+    "size": 6600,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "context": "validation",
+    "exception": "IllegalArgumentException"
+   },
+   "kind": "message",
+   "line": 68,
+   "name": "Owner not found with id:",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "OwnerController.initCreationForm",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 72,
+   "name": "/owners/new",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "OwnerController.processCreationForm",
+    "method": "POST",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 77,
+   "name": "/owners/new",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "OwnerController.initFindForm",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 89,
+   "name": "/owners/find",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "OwnerController.processFindForm",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 94,
+   "name": "/owners",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "OwnerController.initUpdateOwnerForm",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 148,
+   "name": "/owners/{ownerId}/edit",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "OwnerController.processUpdateOwnerForm",
+    "method": "POST",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 153,
+   "name": "/owners/{ownerId}/edit",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "OwnerController.showOwner",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 178,
+   "name": "/owners/{ownerId}",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "context": "validation",
+    "exception": "IllegalArgumentException"
+   },
+   "kind": "message",
+   "line": 182,
+   "name": "Owner not found with id:",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 62,
+    "size": 2298,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "entity": "Owner",
+    "operation": "crud",
+    "type": "repository"
+   },
+   "kind": "data_access",
+   "line": 36,
+   "name": "OwnerRepository",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 85,
+    "size": 2186,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/owner/Pet.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/Pet.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "class": "Pet",
+    "operation": "map",
+    "type": "entity"
+   },
+   "kind": "data_access",
+   "line": 44,
+   "name": "pets",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/Pet.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 207,
+    "size": 6584,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/owner/PetController.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/PetController.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "context": "validation",
+    "exception": "IllegalArgumentException"
+   },
+   "kind": "message",
+   "line": 70,
+   "name": "Owner not found with id:",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/PetController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "context": "validation",
+    "exception": "IllegalArgumentException"
+   },
+   "kind": "message",
+   "line": 84,
+   "name": "Owner not found with id:",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/PetController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "PetController.initCreationForm",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 100,
+   "name": "/owners/{ownerId}/pets/new",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/PetController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "PetController.processCreationForm",
+    "method": "POST",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 107,
+   "name": "/owners/{ownerId}/pets/new",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/PetController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "PetController.initUpdateForm",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 139,
+   "name": "/owners/{ownerId}/pets/{petId}/edit",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/PetController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "PetController.processUpdateForm",
+    "method": "POST",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 144,
+   "name": "/owners/{ownerId}/pets/{petId}/edit",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/PetController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 30,
+    "size": 951,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/owner/PetType.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/PetType.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "class": "PetType",
+    "operation": "map",
+    "type": "entity"
+   },
+   "kind": "data_access",
+   "line": 26,
+   "name": "types",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/PetType.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 62,
+    "size": 1987,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "context": "error",
+    "exception": "ParseException"
+   },
+   "kind": "message",
+   "line": 59,
+   "name": "type not found:",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 39,
+    "size": 1208,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/owner/PetTypeRepository.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/PetTypeRepository.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "entity": "PetType",
+    "operation": "crud",
+    "type": "repository"
+   },
+   "kind": "data_access",
+   "line": 30,
+   "name": "PetTypeRepository",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/PetTypeRepository.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "operation": "select",
+    "type": "sql"
+   },
+   "kind": "data_access",
+   "line": 36,
+   "name": "PetType",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/PetTypeRepository.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 69,
+    "size": 1988,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 70,
+    "size": 1760,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/owner/Visit.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/Visit.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "class": "Visit",
+    "operation": "map",
+    "type": "entity"
+   },
+   "kind": "data_access",
+   "line": 35,
+   "name": "visits",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/Visit.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 114,
+    "size": 3789,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/owner/VisitController.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/VisitController.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "context": "validation",
+    "exception": "IllegalArgumentException"
+   },
+   "kind": "message",
+   "line": 67,
+   "name": "Owner not found with id:",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/VisitController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "context": "validation",
+    "exception": "IllegalArgumentException"
+   },
+   "kind": "message",
+   "line": 72,
+   "name": "Pet with id",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/VisitController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "VisitController.initNewVisitForm",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 90,
+   "name": "/owners/{ownerId}/pets/{petId}/visits/new",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/VisitController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "VisitController.processNewVisitForm",
+    "method": "POST",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 97,
+   "name": "/owners/{ownerId}/pets/{petId}/visits/new",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/VisitController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 16,
+    "size": 675,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/owner/package-info.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/owner/package-info.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 16,
+    "size": 669,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/package-info.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/package-info.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 53,
+    "size": 2014,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 37,
+    "size": 1204,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/system/CrashController.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/system/CrashController.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "handler": "CrashController.triggerException",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 31,
+   "name": "/oups",
+   "path": "src/main/java/org/springframework/samples/petclinic/system/CrashController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "context": "error",
+    "exception": "RuntimeException"
+   },
+   "kind": "message",
+   "line": 33,
+   "name": "Expected: controller used to showcase what happens when an exception is thrown",
+   "path": "src/main/java/org/springframework/samples/petclinic/system/CrashController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 60,
+    "size": 1947,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 30,
+    "size": 898,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "handler": "WelcomeController.welcome",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 25,
+   "name": "/",
+   "path": "src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 16,
+    "size": 676,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/system/package-info.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/system/package-info.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 32,
+    "size": 998,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/vet/Specialty.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/vet/Specialty.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "class": "Specialty",
+    "operation": "map",
+    "type": "entity"
+   },
+   "kind": "data_access",
+   "line": 28,
+   "name": "specialties",
+   "path": "src/main/java/org/springframework/samples/petclinic/vet/Specialty.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 74,
+    "size": 2190,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/vet/Vet.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/vet/Vet.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "class": "Vet",
+    "operation": "map",
+    "type": "entity"
+   },
+   "kind": "data_access",
+   "line": 43,
+   "name": "vets",
+   "path": "src/main/java/org/springframework/samples/petclinic/vet/Vet.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 81,
+    "size": 2774,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/vet/VetController.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/vet/VetController.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "handler": "VetController.showVetList",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 45,
+   "name": "/vets.html",
+   "path": "src/main/java/org/springframework/samples/petclinic/vet/VetController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "handler": "VetController.showResourcesVetList",
+    "method": "GET",
+    "type": "route"
+   },
+   "kind": "entry_point",
+   "line": 72,
+   "name": "/vets",
+   "path": "src/main/java/org/springframework/samples/petclinic/vet/VetController.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 58,
+    "size": 1994,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "entity": "Vet",
+    "operation": "crud",
+    "type": "repository"
+   },
+   "kind": "data_access",
+   "line": 38,
+   "name": "VetRepository",
+   "path": "src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 43,
+    "size": 1215,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/vet/Vets.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/vet/Vets.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 16,
+    "size": 673,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/java/org/springframework/samples/petclinic/vet/package-info.java",
+   "path": "src/main/java/org/springframework/samples/petclinic/vet/package-info.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 7,
+    "size": 306,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/application-mysql.properties",
+   "path": "src/main/resources/application-mysql.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application-mysql.properties"
+   },
+   "kind": "config_key",
+   "line": 2,
+   "name": "database",
+   "path": "src/main/resources/application-mysql.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application-mysql.properties"
+   },
+   "kind": "config_key",
+   "line": 3,
+   "name": "spring.datasource.url",
+   "path": "src/main/resources/application-mysql.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "secret_location": false,
+    "type": "database"
+   },
+   "kind": "connection",
+   "line": 3,
+   "name": "spring.datasource.url",
+   "path": "src/main/resources/application-mysql.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application-mysql.properties"
+   },
+   "kind": "config_key",
+   "line": 4,
+   "name": "spring.datasource.username",
+   "path": "src/main/resources/application-mysql.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": true,
+    "source": "application-mysql.properties"
+   },
+   "kind": "config_key",
+   "line": 5,
+   "name": "spring.datasource.password",
+   "path": "src/main/resources/application-mysql.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application-mysql.properties"
+   },
+   "kind": "config_key",
+   "line": 7,
+   "name": "spring.sql.init.mode",
+   "path": "src/main/resources/application-mysql.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 7,
+    "size": 326,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/application-postgres.properties",
+   "path": "src/main/resources/application-postgres.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application-postgres.properties"
+   },
+   "kind": "config_key",
+   "line": 2,
+   "name": "database",
+   "path": "src/main/resources/application-postgres.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application-postgres.properties"
+   },
+   "kind": "config_key",
+   "line": 3,
+   "name": "spring.datasource.url",
+   "path": "src/main/resources/application-postgres.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "secret_location": false,
+    "type": "database"
+   },
+   "kind": "connection",
+   "line": 3,
+   "name": "spring.datasource.url",
+   "path": "src/main/resources/application-postgres.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application-postgres.properties"
+   },
+   "kind": "config_key",
+   "line": 4,
+   "name": "spring.datasource.username",
+   "path": "src/main/resources/application-postgres.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": true,
+    "source": "application-postgres.properties"
+   },
+   "kind": "config_key",
+   "line": 5,
+   "name": "spring.datasource.password",
+   "path": "src/main/resources/application-postgres.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application-postgres.properties"
+   },
+   "kind": "config_key",
+   "line": 7,
+   "name": "spring.sql.init.mode",
+   "path": "src/main/resources/application-postgres.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 29,
+    "size": 1010,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/application.properties",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 2,
+   "name": "database",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 3,
+   "name": "spring.sql.init.schema-locations",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 4,
+   "name": "spring.sql.init.data-locations",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 7,
+   "name": "spring.thymeleaf.mode",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 10,
+   "name": "spring.jpa.hibernate.ddl-auto",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 11,
+   "name": "spring.jpa.open-in-view",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 12,
+   "name": "spring.jpa.hibernate.naming.physical-strategy",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 13,
+   "name": "spring.jpa.properties.hibernate.default_batch_fetch_size",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 16,
+   "name": "spring.messages.basename",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 21,
+   "name": "management.endpoints.web.exposure.include",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 24,
+   "name": "logging.level.org.springframework",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "role": "app",
+    "secret_location": false,
+    "source": "application.properties"
+   },
+   "kind": "config_key",
+   "line": 29,
+   "name": "spring.web.resources.cache.cachecontrol.max-age",
+   "path": "src/main/resources/application.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".txt",
+    "lines": 15,
+    "size": 724,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/banner.txt",
+   "path": "src/main/resources/banner.txt",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".sql",
+    "lines": 53,
+    "size": 3171,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/db/h2/data.sql",
+   "path": "src/main/resources/db/h2/data.sql",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".sql",
+    "lines": 65,
+    "size": 2211,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/db/h2/schema.sql",
+   "path": "src/main/resources/db/h2/schema.sql",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".sql",
+    "lines": 53,
+    "size": 3253,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/db/mysql/data.sql",
+   "path": "src/main/resources/db/mysql/data.sql",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".txt",
+    "lines": 36,
+    "size": 1726,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/db/mysql/petclinic_db_setup_mysql.txt",
+   "path": "src/main/resources/db/mysql/petclinic_db_setup_mysql.txt",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".sql",
+    "lines": 56,
+    "size": 1629,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/db/mysql/schema.sql",
+   "path": "src/main/resources/db/mysql/schema.sql",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".sql",
+    "lines": 11,
+    "size": 288,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/db/mysql/user.sql",
+   "path": "src/main/resources/db/mysql/user.sql",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".sql",
+    "lines": 53,
+    "size": 6475,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/db/postgres/data.sql",
+   "path": "src/main/resources/db/postgres/data.sql",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".txt",
+    "lines": 19,
+    "size": 876,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/db/postgres/petclinic_db_setup_postgres.txt",
+   "path": "src/main/resources/db/postgres/petclinic_db_setup_postgres.txt",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".sql",
+    "lines": 53,
+    "size": 1752,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/db/postgres/schema.sql",
+   "path": "src/main/resources/db/postgres/schema.sql",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 52,
+    "size": 1284,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/messages/messages.properties",
+   "path": "src/main/resources/messages/messages.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 52,
+    "size": 1499,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/messages/messages_de.properties",
+   "path": "src/main/resources/messages/messages_de.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 1,
+    "size": 110,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/messages/messages_en.properties",
+   "path": "src/main/resources/messages/messages_en.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 52,
+    "size": 1483,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/messages/messages_es.properties",
+   "path": "src/main/resources/messages/messages_es.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 52,
+    "size": 1739,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/messages/messages_fa.properties",
+   "path": "src/main/resources/messages/messages_fa.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 54,
+    "size": 4218,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/messages/messages_hi.properties",
+   "path": "src/main/resources/messages/messages_hi.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 54,
+    "size": 1656,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/messages/messages_ja.properties",
+   "path": "src/main/resources/messages/messages_ja.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 52,
+    "size": 1545,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/messages/messages_ko.properties",
+   "path": "src/main/resources/messages/messages_ko.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 52,
+    "size": 1526,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/messages/messages_pt.properties",
+   "path": "src/main/resources/messages/messages_pt.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 52,
+    "size": 2084,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/messages/messages_ru.properties",
+   "path": "src/main/resources/messages/messages_ru.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".properties",
+    "lines": 52,
+    "size": 1370,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/messages/messages_tr.properties",
+   "path": "src/main/resources/messages/messages_tr.properties",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".css",
+    "lines": 9532,
+    "size": 288462,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/static/resources/css/petclinic.css",
+   "path": "src/main/resources/static/resources/css/petclinic.css",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "ext": ".eot",
+    "size": 20979,
+    "skipped": "binary"
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/static/resources/fonts/montserrat-webfont.eot",
+   "path": "src/main/resources/static/resources/fonts/montserrat-webfont.eot",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".svg",
+    "lines": 1283,
+    "size": 85916,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/static/resources/fonts/montserrat-webfont.svg",
+   "path": "src/main/resources/static/resources/fonts/montserrat-webfont.svg",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "ext": ".ttf",
+    "size": 42692,
+    "skipped": "binary"
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/static/resources/fonts/montserrat-webfont.ttf",
+   "path": "src/main/resources/static/resources/fonts/montserrat-webfont.ttf",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "ext": ".woff",
+    "size": 24240,
+    "skipped": "binary"
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/static/resources/fonts/montserrat-webfont.woff",
+   "path": "src/main/resources/static/resources/fonts/montserrat-webfont.woff",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "ext": ".eot",
+    "size": 28963,
+    "skipped": "binary"
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/static/resources/fonts/varela_round-webfont.eot",
+   "path": "src/main/resources/static/resources/fonts/varela_round-webfont.eot",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".svg",
+    "lines": 7875,
+    "size": 378147,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/static/resources/fonts/varela_round-webfont.svg",
+   "path": "src/main/resources/static/resources/fonts/varela_round-webfont.svg",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "ext": ".ttf",
+    "size": 63044,
+    "skipped": "binary"
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/static/resources/fonts/varela_round-webfont.ttf",
+   "path": "src/main/resources/static/resources/fonts/varela_round-webfont.ttf",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "ext": ".woff",
+    "size": 32712,
+    "skipped": "binary"
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/static/resources/fonts/varela_round-webfont.woff",
+   "path": "src/main/resources/static/resources/fonts/varela_round-webfont.woff",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "ext": ".png",
+    "size": 528,
+    "skipped": "binary"
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/static/resources/images/favicon.png",
+   "path": "src/main/resources/static/resources/images/favicon.png",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "ext": ".png",
+    "size": 67721,
+    "skipped": "binary"
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/static/resources/images/pets.png",
+   "path": "src/main/resources/static/resources/images/pets.png",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "ext": ".png",
+    "size": 3705,
+    "skipped": "binary"
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/static/resources/images/spring-logo-dataflow-mobile.png",
+   "path": "src/main/resources/static/resources/images/spring-logo-dataflow-mobile.png",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "ext": ".png",
+    "size": 6888,
+    "skipped": "binary"
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/static/resources/images/spring-logo-dataflow.png",
+   "path": "src/main/resources/static/resources/images/spring-logo-dataflow.png",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".svg",
+    "lines": 66,
+    "size": 8001,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/static/resources/images/spring-logo.svg",
+   "path": "src/main/resources/static/resources/images/spring-logo.svg",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".html",
+    "lines": 21,
+    "size": 797,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/templates/error.html",
+   "path": "src/main/resources/templates/error.html",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".html",
+    "lines": 27,
+    "size": 1118,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/templates/fragments/inputField.html",
+   "path": "src/main/resources/templates/fragments/inputField.html",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".html",
+    "lines": 88,
+    "size": 3298,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/templates/fragments/layout.html",
+   "path": "src/main/resources/templates/fragments/layout.html",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".html",
+    "lines": 27,
+    "size": 1006,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/templates/fragments/selectField.html",
+   "path": "src/main/resources/templates/fragments/selectField.html",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".html",
+    "lines": 25,
+    "size": 1097,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/templates/owners/createOrUpdateOwnerForm.html",
+   "path": "src/main/resources/templates/owners/createOrUpdateOwnerForm.html",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".html",
+    "lines": 35,
+    "size": 1184,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/templates/owners/findOwners.html",
+   "path": "src/main/resources/templates/owners/findOwners.html",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".html",
+    "lines": 96,
+    "size": 2982,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/templates/owners/ownerDetails.html",
+   "path": "src/main/resources/templates/owners/ownerDetails.html",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".html",
+    "lines": 61,
+    "size": 2483,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/templates/owners/ownersList.html",
+   "path": "src/main/resources/templates/owners/ownersList.html",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".html",
+    "lines": 34,
+    "size": 1263,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/templates/pets/createOrUpdatePetForm.html",
+   "path": "src/main/resources/templates/pets/createOrUpdatePetForm.html",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".html",
+    "lines": 59,
+    "size": 1846,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/templates/pets/createOrUpdateVisitForm.html",
+   "path": "src/main/resources/templates/pets/createOrUpdateVisitForm.html",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".html",
+    "lines": 57,
+    "size": 2248,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/templates/vets/vetList.html",
+   "path": "src/main/resources/templates/vets/vetList.html",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".html",
+    "lines": 16,
+    "size": 390,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/resources/templates/welcome.html",
+   "path": "src/main/resources/templates/welcome.html",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".scss",
+    "lines": 73,
+    "size": 1459,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/scss/header.scss",
+   "path": "src/main/scss/header.scss",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".scss",
+    "lines": 214,
+    "size": 4617,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/scss/petclinic.scss",
+   "path": "src/main/scss/petclinic.scss",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".scss",
+    "lines": 41,
+    "size": 719,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/scss/responsive.scss",
+   "path": "src/main/scss/responsive.scss",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".scss",
+    "lines": 60,
+    "size": 1532,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/main/scss/typography.scss",
+   "path": "src/main/scss/typography.scss",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 74,
+    "size": 2645,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/MySqlIntegrationTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/MySqlIntegrationTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "client": "RestTemplate",
+    "method": "ANY",
+    "test": true,
+    "type": "http"
+   },
+   "kind": "external_call",
+   "line": 70,
+   "name": "/owners/1",
+   "path": "src/test/java/org/springframework/samples/petclinic/MySqlIntegrationTests.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 47,
+    "size": 1529,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/MysqlTestApplication.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/MysqlTestApplication.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 134,
+    "size": 4629,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "client": "RestTemplate",
+    "method": "POST",
+    "test": true,
+    "type": "http"
+   },
+   "kind": "external_call",
+   "line": 80,
+   "name": "/owners//pets/new",
+   "path": "src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 70,
+    "size": 2478,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "client": "RestTemplate",
+    "method": "ANY",
+    "test": true,
+    "type": "http"
+   },
+   "kind": "external_call",
+   "line": 55,
+   "name": "/owners/1",
+   "path": "src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "client": "RestTemplate",
+    "method": "ANY",
+    "test": true,
+    "type": "http"
+   },
+   "kind": "external_call",
+   "line": 62,
+   "name": "/owners",
+   "path": "src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 150,
+    "size": 5148,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/PostgresIntegrationTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/PostgresIntegrationTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "client": "RestTemplate",
+    "method": "ANY",
+    "test": true,
+    "type": "http"
+   },
+   "kind": "external_call",
+   "line": 90,
+   "name": "/owners/1",
+   "path": "src/test/java/org/springframework/samples/petclinic/PostgresIntegrationTests.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 80,
+    "size": 2731,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/model/ValidatorTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/model/ValidatorTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 318,
+    "size": 11978,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 51,
+    "size": 1331,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/owner/OwnerTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/owner/OwnerTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 274,
+    "size": 10342,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/owner/PetControllerTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/owner/PetControllerTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "context": "error",
+    "exception": "DataIntegrityViolationException",
+    "test": true
+   },
+   "kind": "message",
+   "line": 168,
+   "name": "Duplicate key: unique_owner_pet_name",
+   "path": "src/test/java/org/springframework/samples/petclinic/owner/PetControllerTests.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "context": "error",
+    "exception": "DataIntegrityViolationException",
+    "test": true
+   },
+   "kind": "message",
+   "line": 259,
+   "name": "Duplicate key: unique_owner_pet_name",
+   "path": "src/test/java/org/springframework/samples/petclinic/owner/PetControllerTests.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 97,
+    "size": 2616,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/owner/PetTypeFormatterTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/owner/PetTypeFormatterTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 139,
+    "size": 3278,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/owner/PetValidatorTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/owner/PetValidatorTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 121,
+    "size": 4300,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/owner/VisitControllerTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/owner/VisitControllerTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 315,
+    "size": 10303,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/service/ClinicServiceTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/service/ClinicServiceTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 53,
+    "size": 1901,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/service/EntityUtils.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/service/EntityUtils.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 101,
+    "size": 4213,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "client": "RestTemplate",
+    "method": "ANY",
+    "test": true,
+    "type": "http"
+   },
+   "kind": "external_call",
+   "line": 63,
+   "name": "http://localhost:/oups",
+   "path": "src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "client": "RestTemplate",
+    "method": "GET",
+    "test": true,
+    "type": "http"
+   },
+   "kind": "external_call",
+   "line": 81,
+   "name": "http://localhost:/oups",
+   "path": "src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 41,
+    "size": 1326,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/system/CrashControllerTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/system/CrashControllerTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 138,
+    "size": 4231,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "operation": "read",
+    "test": true,
+    "type": "file"
+   },
+   "kind": "external_call",
+   "line": 44,
+   "name": "Files",
+   "path": "src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "operation": "read",
+    "test": true,
+    "type": "file"
+   },
+   "kind": "external_call",
+   "line": 54,
+   "name": "Files",
+   "path": "src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "operation": "read",
+    "test": true,
+    "type": "file"
+   },
+   "kind": "external_call",
+   "line": 89,
+   "name": "Files",
+   "path": "src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "operation": "read",
+    "test": true,
+    "type": "file"
+   },
+   "kind": "external_call",
+   "line": 99,
+   "name": "Files",
+   "path": "src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java",
+   "stack": "java-spring"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 43,
+    "size": 1575,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/system/WelcomeControllerTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/system/WelcomeControllerTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 111,
+    "size": 3488,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/vet/VetControllerTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/vet/VetControllerTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".java",
+    "lines": 41,
+    "size": 1313,
+    "stacks": [
+     "java-spring"
+    ]
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/java/org/springframework/samples/petclinic/vet/VetTests.java",
+   "path": "src/test/java/org/springframework/samples/petclinic/vet/VetTests.java",
+   "stack": "generic"
+  },
+  {
+   "detail": {
+    "encoding": "utf-8",
+    "ext": ".jmx",
+    "lines": 540,
+    "size": 32638,
+    "stacks": []
+   },
+   "kind": "file",
+   "line": null,
+   "name": "src/test/jmeter/petclinic_test_plan.jmx",
+   "path": "src/test/jmeter/petclinic_test_plan.jmx",
+   "stack": "generic"
+  }
+ ],
+ "schema": "appdoc-facts/3",
+ "stacks": [
+  {
+   "detail": {
+    "file_count": 53,
+    "marker_files": [
+     "build.gradle",
+     "pom.xml"
+    ],
+    "supported": true
+   },
+   "kind": "stack",
+   "line": null,
+   "name": "java-spring",
+   "path": "build.gradle",
+   "stack": "java-spring"
+  }
+ ],
+ "target": {
+  "commit": "500158f732419217507c7656904b8e6aa1bcc0d6",
+  "history": "shallow",
+  "name": "spring-petclinic",
+  "scan": {
+   "found": 138,
+   "ignored": 0,
+   "pruned": [],
+   "pruned_files": 0,
+   "scanned": 138
+  }
+ }
+}

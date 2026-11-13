@@ -104,6 +104,28 @@ class JavaSpringTest(unittest.TestCase):
         self.assertEqual((q["type"], q["operation"]), ("sql", "select"))
         self.assertEqual(find("data_access", J + "api/OrderDao.java", 20, "sp_close_order")["detail"]["type"], "stored_procedure")
 
+    def find_all(self, kind, path, line, name):
+        return [f["detail"] for f in self.facts if (f["kind"], f["path"], f["line"], f["name"]) == (kind, path, line, name)]
+
+    def test_scheduled_jobs_carry_schedule_and_enabled(self):
+        R = J + "jobs/ReportJobs.java"
+        self.assertEqual(self.find_all("entry_point", R, 21, "ReportJobs.refreshCache")[0]["schedule"], "fixedRate = 60000")
+        self.assertIs(self.find_all("entry_point", R, 21, "ReportJobs.refreshCache")[0]["enabled"], True)
+        nightly = self.find_all("entry_point", R, 25, "ReportJobs.nightlyReport")[0]
+        self.assertEqual((nightly["type"], nightly["schedule"], nightly["enabled"]),
+                         ("job", 'cron = "0 30 2 * * *"', None))
+        self.assertIs(self.find_all("entry_point", R, 32, "ReportJobs.disabledJob")[0]["enabled"], False)
+        order = self.find_all("entry_point", J + "api/OrderController.java", 34, "OrderController.nightlySweep")[0]
+        self.assertEqual((order["schedule"], order["enabled"]), ('cron = "0 0 * * * *"', True))
+
+    def test_code_config_reads_are_marked_read(self):
+        R = J + "jobs/ReportJobs.java"
+        self.assertEqual(self.find_all("config_key", R, 14, "reports.output-dir")[0]["use"], "read")
+        self.assertEqual(self.find_all("config_key", R, 28, "reports.sink.url")[0]["use"], "read")
+        tok = self.find_all("config_key", R, 29, "REPORT_API_TOKEN")[0]
+        self.assertEqual((tok["use"], tok["secret_location"]), ("read", True))
+        self.assertEqual(self.find_all("config_key", J + "TicketService.java", 20, "itsm.base-url")[0]["use"], "read")
+
     def test_commented_out_code_yields_nothing(self):
         names = {f["name"] for f in self.facts}
         for n in ABSENT_NAMES:

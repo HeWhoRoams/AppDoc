@@ -1,0 +1,50 @@
+[
+  {
+    "id": "GT-1",
+    "section": "16.7",
+    "alt_sections": ["7.5", "4", "16.4"],
+    "must_cite": "services/cron/tasks_basic.go:31",
+    "must_contain": [
+      "stop_zombie_tasks", "stop_endless_tasks", "cancel_abandoned_jobs", "start_schedule_tasks", "cleanup_actions",
+      "cleanup_action_runs", "update_mirrors", "repo_health_check", "check_repo_stats", "archive_cleanup",
+      "sync_external_users", "deleted_branches_cleanup", "update_migration_poster_id", "cleanup_hook_task_table",
+      "cleanup_packages", "sync_repo_licenses", "delete_inactive_accounts", "delete_repo_archives", "git_gc_repos",
+      "resync_all_sshkeys", "resync_all_sshprincipals", "resync_all_hooks", "reinit_missing_repos",
+      "delete_missing_repos", "delete_generated_repository_avatars", "delete_old_actions", "delete_old_audit_events",
+      "update_checker", "delete_old_system_notices", "gc_lfs", "rebuild_issue_indexer"
+    ],
+    "note": "True count is 31, not 30: RegisterTaskFatal(\"<name>\", ...) literals are 6 in tasks_actions.go, 10 in tasks_basic.go, 15 in tasks_extended.go (git grep; RegisterTask( in tasks.go is the wrapper). The 2.1 note said 30; the 31 register functions P7 counted match the 31 literals. Every name must appear in the same section."
+  },
+  {
+    "id": "GT-2",
+    "section": "10.1",
+    "alt_sections": [],
+    "must_cite": "custom/conf/app.example.ini:400",
+    "must_contain": ["PASSWD"],
+    "note": "Corrected. The 2.1 'F13 cites lines 367 and 400' is about custom/conf/app.example.ini: line 367 is the MySQL ';PASSWD =' placeholder and line 400 is a literal sample MSSQL password. They are the only database.PASSWD entries and appear in the 2.2 output only as 16.6 rows. The comparison report read 'F-13' as Git over SSH (modules/ssh/server.go), which is a different numbering; modules/ssh/server.go has no line 367 or 400 (147 lines). The key therefore asks for a 10.1 finding on the shipped sample credential, citing :400 (value omitted)."
+  },
+  {
+    "id": "GT-3",
+    "section": "3.3",
+    "alt_sections": ["5.2", "10.1", "10.2", "16.3"],
+    "must_cite": "custom/conf/app.example.ini:479",
+    "must_contain": ["REVERSE_PROXY_TRUSTED_PROXIES"],
+    "note": "Verified: app.example.ini:479 is ;REVERSE_PROXY_TRUSTED_PROXIES = 127.0.0.0/8,::1/128 (default trusts loopback only; '*' trusts all). The 2.2 output names it only in 16.6, which is not an accepted section for this item. The 2.1 key called this F10 (admin); in 2.2 numbering F-10 is admin management, so the id is not reused."
+  },
+  {
+    "id": "GT-4",
+    "section": "5.3",
+    "alt_sections": [],
+    "must_cite": "routers/web/web.go:1112",
+    "must_contain": ["Actions", "packages", "projects", "wiki", "releases", "token scope"],
+    "note": "Verified: routers/web/web.go:1112 is m.Group(\"/projects\"), :1481 /releases, :691 /actions. The 5.3 matrix has rows for F-14 and F-15 only; projects, wiki, releases and token scopes (models/auth/access_token_scope.go) are not matrix rows."
+  },
+  {
+    "id": "GT-5",
+    "section": "16.5",
+    "alt_sections": [],
+    "must_cite": "cmd/main.go:122-125",
+    "must_contain": ["gitea dump", "gitea doctor", "gitea admin", "rollback", "secret rotation"],
+    "note": "Verified: cmd/main.go:122-125 register dump, admin, migrate and doctor. 2.2 16.5 has Rollback, Secret rotation and a dump mention, but no explicit doctor or admin operator rows."
+  }
+]

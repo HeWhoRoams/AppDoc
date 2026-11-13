@@ -1,0 +1,56 @@
+{
+  "summary": {
+    "Present": 1,
+    "Partial": 4,
+    "Absent": 1,
+    "Retired": 0,
+    "scorable": 6
+  },
+  "items": [
+    {
+      "id": "SP-1",
+      "section": "4",
+      "status": "Absent",
+      "found_in": null,
+      "detail": "terms absent: six controllers OR 6 controllers"
+    },
+    {
+      "id": "SP-2",
+      "section": "10.1",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "citation found elsewhere, terms found elsewhere"
+    },
+    {
+      "id": "SP-3",
+      "section": "8.2",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "citation found elsewhere, terms absent: LOWER(name)"
+    },
+    {
+      "id": "SP-4",
+      "section": "7.1",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "citation found elsewhere, terms absent: not rendered OR not shown OR not displayed OR not visible OR never shown OR is lost"
+    },
+    {
+      "id": "SP-5",
+      "section": "10.1",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "citation found elsewhere, terms absent: /health"
+    },
+    {
+      "id": "SP-6",
+      "section": "11",
+      "status": "Present",
+      "found_in": "11",
+      "detail": ""
+    }
+  ],
+  "repo": "spring-petclinic",
+  "document": "C:\\Github\\appdoc-test\\spring-petclinic\\docs\\appdoc-2.2\\application-documentation.md",
+  "date": "2026-11-11"
+}

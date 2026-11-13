@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import os
-import re
 import subprocess
 from collections import Counter
 
 from . import facts as F
-from . import scan
+from . import scan, smells
 from .stacks import generic, load
 from .summary import render_summary
 
@@ -31,14 +30,7 @@ def _is_repo_root(root: str) -> bool:
     return bool(top) and os.path.normcase(os.path.realpath(top)) == os.path.normcase(os.path.realpath(root))
 
 
-_TEST_DIRS = {"test", "tests", "__tests__", "spec", "specs", "testing"}
-_TEST_FILE_RE = re.compile(
-    r"(^test_.*\.py$|_test\.py$|(Tests?|IT)\.java$|Tests?\.cs$|\.(test|spec)\.[cm]?[jt]sx?$|^conftest\.py$)")
-
-
-def is_test_path(path: str) -> bool:
-    parts = path.split("/")
-    return any(p.lower() in _TEST_DIRS for p in parts[:-1]) or bool(_TEST_FILE_RE.search(parts[-1]))
+is_test_path = F.is_test_path
 
 
 def _history(root: str) -> str:
@@ -66,15 +58,22 @@ def _ownership(root: str, files: list[scan.SourceFile]):
 def extract(root: str, out_dir: str) -> tuple[str, str]:
     """Return (facts_text, summary_text) for the Target at root. Pure with respect to the Target."""
     root = os.path.abspath(root)
-    files = scan.walk(root, out_dir)
+    stats: dict = {}
+    files = scan.walk(root, out_dir, stats)
     paths = [f.path for f in files]
     stacks = load()
 
     detected = {}
     for st in stacks:
-        markers = st.detect(paths)
+        markers = st.detect_in(paths, root) if hasattr(st, "detect_in") else st.detect(paths)
         if markers:
             detected[st.id] = (st, sorted(markers))
+
+    # folder -> set of file names, for i18n message-bundle detection (a sibling <base>_<ll>.<ext>)
+    siblings: dict[str, set[str]] = {}
+    for sf in files:
+        folder = sf.path.rsplit("/", 1)[0] if "/" in sf.path else ""
+        siblings.setdefault(folder, set()).add(sf.path.rsplit("/", 1)[-1])
 
     facts: list[F.Fact] = []
     for sf in files:
@@ -88,17 +87,38 @@ def extract(root: str, out_dir: str) -> tuple[str, str]:
         owners = sorted(sid for sid, (st, _) in detected.items() if sf.ext in st.extensions)
         detail["stacks"] = owners
         facts.append(F.Fact.make("file", "generic", sf.path, None, sf.path, **detail))
-        found = list(generic.extract(sf.path, text))
+        folder = sf.path.rsplit("/", 1)[0] if "/" in sf.path else ""
+        found = list(generic.extract(sf.path, text, siblings.get(folder)))
         for sid in owners:
             found.extend(detected[sid][0].extract(sf.path, text))
+        found.extend(smells.extract(sf.path, text, owners))
         if is_test_path(sf.path):
             found = [f.as_test() for f in found]
         facts.extend(found)
 
+    # Post-pass (1.4A): a config file classified `unclassified` is promoted to `app` when one of its
+    # keys is read from code (a config_key Fact with use="read", source="code").
+    code_read_keys = {f.name for f in facts
+                      if f.kind == "config_key" and f.detail_dict().get("use") == "read"
+                      and f.detail_dict().get("source") == "code"}
+    if code_read_keys:
+        promoted = []
+        for f in facts:
+            if f.kind == "config_key" and f.detail_dict().get("role") == "unclassified" \
+                    and f.name in code_read_keys:
+                d = f.detail_dict()
+                d["role"] = "app"
+                promoted.append(F.Fact.make(f.kind, f.stack, f.path, f.line, f.name, **d))
+            else:
+                promoted.append(f)
+        facts = promoted
+
     for sid, (st, markers) in sorted(detected.items()):
         count = sum(1 for sf in files if sf.ext in st.extensions)
+        caps = sorted(getattr(st, "capabilities", frozenset()))
         facts.append(F.Fact.make("stack", sid, markers[0], None, sid,
-                                 marker_files=markers, file_count=count, supported=True))
+                                 marker_files=markers, file_count=count, supported=True,
+                                 capabilities=caps))
     for eco, markers in generic.unsupported_stacks(paths, set(detected)):
         facts.append(F.Fact.make("stack", "generic", markers[0], None, eco,
                                  marker_files=markers, file_count=len(markers), supported=False))
@@ -106,7 +126,11 @@ def extract(root: str, out_dir: str) -> tuple[str, str]:
 
     name = os.path.basename(root.rstrip("\\/")) or "target"
     commit = _git(root, "rev-parse", "HEAD") if _is_repo_root(root) else None
-    facts_text = F.dumps(name, commit, facts, _history(root))
+    pruned_files = sum(p["files"] for p in stats["pruned"])
+    coverage = {"scanned": len(files), "ignored": stats["ignored"], "pruned_files": pruned_files,
+                "found": len(files) + stats["ignored"] + pruned_files, "pruned": stats["pruned"],
+                "metadata": stats.get("metadata", 0), "retired_candidates": stats.get("retired_candidates", [])}
+    facts_text = F.dumps(name, commit, facts, _history(root), coverage)
     return facts_text, render_summary(F.loads(facts_text))
 
 

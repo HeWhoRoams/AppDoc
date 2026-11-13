@@ -15,6 +15,9 @@ SECRETS = [
     "Sup3rS3cretPw",
     "tok_live_8f3a91c2d7e04b5a9c61",
     "abc123secretvalue",
+    "Fl4sk-Sample-S3cret-Key",
+    "tok_dev_9d41c7a2e6b8",
+    "Mail-Pa55-sample",
 ]
 
 
@@ -78,6 +81,44 @@ class PythonFlaskFacts(unittest.TestCase):
         self.has("config_key", "data/db.py", 22, "DB_PASSWORD", source="code", secret_location=True)
         self.has("config_key", "app.py", 25, "PORT", source="code", secret_location=False)
         self.has("config_key", "admin/views.py", 59, "ADMIN_EMAIL", source="code")
+
+    def test_config_from_object_module_level_defines(self):
+        self.has("config_key", "config_app.py", 9, "PAGE_SIZE", use="define", secret_location=False)
+        self.has("config_key", "config_app.py", 10, "SECRET_KEY", use="define", secret_location=True)
+
+    def test_config_from_object_class_defines(self):
+        self.has("config_key", "config_app.py", 14, "MAIL_SERVER", use="define", secret_location=False)
+        self.has("config_key", "config_app.py", 15, "MAIL_API_TOKEN", use="define", secret_location=True)
+
+    def test_config_assignments_and_update_are_defines(self):
+        self.has("config_key", "config_app.py", 22, "UPLOAD_DIR", use="define")
+        self.has("config_key", "config_app.py", 23, "MAX_CONTENT_LENGTH", use="define")
+        self.has("config_key", "config_app.py", 23, "MAIL_PASSWORD", use="define", secret_location=True)
+        self.has("config_key", "config_app.py", 24, "REPORT_DIR", use="define")
+
+    def test_config_reads_stay_reads(self):
+        self.has("config_key", "config_app.py", 25, "PAGE_SIZE", use="read")
+        self.has("config_key", "admin/views.py", 59, "ADMIN_EMAIL", use="read")
+        self.has("config_key", "admin/views.py", 59, "ADMIN_API_TOKEN", use="read", secret_location=True)
+        self.has("config_key", "app.py", 25, "PORT", use="read")
+
+    def test_lowercase_and_unloaded_module_constants_are_not_config(self):
+        # admin/views.py has UPPER_CASE constants but never calls from_object.
+        self.lacks("config_key", "admin/views.py", "API_TOKEN")
+        self.lacks("config_key", "config_app.py", "scheduler")
+
+    def test_apscheduler_jobs(self):
+        self.has("entry_point", "config_app.py", 38, "sync-tickets", type="job", schedule="interval minutes=5",
+                 handler="sync_tickets", enabled=None)
+        self.has("entry_point", "config_app.py", 39, "nightly_purge", type="job", schedule="cron hour=2, minute=30")
+
+    def test_date_trigger_is_not_a_recurring_job(self):
+        self.assertEqual([f for f in self.facts if f["path"] == "config_app.py" and f["line"] == 40], [])
+
+    def test_celery_beat_schedule_jobs(self):
+        self.has("entry_point", "config_app.py", 44, "digest-email", type="job", handler="tasks.send_digest",
+                 schedule="crontab(hour=7, minute=0)")
+        self.has("entry_point", "config_app.py", 45, "heartbeat", type="job", schedule="30.0")
 
     def test_external_calls(self):
         self.has("external_call", "services/itsm.py", 27, "{SUPPORT_API_URL}/tickets/{ticket_id}/status", type="http")

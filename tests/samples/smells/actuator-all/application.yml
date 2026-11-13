@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: demo
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

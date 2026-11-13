@@ -6,6 +6,8 @@ import html
 import re
 
 from ..citations import parse_span
+from ..docmodel import slug, split_row
+from ..register import AUDIT_NOT_PERFORMED
 
 _FENCE_SPLIT = re.compile(r"(^[ \t]*(?:```|~~~).*?^[ \t]*(?:```|~~~)[ \t]*$)", re.M | re.S)
 _COMMENT = re.compile(r"<!--.*?-->", re.S)
@@ -63,37 +65,11 @@ def _cls(text: str) -> str:
 
 
 def _slug(text: str, seen: dict) -> str:
-    plain = re.sub(r"[`*_]|\[([^\]]*)\]\([^)]*\)", lambda m: m.group(1) or "", text)
-    slug = re.sub(r"[^\w\- ]", "", plain.lower()).strip().replace(" ", "-")
-    slug = re.sub(r"-+", "-", slug) or "section"
-    n = seen.get(slug, 0)
-    seen[slug] = n + 1
-    return slug if n == 0 else f"{slug}-{n + 1}"
+    return slug(text, seen)
 
 
 def _split_row(line: str) -> list[str]:
-    line = line.strip()
-    cells, cur, in_code, i = [], [], False, 0
-    while i < len(line):
-        c = line[i]
-        if c == "\\" and i + 1 < len(line) and line[i + 1] == "|":
-            cur.append("|")
-            i += 2
-            continue
-        if c == "`":
-            in_code = not in_code
-        if c == "|" and not in_code:
-            cells.append("".join(cur).strip())
-            cur = []
-        else:
-            cur.append(c)
-        i += 1
-    cells.append("".join(cur).strip())
-    if line.startswith("|"):
-        cells = cells[1:]
-    if line.endswith("|") and not line.endswith("\\|") and cells:
-        cells = cells[:-1]
-    return cells
+    return split_row(line)
 
 
 def _align(spec: str) -> str:
@@ -187,7 +163,8 @@ def _blocks(text: str, seen: dict) -> str:
             while i < n and lines[i].lstrip().startswith(">"):
                 buf.append(re.sub(r"^\s*>\s?", "", lines[i]))
                 i += 1
-            out.append(f"<blockquote>{_blocks(chr(10).join(buf), seen)}</blockquote>")
+            cls = ' class="audit-banner"' if buf[0].lstrip().startswith(AUDIT_NOT_PERFORMED) else ""
+            out.append(f"<blockquote{cls}>{_blocks(chr(10).join(buf), seen)}</blockquote>")
             continue
         if "|" in line and i + 1 < n and "|" in lines[i + 1] and _TABLE_SEP.match(lines[i + 1]):
             buf = [line, lines[i + 1]]

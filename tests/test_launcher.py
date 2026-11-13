@@ -59,6 +59,22 @@ class LauncherTests(unittest.TestCase):
                            cwd=tempfile.gettempdir(), capture_output=True, text=True)
         self.assertEqual(r.returncode, 1)
 
+    def test_seal_subcommand_is_recognized(self):
+        work = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, work, True)
+        r = subprocess.run([sys.executable, os.path.join(ROOT, "run_appdoc.py"), "seal", work],
+                           cwd=tempfile.gettempdir(), capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("sealed 0 row(s)", r.stdout)
+
+    def test_build_subcommand_is_recognized(self):
+        work = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, work, True)
+        r = subprocess.run([sys.executable, os.path.join(ROOT, "run_appdoc.py"), "build", work],
+                           cwd=tempfile.gettempdir(), capture_output=True, text=True)
+        # no narrative yet: seal is a no-op, fill fails (exit 1) - not an argparse error (exit 2)
+        self.assertEqual(r.returncode, 1, r.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

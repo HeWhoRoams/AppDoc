@@ -1,0 +1,49 @@
+{
+  "summary": {
+    "Present": 0,
+    "Partial": 4,
+    "Absent": 1,
+    "Retired": 0,
+    "scorable": 5
+  },
+  "items": [
+    {
+      "id": "GT-1",
+      "section": "16.7",
+      "status": "Absent",
+      "found_in": null,
+      "detail": "terms absent: stop_zombie_tasks; stop_endless_tasks; cancel_abandoned_jobs; start_schedule_tasks..., no covering citation"
+    },
+    {
+      "id": "GT-2",
+      "section": "10.1",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "citation found elsewhere, terms found elsewhere"
+    },
+    {
+      "id": "GT-3",
+      "section": "3.3",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "citation found elsewhere, terms found elsewhere"
+    },
+    {
+      "id": "GT-4",
+      "section": "5.3",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "citation found elsewhere, terms found elsewhere"
+    },
+    {
+      "id": "GT-5",
+      "section": "16.5",
+      "status": "Partial",
+      "found_in": null,
+      "detail": "citation found elsewhere, terms absent: gitea doctor; gitea admin"
+    }
+  ],
+  "repo": "gitea",
+  "document": "C:\\Github\\appdoc-test\\gitea\\docs\\appdoc-2.2\\application-documentation.md",
+  "date": "2026-11-11"
+}
