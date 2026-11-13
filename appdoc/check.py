@@ -38,6 +38,7 @@ RULE_TITLES = {
     "C5": "Claims grounded", "C6": "No secrets", "C7": "Coverage honest", "C8": "Structure complete",
     "C9": "Tables conform", "C10": "References resolve", "C11": "Register valid",
     "C12": "Finding candidates addressed", "C13": "Entry points not cited",  # C13 fails only under --strict
+    "C14": "Unknowns match the register",
 }
 C5_CAP = 30
 C5_MIN_LEN = 40
@@ -752,6 +753,32 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
     return reg, coverage(heads, ids, reg, workflows)
 
 
+_Q_REF_RE = re.compile(r"^(?:14/)?(Q-\d+)$")
+_A2_UNKNOWNS_RE = re.compile(r"\|\s*14\s*\|\s*(\d+)\s+of\s+(\d+)\s*\|")
+
+
+def _c14_unknowns(lines, heads, ids, reg, appendix, add):
+    """Section 14 and the register must agree: no resolved Q-row left in 14, A.2 counts the register's Q-refs.
+
+    `appendix` is the appendix-a block text; `lines` has it masked, so the caller passes it from the raw Narrative.
+    """
+    if reg is None or not reg.performed:
+        return
+    q_rows = [(no, row, m.group(1)) for no, row in reg.rows if (m := _Q_REF_RE.match(str(row.get("ref", ""))))]
+    t14 = _spec_table(lines, heads, "14")
+    in14 = {dm.cell_text(cells[0]): no for no, cells in t14.rows if cells} if t14 else {}
+    for no, row, qid in q_rows:
+        if row.get("result") in ("Answerable", "Dismissed") and qid in in14:
+            add("C14", in14[qid], f"section 14 lists {qid} but the audit resolved it ({row['id']}, {row['result']}); "
+                "remove it from section 14 or record the answer in the row",
+                f"delete the {qid} row from section 14, or change the register result")
+    m = _A2_UNKNOWNS_RE.search(appendix or "")
+    actual = len({qid for _, _, qid in q_rows})
+    if m and actual and int(m.group(2)) != actual:  # no Q rows at all: nothing to reconcile
+        add("C14", 1, f"Appendix A.2 states {m.group(2)} unknowns but the register carries {actual} Q-refs",
+            "run `appdoc fill` after reconciling section 14 and the register")
+
+
 def coverage(heads, ids, reg, workflows) -> list[tuple[str, int, int]]:
     """(section, IDs with a register row, IDs) for every ID-bearing section, and workflows."""
     refs = set()
@@ -949,6 +976,8 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         smell_fids = None if facts is None else {
             f["detail"].get("fid") for f in facts.get("facts", []) if f.get("kind") == "smell"}
         reg, cov = _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smell_fids, add)
+        appendix = next((body for name, body, _ in fill_mod.blocks(raw) if name == "appendix-a"), "")
+        _c14_unknowns(lines, heads, ids, reg, appendix, add)
         reg_ids = {str(r["id"]) for _, r in reg.rows} if reg else None
         _c10_refs(lines, heads, ids, reg_ids, add)
         _c10_coverage(lines, heads, facts, add)

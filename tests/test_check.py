@@ -837,7 +837,7 @@ class CheckTests(unittest.TestCase):
     def test_c11_answerable_question_fails_until_it_is_removed(self):
         self.write_register(AUDIT, ROWS + [self.ANSWER])
         code, report, _ = self.run_check(build_doc())
-        self.assertEqual(self.rules(report), {"C11"})
+        self.assertEqual(self.rules(report), {"C11", "C14"})
         self.assertIn("Q-1 can be closed from source (app/main.py:3); close it and remove the question", report)
         closed = build_doc().replace("| Q-1 | Unknown: who deploys the service |", "| Q-2 | Unknown: who owns the service |")
         self.assertEqual(self.fired(closed), set())
@@ -859,6 +859,43 @@ class CheckTests(unittest.TestCase):
             self.assertIn(needle, report)
         self.assertIn("one of: Supported, Corrected, Downgraded, Dismissed, Answerable",
                       self._bad_result_report())
+
+    # --- C14: section 14 vs the register
+
+    @staticmethod
+    def _q_doc(n):
+        rows = "\n".join(f"| Q-{i} | Unknown: question {i} | Why | Ask | Unknown | Medium |" for i in range(1, n + 1))
+        return build_doc({14: "| ID | Question | Why it matters | How to close | Owner | Priority |\n"
+                              "|---|---|---|---|---|---|\n" + rows})
+
+    @staticmethod
+    def _q_row(n, result="Supported"):
+        return {"id": f"E-{n + 2}", "ref": f"14/Q-{n}", "claim": f"question {n}", "result": result,
+                "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "needs owner"}
+
+    def test_c14_answerable_in_14_fails(self):
+        self.write_register(AUDIT, ROWS + [self._q_row(1, "Answerable"), self._q_row(5, "Answerable")])
+        code, report, _ = self.run_check(self._q_doc(5))
+        self.assertIn("C14", self.rules(report))
+        self.assertIn("section 14 lists Q-5 but the audit resolved it (E-7, Answerable); "
+                      "remove it from section 14 or record the answer in the row", report)
+
+    def test_c14_a2_count_mismatch(self):
+        self.write_register(AUDIT, ROWS + [self._q_row(n) for n in range(1, 15)])
+        code, report, _ = self.run_check(self._q_doc(10))
+        self.assertIn("| 14 | 10 of 10 |", report)
+        self.assertIn("C14", self.rules(report))
+        self.assertIn("Appendix A.2 states 10 unknowns but the register carries 14 Q-refs", report)
+
+    def test_c14_supported_q_stays(self):
+        self.write_register(AUDIT, ROWS + [self._q_row(1)])
+        code, report, _ = self.run_check(self._q_doc(1))
+        self.assertNotIn("C14", self.rules(report), report)
+
+    def test_c14_clean(self):
+        self.write_register(AUDIT, ROWS + [self._q_row(1), self._q_row(2)])
+        code, report, _ = self.run_check(self._q_doc(2))
+        self.assertNotIn("C14", self.rules(report), report)
 
     def _bad_result_report(self):
         self.write_register(AUDIT, [ROWS[0], dict(ROWS[1], result="Fine")])
