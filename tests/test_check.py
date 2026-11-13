@@ -885,7 +885,13 @@ class CheckTests(unittest.TestCase):
         code, report, _ = self.run_check(self._q_doc(10))
         self.assertIn("| 14 | 10 of 10 |", report)
         self.assertIn("C14", self.rules(report))
-        self.assertIn("Appendix A.2 states 10 unknowns but the register carries 14 Q-refs", report)
+        self.assertIn("Appendix A.2 states 10 unknowns have a register row but the register carries 14 Q-refs", report)
+
+    def test_c14_partial_audit_no_false_positive(self):
+        self.write_register(AUDIT, ROWS + [self._q_row(n) for n in range(1, 6)])
+        code, report, _ = self.run_check(self._q_doc(10))
+        self.assertIn("| 14 | 5 of 10 |", report)
+        self.assertNotIn("C14", self.rules(report), report)
 
     def test_c14_supported_q_stays(self):
         self.write_register(AUDIT, ROWS + [self._q_row(1)])

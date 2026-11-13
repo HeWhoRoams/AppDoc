@@ -773,9 +773,9 @@ def _c14_unknowns(lines, heads, ids, reg, appendix, add):
                 "remove it from section 14 or record the answer in the row",
                 f"delete the {qid} row from section 14, or change the register result")
     m = _A2_UNKNOWNS_RE.search(appendix or "")
-    actual = len({qid for _, _, qid in q_rows})
-    if m and actual and int(m.group(2)) != actual:  # no Q rows at all: nothing to reconcile
-        add("C14", 1, f"Appendix A.2 states {m.group(2)} unknowns but the register carries {actual} Q-refs",
+    actual = len({qid for _, row, qid in q_rows if row.get("result") not in ("Answerable", "Dismissed")})  # resolved Qs leave section 14
+    if m and actual and int(m.group(1)) != actual:  # A.2 counts IDs with a register row; no Q rows at all: nothing to reconcile
+        add("C14", 1, f"Appendix A.2 states {m.group(1)} unknowns have a register row but the register carries {actual} Q-refs",
             "run `appdoc fill` after reconciling section 14 and the register")
 
 
