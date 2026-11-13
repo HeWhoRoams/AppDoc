@@ -903,6 +903,39 @@ class CheckTests(unittest.TestCase):
         code, report, _ = self.run_check(self._q_doc(2))
         self.assertNotIn("C14", self.rules(report), report)
 
+    # --- C15: register counts in prose
+
+    @staticmethod
+    def _r_doc(n, sentence):
+        rows = "\n".join(f"| R-{i} | High | S | Recommendation {i} | V-1 |" for i in range(1, n + 1))
+        return build_doc({15: "| ID | Severity | Effort | Recommendation | Addresses |\n"
+                              "|---|---|---|---|---|\n" + rows + "\n\n"
+                              "### 15.1 Coverage summary\n\n" + sentence})
+
+    @staticmethod
+    def _r_row(n):
+        return {"id": f"E-{n + 2}", "ref": f"15/R-{n}", "claim": f"recommendation {n}", "result": "Supported",
+                "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "none"}
+
+    def test_c15_stale_count_fails(self):
+        # 13 R-rows in the doc, 7 R-refs in the register; the sentence is stale on both counts.
+        self.write_register(AUDIT, ROWS + [self._r_row(n) for n in range(1, 8)])
+        code, report, _ = self.run_check(self._r_doc(13, "The audit covered 5 of 12 recommendations."))
+        self.assertIn("C15", self.rules(report))
+        self.assertIn("but the document has 13 recommendations", report)
+
+    def test_c15_correct_count_passes(self):
+        # 13 R-rows, 7 R-refs; the sentence matches both the table total and the register.
+        self.write_register(AUDIT, ROWS + [self._r_row(n) for n in range(1, 8)])
+        code, report, _ = self.run_check(self._r_doc(13, "The audit covered 7 of 13 recommendations."))
+        self.assertNotIn("C15", self.rules(report), report)
+
+    def test_c15_base_doc_no_false_positive(self):
+        # The base document has no "N of M <noun>" sentence, so C15 must not fire.
+        self.write_register(AUDIT, ROWS)
+        code, report, _ = self.run_check(build_doc())
+        self.assertNotIn("C15", self.rules(report), report)
+
     def _bad_result_report(self):
         self.write_register(AUDIT, [ROWS[0], dict(ROWS[1], result="Fine")])
         return self.run_check(build_doc())[1]

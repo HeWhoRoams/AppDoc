@@ -38,7 +38,7 @@ RULE_TITLES = {
     "C5": "Claims grounded", "C6": "No secrets", "C7": "Coverage honest", "C8": "Structure complete",
     "C9": "Tables conform", "C10": "References resolve", "C11": "Register valid",
     "C12": "Finding candidates addressed", "C13": "Entry points not cited",  # C13 fails only under --strict
-    "C14": "Unknowns match the register",
+    "C14": "Unknowns match the register", "C15": "Register counts in prose",
 }
 C5_CAP = 30
 C5_MIN_LEN = 40
@@ -779,6 +779,41 @@ def _c14_unknowns(lines, heads, ids, reg, appendix, add):
             "run `appdoc fill` after reconciling section 14 and the register")
 
 
+# C15: a hand-written "N of M <noun>" sentence states two counts the tool can verify:
+# M is the total rows of the doc's table for that ID class, N is how many of them have a
+# register row. A sentence that disagrees with either is stale prose (RC-A). Only ID-class
+# nouns are checked; "control" and "row" are not single ID classes, so they are skipped.
+_C15_NOUNS = {"recommendation": "R-", "finding": "V-", "v-finding": "V-", "unknown": "Q-"}
+_C15_RE = re.compile(r"\b(\d+) of (\d+)\s+([A-Za-z-]+)")
+
+
+def _c15_register_counts(lines, ids, reg, add):
+    """Every 'N of M <noun>' sentence must agree with the doc's table total and the register."""
+    if reg is None or not reg.performed:
+        return
+    refs = set()
+    for _, row in reg.rows:
+        m = reg_mod.REF_RE.match(str(row.get("ref", "")))
+        if m:
+            refs.add(m.group(2) or m.group(1))
+    for i, line in enumerate(lines):
+        for m in _C15_RE.finditer(line):
+            noun = m.group(3).lower().rstrip("s")
+            prefix = _C15_NOUNS.get(noun)
+            if not prefix:
+                continue
+            n, total = int(m.group(1)), int(m.group(2))
+            doc_total = sum(1 for k in ids if k.startswith(prefix))
+            if doc_total and total != doc_total:
+                add("C15", i + 1, f'states "{m.group(0).strip()}" but the document has {doc_total} {noun}s',
+                    "reword the sentence to the current table total, or run `appdoc fill`")
+                continue
+            reg_count = sum(1 for k in refs if k.startswith(prefix))
+            if reg_count and n != reg_count:
+                add("C15", i + 1, f'states "{m.group(0).strip()}" but the register has {reg_count} {noun}s with a row',
+                    "reword the sentence to the current register count, or run `appdoc fill`")
+
+
 def coverage(heads, ids, reg, workflows) -> list[tuple[str, int, int]]:
     """(section, IDs with a register row, IDs) for every ID-bearing section, and workflows."""
     refs = set()
@@ -978,6 +1013,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         reg, cov = _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smell_fids, add)
         appendix = next((body for name, body, _ in fill_mod.blocks(raw) if name == "appendix-a"), "")
         _c14_unknowns(lines, heads, ids, reg, appendix, add)
+        _c15_register_counts(lines, ids, reg, add)
         reg_ids = {str(r["id"]) for _, r in reg.rows} if reg else None
         _c10_refs(lines, heads, ids, reg_ids, add)
         _c10_coverage(lines, heads, facts, add)
