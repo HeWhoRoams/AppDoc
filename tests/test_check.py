@@ -32,7 +32,7 @@ SECTION_BODY = {
        "### 5.2 Authorization enforcement\n\n- The admin check is made at `app/main.py:4`.\n\n"
        "### 5.3 Role-to-capability matrix\n\n| Capability | admin |\n|---|---|\n| Service: change settings, see `app/main.py:4` | Y |\n\n"
        + spec.RESTRICTION_LINE,
-    6: "- The landing page is rendered by `app/main.py:5` for all visitors.\n\n"
+    6: "- The landing page is rendered by `app/main.py:5` for visitors.\n\n"
        "| ID | Page | Route or entry | Reached from | Visible controls and data | States and effects | Roles and evidence |\n"
        "|---|---|---|---|---|---|---|\n"
        "| UI-1 | Landing | / | direct | Welcome text | Static | everyone, `app/main.py:5` |",
@@ -204,10 +204,10 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(self.fired(build_doc().replace("`app/main.py:2` and starts", "`app/nope.py:2` and starts")), {"C1"})
 
     def test_c1_line_beyond(self):
-        self.assertEqual(self.fired(build_doc().replace("`app/main.py:5` for all", "`app/main.py:500` for all")), {"C1"})
+        self.assertEqual(self.fired(build_doc().replace("`app/main.py:5` for visitors", "`app/main.py:500` for visitors")), {"C1"})
 
     def _swap(self, new):
-        return build_doc().replace("`app/main.py:5` for all", new + " for all")
+        return build_doc().replace("`app/main.py:5` for visitors", new + " for visitors")
 
     def test_c1_folder_citation_resolves(self):
         self.assertEqual(self.fired(self._swap("`app/`")), set())
@@ -284,7 +284,7 @@ class CheckTests(unittest.TestCase):
         self.assertIn("does not resolve", report)
 
     def test_c1_escape(self):
-        self.assertEqual(self.fired(build_doc().replace("`app/main.py:5` for all", "`../outside.py:1` for all")), {"C1"})
+        self.assertEqual(self.fired(build_doc().replace("`app/main.py:5` for visitors", "`../outside.py:1` for visitors")), {"C1"})
 
     def test_c2(self):
         doc = build_doc().replace("`app/main.py:6`; value omitted.", "`app/main.py`; value omitted.")
@@ -357,7 +357,7 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(self.fired(doc), {"C8"})
 
     def test_c5(self):
-        doc = build_doc().replace("- The landing page is rendered by `app/main.py:5` for all visitors.",
+        doc = build_doc().replace("- The landing page is rendered by `app/main.py:5` for visitors.",
                                   "- The landing page is rendered for every single visitor of the site.")
         self.assertEqual(self.fired(doc), {"C5"})
 
@@ -935,6 +935,36 @@ class CheckTests(unittest.TestCase):
         self.write_register(AUDIT, ROWS)
         code, report, _ = self.run_check(build_doc())
         self.assertNotIn("C15", self.rules(report), report)
+
+    # --- C16: universal claims that cite only single lines
+
+    @staticmethod
+    def _q16_doc(cite):
+        return build_doc({3: SECTION_BODY[3] + f"\n- All handlers are registered in `{cite}`."})
+
+    def test_c16_advisory_present(self):
+        # A universal claim whose only citation is a single line is advisory, not a failure.
+        code, report, out = self.run_check(self._q16_doc("app/main.py:3"))
+        self.assertEqual(code, 0, report)
+        self.assertEqual(report.splitlines()[0], "# Check: PASS")
+        self.assertIn("## Universal claims cite single lines (advisory)", report)
+        self.assertIn("All handlers are registered in `app/main.py:3`", report)
+        self.assertNotRegex(report, r"(?m)^## C16")
+        self.assertIn("Advisory: 1 universal claim cites only single lines", out)
+
+    def test_c16_fails_under_strict(self):
+        code, report, _ = self.run_check(self._q16_doc("app/main.py:3"), strict=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C16", self.rules(report))
+        self.assertIn("a universal claim cites only single lines", report)
+        self.assertNotIn("(advisory)", report)
+
+    def test_c16_range_cite_not_flagged(self):
+        # A range citation covers the universal claim, so it is not flagged.
+        code, report, out = self.run_check(self._q16_doc("app/main.py:3-5"))
+        self.assertEqual(code, 0, report)
+        self.assertNotIn("Universal claims cite single lines", report)
+        self.assertNotIn("universal claim", out)
 
     def _bad_result_report(self):
         self.write_register(AUDIT, [ROWS[0], dict(ROWS[1], result="Fine")])

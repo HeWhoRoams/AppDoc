@@ -39,6 +39,7 @@ RULE_TITLES = {
     "C9": "Tables conform", "C10": "References resolve", "C11": "Register valid",
     "C12": "Finding candidates addressed", "C13": "Entry points not cited",  # C13 fails only under --strict
     "C14": "Unknowns match the register", "C15": "Register counts in prose",
+    "C16": "Universal claims cite single lines",  # C16 is advisory; fails only under --strict
 }
 C5_CAP = 30
 C5_MIN_LEN = 40
@@ -814,6 +815,36 @@ def _c15_register_counts(lines, ids, reg, add):
                     "reword the sentence to the current register count, or run `appdoc fill`")
 
 
+# C16: a universal claim ("all handlers …") whose only citations are single lines is under-evidenced
+# (F1). Advisory by default; fails under --strict (R8). A range citation covers the claim, so it is
+# not flagged. Only prose lines (not headings or table rows) are considered; fenced lines carry no
+# citations and are therefore skipped.
+_C16_QUANTIFIERS = re.compile(r"\b(all|every|any|whole|entire|always|never|each)\b", re.I)
+
+
+def _c16_quantifier(lines, cites, add, strict):
+    """Return the (line, text) of universal claims whose only citations are single lines."""
+    by_line: dict[int, list] = {}
+    for c in cites:
+        if c.start is not None:
+            by_line.setdefault(c.doc_line, []).append(c)
+    hits = []
+    for i, line in enumerate(lines):
+        if line.lstrip().startswith(("#", "|")):
+            continue
+        cites_here = by_line.get(i + 1)
+        if not cites_here or not _C16_QUANTIFIERS.search(line):
+            continue
+        if any(c.start != c.end for c in cites_here):
+            continue  # a range citation covers the claim
+        hits.append((i + 1, line.strip()))
+    for no, _ in hits:
+        if strict:
+            add("C16", no, "a universal claim cites only single lines; cite the covering range or mark it Inferred",
+                "cite the covering range (`path:start-end`) or prefix the claim with **Inferred:**")
+    return hits
+
+
 def coverage(heads, ids, reg, workflows) -> list[tuple[str, int, int]]:
     """(section, IDs with a register row, IDs) for every ID-bearing section, and workflows."""
     refs = set()
@@ -1000,7 +1031,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                         "name it in 2.1 and record the decision: documented as live, or excluded via .appdocignore")
 
     # C7 (counts and generated blocks), C9, C10, C11: template-2.2 structure
-    reg, cov, uncited = None, [], []
+    reg, cov, uncited, quant_hits = None, [], [], []
     if current:
         heads = dm.headings(lines)
         _c7_counts(target, lines, heads, facts, add)
@@ -1014,6 +1045,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         appendix = next((body for name, body, _ in fill_mod.blocks(raw) if name == "appendix-a"), "")
         _c14_unknowns(lines, heads, ids, reg, appendix, add)
         _c15_register_counts(lines, ids, reg, add)
+        quant_hits = _c16_quantifier(lines, cites, add, strict)
         reg_ids = {str(r["id"]) for _, r in reg.rows} if reg else None
         _c10_refs(lines, heads, ids, reg_ids, add)
         _c10_coverage(lines, heads, facts, add)
@@ -1054,6 +1086,13 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         if len(uncited) > FOLDER_CAP:
             advisory.append(f"| {len(uncited) - FOLDER_CAP} more folders | | |")
         advisory.append("")
+    if quant_hits and not strict:
+        advisory += ["## Universal claims cite single lines (advisory)", "",
+                     f"{len(quant_hits)} universal claim{'s' if len(quant_hits) != 1 else ''} "
+                     f"{'cite' if len(quant_hits) != 1 else 'cites'} only single lines. "
+                     "This is not a problem; `appdoc check --strict` fails on it.", ""]
+        advisory += [f"- line {no}: `{text}`" for no, text in quant_hits[:RULE_CAP]]
+        advisory.append("")
     head = "# Check: PASS" if total == 0 else f"# Check: FAIL ({total} problem{'s' if total != 1 else ''})"
     cite_reg = ["## Citation register", "", "| Doc line | Cited path | Line/range | Resolved |", "|---|---|---|---|"]
     for c, ok in sorted(register, key=lambda r: (r[0].doc_line, r[0].raw)):
@@ -1091,7 +1130,11 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, REPORT), "w", encoding="utf-8", newline="\n") as fh:
         fh.write("\n".join([head, ""] + scope + body + advisory + cite_reg + [""] + verification) + "\n")
-    note = [f"Advisory: {sum(n for _, n, _ in uncited)} entry point files are not cited (see {REPORT})."] \
-        if advisory else []
+    note = []
+    if uncited and not strict:
+        note.append(f"Advisory: {sum(n for _, n, _ in uncited)} entry point files are not cited (see {REPORT}).")
+    if quant_hits and not strict:
+        note.append(f"Advisory: {len(quant_hits)} universal claim{'s' if len(quant_hits) != 1 else ''} "
+                    f"{'cite' if len(quant_hits) != 1 else 'cites'} only single lines (see {REPORT}).")
     print("\n".join([head] + [b for b in body if b] + note + [verification_status]))
     return 0 if total == 0 else 2
