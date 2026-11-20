@@ -9,6 +9,11 @@
 
 > **Extraction changelog note:** Phases 6a/6b are **additive** and on by default (no flag). Existing Samples' `facts.json` is byte-identical to before; `facts.json` only changes for Targets that actually use the newly-detected integrations. This is a *content* change, not a silent change to the default output of existing codebases — documented here so it is not mistaken for a regression.
 
+### Changed — the cache key is now versioned (schema + extractor version)
+- The per-file content-hash cache key (`.appdoc-cache.json`) is salted with the Facts `SCHEMA` and a manually-bumped `EXTRACTOR_VERSION` constant (new in `appdoc/extract.py`). A cache written by an older AppDoc build is never served to a newer one, so a schema or extractor-logic change cleanly invalidates stale entries. Default (no-flag) `facts.json` is byte-identical to before — the version bytes are part of the *key*, not the output. Bump `EXTRACTOR_VERSION` whenever a stack/catalog regex or extraction logic changes.
+### Fixed — `smtp` is now in the integration view vocabulary
+- `smtp` (a Spring-XML mail-sender `connection`) is a canonical type in the view's `TYPE_ORDER`/`TYPE_LABEL` (rendered "Email (SMTP)"), so it groups with the canonical list instead of appearing as an orphan "Smtp" row sorted after it.
+
 ## 2.0.0
 
 AppDoc is rebuilt as a small, portable skill. See `docs/adr/0004-facts-plus-narrative.md`.

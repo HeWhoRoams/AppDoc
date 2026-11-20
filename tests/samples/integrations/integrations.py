@@ -1,9 +1,9 @@
 """Integration fixture for AppDoc's shared integration catalog.
 
 Exercises the six non-DB system-connection types the catalog detects (cache, queue,
-object_storage, grpc, ldap, search). No secret value is present: every endpoint is a
-plain host (no ``user:pass@`` credential, no ``Password=``/``Pwd=``), so the Facts carry
-locations only.
+object_storage, grpc, ldap, search). Most endpoints are plain hosts; ``get_cache_cred``
+embeds a ``user:pass@`` credential in its URL so the redaction tests can prove the driver
+name is extracted while the credential value is redacted from ``facts.json``.
 """
 
 import redis
@@ -16,6 +16,12 @@ import elasticsearch
 
 def get_cache():
     return redis.Redis.from_url("redis://cache.internal:6379/0")
+
+
+def get_cache_cred():
+    # A credential-bearing URL: the catalog must redact the ``user:pass@`` value so it
+    # never appears in facts.json (only the driver name and a secret_location flag).
+    return redis.Redis.from_url("redis://user:pass@r2.internal:6379")
 
 
 def get_queue():

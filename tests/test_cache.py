@@ -91,5 +91,36 @@ class CacheBehaviorTests(unittest.TestCase):
         self.assertEqual(after_calls, 2, "the changed content must be re-extracted (cache invalidated)")
 
 
+class CacheKeyVersionTests(unittest.TestCase):
+    """The cache key is salted with F.SCHEMA + EXTRACTOR_VERSION, so an AppDoc upgrade
+    (a schema or extractor-logic change) invalidates a stale cache entry."""
+
+    RAW = b"requests.get('http://x.example/')\n"
+    PATH = "a.py"
+    IDS = ["python-flask"]
+
+    def _key(self, version=None, schema=None):
+        saved_v, saved_s = extract.EXTRACTOR_VERSION, F.SCHEMA
+        extract.EXTRACTOR_VERSION = version if version is not None else saved_v
+        F.SCHEMA = schema if schema is not None else saved_s
+        try:
+            return extract._cache_key(self.RAW, self.PATH, self.IDS)
+        finally:
+            extract.EXTRACTOR_VERSION, F.SCHEMA = saved_v, saved_s
+
+    def test_same_version_same_key(self):
+        # (b) The same (raw, path, detected_ids) at the current version is deterministic.
+        self.assertEqual(self._key(), self._key())
+
+    def test_bumped_extractor_version_changes_key(self):
+        # (a) Two keys for the same (raw, path, detected_ids) at different EXTRACTOR_VERSION
+        # values differ — a stale cache written by an older build is never served.
+        self.assertNotEqual(self._key(), self._key(version=extract.EXTRACTOR_VERSION + 1))
+
+    def test_changed_schema_changes_key(self):
+        # The schema bytes are also in the key: a schema change invalidates the cache.
+        self.assertNotEqual(self._key(), self._key(schema="appdoc-facts/999"))
+
+
 if __name__ == "__main__":
     unittest.main()

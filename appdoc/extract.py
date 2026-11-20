@@ -24,6 +24,7 @@ from .summary import render_summary
 
 PARALLEL_THRESHOLD = 50  # below this file count, the pool's overhead isn't worth it
 CACHE_NAME = ".appdoc-cache.json"
+EXTRACTOR_VERSION = 1  # bump whenever a stack/catalog regex or extraction logic changes
 
 
 def _git(root: str, *args: str) -> str | None:
@@ -76,8 +77,15 @@ def _ownership(root: str, files: list[scan.SourceFile], ownership_top: int | Non
 # ------------------------------------------------------------------ caching
 
 def _cache_key(raw: bytes, path: str, detected_ids) -> str:
-    """Content-hash key: full raw bytes + Target-relative path + detected stack ids."""
+    """Content-hash key, versioned so an AppDoc upgrade invalidates a stale cache.
+
+    The leading bytes (schema + extractor version) change whenever the extraction logic
+    changes, so a ``.appdoc-cache.json`` written by an older AppDoc build is never served
+    to a newer one.
+    """
     h = hashlib.sha256()
+    h.update(str(F.SCHEMA).encode("utf-8")); h.update(b"\x00")
+    h.update(str(EXTRACTOR_VERSION).encode("utf-8")); h.update(b"\x00")
     h.update(raw); h.update(b"\x00")
     h.update(path.encode("utf-8")); h.update(b"\x00")
     h.update("\x00".join(sorted(detected_ids)).encode("utf-8"))

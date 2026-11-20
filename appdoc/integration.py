@@ -17,7 +17,7 @@ from __future__ import annotations
 # per-call outbound external_call types. Anything not listed sorts after these, alphabetically.
 TYPE_ORDER = (
     "database", "cache", "queue", "object_storage", "grpc", "ldap", "search",
-    "http", "email", "process", "file",
+    "http", "email", "smtp", "process", "file",
 )
 
 TYPE_LABEL = {
@@ -30,6 +30,7 @@ TYPE_LABEL = {
     "search": "Search",
     "http": "Outbound HTTP",
     "email": "Email",
+    "smtp": "Email (SMTP)",
     "process": "Process",
     "file": "File",
     "untyped": "Unspecified",

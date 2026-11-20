@@ -43,7 +43,9 @@ class IntegrationViewDeterminism(unittest.TestCase):
 
     def test_view_is_nonempty_and_typed(self):
         self.assertIn("## System Connections", self.view)
-        self.assertIn("| Cache | connection | 1 | `redis.from_url` |", self.view)
+        # Two cache connections: the plain host (get_cache) and the credential-bearing
+        # URL (get_cache_cred) — the catalog redacts the credential, not the connection.
+        self.assertIn("| Cache | connection | 2 | `redis.from_url` |", self.view)
         self.assertIn("| Queue | connection | 1 | `kafka.KafkaProducer` |", self.view)
         self.assertIn("| Object storage | connection | 1 | `boto3.s3` |", self.view)
         self.assertIn("app → { cache, queue, object_storage, grpc, ldap, search }", self.view)
@@ -86,6 +88,23 @@ class IntegrationViewDeterminism(unittest.TestCase):
         view = render_integration_view(doc)
         self.assertNotIn("a.py:1", view)   # test-code location is excluded
         self.assertIn("b.py:2", view)
+
+    def test_smtp_renders_in_canonical_group(self):
+        # smtp is a canonical TYPE_ORDER type (after email, before process). With `file`
+        # (the last canonical type), smtp must sort BEFORE file — NOT after it via the
+        # `extra` branch (which would yield `app → { file, smtp }`).
+        doc = {"facts": [
+            {"kind": "connection", "stack": "python-flask", "path": "a.py", "line": 1,
+             "name": "open", "detail": {"type": "file"}},
+            {"kind": "connection", "stack": "python-flask", "path": "b.py", "line": 2,
+             "name": "SmtpClient", "detail": {"type": "smtp"}},
+        ]}
+        view = render_integration_view(doc)
+        self.assertIn("Email (SMTP)", view)           # canonical label, not the "Smtp" fallback
+        self.assertNotIn("| Smtp |", view)            # the fallback label is NOT used in the map...
+        self.assertNotIn("**Smtp**", view)            # ...or the provenance
+        self.assertIn("app → { smtp, file }", view)   # smtp before file (canonical order)
+        self.assertIn("| Email (SMTP) | connection | 1 | `SmtpClient` |", view)
 
 
 if __name__ == "__main__":

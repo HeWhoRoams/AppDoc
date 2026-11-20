@@ -57,6 +57,15 @@ class IntegrationCatalogFacts(unittest.TestCase):
         self.assertNotIn("fakepass", self.text)
         self.assertNotIn("user:pass@", self.text)
 
+    def test_embedded_credential_is_redacted(self):
+        # get_cache_cred embeds a `user:pass@` credential in a redis URL. The catalog
+        # extracts the driver (redis.from_url) but redacts the credential, so the
+        # `user:pass@` marker never appears in facts.json. This is now non-tautological:
+        # the credential really is in the source and must be stripped from the output.
+        self.assertIn("redis.from_url", self.text)    # the driver name is present
+        self.assertNotIn("user:pass@", self.text)      # the credential is NOT
+        self.assertNotIn("secretpw", self.text)        # (guard: no leaked password value)
+
     def test_catalog_scan_is_pure_and_typed(self):
         text = ('import redis, kafka, boto3\n'
                 'r = redis.Redis.from_url("redis://c.internal:6379")\n'
