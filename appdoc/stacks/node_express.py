@@ -14,6 +14,7 @@ from typing import Iterable
 from ..facts import Fact
 from ..secrets import find_secret_shapes, is_secret_key
 from .base import Stack, line_of, strip_comments
+from . import integrations
 
 STACK_ID = "node-express"
 
@@ -205,6 +206,7 @@ def _extract(path: str, text: str) -> Iterable[Fact]:
     out.extend(_config(path, t))
     out.extend(_external(path, t))
     out.extend(_messages(path, t))
+    out.extend(integrations.scan_facts("node", STACK_ID, path, t))
     return list(dict.fromkeys(out))
 
 

@@ -64,6 +64,8 @@ Every Target also gets the **generic** extractor: files, dependency manifests, c
 
 `facts.json` holds records of `{kind, stack, path, line, name, detail}`. Kinds: `file`, `stack`, `entry_point`, `data_access`, `connection`, `config_key`, `dependency`, `external_call`, `auth_check`, `message`, `ownership`. It contains no timestamps, no absolute paths and no secret values; entries are sorted and de-duplicated, and the Target's git commit is recorded when there is one.
 
+`connection` Facts carry a `type` in `detail` — `database` plus the non-database integration vocabulary `cache`, `queue`, `object_storage`, `grpc`, `ldap`, `search` (detected by the shared catalog in `appdoc/stacks/integrations.py`), and `external_call` adds `grpc`. The Facts summary leads with a deterministic **System Connections** section (`appdoc/integration.py`) that groups these Facts by type into a system-to-system map — the integration picture, rendered near the top of the summary and the HTML page.
+
 ## The Check
 
 | Rule | Fails when |
