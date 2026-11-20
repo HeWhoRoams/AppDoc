@@ -78,3 +78,23 @@ jobs:
       - name: Run the AppDoc Check (C1–C7, deterministic consistency gate)
         working-directory: appdoc-skill
         run: python -m appdoc check ..
+
+  # Windows job: proves the ProcessPoolExecutor spawn path (the only
+  # Windows-specific code) by running the full test suite on windows-latest.
+  appdoc-windows-tests:
+    runs-on: windows-latest
+    steps:
+      - name: Check out the AppDoc skill
+        uses: actions/checkout@v4
+        with:
+          repository: HeWhoRoams/AppDoc
+          path: appdoc-skill
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run the test suite (exercises the Windows spawn path)
+        working-directory: appdoc-skill
+        run: python -m pytest -q
