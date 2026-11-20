@@ -38,6 +38,8 @@ RULE_TITLES = {
     "C5": "Claims grounded", "C6": "No secrets", "C7": "Coverage honest", "C8": "Structure complete",
     "C9": "Tables conform", "C10": "References resolve", "C11": "Register valid",
     "C12": "Finding candidates addressed", "C13": "Entry points not cited",  # C13 fails only under --strict
+    "C14": "Unknowns match the register", "C15": "Register counts in prose",
+    "C16": "Universal claims cite single lines",  # C16 is advisory; fails only under --strict
 }
 C5_CAP = 30
 C5_MIN_LEN = 40
@@ -752,6 +754,97 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
     return reg, coverage(heads, ids, reg, workflows)
 
 
+_Q_REF_RE = re.compile(r"^(?:14/)?(Q-\d+)$")
+_A2_UNKNOWNS_RE = re.compile(r"\|\s*14\s*\|\s*(\d+)\s+of\s+(\d+)\s*\|")
+
+
+def _c14_unknowns(lines, heads, ids, reg, appendix, add):
+    """Section 14 and the register must agree: no resolved Q-row left in 14, A.2 counts the register's Q-refs.
+
+    `appendix` is the appendix-a block text; `lines` has it masked, so the caller passes it from the raw Narrative.
+    """
+    if reg is None or not reg.performed:
+        return
+    q_rows = [(no, row, m.group(1)) for no, row in reg.rows if (m := _Q_REF_RE.match(str(row.get("ref", ""))))]
+    t14 = _spec_table(lines, heads, "14")
+    in14 = {dm.cell_text(cells[0]): no for no, cells in t14.rows if cells} if t14 else {}
+    for no, row, qid in q_rows:
+        if row.get("result") in ("Answerable", "Dismissed") and qid in in14:
+            add("C14", in14[qid], f"section 14 lists {qid} but the audit resolved it ({row['id']}, {row['result']}); "
+                "remove it from section 14 or record the answer in the row",
+                f"delete the {qid} row from section 14, or change the register result")
+    m = _A2_UNKNOWNS_RE.search(appendix or "")
+    actual = len({qid for _, row, qid in q_rows if row.get("result") not in ("Answerable", "Dismissed")})  # resolved Qs leave section 14
+    if m and actual and int(m.group(1)) != actual:  # A.2 counts IDs with a register row; no Q rows at all: nothing to reconcile
+        add("C14", 1, f"Appendix A.2 states {m.group(1)} unknowns have a register row but the register carries {actual} Q-refs",
+            "run `appdoc fill` after reconciling section 14 and the register")
+
+
+# C15: a hand-written "N of M <noun>" sentence states two counts the tool can verify:
+# M is the total rows of the doc's table for that ID class, N is how many of them have a
+# register row. A sentence that disagrees with either is stale prose (RC-A). Only ID-class
+# nouns are checked; "control" and "row" are not single ID classes, so they are skipped.
+_C15_NOUNS = {"recommendation": "R-", "finding": "V-", "v-finding": "V-", "unknown": "Q-"}
+_C15_RE = re.compile(r"\b(\d+) of (\d+)\s+([A-Za-z-]+)")
+
+
+def _c15_register_counts(lines, ids, reg, add):
+    """Every 'N of M <noun>' sentence must agree with the doc's table total and the register."""
+    if reg is None or not reg.performed:
+        return
+    refs = set()
+    for _, row in reg.rows:
+        m = reg_mod.REF_RE.match(str(row.get("ref", "")))
+        if m:
+            refs.add(m.group(2) or m.group(1))
+    for i, line in enumerate(lines):
+        for m in _C15_RE.finditer(line):
+            noun = m.group(3).lower().rstrip("s")
+            prefix = _C15_NOUNS.get(noun)
+            if not prefix:
+                continue
+            n, total = int(m.group(1)), int(m.group(2))
+            doc_total = sum(1 for k in ids if k.startswith(prefix))
+            if doc_total and total != doc_total:
+                add("C15", i + 1, f'states "{m.group(0).strip()}" but the document has {doc_total} {noun}s',
+                    "reword the sentence to the current table total, or run `appdoc fill`")
+                continue
+            reg_count = sum(1 for k in refs if k.startswith(prefix))
+            if reg_count and n != reg_count:
+                add("C15", i + 1, f'states "{m.group(0).strip()}" but the register has {reg_count} {noun}s with a row',
+                    "reword the sentence to the current register count, or run `appdoc fill`")
+
+
+# C16: a universal claim ("all handlers …") whose only citations are single lines is under-evidenced
+# (F1). Advisory by default; fails under --strict (R8). A range citation covers the claim, so it is
+# not flagged. Only prose lines (not headings or table rows) are considered; fenced lines carry no
+# citations and are therefore skipped.
+_C16_QUANTIFIERS = re.compile(r"\b(all|every|any|whole|entire|always|never|each)\b", re.I)
+
+
+def _c16_quantifier(lines, cites, add, strict):
+    """Return the (line, text) of universal claims whose only citations are single lines."""
+    by_line: dict[int, list] = {}
+    for c in cites:
+        if c.start is not None:
+            by_line.setdefault(c.doc_line, []).append(c)
+    hits = []
+    for i, line in enumerate(lines):
+        if line.lstrip().startswith(("#", "|")):
+            continue
+        cites_here = by_line.get(i + 1)
+        if not cites_here or not _C16_QUANTIFIERS.search(line):
+            continue
+        if any(c.start != c.end for c in cites_here):
+            continue  # a range citation covers the claim
+        hits.append((i + 1, line.strip()))
+    for no, _ in hits:
+        if strict:
+            add("C16", no, "a universal claim cites only single lines; cite the covering range or mark it Inferred",
+                "cite the covering range (`path:start-end`) or prefix the claim with **Inferred:**")
+    return hits
+
+
 def coverage(heads, ids, reg, workflows) -> list[tuple[str, int, int]]:
     """(section, IDs with a register row, IDs) for every ID-bearing section, and workflows."""
     refs = set()
@@ -938,7 +1031,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                         "name it in 2.1 and record the decision: documented as live, or excluded via .appdocignore")
 
     # C7 (counts and generated blocks), C9, C10, C11: template-2.2 structure
-    reg, cov, uncited = None, [], []
+    reg, cov, uncited, quant_hits = None, [], [], []
     if current:
         heads = dm.headings(lines)
         _c7_counts(target, lines, heads, facts, add)
@@ -949,6 +1042,10 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         smell_fids = None if facts is None else {
             f["detail"].get("fid") for f in facts.get("facts", []) if f.get("kind") == "smell"}
         reg, cov = _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smell_fids, add)
+        appendix = next((body for name, body, _ in fill_mod.blocks(raw) if name == "appendix-a"), "")
+        _c14_unknowns(lines, heads, ids, reg, appendix, add)
+        _c15_register_counts(lines, ids, reg, add)
+        quant_hits = _c16_quantifier(lines, cites, add, strict)
         reg_ids = {str(r["id"]) for _, r in reg.rows} if reg else None
         _c10_refs(lines, heads, ids, reg_ids, add)
         _c10_coverage(lines, heads, facts, add)
@@ -989,6 +1086,13 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         if len(uncited) > FOLDER_CAP:
             advisory.append(f"| {len(uncited) - FOLDER_CAP} more folders | | |")
         advisory.append("")
+    if quant_hits and not strict:
+        advisory += ["## Universal claims cite single lines (advisory)", "",
+                     f"{len(quant_hits)} universal claim{'s' if len(quant_hits) != 1 else ''} "
+                     f"{'cite' if len(quant_hits) != 1 else 'cites'} only single lines. "
+                     "This is not a problem; `appdoc check --strict` fails on it.", ""]
+        advisory += [f"- line {no}: `{text}`" for no, text in quant_hits[:RULE_CAP]]
+        advisory.append("")
     head = "# Check: PASS" if total == 0 else f"# Check: FAIL ({total} problem{'s' if total != 1 else ''})"
     cite_reg = ["## Citation register", "", "| Doc line | Cited path | Line/range | Resolved |", "|---|---|---|---|"]
     for c, ok in sorted(register, key=lambda r: (r[0].doc_line, r[0].raw)):
@@ -1026,7 +1130,11 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, REPORT), "w", encoding="utf-8", newline="\n") as fh:
         fh.write("\n".join([head, ""] + scope + body + advisory + cite_reg + [""] + verification) + "\n")
-    note = [f"Advisory: {sum(n for _, n, _ in uncited)} entry point files are not cited (see {REPORT})."] \
-        if advisory else []
+    note = []
+    if uncited and not strict:
+        note.append(f"Advisory: {sum(n for _, n, _ in uncited)} entry point files are not cited (see {REPORT}).")
+    if quant_hits and not strict:
+        note.append(f"Advisory: {len(quant_hits)} universal claim{'s' if len(quant_hits) != 1 else ''} "
+                    f"{'cite' if len(quant_hits) != 1 else 'cites'} only single lines (see {REPORT}).")
     print("\n".join([head] + [b for b in body if b] + note + [verification_status]))
     return 0 if total == 0 else 2
