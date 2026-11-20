@@ -241,7 +241,7 @@ def _extract(path: str, text: str) -> Iterable[Fact]:
     out.extend(_external(path, t))
     out.extend(_messages(path, t))
     out.extend(integrations.scan_facts("python", STACK_ID, path, t))
-    return out
+    return list(dict.fromkeys(out))
 
 
 # --- routes ------------------------------------------------------------

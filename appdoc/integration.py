@@ -52,7 +52,7 @@ def _cite(f: dict) -> str:
 def _drivers_cell(names: list[str]) -> str:
     head = ", ".join(f"`{n}`" for n in names[:_DRIVER_CAP])
     if len(names) > _DRIVER_CAP:
-        head += f", … +{len(names) - _DRIVER_CAP} more"
+        head += f", ... +{len(names) - _DRIVER_CAP} more"
     return head
 
 
@@ -74,7 +74,7 @@ def render_integration_view(doc: dict) -> str:
 
     out = ["## System Connections", ""]
     out += ["> Derived deterministically from the `connection`, `external_call` and `dependency` "
-            "Facts in `facts.json` — a pure function of the Facts, byte-identical across runs. "
+            "Facts in `facts.json` - a pure function of the Facts, byte-identical across runs. "
             "A group with no rows is not proof of absence; the extractors only recognise the "
             "patterns of the detected Stacks.", ""]
 
@@ -82,7 +82,7 @@ def render_integration_view(doc: dict) -> str:
     out += ["### Integration map", ""]
     types = _sorted_types({f["detail"].get("type", "untyped") for f in conns})
     if types:
-        out.append("app → { " + ", ".join(types) + " }")
+        out.append("app -> { " + ", ".join(types) + " }")
         out += ["", "| System | Kind | Count | Drivers / targets |", "|---|---|---:|---|"]
         for type_ in types:
             of = [f for f in conns if f["detail"].get("type", "untyped") == type_]
@@ -99,13 +99,13 @@ def render_integration_view(doc: dict) -> str:
         for type_ in types:
             of = [f for f in conns if f["detail"].get("type", "untyped") == type_]
             names = sorted({f["name"] for f in of})
-            out.append(f"- **{_label(type_)}** — {len(of)} × {', '.join(f'`{n}`' for n in names[:_DRIVER_CAP])}"
+            out.append(f"- **{_label(type_)}** - {len(of)} x {', '.join(f'`{n}`' for n in names[:_DRIVER_CAP])}"
                        + (f" (+{len(names) - _DRIVER_CAP} more)" if len(names) > _DRIVER_CAP else ""))
             locs = sorted({_cite(f) for f in of})
             for loc in locs[:_PROVEN_CAP]:
                 out.append(f"  - `{loc}`")
             if len(locs) > _PROVEN_CAP:
-                out.append(f"  - … {len(locs) - _PROVEN_CAP} more in `facts.json`")
+                out.append(f"  - ... {len(locs) - _PROVEN_CAP} more in `facts.json`")
         out.append("")
 
     # --- dependencies ------------------------------------------------------
@@ -119,7 +119,7 @@ def render_integration_view(doc: dict) -> str:
             names = sorted({f["name"] for f in ds})
             head = ", ".join(f"`{n}`" for n in names[:_DEP_EXAMPLE_CAP])
             if len(names) > _DEP_EXAMPLE_CAP:
-                head += f", … +{len(names) - _DEP_EXAMPLE_CAP} more"
+                head += f", ... +{len(names) - _DEP_EXAMPLE_CAP} more"
             out.append(f"| {mgr} | {len(ds)} | {head} |")
         out.append("")
 

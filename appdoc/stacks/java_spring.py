@@ -874,11 +874,11 @@ class JavaSpring(Stack):
         if low.endswith(".java"):
             facts = list(_scan_java(path, text))
             facts.extend(integrations.scan_facts("java", STACK_ID, path, _clean_java(text)))
-            return facts
+            return list(dict.fromkeys(facts))
         if low.endswith((".jsp", ".jspx")):
-            return list(_scan_jsp(path, text))
+            return list(dict.fromkeys(_scan_jsp(path, text)))
         if low.endswith(".xml") and low.rsplit("/", 1)[-1] != "pom.xml":
-            return list(_scan_xml(path, text))
+            return list(dict.fromkeys(_scan_xml(path, text)))
         return ()
 
 

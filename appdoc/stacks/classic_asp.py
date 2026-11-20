@@ -465,7 +465,7 @@ class ClassicAsp(Stack):
                     ifstack.pop()
                 continue
             handle_body(ln, s)
-        return facts
+        return list(dict.fromkeys(facts))
 
 
 STACK = ClassicAsp()

@@ -25,6 +25,7 @@ from .summary import render_summary
 PARALLEL_THRESHOLD = 50  # below this file count, the pool's overhead isn't worth it
 CACHE_NAME = ".appdoc-cache.json"
 EXTRACTOR_VERSION = 1  # bump whenever a stack/catalog regex or extraction logic changes
+_CACHE_MAX_ENTRIES = 10_000  # best-effort cap on cache entries (never prune, just bound growth)
 
 
 def _git(root: str, *args: str) -> str | None:
@@ -107,6 +108,8 @@ def _load_cache(out_dir: str) -> dict:
 
 def _save_cache(out_dir: str, cache: dict) -> None:
     """Persist the cache; best-effort (a missing/unwritable out dir just means no cache next run)."""
+    if len(cache) > _CACHE_MAX_ENTRIES:
+        cache.clear()  # the cache is best-effort; a cleared cache just means a cold next run
     try:
         os.makedirs(out_dir, exist_ok=True)
         with open(os.path.join(out_dir, CACHE_NAME), "w", encoding="utf-8", newline="\n") as fh:

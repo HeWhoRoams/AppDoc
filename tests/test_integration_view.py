@@ -48,7 +48,7 @@ class IntegrationViewDeterminism(unittest.TestCase):
         self.assertIn("| Cache | connection | 2 | `redis.from_url` |", self.view)
         self.assertIn("| Queue | connection | 1 | `kafka.KafkaProducer` |", self.view)
         self.assertIn("| Object storage | connection | 1 | `boto3.s3` |", self.view)
-        self.assertIn("app → { cache, queue, object_storage, grpc, ldap, search }", self.view)
+        self.assertIn("app -> { cache, queue, object_storage, grpc, ldap, search }", self.view)
 
     def test_view_appears_in_summary_before_stacks(self):
         self.assertIn("## System Connections", self.summary_a)
@@ -103,7 +103,7 @@ class IntegrationViewDeterminism(unittest.TestCase):
         self.assertIn("Email (SMTP)", view)           # canonical label, not the "Smtp" fallback
         self.assertNotIn("| Smtp |", view)            # the fallback label is NOT used in the map...
         self.assertNotIn("**Smtp**", view)            # ...or the provenance
-        self.assertIn("app → { smtp, file }", view)   # smtp before file (canonical order)
+        self.assertIn("app -> { smtp, file }", view)   # smtp before file (canonical order)
         self.assertIn("| Email (SMTP) | connection | 1 | `SmtpClient` |", view)
 
 

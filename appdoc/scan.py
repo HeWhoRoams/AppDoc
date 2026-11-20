@@ -106,7 +106,11 @@ def walk(root: str, out_dir: str | None = None, skip_tests: bool = False) -> lis
 def read_bytes(root: str, rel: str) -> bytes:
     """Read a file's raw bytes. Uses mmap for files above the 1MiB threshold."""
     full = os.path.join(root, rel)
-    if os.path.getsize(full) > _MMAP_THRESHOLD:
+    try:
+        size = os.path.getsize(full)
+    except OSError:
+        return b""  # file deleted between getsize and open (TOCTOU)
+    if size > _MMAP_THRESHOLD:
         with open(full, "rb") as fh:
             with mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ) as mm:
                 return mm[:]
