@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Added — the integration picture (content Phases 6a + 6b)
+- **Widened the `connection.type` vocabulary** (an *additive convention* change — `KINDS` and `SCHEMA` in `facts.py` are unchanged). A shared catalog (`appdoc/stacks/integrations.py`) now detects the non-database system connections the per-stack extractors previously missed: `cache` (Redis/Memcached), `queue` (Kafka, RabbitMQ, SQS, pika, kombu, MassTransit, Confluent), `object_storage` (S3, Azure Blob, GCS), `grpc`, `ldap`, and `search` (Elasticsearch/OpenSearch), wired into the python, java, node and dotnet Stacks. Each yields a `connection` Fact with the correct `type`; `external_call.type` also accepts `grpc`.
+- **A `System Connections` view** (`appdoc/integration.py`): a deterministic post-pass (not the AI Narrative) that aggregates the raw `connection`/`external_call`/`dependency` Facts into a system-to-system summary — per-type distinct drivers, counts, file/line provenance, a compact integration map, and the manifest dependencies. Rendered near the top of the Facts summary, and (when a Narrative is present) of the HTML page. It is a pure function of the Facts, so it is byte-identical across runs.
+- Fixture `tests/samples/integrations/` plus `tests/test_integration_catalog.py` and `tests/test_integration_view.py`.
+
+> **Extraction changelog note:** Phases 6a/6b are **additive** and on by default (no flag). Existing Samples' `facts.json` is byte-identical to before; `facts.json` only changes for Targets that actually use the newly-detected integrations. This is a *content* change, not a silent change to the default output of existing codebases — documented here so it is not mistaken for a regression.
+
 ## 2.0.0
 
 AppDoc is rebuilt as a small, portable skill. See `docs/adr/0004-facts-plus-narrative.md`.

@@ -17,6 +17,7 @@ from urllib.parse import urlsplit
 from ..facts import Fact
 from ..secrets import find_secret_shapes, is_secret_key
 from .base import Stack, strip_comments
+from . import integrations
 
 STACK_ID = "aspnet"
 
@@ -619,6 +620,7 @@ class AspNetStack(Stack):
             if "System.Web" not in text and not self._web_target:
                 return
             yield from self._code(path, text, ext == ".vb")
+            yield from integrations.scan_facts("dotnet", STACK_ID, path, strip_comments(text, "c"))
         elif ext in (".aspx", ".ascx", ".master", ".asax"):
             yield from self._markup(path, text, ext)
         elif ext == ".cshtml":

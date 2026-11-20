@@ -14,6 +14,7 @@ from typing import Iterable
 from ..facts import Fact
 from ..secrets import find_secret_shapes, is_secret_key
 from .base import Stack, line_of, strip_comments
+from . import integrations
 
 STACK_ID = "java-spring"
 _BUILD = ("pom.xml", "build.gradle", "build.gradle.kts")
@@ -871,7 +872,9 @@ class JavaSpring(Stack):
     def extract(self, path: str, text: str) -> Iterable[Fact]:
         low = path.lower()
         if low.endswith(".java"):
-            return list(_scan_java(path, text))
+            facts = list(_scan_java(path, text))
+            facts.extend(integrations.scan_facts("java", STACK_ID, path, _clean_java(text)))
+            return facts
         if low.endswith((".jsp", ".jspx")):
             return list(_scan_jsp(path, text))
         if low.endswith(".xml") and low.rsplit("/", 1)[-1] != "pom.xml":

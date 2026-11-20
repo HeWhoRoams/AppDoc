@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 
+from .integration import render_integration_view
+
 LIST_CAP = 50
 FOLDER_CAP = 25
 LISTED_KINDS = (
@@ -34,6 +36,11 @@ def render_summary(doc: dict) -> str:
             "> Facts show what the extractors found. An empty list is not proof that something is absent: "
             "the extractors only recognise the patterns of the Stacks below, so read the source before "
             "writing \"none\". Facts from test code are marked `test` in `facts.json` and left out of the lists.", ""]
+
+    view = render_integration_view(doc)
+    if view:
+        out.extend(view.split("\n"))
+        out.append("")
 
     out += ["## Stacks", ""]
     if stacks:
