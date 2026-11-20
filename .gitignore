@@ -12,3 +12,6 @@ tmp/
 .appdoc/
 tests/test-output/
 tests/powershell/
+
+# Content-hash cache written by `appdoc extract` (best-effort; never committed)
+.appdoc-cache.json

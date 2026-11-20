@@ -19,6 +19,8 @@ STACK_ID = "python-flask"
 _MANIFEST_RE = re.compile(r"^(requirements[^/]*\.txt|pyproject\.toml|setup\.py)$", re.I)
 _FLASK_IMPORT = re.compile(r"(?m)^\s*(?:from\s+flask\b|import\s+flask\b)")
 _VERBS = ("get", "post", "put", "delete", "patch")
+_CLEAN_RE = re.compile(r'("""|\'\')(?:.*?)\1|"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])*\'|#[^\n]*', re.S)
+_DEFCLASS_RE = re.compile(r"\b(def|class)\s+(\w+)")
 _AUTH_DECORATOR = re.compile(
     r"(login_required|roles_required|roles_accepted|permission_required|jwt_required|"
     r"auth_required|requires_auth|admin_required|token_required|requires_roles)", re.I)
@@ -69,7 +71,7 @@ def _parse_string(s: str, i: int):
 def _clean(text: str) -> str:
     """Blank comments and docstrings (string-aware), keeping every newline."""
     text = strip_comments(text, "hash")
-    rx = re.compile(r'("""|\'\'\')(?:.*?)\1|"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])*\'|#[^\n]*', re.S)
+    rx = _CLEAN_RE
 
     def blank(m):
         return re.sub(r"[^\n]", " ", m.group(0))
@@ -270,7 +272,7 @@ def _routes(path, t):
         route = _leading_string(args)
         if route is None:
             continue
-        hm = re.compile(r"\b(def|class)\s+(\w+)").search(t, end)
+        hm = _DEFCLASS_RE.search(t, end)
         handler = hm.group(2) if hm and hm.group(1) == "def" else ""
         if owner in bps:
             prefix, unresolved = bps[owner]

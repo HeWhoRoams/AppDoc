@@ -252,6 +252,7 @@ def _enclosing(classes: list[_Cls], pos: int):
 # ------------------------------------------------------------------ SQL helpers
 
 _SQL_OP = re.compile(r"^\s*(?:\(\s*)?(select|insert|update|delete|merge|with|from|truncate)\b", re.I)
+_AUTH_METHOD_RE = re.compile(r"\s*\.\s*(hasRole|hasAnyRole|hasAuthority|hasAnyAuthority|permitAll|authenticated|denyAll|access|hasIpAddress|anonymous|fullyAuthenticated|rememberMe)\s*\(")
 _STRONG_SQL = re.compile(
     r"(?is)^\s*(?:insert\s+(?:ignore\s+)?into\s+\w|delete\s+from\s+\w|update\s+[\w.$]+\s+set\s"
     r"|select\s.+\sfrom\s+[\w.$]+.*\b(?:where|join|order\s+by|group\s+by)\b)")
@@ -456,8 +457,7 @@ def _scan_java(path: str, text: str, clean: str | None = None) -> Iterable[Fact]
         close = _match_paren(clean, op)
         if close < 0:
             continue
-        r = re.compile(r"\s*\.\s*(hasRole|hasAnyRole|hasAuthority|hasAnyAuthority|permitAll|authenticated|denyAll|access|"
-                       r"hasIpAddress|anonymous|fullyAuthenticated|rememberMe)\s*\(").match(clean, close + 1)
+        r = _AUTH_METHOD_RE.match(clean, close + 1)
         if not r:
             continue
         rclose = _match_paren(clean, r.end() - 1)

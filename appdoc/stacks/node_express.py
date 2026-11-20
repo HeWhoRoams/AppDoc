@@ -26,6 +26,8 @@ _AUTH_NAME = re.compile(r"auth|jwt|passport|session|role|permission|guard", re.I
 _SQL_START = re.compile(r"^\s*\(?\s*(select|insert|update|delete|merge|with|exec|execute|call|truncate)\b", re.I)
 _TABLE = r"([A-Za-z_#@\[\"`$][\w.\[\]\"`${}#@]*)"
 _GENERIC = r"(?:<[^<>()]*(?:<[^<>()]*>[^<>()]*)*>)?"
+_VERB_CALL_RE = re.compile(r"(?<![\w$.])([A-Za-z_$][\w$]*)\s*\.\s*(get|post|put|delete|patch|all|options|head|use)\s*\(")
+_ROUTE_VERB_RE = re.compile(r"\s*\.\s*(get|post|put|delete|patch|all|options|head)\s*\(")
 
 
 class NodeExpressStack(Stack):
@@ -259,7 +261,7 @@ def _routes(path, t):
     known = apps | routers
     mounts: dict[str, tuple[str, str]] = {}
     calls = []  # (offset, receiver, verb, args)
-    rx = re.compile(r"(?<![\w$.])([A-Za-z_$][\w$]*)\s*\.\s*(" + "|".join(_VERBS) + r")\s*\(")
+    rx = _VERB_CALL_RE
     for m in rx.finditer(t):
         recv = m.group(1)
         if recv not in known and not re.fullmatch(r"(?i)app|server|router|\w*routes?|\w*router|api", recv):
@@ -276,7 +278,7 @@ def _routes(path, t):
         if pl is None:
             continue
         while True:
-            cm = re.compile(r"\s*\.\s*(" + "|".join(v for v in _VERBS if v != "use") + r")\s*\(").match(t, i)
+            cm = _ROUTE_VERB_RE.match(t, i)
             if not cm:
                 break
             a, i = _call_args(t, cm.end() - 1)

@@ -21,6 +21,7 @@ ID = "classic-asp"
 # ---------------------------------------------------------------------------
 
 _SEG_RE = re.compile(r"<%(=?)(.*?)(?:%>|\Z)", re.S)
+_AMP_RE = re.compile(r"\s*&\s*")
 _HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
 _INCLUDE_RE = re.compile(
     r"""<!--\s*\#\s*include\s+(file|virtual)\s*=\s*["']([^"']+)["']\s*-->""", re.I)
@@ -184,7 +185,7 @@ def chains(stmt: str) -> list[tuple[str, str, int]]:
     """
     res = []
     i, n = 0, len(stmt)
-    amp = re.compile(r"\s*&\s*")
+    amp = _AMP_RE
     while i < n:
         if stmt[i] != '"':
             i += 1
