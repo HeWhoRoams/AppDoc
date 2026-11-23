@@ -51,6 +51,27 @@ class DiagMetricsBaseline(unittest.TestCase):
                        m["audit_rows"], m["pct_supported"], m["facts_total"])
                 self.assertEqual(got, want)
 
+    def test_baseline_matches_diagnostic_doc(self):
+        """BASELINE equals docs/diagnostic-2.4-comparison.md section 1 (the doc is the source of truth)."""
+        import re
+        with open(os.path.join(ROOT, "docs", "diagnostic-2.4-comparison.md"), encoding="utf-8") as fh:
+            text = fh.read()
+        sec = text.split("## 1. Objective metrics", 1)[1].split("###", 1)[0]
+        rows = {}
+        for line in sec.splitlines():
+            cells = [c.strip().replace("**", "") for c in line.strip().strip("|").split("|")]
+            if len(cells) == 5:
+                rows[cells[0]] = cells[1:]
+        order = ("flaskr-tdd", "spring-petclinic", "eShop", "gitea")
+        num = lambda c: int(re.sub(r"\D", "", c.split("(")[0]))
+        pct = lambda c: float(re.search(r"\(([\d.]+)%\)", c).group(1))
+        for i, ex in enumerate(order):
+            with self.subTest(example=ex):
+                got = (rows["Check"][i], num(rows["Citations (total)"][i]), pct(rows["Citations with a line"][i]),
+                       num(rows["Audit rows"][i]), pct(rows["**Supported**".replace("**", "")][i]),
+                       num(rows["Facts (total)"][i]))
+                self.assertEqual(got, BASELINE[ex + "-2.4"])
+
 
 if __name__ == "__main__":
     unittest.main()

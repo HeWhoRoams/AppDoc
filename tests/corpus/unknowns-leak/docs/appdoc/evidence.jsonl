@@ -1,0 +1,17 @@
+{"type": "audit", "performed": true, "auditor": "independent", "scope": "sections 3-10"}
+{"id": "E-1", "ref": "10.1/V-1", "claim": "A password is set in code", "result": "Supported", "cites": ["app/main.py:6"], "anchor": "line 6", "limitation": "value not shown"}
+{"id": "E-2", "ref": "7.1", "claim": "Operators launch the entry point", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}
+{"id": "E-3", "ref": "14/Q-1", "claim": "question 1", "result": "Supported", "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "needs owner"}
+{"id": "E-4", "ref": "14/Q-2", "claim": "question 2", "result": "Supported", "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "needs owner"}
+{"id": "E-5", "ref": "14/Q-3", "claim": "question 3", "result": "Supported", "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "needs owner"}
+{"id": "E-6", "ref": "14/Q-4", "claim": "question 4", "result": "Supported", "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "needs owner"}
+{"id": "E-7", "ref": "14/Q-5", "claim": "question 5", "result": "Answerable", "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "needs owner"}
+{"id": "E-8", "ref": "14/Q-6", "claim": "question 6", "result": "Supported", "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "needs owner"}
+{"id": "E-9", "ref": "14/Q-7", "claim": "question 7", "result": "Supported", "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "needs owner"}
+{"id": "E-10", "ref": "14/Q-8", "claim": "question 8", "result": "Supported", "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "needs owner"}
+{"id": "E-11", "ref": "14/Q-9", "claim": "question 9", "result": "Supported", "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "needs owner"}
+{"id": "E-12", "ref": "14/Q-10", "claim": "question 10", "result": "Supported", "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "needs owner"}
+{"id": "E-13", "ref": "14/Q-11", "claim": "question 11", "result": "Supported", "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "needs owner"}
+{"id": "E-14", "ref": "14/Q-12", "claim": "question 12", "result": "Supported", "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "needs owner"}
+{"id": "E-15", "ref": "14/Q-13", "claim": "question 13", "result": "Supported", "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "needs owner"}
+{"id": "E-16", "ref": "14/Q-14", "claim": "question 14", "result": "Supported", "cites": ["app/main.py:3"], "anchor": "line 3", "limitation": "needs owner"}
