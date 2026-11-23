@@ -491,6 +491,14 @@ class RegisterHistory(CorpusCase):
         # the computed coverage line, not the writer's scope, says what the register covers
         self.assertIn("10.1 V-1 (1 of 1)", r.narrative)
 
+    def test_severity_order_fails_c9_on_10_1_and_15(self):
+        r = self.case27("severity-order")
+        self.assertEqual(r.code, 2, r.report)
+        self.assertEqual(r.rules(), {"C9"})
+        self.assertIn("10.1 row V-2 (High) outranks the row before it (V-1, Low)", r.report)
+        self.assertIn("15 row R-1 (High) outranks the row before it (R-0, Low)", r.report)
+        self.assertIn("move the row; keep its ID", r.report)
+
     def test_scope_ids_is_only_a_preview_on_2_4(self):
         r = self.case("scope-ids")        # stamped 2.7 on disk, checked against the running 2.4 template: C3 only
         self.assertIn("C3", r.rules())

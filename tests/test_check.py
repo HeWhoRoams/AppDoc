@@ -1582,6 +1582,29 @@ class CheckTests(unittest.TestCase):
         self.assertIn("V-2", report.split(self.PREVIEW)[1])
         self.assertNotIn("C9", self.rules(report))
 
+    def test_c9_15_severity_order(self):
+        """From template 2.7 an out-of-order section 15 row fails C9 (the 2.6 preview, now enforced)."""
+        code, report, _ = self.run27(self._sev_doc())
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C9"})
+        self.assertIn("15 row R-1 (High) outranks the row before it (R-0, Low)", report)
+        self.assertIn("move the row; keep its ID", report)
+        self.assertNotIn(self.PREVIEW, report)
+
+    def test_c9_10_1_severity_order(self):
+        doc = build_doc({10: SECTION_BODY[10].replace(
+            "| V-1 | High |", "| V-1 | Low |").replace(
+            "\n\n### 10.2", "\n| V-2 | High | Another | `app/main.py:6` | Exposure |\n\n### 10.2")})
+        self.write_register(AUDIT, [ROWS[0], ROWS[1], dict(ROWS[0], id="E-3", ref="10.1/V-2")])
+        doc = doc.replace("| V-1, TLS |", "| V-1, V-2, TLS |")
+        code, report, _ = self.run27(doc)
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C9"})
+        self.assertIn("10.1 row V-2 (High) outranks the row before it (V-1, Low)", report)
+        # keeping the order of equal or falling severity passes
+        ok = doc.replace("| V-1 | Low |", "| V-1 | High |").replace("| V-2 | High |", "| V-2 | Low |")
+        self.assertNotIn("C9", self.rules(self.run27(ok)[1]))
+
     def test_preview_in_order_clean_document_has_no_preview_section(self):
         self.write_register(dict(AUDIT, scope="the cited source"), ROWS)
         self.assertNotIn(self.PREVIEW, self.run_check(build_doc())[1])
