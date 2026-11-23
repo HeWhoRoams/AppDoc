@@ -306,7 +306,8 @@ def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: boo
     pruned_files = sum(p["files"] for p in stats["pruned"])
     coverage = {"scanned": len(files), "ignored": stats["ignored"], "pruned_files": pruned_files,
                 "found": len(files) + stats["ignored"] + pruned_files, "pruned": stats["pruned"],
-                "metadata": stats.get("metadata", 0), "retired_candidates": stats.get("retired_candidates", [])}
+                "metadata": stats.get("metadata", 0), "retired_candidates": stats.get("retired_candidates", []),
+                "duplicate_folders": stats.get("duplicate_folders", [])}
     facts_text = F.dumps(name, commit, facts, _history(root), coverage)
     if use_cache and cache is not None:
         _save_cache(out_dir, cache)

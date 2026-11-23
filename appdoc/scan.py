@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import fnmatch
+import hashlib
 import mmap
 import os
 import re
@@ -119,7 +120,7 @@ def walk(root: str, out_dir: str | None = None, stats: dict | None = None,
 
     When `stats` is given it receives `ignored` (files dropped by .appdocignore), `pruned`
     (one {path, rule, files} per pruned folder that held files; VCS metadata is not counted),
-    `metadata` and `retired_candidates`. With `skip_tests` a test file is flagged
+    `metadata`, `retired_candidates` (by name) and `duplicate_folders`. With `skip_tests` a test file is flagged
     ``skipped="test"`` (never read or extracted); the default (``skip_tests=False``) is unchanged.
     """
     root = os.path.abspath(root)
@@ -187,7 +188,9 @@ def walk(root: str, out_dir: str | None = None, stats: dict | None = None,
         stats["ignored"] = ignored
         stats["pruned"] = sorted(pruned, key=lambda p: p["path"])
         stats["metadata"] = metadata
-        stats["retired_candidates"] = _retired_candidates(root, found)
+        by_path, by_hash = _content_index(root, found)
+        stats["retired_candidates"] = _retired_candidates(found)
+        stats["duplicate_folders"] = _duplicate_folders(found, by_path, by_hash)
     return found
 
 
@@ -236,47 +239,132 @@ def _retired_name_signal(name: str) -> str | None:
     return None
 
 
-def _retired_candidates(root: str, files: list[SourceFile]) -> list[dict]:
-    """Folders that look retired by name or by content (>=5 files, half byte-identical to a file outside).
+def _under(path: str, folder: str) -> bool:
+    """True when `path` (a file or a folder) is `folder` or lies beneath it; both end without a slash."""
+    return path == folder or path.startswith(folder + "/")
 
-    A folder is any prefix of a scanned file's path. The shallowest matching folder wins (so
-    `To be deleted/Front Dev/x.asp` reports `To be deleted/`, not the nested folder).
-    """
+
+def _folders_of(files: list[SourceFile]) -> list[str]:
+    """Every folder that is a prefix of a scanned file's path, sorted."""
     folders: set[str] = set()
     for f in files:
         parts = f.path.split("/")[:-1]
         for i in range(1, len(parts) + 1):
             folders.add("/".join(parts[:i]))
-    out = []
-    for folder in sorted(folders):
-        name = folder.rsplit("/", 1)[-1]
-        signal = _retired_name_signal(name)
-        if signal is None:
-            fs = [f for f in files if f.path.startswith(folder + "/")]
-            if len(fs) < 5:
+    return sorted(folders)
+
+
+def _collapse_nested(paths: list[str]) -> list[str]:
+    """Drop every folder that lies beneath another folder in the list (input sorted, trailing slashes)."""
+    kept: list[str] = []
+    for p in sorted(paths):
+        if not any(p.startswith(k) for k in kept):
+            kept.append(p)
+    return kept
+
+
+def _retired_candidates(files: list[SourceFile]) -> list[dict]:
+    """Folders that look retired by name; a folder beneath another candidate is not listed again.
+
+    A folder is any prefix of a scanned file's path. The shallowest matching folder wins (so
+    `To be deleted/Front Dev/x.asp` reports `To be deleted/`, not the nested folder). Byte-identical
+    folders are not retired candidates; they are `duplicate_folders`.
+    """
+    count: dict[str, int] = {}
+    for folder in _folders_of(files):
+        if _retired_name_signal(folder.rsplit("/", 1)[-1]):
+            count[folder + "/"] = sum(1 for f in files if f.path.startswith(folder + "/"))
+    return [{"path": p, "signal": "name", "files": count[p]} for p in _collapse_nested(list(count))]
+
+
+def _sha1_file(full: str) -> str:
+    """SHA-1 of a file's bytes, read in 64 KiB chunks."""
+    h = hashlib.sha1()
+    with open(full, "rb") as fh:
+        for chunk in iter(lambda: fh.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _content_index(root: str, files: list[SourceFile]) -> tuple[dict, dict]:
+    """(path -> SHA-1, SHA-1 -> sorted paths): one streaming read per scanned non-test file.
+
+    Skipped files (oversize, binary, test) are never read, and files under test paths are left out
+    (R5). An empty file is not indexed: every empty file is byte-identical to every other, which is
+    not evidence of a copy.
+    """
+    by_path: dict[str, str] = {}
+    by_hash: dict[str, list[str]] = {}
+    for f in files:
+        if f.skipped or f.size == 0 or F.is_test_path(f.path):
+            continue
+        try:
+            digest = _sha1_file(os.path.join(root, f.path))
+        except OSError:
+            continue
+        by_path[f.path] = digest
+        by_hash.setdefault(digest, []).append(f.path)
+    for paths in by_hash.values():
+        paths.sort()
+    return by_path, by_hash
+
+
+DUPLICATE_MIN_FILES = 5
+
+
+def _duplicate_folders(files: list[SourceFile], by_path: dict, by_hash: dict) -> list[dict]:
+    """Pairs of folders where one is mostly a byte-identical copy of another: `{a, b, files}`.
+
+    A folder A with at least 5 non-test files qualifies when at least half of its files have a
+    byte-identical file outside A. It pairs with the folder B (outside A, neither above nor below it)
+    that holds the most of those matches; a tie goes to the smallest path. `files` is how many of A's
+    files have a match in B. A pair found from both sides is stored once with `a < b` (the larger
+    `files`), a pair nested inside another pair is dropped, and the list is sorted.
+    """
+    mine: dict[str, list[str]] = {}
+    for f in files:
+        if not f.skipped and not F.is_test_path(f.path):
+            parts = f.path.split("/")[:-1]
+            for i in range(1, len(parts) + 1):
+                mine.setdefault("/".join(parts[:i]), []).append(f.path)
+    holders: dict[str, set] = {}   # hash -> every folder that holds or contains a file with it
+
+    def folders_with(digest):
+        got = holders.get(digest)
+        if got is None:
+            got = holders[digest] = {"/".join(p.split("/")[:i]) for p in by_hash[digest]
+                                     for i in range(1, len(p.split("/")))}
+        return got
+
+    pairs: dict[tuple, int] = {}
+    for a in sorted(mine):
+        fs = mine[a]
+        if len(fs) < DUPLICATE_MIN_FILES:
+            continue
+        own: dict[str, int] = {}
+        for p in fs:
+            if p in by_path:
+                own[by_path[p]] = own.get(by_path[p], 0) + 1
+        matched = 0
+        score: dict[str, int] = {}
+        for p in fs:
+            digest = by_path.get(p)
+            if digest is None or len(by_hash[digest]) <= own[digest]:
                 continue
-            outside_hashes: set[bytes] = set()
-            for f in files:
-                if not f.path.startswith(folder + "/"):
-                    try:
-                        with open(os.path.join(root, f.path), "rb") as fh:
-                            outside_hashes.add(fh.read())
-                    except OSError:
-                        continue
-            dup = 0
-            for f in fs:
-                try:
-                    with open(os.path.join(root, f.path), "rb") as fh:
-                        if fh.read() in outside_hashes:
-                            dup += 1
-                except OSError:
-                    continue
-            if dup * 2 >= len(fs):
-                signal = "content"
-        if signal:
-            fs = [f for f in files if f.path.startswith(folder + "/")]
-            out.append({"path": folder + "/", "signal": signal, "files": len(fs)})
-    return out
+            matched += 1
+            for b in folders_with(digest):
+                if not _under(b, a) and not _under(a, b):
+                    score[b] = score.get(b, 0) + 1
+        if not score or matched * 2 < len(fs):
+            continue
+        best = max(score.values())
+        b = min(k for k, v in score.items() if v == best)
+        key = (a + "/", b + "/") if a < b else (b + "/", a + "/")
+        pairs[key] = max(pairs.get(key, 0), best)
+    def inside(k, o):
+        return (k[0].startswith(o[0]) and k[1].startswith(o[1])) or (k[0].startswith(o[1]) and k[1].startswith(o[0]))
+    kept = [k for k in pairs if not any(o != k and inside(k, o) for o in pairs)]
+    return [{"a": a, "b": b, "files": pairs[(a, b)]} for a, b in sorted(kept)]
 
 
 def is_binary(full: str) -> bool:

@@ -37,12 +37,6 @@ CORPUS = os.path.join(HERE, "corpus")
 
 # test method name -> (task ID, why it fails today). Delete the entry when the task lands.
 PENDING: dict = {
-    "test_dup_twins_are_a_duplicate_pair_not_retired":
-        ("T26.31", "byte-identical folders are reported as retired by content; no duplicate_folders list"),
-    "test_dup_tests_under_test_paths_are_ignored":
-        ("T26.30", "duplicate test folders are reported as retired by content"),
-    "test_dup_nested_reports_the_outer_folder_once":
-        ("T26.32", "old/ and old/sub/ are both reported"),
     "test_prior_appdoc_output_is_pruned":
         ("T26.35", "a folder holding AppDoc output is scanned as source (T26.36 adds the 2.1 disclosure copy)"),
     "test_skill_bundle_in_target_is_pruned":

@@ -243,16 +243,98 @@ class ScanTests(unittest.TestCase):
         self.assertIn("old/", names)
         self.assertIn("To be deleted/", names)  # the shallowest matching folder
 
-    def test_retired_candidate_by_content(self):
-        self.write("src/a.py", "same content\n")
-        self.write("src/b.py", "same content\n")
-        self.write("src/c.py", "same content\n")
-        self.write("src/d.py", "same content\n")
-        self.write("src/e.py", "same content\n")
-        self.write("other/a.py", "same content\n")
+    def _twin(self, folder, n=5, body="same content {}\n"):
+        for i in range(n):
+            self.write(f"{folder}/f{i}.py", body.format(i))
+
+    def test_retired_name_signal_only(self):
+        self._twin("src")
+        self._twin("other")
+        self.write("old/legacy.py", "x\n")
         _, stats = self.walk_stats()
-        # src has 5 files, all byte-identical to other/a.py -> content signal
-        self.assertIn({"path": "src/", "signal": "content", "files": 5}, stats["retired_candidates"])
+        self.assertEqual(stats["retired_candidates"], [{"path": "old/", "signal": "name", "files": 1}])
+
+    def test_content_index_reads_each_file_once(self):
+        self._twin("src")
+        self._twin("other")
+        self.write("img.bin", b"\x00\x01", "wb")
+        self.write("big.txt", "a" * (scan.MAX_BYTES + 1))
+        seen = []
+        real = scan._sha1_file
+
+        def spy(full):
+            seen.append(os.path.relpath(full, self.root).replace(os.sep, "/"))
+            return real(full)
+        with mock.patch.object(scan, "_sha1_file", spy):
+            self.walk_stats()
+        self.assertEqual(len(seen), len(set(seen)), "a file was hashed twice")
+        self.assertEqual(len(seen), 10)  # skipped binary and oversize files are never read
+
+    def test_content_index_by_hash(self):
+        self.write("a/x.py", "same\n")
+        self.write("b/y.py", "same\n")
+        self.write("c/z.py", "other\n")
+        self.write("tests/t.py", "same\n")
+        files = scan.walk(self.root)
+        by_path, by_hash = scan._content_index(self.root, files)
+        self.assertNotIn("tests/t.py", by_path)
+        self.assertEqual(sorted(sorted(v) for v in by_hash.values()), [["a/x.py", "b/y.py"], ["c/z.py"]])
+
+    def test_duplicates_under_test_paths_ignored(self):
+        self._twin("tests/one")
+        self._twin("tests/two")
+        _, stats = self.walk_stats()
+        self.assertEqual(stats["duplicate_folders"], [])
+        self.assertEqual(stats["retired_candidates"], [])
+
+    def test_duplicate_pair_reported_once(self):
+        self._twin("alpha")
+        self._twin("beta")
+        self.write("main.py", "print(1)\n")
+        _, stats = self.walk_stats()
+        self.assertEqual(stats["retired_candidates"], [])
+        self.assertEqual(stats["duplicate_folders"], [{"a": "alpha/", "b": "beta/", "files": 5}])
+
+    def test_duplicate_below_threshold_not_reported(self):
+        self._twin("alpha", 4)
+        self._twin("beta", 4)
+        _, stats = self.walk_stats()
+        self.assertEqual(stats["duplicate_folders"], [])
+
+    def test_duplicate_needs_half_of_the_hashes(self):
+        self._twin("alpha", 4)
+        for i in range(4):
+            self.write(f"alpha/own{i}.py", f"unique {i}\n")
+        self._twin("beta", 4)  # beta has under 5 files, so only alpha can be the first side
+        _, stats = self.walk_stats()  # alpha: 4 of 8 match (50%)
+        self.assertEqual([(d["a"], d["b"]) for d in stats["duplicate_folders"]], [("alpha/", "beta/")])
+        self.write("alpha/own4.py", "unique 4\n")
+        _, stats = self.walk_stats()  # alpha: 4 of 9 (<50%)
+        self.assertEqual(stats["duplicate_folders"], [])
+
+    def test_duplicate_tie_break_sorted(self):
+        # alpha, beta and gamma are identical: each pairs with the smallest other path.
+        self._twin("gamma")
+        self._twin("beta")
+        self._twin("alpha")
+        self._twin("zeta", 5, "zeta only {}\n")
+        self._twin("zeta2", 5, "zeta only {}\n")
+        _, stats = self.walk_stats()
+        pairs = [(d["a"], d["b"]) for d in stats["duplicate_folders"]]
+        self.assertEqual(pairs, [("alpha/", "beta/"), ("alpha/", "gamma/"), ("zeta/", "zeta2/")])
+        self.assertTrue(all(a < b for a, b in pairs))
+
+    def test_nested_candidates_collapsed(self):
+        self.write("old/readme.txt", "x\n")
+        self.write("old/sub_backup/x.py", "x\n")
+        self.write("live/readme.txt", "x\n")
+        self._twin("live")
+        self._twin("old/sub")
+        _, stats = self.walk_stats()
+        self.assertEqual([c["path"] for c in stats["retired_candidates"]], ["old/"])
+        for d in stats["duplicate_folders"]:
+            self.assertFalse(d["a"].startswith("old/sub") or d["b"].startswith("old/sub"), d)
+        self.assertEqual([(d["a"], d["b"]) for d in stats["duplicate_folders"]], [("live/", "old/")])
 
     def test_retired_token_matcher(self):
         from appdoc.scan import _retired_name_signal
