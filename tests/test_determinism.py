@@ -291,6 +291,20 @@ class AmbientInputs(unittest.TestCase):
 
 
 class OneNormalization(unittest.TestCase):
+    def test_no_inline_newline_replace(self):
+        """R14: exactly one newline rule; no module but textnorm.py spells the replacement."""
+        offenders = []
+        for top in ("appdoc", "tools"):
+            for dirpath, _dirs, files in os.walk(os.path.join(ROOT, top)):
+                for f in sorted(files):
+                    if not f.endswith(".py") or (top == "appdoc" and f == "textnorm.py" and dirpath.endswith("appdoc")):
+                        continue
+                    with open(os.path.join(dirpath, f), encoding="utf-8") as fh:
+                        for i, line in enumerate(fh, 1):
+                            if 'replace("\\r\\n"' in line or 'replace(b"\\r\\n"' in line:
+                                offenders.append(f"{os.path.relpath(os.path.join(dirpath, f), ROOT)}:{i}")
+        self.assertEqual(offenders, [])
+
     def test_normalize_text(self):
         n = textnorm.normalize_text
         self.assertEqual(n("a  \r\nb\t\rc\n\n"), "a\nb\nc")

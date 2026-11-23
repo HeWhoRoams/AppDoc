@@ -9,6 +9,7 @@ import re
 import sys
 
 from .markdown import render_markdown
+from ..textnorm import normalize_newlines
 from ..integration import render_integration_view
 
 ASSETS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
@@ -19,7 +20,7 @@ _HEADING_RE = re.compile(r'<h([123]) id="([^"]+)">(.*?)</h\1>', re.S)
 
 def _read(path: str) -> str:
     with open(path, encoding="utf-8-sig", newline="") as f:
-        return f.read().replace("\r\n", "\n")
+        return normalize_newlines(f.read())
 
 
 def pick_css(out_dir: str, css: str | None) -> str:
@@ -85,10 +86,10 @@ def _stale_block(target: str, md_path: str, out_dir: str) -> str | None:
     with open(os.path.join(out_dir, "facts.json"), encoding="utf-8") as fh:
         facts = json.load(fh)
     raw = _read(md_path)
-    lines = check._strip_comments(fill_mod.mask_blocks(raw.replace("\r\n", "\n"), spec.OPAQUE_BLOCKS)).splitlines()
+    lines = check._strip_comments(fill_mod.mask_blocks(normalize_newlines(raw), spec.OPAQUE_BLOCKS)).splitlines()
     heads = dm.headings(lines)
     ctx = {"out_dir": out_dir, "text": raw, "target": os.path.abspath(target)}
-    found = {name: body for name, body, _ in fill_mod.blocks(raw.replace("\r\n", "\n"))}
+    found = {name: body for name, body, _ in fill_mod.blocks(normalize_newlines(raw))}
     for key, name in spec.GENERATED.items():
         if name not in found:
             continue

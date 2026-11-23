@@ -21,7 +21,7 @@ from . import template_spec as spec
 from .citations import KNOWN_BARE_FILES, OWNER_CONTEXT, Citation, find_citations, parse_span
 from .facts import fact_id
 from .secrets import find_secret_shapes
-from .textnorm import normalize_text
+from .textnorm import normalize_newlines, normalize_text
 
 NARRATIVE = "application-documentation.md"
 FACTS = "facts.json"
@@ -596,7 +596,7 @@ def _uncited_entry_points(target, cache, facts, cites) -> list[tuple[str, int, l
 
 def _c7_blocks(raw, heads, facts, out_dir, target, add):
     ctx = {"out_dir": out_dir, "text": raw, "target": target}
-    found = {name: (body, line) for name, body, line in fill_mod.blocks(raw.replace("\r\n", "\n"))}
+    found = {name: (body, line) for name, body, line in fill_mod.blocks(normalize_newlines(raw))}
     for key, name in spec.GENERATED.items():
         h = heads.get(key)
         line = h.idx + 1 if h else 1
@@ -642,7 +642,7 @@ def seal_register(target, out_dir) -> int:
     if not os.path.isfile(md_path) or not os.path.isfile(reg_path):
         return 0
     raw = _read_text(md_path)
-    lines = _strip_comments(fill_mod.mask_blocks(raw.replace("\r\n", "\n"), spec.OPAQUE_BLOCKS)).splitlines()
+    lines = _strip_comments(fill_mod.mask_blocks(normalize_newlines(raw), spec.OPAQUE_BLOCKS)).splitlines()
     heads = dm.headings(lines)
     ids = defined_ids(lines, heads, lambda *a: None)
     reg = reg_mod.parse(_read_text(reg_path))
@@ -1025,7 +1025,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
             return 1
 
     prov = version.read_provenance(out_dir) if facts is not None else None
-    text = _strip_comments(fill_mod.mask_blocks(raw.replace("\r\n", "\n"), spec.OPAQUE_BLOCKS))
+    text = _strip_comments(fill_mod.mask_blocks(normalize_newlines(raw), spec.OPAQUE_BLOCKS))
     lines = text.splitlines()
     secs = _sections(lines)
     by_num = {s["num"]: s for s in secs}
@@ -1177,7 +1177,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         # in section 2 prose. Content-signal candidates are advisory only (rendered in scan-coverage).
         # Generated blocks are masked so the scan-coverage list of candidates does not count as naming.
         if s2:
-            masked = _strip_comments(fill_mod.mask_blocks(raw.replace("\r\n", "\n"),
+            masked = _strip_comments(fill_mod.mask_blocks(normalize_newlines(raw),
                                                           tuple(spec.GENERATED.values()))).splitlines()
             msecs = _sections(masked)
             ms2 = next((s for s in msecs if s["num"] == 2), None)
@@ -1222,7 +1222,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         _c15_register_counts(lines, ids, reg, add)
         quant_hits = _c16_quantifier(lines, cites, add, strict)
         generated = tuple(spec.GENERATED.values())
-        glines = _strip_comments(fill_mod.mask_blocks(raw.replace("\r\n", "\n"), generated)).splitlines()
+        glines = _strip_comments(fill_mod.mask_blocks(normalize_newlines(raw), generated)).splitlines()
         wide_hits = _c20_precision(glines, dm.headings(glines))
         for no, msg in wide_hits:
             if strict:

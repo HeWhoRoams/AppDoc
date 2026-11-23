@@ -28,6 +28,7 @@ sys.path.insert(0, ROOT)
 from appdoc import __version__, check, facts, gate, workflow  # noqa: E402
 from appdoc import __main__ as cli  # noqa: E402
 from appdoc import template_spec as spec  # noqa: E402
+from appdoc.textnorm import normalize_newlines  # noqa: E402
 
 BLOCK_RE = re.compile(
     r"^(?P<indent>[ \t]*)(?P<open>(?:<!-- |# )appdoc-self:generated (?P<name>[\w-]+)(?: -->)?)[ \t]*\n"
@@ -167,7 +168,7 @@ def generate(root: str = ROOT) -> dict:
         with open(path, encoding="utf-8", newline="") as fh:
             current = fh.read()
         crlf = "\r\n" in current
-        text = render_file(current.replace("\r\n", "\n"), rel, generators)
+        text = render_file(normalize_newlines(current), rel, generators)
         out[rel] = (current, text.replace("\n", "\r\n") if crlf else text)
     return out
 

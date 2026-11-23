@@ -11,6 +11,7 @@ import hashlib
 import json
 import os
 
+from .textnorm import normalize_newlines
 from . import __version__  # the literal lives in appdoc/__init__.py (the release script edits it there)
 
 BUNDLE_LEN = 12
@@ -48,7 +49,7 @@ def bundle_hash() -> str:
         h.update(rel.encode("utf-8"))
         h.update(b"\0")
         with open(full, "rb") as fh:
-            h.update(fh.read().replace(b"\r\n", b"\n"))
+            h.update(normalize_newlines(fh.read()))
         h.update(b"\0")
     _memo.update(sig=sig, hash=h.hexdigest())
     return _memo["hash"]

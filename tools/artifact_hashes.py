@@ -21,7 +21,10 @@ import sys
 import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 sys.path.insert(0, ROOT)
+
+from appdoc.textnorm import normalize_newlines  # noqa: E402
 
 ARTIFACTS = ("facts.json", "facts-summary.md", "application-documentation.md", "check-report.md",
              "application-documentation.html")
@@ -29,7 +32,7 @@ ARTIFACTS = ("facts.json", "facts-summary.md", "application-documentation.md", "
 
 def _digest(path: str) -> str:
     with open(path, "rb") as fh:
-        return hashlib.sha256(fh.read().replace(b"\r\n", b"\n")).hexdigest()
+        return hashlib.sha256(normalize_newlines(fh.read())).hexdigest()
 
 
 def collect() -> dict:

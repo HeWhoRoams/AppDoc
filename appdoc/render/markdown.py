@@ -8,6 +8,7 @@ import re
 from ..citations import parse_span
 from ..docmodel import slug, split_row
 from ..register import AUDIT_NOT_PERFORMED
+from ..textnorm import normalize_newlines
 
 _FENCE_SPLIT = re.compile(r"(^[ \t]*(?:```|~~~).*?^[ \t]*(?:```|~~~)[ \t]*$)", re.M | re.S)
 _COMMENT = re.compile(r"<!--.*?-->", re.S)
@@ -126,7 +127,7 @@ def _starts_block(line: str) -> bool:
 
 
 def _blocks(text: str, seen: dict) -> str:
-    lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    lines = normalize_newlines(text).split("\n")
     out, i, n = [], 0, len(lines)
     while i < n:
         line = lines[i]
