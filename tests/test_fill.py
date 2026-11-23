@@ -45,7 +45,7 @@ class EntryPointTests(unittest.TestCase):
 
     def test_block_totals_and_rows_sorted_by_routes_then_path(self):
         out = fill.render_block("entry-points", self.doc).splitlines()
-        self.assertEqual(out[0], "2 route handler files; 3 routes; 1 pages; 1 commands; 1 jobs.")
+        self.assertEqual(out[0], "2 route handler files; 3 routes; 1 page; 1 command; 1 job.")
         self.assertEqual(out[2:4], ["| Handler file | Kinds | Routes | Pages | Jobs | Commands |", "|---|---|---|---|---|---|"])
         self.assertEqual(out[4:], [
             "| `web/a.py` | handler, route | 2 | 0 | 0 | 0 |",
@@ -174,20 +174,20 @@ class ConfigReferenceTests(unittest.TestCase):
         self.assertEqual(sum(1 for l in out.splitlines() if l.startswith("| KEY_")), 0)
         self.assertIn("| APP_NAME | `custom/conf/app.example.ini:600` | no |", out)
         self.assertEqual(out.splitlines()[-1],
-                         "Shown 1 of 1 application keys; 500 commented defaults in 1 file(s) "
+                         "Shown 1 of 1 application key; 500 commented defaults in 1 file "
                          "are not listed (see facts.json).")
 
     def test_only_commented_keys(self):
         d = doc(cfg("a.ini", 1, "A", role="app", commented=True), cfg("b.ini", 1, "B", role="app", commented=True))
         self.assertEqual(fill.render_block("config-reference", d).splitlines()[-1],
-                         "No application config keys were extracted. 2 commented defaults in 2 file(s) "
+                         "No application config keys were extracted. 2 commented defaults in 2 files "
                          "are not listed (see facts.json).")
 
     def test_ci_and_test_keys_are_excluded(self):
         d = doc(cfg(".github/workflows/ci.yml", 1, "on", role="ci"), cfg("tests/app.ini", 1, "X", test=True))
         out = fill.render_block("config-reference", d)
         self.assertIn("No application config keys were extracted.", out)
-        self.assertTrue(out.endswith("0 env-var keys and 1 CI keys are excluded from the application table (see facts.json)."))
+        self.assertTrue(out.endswith("0 env-var keys and 1 CI key are excluded from the application table (see facts.json)."))
 
     def test_secret_locations_first_then_path_and_line(self):
         d = doc(cfg("a.ini", 1, "PLAIN", role="app"), cfg("z.ini", 9, "PASSWD", role="app", secret_location=True),
@@ -210,7 +210,7 @@ class ConfigReferenceTests(unittest.TestCase):
         d = doc(cfg("a.ini", 1, "K", use="define"), cfg("b.ini", 1, "K", use="define"))
         out = fill.render_block("config-reference", d)
         self.assertEqual(out.count("| K |"), 1)
-        self.assertTrue(out.endswith("Shown 1 of 1 application keys."))
+        self.assertTrue(out.endswith("Shown 1 of 1 application key."))
 
     def test_unclassified_keys_are_not_listed_but_trailered(self):
         d = doc(cfg("a.ini", 1, "K", role="app"),
@@ -219,14 +219,96 @@ class ConfigReferenceTests(unittest.TestCase):
         out = fill.render_block("config-reference", d)
         self.assertIn("| K | `a.ini:1` | no |", out)
         self.assertNotIn("`X`", out)
-        self.assertIn("2 keys in 1 file(s) were not classified as application configuration", out)
+        self.assertIn("2 keys in 1 file were not classified as application configuration", out)
         self.assertIn("`custom/ClientRes.properties`", out)
 
     def test_unclassified_trailer_alone_when_no_app_keys(self):
         d = doc(cfg("custom/ClientRes.properties", 1, "X", role="unclassified"))
         out = fill.render_block("config-reference", d)
         self.assertIn("No application config keys were extracted.", out)
-        self.assertIn("1 keys in 1 file(s) were not classified", out)
+        self.assertIn("1 key in 1 file was not classified", out)
+
+
+def scan_doc(**scan):
+    d = doc()
+    d["target"] = {"scan": {"found": 3, "scanned": 3, "pruned_files": 0, "ignored": 0, **scan}}
+    return d
+
+
+class ScanCoverageListTests(unittest.TestCase):
+    def test_scan_coverage_duplicate_heading(self):
+        d = scan_doc(retired_candidates=[{"path": "old/", "signal": "name", "files": 1}],
+                     duplicate_folders=[{"a": "alpha/", "b": "beta/", "files": 5}])
+        out = fill.render_block("scan-coverage", d)
+        self.assertIn("Folders that look retired by name (not excluded):\n- `old/` (1 file)", out)
+        self.assertIn("Folders that duplicate another folder (not excluded; say in 2.1 which copy is live):\n"
+                      "- `alpha/` and `beta/` (5 files)", out)
+
+    def test_lists_are_capped_at_ten_each(self):
+        d = scan_doc(retired_candidates=[{"path": f"old{i:02}/", "signal": "name", "files": 2} for i in range(13)],
+                     duplicate_folders=[{"a": f"a{i:02}/", "b": f"b{i:02}/", "files": 6} for i in range(11)])
+        out = fill.render_block("scan-coverage", d)
+        self.assertEqual(out.count("- `old"), 10)
+        self.assertIn("- 3 more folders; see facts.json", out)
+        self.assertEqual(out.count("` and `"), 10)
+        self.assertIn("- 1 more pair; see facts.json", out)
+
+    def test_no_lists_when_empty(self):
+        out = fill.render_block("scan-coverage", scan_doc(retired_candidates=[], duplicate_folders=[]))
+        self.assertNotIn("not excluded", out)
+
+    def test_pruned_appdoc_items_are_disclosed_in_2_1(self):
+        d = scan_doc(pruned=[{"path": "previous-docs/", "rule": "AppDoc output", "files": 3},
+                             {"path": "tools/skill/", "rule": "AppDoc skill bundle", "files": 9},
+                             {"path": "web/dist/", "rule": "JavaScript/.NET build output", "files": 4}])
+        out = fill.render_block("scan-coverage", d)
+        self.assertIn("AppDoc's own files were not scanned: `previous-docs/` (AppDoc output), "
+                      "`tools/skill/` (AppDoc skill bundle). Add `!name` to .appdocignore to scan one.", out)
+        plain = fill.render_block("scan-coverage", scan_doc(pruned=[
+            {"path": "web/dist/", "rule": "JavaScript/.NET build output", "files": 4}]))
+        self.assertNotIn("AppDoc's own files", plain)
+
+
+class GeneratedCopyTests(unittest.TestCase):
+    def test_generated_copy(self):
+        self.assertEqual(fill.plural(1, "file"), "1 file")
+        self.assertEqual(fill.plural(0, "file"), "0 files")
+        self.assertEqual(fill.plural(2, "entry", "entries"), "2 entries")
+        d = doc(route("web/a.py"),
+                fact("entry_point", "web/p.py", 3, "home", type="page"),
+                fact("entry_point", "cli.py", 4, "run", type="command"),
+                fact("entry_point", "jobs.py", 6, "n", type="job", schedule="@daily", enabled=True))
+        self.assertEqual(fill.render_block("entry-points", d).splitlines()[0],
+                         "1 route handler file; 1 route; 1 page; 1 command; 1 job.")
+        # nothing under a retired-looking folder: no "(0 under ...)"
+        self.assertNotIn("under folders", fill.render_block("entry-points", d))
+        d["target"] = {"scan": {"retired_candidates": [{"path": "web/", "signal": "name", "files": 1}]}}
+        self.assertIn("(2 under folders that look retired)", fill.render_block("entry-points", d))
+        d["target"] = {"scan": {"retired_candidates": [{"path": "zzz/", "signal": "name", "files": 1}]}}
+        self.assertNotIn("under folders", fill.render_block("entry-points", d))
+
+    def test_no_optional_plural_marker_in_any_block(self):
+        d = doc(cfg("a.ini", 1, "A", role="app", commented=True), cfg("b.ini", 1, "B", role="unclassified"),
+                cfg("c.py", 1, "C", role="ci"), cfg("d.py", 1, "D", role="env"), route("a.py"))
+        d["target"] = {"scan": {"found": 1, "scanned": 1, "pruned_files": 0, "ignored": 0, "metadata": 1,
+                                "pruned": [{"path": "x/", "rule": "always", "files": 1}]}}
+        d["facts"].append(fact("file", "a.py", None, "a.py"))
+        text = "\n".join(fill.render_block(n, d) for n in ("scan-coverage", "entry-points", "config-reference",
+                                                           "scheduled-jobs"))
+        self.assertNotIn("(s)", text)
+        self.assertIn("1 file dropped", text)
+        self.assertIn("1 commented default in 1 file is not listed", text)
+
+
+class ConfigGuardTests(unittest.TestCase):
+    def test_config_trailer_never_lists_app_file(self):
+        d = doc(cfg("conf/app.ini", 1, "A", role="app"), cfg("conf/other.ini", 1, "B", role="unclassified"))
+        out = fill.render_block("config-reference", d)
+        self.assertIn("`conf/other.ini`", out.split("not classified")[1])
+        self.assertNotIn("`conf/app.ini`", out.split("not classified")[1])
+        bad = doc(cfg("conf/app.ini", 1, "A", role="app"), cfg("conf/app.ini", 2, "B", role="unclassified"))
+        with self.assertRaises(RuntimeError):
+            fill.render_block("config-reference", bad)
 
 
 class AppendixTests(unittest.TestCase):
@@ -288,7 +370,7 @@ class FillTextTests(unittest.TestCase):
             with open(os.path.join(tmp, "application-documentation.md"), newline="") as fh:
                 self.assertEqual(fh.read(), once)
         self.assertIn("filled: " + ", ".join(names), buf.getvalue())
-        self.assertIn("1 route handler files; 1 routes", once)
+        self.assertIn("1 route handler file; 1 route", once)
         self.assertIn("time-boxed", once)
 
 

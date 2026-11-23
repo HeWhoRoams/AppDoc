@@ -273,6 +273,18 @@ class Phase1Behaviour(CorpusCase):
         self.assertEqual(pruned.get("previous-docs/", {}).get("rule"), "AppDoc output", pruned)
         self.assertFalse([f for f in r.facts_of("file") if f["path"].startswith("previous-docs/")])
 
+    def test_prior_output_is_disclosed_in_scan_coverage(self):
+        r = self.case("prior-output")
+        text = fill.render_block("scan-coverage", r.facts)
+        self.assertIn("AppDoc's own files were not scanned: `previous-docs/` (AppDoc output).", text)
+
+    def test_dup_twins_are_listed_under_the_duplicate_heading(self):
+        r = self.case("dup-twins")
+        text = fill.render_block("scan-coverage", r.facts)
+        self.assertIn("Folders that duplicate another folder (not excluded; say in 2.1 which copy is live):\n"
+                      "- `alpha/` and `beta/` (5 files)", text)
+        self.assertNotIn("look retired", text)
+
     def test_skill_bundle_in_target_is_pruned(self):
         r = self.case("skill-in-target")
         pruned = {p["path"]: p for p in _facts_scan(r).get("pruned", [])}

@@ -242,9 +242,9 @@ class ConfigTrailerTests(unittest.TestCase):
         d = self._doc(("a.py", "K", "app"), ("a.py", "E1", "env"), ("b.py", "E1", "env"), ("b.py", "E2", "env"),
                       (".github/workflows/ci.yml", "C1", "ci"))
         out = fill.render_block("config-reference", d)
-        self.assertIn("Shown 1 of 1 application keys.", out)
+        self.assertIn("Shown 1 of 1 application key.", out)
         self.assertEqual(out.splitlines()[-1],
-                         "2 env-var keys and 1 CI keys are excluded from the application table (see facts.json).")
+                         "2 env-var keys and 1 CI key are excluded from the application table (see facts.json).")
 
     def test_trailer_absent_without_env_or_ci_keys(self):
         self.assertNotIn("excluded", fill.render_block("config-reference", self._doc(("a.py", "K", "app"))))
@@ -252,7 +252,7 @@ class ConfigTrailerTests(unittest.TestCase):
     def test_trailer_when_no_application_keys(self):
         out = fill.render_block("config-reference", self._doc(("a.py", "E", "env")))
         self.assertIn("No application config keys were extracted.", out)
-        self.assertIn("1 env-var keys and 0 CI keys are excluded", out)
+        self.assertIn("1 env-var key and 0 CI keys are excluded", out)
 
     def test_app_key_count_is_distinct_uncommented_app_names(self):
         d = self._doc(("a.py", "K", "app"), ("b.py", "K", "app"), ("a.py", "E", "env"))

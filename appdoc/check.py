@@ -414,7 +414,7 @@ def _c7_counts(target, lines, heads, facts, add):
             add("C7", no, f"4.1 Files '{stated}' is not a plain number", f"write the Facts count ({n})")
 
 
-_CONFIG_SHOWN_RE = re.compile(r"Shown \d+ of (\d+) application keys")
+_CONFIG_SHOWN_RE = re.compile(r"Shown \d+ of (\d+) application keys?")
 
 
 def _c7_config_count(body: str, line: int, facts, add):
@@ -909,6 +909,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     secs = _sections(lines)
     by_num = {s["num"]: s for s in secs}
     problems: dict[str, list[tuple[int, str, str]]] = {k: [] for k in RULE_TITLES}
+    dup_missing: list[dict] = []  # duplicate-folder pairs section 2 does not name (advisory unless --strict)
 
     def add(rule, line, msg, fix):
         problems[rule].append((line, msg, fix))
@@ -1058,6 +1059,19 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                     add("C7", s2["start"],
                         f"folder '{name}' looks retired but is not named in section 2",
                         "name it in 2.1 and record the decision: documented as live, or excluded via .appdocignore")
+            # A duplicate pair (byte-identical folders) should be named in section 2 too, saying which copy is
+            # live: an advisory, and a C7 failure under --strict.
+            for pair in (facts.get("target") or {}).get("scan", {}).get("duplicate_folders", []):
+                sides = [pair[k].rstrip("/") for k in ("a", "b")]
+                if all(re.search(r"(?<!\w)" + re.escape(x.rsplit("/", 1)[-1].lower()) + r"(?!\w)", sec2_prose)
+                       for x in sides):
+                    continue
+                if strict:
+                    add("C7", s2["start"],
+                        f"folders '{sides[0]}' and '{sides[1]}' duplicate each other but are not both named in section 2",
+                        "name both in 2.1 and say which copy is live")
+                else:
+                    dup_missing.append(pair)
 
     # C7 (counts and generated blocks), C9, C10, C11: template-2.2 structure
     reg, cov, uncited, quant_hits = None, [], [], []
@@ -1123,6 +1137,13 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                      "This is not a problem; `appdoc check --strict` fails on it.", ""]
         advisory += [f"- line {no}: `{text}`" for no, text in quant_hits[:RULE_CAP]]
         advisory.append("")
+    if dup_missing:
+        advisory += ["## Duplicate folders not named in section 2 (advisory)", "",
+                     f"{fill_mod.plural(len(dup_missing), 'pair')} of byte-identical folders "
+                     f"{'is' if len(dup_missing) == 1 else 'are'} not named in section 2. This is not a problem; "
+                     "name both in 2.1 and say which copy is live. `appdoc check --strict` fails on it.", ""]
+        advisory += [f"- `{d['a']}` and `{d['b']}` ({fill_mod.plural(d['files'], 'file')})" for d in dup_missing[:RULE_CAP]]
+        advisory.append("")
     if facts is not None and prov is None:
         advisory += ["## Provenance missing (advisory)", "",
                      f"`{version.PROVENANCE_FILE}` is not beside facts.json, so the AppDoc version that wrote the "
@@ -1169,6 +1190,9 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     note = []
     if uncited and not strict:
         note.append(f"Advisory: {sum(n for _, n, _ in uncited)} entry point files are not cited (see {REPORT}).")
+    if dup_missing:
+        note.append(f"Advisory: {fill_mod.plural(len(dup_missing), 'duplicate folder pair')} "
+                    f"{'is' if len(dup_missing) == 1 else 'are'} not named in section 2 (see {REPORT}).")
     if quant_hits and not strict:
         note.append(f"Advisory: {len(quant_hits)} universal claim{'s' if len(quant_hits) != 1 else ''} "
                     f"{'cite' if len(quant_hits) != 1 else 'cites'} only single lines (see {REPORT}).")

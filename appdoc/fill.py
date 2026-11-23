@@ -18,6 +18,12 @@ TOP_CAP = 25
 PRUNED_CAP = 50
 CONFIG_CAP = 150
 ENTRY_CAP = 100
+LIST_CAP = 10  # retired-by-name and duplicate-folder lists in scan coverage
+
+
+def plural(n: int, singular: str, plural_form: str | None = None) -> str:
+    """"1 file", "0 files", "2 entries": the count and the noun in the right number (no "(s)")."""
+    return f"{n} {singular if n == 1 else (plural_form or singular + 's')}"
 
 
 def _cell(s: str) -> str:
@@ -91,22 +97,35 @@ def _scan_coverage(doc: dict, ctx: dict | None = None) -> str:
         out += ["", "| Top folder | Files scanned |", "|---|---|"]
         out += [f"| `{p}` | {n} |" for p, n in top]
         if len(counts) > TOP_CAP:
-            out.append(f"| {len(counts) - TOP_CAP} more folders | {sum(n for p, n in counts.items()) - sum(n for _, n in top)} |")
+            out.append(f"| {plural(len(counts) - TOP_CAP, 'more folder')} | "
+                       f"{sum(n for p, n in counts.items()) - sum(n for _, n in top)} |")
     if sc and sc.get("pruned"):
         out += ["", "| Folder not scanned | Rule | Files |", "|---|---|---|"]
         out += [f"| `{p['path']}` | {_cell(p['rule'])} | {p['files']} |" for p in sc["pruned"][:PRUNED_CAP]]
         if len(sc["pruned"]) > PRUNED_CAP:
-            out.append(f"| {len(sc['pruned']) - PRUNED_CAP} more folders | see facts.json | |")
+            out.append(f"| {plural(len(sc['pruned']) - PRUNED_CAP, 'more folder')} | see facts.json | |")
+        own = [p for p in sc["pruned"] if str(p["rule"]).startswith("AppDoc ")]
+        if own:
+            out += ["", "AppDoc's own files were not scanned: "
+                    + ", ".join(f"`{p['path']}` ({p['rule']})" for p in own[:PRUNED_CAP])
+                    + ". Add `!name` to .appdocignore to scan one."]
     elif sc:
         out += ["", "No folders were pruned."]
     if sc and sc.get("metadata"):
-        out += ["", f"OS and authoring metadata: {sc['metadata']} file(s) dropped."]
-    if sc and sc.get("retired_candidates"):
-        cands = sorted(sc["retired_candidates"], key=lambda c: (c["signal"] != "name", c["path"]))
-        out += ["", "Folders that look retired (not excluded):"]
-        out += [f"- `{c['path']}` ({c['signal']}, {c['files']} files)" for c in cands[:10]]
-        if len(cands) > 10:
-            out.append(f"- {len(cands) - 10} more folders; see facts.json")
+        out += ["", f"OS and authoring metadata: {plural(sc['metadata'], 'file')} dropped."]
+    named = sorted((c for c in (sc or {}).get("retired_candidates", []) if c.get("signal") == "name"),
+                   key=lambda c: c["path"])
+    if named:
+        out += ["", "Folders that look retired by name (not excluded):"]
+        out += [f"- `{c['path']}` ({plural(c['files'], 'file')})" for c in named[:LIST_CAP]]
+        if len(named) > LIST_CAP:
+            out.append(f"- {plural(len(named) - LIST_CAP, 'more folder')}; see facts.json")
+    dups = sorted((sc or {}).get("duplicate_folders", []), key=lambda d: (d["a"], d["b"]))
+    if dups:
+        out += ["", "Folders that duplicate another folder (not excluded; say in 2.1 which copy is live):"]
+        out += [f"- `{d['a']}` and `{d['b']}` ({plural(d['files'], 'file')})" for d in dups[:LIST_CAP]]
+        if len(dups) > LIST_CAP:
+            out.append(f"- {plural(len(dups) - LIST_CAP, 'more pair')}; see facts.json")
     return "\n".join(out)
 
 
@@ -130,18 +149,19 @@ def _entry_points(doc: dict, ctx: dict | None = None) -> str:
         if t in r:
             r[t] += 1
     ordered = sorted(rows.items(), key=lambda kv: (-kv[1]["route"], kv[0]))
-    retired = {c["path"].rstrip("/") for c in (doc.get("target") or {}).get("scan", {}).get("retired_candidates", [])}
+    retired = {c["path"].rstrip("/") for c in (doc.get("target") or {}).get("scan", {}).get("retired_candidates", [])
+               if c.get("signal") == "name"}
     under_retired = sum(1 for p in rows if any(p.startswith(r + "/") for r in retired)) if retired else 0
-    headline = f"{n['files']} route handler files"
-    if retired:
+    headline = plural(n["files"], "route handler file")
+    if under_retired:
         headline += f" ({under_retired} under folders that look retired)"
-    out = [f"{headline}; {n['routes']} routes; {n['pages']} pages; "
-           f"{n['commands']} commands; {n['jobs']} jobs.", "",
+    out = [f"{headline}; {plural(n['routes'], 'route')}; {plural(n['pages'], 'page')}; "
+           f"{plural(n['commands'], 'command')}; {plural(n['jobs'], 'job')}.", "",
            "| Handler file | Kinds | Routes | Pages | Jobs | Commands |", "|---|---|---|---|---|---|"]
     for path, r in ordered[:ENTRY_CAP]:
         out.append(f"| `{path}` | {', '.join(sorted(r['kinds']))} | {r['route']} | {r['page']} | {r['job']} | {r['command']} |")
     if len(ordered) > ENTRY_CAP:
-        out += ["", f"Shown {ENTRY_CAP} of {len(ordered)} handler files."]
+        out += ["", f"Shown {ENTRY_CAP} of {plural(len(ordered), 'handler file')}."]
     return "\n".join(out)
 
 
@@ -186,18 +206,24 @@ def _config_reference(doc: dict, ctx: dict | None = None) -> str:
         by_key.setdefault(f["name"], []).append(f)
     keys = [next((f for f in fs if f["detail"].get("use") != "read"), fs[0]) for fs in by_key.values()]
     keys.sort(key=lambda f: (not f["detail"].get("secret_location"), f["path"], f["line"] or 0, f["name"]))
-    skipped = (f"{len(commented)} commented defaults in {len({f['path'] for f in commented})} file(s) "
-               "are not listed (see facts.json).") if commented else ""
+    n_cf = len({f["path"] for f in commented})
+    skipped = (f"{plural(len(commented), 'commented default')} in {plural(n_cf, 'file')} "
+               f"{'is' if len(commented) == 1 else 'are'} not listed (see facts.json).") if commented else ""
     unclassified = [f for f in _facts(doc, "config_key") if f["detail"].get("role") == "unclassified"]
     uncl_files = sorted({f["path"] for f in unclassified})
-    uncl_note = (f"{len(unclassified)} keys in {len(uncl_files)} file(s) were not classified as application "
+    both = sorted(set(uncl_files) & {f["path"] for f in app})
+    if both:  # promotion is per file, so one file can never be both; stop rather than print a false trailer
+        raise RuntimeError("internal error: config file is both application and not classified: " + ", ".join(both))
+    uncl_note = (f"{plural(len(unclassified), 'key')} in {plural(len(uncl_files), 'file')} "
+                 f"{'was' if len(unclassified) == 1 else 'were'} not classified as application "
                  f"configuration: {', '.join(f'`{p}`' for p in uncl_files[:5])}"
                  + (f" (+{len(uncl_files) - 5} more)" if len(uncl_files) > 5 else "")
                  + " (see facts.json).") if unclassified else ""
     excluded = {r: len({f["name"] for f in _facts(doc, "config_key") if f["detail"].get("role") == r})
                 for r in ("env", "ci")}
-    excl_note = (f"{excluded['env']} env-var keys and {excluded['ci']} CI keys are excluded from the "
-                 "application table (see facts.json).") if any(excluded.values()) else ""
+    excl_note = (f"{plural(excluded['env'], 'env-var key')} and {plural(excluded['ci'], 'CI key')} "
+                 "are excluded from the application table "
+                 "(see facts.json).") if any(excluded.values()) else ""
     head = ["| Key | Defined at | Secret location |", "|---|---|---|"]
     if not keys:
         return "\n".join(head + ["", " ".join(("No application config keys were extracted.", skipped, uncl_note)).strip()]
@@ -205,7 +231,7 @@ def _config_reference(doc: dict, ctx: dict | None = None) -> str:
     out = list(head)
     for f in keys[:CONFIG_CAP]:
         out.append(f"| {_cell(f['name'])} | {_at(f)} | {'yes' if f['detail'].get('secret_location') else 'no'} |")
-    out += ["", f"Shown {min(len(keys), CONFIG_CAP)} of {len(keys)} application keys"
+    out += ["", f"Shown {min(len(keys), CONFIG_CAP)} of {plural(len(keys), 'application key')}"
                 + (f"; {skipped}" if skipped else ".")]
     if uncl_note:
         out += ["", uncl_note]

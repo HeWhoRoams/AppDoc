@@ -197,7 +197,8 @@ def _audit_state(reg: Register | None) -> list[str]:
 def _coverage(reg: Register, coverage) -> list[str]:
     c = reg.counts()
     parts = [f"{c[r]} {r}" for r in RESULTS if r in COUNTED_ALWAYS or c[r]]
-    out = [f"{len(reg.rows)} rows: {', '.join(parts)}. "
+    from .fill import plural
+    out = [f"{plural(len(reg.rows), 'row')}: {', '.join(parts)}. "
            "Each Supported or Corrected row's anchor text was found in its cited lines by the Check."]
     if coverage:
         out += ["", "| Section | IDs with a register row |", "|---|---|"]
@@ -231,7 +232,9 @@ def _commands(reg: Register, root: str | None = None) -> list[str]:
         if loc is None:
             continue
         path, line = loc
-        out += [f"- **{_cell(row['id'])}** (`{_cell(row['ref'])}`), expect line {line}", "", "```text",
+        sec = re.match(r"\d+", str(row["ref"]).strip())
+        label = f"section {sec.group(0)}" if sec else f"`{_cell(row['ref'])}`"
+        out += [f"- **{_cell(row['id'])}** ({label}), expect `{path}:{line}`", "", "```text",
                 f"Select-String -LiteralPath {_ps(path)} -SimpleMatch -CaseSensitive -Pattern {_ps(anchor)}",
                 f"grep -nF -- {_sh(anchor)} {_sh(path)}", "```", ""]
     if not out:

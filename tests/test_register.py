@@ -93,9 +93,21 @@ class AppendixMarkdownTests(unittest.TestCase):
         md = appendix_markdown(reg_of(row(1, ref="7.1", anchor="line 8", cites=("app/main.py:8",))), {},
                                root=target)
         cmds = block(md, "A.4 Verification commands")
-        self.assertIn("- **E-1** (`7.1`), expect line 8\n\n```text\n"
+        self.assertIn("- **E-1** (section 7), expect `app/main.py:8`\n\n```text\n"
                       "Select-String -LiteralPath 'app/main.py' -SimpleMatch -CaseSensitive -Pattern 'line 8'\n"
                       "grep -nF -- 'line 8' 'app/main.py'\n```", cmds)
+
+    def test_a4_label_section_and_location(self):
+        tmp, target = make_target()
+        self.addCleanup(tmp.cleanup)
+        md = appendix_markdown(reg_of(row(1, ref="10.1/V-1", anchor="line 8", cites=("app/main.py:8",))), {},
+                               root=target)
+        self.assertIn("- **E-1** (section 10), expect `app/main.py:8`", block(md, "A.4 Verification commands"))
+        self.assertNotIn("expect line", md)
+
+    def test_one_row_is_singular(self):
+        md = appendix_markdown(reg_of(row(1)), {})
+        self.assertIn("1 row: ", block(md, "A.2 Coverage"))
 
     def test_command_uses_located_path_not_first_cite(self):
         tmp, target = make_target()
@@ -106,7 +118,7 @@ class AppendixMarkdownTests(unittest.TestCase):
         md = appendix_markdown(reg_of(row(1, anchor="beta", cites=("app/main.py:1", "other/b.py:2"))), {},
                                root=target)
         cmds = block(md, "A.4 Verification commands")
-        self.assertIn("expect line 2", cmds)
+        self.assertIn("expect `other/b.py:2`", cmds)
         self.assertIn("-LiteralPath 'other/b.py'", cmds)
 
     def test_command_quoting_special_characters(self):
@@ -178,10 +190,10 @@ class AppendixMarkdownTests(unittest.TestCase):
             "### A.4 Verification commands", "",
             "Run from the Target root. Each block names the expected line, then a PowerShell command and a POSIX command.",
             "",
-            "- **E-1** (`10.1/V-1`), expect line 6", "", "```text",
+            "- **E-1** (section 10), expect `app/main.py:6`", "", "```text",
             "Select-String -LiteralPath 'app/main.py' -SimpleMatch -CaseSensitive -Pattern 'line 6'",
             "grep -nF -- 'line 6' 'app/main.py'", "```", "",
-            "- **E-2** (`7.1`), expect line 2", "", "```text",
+            "- **E-2** (section 7), expect `app/main.py:2`", "", "```text",
             "Select-String -LiteralPath 'app/main.py' -SimpleMatch -CaseSensitive -Pattern 'line 2'",
             "grep -nF -- 'line 2' 'app/main.py'", "```"]))
 

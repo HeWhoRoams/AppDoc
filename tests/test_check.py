@@ -416,6 +416,36 @@ class CheckTests(unittest.TestCase):
             json.dump(self.facts, fh)
         self.assertNotIn("looks retired", self.run_check(doc2, filled=False)[1])
 
+    def _dup_facts(self):
+        for d in ("alpha", "beta"):
+            os.makedirs(os.path.join(self.target, d), exist_ok=True)
+        self.write_facts(self.facts["stacks"], self.facts["facts"])
+        self.facts["target"] = {"scan": {"duplicate_folders": [{"a": "alpha/", "b": "beta/", "files": 5}]}}
+        with open(os.path.join(self.out, "facts.json"), "w") as fh:
+            json.dump(self.facts, fh)
+
+    def test_c7_duplicate_pair_advisory(self):
+        self._dup_facts()
+        doc = self.fill_doc(build_doc())
+        code, report, out = self.run_check(doc, filled=False)
+        self.assertEqual(code, 0, report)
+        self.assertNotIn("C7", self.rules(report))
+        self.assertIn("## Duplicate folders not named in section 2 (advisory)", report)
+        self.assertIn("`alpha/` and `beta/` (5 files)", report)
+        self.assertIn("Advisory: 1 duplicate folder pair is not named in section 2", out)
+        # strict fails it as C7
+        code, report, _ = self.run_check(doc, filled=False, strict=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C7", self.rules(report))
+        self.assertIn("folders 'alpha' and 'beta' duplicate each other but are not both named in section 2", report)
+        # naming both folders in section 2 clears it, advisory and strict
+        named = self.fill_doc(build_doc().replace(
+            "### 2.1 What was inspected",
+            "The `alpha/` and `beta/` folders are byte-identical; `beta/` is the live copy.\n\n### 2.1 What was inspected"))
+        code, report, _ = self.run_check(named, filled=False, strict=True)
+        self.assertNotIn("duplicate", report.lower().replace("duplicate defined", ""))
+        self.assertEqual(self.rules(report) & {"C7"}, set(), report)
+
     def test_c7_content_signal_retired_is_advisory_only(self):
         doc = self.fill_doc(build_doc())
         self.write_facts(self.facts["stacks"], self.facts["facts"])
@@ -727,7 +757,7 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(code, 0, report)
         with open(os.path.join(self.out, "application-documentation.md")) as fh:
             text = fh.read()
-        self.assertIn("1 route handler files; 1 routes; 0 pages; 0 commands; 1 jobs.", text)
+        self.assertIn("1 route handler file; 1 route; 0 pages; 0 commands; 1 job.", text)
         self.assertIn("| `app/main.py` | job, route | 1 | 0 | 1 | 0 |", text)
 
     def test_appendix_is_generated_from_the_register_in_out_dir(self):
