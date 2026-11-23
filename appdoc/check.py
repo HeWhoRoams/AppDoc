@@ -78,7 +78,10 @@ RULES = (
          ("advisory", "strict")),   # fails only under --strict
     Rule("C14", "Unknowns match the register",
          "section 14 lists a question the register resolved, or its unknown count disagrees with the register"),
-    Rule("C15", "Register counts in prose", "a register count written in prose disagrees with the register"),
+    Rule("C15", "Register counts in prose",
+         "a register count written in prose disagrees with the register; from template 2.7 a count marker holds a "
+         "stale number or an unknown class (a hand-written \"N of M\" is then only an advisory: use a count marker)",
+         preview="a count marker holds a stale number or an unknown class"),
     Rule("C16", "Universal claims cite single lines",
          "a universal claim (all, every, never) cites only single lines", ("advisory", "strict")),
     Rule("C17", "Audit scope names the method only",
@@ -972,8 +975,18 @@ _C15_NOUNS = {"recommendation": "R-", "finding": "V-", "v-finding": "V-", "unkno
 _C15_RE = re.compile(r"\b(\d+) of (\d+)\s+([A-Za-z-]+)")
 
 
+def _c15_sentences(lines, ids):
+    """(line, text, noun, ID prefix, N, M) of every hand-written 'N of M <noun>' sentence about an ID class."""
+    for i, line in enumerate(lines):
+        for m in _C15_RE.finditer(line):
+            noun = m.group(3).lower().rstrip("s")
+            prefix = _C15_NOUNS.get(noun)
+            if prefix:
+                yield i + 1, m.group(0).strip(), noun, prefix, int(m.group(1)), int(m.group(2))
+
+
 def _c15_register_counts(lines, ids, reg, add):
-    """Every 'N of M <noun>' sentence must agree with the doc's table total and the register."""
+    """Every 'N of M <noun>' sentence must agree with the doc's table total and the register (template 2.4)."""
     if reg is None or not reg.performed:
         return
     refs = set()
@@ -981,22 +994,38 @@ def _c15_register_counts(lines, ids, reg, add):
         m = reg_mod.REF_RE.match(str(row.get("ref", "")))
         if m:
             refs.add(m.group(2) or m.group(1))
-    for i, line in enumerate(lines):
-        for m in _C15_RE.finditer(line):
-            noun = m.group(3).lower().rstrip("s")
-            prefix = _C15_NOUNS.get(noun)
-            if not prefix:
-                continue
-            n, total = int(m.group(1)), int(m.group(2))
-            doc_total = sum(1 for k in ids if k.startswith(prefix))
-            if doc_total and total != doc_total:
-                add("C15", i + 1, f'states "{m.group(0).strip()}" but the document has {doc_total} {noun}s',
-                    "reword the sentence to the current table total, or run `appdoc fill`")
-                continue
-            reg_count = sum(1 for k in refs if k.startswith(prefix))
-            if reg_count and n != reg_count:
-                add("C15", i + 1, f'states "{m.group(0).strip()}" but the register has {reg_count} {noun}s with a row',
-                    "reword the sentence to the current register count, or run `appdoc fill`")
+    for no, text, noun, prefix, n, total in _c15_sentences(lines, ids):
+        doc_total = sum(1 for k in ids if k.startswith(prefix))
+        if doc_total and total != doc_total:
+            add("C15", no, f'states "{text}" but the document has {doc_total} {noun}s',
+                "reword the sentence to the current table total, or run `appdoc fill`")
+            continue
+        reg_count = sum(1 for k in refs if k.startswith(prefix))
+        if reg_count and n != reg_count:
+            add("C15", no, f'states "{text}" but the register has {reg_count} {noun}s with a row',
+                "reword the sentence to the current register count, or run `appdoc fill`")
+
+
+def _c15_markers(raw, facts, ids, reg, add):
+    """C15, 2.7 rule: a count marker holds the number `fill` would write, and its class is a known one.
+
+    Reads the raw Narrative (the marker is an HTML comment) with the generated blocks masked."""
+    text = fill_mod.mask_blocks(normalize_newlines(raw), tuple(spec.GENERATED.values()))
+    for m in spec.COUNT_MARKER_RE.finditer(text):
+        cls, shown = m.group(2).strip(), m.group(3).strip()
+        no = text.count("\n", 0, m.start()) + 1
+        if cls not in spec.COUNT_CLASSES:
+            add("C15", no, f"count marker class '{cls}' is not one of {', '.join(spec.COUNT_CLASSES)}",
+                "use one of those classes")
+            continue
+        kind = spec.COUNT_CLASSES[cls]
+        if kind == "facts" and facts is None:
+            continue
+        want = fill_mod.count_marker_value(cls, facts or {}, ids, reg)
+        if want is not None and shown != str(want):
+            source = {"id": "document has", "register": "register has", "facts": "Facts have"}[kind]
+            add("C15", no, f"count marker {cls} says {shown} but the {source} {want}",
+                "run `appdoc fill`, which writes the number")
 
 
 # C16: a universal claim ("all handlers …") whose only citations are single lines is under-evidenced
@@ -1379,7 +1408,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                     dup_missing.append(pair)
 
     # C7 (counts and generated blocks), C9, C10, C11: template-2.2 structure
-    reg, cov, uncited, quant_hits, wide_hits = None, [], [], [], []
+    reg, cov, uncited, quant_hits, wide_hits, count_advice = None, [], [], [], [], []
     if current:
         heads = dm.headings(lines)
         _c7_counts(target, lines, heads, facts, add)
@@ -1393,7 +1422,13 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                                  doc_ver=doc_ver)
         appendix = next((body for name, body, _ in fill_mod.blocks(raw) if name == "appendix-a"), "")
         _c14_unknowns(lines, heads, ids, reg, appendix, add)
-        _c15_register_counts(lines, ids, reg, add)
+        count_advice: list = []
+        if doc_ver >= FAILS_FROM:   # a stronger structural rule replaces the English one (P2, Q2)
+            count_advice = [(no, text) for no, text, *_ in _c15_sentences(
+                document_text(raw, mask_counts=True).splitlines(), ids)]
+        else:
+            _c15_register_counts(lines, ids, reg, add)
+        _c15_markers(raw, facts, ids, reg, add27)
         quant_hits = _c16_quantifier(lines, cites, add, strict)
         generated = tuple(spec.GENERATED.values())
         glines = _strip_comments(fill_mod.mask_blocks(normalize_newlines(raw), generated)).splitlines()
@@ -1464,6 +1499,13 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         advisory += [f"- line {no}: {msg}" for no, msg in wide_hits[:RULE_CAP]]
         if len(wide_hits) > RULE_CAP:
             advisory.append(f"- ... {len(wide_hits) - RULE_CAP} more")
+        advisory.append("")
+    if count_advice:
+        advisory += ["## Hand-written counts (advisory)", "",
+                     f"{plural(len(count_advice), 'count')} written by hand. This is not a problem; a count marker "
+                     "(`<!-- appdoc:count R -->13<!-- /appdoc:count -->`) is filled by `appdoc fill`, so it cannot "
+                     "go stale. Fix: use a count marker.", ""]
+        advisory += [f"- line {no}: `{text}` is a hand-written count; use a count marker" for no, text in count_advice[:RULE_CAP]]
         advisory.append("")
     if previews:
         previews = sorted(set(previews), key=lambda p: (p[0], p[1], p[2]))
@@ -1540,6 +1582,8 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     if wide_hits and not strict:
         note.append(f"Advisory: {len(wide_hits)} wide range or crowded cell{'s' if len(wide_hits) != 1 else ''} "
                     f"(citation precision, see {REPORT}).")
+    if count_advice:
+        note.append(f"Advisory: {plural(len(count_advice), 'hand-written count')}; use a count marker (see {REPORT}).")
     if previews:
         note.append(f"Advisory: {len(previews)} finding{'s' if len(previews) != 1 else ''} fail from template "
                     f"{'.'.join(map(str, FAILS_FROM))} (see {REPORT}).")

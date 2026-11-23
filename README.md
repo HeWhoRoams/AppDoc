@@ -117,7 +117,7 @@ Rules C1-C20. Each rule fails or is not reported; there is no score.
 | C12 | Finding candidates addressed | a finding candidate is neither cited in 10.1 nor Dismissed in the register | fails |
 | C13 | Entry points not cited | an entry point file is not cited anywhere in the document | advisory; fails under `--strict` |
 | C14 | Unknowns match the register | section 14 lists a question the register resolved, or its unknown count disagrees with the register | fails |
-| C15 | Register counts in prose | a register count written in prose disagrees with the register | fails |
+| C15 | Register counts in prose | a register count written in prose disagrees with the register; from template 2.7 a count marker holds a stale number or an unknown class (a hand-written "N of M" is then only an advisory: use a count marker) | fails |
 | C16 | Universal claims cite single lines | a universal claim (all, every, never) cites only single lines | advisory; fails under `--strict` |
 | C17 | Audit scope names the method only | the audit record's scope text holds an ID or a digit; with `--require-audit` the record lacks `audited_on`, `audited_with`, `audited_bundle` or `doc_sha`, and with `--strict` a row was sealed at upgrade (all fail from template 2.7) | advisory before template 2.7; fails from 2.7 |
 | C18 | Notes match their block | a note in `notes.jsonl` names an unknown block, was written about an older version of its block (`block_sha`), or cites a file that does not resolve; the label `Known extractor limitation:` is written in the Narrative outside a generated block (fails from template 2.7) | advisory before template 2.7; fails from 2.7 |
@@ -127,6 +127,7 @@ Previews of template 2.7 rules. On a template 2.4 document these are advisories,
 
 - C1: a bare file name that resolves to a file in a folder: cite the full path
 - C9: a section 10.1 or 15 row that outranks the row before it (Critical, High, Medium, Low)
+- C15: a count marker holds a stale number or an unknown class
 - C17: the audit record's scope text holds an ID or a digit
 - C18: a note in `notes.jsonl` that does not match its block, or the reserved label written by hand
 <!-- /appdoc-self:generated rules -->

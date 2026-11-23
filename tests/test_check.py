@@ -1266,6 +1266,70 @@ class CheckTests(unittest.TestCase):
         code, report, _ = self.run_check(build_doc())
         self.assertNotIn("C15", self.rules(report), report)
 
+    # --- C15 on 2.7: count markers (T27.18)
+
+    @staticmethod
+    def _marker(cls, n):
+        return f"<!-- appdoc:count {cls} -->{n}<!-- /appdoc:count -->"
+
+    def _marked_doc(self, *markers, sentence=""):
+        body = SECTION_BODY[3] + "\n- Counts: " + ", ".join(markers) + "." + (f"\n- {sentence}" if sentence else "")
+        return build_doc({3: body})
+
+    def _tamper27(self, doc, old, new):
+        """Check a 2.7 document whose marker was edited after `fill` wrote it (fill would repair it)."""
+        from unittest import mock
+        self.run27(doc)
+        with open(os.path.join(self.out, "application-documentation.md"), encoding="utf-8") as fh:
+            text = fh.read()
+        self.assertIn(old, text)
+        with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"):
+            return self.run_check(text.replace(old, new), filled=False, seal=False)
+
+    def test_c15_stale_marker_fails(self):
+        doc = self._marked_doc(self._marker("V", 0), self._marker("rows", 0), self._marker("routes", 0))
+        code, report, _ = self.run27(doc)
+        self.assertEqual(code, 0, report)            # fill wrote 1, 2 and 1
+        self.assertIn(self._marker("rows", 2), open(os.path.join(self.out, "application-documentation.md")).read())
+        code, report, _ = self._tamper27(doc, self._marker("V", 1), self._marker("V", 14))
+        self.assertEqual(code, 2, report)
+        self.assertIn("C15", self.rules(report))
+        self.assertIn("count marker V says 14 but the document has 1. Fix: run `appdoc fill`, which writes the number", report)
+        code, report, _ = self._tamper27(doc, self._marker("routes", 1), self._marker("routes", "many"))
+        self.assertIn("count marker routes says many but the Facts have 1", report)
+        code, report, _ = self._tamper27(doc, self._marker("rows", 2), self._marker("rows", 3))
+        self.assertIn("count marker rows says 3 but the register has 2", report)
+        # on a 2.4 document the same stale marker is only a preview
+        code, report, _ = self.run_check(doc.replace(self._marker("V", 0), self._marker("V", 14)), filled=False)
+        self.assertNotIn("C15", self.rules(report))
+
+    def test_c15_unknown_class_fails(self):
+        doc = self._marked_doc(self._marker("widgets", 3))
+        code, report, _ = self.run27(doc)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C15", self.rules(report))
+        self.assertIn("count marker class 'widgets' is not one of V, F, UI, C, X, Q, R, rows, superseded, routes, "
+                      "jobs, pages, commands, config-keys. Fix: use one of those classes", report)
+
+    def test_c15_handwritten_count_advisory(self):
+        self.write_register(AUDIT, ROWS + [self._r_row(n) for n in range(1, 8)])
+        sentence = "The audit covered 5 of 12 recommendations."        # stale on both counts, and not a failure on 2.7
+        doc = self._r_doc(13, sentence).replace("Recommendation 1 | V-1 |", "Recommendation 1 | V-1, TLS |")
+        code, report, out = self.run27(doc)
+        self.assertEqual(code, 0, report)
+        self.assertNotIn("C15", self.rules(report))
+        self.assertIn("## Hand-written counts (advisory)", report)
+        self.assertIn("`5 of 12 recommendations` is a hand-written count; use a count marker", report)
+        self.assertIn("Advisory: 1 hand-written count; use a count marker (see check-report.md).", out)
+        # the 2.4 rule is unchanged: the same stale sentence still fails there
+        self.assertIn("C15", self.rules(self.run_check(doc)[1]))
+        # a count written with markers is not hand-written
+        marked = self._r_doc(13, f"The audit covered {self._marker('rows', 9)} of {self._marker('R', 13)} "
+                                 "recommendations.").replace("Recommendation 1 | V-1 |", "Recommendation 1 | V-1, TLS |")
+        code, report, _ = self.run27(marked)
+        self.assertEqual(code, 0, report)
+        self.assertNotIn("Hand-written counts", report)
+
     # --- C16: universal claims that cite only single lines
 
     @staticmethod
