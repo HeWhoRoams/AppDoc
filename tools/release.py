@@ -25,8 +25,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION_RE = re.compile(r'^(__version__ = ")([^"]+)(")', re.M)
 UNRELEASED = "## Unreleased"
 EVAL_ROOT_ENV = "APPDOC_EVAL_ROOT"
-# eval/ scripts that gate a release once they exist (T26.60 extractor answer keys, T26.61 narrative answer keys).
-EVAL_HOOKS = (("extractor eval", "extractor_eval.py", "T26.60"), ("narrative eval", "narrative_eval.py", "T26.61"))
+# The eval scripts that gate a release (extractor answer keys; narrative answer keys). Each exits 1 on a regression.
+# The narrative eval needs local clones (APPDOC_EVAL_ROOT); with none it prints why and skips, it does not fail.
+EVAL_HOOKS = (("extractor eval", ("extractor_checks.py",)), ("narrative eval", ("score.py", "--all")))
 
 
 def _git(*args, check=False):
@@ -97,16 +98,12 @@ def _run(label, argv):
 def run_checks() -> bool:
     ok = _run("run tests", [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-t", "."])
     ok = ok and _run("determinism", [sys.executable, "-m", "unittest", "tests.test_determinism"])
-    for label, script, task in EVAL_HOOKS:
-        path = os.path.join(ROOT, "eval", script)
-        if not os.path.isfile(path):
-            print(f"release: {label}: eval/{script} does not exist yet ({task}); skipped")
-            continue
-        root = os.environ.get(EVAL_ROOT_ENV)
-        if not root:
-            print(f"release: {label}: set {EVAL_ROOT_ENV} to the folder holding the local clones", file=sys.stderr)
-            return False
-        ok = ok and _run(label, [sys.executable, path, "--root", root])
+    root = os.environ.get(EVAL_ROOT_ENV)
+    for label, (script, *extra) in EVAL_HOOKS:
+        argv = [sys.executable, os.path.join(ROOT, "eval", script), *extra]
+        if root and script == "score.py":
+            argv += ["--root", root]
+        ok = _run(label, argv) and ok
     return ok
 
 
@@ -117,8 +114,9 @@ def steps(version: str) -> list[str]:
         "gen_docs: python tools/gen_docs.py (README, SKILL.md, gate YAML header and pin)",
         "run tests: python -m unittest discover -s tests -t .",
         "determinism job: python -m unittest tests.test_determinism",
-        f"extractor eval ({EVAL_ROOT_ENV}; a regression refuses the release)",
-        f"narrative eval ({EVAL_ROOT_ENV}; a regression refuses the release)",
+        "extractor eval: python eval/extractor_checks.py (a regression refuses the release)",
+        f"narrative eval: python eval/score.py --all ({EVAL_ROOT_ENV} points at the clones; a regression refuses the "
+        "release; with no clones it prints why and skips)",
         "rotate examples (TODO T26.63)",
         f"git commit -m 'AppDoc {version}'",
         f"git tag -a v{version} -m 'AppDoc {version}'",

@@ -1,6 +1,14 @@
 """Score an AppDoc document against a hand-verified answer key.
 
     python eval/score.py <repo-key> <application-documentation.md> [--out eval/results]
+    python eval/score.py --all [--root DIR] [--update-baseline]
+
+`--all` is the release gate (tools/release.py): it scores the committed example of every narrative key
+(`examples/current/<repo>/` when it exists, else `examples/<repo>/`) against `eval/narrative-baseline.json` and
+exits 1 when an item scores below its baseline or a key cites a file or line the clone does not have. It needs
+local clones of the example repositories under `--root` (or `APPDOC_EVAL_ROOT`), one folder per key name; with
+no root or no clone it prints why and exits 0 without scoring. `--update-baseline` rewrites the baseline from the
+examples and needs no clones.
 
 An item is Present when a Citation covering `must_cite` and every `must_contain` term occur in the
 same section block (the item's `section` or one of its `alt_sections`). It is Partial when only the
@@ -25,6 +33,10 @@ from appdoc import docmodel as dm  # noqa: E402
 from appdoc.citations import find_citations, parse_span  # noqa: E402
 
 PRESENT, PARTIAL, ABSENT, RETIRED = "Present", "Partial", "Absent", "Retired"
+RANK = {ABSENT: 0, PARTIAL: 1, PRESENT: 2}
+KEYS_DIR = os.path.join(HERE, "answer-keys")
+NARRATIVE_BASELINE = os.path.join(HERE, "narrative-baseline.json")
+EVAL_ROOT_ENV = "APPDOC_EVAL_ROOT"
 
 
 def _has_term(haystack: str, term: str) -> bool:
@@ -102,12 +114,118 @@ def score(key: list[dict], raw: str) -> dict:
     return {"summary": counts, "items": items}
 
 
+def narrative_keys(keys_dir: str = KEYS_DIR) -> dict:
+    """{repo: key} for the narrative keys (JSON lists); extractor keys (JSON objects) are not read here."""
+    keys = {}
+    for fn in sorted(os.listdir(keys_dir)):
+        if fn.endswith(".json"):
+            with open(os.path.join(keys_dir, fn), encoding="utf-8") as fh:
+                data = json.load(fh)
+            if isinstance(data, list):
+                keys[fn[:-5]] = data
+    return keys
+
+
+def example_document(repo: str, examples_dir: str | None = None) -> str:
+    """Path of the committed example Narrative scored for `repo` (examples/current/<repo> wins over examples/<repo>)."""
+    base = examples_dir or os.path.join(os.path.dirname(HERE), "examples")
+    for rel in (os.path.join("current", repo), repo):
+        path = os.path.join(base, rel, "application-documentation.md")
+        if os.path.isfile(path):
+            return path
+    raise FileNotFoundError(f"no example Narrative for {repo!r} under {base}")
+
+
+def score_examples(keys: dict | None = None, examples_dir: str | None = None) -> dict:
+    """{repo: {item id: status}} for every narrative key against its committed example."""
+    out = {}
+    for repo, key in (narrative_keys() if keys is None else keys).items():
+        with open(example_document(repo, examples_dir), encoding="utf-8") as fh:
+            out[repo] = {i["id"]: i["status"] for i in score(key, fh.read())["items"]}
+    return out
+
+
+def narrative_regressions(baseline: dict, current: dict) -> list[str]:
+    """One message per item that scores below its baseline, or that the baseline has and the key lost."""
+    bad = []
+    for repo, items in baseline.items():
+        for item_id, was in items.items():
+            now = current.get(repo, {}).get(item_id)
+            if now is None:
+                bad.append(f"{repo} {item_id}: in the baseline ({was}) but no longer in the key")
+            elif was != RETIRED and now != RETIRED and RANK[now] < RANK[was]:
+                bad.append(f"{repo} {item_id}: {now}, was {was} in the baseline")
+    return bad
+
+
+def citation_problems(key: list[dict], clone: str) -> list[str]:
+    """Items whose `must_cite` names a file the clone lacks or a line past its end."""
+    bad = []
+    for item in key:
+        if not item.get("must_cite"):
+            continue
+        path, start, end = parse_span(item["must_cite"])
+        full = os.path.join(clone, *path.split("/"))
+        if not os.path.isfile(full):
+            bad.append(f"{item['id']}: {path} is not in the clone")
+            continue
+        if start is not None:
+            with open(full, "rb") as fh:
+                n = sum(1 for _ in fh)
+            if end > n:
+                bad.append(f"{item['id']}: {path} has {n} lines, the key cites up to {end}")
+    return bad
+
+
+def run_all(root: str | None, update: bool = False, examples_dir: str | None = None) -> int:
+    keys = narrative_keys()
+    current = score_examples(keys, examples_dir)
+    if update:
+        with open(NARRATIVE_BASELINE, "w", encoding="utf-8", newline="\n") as fh:
+            json.dump(current, fh, indent=2, sort_keys=True)
+            fh.write("\n")
+        print(f"wrote {os.path.relpath(NARRATIVE_BASELINE, os.path.dirname(HERE))}: "
+              f"{sum(len(v) for v in current.values())} items in {len(current)} keys")
+        return 0
+    if not root:
+        print(f"narrative eval skipped: {EVAL_ROOT_ENV} is not set. Point it at the folder holding local clones of "
+              f"{', '.join(keys)} (one folder per name) to score the narrative answer keys.")
+        return 0
+    clones = {r: os.path.join(root, r) for r in keys if os.path.isdir(os.path.join(root, r))}
+    if not clones:
+        print(f"narrative eval skipped: no clone of {', '.join(keys)} under {root}; nothing was scored.")
+        return 0
+    with open(NARRATIVE_BASELINE, encoding="utf-8") as fh:
+        baseline = json.load(fh)
+    bad = []
+    for repo in keys:
+        if repo not in clones:
+            print(f"narrative eval: {repo}: no clone under {root}; skipped")
+            continue
+        bad += [f"{repo} {m}" for m in citation_problems(keys[repo], clones[repo])]
+        bad += narrative_regressions({repo: baseline.get(repo, {})}, {repo: current[repo]})
+        counts = {s: sum(v == s for v in current[repo].values()) for s in (PRESENT, PARTIAL, ABSENT, RETIRED)}
+        print(f"narrative eval: {repo}: Present {counts[PRESENT]}, Partial {counts[PARTIAL]}, "
+              f"Absent {counts[ABSENT]}, Retired {counts[RETIRED]}")
+    for m in bad:
+        print(f"REGRESSION {m}")
+    print(f"narrative eval: {len(clones)} of {len(keys)} keys checked, {len(bad)} problems")
+    return 1 if bad else 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("repo", help="answer-key name, e.g. gitea")
-    ap.add_argument("document", help="path to application-documentation.md")
+    ap.add_argument("repo", nargs="?", help="answer-key name, e.g. gitea")
+    ap.add_argument("document", nargs="?", help="path to application-documentation.md")
     ap.add_argument("--out", default=os.path.join(HERE, "results"), help="directory for the JSON result")
+    ap.add_argument("--all", action="store_true", help="release gate: every key against its committed example")
+    ap.add_argument("--root", default=os.environ.get(EVAL_ROOT_ENV), help=f"folder holding the clones (${EVAL_ROOT_ENV})")
+    ap.add_argument("--update-baseline", action="store_true", help="with --all: rewrite eval/narrative-baseline.json")
     args = ap.parse_args(argv)
+    if args.all:
+        return run_all(args.root, args.update_baseline)
+    if not args.repo or not args.document:
+        ap.error("give <repo-key> and <document>, or --all")
 
     with open(os.path.join(HERE, "answer-keys", args.repo + ".json"), encoding="utf-8") as fh:
         key = json.load(fh)

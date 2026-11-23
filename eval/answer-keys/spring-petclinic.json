@@ -47,5 +47,45 @@
     "must_cite": "src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java",
     "must_contain": ["PetClinicConcurrencyTests", "PostgresIntegrationTests"],
     "note": "Verified: both classes exist under src/test/java/org/springframework/samples/petclinic/ (PetClinicConcurrencyTests.java, PostgresIntegrationTests.java; MySqlIntegrationTests.java is the MySQL dialect test)."
+  },
+  {
+    "id": "SP-7",
+    "section": "10.1",
+    "alt_sections": ["10.2", "16.6"],
+    "must_cite": "src/main/resources/application.properties:19-21",
+    "must_contain": ["management.endpoints.web.exposure.include", "actuator"],
+    "note": "Verified at 500158f: application.properties:19-21 is the comment 'Expose all actuator endpoints ... Don't do this in production' and management.endpoints.web.exposure.include=*. V-2 in the 2.5.0 example."
+  },
+  {
+    "id": "SP-8",
+    "section": "10.1",
+    "alt_sections": [],
+    "must_cite": "k8s/db.yml:28-73",
+    "must_contain": ["volume", "PostgreSQL"],
+    "note": "Verified: k8s/db.yml (73 lines) declares the PostgreSQL deployment and contains no volume or volumeMounts entry. V-5 in the 2.5.0 example, which marks the consequence Inferred."
+  },
+  {
+    "id": "SP-9",
+    "section": "10.1",
+    "alt_sections": [],
+    "must_cite": "docker-compose.yml:4-8",
+    "must_contain": ["root", "3306"],
+    "note": "Verified: docker-compose.yml:4-8 publishes 3306:3306 and sets MYSQL_ROOT_PASSWORD= (empty) with MYSQL_ALLOW_EMPTY_PASSWORD=true. V-4 in the 2.5.0 example."
+  },
+  {
+    "id": "SP-10",
+    "section": "10.1",
+    "alt_sections": ["16.6"],
+    "must_cite": "k8s/db.yml:14",
+    "must_contain": ["clear text", "Kubernetes"],
+    "note": "Verified: db.yml:14 is a literal password in the Kubernetes secret. V-3 in the 2.5.0 example lists it with the profile properties and Compose settings; values must stay out of the document."
+  },
+  {
+    "id": "SP-11",
+    "section": "10.1",
+    "alt_sections": ["16.5"],
+    "must_cite": "k8s/petclinic.yml:34-43",
+    "must_contain": ["override"],
+    "note": "Verified: petclinic.yml:34-43 sets SPRING_PROFILES_ACTIVE and SPRING_APPLICATION_JSON (a health-probes property only), with no management.endpoints override. Cited in V-2 of the 2.5.0 example."
   }
 ]

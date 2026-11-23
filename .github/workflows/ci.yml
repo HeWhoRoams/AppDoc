@@ -28,8 +28,10 @@ jobs:
         run: python tools/gate_selftest.py
       - name: Release tests (generated docs, changelog, gate pin, release script)
         run: python -m unittest tests.test_release
-      # Extractor eval (eval/extractor_checks.py) needs local clones of the example repos
-      # (APPDOC_EVAL_ROOT); tools/release.py runs it, CI does not.
+      - name: Extractor eval (answer keys against eval/baseline.json; no clones needed)
+        run: python eval/extractor_checks.py
+      # The narrative eval (eval/score.py --all) needs local clones (APPDOC_EVAL_ROOT);
+      # tools/release.py runs it, CI does not.
       - name: Artifact hashes
         run: python tools/artifact_hashes.py > hashes.json
       - uses: actions/upload-artifact@v4
