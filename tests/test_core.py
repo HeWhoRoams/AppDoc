@@ -1184,6 +1184,27 @@ class AuditPlanTests(unittest.TestCase):
         self.assertNotIn(b"\r", first)
         self.assertNotIn(self.tmp.name.encode(), first)
 
+    def test_audit_plan_lists_every_candidate_no_10_1_row_cites(self):
+        """S6.5: a finding candidate no 10.1 row cites is planned, with or without a table id (smell/<fid>), whatever
+        its file; a cited one and a test-code one are not."""
+        from appdoc import facts as facts_mod
+        self.write()
+        sm = lambda fid, line, path="app/main.py", **d: {
+            "kind": "smell", "stack": "python-flask", "path": path, "line": line, "name": "candidate",
+            "detail": {"pattern": "hardcoded-credential-constant", **({"fid": fid} if fid else {}), **d}}
+        facts = {"schema": facts_mod.SCHEMA, "target": {"name": "t", "commit": None}, "stacks": [], "facts": [
+            sm("aaaa0001", 6),                                   # 10.1 cites app/main.py:6: covered
+            sm("aaaa0002", 9),                                   # same file, another line: planned
+            sm("", 12),                                          # no fid in the Facts: id derived from the Fact
+            sm("aaaa0004", 3, path="project/templates/index.html"),   # a file the document never cites
+            sm("aaaa0005", 5, test=True)]}                       # test code is never a candidate
+        with open(os.path.join(self.out, "facts.json"), "w", encoding="utf-8") as fh:
+            json.dump(facts, fh)
+        derived = facts_mod.fact_id("smell", "hardcoded-credential-constant", "app/main.py", 12)
+        cand = self.section(self.plan(), "candidates")
+        self.assertEqual(sorted(cand["ids"]), sorted(["smell/aaaa0002", f"smell/{derived}", "smell/aaaa0004"]))
+        self.assertEqual(cand["total"], 3)
+
     def test_audit_plan_full_and_sampled_sections(self):
         self.write(n_f=30, n_r=3)
         plan = self.plan()
