@@ -21,13 +21,8 @@ def load() -> list:
 
 
 def capabilities_of(stack) -> frozenset:
-    """The only capability lookup. ``stack`` is a Stack instance, or a Stack id or module name.
+    """The only capability lookup. ``stack`` is a Stack instance.
 
-    Dotted detail capabilities (``entry_point.job``) are part of the set. Unknown stacks give an empty set.
+    Dotted detail capabilities (``entry_point.job``) are part of the set.
     """
-    if isinstance(stack, str):
-        for st in load():
-            if stack in (st.id, st.id.replace("-", "_")):
-                return st.capabilities
-        return frozenset()
     return frozenset(getattr(type(stack), "capabilities", frozenset()))

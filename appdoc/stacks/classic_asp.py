@@ -471,8 +471,4 @@ class ClassicAsp(Stack):
             handle_body(ln, s)
         return list(dict.fromkeys(facts))
 
-
-# Module alias kept for one release; use stacks.capabilities_of(stack).
-capabilities = ClassicAsp.capabilities
-
 STACK = ClassicAsp()

@@ -682,8 +682,4 @@ class AspNetStack(Stack):
         detail["inputs"] = inputs
         return Fact.make("entry_point", STACK_ID, path, ctx.line(m.start()) if m else 1, "/" + path, **detail)
 
-
-# Module alias kept for one release; use stacks.capabilities_of(stack).
-capabilities = AspNetStack.capabilities
-
 STACK = AspNetStack()

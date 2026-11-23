@@ -695,7 +695,3 @@ def _extract(path: str, text: str) -> Iterable[Fact]:
     if "http." in t:
         out.extend(_external(src, path))
     return list(dict.fromkeys(out))
-
-
-# Module alias kept for one release; use stacks.capabilities_of(stack).
-capabilities = GoStack.capabilities

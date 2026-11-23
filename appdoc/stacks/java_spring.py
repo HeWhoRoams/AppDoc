@@ -900,8 +900,4 @@ class JavaSpring(Stack):
             return list(dict.fromkeys(_scan_xml(path, text)))
         return ()
 
-
-# Module alias kept for one release; use stacks.capabilities_of(stack).
-capabilities = JavaSpring.capabilities
-
 STACK = JavaSpring()

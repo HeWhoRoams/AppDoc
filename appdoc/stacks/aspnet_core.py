@@ -594,8 +594,4 @@ class AspNetCoreStack(Stack):
             yield from error_messages(STACK_ID, path, ctx)
             yield from _messages(path, ctx)
 
-
-# Module alias kept for one release; use stacks.capabilities_of(stack).
-capabilities = AspNetCoreStack.capabilities
-
 STACK = AspNetCoreStack()

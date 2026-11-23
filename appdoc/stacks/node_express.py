@@ -635,7 +635,3 @@ def _messages(path, t):
             f = _msg(path, t, m.start(), s, _ctx(s))
             if f:
                 yield f
-
-
-# Module alias kept for one release; use stacks.capabilities_of(stack).
-capabilities = NodeExpressStack.capabilities

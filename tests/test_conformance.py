@@ -12,6 +12,7 @@ For every stack in stacks.MODULES, run the extractor on its sample and assert:
   9. every stack declares capabilities, the stack Fact records them, every emitted entry_point type is declared
 """
 
+import importlib
 import json
 import os
 import tempfile
@@ -156,10 +157,15 @@ class ConformanceTests(unittest.TestCase):
                 self.assertIn(c.split(".", 1)[0], facts_mod.KINDS, f"{st.id}: {c!r}")
             self.assertTrue(any(c.startswith("entry_point.") for c in caps), st.id)
 
-    def test_capabilities_of_accepts_instance_or_id(self):
+    def test_no_module_level_capability_alias(self):
+        for name in MODULES:
+            mod = importlib.import_module(f"appdoc.stacks.{name}")
+            self.assertFalse(hasattr(mod, "capabilities"), f"{name}: module-level capabilities alias")
+
+    def test_capabilities_of_takes_an_instance_only(self):
         st = stacks.load()[0]
-        self.assertEqual(stacks.capabilities_of(st), stacks.capabilities_of(st.id))
-        self.assertEqual(stacks.capabilities_of("no-such-stack"), frozenset())
+        self.assertEqual(stacks.capabilities_of(st), st.capabilities)
+        self.assertEqual(stacks.capabilities_of(object()), frozenset())
 
     def test_extract_records_capabilities(self):
         for name, (sample, doc, _) in self.results.items():
