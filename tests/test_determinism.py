@@ -17,10 +17,13 @@ import contextlib
 import io
 import json
 import os
+import inspect
 import shutil
+import subprocess
 import tempfile
 import unittest
 
+from appdoc import __main__ as cli
 from appdoc import check, extract, fill
 from appdoc import textnorm
 from tests.test_corpus import CORPUS, run_case
@@ -364,6 +367,98 @@ class Extras(Tmp):
         cold = extract.extract(root, out, workers=0, use_cache=True, no_ownership=True)
         self.assertTrue(os.path.isfile(os.path.join(out, ".appdoc-cache.json")), "the cold run wrote no cache")
         warm = extract.extract(root, out, workers=0, use_cache=True, no_ownership=True)
+        self.assertEqual(nocache, cold)
+        self.assertEqual(cold, warm)
+
+
+GIT = shutil.which("git")
+_STAMPS = ("2024-01-15T10:00:00+0000", "2024-03-02T12:30:00+0000")
+
+
+def _git_env(n):
+    """A fixed identity and fixed dates, and no user or system git config: the commit hashes are reproducible."""
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    who = ("Fixed Author", "author@example.invalid") if n == 0 else ("Other Author", "other@example.invalid")
+    env.update(GIT_AUTHOR_NAME=who[0], GIT_AUTHOR_EMAIL=who[1], GIT_COMMITTER_NAME=who[0], GIT_COMMITTER_EMAIL=who[1],
+               GIT_AUTHOR_DATE=_STAMPS[n], GIT_COMMITTER_DATE=_STAMPS[n],
+               GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")
+    return env
+
+
+def make_git_repo(root):
+    """Two commits with fixed identities and dates; the second touches only `pkg/`."""
+    def run(n, *args):
+        subprocess.run(["git", "-C", root, "-c", "commit.gpgsign=false", "-c", "core.autocrlf=false", *args],
+                       env=_git_env(n), check=True, capture_output=True)
+    run(0, "init", "-q")
+    run(0, "add", "-A")
+    run(0, "commit", "-q", "-m", "first")
+    with open(os.path.join(root, "pkg", "mod000.py"), "a") as fh:
+        fh.write("# touched\n")
+    run(1, "add", "-A")
+    run(1, "commit", "-q", "-m", "second")
+
+
+class SkipTestsDefault(Tmp):
+    def test_skip_tests_default_off_and_changes_output(self):
+        self.assertFalse(inspect.signature(extract.extract).parameters["skip_tests"].default)
+        self.assertFalse(inspect.signature(extract.write).parameters["skip_tests"].default)
+        ns = cli.build_parser().parse_args(["extract", "somewhere"])
+        self.assertFalse(ns.skip_tests)
+        root = self.tmp()
+        os.makedirs(os.path.join(root, "app"))
+        os.makedirs(os.path.join(root, "tests"))
+        with open(os.path.join(root, "app", "main.py"), "w") as fh:
+            fh.write("import requests\nrequests.get('http://svc.example/api')\n")
+        with open(os.path.join(root, "tests", "test_main.py"), "w") as fh:
+            fh.write("import requests\nrequests.get('http://other.example/api')\n")
+        out = os.path.join(root, "docs", "appdoc")
+        default = extract.extract(root, out, workers=0, use_cache=False, no_ownership=True)
+        explicit_off = extract.extract(root, out, workers=0, use_cache=False, no_ownership=True, skip_tests=False)
+        skipped = extract.extract(root, out, workers=0, use_cache=False, no_ownership=True, skip_tests=True)
+        self.assertEqual(default, explicit_off)
+        self.assertNotEqual(default, skipped)
+        self.assertIn("tests/test_main.py", default[0])
+        self.assertNotIn("other.example", skipped[0])
+
+
+@unittest.skipUnless(GIT, "git is not installed: the ownership determinism tests need it")
+class OwnershipDeterminism(Tmp):
+    def repo(self, name="big"):
+        from tests.test_parallel import _large_target
+        root = os.path.join(self.tmp(), name)
+        os.makedirs(root)
+        _large_target(root)
+        make_git_repo(root)
+        return root
+
+    def run_extract(self, root, **kw):
+        out = os.path.join(root, "docs", "appdoc")
+        return extract.extract(root, out, **{"use_cache": False, **kw})
+
+    def test_ownership_is_present_and_has_no_wall_clock(self):
+        facts = json.loads(self.run_extract(self.repo(), workers=0)[0])["facts"]
+        own = [f for f in facts if f["kind"] == "ownership" and f["detail"].get("source") == "git"]
+        self.assertEqual([f["name"] for f in own], ["pkg"])
+        d = own[0]["detail"]
+        self.assertEqual((d["commits"], d["contributors"], d["first_commit"], d["last_commit"]),
+                         (2, 2, "2024-01-15", "2024-03-02"))
+
+    def test_run_twice_and_two_repos_are_byte_identical(self):
+        a, b = self.repo(), self.repo()  # same name, two parents, two absolute paths
+        self.assertEqual(self.run_extract(a, workers=0), self.run_extract(a, workers=0))
+        self.assertEqual(self.run_extract(a, workers=0), self.run_extract(b, workers=0))
+
+    def test_workers_1_vs_2_with_ownership(self):
+        root = self.repo()
+        self.assertEqual(self.run_extract(root, workers=1), self.run_extract(root, workers=2))
+
+    def test_cold_vs_warm_cache_with_ownership(self):
+        root = self.repo()
+        nocache = self.run_extract(root, workers=0)
+        cold = self.run_extract(root, workers=0, use_cache=True)
+        self.assertTrue(os.path.isfile(os.path.join(root, "docs", "appdoc", ".appdoc-cache.json")))
+        warm = self.run_extract(root, workers=0, use_cache=True)
         self.assertEqual(nocache, cold)
         self.assertEqual(cold, warm)
 
