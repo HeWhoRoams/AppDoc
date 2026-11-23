@@ -20,7 +20,7 @@ The 2.4 examples under-reported what a reader can see in the code: Razor compone
    `python-flask` `SQLAlchemy(...)` `connection`.
 2. EF query Facts are one per source line, so a line with several query calls is one Fact.
 3. Go reads `.html` files only under a `templates` directory.
-4. The change bumps `facts.SCHEMA` to `appdoc-facts/6` and `EXTRACTOR_VERSION` to 2.
+4. The change bumps `facts.SCHEMA` to `appdoc-facts/6` and `EXTRACTOR_VERSION` to 2 (the constant was replaced by the bundle hash in 2.6.0).
 
 ## Consequences
 

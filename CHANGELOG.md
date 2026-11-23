@@ -4,6 +4,15 @@
 
 AppDoc 2.6.0 (in development): tooling and Facts release. See `docs/remediation-plan-2.6.md`.
 
+### Changed
+- The cache key is salted with `version.bundle_hash()` (every file of the `appdoc` package) plus the Facts schema. `extract.EXTRACTOR_VERSION` is deleted; nothing is bumped by hand, and the first run after any AppDoc change is a cold run.
+- `scan` records `retired_candidates` by folder name only and a new `duplicate_folders` list (`{a, b, files}`) for byte-identical folders; both lists collapse nested entries; test paths are never compared. `scan-coverage` renders both, capped at 10 each. C7 asks section 2 to name a duplicate pair (an advisory; it fails under `--strict`).
+- Folders holding AppDoc output (`facts.json` with an `appdoc-facts/` schema, or a Narrative with the template stamp) and AppDoc skill bundles inside a Target are pruned and disclosed in 2.1; `.appdocignore` `!name` re-includes them.
+- A config file with at least one key that code reads is promoted to `app` as a whole (INI `section.KEY` matches the code's `KEY`); `env` and `ci` keys are never promoted.
+- Secret naming is segment-aware (`MIN_PASSWORD_LENGTH` is not a secret location); keys ending in `uri`, `path` or `file` carry the new `config_key` detail `secret_ref`.
+- Generated copy uses one `plural()` helper everywhere; the A.4 verification label reads `**E-1** (section N), expect `path:line``.
+- `ownership` Facts no longer record git author names (counts and dates only); `facts.DETAIL_KEYS` drops `authors`.
+
 ## 2.5.0 — remediation of the 2.4 diagnostic
 
 Schema `appdoc-facts/6`. Template stays 2.4. Re-run `extract`, then `fill` and `build`; the gate exits with "AppDoc upgraded" until `facts.json` is re-extracted and committed.
@@ -28,7 +37,7 @@ Schema `appdoc-facts/6`. Template stays 2.4. Re-run `extract`, then `fill` and `
 > **Extraction changelog note:** Phases 6a/6b are **additive** and on by default (no flag). Existing Samples' `facts.json` is byte-identical to before; `facts.json` only changes for Targets that actually use the newly-detected integrations. This is a *content* change, not a silent change to the default output of existing codebases — documented here so it is not mistaken for a regression.
 
 ### Changed — the cache key is now versioned (schema + extractor version)
-- The per-file content-hash cache key (`.appdoc-cache.json`) is salted with the Facts `SCHEMA` and a manually-bumped `EXTRACTOR_VERSION` constant (new in `appdoc/extract.py`). A cache written by an older AppDoc build is never served to a newer one, so a schema or extractor-logic change cleanly invalidates stale entries. Default (no-flag) `facts.json` is byte-identical to before — the version bytes are part of the *key*, not the output. Bump `EXTRACTOR_VERSION` whenever a stack/catalog regex or extraction logic changes.
+- The per-file content-hash cache key (`.appdoc-cache.json`) is salted with the Facts `SCHEMA` and a manually-bumped `EXTRACTOR_VERSION` constant (new in `appdoc/extract.py`). A cache written by an older AppDoc build is never served to a newer one, so a schema or extractor-logic change cleanly invalidates stale entries. Default (no-flag) `facts.json` is byte-identical to before — the version bytes are part of the *key*, not the output. (Superseded in 2.6.0: the salt is the bundle hash and nothing is bumped by hand.)
 ### Fixed — `smtp` is now in the integration view vocabulary
 - `smtp` (a Spring-XML mail-sender `connection`) is a canonical type in the view's `TYPE_ORDER`/`TYPE_LABEL` (rendered "Email (SMTP)"), so it groups with the canonical list instead of appearing as an orphan "Smtp" row sorted after it.
 

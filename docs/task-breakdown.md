@@ -3,7 +3,7 @@
 **Date:** 2026-11-23. **Base:** `origin/main` at `2e59393` (version 2.4.0, schema `/5`, C1–C16, perf and integration work merged, no tag after `v2.0.0`).
 **Sources:** `docs/remediation-plan-2.5.md` (rev 2), `-2.6.md` (rev 2), `-2.7.md` (rev 2), `-2.8.md` (rev 4, covers 2.8.0 and 2.9.0), `docs/performance-plan.md` §8 (Phase 5).
 
-**How to read this.** One row per task that one person can finish and review in a sitting. Columns: **ID**; **Task** (what changes); **Where** (files and functions; locate by function name, line numbers have drifted); **Done when** (the failing test that goes green, or the check); **Needs** (task IDs that must land first); **h** (estimate in hours, one engineer, including tests). Every task that changes what a Stack emits for a file also bumps `extract.EXTRACTOR_VERSION` (rule R21) until T26.60 removes the constant. Every task follows the house rules: test first, failing on the previous tag, stdlib only, Python 3.10+, Windows and Linux.
+**How to read this.** One row per task that one person can finish and review in a sitting. Columns: **ID**; **Task** (what changes); **Where** (files and functions; locate by function name, line numbers have drifted); **Done when** (the failing test that goes green, or the check); **Needs** (task IDs that must land first); **h** (estimate in hours, one engineer, including tests). Until T26.41 lands, every task that changes what a Stack emits for a file also bumps `extract.EXTRACTOR_VERSION` (rule R21); T26.41 deletes the constant and the rule (the cache salt is `version.bundle_hash()`). Every task follows the house rules: test first, failing on the previous tag, stdlib only, Python 3.10+, Windows and Linux.
 
 **Totals (hours), summed bottom-up from the rows below:** 2.5 remainder ≈ 66; 2.6 ≈ 128; 2.7 ≈ 87 (≈ 103 if `appdoc upgrade` ships there, T27.30–32); 2.8 ≈ 160; 2.9 ≈ 59; §0 ≈ 1. About **500 h (roughly 62 working days)**. The plans' own figures (6 + 8.5 + 6.5 + 20 + 7.75 days, about 28 d for 2.8 and 2.9 together, 49 d overall) are lower for 2.5–2.7 because these rows each carry their tests, docs, ADRs and four-example regeneration and audits as separate lines. 2.8 and 2.9 match their plan. Treat the bottom-up figure as the planning number and the plans' figures as the optimistic bound.
 
@@ -423,7 +423,7 @@ T00.1–3 ─┐
 ```
 
 **Hard dependencies between releases**
-- 2.6 T26.41 (cache salt from the bundle hash) removes the R21 bump rule; before it lands, every extractor-changing task in 2.5 bumps `EXTRACTOR_VERSION`.
+- 2.6 T26.41 (cache salt from the bundle hash) removed the R21 bump rule (landed); no task bumps a constant by hand any more.
 - 2.7 T27.02 (`doc_sha`) and T27.10 (opaque registry) are prerequisites for 2.8's T28.90.
 - 2.8 T28.A4 (`UPGRADE_STEPS["2.8"]`) needs 2.7's step table (T27.30) or, if Q23 is declined, T28.B0.
 - 2.9 reuses the raw-Fact foundation (T28.20–T28.25) and the labelled-set gate (T28.75).

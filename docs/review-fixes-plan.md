@@ -73,9 +73,7 @@ by the *older* extractor for unchanged files — silently.
 manually-bumped constant is the standard versioning approach (like a schema migration) — cheap,
 explicit, and the reviewer's recommended alternative.
 
-**Discipline:** Add a one-line note in `CHANGELOG.md` ("Unreleased") and a comment at the constant:
-"bump `EXTRACTOR_VERSION` when a stack/catalog regex or extraction logic changes." Any worker
-touching `stacks/` or `integrations.py` must bump it.
+**Discipline (superseded in 2.6.0):** the cache salt is now `version.bundle_hash()` and the constant is gone; nothing is bumped by hand (`docs/remediation-plan-2.6.md` §4.6).
 
 **Verification:**
 - Unit test: two cache keys for the same `(raw, path, detected_ids)` but different

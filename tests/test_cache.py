@@ -1,4 +1,4 @@
-"""Phase 3: content-hash Facts cache is exact and self-invalidating.
+"""Content-hash Facts cache is exact and self-invalidating (salted with SCHEMA and the bundle hash).
 
 The cache is a *cache*, not a semantic change: a warm run and a cold run must produce
 byte-identical Facts, and a changed file must invalidate its cached entry.
@@ -9,8 +9,9 @@ import os
 import shutil
 import tempfile
 import unittest
+from unittest import mock
 
-from appdoc import extract, facts as F
+from appdoc import extract, facts as F, version
 
 
 class CacheRoundTripTests(unittest.TestCase):
@@ -91,31 +92,51 @@ class CacheBehaviorTests(unittest.TestCase):
         self.assertEqual(after_calls, 2, "the changed content must be re-extracted (cache invalidated)")
 
 
-class CacheKeyVersionTests(unittest.TestCase):
-    """The cache key is salted with F.SCHEMA + EXTRACTOR_VERSION, so an AppDoc upgrade
-    (a schema or extractor-logic change) invalidates a stale cache entry."""
+class CacheKeySaltTests(unittest.TestCase):
+    """The cache key is salted with F.SCHEMA and the bundle hash (version.bundle_hash()), so any change to
+    AppDoc's own files (a Stack regex, the catalog, extraction logic) invalidates a stale cache entry."""
 
     RAW = b"requests.get('http://x.example/')\n"
     PATH = "a.py"
     IDS = ["python-flask"]
 
-    def _key(self, version=None, schema=None):
-        saved_v, saved_s = extract.EXTRACTOR_VERSION, F.SCHEMA
-        extract.EXTRACTOR_VERSION = version if version is not None else saved_v
-        F.SCHEMA = schema if schema is not None else saved_s
+    def _key(self, schema=None):
+        saved = F.SCHEMA
+        F.SCHEMA = schema if schema is not None else saved
         try:
             return extract._cache_key(self.RAW, self.PATH, self.IDS)
         finally:
-            extract.EXTRACTOR_VERSION, F.SCHEMA = saved_v, saved_s
+            F.SCHEMA = saved
 
-    def test_same_version_same_key(self):
-        # (b) The same (raw, path, detected_ids) at the current version is deterministic.
+    def test_same_bundle_hits(self):
         self.assertEqual(self._key(), self._key())
 
-    def test_bumped_extractor_version_changes_key(self):
-        # (a) Two keys for the same (raw, path, detected_ids) at different EXTRACTOR_VERSION
-        # values differ — a stale cache written by an older build is never served.
-        self.assertNotEqual(self._key(), self._key(version=extract.EXTRACTOR_VERSION + 1))
+    def test_bundle_change_invalidates(self):
+        """Change the content of a file in the bundle: the key changes (and changes back with it)."""
+        pkg = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, pkg, True)
+        path = os.path.join(pkg, "stack.py")
+
+        def write(text):
+            with open(path, "w", encoding="utf-8") as fh:
+                fh.write(text)
+
+        write("REGEX = 'a'\n")
+        with mock.patch.object(version, "_bundle_files", lambda: [("stack.py", path)]):
+            before = self._key()
+            self.assertEqual(before, self._key())
+            write("REGEX = 'ab'\n")
+            after = self._key()
+            self.assertNotEqual(before, after)
+            write("REGEX = 'a'\n")
+            self.assertEqual(before, self._key())
+
+    def test_key_uses_the_bundle_hash(self):
+        with mock.patch.object(version, "bundle_hash", return_value="0" * 40):
+            k0 = self._key()
+        with mock.patch.object(version, "bundle_hash", return_value="1" * 40):
+            k1 = self._key()
+        self.assertNotEqual(k0, k1)
 
     def test_changed_schema_changes_key(self):
         # The schema bytes are also in the key: a schema change invalidates the cache.

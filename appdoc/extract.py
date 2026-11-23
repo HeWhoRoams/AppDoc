@@ -26,7 +26,6 @@ from .summary import render_summary
 
 PARALLEL_THRESHOLD = 50  # below this file count, the pool's overhead isn't worth it
 CACHE_NAME = ".appdoc-cache.json"
-EXTRACTOR_VERSION = 2  # bump whenever a stack/catalog regex or extraction logic changes
 _CACHE_MAX_ENTRIES = 10_000  # best-effort cap on cache entries (never prune, just bound growth)
 
 is_test_path = F.is_test_path
@@ -99,17 +98,18 @@ def _owner_context(root: str):
 
 # ------------------------------------------------------------------ caching
 
-def _cache_key(raw: bytes, path: str, detected_ids, siblings=None) -> str:
-    """Content-hash key, versioned so an AppDoc upgrade invalidates a stale cache.
+def _cache_key(raw: bytes, path: str, detected_ids, siblings=None, salt: str | None = None) -> str:
+    """Content-hash key, salted so an AppDoc change invalidates a stale cache.
 
-    The leading bytes (schema + extractor version) change whenever the extraction logic
-    changes, so a ``.appdoc-cache.json`` written by an older AppDoc build is never served
-    to a newer one. ``siblings`` (the folder's file names) is folded in because i18n
-    message-bundle detection depends on the folder's file set, not just this file's content.
+    The leading bytes are the Facts schema and the bundle hash (``version.bundle_hash()``, a hash of
+    every file in the ``appdoc`` package), so a ``.appdoc-cache.json`` written by any other build of
+    AppDoc is never served; nobody has to remember to bump a constant. ``salt`` lets a caller that
+    keys many files compute the bundle hash once. ``siblings`` (the folder's file names) is folded in
+    because i18n message-bundle detection depends on the folder's file set, not just this file's content.
     """
     h = hashlib.sha256()
     h.update(str(F.SCHEMA).encode("utf-8")); h.update(b"\x00")
-    h.update(str(EXTRACTOR_VERSION).encode("utf-8")); h.update(b"\x00")
+    h.update((salt if salt is not None else version.bundle_hash()).encode("utf-8")); h.update(b"\x00")
     h.update(raw); h.update(b"\x00")
     h.update(path.encode("utf-8")); h.update(b"\x00")
     h.update("\x00".join(sorted(detected_ids)).encode("utf-8"))
@@ -147,7 +147,8 @@ def _save_cache(out_dir: str, cache: dict) -> None:
 # ------------------------------------------------------------------ per-file extraction
 
 def _extract_file(root: str, sf: scan.SourceFile, detected: dict,
-                  cache: dict | None = None, siblings: dict | None = None) -> list[F.Fact]:
+                  cache: dict | None = None, siblings: dict | None = None,
+                  salt: str | None = None) -> list[F.Fact]:
     """Pure per-file extraction. No cross-file state beyond the picklable ``siblings`` map.
 
     Returns exactly the facts the serial loop appends for this file. If ``cache`` is a dict, a
@@ -162,7 +163,7 @@ def _extract_file(root: str, sf: scan.SourceFile, detected: dict,
     sib = siblings.get(folder) if siblings is not None else None
     key = None
     if cache is not None:
-        key = _cache_key(raw, sf.path, sorted(detected), sib)
+        key = _cache_key(raw, sf.path, sorted(detected), sib, salt)
         if key in cache:
             return [F.Fact.from_json(d) for d in cache[key]]
     text, enc = scan._decode(raw)
@@ -183,7 +184,8 @@ def _extract_file(root: str, sf: scan.SourceFile, detected: dict,
 
 
 def _worker_chunk(root: str, detected: dict, chunk: list[scan.SourceFile],
-                  cache: dict | None = None, siblings: dict | None = None) -> tuple[list[F.Fact], dict]:
+                  cache: dict | None = None, siblings: dict | None = None,
+                  salt: str | None = None) -> tuple[list[F.Fact], dict]:
     """Process a chunk of files in a worker process; return (combined Facts, new cache entries).
 
     Each worker gets a pickled copy of the loaded cache; misses are computed locally and the new
@@ -192,7 +194,7 @@ def _worker_chunk(root: str, detected: dict, chunk: list[scan.SourceFile],
     before = set(cache) if cache is not None else None
     out: list[F.Fact] = []
     for sf in chunk:
-        out.extend(_extract_file(root, sf, detected, cache, siblings))
+        out.extend(_extract_file(root, sf, detected, cache, siblings, salt))
     new = {k: cache[k] for k in cache if k not in before} if cache is not None else {}
     return out, new
 
@@ -203,10 +205,11 @@ def _extract_all(root: str, files: list[scan.SourceFile], detected: dict, worker
 
     Completion order is irrelevant: ``facts.dumps`` sorts + de-duplicates the set of Facts.
     """
+    salt = version.bundle_hash() if cache is not None else None
     if workers <= 1 or len(files) < PARALLEL_THRESHOLD:
         out: list[F.Fact] = []
         for sf in files:
-            out.extend(_extract_file(root, sf, detected, cache, siblings))
+            out.extend(_extract_file(root, sf, detected, cache, siblings, salt))
         return out
     nchunks = min(workers * 4, len(files))
     size = max(1, -(-len(files) // nchunks))            # ceil division
@@ -214,7 +217,7 @@ def _extract_all(root: str, files: list[scan.SourceFile], detected: dict, worker
     out: list[F.Fact] = []
     with ProcessPoolExecutor(max_workers=workers) as ex:
         for chunk_facts, new in ex.map(
-                partial(_worker_chunk, root, detected, cache=cache, siblings=siblings), chunks):
+                partial(_worker_chunk, root, detected, cache=cache, siblings=siblings, salt=salt), chunks):
             out.extend(chunk_facts)
             if cache is not None and new:
                 cache.update(new)

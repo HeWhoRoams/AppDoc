@@ -22,6 +22,14 @@ ROOT = os.path.dirname(HERE)
 SAMPLE = os.path.join(HERE, "samples", "python-flask")
 
 
+class CacheSaltTests(unittest.TestCase):
+    def test_no_manual_extractor_version(self):
+        """The cache is salted with the bundle hash, so there is no constant to forget to bump."""
+        self.assertFalse(hasattr(extract, "EXTRACTOR_VERSION"))
+        with open(os.path.join(ROOT, "appdoc", "extract.py"), encoding="utf-8") as fh:
+            self.assertNotIn("EXTRACTOR_VERSION", fh.read())
+
+
 class VersionFlagTests(unittest.TestCase):
     def test_version_flag_prints_version_and_bundle_hash(self):
         r = subprocess.run([sys.executable, "-m", "appdoc", "--version"],
