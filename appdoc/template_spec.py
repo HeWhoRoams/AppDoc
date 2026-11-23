@@ -31,6 +31,15 @@ def version_tuple(s) -> tuple:
 # two comments is the filled number; doc_sha masks the whole marker so fill never changes the fingerprint.
 COUNT_MARKER_RE = re.compile(r"<!--\s*appdoc:count\s+[^>]*?-->[^<]*<!--\s*/appdoc:count\s*-->")
 
+# The closed list of count-marker classes, each with where the number comes from: "id" (the defined IDs of that
+# prefix), "register" (rows of the Evidence Register) or "facts" (Facts, through fill.entry_point_counts and the
+# config reference). The one place to extend it (template 2.8 adds more classes without changing the syntax).
+COUNT_CLASSES = {
+    **{c: "id" for c in ("V", "F", "UI", "C", "X", "Q", "R")},
+    "rows": "register", "superseded": "register",
+    **{c: "facts" for c in ("routes", "jobs", "pages", "commands", "config-keys")},
+}
+
 STAMP_RE = re.compile(r"<!--\s*appdoc:template\s+([\w.]+)\s*-->")
 GUIDE_RE = re.compile(r"<!--\s*appdoc:guide\b")
 UPGRADE_NOTES = ("CHANGELOG.md, 2.4.0 upgrade notes. 2.3 -> 2.4: per-claim C2 (security citations need a line); "

@@ -688,6 +688,19 @@ if __name__ == "__main__":
 
 
 class VersionCompareTests(unittest.TestCase):
+    def test_count_marker_classes_are_one_constant(self):
+        """T27.16: the closed list of count-marker classes lives in template_spec, grouped by where the number comes from."""
+        from appdoc import template_spec as spec
+        self.assertEqual(list(spec.COUNT_CLASSES), ["V", "F", "UI", "C", "X", "Q", "R", "rows", "superseded",
+                                                    "routes", "jobs", "pages", "commands", "config-keys"])
+        self.assertEqual({c: k for c, k in spec.COUNT_CLASSES.items()},
+                         {**{c: "id" for c in ("V", "F", "UI", "C", "X", "Q", "R")},
+                          "rows": "register", "superseded": "register",
+                          **{c: "facts" for c in ("routes", "jobs", "pages", "commands", "config-keys")}})
+        # an ID class is the prefix of a defined ID (V- for V-1)
+        self.assertEqual({c for c, k in spec.COUNT_CLASSES.items() if k == "id"},
+                         {p.rstrip("-") for p in spec.ID_PREFIXES})
+
     def test_version_tuple(self):
         from appdoc.template_spec import version_tuple
         self.assertEqual(version_tuple("2.4"), (2, 4))
