@@ -1,6 +1,6 @@
 # Check: PASS
 
-**Scope.** Run by AppDoc 2.6.0 (bundle c0768e029882). This Check verifies **resolution and structure**: every Citation points to a real file and line inside the Target (see the Citation register), and every Evidence Register row's anchor text appears in the lines it cites. It does **not** judge whether a claim's wording follows from those lines; that is the source-to-claim audit, recorded in `evidence.jsonl`. A PASS is not an accuracy certification.
+**Scope.** Run by AppDoc 2.6.0 (bundle 2b80067ff022). This Check verifies **resolution and structure**: every Citation points to a real file and line inside the Target (see the Citation register), and every Evidence Register row's anchor text appears in the lines it cites. It does **not** judge whether a claim's wording follows from those lines; that is the source-to-claim audit, recorded in `evidence.jsonl`. A PASS is not an accuracy certification.
 
 ## Universal claims cite single lines (advisory)
 
@@ -58,8 +58,8 @@
 - C1 line 81: `PetController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/PetController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:53-60` (fails from template 2.7)
 - C1 line 81: `VetController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/vet/VetController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/vet/VetController.java:39-43` (fails from template 2.7)
 - C1 line 81: `VisitController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:45-49` (fails from template 2.7)
-- C1 line 84: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:48-188` (fails from template 2.7)
 - C1 line 84: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:77` (fails from template 2.7)
+- C1 line 84: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:48-188` (fails from template 2.7)
 - C1 line 84: `PetController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/PetController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:107` (fails from template 2.7)
 - C1 line 84: `VisitController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:97` (fails from template 2.7)
 - C1 line 84: `WebConfiguration.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java:23-60` (fails from template 2.7)
@@ -68,9 +68,9 @@
 - C1 line 103: `welcome.html` is a bare name; the file is `src/main/resources/templates/welcome.html`. Fix: cite the full path: `src/main/resources/templates/welcome.html:7-12` (fails from template 2.7)
 - C1 line 104: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:89-92` (fails from template 2.7)
 - C1 line 104: `findOwners.html` is a bare name; the file is `src/main/resources/templates/owners/findOwners.html`. Fix: cite the full path: `src/main/resources/templates/owners/findOwners.html:9-31` (fails from template 2.7)
-- C1 line 105: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:94-130` (fails from template 2.7)
 - C1 line 105: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:98-126` (fails from template 2.7)
 - C1 line 105: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:141-146` (fails from template 2.7)
+- C1 line 105: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:94-130` (fails from template 2.7)
 - C1 line 105: `OwnerRepository.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java:45` (fails from template 2.7)
 - ... 361 more
 

@@ -459,7 +459,7 @@ No scheduled or background jobs were extracted. Stacks that report jobs: `python
 
 **Auditor:** independent. **Scope:** Claims in sections 1, 2.1-2.3, 3.1-3.3, 4 (F-1..F-8, 4.1 sampled), 5.1-5.3, 6 (UI-1..UI-3), 7.1-7.6, 8.1-8.5, 9 (all 8 rows), 10.1 (V-1..V-8), 10.2 (one row for all 8 controls), 11, 12, 13 (5 of 10 glossary terms sampled), 14 (Q-1..Q-7), 15 (R-1, R-2, R-5 sampled; 15.1), 16.1-16.7, plus all 7 smells. Every cited span was opened in source. Q-7 was checked by running the suite on a scratch copy in TEMP (Flask 3.0.0, Flask-SQLAlchemy 3.1.1); Q-4 by reading the two db files read-only. Static reading otherwise; nothing observed on a deployed instance.
 
-Generated blocks written by AppDoc 2.6.0 (bundle c0768e029882).
+Generated blocks written by AppDoc 2.6.0 (bundle 2b80067ff022).
 Generated blocks were regenerated after the audit and are not covered by it.
 
 ### A.2 Coverage
