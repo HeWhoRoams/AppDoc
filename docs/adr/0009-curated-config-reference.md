@@ -43,9 +43,10 @@ never records values, because detecting which values are secrets is heuristic.
 A key read from code is no longer always application configuration. A per-file `read_kind` (`env` for
 environment-variable reads, `file` otherwise) feeds a post-pass that assigns role `env` to
 environment-variable reads, `ci` to reads in CI or build files, and `app` to the rest. Only `app`
-keys appear in the application table; the trailer counts the `env` and `ci` keys it excludes. Keys of
-roles `env` and `ci` are not `secret_location`, because the variable is the name of a secret held
-elsewhere, not the secret itself. The cache keeps pre-promotion Facts, so the split stays in the
+keys appear in the application table; the trailer counts the `env` and `ci` keys it excludes. The
+`secret_location` flag is never set on `env` or `ci` keys, because the variable is the name of a
+secret held elsewhere, not the secret itself. It stays on `unclassified` keys: an INI `[db]
+DB_PASSWORD` that no code reads is still a password location. The cache keeps pre-promotion Facts, so the split stays in the
 post-pass.
 
 ## Amendment (2026-11-23, 2.6.0): file-level promotion and segment-aware secret naming

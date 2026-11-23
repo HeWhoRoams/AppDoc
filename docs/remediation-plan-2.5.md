@@ -178,7 +178,7 @@ Every item is checked against these in review (carried forward from rev2, R1–R
    - an **env-var read** (`os.getenv`, `os.environ`, `os.lookupenv`, `Environment.GetEnvironmentVariable`, `getenv`, `os.Getenv`) → role `env`;
    - a read whose source file is a CI/build file (`.github/`, `Jenkinsfile`, `azure-pipelines*`, `*.pipeline.*`) → role `ci`;
    - any other code read of a config file → role `app` (the current behaviour).
-2. `secret_location` is set `True` only for role `app` keys (an env var is not an application secret). This removes the gitea mis-flags (`GO`, `SSH_ORIGINAL_COMMAND`).
+2. `secret_location` is never set on `env` or `ci` keys (an env var is not an application secret). It is kept on `app` and `unclassified` keys, so an INI `[db] DB_PASSWORD` that no code reads keeps the flag. This removes the gitea mis-flags (`GO`, `SSH_ORIGINAL_COMMAND`).
 3. `fill.py::_config_reference` (line 155) already filters `role == "app"`, so `env`/`ci` keys drop out of the 16.6 block automatically. Add to its trailer:
    `f"{env_n} env-var keys and {ci_n} CI keys are excluded from the application table (see facts.json)"`.
 4. The 16.6 count (C7 `_c7_counts`) now compares against the `app`-role key count, so the gitea 785-vs-758 mismatch is resolved by construction.

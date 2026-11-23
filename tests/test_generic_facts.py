@@ -446,5 +446,14 @@ class ConfigRoleSplitTests(unittest.TestCase):
         self.assertTrue(keys[("app.py", "DB_PASSWORD")]["secret_location"])
 
 
+    def test_unclassified_secret_key_keeps_flag(self):
+        """An INI key no code reads stays `unclassified` and keeps its secret flag (never set on env or ci keys)."""
+        keys = self._keys({"requirements.txt": "flask\n", "app.py": "x = 1\n",
+                           "conf/db.ini": "[db]\nDB_PASSWORD = hunter2value\n"})
+        d = keys[("conf/db.ini", "db.DB_PASSWORD")]
+        self.assertEqual(d["role"], "unclassified")
+        self.assertIs(d["secret_location"], True)
+
+
 if __name__ == "__main__":
     unittest.main()

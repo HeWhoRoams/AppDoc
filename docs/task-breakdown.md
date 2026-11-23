@@ -59,7 +59,7 @@
 |---|---|---|---|---|---|
 | T25.20 | Make the read kind a **per-file** detail: confirm what `config_key.via` carries per stack; if it does not name `os.getenv`, `os.environ`, `os.Getenv`, `os.lookupenv`, `Environment.GetEnvironmentVariable`, `getenv`, add `read_kind` (`env`, `file`) to `DETAIL_KEYS["config_key"]` and emit it from each stack's config-read code | `stacks/*.py`, `facts.DETAIL_KEYS` | per-stack unit tests for `read_kind`; cache stays correct | — | 5 |
 | T25.21 | Post-pass split: `unclassified` promoted to `env` (env-var read), `ci` (read from CI/build file paths), `app` (any other code read). Keep it in the post-pass because the cache stores pre-promotion Facts | `extract.extract` post-pass | `test_generic_facts::test_env_key_role_env`, `::test_ci_key_role_ci` | T25.20 | 3 |
-| T25.22 | `secret_location` only for role `app`; remove the `GO`/`SSH_ORIGINAL_COMMAND` mis-flags | post-pass | `::test_env_key_not_secret` | T25.21 | 1 |
+| T25.22 | `secret_location` never set on `env` or `ci` keys (kept on `app` and `unclassified`); remove the `GO`/`SSH_ORIGINAL_COMMAND` mis-flags | post-pass | `::test_env_key_not_secret` | T25.21 | 1 |
 | T25.23 | `fill._config_reference` trailer: "N env-var keys and M CI keys are excluded from the application table"; `check._c7_counts` compares the 16.6 block with the `app`-role count | `fill.py`, `check.py` | `test_render::test_config_trailer_counts`; corpus `config-env` green | T25.21 | 2 |
 
 ### 1D. Extractor coverage (Phase 2)
