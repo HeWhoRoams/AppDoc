@@ -72,6 +72,20 @@ class Register:
         gone = self.superseded_ids()
         return [(no, row) for no, row in self.rows if str(row.get("id")) not in gone]
 
+    def live_keys(self) -> set[str]:
+        """What the live rows cover: an ID (V-1), a workflow or section ref (7.1, 10.2, 9), or `smell/<fid>`."""
+        keys = set()
+        for _, row in self.live_rows():
+            ref = str(row.get("ref", ""))
+            m = REF_RE.match(ref)
+            if m:
+                keys.add(m.group(2) or m.group(1))
+            elif SMELL_REF_RE.match(ref):
+                keys.add(ref)
+            if ref.startswith("7."):
+                keys.add(ref.split("/")[0])
+        return keys
+
     def counts(self, rows=None) -> dict[str, int]:
         c = {r: 0 for r in RESULTS}
         for _, row in (self.rows if rows is None else rows):
@@ -241,7 +255,7 @@ def _result_parts(c: dict) -> str:
     return ", ".join(f"{c[r]} {r}" for r in RESULTS if r in COUNTED_ALWAYS or c[r])
 
 
-def _coverage(reg: Register, coverage) -> list[str]:
+def _coverage(reg: Register, coverage, plan=None) -> list[str]:
     live = reg.live_rows()
     anchors = "Each Supported or Corrected row's anchor text was found in its cited lines by the Check."
     if len(live) == len(reg.rows):
@@ -254,6 +268,10 @@ def _coverage(reg: Register, coverage) -> list[str]:
     if coverage:
         out += ["", "| Section | IDs with a register row |", "|---|---|"]
         out += [f"| {_cell(sec)} | {hit} of {n} |" for sec, hit, n in coverage]
+    if plan:
+        from .audit_plan import progress
+        out += ["", "| Section | Planned | Audited | Extra |", "|---|---|---|---|"]
+        out += [f"| {_cell(sec)} | {p} | {a} | {x} |" for sec, p, a, x in progress(plan, reg.live_keys())]
     return out
 
 
@@ -370,17 +388,18 @@ def _provenance_lines(reg: Register | None) -> list[str]:
 
 
 def appendix_markdown(reg: Register | None, facts: dict | None = None, coverage=None,
-                      root: str | None = None, blocks_by: dict | None = None) -> str:
+                      root: str | None = None, blocks_by: dict | None = None, plan: dict | None = None) -> str:
     """Body of Appendix A (the `appendix-a` generated block), computed from the register.
 
     reg is None when evidence.jsonl does not exist. coverage is check.coverage() output, or None to omit it.
     facts is the facts.json dict; nothing in the appendix reads it yet.
     root is the Target directory; when given, A.4 commands are generated from locate().
     blocks_by is {"generator", "bundle"} of the running AppDoc; when given, A.1 says who wrote the blocks.
+    plan is the audit plan (audit-plan.json); when given, A.2 shows planned / audited / extra per section.
     """
     out = ["### A.1 Audit state", "", *_audit_state(reg), *_blocks_lines(reg, blocks_by), *_provenance_lines(reg)]
     if reg is not None and reg.performed:
-        out += ["", "### A.2 Coverage", "", *_coverage(reg, coverage),
+        out += ["", "### A.2 Coverage", "", *_coverage(reg, coverage, plan),
                 "", "### A.3 Register", "", *_table(reg),
                 "", "### A.4 Verification commands", "", *_commands(reg, root)]
     return "\n".join(out)

@@ -403,7 +403,7 @@ class CheckTests(unittest.TestCase):
         self.assertIn("lacks audited_with, audited_bundle.", self.run27(require_audit=True)[1])
         self._audited()
         code, report, _ = self.run27(require_audit=True)
-        self.assertEqual(code, 0, report)
+        self.assertEqual(self.rules(report), {"C19"}, report)    # provenance is complete; only the plan (T27.15) is missing
         # without --require-audit the fields are not demanded, and a 2.4 document is never asked for them
         self.write_register(AUDIT, ROWS)
         self.assertEqual(self.run27()[0], 0)
@@ -419,11 +419,11 @@ class CheckTests(unittest.TestCase):
         self.assertIn("E-2 was sealed at upgrade", report)
         self.assertIn("appdoc seal --audit", report)
         # not strict: the upgrade seal is reported in Appendix A, not failed
-        self.assertEqual(self.run27(require_audit=True)[0], 0)
+        self.assertEqual(self.rules(self.run27(require_audit=True)[1]), {"C19"})   # no C17; the plan is T27.15's
         # audited rows pass under strict
         self._audited()
         code, report, _ = self.run27(require_audit=True, strict=True)
-        self.assertEqual(code, 0, report)
+        self.assertEqual(self.rules(report), {"C19"}, report)
 
     def test_c12_c10_and_verification_read_live_rows(self):
         """T27.19: a superseded row is history; it no longer dismisses a candidate, names a register id or counts."""
@@ -565,6 +565,72 @@ class CheckTests(unittest.TestCase):
         self.assertNotIn("C18", self.rules(report))
         self.assertIn("C18 line 1: notes.jsonl line 1: the entry-points block changed after this note was written", report)
         self.assertIn("(fails from template 2.7)", report)
+
+    # --- C19: the audit follows the plan (T27.15)
+
+    PLANNED = [("14/Q-1", "Question one is open"), ("4/F-1", "F-1 runs"), ("6/UI-1", "UI-1 renders"),
+               ("8.1/C-1", "C-1 is a database"), ("8.3/X-1", "X-1 is a ping"), ("9", "Troubleshooting is accurate"),
+               ("15/R-1", "R-1 moves the password")]
+
+    def plan27(self, drop=(), exclusions=None, **audit_extra):
+        """A register that covers the whole audit plan of the base document (minus the refs in `drop`), and the plan."""
+        from appdoc import audit_plan
+        rows = list(ROWS)
+        for n, (ref, claim) in enumerate(self.PLANNED, 3):
+            if ref not in drop:
+                rows.append({"id": f"E-{n}", "ref": ref, "claim": claim, "result": "Supported",
+                             "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"})
+        audit = dict(AUDIT, audited_on="2026-11-23", audited_with="2.7.0", audited_bundle="0123456789ab",
+                     doc_sha=check.doc_sha(self.doc27()), **audit_extra)
+        if exclusions:
+            audit["exclusions"] = exclusions
+        self.write_register(audit, rows)
+        self.run27()
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(audit_plan.run(self.target, self.out), 0)
+
+    def test_c19_missing_planned_row_fails(self):
+        self.plan27()
+        code, report, _ = self.run27(require_audit=True)
+        self.assertEqual(code, 0, report)
+        self.plan27(drop=("8.3/X-1", "4/F-1"))
+        code, report, _ = self.run27(require_audit=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C19", self.rules(report))
+        self.assertIn("the audit plan names X-1, which has no live register row. Fix: audit it and add a row "
+                      "with ref 8.3/X-1", report)
+        self.assertIn("names F-1", report)
+        # a superseded row is history: the replacement is the live one
+        self.assertEqual(self.run27(require_audit=False)[0], 0)        # not asked for without --require-audit
+        self.assertEqual(self.run_check(build_doc(), require_audit=True)[0], 0)   # a 2.4 document is never asked
+
+    def test_c19_stale_plan_fails(self):
+        import os
+        self.plan27()
+        os.remove(os.path.join(self.out, "audit-plan.json"))
+        code, report, _ = self.run27(require_audit=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("audit-plan.json is missing. Fix: run `appdoc audit-plan`", report)
+        self.plan27()
+        doc = build_doc().replace("- The entry module wires", "- The entry module also wires")
+        code, report, _ = self.run27(doc, require_audit=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C19", self.rules(report))
+        self.assertIn("audit-plan.json is not what `appdoc audit-plan` computes now", report)
+        self.assertIn("Fix: run `appdoc audit-plan`, then audit the ids it names", report)
+
+    def test_c19_exclusion_printed(self):
+        self.plan27(drop=("9",), exclusions={"9": "troubleshooting rows are owner knowledge, not read from source"})
+        code, report, out = self.run27(require_audit=True)
+        self.assertEqual(code, 0, report)
+        self.assertIn("## Audit exclusions", report)
+        self.assertIn("- 9: troubleshooting rows are owner knowledge, not read from source", report)
+        # an exclusion excuses only the section it names
+        self.plan27(drop=("9", "15/R-1"), exclusions={"9": "owner knowledge"})
+        code, report, _ = self.run27(require_audit=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("names R-1", report)
+        self.assertNotIn("names 9", report)
 
     def test_c11_2_4_document_keeps_the_old_duplicate_message(self):
         self.write_register(AUDIT, ROWS + [self.SECOND_V1])

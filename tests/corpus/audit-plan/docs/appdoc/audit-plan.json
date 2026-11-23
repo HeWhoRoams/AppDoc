@@ -1,0 +1,119 @@
+{
+ "advisories": [],
+ "doc_sha": "da983ced17ef",
+ "floor": {
+  "fraction": "0.25",
+  "minimum": 5
+ },
+ "schema": "appdoc-audit-plan/1",
+ "sections": [
+  {
+   "ids": [
+    "V-1"
+   ],
+   "mode": "full",
+   "section": "10.1",
+   "total": 1
+  },
+  {
+   "ids": [
+    "7.1"
+   ],
+   "mode": "full",
+   "section": "7",
+   "total": 1
+  },
+  {
+   "ids": [
+    "Q-1"
+   ],
+   "mode": "full",
+   "section": "14",
+   "total": 1
+  },
+  {
+   "ids": [],
+   "mode": "full",
+   "section": "candidates",
+   "total": 0
+  },
+  {
+   "ids": [],
+   "items": [],
+   "mode": "full",
+   "section": "10.2",
+   "total": 1
+  },
+  {
+   "ids": [],
+   "items": [],
+   "mode": "full",
+   "section": "16.5",
+   "total": 8
+  },
+  {
+   "ids": [],
+   "items": [],
+   "mode": "full",
+   "section": "17",
+   "total": 0
+  },
+  {
+   "ids": [
+    "F-1"
+   ],
+   "k": 1,
+   "mode": "sampled",
+   "section": "4",
+   "total": 1
+  },
+  {
+   "ids": [
+    "UI-1"
+   ],
+   "k": 1,
+   "mode": "sampled",
+   "section": "6",
+   "total": 1
+  },
+  {
+   "ids": [
+    "C-1"
+   ],
+   "k": 1,
+   "mode": "sampled",
+   "section": "8.1",
+   "total": 1
+  },
+  {
+   "ids": [
+    "X-1"
+   ],
+   "k": 1,
+   "mode": "sampled",
+   "section": "8.3",
+   "total": 1
+  },
+  {
+   "ids": [
+    "9"
+   ],
+   "items": [
+    "Service will not start"
+   ],
+   "k": 1,
+   "mode": "sampled",
+   "section": "9",
+   "total": 1
+  },
+  {
+   "ids": [
+    "R-1"
+   ],
+   "k": 1,
+   "mode": "sampled",
+   "section": "15",
+   "total": 1
+  }
+ ]
+}

@@ -353,6 +353,19 @@ class AppendixHistoryTests(unittest.TestCase):
         self.assertIn("2 rows: 1 Supported, 1 Corrected, 0 Downgraded. Each Supported",
                       block(appendix_markdown(reg_of(row(1), row(2, "Corrected", ref="7.1")), {}), "A.2 Coverage"))
 
+    def test_a2_shows_planned_audited_extra(self):
+        plan = {"sections": [
+            {"section": "10.1", "mode": "full", "total": 3, "ids": ["V-1", "V-2", "V-3"]},
+            {"section": "4", "mode": "sampled", "total": 9, "k": 5, "ids": ["F-1", "F-2"]},
+            {"section": "10.2", "mode": "full", "total": 1, "ids": ["10.2"], "items": ["TLS"]}]}
+        reg = reg_of(row(1, ref="10.1/V-1"), row(2, ref="10.1/V-2"), row(3, ref="4/F-1"), row(4, ref="4/F-9"))
+        a2 = block(appendix_markdown(reg, {}, plan=plan), "A.2 Coverage")
+        self.assertIn("| Section | Planned | Audited | Extra |", a2)
+        self.assertIn("| 10.1 | 3 | 2 | 0 |", a2)
+        self.assertIn("| 4 | 2 | 1 | 1 |", a2)          # F-9 has a row the plan did not ask for
+        self.assertIn("| 10.2 | 1 | 0 | 0 |", a2)
+        self.assertNotIn("Planned", block(appendix_markdown(reg, {}), "A.2 Coverage"))   # no plan, no table
+
     def test_a3_marks_superseded(self):
         a3 = block(appendix_markdown(self.reg(), {}), "A.3 Register")
         rows = {l.split("|")[1].strip(): l for l in a3.splitlines() if l.startswith("| E-")}

@@ -459,6 +459,28 @@ class RegisterHistory(CorpusCase):
                       "generated block. Fix: move this note to notes.jsonl", r.report)
 
 
+    def test_audit_plan_followed_passes_under_require_audit(self):
+        r = self.case27("audit-plan", require_audit=True)
+        self.assertEqual(r.code, 0, r.report)
+        self.assertIn("| Section | Planned | Audited | Extra |", r.narrative)
+        self.assertIn("| 4 | 1 | 1 | 0 |", r.narrative)
+
+    def test_audit_plan_missing_row_fails_c19(self):
+        from unittest import mock
+        from appdoc import template_spec as spec
+        r = self.case27("audit-plan")
+        reg_path = os.path.join(r.out, "evidence.jsonl")
+        with open(reg_path, encoding="utf-8") as fh:
+            lines = [l for l in fh.read().splitlines() if '"ref": "15/R-1"' not in l]
+        with open(reg_path, "w", encoding="utf-8") as fh:
+            fh.write("\n".join(lines) + "\n")
+        with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"), contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(check.run(r.target, r.out, True), 2)
+        with open(os.path.join(r.out, "check-report.md"), encoding="utf-8") as fh:
+            report = fh.read()
+        self.assertIn("the audit plan names R-1, which has no live register row. Fix: audit it and add a row "
+                      "with ref 15/R-1", report)
+
 def _apply_pending():
     for cls in CorpusCase.__subclasses__():
         for name in PENDING:

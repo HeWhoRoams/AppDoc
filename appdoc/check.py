@@ -94,6 +94,9 @@ RULES = (
          "(`block_sha`), or cites a file that does not resolve; the label `Known extractor limitation:` is "
          "written in the Narrative outside a generated block (fails from template 2.7)", ("advisory",),
          preview="a note in `notes.jsonl` that does not match its block, or the reserved label written by hand"),
+    Rule("C19", "Audit follows the plan",
+         "with `--require-audit` on template 2.7, `audit-plan.json` is missing or differs from a fresh computation, "
+         "or a planned id has no live register row (a section listed under `exclusions` is not required)"),
     Rule("C20", "Citation precision",
          "a range over 100 lines is a claim's only lined Citation in section 4, 7 or 10, "
          "or a section 4 or 10.1 table cell holds more than 5 Citations", ("advisory", "strict")),
@@ -1204,6 +1207,34 @@ def _c18_notes(target, out_dir, raw, facts, cache, add):
                 f"move this note to {notes_mod.NOTES}")
 
 
+def _c19_plan(target, out_dir, reg, add):
+    """C19, 2.7 rule under --require-audit: audit-plan.json equals a fresh computation and every planned key has a
+    live register row. A section the audit record lists under `exclusions` is not required (and is printed).
+    Returns the plan's advisories."""
+    from . import audit_plan
+    path = os.path.join(out_dir, audit_plan.PLAN)
+    if not os.path.isfile(path):
+        add("C19", 1, f"{audit_plan.PLAN} is missing", "run `appdoc audit-plan`")
+        return []
+    fresh = audit_plan.compute(target, out_dir)
+    if normalize_newlines(_read_text(path)) != audit_plan.render(fresh):
+        add("C19", 1, f"{audit_plan.PLAN} is not what `appdoc audit-plan` computes now "
+            "(the Narrative, the Facts or the audit floor changed)", "run `appdoc audit-plan`, then audit the ids it names")
+        return fresh["advisories"]
+    if reg is None or not reg.performed:
+        return fresh["advisories"]
+    excluded = set((reg.audit or {}).get("exclusions") or {})
+    live = reg.live_keys()
+    for s in fresh["sections"]:
+        if s["section"] in excluded:
+            continue
+        for key in s["ids"]:
+            if key not in live:
+                add("C19", 1, f"the audit plan names {key}, which has no live register row",
+                    f"audit it and add a row with ref {audit_plan.ref_for(key)}")
+    return fresh["advisories"]
+
+
 def coverage(heads, ids, reg, workflows) -> list[tuple[str, int, int]]:
     """(section, IDs with a register row, IDs) for every ID-bearing section, and workflows."""
     live = reg.live_rows()
@@ -1421,6 +1452,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
 
     # C7 (counts and generated blocks), C9, C10, C11: template-2.2 structure
     reg, cov, uncited, quant_hits, wide_hits, count_advice = None, [], [], [], [], []
+    floor_advice, exclusions = [], {}
     if current:
         heads = dm.headings(lines)
         _c7_counts(target, lines, heads, facts, add)
@@ -1456,6 +1488,10 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         _c18_notes(target, out_dir, raw, facts, cache, add27)
         if doc_ver >= FAILS_FROM:
             _c17_provenance(reg, require_audit, strict, add)
+            if require_audit:
+                floor_advice = _c19_plan(target, out_dir, reg, add)
+            if reg is not None and reg.performed:
+                exclusions = (reg.audit or {}).get("exclusions") or {}
         reg_ids = {str(r["id"]) for _, r in reg.live_rows()} if reg else None   # a superseded row is history
         gone = {t: reg.superseded_by(t) for t in reg.superseded_ids()} if reg else None
         _c10_refs(lines, heads, ids, reg_ids, add, gone)
@@ -1475,7 +1511,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
 
     for k in problems:
         items = problems[k] if k == "C5" else sorted(set(problems[k]), key=lambda p: (p[0], p[1]))
-        if k in ("C9", "C10", "C11", "C12", "C13") and len(items) > RULE_CAP:
+        if k in ("C9", "C10", "C11", "C12", "C13", "C19") and len(items) > RULE_CAP:
             items = items[:RULE_CAP] + [(items[RULE_CAP][0], f"... {len(items) - RULE_CAP} more", "fix the above, then rerun")]
         problems[k] = items
     total = sum(len(v) for v in problems.values())
@@ -1512,6 +1548,11 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         if len(wide_hits) > RULE_CAP:
             advisory.append(f"- ... {len(wide_hits) - RULE_CAP} more")
         advisory.append("")
+    if exclusions:
+        advisory += ["## Audit exclusions", "", "The audit record declares sections the audit did not cover:", ""]
+        advisory += [f"- {sec}: {why}" for sec, why in sorted(exclusions.items())] + [""]
+    if floor_advice:
+        advisory += ["## Audit floor (advisory)", ""] + [f"- {a}" for a in floor_advice] + [""]
     if count_advice:
         advisory += ["## Hand-written counts (advisory)", "",
                      f"{plural(len(count_advice), 'count')} written by hand. This is not a problem; a count marker "

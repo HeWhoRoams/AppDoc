@@ -1,0 +1,10 @@
+{"type": "audit", "performed": true, "auditor": "independent", "scope": "an independent read of the cited source", "audited_on": "2026-11-23", "audited_with": "2.7.0", "audited_bundle": "0123456789ab", "doc_sha": "dc1ca888d276"}
+{"id": "E-1", "ref": "10.1/V-1", "claim": "A password is set in code", "result": "Supported", "cites": ["app/main.py:6"], "anchor": "line 6", "limitation": "value not shown"}
+{"id": "E-2", "ref": "7.1", "claim": "Operators launch the entry point", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}
+{"id": "E-3", "ref": "14/Q-1", "claim": "Question one is open", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}
+{"id": "E-4", "ref": "4/F-1", "claim": "F-1 runs", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}
+{"id": "E-5", "ref": "6/UI-1", "claim": "UI-1 renders", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}
+{"id": "E-6", "ref": "8.1/C-1", "claim": "C-1 is a database", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}
+{"id": "E-7", "ref": "8.3/X-1", "claim": "X-1 is a ping", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}
+{"id": "E-8", "ref": "9", "claim": "Troubleshooting is accurate", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}
+{"id": "E-9", "ref": "15/R-1", "claim": "R-1 moves the password", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}

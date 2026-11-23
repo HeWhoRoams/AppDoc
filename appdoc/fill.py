@@ -280,9 +280,11 @@ def _appendix_a(doc: dict, ctx: dict | None = None) -> str:
         ids = check.defined_ids(lines, heads, lambda *a: None)
         workflows = sorted((k for k in heads if k.startswith("7.")), key=lambda k: int(k.split(".")[1]))
         coverage = check.coverage(heads, ids, reg, workflows)
+    plan_path = os.path.join((ctx or {}).get("out_dir") or "", "audit-plan.json")
+    plan = json.loads(read_text(plan_path)) if (ctx or {}).get("out_dir") and os.path.isfile(plan_path) else None
     prov = version.provenance()
     return register.appendix_markdown(reg, doc, coverage, root=(ctx or {}).get("target"),
-                                      blocks_by={"generator": prov["generator"], "bundle": prov["bundle"]})
+                                      blocks_by={"generator": prov["generator"], "bundle": prov["bundle"]}, plan=plan)
 
 
 RENDERERS = {"scan-coverage": _scan_coverage, "entry-points": _entry_points, "config-reference": _config_reference,

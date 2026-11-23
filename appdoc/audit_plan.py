@@ -149,6 +149,38 @@ def render(plan: dict) -> str:
     return json.dumps(plan, indent=1, sort_keys=True, ensure_ascii=False) + "\n"
 
 
+# The register ref of an ID class (a row's `ref` is `<section>/<id>`); other keys are their own ref.
+ID_SECTION = {"V-": "10.1", "F-": "4", "UI-": "6", "C-": "8.1", "X-": "8.3", "Q-": "14", "R-": "15"}
+
+
+def ref_for(key: str) -> str:
+    """The register `ref` that covers a planned key."""
+    for prefix, section in ID_SECTION.items():
+        if key.startswith(prefix):
+            return f"{section}/{key}"
+    return key
+
+
+def _in_section(key: str, section: str) -> bool:
+    if section == "candidates":
+        return key.startswith("smell/")
+    if section == "7":
+        return key.startswith("7.")
+    prefix = next((p for p, sec in ID_SECTION.items() if sec == section), None)
+    return key.startswith(prefix) if prefix else key == section
+
+
+def progress(plan: dict, live_keys: set) -> list[tuple[str, int, int, int]]:
+    """(section, planned, audited, extra) per plan section: the keys planned, those with a live row, and live rows
+    in the section the plan did not ask for."""
+    out = []
+    for s in plan["sections"]:
+        done = sum(1 for i in s["ids"] if i in live_keys)
+        extra = sum(1 for k in live_keys if _in_section(k, s["section"]) and k not in s["ids"])
+        out.append((s["section"], len(s["ids"]), done, extra))
+    return out
+
+
 def planned_ids(plan: dict) -> list[str]:
     return [i for s in plan["sections"] for i in s["ids"]]
 
