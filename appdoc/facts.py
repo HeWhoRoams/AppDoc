@@ -52,7 +52,7 @@ DETAIL_KEYS = {
     "external_call": frozenset("call client method mode operation type via".split()),
     "auth_check": frozenset("applies_to mechanism policy roles scope".split()),
     "message": frozenset("context exception".split()),
-    "ownership": frozenset("authors commits role source".split()),  # authors leave in 2.6 (Q32)
+    "ownership": frozenset("commits contributors first_commit last_commit role source".split()),  # counts and dates, no names (R18)
     "smell": frozenset("constant fid pattern".split()),
     "schema_object": frozenset("columns dialect expression type unique".split()),
     "owner_file": frozenset("entries kind".split()),

@@ -43,7 +43,7 @@ def _is_repo_root(root: str) -> bool:
     """True only when the Target is itself the top of a git repo.
 
     A Target nested inside another repo (a sample, a subfolder) must not borrow that repo's
-    commit or authors.
+    commit or history.
     """
     top = _git(root, "rev-parse", "--show-toplevel")
     return bool(top) and os.path.normcase(os.path.realpath(top)) == os.path.normcase(os.path.realpath(root))
@@ -57,8 +57,10 @@ def _history(root: str) -> str:
 
 
 def _ownership(root: str, files: list[scan.SourceFile], ownership_top: int | None = None):
-    """Top authors per top-level folder (names only). Only with full git history.
+    """Commit activity per top-level folder: counts and dates, never a person's name. Only with full git history.
 
+    Each Fact records `commits`, `contributors` (the number of distinct authors, counted and then
+    forgotten) and the dates (`YYYY-MM-DD`) of the first and last commit. R18: no author name, no email.
     ``ownership_top``, when set, ranks folders by file count (stable: descending count then name)
     and runs ``git log`` only on the top-N, bounding the subprocess count on wide repos.
     """
@@ -69,13 +71,16 @@ def _ownership(root: str, files: list[scan.SourceFile], ownership_top: int | Non
         counts = Counter(f.path.split("/", 1)[0] for f in files if "/" in f.path)
         folders = sorted(folders, key=lambda fo: (-counts[fo], fo))[:ownership_top]
     for folder in folders:
-        out = _git(root, "log", "--format=%an", "--", folder)
+        out = _git(root, "log", "--date=short", "--format=%an%x09%ad", "--", folder)
         if not out:
             continue
-        names = Counter(out.splitlines())
-        top = sorted(names.items(), key=lambda kv: (-kv[1], kv[0]))[:3]
+        rows = [line.split("\t") for line in out.splitlines() if "\t" in line]
+        if not rows:
+            continue
+        dates = sorted(r[1] for r in rows)
         yield F.Fact.make("ownership", "generic", folder, None, folder,
-                          authors=[n for n, _ in top], commits=sum(names.values()))
+                          commits=len(rows), contributors=len({r[0] for r in rows}),
+                          first_commit=dates[0], last_commit=dates[-1])
 
 
 def _owner_context(root: str):

@@ -467,6 +467,28 @@ class GitScopeTests(unittest.TestCase):
         self.assertIsNotNone(doc["target"]["commit"])
         self.assertTrue([f for f in doc["facts"] if f["kind"] == "ownership"])
 
+    def test_ownership_has_no_author_names(self):
+        import subprocess
+        for name, day in (("Zed Quux", "2024-03-01T10:00:00"), ("Ada Lovelace", "2024-05-02T10:00:00"),
+                          ("Zed Quux", "2024-06-03T10:00:00")):
+            with open(os.path.join(self.repo, "sub", "src", "a.py"), "a") as fh:
+                fh.write(f"# {day}\n")
+            env = dict(os.environ, GIT_AUTHOR_DATE=day, GIT_COMMITTER_DATE=day)
+            subprocess.run(["git", "-C", self.repo, "-c", f"user.name={name}", "-c", "user.email=q@example.com",
+                            "commit", "-q", "-am", "edit"], check=True, capture_output=True, env=env)
+        text = extract.extract(self.repo, self.out)[0]
+        for forbidden in ("Zed", "Quux", "Ada", "Lovelace", "q@example.com"):
+            self.assertNotIn(forbidden, text)
+        own = [f for f in json.loads(text)["facts"] if f["kind"] == "ownership"]
+        self.assertTrue(own)
+        sub = next(f for f in own if f["name"] == "sub")
+        d = sub["detail"]
+        self.assertEqual((d["commits"], d["contributors"], d["first_commit"]), (4, 3, "2024-03-01"))
+        self.assertEqual(sorted(d), ["commits", "contributors", "first_commit", "last_commit"])
+        self.assertRegex(d["last_commit"], r"^\d{4}-\d{2}-\d{2}$")
+        self.assertNotIn("authors", facts.DETAIL_KEYS["ownership"])
+        self.assertEqual(facts.DETAIL_KEYS["ownership"], frozenset("commits contributors first_commit last_commit role source".split()))
+
     def test_target_nested_in_a_repo_borrows_nothing(self):
         sub = os.path.join(self.repo, "sub")
         doc = json.loads(extract.extract(sub, os.path.join(sub, "docs", "appdoc"))[0])

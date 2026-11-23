@@ -11,7 +11,7 @@ AppDoc 2.6.0 (in development): tooling and Facts release. See `docs/remediation-
 - A config file with at least one key that code reads is promoted to `app` as a whole (INI `section.KEY` matches the code's `KEY`); `env` and `ci` keys are never promoted.
 - Secret naming is segment-aware (`MIN_PASSWORD_LENGTH` is not a secret location); keys ending in `uri`, `path` or `file` carry the new `config_key` detail `secret_ref`.
 - Generated copy uses one `plural()` helper everywhere; the A.4 verification label reads `**E-1** (section N), expect `path:line``.
-- `ownership` Facts no longer record git author names (counts and dates only); `facts.DETAIL_KEYS` drops `authors`.
+- `ownership` Facts no longer record git author names (R18): they hold `commits`, `contributors` (a count) and `first_commit`/`last_commit` dates; `facts.DETAIL_KEYS` drops `authors`.
 
 ## 2.5.0 — remediation of the 2.4 diagnostic
 

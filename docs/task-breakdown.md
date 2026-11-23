@@ -16,7 +16,7 @@
 | Q23 | `appdoc upgrade` ships in **2.7.0** | T27.30–32 are in scope; T28.B0 is dropped; 2.7 ≈ 103 h |
 | Q24 | Synthetic `mvc5-classic` Target now; real public repository later | T90.03 stays deferred |
 | Q31 | Record connection targets: **yes**, behind `Record connection targets: yes` in `appdoc-context.md`, off by default | T28.22 parses the directive; T29.04 builds the matrix |
-| Q32 | Remove git author names from `ownership` Facts in **2.6.0** (same schema bump); R18 carries a written exemption naming `ownership` until then | new task T26.66 (≈ 4 h) |
+| Q32 | Remove git author names from `ownership` Facts in **2.6.0** (same schema bump); R18 carried a written exemption naming `ownership` until T26.66 removed it (done: counts and dates only) | new task T26.66 (≈ 4 h) |
 | Tag | Tag `v2.4.0` at `9241c2f`; push the tag with the next push to `main` | T00.1 |
 | Order | 2.5 → 2.6 → 2.7 → 2.8 → 2.9; the 2.8 `.config` slice is not pulled forward | — |
 | Process | Parallel subagent streams in isolated worktrees, merged by the integrator | — |
@@ -402,7 +402,7 @@ Schema next after 2.8's (expected `/9`). **No template bump:** the blocks shippe
 | ID | Task | Notes | h |
 |---|---|---|---|
 | T90.01 | Performance plan Phase 5 (deferred in `docs/performance-plan.md` §8) | not scheduled; re-estimate from that section before starting | — |
-| T90.02 | Q32: stop recording git author names in `ownership` Facts (R18) | exempt for now; schedule with performance work; bumps schema | ≈ 4 |
+| T90.02 | Q32: stop recording git author names in `ownership` Facts (R18) | done in 2.6.0 as T26.66 (counts and dates only; no exemption); bumps schema | ≈ 4 |
 | T90.03 | Second public classic-MVC example from a real repository (Q24) | replaces the synthetic `mvc5-classic` as false-positive data when one is found | ≈ 16 |
 | T90.04 | `render --mermaid sibling` (also T28.B3) | can ride in 2.6.0 | 1.5 |
 

@@ -26,7 +26,7 @@ class CacheRoundTripTests(unittest.TestCase):
             F.Fact.make("dependency", "generic", "requirements.txt", 1, "flask", version="2.0", manager="pip"),
             F.Fact.make("dependency", "generic", "pom.xml", 9, "g:a", version="", manager="maven"),
             F.Fact.make("connection", "generic", "web.config", 5, "Main", type="database", secret_location=True),
-            F.Fact.make("ownership", "generic", "pkg", None, "pkg", authors=["A", "B"], commits=42),
+            F.Fact.make("ownership", "generic", "pkg", None, "pkg", contributors=2, commits=42),
             F.Fact.make("config_key", "generic", ".env", 1, "DB_PASSWORD", source=".env", secret_location=True),
             F.Fact.make("data_access", "python-flask", "db.py", 4, "SELECT", table="users"),
         ]
@@ -39,7 +39,7 @@ class CacheRoundTripTests(unittest.TestCase):
             self.assertEqual(F.Fact.from_json(f.to_json()), f, f)
 
     def test_cache_round_trip_preserves_sort_order(self):
-        f = F.Fact.make("ownership", "generic", "pkg", None, "pkg", authors=["Z", "A"], commits=1)
+        f = F.Fact.make("ownership", "generic", "pkg", None, "pkg", contributors=1, commits=1)
         self.assertEqual(F.Fact.from_json(f.to_json()).detail, f.detail)
 
 
