@@ -24,3 +24,23 @@ jobs:
         run: python -m unittest discover -s tests -t .
       - name: Smoke test
         run: python -m appdoc extract tests/samples/java-spring --out docs/appdoc
+      - name: Artifact hashes
+        run: python tools/artifact_hashes.py > hashes.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hashes-${{ matrix.os }}-${{ matrix.python }}
+          path: hashes.json
+
+  hashes-agree:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: actions/download-artifact@v4
+        with:
+          path: hashes
+      - name: Every OS and Python wrote the same bytes
+        run: python tools/artifact_hashes.py --compare hashes/*/hashes.json
