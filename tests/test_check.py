@@ -1050,6 +1050,22 @@ class CheckTests(unittest.TestCase):
         self.assertIn("C14", self.rules(report))
         self.assertIn("Appendix A.2 states 10 unknowns have a register row but the register carries 14 Q-refs", report)
 
+    def test_c14_uses_live_rows(self):
+        # E-3 said Q-1 was answerable; E-4 supersedes it (the question needs an owner after all) and Q-1 stays
+        old = self._q_row(1, "Answerable")
+        new = dict(self._q_row(1), id="E-4", supersedes="E-3")
+        self.write_register(AUDIT, ROWS + [old, new])
+        code, report, _ = self.run_check(self._q_doc(1))
+        self.assertNotIn("C14", self.rules(report), report)
+        self.assertNotIn("C11", self.rules(report), report)
+        # without the supersedes link the Answerable row is live and fails as before
+        self.write_register(AUDIT, ROWS + [old, {k: v for k, v in new.items() if k != "supersedes"}])
+        self.assertIn("C14", self.rules(self.run_check(self._q_doc(1))[1]))
+        # superseded Q rows are not counted against Appendix A.2
+        self.write_register(AUDIT, ROWS + [self._q_row(1), dict(self._q_row(2), id="E-9"),
+                                           dict(self._q_row(2), id="E-10", supersedes="E-9")])
+        self.assertNotIn("C14", self.rules(self.run_check(self._q_doc(2))[1]))
+
     def test_c14_partial_audit_no_false_positive(self):
         self.write_register(AUDIT, ROWS + [self._q_row(n) for n in range(1, 6)])
         code, report, _ = self.run_check(self._q_doc(10))

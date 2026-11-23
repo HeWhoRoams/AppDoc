@@ -928,7 +928,7 @@ def _c14_unknowns(lines, heads, ids, reg, appendix, add):
     """
     if reg is None or not reg.performed:
         return
-    q_rows = [(no, row, m.group(1)) for no, row in reg.rows if (m := _Q_REF_RE.match(str(row.get("ref", ""))))]
+    q_rows = [(no, row, m.group(1)) for no, row in reg.live_rows() if (m := _Q_REF_RE.match(str(row.get("ref", ""))))]
     t14 = _spec_table(lines, heads, "14")
     in14 = {dm.cell_text(cells[0]): no for no, cells in t14.rows if cells} if t14 else {}
     for no, row, qid in q_rows:
