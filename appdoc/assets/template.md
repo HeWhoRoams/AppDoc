@@ -14,7 +14,13 @@ CONVENTIONS:
   - A limitation of a generated block is a line of `docs/appdoc/notes.jsonl` ({"block", "text", "cites", "block_sha"}), rendered by `fill` as "Known extractor limitation: ..." inside its block; leave `block_sha` empty and `appdoc build` seals it. That label is reserved: written by hand in the Narrative it fails C18.
   - Never delete an `evidence.jsonl` row; a correction is a new row with `"supersedes": "E-n"`. A row that closes a question (`Answerable`) names the answering section in `"answered_in"`.
   - The audit record's `scope` describes the method only (no IDs, no numbers); what the audit covered is computed into Appendix A.1, and a section left out is a reasoned entry in `exclusions` (C17).
-- Section 17 (Build, Run and Test Locally): in each Command cell write a backticked command, `Unknown - see Open questions.` (the repository does not show it; also a row in section 14), or `Not applicable` (cite the evidence). Any row but an Unknown one cites its Evidence with a lined Citation (C9).
+- Writing rules the Check enforces (2.7):
+  - A backticked file name is a Citation even in a negative sentence: write a name that does not exist without backticks (appdoc-context.md does not exist), or C1 fails.
+  - A sentence that carries a count marker still needs a Citation (C5).
+  - A `|` inside a table cell must be written `\|`.
+  - A ref allows one live register row. Where a section has several planned items under one ref (9, 10.2, 16.5, 17) the auditor writes one combined row with per-item notes in `limitation`; a failing item makes the whole row Corrected or Downgraded.
+  - Section 11 Status is Cited, Inferred or Unknown.
+- Section 17 (Build, Run and Test Locally): the Command cell holds exactly one backticked command and nothing else (extra commands and prose go under the table). In each Command cell write a backticked command, `Unknown - see Open questions.` (the repository does not show it; also a row in section 14), or `Not applicable` (cite the evidence). Any row but an Unknown one cites its Evidence with a lined Citation (C9).
 - Run `appdoc fill` to write the generated blocks (scan-coverage, entry-points, closed-questions, config-reference, scheduled-jobs, appendix-a); never edit them by hand (C7). Run it again after every change to evidence.jsonl or notes.jsonl. -->
 
 **Target:** <fill: folder name> | **Commit:** <fill: facts.json target.commit> | **Evidence date:** <fill: YYYY-MM-DD>
@@ -141,7 +147,8 @@ Cite the code; where there is no handling, say "none" and cite where you looked.
 
 ## 9. Troubleshooting Matrix
 <!-- appdoc:guide Fed by: `message` Facts and error branches in source. One cited row per symptom.
-"Escalate when" must be a concrete trigger (e.g. "after one retry", "if the queue is down"); use Unknown at most once. -->
+"Escalate when" must be a concrete trigger (e.g. "after one retry", "if the queue is down"); use Unknown at most once.
+The audit covers this section with one combined row (one ref, one live row): per-item notes in `limitation`. -->
 
 | Symptom | Checks | Known response | Escalate when |
 |---|---|---|---|
@@ -162,13 +169,15 @@ Low = hygiene or informational. -->
 ### 10.2 Unknowns that must not be treated as controls
 <!-- appdoc:guide Consider at least: TLS, CSRF, MFA, cookie flags, rate limiting, audit-log integrity, backup and recovery, production secret management.
 Status: "Verified absent" (you confirmed in source that the control does not exist), "Not established" (the code cannot show it),
-or "Present" (cite it). Every control that is not Present needs a row in 15 or 14 naming it (C10). -->
+or "Present" (cite it). Every control that is not Present needs a row in 15 or 14 naming it (C10).
+The audit covers this section with one combined row (one ref, one live row): per-item notes in `limitation`. -->
 
 | Control | Status | Where looked |
 |---|---|---|
 
 ## 11. Ownership and Maintenance
 <!-- appdoc:guide Fed by: `ownership` and `owner_file` Facts and Owner context (cite `appdoc-context.md` only if it exists). Fill all six required rows: Business owner, Technical owner, Process owner, Data and integration owners, Documentation owner, Release and change process. Do not invent owners; use Unknown. Never copy personal email addresses.
+Status is Cited, Inferred or Unknown.
 Add one row per test suite (what it covers, which F-IDs). End with a short "Recommended maintenance minimum" list. -->
 
 | Area | Evidence | Status |
@@ -231,7 +240,8 @@ Severity: Critical, High, Medium, Low. Effort: S, M, L. IDs R-1, R-2, ... -->
 
 ### 16.5 Deployment and change process
 <!-- appdoc:guide One row per step, all eight required (C9): Build, Test, Deploy, Upgrade, Rollback, Backup, Restore, Secret rotation.
-Attribute each to the job, script or command that does it, cited; Unknown if the repository does not show it. -->
+Attribute each to the job, script or command that does it, cited; Unknown if the repository does not show it.
+The audit covers this section with one combined row (one ref, one live row): per-item notes in `limitation`. -->
 
 | Step | Procedure | Evidence |
 |---|---|---|
@@ -250,7 +260,8 @@ Attribute each to the job, script or command that does it, cited; Unknown if the
 
 ## 17. Build, Run and Test Locally
 <!-- appdoc:guide Fed by: build files, runtime pins, README, CI steps. Every command is cited where it is defined (a Citation with a line in Evidence).
-All five rows are required (C9). Command is one of: a backticked command; `Unknown - see Open questions.` (the repository does not show it; also add a row to section 14); `Not applicable` (cite the evidence, for example the file that shows there is nothing to build). Working directory is the folder the command runs in, relative to the Target (`.` for the root). -->
+All five rows are required (C9). Command is one of: a backticked command; `Unknown - see Open questions.` (the repository does not show it; also add a row to section 14); `Not applicable` (cite the evidence, for example the file that shows there is nothing to build). Working directory is the folder the command runs in, relative to the Target (`.` for the root).
+The Command cell holds exactly one backticked command and nothing else; put extra commands and prose under the table. The audit covers this section with one combined row (one ref, one live row): per-item notes in `limitation`. -->
 
 | Step | Command | Working directory | Evidence |
 |---|---|---|---|

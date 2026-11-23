@@ -144,6 +144,32 @@ class SkillDoc(unittest.TestCase):
                        "The order is: audit, apply findings, audit the delta, seal, build."):
             self.assertIn(needle, flat)
 
+    WRITING_RULES = (
+        "a backticked file name is a Citation",
+        "without backticks",
+        "status is cited, inferred or unknown",
+        "holds exactly one backticked command and nothing else",
+        "a sentence that carries a count marker still needs a citation (c5)",
+        "`\\|`",
+        "one combined row with per-item notes in `limitation`",
+        "a failing item makes the whole row Corrected or Downgraded",
+    )
+
+    def test_s6_writing_rules_in_skill_and_template_guide(self):
+        """S6.3: the rules the pilot run learned the hard way, in SKILL.md and in the template's guide comments."""
+        template = " ".join(slurp(os.path.join(ROOT, "appdoc", "assets", "template.md")).split())
+        skill = " ".join(self.skill.split())
+        for needle in self.WRITING_RULES:
+            self.assertIn(needle.lower(), skill.lower(), needle)
+            self.assertIn(needle.lower(), template.lower(), needle)
+        guide11 = template.split("## 11. Ownership and Maintenance")[1].split("## 12.")[0]
+        self.assertIn("Status is Cited, Inferred or Unknown", guide11)
+        guide17 = template.split("## 17. Build, Run and Test Locally")[1].split("## Appendix")[0]
+        self.assertIn("exactly one backticked command and nothing else", guide17)
+        for sec in ("## 9. ", "### 10.2 ", "### 16.5 "):
+            part = template.split(sec)[1][:900]
+            self.assertIn("one combined row", part, sec)
+
     def test_every_workflow_command_is_a_real_subcommand(self):
         for step in workflow.SKILL_STEPS:
             if step.command:
