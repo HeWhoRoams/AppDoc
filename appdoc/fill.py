@@ -226,7 +226,9 @@ def _config_reference(doc: dict, ctx: dict | None = None) -> str:
     unclassified = [f for f in _facts(doc, "config_key") if f["detail"].get("role") == "unclassified"]
     uncl_files = sorted({f["path"] for f in unclassified})
     both = sorted(set(uncl_files) & {f["path"] for f in app})
-    if both:  # promotion is per file, so one file can never be both; stop rather than print a false trailer
+    # extract._config_roles (plan 2.6 4.4.3) promotes per file: it turns every `unclassified` key of a file into
+    # `app` or none of them, so a file is never both. tests/test_fill proves this over every sample and corpus Target.
+    if both:  # stop rather than print a false trailer
         raise RuntimeError("internal error: config file is both application and not classified: " + ", ".join(both))
     uncl_note = (f"{plural(len(unclassified), 'key')} in {plural(len(uncl_files), 'file')} "
                  f"{'was' if len(unclassified) == 1 else 'were'} not classified as application "

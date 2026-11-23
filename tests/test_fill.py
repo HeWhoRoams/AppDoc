@@ -5,7 +5,7 @@ import os
 import tempfile
 import unittest
 
-from appdoc import fill
+from appdoc import extract, fill
 
 
 def fact(kind, path, line, name, stack="s", **detail):
@@ -318,6 +318,28 @@ class ConfigGuardTests(unittest.TestCase):
         bad = doc(cfg("conf/app.ini", 1, "A", role="app"), cfg("conf/app.ini", 2, "B", role="unclassified"))
         with self.assertRaises(RuntimeError):
             fill.render_block("config-reference", bad)
+
+
+class ConfigInvariantTests(unittest.TestCase):
+    def test_config_reference_invariant_unreachable(self):
+        here = os.path.dirname(__file__)
+        targets = []
+        for top in ("samples", "corpus"):
+            base = os.path.join(here, top)
+            for name in sorted(os.listdir(base)):
+                full = os.path.join(base, name)
+                if os.path.isdir(os.path.join(full, "target")):
+                    full = os.path.join(full, "target")
+                if os.path.isdir(full):
+                    targets.append(full)
+        self.assertGreater(len(targets), 20)
+        for t in targets:
+            with tempfile.TemporaryDirectory() as out:
+                text, _ = extract.extract(t, out)
+            try:
+                fill.render_block("config-reference", json.loads(text))
+            except RuntimeError as e:  # pragma: no cover - the failure being proved impossible
+                self.fail(f"{t}: {e}")
 
 
 class AppendixTests(unittest.TestCase):
