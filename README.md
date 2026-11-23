@@ -127,7 +127,7 @@ Rules C1-C20. Each rule fails or is not reported; there is no score.
 
 Previews of template 2.7 rules. On a template 2.4 document these are advisories, listed in `check-report.md` as "fails from template 2.7"; they fail only on a document stamped 2.7:
 
-- C1: a bare file name that resolves to a file in a folder: cite the full path
+- C1: a bare file name (in the Narrative, a register row or a note) that resolves to a file in a folder: cite the full path
 - C9: a section 10.1 or 15 row that outranks the row before it (Critical, High, Medium, Low)
 - C15: a count marker holds a stale number or an unknown class
 - C17: the audit record's scope text holds an ID or a digit

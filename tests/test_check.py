@@ -1620,6 +1620,48 @@ class CheckTests(unittest.TestCase):
         self.assertIn("fails from template 2.7", part)
         self.assertNotIn("C1", self.rules(report))
 
+    def test_c1_bare_name_fails_on_2_7(self):
+        """From template 2.7 a bare name that resolves to a file in a folder fails C1 and prints the full path;
+        the same holds for a register row's cites and a note's cites."""
+        doc = build_doc().replace("`app/main.py:5` for visitors", "`main.py:5` for visitors")
+        code, report, _ = self.run27(doc)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C1", self.rules(report))
+        self.assertIn("`main.py` is a bare name; the file is `app/main.py`. Fix: cite the full path: `app/main.py:5`",
+                      report)
+        self.assertNotIn(self.PREVIEW, report)
+        # a register row
+        self.write_register(AUDIT, [dict(ROWS[0], cites=["main.py:6"]), ROWS[1]])
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C1"})
+        self.assertIn("evidence.jsonl line 2: `main.py` is a bare name; the file is `app/main.py`. Fix: cite the "
+                      "full path: `app/main.py:6`", report)
+        # a note
+        self.write_register(AUDIT, ROWS)
+        from appdoc import notes
+        body = fill.generated_body("entry-points", self.facts, {"out_dir": self.out, "target": self.target})
+        self.write_notes(dict(self.NOTE, cites=["main.py:2"], block_sha=notes.body_sha(body)))
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C1"})
+        self.assertIn("notes.jsonl line 1: `main.py` is a bare name; the file is `app/main.py`. Fix: cite the "
+                      "full path: `app/main.py:2`", report)
+
+    def test_c1_bare_name_in_register_is_a_preview_on_2_4(self):
+        self.write_register(AUDIT, [dict(ROWS[0], cites=["main.py:6"]), ROWS[1]])
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(code, 0, report)
+        self.assertIn("evidence.jsonl line 2: `main.py` is a bare name", report.split(self.PREVIEW)[1])
+
+    def test_c1_root_and_known_bare_allowed(self):
+        with open(os.path.join(self.target, "app", "Procfile"), "w") as fh:
+            fh.write("web: run\n")
+        doc = build_doc().replace("`app/main.py:5` for visitors", "`Procfile` and `appdoc-context.md:1` for visitors")
+        code, report, _ = self.run27(doc)
+        self.assertNotIn("bare name", report)
+        self.assertNotIn("C1", self.rules(report))
+
     def test_preview_c1_root_and_known_bare_files_are_allowed(self):
         with open(os.path.join(self.target, "app", "Procfile"), "w") as fh:
             fh.write("web: run\n")

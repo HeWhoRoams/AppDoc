@@ -499,6 +499,15 @@ class RegisterHistory(CorpusCase):
         self.assertIn("15 row R-1 (High) outranks the row before it (R-0, Low)", r.report)
         self.assertIn("move the row; keep its ID", r.report)
 
+    def test_bare_cite_fails_c1_in_the_narrative_the_register_and_a_note(self):
+        r = self.case27("bare-cite")
+        self.assertEqual(r.code, 2, r.report)
+        self.assertEqual(r.rules(), {"C1"})
+        self.assertIn("line 72: `main.py` is a bare name; the file is `app/main.py`. Fix: cite the full path: "
+                      "`app/main.py:5`", r.report)
+        self.assertIn("evidence.jsonl line 2: `main.py` is a bare name; the file is `app/main.py`", r.report)
+        self.assertIn("notes.jsonl line 1: `main.py` is a bare name; the file is `app/main.py`", r.report)
+
     def test_scope_ids_is_only_a_preview_on_2_4(self):
         r = self.case("scope-ids")        # stamped 2.7 on disk, checked against the running 2.4 template: C3 only
         self.assertIn("C3", r.rules())

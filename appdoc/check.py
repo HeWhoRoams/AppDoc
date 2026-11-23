@@ -51,7 +51,8 @@ RULES = (
     Rule("C1", "Citations resolve",
          "a Citation points to a missing file or a line past the end (folders and unique bare filenames resolve; "
          "extensionless non-existent spans are not Citations)",
-         preview="a bare file name that resolves to a file in a folder: cite the full path"),
+         preview="a bare file name (in the Narrative, a register row or a note) that resolves to a file in a folder: "
+                 "cite the full path"),
     Rule("C2", "Security lines", "a Citation in section 10 has no line"),
     Rule("C3", "Sections complete",
          "a section is missing, out of order, empty or a placeholder, or the document is not on the current template"),
@@ -821,7 +822,7 @@ def _c11_supersedes(reg, all_ids, add):
 
 
 def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smell_fids, add,
-                  doc_ver=()):
+                  doc_ver=(), add27=None):
     """Validate evidence.jsonl. Returns (Register or None, coverage rows)."""
     path = os.path.join(out_dir, REGISTER)
     if not os.path.isfile(path):
@@ -893,6 +894,8 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
             ok, why = _resolve(target, cache, c)
             if not ok:
                 add("C11", no, f"{where}: citation does not resolve: {why}", "cite an existing file and line")
+            elif add27 and (finding := _c1_bare_finding(target, cache, c)):
+                add27("C1", no, f"{where}: {finding[0]}", finding[1])
         anchor = " ".join(str(row["anchor"]).split())
         one_line = str(row["anchor"]).strip()
         if "\n" in one_line or "\r" in one_line or len(one_line) > reg_mod.MAX_ANCHOR:
@@ -1141,6 +1144,16 @@ def _c1_bare_name(target, cache, c):
     return hits[0] if len(hits) == 1 else None
 
 
+def _c1_bare_finding(target, cache, c):
+    """(message, fix) for a bare-name Citation that has one full path, else None. One wording for the Narrative,
+    the register's cites and a note's cites."""
+    full = _c1_bare_name(target, cache, c)
+    if not full:
+        return None
+    span = "" if c.start is None else f":{c.start}" + ("" if c.end in (None, c.start) else f"-{c.end}")
+    return f"`{c.path}` is a bare name; the file is `{full}`", f"cite the full path: `{full}{span}`"
+
+
 def _c17_scope(reg, heads, add):
     """C17, 2.7 rule: the audit record's scope describes the method only, with no ID token or digit; `exclusions`
     is {section: reason}, its keys are sections of the document and its reasons follow the same token rule."""
@@ -1188,7 +1201,8 @@ def _c18_notes(target, out_dir, raw, facts, cache, add):
     """C18, 2.7 rule: notes.jsonl notes match their block, and the reserved label is not hand-written.
 
     A note names a generated block, carries a `block_sha` equal to the hash of that block's current generated
-    body (so a note written about an older block fails), and cites files that resolve. The label
+    body (so a note written about an older block fails), and cites files that resolve by their full path (a bare
+    name is C1, 2.7 rule). `add` is the stamp-gated adder. The label
     `Known extractor limitation:` may appear in the Narrative only inside a generated block (where `fill` put it).
     """
     path = os.path.join(out_dir, notes_mod.NOTES)
@@ -1219,6 +1233,8 @@ def _c18_notes(target, out_dir, raw, facts, cache, add):
                 ok, why = _resolve(target, cache, Citation(no, p[0], p[1], p[2], raw_cite))
                 if not ok:
                     add("C18", no, f"{where} {no}: citation does not resolve: {why}", "cite an existing file and line")
+                elif finding := _c1_bare_finding(target, cache, Citation(no, p[0], p[1], p[2], raw_cite)):
+                    add("C1", no, f"{where} {no}: {finding[0]}", finding[1])
     prose = _strip_comments(fill_mod.mask_blocks(normalize_newlines(raw), tuple(spec.GENERATED.values())))
     for i, line in enumerate(prose.splitlines(), 1):
         if notes_mod.LABEL.casefold() in line.casefold():
@@ -1307,7 +1323,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         problems[rule].append((line, msg, fix))
 
     previews: list[tuple[str, int, str, str]] = []  # 2.7 rules on a document older than 2.7: advisory only
-    bare: list = []                                  # (Citation, full path) bare names, a C1 preview
+    bare: list = []                                  # (line, message, fix) bare names, a C1 2.7 rule
 
     # C1 + register
     cites = find_citations(text)
@@ -1324,9 +1340,9 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                 why = f"`{c.path}` is a binary file; cite it without a line"
         register.append((c, ok))
         if ok:
-            full_path = _c1_bare_name(target, cache, c)
-            if full_path:
-                bare.append((c, full_path))
+            finding = _c1_bare_finding(target, cache, c)
+            if finding:
+                bare.append((c.doc_line, *finding))
         if not ok:
             add("C1", c.doc_line, f"citation does not resolve: {why}",
                 "cite an existing Target-relative path and a line within the file")
@@ -1488,7 +1504,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         smell_fids = None if facts is None else {
             f["detail"].get("fid") for f in facts.get("facts", []) if f.get("kind") == "smell"}
         reg, cov = _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smell_fids, add,
-                                 doc_ver=doc_ver)
+                                 doc_ver=doc_ver, add27=add27)
         appendix = next((body for name, body, _ in fill_mod.blocks(raw) if name == "appendix-a"), "")
         _c14_unknowns(lines, heads, ids, reg, appendix, add)
         count_advice: list = []
@@ -1506,9 +1522,8 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
             if strict:
                 add("C20", no, msg, _C20_FIX)
         _c9_severity_order(lines, heads, add27)
-        for c, full_path in bare:
-            add27("C1", c.doc_line, f"`{c.path}` is a bare name; the file is `{full_path}`",
-                  f"cite the full path: `{full_path}" + ("" if c.start is None else f":{c.raw.rsplit(':', 1)[1]}") + "`")
+        for no, msg, fix in bare:
+            add27("C1", no, msg, fix)
         _c17_scope(reg, heads, add27)
         _c18_notes(target, out_dir, raw, facts, cache, add27)
         if doc_ver >= FAILS_FROM:
