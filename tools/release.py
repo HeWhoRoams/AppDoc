@@ -204,7 +204,9 @@ def comparison_markdown(version, previous_dir, current_dir, apps=APPS):
 
 def write_comparison(version, previous_dir, current_dir, docs_dir=None):
     rel = os.path.join("docs", f"diagnostic-{version}-comparison.md")
-    with open(os.path.join(docs_dir or os.path.join(ROOT, "docs"), f"diagnostic-{version}-comparison.md"), "w", encoding="utf-8", newline="\n") as fh:
+    docs_dir = docs_dir or os.path.join(ROOT, "docs")
+    os.makedirs(docs_dir, exist_ok=True)
+    with open(os.path.join(docs_dir, f"diagnostic-{version}-comparison.md"), "w", encoding="utf-8", newline="\n") as fh:
         fh.write(comparison_markdown(version, previous_dir, current_dir))
     return rel
 

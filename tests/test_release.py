@@ -166,7 +166,10 @@ class ChangelogAndPin(unittest.TestCase):
 
 def _tree_copy(dest):
     """A throwaway git repo on `main` holding what the release script touches."""
-    keep = ("appdoc", "tools", "ci", ".github", "README.md", "SKILL.md", "CHANGELOG.md", "CONTEXT.md", "run_appdoc.py")
+    keep = ("appdoc", "tools", "ci", ".github", "README.md", "SKILL.md", "CHANGELOG.md", "CONTEXT.md", "run_appdoc.py",
+            "examples")
+    os.makedirs(os.path.join(dest, "tests"))
+    shutil.copy(os.path.join(ROOT, "tests", "diag_metrics.py"), os.path.join(dest, "tests"))
     for name in keep:
         src = os.path.join(ROOT, name)
         if os.path.isdir(src):

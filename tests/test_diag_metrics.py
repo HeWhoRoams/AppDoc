@@ -100,7 +100,9 @@ class DiagMetricsPost25(unittest.TestCase):
                 new = self._m(name, CURRENT)
                 self.assertEqual(new["check"], "PASS")
                 self.assertGreaterEqual(new["pct_supported"], old["pct_supported"])
-                self.assertGreaterEqual(new["pct_cites_with_line"], old["pct_cites_with_line"])
+                self.assertEqual(new["audit_rows"], old["audit_rows"])
+                # The 2.6 duplicate-folder list cites folders (no line), so the share may dip a little (eShop 94.6 -> 94.3).
+                self.assertGreaterEqual(new["pct_cites_with_line"], old["pct_cites_with_line"] - 1.0)
 
 
 # Facts-level baselines the 2.6.0 work had to move, read from examples/previous (the committed 2.5.0 examples, T26.13).
@@ -156,6 +158,63 @@ class DiagMetricsFactsBaseline(unittest.TestCase):
             self.assertEqual(new["generator"], "2.6.0")
             self.assertEqual({k: v for k, v in new.items() if k != "generator"},
                              {k: v for k, v in old.items() if k != "generator"})
+
+
+# 2.6.0 values of examples/current (T26.64): the movement the plan expects against FACTS_2_5.
+# name-signal-only retired 0; the content-signal "retired" folders of 2.5.0 became duplicate_folders pairs (eShop 4) or
+# vanished (gitea 40 -> 0); capabilities non-empty; the gitea trailer dropped app.example.ini (569 keys in 4 files -> 62 in 1)
+# and its secret-location count fell 276 -> 190.
+FACTS_2_6 = {
+    "flaskr-tdd": dict(retired_name=0, retired_content=0, duplicate_pairs=0, stacks=1,
+                       secret_locations=8, not_classified=None, bare_name_cites=67, cites_total=356),
+    "spring-petclinic": dict(retired_name=0, retired_content=0, duplicate_pairs=0, stacks=1,
+                             secret_locations=6, not_classified=None, bare_name_cites=481, cites_total=650),
+    "eShop": dict(retired_name=0, retired_content=0, duplicate_pairs=4, stacks=2,
+                  secret_locations=9, not_classified=(22, 2), bare_name_cites=64, cites_total=1301),
+    "gitea": dict(retired_name=0, retired_content=0, duplicate_pairs=0, stacks=3,
+                  secret_locations=190, not_classified=(62, 1), bare_name_cites=101, cites_total=1284),
+}
+
+
+class DiagMetricsFacts26(unittest.TestCase):
+    def _b(self, name, base=CURRENT):
+        if not os.path.isdir(os.path.join(base, name)):
+            self.skipTest(f"example {name} not present under {base}")
+        return diag_metrics.baselines(base, name)
+
+    def test_pinned_facts_level_baselines_2_6(self):
+        for name, want in FACTS_2_6.items():
+            with self.subTest(example=name):
+                got = self._b(name)
+                self.assertEqual({k: got[k] for k in want}, want)
+
+    def test_expected_movement_against_previous(self):
+        for name in FACTS_2_6:
+            with self.subTest(example=name):
+                old, new = self._b(name, PREVIOUS), self._b(name)
+                self.assertEqual(new["retired_name"], 0)
+                self.assertTrue(new["capabilities"], "capabilities are non-empty")
+                self.assertEqual(old["capabilities"], [])
+                self.assertLessEqual(new["secret_locations"], old["secret_locations"])
+        self.assertLess(self._b("gitea")["secret_locations"], self._b("gitea", PREVIOUS)["secret_locations"])
+        self.assertLess(self._b("gitea")["not_classified"][0], self._b("gitea", PREVIOUS)["not_classified"][0])
+
+    def test_trailer_no_longer_lists_example_ini_and_nothing_scans_appdoc_output(self):
+        import json
+        for name in FACTS_2_6:
+            with self.subTest(example=name):
+                d = os.path.join(CURRENT, name)
+                if not os.path.isdir(d):
+                    self.skipTest("example not present")
+                with open(os.path.join(d, "application-documentation.md"), encoding="utf-8") as fh:
+                    text = fh.read()
+                trailer = [l for l in text.splitlines() if "were not classified as application configuration" in l]
+                self.assertFalse(any("app.example.ini" in l or "templates/app.ini" in l for l in trailer), trailer)
+                with open(os.path.join(d, "facts.json"), encoding="utf-8") as fh:
+                    doc = json.load(fh)
+                self.assertFalse([f for f in doc["facts"] if f["path"].startswith("docs/appdoc")])
+                self.assertFalse([f for f in doc["facts"] if f["kind"] == "ownership"
+                                  and set(f.get("detail", {})) & {"author", "authors", "name", "email"}])
 
 
 if __name__ == "__main__":
