@@ -1855,6 +1855,23 @@ class CheckTests(unittest.TestCase):
         self.assertIn("C9", self.rules(report))
         self.assertNotIn(self.PREVIEW, report)
 
+    def test_gates_flip_from_preview_to_failure_with_the_stamp(self):
+        """T27.25: one document with a severity-order, a bare-name and a scope defect. Stamped 2.4 it passes and
+        previews all three (even under --strict); stamped 2.7 the same three fail. Nothing else changes."""
+        old = self._sev_doc().replace("`app/main.py:5` for visitors", "`main.py:5` for visitors")
+        self.write_register(dict(AUDIT, scope="sections 3-10"), ROWS)
+        for strict in (False, True):
+            code, report, _ = self.run_check(old, strict=strict)
+            self.assertEqual(code, 0, report)
+            self.assertEqual(self.rules(report), set())
+            part = report.split(self.PREVIEW)[1]
+            for rule in ("C1", "C9", "C17"):
+                self.assertIn(f"- {rule} line", part)
+        code, report, _ = self.run27(old)
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C1", "C9", "C17"})
+        self.assertNotIn(self.PREVIEW, report)
+
     def _bad_result_report(self):
         self.write_register(AUDIT, [ROWS[0], dict(ROWS[1], result="Fine")])
         return self.run_check(build_doc())[1]
