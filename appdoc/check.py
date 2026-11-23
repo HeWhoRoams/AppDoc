@@ -736,6 +736,8 @@ def seal_register(target, out_dir, audit: bool = False, date: str | None = None)
     reg_path = os.path.join(out_dir, REGISTER)
     if not os.path.isfile(md_path) or not os.path.isfile(reg_path):
         return 0
+    if spec.stamp_version(_read_text(md_path)) >= FAILS_FROM:
+        fill_mod.fill_facts_blocks(target, out_dir)   # the fingerprint is that of the filled document (S6.1)
     raw = _read_text(md_path)
     lines = document_text(raw).splitlines()
     heads = dm.headings(lines)

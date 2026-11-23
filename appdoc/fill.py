@@ -377,18 +377,44 @@ def blocks(text: str) -> list[tuple[str, str, int]]:
     return [(m.group(2), m.group(3).strip(), text.count("\n", 0, m.start()) + 1) for m in BLOCK_RE.finditer(text)]
 
 
-def fill_text(text: str, doc: dict, ctx: dict | None = None) -> tuple[str, list[str]]:
+def fill_text(text: str, doc: dict, ctx: dict | None = None, only=None) -> tuple[str, list[str]]:
+    """Fill the generated blocks (and count markers) of `text`; with `only` (block names) fill just those blocks and
+    leave the count markers alone."""
     filled = []
     ctx = {**(ctx or {}), "text": text}
 
     def repl(m):
+        if only is not None and m.group(2) not in only:
+            return m.group(0)
         body = render_block(m.group(2), doc, ctx)
         if body is None:
             return m.group(0)
         filled.append(m.group(2))
         return f"{m.group(1)}\n{body}\n{m.group(4)}"
     new = BLOCK_RE.sub(repl, text)
-    return fill_counts(new, doc, ctx), filled
+    return (new if only is not None else fill_counts(new, doc, ctx)), filled
+
+
+def fill_facts_blocks(target: str, out_dir: str) -> bool:
+    """Fill the non-opaque generated blocks (scan-coverage, config-reference) from the Facts alone, before a seal.
+    `doc_sha` and the row seals read those blocks as Narrative, so the fingerprint must be that of the filled
+    document: a later `fill` then reproduces it (S6.1). Returns True when the file changed; no Facts or no
+    document means nothing to do."""
+    md = os.path.join(out_dir, "application-documentation.md")
+    facts_path = os.path.join(out_dir, "facts.json")
+    if not (os.path.isfile(md) and os.path.isfile(facts_path)):
+        return False
+    with open(facts_path, encoding="utf-8") as fh:
+        doc = json.load(fh)
+    with open(md, encoding="utf-8", newline="") as fh:
+        text = fh.read()
+    only = tuple(n for n in RENDERERS if n not in spec.OPAQUE_BLOCKS)
+    new, _ = fill_text(text, doc, {"out_dir": out_dir, "target": target}, only=only)
+    if new == text:
+        return False
+    with open(md, "w", encoding="utf-8", newline="") as fh:
+        fh.write(new)
+    return True
 
 
 def run(target: str, out_dir: str) -> int:

@@ -1324,6 +1324,46 @@ class SealProvenanceTests(unittest.TestCase):
             self.main()
             self.assertEqual({r["sealed_by"] for r in self.read()[1:]}, {want}, sha)
 
+    def facts(self):
+        from appdoc import extract
+        extract.write(self.target, self.out)
+
+    def test_seal_audit_fingerprints_the_filled_document(self):
+        """S6.1: a stale scan-coverage block is filled before the fingerprint, so a later `fill` keeps doc_sha."""
+        from appdoc import check, fill
+        self.write()
+        self.facts()
+        self.assertEqual(self.main("--audit", "--date", "2026-11-23")[0], 0)
+        audit = self.read()[0]
+        md = os.path.join(self.out, "application-documentation.md")
+        with open(md, encoding="utf-8") as fh:
+            sealed_text = fh.read()
+        self.assertIn("Stack", dict((n, c) for n, c, _ in fill.blocks(sealed_text))["scan-coverage"])
+        self.assertEqual(audit["doc_sha"], check.doc_sha(sealed_text))
+        self.assertEqual(fill.run(self.target, self.out), 0)
+        with open(md, encoding="utf-8") as fh:
+            self.assertEqual(check.doc_sha(fh.read()), audit["doc_sha"])
+        check.run(self.target, self.out, True, True)      # the fixture has other problems; C17 is not one of them
+        with open(os.path.join(self.out, check.REPORT), encoding="utf-8") as fh:
+            self.assertNotIn("## C17", fh.read())
+
+    def test_build_after_the_audit_seals_rows_audit_not_upgrade(self):
+        """S6.1: the audit read the filled document; `build` seals before it fills, yet the rows are `audit` because
+        the stale generated block is filled first."""
+        from appdoc import check, fill
+        from appdoc.__main__ import main
+        stale = self.write()
+        self.facts()
+        self.assertEqual(fill.run(self.target, self.out), 0)
+        with open(os.path.join(self.out, "application-documentation.md"), encoding="utf-8") as fh:
+            sha = check.doc_sha(fh.read())
+        self.assertNotEqual(sha, check.doc_sha(stale))
+        self.write(audit=dict(self.AUDIT, doc_sha=sha))          # the stale text again, rows unsealed
+        import contextlib, io
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            main(["build", self.target])
+        self.assertEqual({r["sealed_by"] for r in self.read()[1:]}, {"audit"})
+
     def test_seal_on_a_2_4_document_writes_no_sealed_by(self):
         self.write(stamp="2.4")
         self.main()
