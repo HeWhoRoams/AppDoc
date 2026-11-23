@@ -983,3 +983,68 @@ class SealProvenanceTests(unittest.TestCase):
         self.assertNotIn("sealed_by", by_id["E-1"])
         self.assertNotIn("claim_sha", by_id["E-1"])
         self.assertEqual(by_id["E-3"]["sealed_by"], "audit")
+
+
+class ExpandCitationsTests(unittest.TestCase):
+    """T27.22: `appdoc build --expand-citations` rewrites unique bare names to their full path."""
+
+    DOC = "\n".join([
+        "# Doc", "<!-- appdoc:template 2.7 -->",
+        "<!-- a comment `main.py:5` -->",
+        "See `main.py:5`, `main.py:3-5` and `main.py` for the entry; `util.py:2` is ambiguous.",
+        "Root files stay: `README.md:1`, `Procfile`, `appdoc-context.md:1`; full paths stay: `app/main.py:2`.",
+        "Not a citation: `self.main`, `GET main.py`, `util.py` is ambiguous.",
+        "```", "`main.py:5` inside a fence", "```",
+        "<!-- appdoc:generated entry-points -->", "| `main.py:5` | generated |", "<!-- /appdoc:generated entry-points -->",
+        "Unknown name `nowhere.py:1` stays.", ""])
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.target = os.path.join(self.tmp.name, "t")
+        self.out = os.path.join(self.target, "docs", "appdoc")
+        for rel in ("app/main.py", "a/util.py", "b/util.py", "README.md", "Procfile", "appdoc-context.md"):
+            path = os.path.join(self.target, *rel.split("/"))
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w") as fh:
+                fh.write("".join(f"line {i}\n" for i in range(1, 8)))
+        os.makedirs(self.out)
+        self.path = os.path.join(self.out, "application-documentation.md")
+        with open(self.path, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(self.DOC)
+
+    def read(self):
+        with open(self.path, encoding="utf-8", newline="") as fh:
+            return fh.read()
+
+    def test_expand_citations_unique_only(self):
+        from appdoc import check
+        self.assertEqual(check.expand_citations(self.target, self.out), 3)
+        got = self.read().splitlines()
+        self.assertEqual(got[2], "<!-- a comment `main.py:5` -->")                       # comments stay
+        self.assertEqual(got[3], "See `app/main.py:5`, `app/main.py:3-5` and `app/main.py` for the entry; "
+                                 "`util.py:2` is ambiguous.")                          # unique names only
+        self.assertEqual(got[4], self.DOC.splitlines()[4])                             # root, known and full stay
+        self.assertEqual(got[5], self.DOC.splitlines()[5])                             # not citations
+        self.assertEqual(got[6:], self.DOC.splitlines()[6:])                           # fence, block, unknown stay
+
+    def test_expand_citations_idempotent(self):
+        from appdoc import check
+        check.expand_citations(self.target, self.out)
+        once = self.read()
+        self.assertEqual(check.expand_citations(self.target, self.out), 0)
+        self.assertEqual(self.read(), once)
+        self.assertNotIn("\r", once)
+
+    def test_build_expand_citations_flag(self):
+        import contextlib, io
+        from appdoc import extract
+        from appdoc.__main__ import main
+        with contextlib.redirect_stdout(io.StringIO()):
+            extract.write(self.target, self.out, workers=0, use_cache=False, no_ownership=True)
+            main(["build", self.target, "--expand-citations"])
+        self.assertIn("`app/main.py:5`", self.read())
+        self.assertNotIn("See `main.py:5`", self.read())
+        with contextlib.redirect_stdout(io.StringIO()):
+            main(["build", self.target])      # without the flag the text is not touched again
+        self.assertIn("`util.py:2` is ambiguous", self.read())

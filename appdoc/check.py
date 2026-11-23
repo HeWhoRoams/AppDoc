@@ -20,7 +20,7 @@ from . import notes as notes_mod
 from . import register as reg_mod
 from . import scan
 from . import template_spec as spec
-from .citations import KNOWN_BARE_FILES, OWNER_CONTEXT, Citation, find_citations, parse_span
+from .citations import KNOWN_BARE_FILES, OWNER_CONTEXT, Citation, expand_bare, find_citations, parse_span
 from .facts import fact_id
 from .secrets import find_secret_shapes
 from .textnorm import normalize_newlines, normalize_text
@@ -731,6 +731,34 @@ def seal_register(target, out_dir, audit: bool = False, date: str | None = None)
         if sha:
             claim_shas[str(row["id"])] = sha
     return reg_mod.seal(reg_path, claim_shas, sealed_by, audit_fields)
+
+
+def expand_citations(target, out_dir) -> int:
+    """Rewrite the unique bare-name Citations of the Narrative to their full path (opt-in, `build --expand-citations`).
+
+    Same rule as the C1 2.7 check (_c1_bare_name): a name with one file outside the Target root, not a known bare
+    file. Fenced code, comments and generated blocks are left alone. Returns the number of spans rewritten."""
+    path = os.path.join(out_dir, NARRATIVE)
+    if not os.path.isfile(path):
+        return 0
+    raw = normalize_newlines(_read_text(path))
+    cache: dict = {"__out__": out_dir}
+
+    def full_of(name):
+        return _c1_bare_name(target, cache, Citation(0, name, None, None, name))
+
+    parts, last, total = [], 0, 0
+    for m in fill_mod.BLOCK_RE.finditer(raw):
+        new, n = expand_bare(raw[last:m.start()], full_of)
+        parts += [new, m.group(0)]
+        total += n
+        last = m.end()
+    new, n = expand_bare(raw[last:], full_of)
+    total += n
+    if total:
+        with open(path, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write("".join(parts) + new)
+    return total
 
 
 def seal_notes(target, out_dir) -> int:

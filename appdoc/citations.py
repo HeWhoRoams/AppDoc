@@ -107,3 +107,38 @@ def find_citations(text: str) -> list[Citation]:
             if parsed:
                 out.append(Citation(lineno, parsed[0], parsed[1], parsed[2], m.group(1)))
     return out
+
+
+# What expand_bare leaves alone: a fenced code block (closed, or open to the end of the text) and an HTML comment.
+_PROTECTED_RE = re.compile(r"^[ \t]*```.*?^[ \t]*```[^\n]*$|^[ \t]*```.*\Z|<!--.*?-->", re.S | re.M)
+
+
+def expand_bare(text: str, full_of) -> tuple[str, int]:
+    """Rewrite every bare-name Citation in `text` whose `full_of(name)` is a full path; returns (text, count).
+
+    `full_of` is the caller's resolver (the Target is not known here): the unique Target-relative path of a bare
+    name, or None to leave the span alone. Fenced code and HTML comments are not touched. The line or range of a
+    span is kept, and a span that already holds a folder is not a bare name, so a second pass changes nothing.
+    """
+    count = 0
+
+    def span(m):
+        nonlocal count
+        inner = m.group(1)
+        parsed = parse_span(inner)
+        if not parsed or "/" in parsed[0]:
+            return m.group(0)
+        full = full_of(parsed[0])
+        if not full:
+            return m.group(0)
+        count += 1
+        lead = inner[:len(inner) - len(inner.lstrip())]
+        return "`" + lead + full + inner.strip()[len(parsed[0]):] + inner[len(inner.rstrip()):] + "`"
+
+    out, last = [], 0
+    for prot in _PROTECTED_RE.finditer(text):
+        out.append(_SPAN_RE.sub(span, text[last:prot.start()]))
+        out.append(prot.group(0))
+        last = prot.end()
+    out.append(_SPAN_RE.sub(span, text[last:]))
+    return "".join(out), count

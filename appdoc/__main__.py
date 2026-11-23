@@ -70,6 +70,10 @@ def build_parser() -> argparse.ArgumentParser:
         if name == "gate":
             sp.add_argument("--workers", type=int, default=None,
                             help="process-pool workers for the regeneration; default min(cpu,8); 0 = serial")
+        if name == "build":
+            sp.add_argument("--expand-citations", action="store_true",
+                            help="first rewrite each bare file name that has one full path (`main.py:5`) to the "
+                                 "full path, outside code fences and generated blocks")
         if name in ("build", "gate"):
             sp.add_argument("--require-audit", action="store_true",
                             help="fail when the source-to-claim audit was declared not performed")
@@ -139,6 +143,9 @@ def main(argv=None) -> int:
         if args.cmd == "build":
             from . import check, fill
             from .render import page
+            if args.expand_citations:
+                n = check.expand_citations(args.target, out_dir)
+                print(f"expanded {n} citation(s)")
             n = check.seal_register(args.target, out_dir)
             if n:
                 print(f"sealed {n} row(s)")

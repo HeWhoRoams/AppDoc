@@ -44,7 +44,7 @@ All commands:
 | `appdoc check <target>` | `--out OUT`, `--require-audit`, `--strict` | verify the Narrative; exit 0 pass, 2 problems, 1 tool error |
 | `appdoc render <target>` | `--out OUT`, `--css CSS` | write application-documentation.html |
 | `appdoc seal <target>` | `--out OUT`, `--audit`, `--date DATE` | write claim_sha into the register rows that lack one; --audit --date records the audit |
-| `appdoc build <target>` | `--out OUT`, `--require-audit`, `--strict` | seal (rows and notes), fill, check and render in one step |
+| `appdoc build <target>` | `--out OUT`, `--expand-citations`, `--require-audit`, `--strict` | seal (rows and notes), fill, check and render in one step |
 | `appdoc gate <target>` | `--out OUT`, `--workers WORKERS`, `--require-audit`, `--strict` | CI gate: regenerate the Facts and compare with the committed facts.json, then check; exit 0 pass, 1 tool error, 2 Facts changed, 3 AppDoc upgraded |
 | `appdoc audit-plan <target>` | `--out OUT` | write docs/appdoc/audit-plan.json: the ids the independent audit must cover (a sample is chosen by the tool) |
 <!-- /appdoc-self:generated commands -->
