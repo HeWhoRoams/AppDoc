@@ -37,3 +37,13 @@ never records values, because detecting which values are secrets is heuristic.
 - A key defined only in an unscanned folder or an extensionless file shows up as a read, or not at
   all. The 2.1 block lists pruned folders.
 - Truncation is visible: a reader sees that rows are missing and by how many.
+
+## Amendment (2026-11-23, 2.5.0): role split by read kind
+
+A key read from code is no longer always application configuration. A per-file `read_kind` (`env` for
+environment-variable reads, `file` otherwise) feeds a post-pass that assigns role `env` to
+environment-variable reads, `ci` to reads in CI or build files, and `app` to the rest. Only `app`
+keys appear in the application table; the trailer counts the `env` and `ci` keys it excludes. Keys of
+roles `env` and `ci` are not `secret_location`, because the variable is the name of a secret held
+elsewhere, not the secret itself. The cache keeps pre-promotion Facts, so the split stays in the
+post-pass.

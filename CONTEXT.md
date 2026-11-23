@@ -128,3 +128,12 @@ _Avoid_: framework class, platform
 ## Flagged ambiguities
 
 - "Deterministic" meant the whole output under the old design. It now means the **Facts file** only; the **Narrative** is grounded but may vary in wording.
+
+**Register count**:
+The number of live rows of one ID class (V, F, UI, C, X, Q, R, or all rows) in the Evidence Register. A hand-written "N of M <noun>" must have a denominator equal to the register count for that noun.
+_Avoid_: total, tally
+
+**Unknown by absence**:
+A section left Unknown because the Target supplies no owner context, as distinct from Unknown after an audit. The Check says so in an advisory.
+_Avoid_: not found, missing
+
