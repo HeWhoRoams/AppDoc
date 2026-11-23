@@ -267,9 +267,11 @@ class CheckTests(unittest.TestCase):
         code, report, _ = self.run_check(self._swap("`To be deleted/Front Dev/nope.asp:12`"))
         self.assertEqual(code, 2)
         self.assertIn("does not exist in the Target", report)
+        self.assertIn("a backticked file name is a Citation; write it without backticks if it does not exist", report)
         code, report, _ = self.run_check(self._swap("`To be deleted/Front Dev/logcall.asp:99`"))
         self.assertEqual(code, 2)
         self.assertIn("line 99 is outside", report)
+        self.assertNotIn("write it without backticks", report)     # only for a name that does not exist
 
     def test_c1_dotfile_and_data_file_citations_resolve(self):
         for name in (".gitignore", "test.db"):
@@ -1129,6 +1131,12 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(code, 2, report)
         self.assertIn("17 Run: the Command cell is not a backticked command, 'Unknown - see Open questions.' or "
                       "'Not applicable'", report)
+        # S6.4: a command plus anything else says why it fails
+        for cell in ("`npm start` (see the README)", "`npm start` runs the app", "run `npm start`"):
+            row = ok[:3] + [f"| Run | {cell} | . | `app/main.py:2` |"] + ok[4:]
+            code, report, _ = self.run27(self.sec17(*row))
+            self.assertEqual(code, 2, (cell, report))
+            self.assertIn("17 Run: the Command cell must hold exactly one backticked command and nothing else", report)
         # a command needs a lined Citation; a Citation without a line does not do
         for ev in ("", "`app/main.py`", "see the README"):
             row = ok[:3] + [f"| Run | `python app/main.py` | . | {ev} |"] + ok[4:]

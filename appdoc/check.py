@@ -421,7 +421,10 @@ def _c9_build_rows(lines, heads, add):
         value = cells[cmd].strip()
         if value == spec.BUILD_UNKNOWN:
             continue
-        if value != spec.BUILD_NOT_APPLICABLE and not _BUILD_COMMAND_RE.match(value):
+        if value != spec.BUILD_NOT_APPLICABLE and not _BUILD_COMMAND_RE.match(value) and "`" in value:
+            add("C9", no, f"17 {step}: the Command cell must hold exactly one backticked command and nothing else",
+                "put the command alone in backticks in the Command cell; extra commands and prose go under the table")
+        elif value != spec.BUILD_NOT_APPLICABLE and not _BUILD_COMMAND_RE.match(value):
             add("C9", no, f"17 {step}: the Command cell is not a backticked command, '{spec.BUILD_UNKNOWN}' "
                 f"or '{spec.BUILD_NOT_APPLICABLE}'",
                 f"write the command in backticks, or '{spec.BUILD_UNKNOWN}' when the repository does not show it, "
@@ -1415,8 +1418,10 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
             if finding:
                 bare.append((c.doc_line, *finding))
         if not ok:
-            add("C1", c.doc_line, f"citation does not resolve: {why}",
-                "cite an existing Target-relative path and a line within the file")
+            fix = "cite an existing Target-relative path and a line within the file"
+            if "does not exist in the Target" in why:
+                fix += "; a backticked file name is a Citation; write it without backticks if it does not exist"
+            add("C1", c.doc_line, f"citation does not resolve: {why}", fix)
 
     # C2: per-claim. A security claim must carry at least one lined Citation; a bare
     # mention (no line) is still a resolved Citation (C1) but does not satisfy C2.
