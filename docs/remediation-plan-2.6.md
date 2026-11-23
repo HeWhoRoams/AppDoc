@@ -208,8 +208,9 @@ Builds on 2.5 §1.5, which adds `env`/`ci` roles in the same post-pass (`extract
    - The set is closed and lives in code (Q6).
 3. The `fill._config_reference` guard raises an internal error if a file is both `app` and "not classified".
 4. C6 is untouched (it uses `find_secret_shapes`), and a test proves it.
+5. **`secrets.never_record_value(key)`** is `is_secret_key` or the pre-2.6 broad substring test. `is_secret_key` only sets the `secret_location` flag; R19 value gating (recording or resolving a value) uses `never_record_value`. A `config_key` Fact never carries a value.
 
-**Tests:** `test_generic_facts::test_file_level_promotion`, `::test_ini_section_key_variants`; `test_core::test_secret_key_segments` (≥20 positive, ≥25 negative names, including gitea's), `::test_secret_ref_flag`, `::test_c6_unaffected_by_key_naming`; `test_fill::test_config_trailer_never_lists_app_file`.
+**Tests:** `test_generic_facts::test_file_level_promotion`, `::test_ini_section_key_variants`; `test_core::test_secret_key_segments` (≥20 positive, ≥25 negative names, including gitea's), `::test_secret_ref_flag`, `::test_c6_unaffected_by_key_naming`, `::test_never_record_value_is_superset`, `::test_password_hash_not_flagged_but_never_recorded`, `::test_config_key_facts_never_carry_a_value`; `test_fill::test_config_trailer_never_lists_app_file`.
 
 ### 4.5 Generated copy (MIN-04, MIN-07)
 

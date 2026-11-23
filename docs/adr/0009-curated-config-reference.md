@@ -68,6 +68,11 @@ post-pass.
 3. **`secret_ref`.** A name whose modifier is `uri`, `path` or `file` (`SECRET_KEY_URI`) is not a
    secret location but refers to one; the Fact carries `secret_ref: true` (a `DETAIL_KEYS` entry)
    and still holds no value.
-4. The finding-candidate and secret-shape scan (C6, `find_secret_shapes`) is independent of key
+4. **Two predicates (2.6.0).** `secrets.is_secret_key` is the display predicate for `secret_location`
+   and stays precise. `secrets.never_record_value(key)` is true when `is_secret_key` is true **or** the
+   pre-2.6 broad substring test matches (`PasswordHash`, `TOKEN_CACHE`, `PASSWORD_FILE`). R19 gates
+   value recording and value resolution with `never_record_value` only. A `config_key` Fact never
+   carries a value; a test asserts it.
+5. The finding-candidate and secret-shape scan (C6, `find_secret_shapes`) is independent of key
    naming and is unchanged; a test proves it.
 

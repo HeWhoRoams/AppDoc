@@ -134,6 +134,38 @@ class SecretTests(unittest.TestCase):
         for name in self.NOT_SECRET_NAMES:
             self.assertFalse(secrets.is_secret_key(name), name)
 
+    def test_never_record_value_is_superset(self):
+        for name in self.SECRET_NAMES + self.NOT_SECRET_NAMES:
+            if secrets.is_secret_key(name):
+                self.assertTrue(secrets.never_record_value(name), name)
+        for name in self.SECRET_NAMES:
+            self.assertTrue(secrets.never_record_value(name), name)
+        for name in ("", None, "HTTP_PORT", "DB_HOST", "USERNAME", "KEY", "DOMAIN"):
+            self.assertFalse(secrets.never_record_value(name), name)
+
+    def test_password_hash_not_flagged_but_never_recorded(self):
+        for name in ("PasswordHash", "PASSWORD_HASH_ALGO", "TokenCache", "TOKEN_CACHE_TTL", "PasswordFile",
+                     "SECRET_HEADER", "MIN_PASSWORD_LENGTH"):
+            self.assertFalse(secrets.is_secret_key(name), name)
+            self.assertTrue(secrets.never_record_value(name), name)
+
+    def test_config_key_facts_never_carry_a_value(self):
+        self.assertNotIn("value", facts.DETAIL_KEYS["config_key"])
+        root = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, root, True)
+        os.makedirs(os.path.join(root, "conf"))
+        with open(os.path.join(root, "conf", "app.ini"), "w") as fh:
+            fh.write("[db]\nDB_PASSWORD = hunter2value\nPASSWORD_HASH = sha256valuehere\nHTTP_PORT = 8123\n")
+        docs = [json.loads(extract.extract(root, os.path.join(root, "out"))[0]),
+                json.loads(run("secrets")[0])]
+        for doc in docs:
+            cfg = [f for f in doc["facts"] if f["kind"] == "config_key"]
+            self.assertTrue(cfg)
+            for f in cfg:
+                self.assertNotIn("value", f["detail"], f["name"])
+                for v in f["detail"].values():
+                    self.assertNotIn(v, ("hunter2value", "sha256valuehere", "8123"), f["name"])
+
     def test_secret_ref_flag(self):
         for name in ("SECRET_KEY_URI", "INTERNAL_TOKEN_URI", "DB_PASSWORD_FILE", "password_path", "PasswordFile"):
             self.assertTrue(secrets.is_secret_ref(name), name)

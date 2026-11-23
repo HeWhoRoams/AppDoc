@@ -43,12 +43,15 @@ def entropy(s: str) -> float:
 # Segment-aware key naming (Q6). A name is split on separators and camel case into lower-case words.
 # It is a secret when a secret noun is present and no modifier from the closed set below is. The sets
 # live here, are closed, and are not extended from a Target's names.
-_SECRET_NOUNS = frozenset("password passwords passwd pwd secret secrets token tokens credential credentials sas".split())
+# One noun table; the flag says whether the noun may be fused to a neighbouring word ("dbpassword").
+_NOUNS = {"password": True, "passwd": True, "secret": True, "token": True, "credential": True, "pwd": True,
+          "passwords": False, "secrets": False, "tokens": False, "credentials": False, "sas": False}
+_SECRET_NOUNS = frozenset(_NOUNS)
 _SECRET_PAIRS = frozenset({("api", "key"), ("api", "keys"), ("private", "key"), ("private", "keys"),
                            ("account", "key"), ("account", "keys"), ("connection", "string"),
                            ("connection", "strings")})
 _SECRET_FUSED = frozenset("apikey privatekey accountkey connectionstring".split())
-_FUSE_NOUNS = ("password", "passwd", "secret", "token", "credential", "pwd")
+_FUSE_NOUNS = tuple(n for n, fuses in _NOUNS.items() if fuses)
 SECRET_MODIFIERS = frozenset(
     "length min max size count ttl lifetime expiry expires minutes seconds hours days algo algorithm hash "
     "complexity policy check pwn enable enabled disable disabled allow require required form cache uri url "
@@ -99,7 +102,25 @@ def _secret_kind(name: str) -> str | None:
 
 
 def is_secret_key(name: str) -> bool:
+    """The display predicate behind `secret_location`: segment-aware, so `MIN_PASSWORD_LENGTH` is not one."""
     return _secret_kind(name) == "secret"
+
+
+# The pre-2.6 substring test, kept as the wide safety net for never_record_value.
+_BROAD_SECRET_RE = re.compile(
+    r"(password|passwd|pwd|secret|token|api[_-]?key|connection[_-]?string|credential|"
+    r"private[_-]?key|client[_-]?secret|account[_-]?key|\bsas\b)",
+    re.IGNORECASE,
+)
+
+
+def never_record_value(name: str) -> bool:
+    """The R19 gate: true when a value under this key name must never be recorded or resolved.
+
+    Wider than is_secret_key on purpose: `PasswordHash`, `TOKEN_CACHE` or `PASSWORD_FILE` are not
+    secret locations, but no extractor records or resolves a value under them.
+    """
+    return is_secret_key(name) or bool(_BROAD_SECRET_RE.search(name or ""))
 
 
 def is_secret_ref(name: str) -> bool:
