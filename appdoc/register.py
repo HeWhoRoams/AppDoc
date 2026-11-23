@@ -367,6 +367,42 @@ def _blocks_lines(reg: Register | None, blocks_by: dict | None) -> list[str]:
     return out
 
 
+def _runs(items: list[str]) -> str:
+    """"V-1, V-2, V-3, V-5" as "V-1\u2013V-3, V-5" (runs of consecutive numbers, in the order given)."""
+    def num(i):
+        return int(re.search(r"(\d+)$", i).group(1))
+    out, run = [], []
+    for i in items:
+        if run and num(i) == num(run[-1]) + 1:
+            run.append(i)
+            continue
+        if run:
+            out.append(run)
+        run = [i]
+    if run:
+        out.append(run)
+    return ", ".join(r[0] if len(r) == 1 else (f"{r[0]}\u2013{r[-1]}" if len(r) > 2 else f"{r[0]}, {r[1]}")
+                     for r in out)
+
+
+def _scope_lines(reg: Register | None, detail) -> list[str]:
+    """A.1: what the register covers, computed (never written by hand), and the exclusions the audit declares."""
+    if reg is None or not reg.performed:
+        return []
+    out = []
+    if detail:
+        parts = []
+        for section, hit, allids in detail:
+            label = "workflows" if section.startswith("7 ") else section
+            parts.append(f"{label} {_runs(hit) if hit else 'none'} ({len(hit)} of {len(allids)})")
+        out += ["", "Register rows cover: " + " \u00b7 ".join(parts) + "."]
+    ex = (reg.audit or {}).get("exclusions")
+    if isinstance(ex, dict) and ex:
+        items = sorted(ex.items(), key=lambda kv: [int(p) if p.isdigit() else 0 for p in str(kv[0]).split(".")])
+        out += ["", "Not covered by the audit: " + "; ".join(f"{_cell(k)}: {_cell(v)}" for k, v in items) + "."]
+    return out
+
+
 def _provenance_lines(reg: Register | None) -> list[str]:
     """A.1 lines from the audit record: when and with what the audit was sealed, and any upgrade-sealed rows."""
     if reg is None or not reg.performed:
@@ -388,16 +424,19 @@ def _provenance_lines(reg: Register | None) -> list[str]:
 
 
 def appendix_markdown(reg: Register | None, facts: dict | None = None, coverage=None,
-                      root: str | None = None, blocks_by: dict | None = None, plan: dict | None = None) -> str:
+                      root: str | None = None, blocks_by: dict | None = None, plan: dict | None = None,
+                      coverage_ids=None) -> str:
     """Body of Appendix A (the `appendix-a` generated block), computed from the register.
 
     reg is None when evidence.jsonl does not exist. coverage is check.coverage() output, or None to omit it.
     facts is the facts.json dict; nothing in the appendix reads it yet.
     root is the Target directory; when given, A.4 commands are generated from locate().
     blocks_by is {"generator", "bundle"} of the running AppDoc; when given, A.1 says who wrote the blocks.
+    coverage_ids is check.coverage_detail(...): A.1 prints the computed coverage line from it.
     plan is the audit plan (audit-plan.json); when given, A.2 shows planned / audited / extra per section.
     """
-    out = ["### A.1 Audit state", "", *_audit_state(reg), *_blocks_lines(reg, blocks_by), *_provenance_lines(reg)]
+    out = ["### A.1 Audit state", "", *_audit_state(reg), *_blocks_lines(reg, blocks_by), *_provenance_lines(reg),
+           *_scope_lines(reg, coverage_ids)]
     if reg is not None and reg.performed:
         out += ["", "### A.2 Coverage", "", *_coverage(reg, coverage, plan),
                 "", "### A.3 Register", "", *_table(reg),

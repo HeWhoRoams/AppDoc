@@ -271,7 +271,7 @@ def _appendix_a(doc: dict, ctx: dict | None = None) -> str:
     from . import check, register
     from . import docmodel as dm
     reg = _register(ctx)
-    coverage = None
+    coverage = detail = None
     text = (ctx or {}).get("text")
     if reg is not None and reg.performed and text is not None:
         # the same masking the Check applies, so the appendix never reads itself
@@ -279,12 +279,14 @@ def _appendix_a(doc: dict, ctx: dict | None = None) -> str:
         heads = dm.headings(lines)
         ids = check.defined_ids(lines, heads, lambda *a: None)
         workflows = sorted((k for k in heads if k.startswith("7.")), key=lambda k: int(k.split(".")[1]))
-        coverage = check.coverage(heads, ids, reg, workflows)
+        detail = check.coverage_detail(heads, ids, reg, workflows)
+        coverage = [(k, len(h), len(a)) for k, h, a in detail]
     plan_path = os.path.join((ctx or {}).get("out_dir") or "", "audit-plan.json")
     plan = json.loads(read_text(plan_path)) if (ctx or {}).get("out_dir") and os.path.isfile(plan_path) else None
     prov = version.provenance()
     return register.appendix_markdown(reg, doc, coverage, root=(ctx or {}).get("target"),
-                                      blocks_by={"generator": prov["generator"], "bundle": prov["bundle"]}, plan=plan)
+                                      blocks_by={"generator": prov["generator"], "bundle": prov["bundle"]}, plan=plan,
+                                      coverage_ids=detail)
 
 
 RENDERERS = {"scan-coverage": _scan_coverage, "entry-points": _entry_points, "config-reference": _config_reference,

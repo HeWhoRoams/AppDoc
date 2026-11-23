@@ -481,6 +481,20 @@ class RegisterHistory(CorpusCase):
         self.assertIn("the audit plan names R-1, which has no live register row. Fix: audit it and add a row "
                       "with ref 15/R-1", report)
 
+    def test_scope_ids_fails_c17(self):
+        r = self.case27("scope-ids")
+        self.assertEqual(r.code, 2, r.report)
+        self.assertEqual(r.rules(), {"C17"})
+        self.assertIn("evidence.jsonl line 1: the audit scope text holds an ID or a number. "
+                      "Fix: describe only the method; coverage is computed", r.report)
+        self.assertIn("the exclusion for 9 holds an ID or a number", r.report)
+        # the computed coverage line, not the writer's scope, says what the register covers
+        self.assertIn("10.1 V-1 (1 of 1)", r.narrative)
+
+    def test_scope_ids_is_only_a_preview_on_2_4(self):
+        r = self.case("scope-ids")        # stamped 2.7 on disk, checked against the running 2.4 template: C3 only
+        self.assertIn("C3", r.rules())
+
 def _apply_pending():
     for cls in CorpusCase.__subclasses__():
         for name in PENDING:

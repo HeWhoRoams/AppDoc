@@ -1141,12 +1141,31 @@ def _c1_bare_name(target, cache, c):
     return hits[0] if len(hits) == 1 else None
 
 
-def _c17_scope(reg, add):
-    """C17, 2.7 rule: the audit record's scope describes the method only, with no ID token or digit."""
-    scope = str((reg.audit or {}).get("scope") or "") if reg is not None and reg.performed else ""
+def _c17_scope(reg, heads, add):
+    """C17, 2.7 rule: the audit record's scope describes the method only, with no ID token or digit; `exclusions`
+    is {section: reason}, its keys are sections of the document and its reasons follow the same token rule."""
+    if reg is None or not reg.performed:
+        return
+    audit = reg.audit or {}
+    scope = str(audit.get("scope") or "")
     if _ID_REF_RE.search(scope) or re.search(r"\d", scope):
         add("C17", 1, f"{REGISTER} line 1: the audit scope text holds an ID or a number",
             "describe only the method; coverage is computed")
+    exclusions = audit.get("exclusions")
+    if exclusions is None:
+        return
+    if not isinstance(exclusions, dict):
+        add("C17", 1, f"{REGISTER} line 1: exclusions must be an object of section: reason",
+            'write "exclusions": {"9": "reason"}')
+        return
+    for key, why in exclusions.items():
+        if key not in heads or not re.fullmatch(r"\d+(?:\.\d+)?", str(key)):
+            add("C17", 1, f"{REGISTER} line 1: exclusions key '{key}' is not a section of the document",
+                "use a section number such as 8.3")
+        why = str(why)
+        if _ID_REF_RE.search(why) or re.search(r"\d", why):
+            add("C17", 1, f"{REGISTER} line 1: the exclusion for {key} holds an ID or a number",
+                "state the reason without IDs or numbers; coverage is computed")
 
 
 def _c17_provenance(reg, require_audit, strict, add):
@@ -1223,7 +1242,8 @@ def _c19_plan(target, out_dir, reg, add):
         return fresh["advisories"]
     if reg is None or not reg.performed:
         return fresh["advisories"]
-    excluded = set((reg.audit or {}).get("exclusions") or {})
+    ex = (reg.audit or {}).get("exclusions")
+    excluded = set(ex) if isinstance(ex, dict) else set()
     live = reg.live_keys()
     for s in fresh["sections"]:
         if s["section"] in excluded:
@@ -1235,8 +1255,8 @@ def _c19_plan(target, out_dir, reg, add):
     return fresh["advisories"]
 
 
-def coverage(heads, ids, reg, workflows) -> list[tuple[str, int, int]]:
-    """(section, IDs with a register row, IDs) for every ID-bearing section, and workflows."""
+def coverage_detail(heads, ids, reg, workflows) -> list[tuple[str, list[str], list[str]]]:
+    """(section, IDs with a live register row, all IDs) for every ID-bearing section, and workflows."""
     live = reg.live_rows()
     refs = set()
     for _, r in live:
@@ -1248,11 +1268,16 @@ def coverage(heads, ids, reg, workflows) -> list[tuple[str, int, int]]:
         if ts.id_prefix:
             mine = [i for i in ids if i.startswith(ts.id_prefix)]
             if mine:
-                out.append((key, sum(1 for i in mine if i in refs), len(mine)))
+                out.append((key, [i for i in mine if i in refs], mine))
     if workflows:
-        out.append(("7 (workflows)", sum(1 for k in workflows if k in refs or any(
-            str(r["ref"]).startswith(k + "/") for _, r in live)), len(workflows)))
+        out.append(("7 (workflows)", [k for k in workflows if k in refs or any(
+            str(r["ref"]).startswith(k + "/") for _, r in live)], list(workflows)))
     return out
+
+
+def coverage(heads, ids, reg, workflows) -> list[tuple[str, int, int]]:
+    """(section, IDs with a register row, IDs) for every ID-bearing section, and workflows."""
+    return [(key, len(hit), len(mine)) for key, hit, mine in coverage_detail(heads, ids, reg, workflows)]
 
 
 def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = False) -> int:
@@ -1484,14 +1509,15 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         for c, full_path in bare:
             add27("C1", c.doc_line, f"`{c.path}` is a bare name; the file is `{full_path}`",
                   f"cite the full path: `{full_path}" + ("" if c.start is None else f":{c.raw.rsplit(':', 1)[1]}") + "`")
-        _c17_scope(reg, add27)
+        _c17_scope(reg, heads, add27)
         _c18_notes(target, out_dir, raw, facts, cache, add27)
         if doc_ver >= FAILS_FROM:
             _c17_provenance(reg, require_audit, strict, add)
             if require_audit:
                 floor_advice = _c19_plan(target, out_dir, reg, add)
             if reg is not None and reg.performed:
-                exclusions = (reg.audit or {}).get("exclusions") or {}
+                exclusions = (reg.audit or {}).get("exclusions")
+                exclusions = exclusions if isinstance(exclusions, dict) else {}
         reg_ids = {str(r["id"]) for _, r in reg.live_rows()} if reg else None   # a superseded row is history
         gone = {t: reg.superseded_by(t) for t in reg.superseded_ids()} if reg else None
         _c10_refs(lines, heads, ids, reg_ids, add, gone)

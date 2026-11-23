@@ -366,6 +366,19 @@ class AppendixHistoryTests(unittest.TestCase):
         self.assertIn("| 10.2 | 1 | 0 | 0 |", a2)
         self.assertNotIn("Planned", block(appendix_markdown(reg, {}), "A.2 Coverage"))   # no plan, no table
 
+    def test_a1_computed_scope_line(self):
+        detail = [("10.1", [f"V-{i}" for i in range(1, 15)], [f"V-{i}" for i in range(1, 15)]),
+                  ("4", ["F-1", "F-2", "F-3", "F-7"], [f"F-{i}" for i in range(1, 41)]),
+                  ("6", [], ["UI-1", "UI-2"]),
+                  ("7 (workflows)", [f"7.{i}" for i in range(1, 11)], [f"7.{i}" for i in range(1, 11)])]
+        audit = dict(AUDIT, exclusions={"9": "owner knowledge", "8.3": "no outbound calls are read"})
+        a1 = block(appendix_markdown(reg_of(row(1), audit=audit), {}, coverage_ids=detail), "A.1 Audit state")
+        self.assertIn("Register rows cover: 10.1 V-1\u2013V-14 (14 of 14) \u00b7 4 F-1\u2013F-3, F-7 (4 of 40) \u00b7 "
+                      "6 none (0 of 2) \u00b7 workflows 7.1\u20137.10 (10 of 10).", a1)
+        # the exclusions the audit record declares are printed verbatim, in section order
+        self.assertIn("Not covered by the audit: 8.3: no outbound calls are read; 9: owner knowledge.", a1)
+        self.assertNotIn("Register rows cover", block(appendix_markdown(reg_of(row(1)), {}), "A.1 Audit state"))
+
     def test_a3_marks_superseded(self):
         a3 = block(appendix_markdown(self.reg(), {}), "A.3 Register")
         rows = {l.split("|")[1].strip(): l for l in a3.splitlines() if l.startswith("| E-")}

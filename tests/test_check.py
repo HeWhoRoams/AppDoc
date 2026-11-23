@@ -632,6 +632,46 @@ class CheckTests(unittest.TestCase):
         self.assertIn("names R-1", report)
         self.assertNotIn("names 9", report)
 
+    # --- C17 scope on 2.7 (T27.13)
+
+    def scope27(self, scope="an independent read of the cited source", **extra):
+        self.write_register(dict(AUDIT, scope=scope, **extra), ROWS)
+        return self.run27()
+
+    def test_c17_scope_ids_fail(self):
+        code, report, _ = self.scope27("covers E-4 and V-1 only")
+        self.assertEqual(code, 2, report)
+        self.assertIn("C17", self.rules(report))
+        self.assertIn("evidence.jsonl line 1: the audit scope text holds an ID or a number. "
+                      "Fix: describe only the method; coverage is computed", report)
+
+    def test_c17_scope_digits_fail(self):
+        code, report, _ = self.scope27("sections 3 to 10")
+        self.assertEqual(code, 2, report)
+        self.assertIn("C17", self.rules(report))
+
+    def test_c17_method_only_passes(self):
+        code, report, _ = self.scope27()
+        self.assertEqual(code, 0, report)
+        # a 2.4 document keeps the old behaviour: the same scope is only a preview
+        self.write_register(dict(AUDIT, scope="sections 3-10"), ROWS)
+        self.assertEqual(self.run_check(build_doc())[0], 0)
+
+    def test_c17_exclusions_keys_are_sections(self):
+        code, report, _ = self.scope27(exclusions={"9": "owner knowledge, not read from source", "8.3": "none are read"})
+        self.assertEqual(code, 0, report)
+        code, report, _ = self.scope27(exclusions={"V-1": "skipped", "nine": "skipped", "9.9": "no such section"})
+        self.assertEqual(code, 2, report)
+        self.assertIn("C17", self.rules(report))
+        for key in ("V-1", "nine", "9.9"):
+            self.assertIn(f"exclusions key '{key}' is not a section of the document. Fix: use a section number "
+                          "such as 8.3", report)
+        code, report, _ = self.scope27(exclusions={"9": "rows E-4 to E-9", "8.3": "about 40 of them"})
+        self.assertIn("the exclusion for 9 holds an ID or a number. Fix: state the reason without IDs or numbers", report)
+        self.assertIn("the exclusion for 8.3 holds an ID or a number", report)
+        code, report, _ = self.scope27(exclusions=["9"])
+        self.assertIn("exclusions must be an object of section: reason. Fix:", report)
+
     def test_c11_2_4_document_keeps_the_old_duplicate_message(self):
         self.write_register(AUDIT, ROWS + [self.SECOND_V1])
         code, report, _ = self.run_check(build_doc())
