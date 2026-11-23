@@ -722,6 +722,18 @@ class CheckTests(unittest.TestCase):
         self.assertIn("appdoc upgrade", report)
         self.assertNotIn("previews (advisory)", report)
 
+    def test_c3_upgrade_orphan_comment_fails(self):
+        """`appdoc upgrade` leaves text it could not map under an `appdoc:upgrade-orphan` comment; C3 fails on it
+        (one problem per comment) until the text is moved and the comment deleted."""
+        orphan = "<!-- appdoc:upgrade-orphan 14: the text below did not fit the template 2.7 table; move it -->"
+        doc = build_doc({14: orphan + "\n\n" + SECTION_BODY[14]})
+        code, report, _ = self.run_check(doc)
+        self.assertEqual(code, 2)
+        self.assertEqual(self.rules(report), {"C3"})
+        self.assertRegex(report, r"- line \d+: `appdoc upgrade` left text it could not map to the template "
+                                 r"\(an `appdoc:upgrade-orphan` comment\)\. Fix: move what still applies")
+        self.assertEqual(self.fired(build_doc()), set())     # without the comment the same document passes
+
     def test_c4_unknown_without_gaps(self):
         doc = build_doc({14: ""}).replace(
             SECTION_BODY[13], SECTION_BODY[13] + "\n\n- Unknown: the owner of `app/main.py:3`.")

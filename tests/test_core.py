@@ -744,6 +744,240 @@ class UpgradeStepTableTests(unittest.TestCase):
                                                 "16.1", "16.2", "16.3", "16.4", "16.5"))
 
 
+
+class UpgradeTests(unittest.TestCase):
+    """T27.31: `appdoc upgrade <target>` (appdoc/upgrade.py)."""
+
+    FIXTURES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures")
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.target = os.path.join(self.tmp.name, "target")
+        self.out = os.path.join(self.target, "docs", "appdoc")
+        os.makedirs(os.path.join(self.target, "app"))
+        os.makedirs(self.out)
+        with open(os.path.join(self.target, "app", "main.py"), "w") as fh:
+            fh.write("\n".join(f"line {i}" for i in range(1, 11)) + "\n")
+
+    def put(self, name, text):
+        with open(os.path.join(self.out, name), "w", encoding="utf-8", newline="") as fh:
+            fh.write(text)
+
+    def doc_from_fixture(self, which="docs-2.1", repo="flaskr-tdd", name="application-documentation.md"):
+        with open(os.path.join(self.FIXTURES, which, repo, name), encoding="utf-8", newline="") as fh:
+            return fh.read()
+
+    def narrative(self):
+        with open(os.path.join(self.out, "application-documentation.md"), encoding="utf-8", newline="") as fh:
+            return fh.read()
+
+    def upgrade(self, *args):
+        import contextlib, io
+        from appdoc.__main__ import main
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+            rc = main(["upgrade", self.target, "--no-ownership", "--workers", "0", *args])
+        return rc, buf.getvalue()
+
+    def snapshot(self):
+        out = {}
+        for d, dirs, files in os.walk(self.target):
+            dirs.sort()
+            for f in files:
+                with open(os.path.join(d, f), "rb") as fh:
+                    out[os.path.relpath(os.path.join(d, f), self.target)] = fh.read()
+        return out
+
+    # --- version inference
+
+    def test_infer_version_from_stamp_or_subsections(self):
+        from appdoc import template_spec as spec
+        from appdoc import upgrade
+        two_1 = self.doc_from_fixture()
+        self.assertEqual(upgrade.infer_version(two_1), "2.1")                    # no stamp, has the 2.1 subsections
+        no_sub = two_1.replace("### 5.2 Authorization enforcement", "Authorization enforcement")
+        self.assertEqual(upgrade.infer_version(no_sub), "2.0")                   # no stamp, a 2.1 subsection missing
+        self.assertEqual(upgrade.infer_version("# T\n<!-- appdoc:template 2.4 -->\n"), "2.4")
+        self.assertEqual(upgrade.infer_version(self.doc_from_fixture("docs-2.2")), "2.2")
+        self.assertEqual(upgrade.steps_after("2.0"), ["2.1", "2.2", "2.3", "2.4", "2.7"])
+        self.assertEqual(upgrade.steps_after("2.4"), ["2.7"])
+        self.assertEqual(upgrade.steps_after(spec.TEMPLATE_VERSION), [])
+
+    # --- 2.1 -> 2.7
+
+    def test_upgrade_2_1_to_current_mechanical(self):
+        import re
+        from appdoc import check, fill
+        from appdoc import docmodel as dm
+        from appdoc import template_spec as spec
+        self.put("application-documentation.md", self.doc_from_fixture())
+        self.put("verification.md", self.doc_from_fixture(name="verification.md"))
+        rc, log = self.upgrade()
+        self.assertEqual(rc, 0, log)
+        text = self.narrative()
+        lines = text.split("\n")
+        self.assertEqual(spec.stamp_version(text), (2, 7))
+        heads = dm.headings(lines)
+        for n, title in enumerate(spec.SECTIONS, 1):                              # all 17 sections
+            self.assertTrue(heads[str(n)].title.startswith(title), (n, title))
+        for key, title in spec.REQUIRED_SUBSECTIONS.items():                     # every required subsection
+            self.assertEqual(heads[key].title, title, key)
+        self.assertEqual(sorted(n for n, _, _ in fill.blocks(text)), sorted(spec.GENERATED.values()))
+        for key in ("4", "4.1", "6", "8.1", "11"):                               # the mechanical headers and rows
+            self.assertTrue(spec.TABLES[key].header_ok([dm.cell_text(c) for c in dm.first_table(lines, heads[key]).header]), key)
+        self.assertIn(spec.RESTRICTION_LINE, text)
+        labels = {dm.cell_text(c[0]) for _, c in dm.first_table(lines, heads["11"]).rows}
+        self.assertTrue(set(spec.OWNERSHIP_ROWS) <= labels)
+        build = {dm.cell_text(c[0]): c[1] for _, c in dm.first_table(lines, heads["17"]).rows}
+        self.assertEqual(build, {step: spec.UNKNOWN_TEXT for step in spec.BUILD_STEPS})
+        ids = [dm.cell_text(c[0]) for _, c in dm.first_table(lines, heads["6"]).rows]
+        self.assertEqual(ids, [f"UI-{i}" for i in range(1, len(ids) + 1)])       # sequential IDs for the new ID column
+        # the tool ran extract and fill: facts exist and the scan-coverage block holds text
+        self.assertTrue(os.path.isfile(os.path.join(self.out, "facts.json")))
+        block = dict((n, c) for n, c, _ in fill.blocks(text))["scan-coverage"]
+        self.assertIn("Stack", block)
+        # what had no place in the new shape stays, under a marker C3 fails on (1 old TOC table, 10.1 without Severity ...)
+        self.assertGreaterEqual(len(spec.ORPHAN_RE.findall(text)), 1)
+        self.assertEqual(check.run(self.target, self.out), 2)
+        with open(os.path.join(self.out, check.REPORT), encoding="utf-8") as fh:
+            report = fh.read()
+        self.assertRegex(report, r"(?m)^## C3 ")
+        self.assertIn("appdoc:upgrade-orphan", report)
+        self.assertNotRegex(report, r"template 2\.7 \(stamp")                    # the stamp is no longer the problem
+        self.assertTrue(re.search(r"(?m)^## C9 ", report))                       # guides left in the added sections
+
+    def test_upgrade_2_0_adds_2_1_subsections(self):
+        from appdoc import docmodel as dm
+        from appdoc import template_spec as spec
+        from appdoc import upgrade
+        two_1 = self.doc_from_fixture()
+        two_0 = two_1
+        for key in spec.SUBSECTIONS_2_1:                                          # a 2.0 document: the headings are not there
+            two_0 = "\n".join(l for l in two_0.split("\n")
+                              if not (l.startswith("### " + key + " ") or l == "### " + key))
+        self.assertEqual(upgrade.infer_version(two_0), "2.0")
+        self.put("application-documentation.md", two_0)
+        rc, log = self.upgrade()
+        self.assertEqual(rc, 0, log)
+        heads = dm.headings(self.narrative().split("\n"))
+        for key in spec.SUBSECTIONS_2_1 + ("8.1", "8.2", "8.3"):
+            self.assertIn(key, heads, key)
+        # in document order: 4.1 sits after section 4's body and before section 5
+        self.assertLess(heads["4"].idx, heads["4.1"].idx)
+        self.assertLess(heads["4.1"].idx, heads["5"].idx)
+        self.assertLess(heads["16.4"].idx, heads["16.5"].idx)
+        self.assertLess(heads["16.5"].idx, heads["16.6"].idx)
+
+    def test_upgrade_idempotent(self):
+        from appdoc import upgrade
+        for which, repo in (("docs-2.1", "flaskr-tdd"), ("docs-2.1", "eShop"), ("docs-2.2", "spring-petclinic")):
+            with self.subTest(which=which, repo=repo):
+                original = self.doc_from_fixture(which, repo)
+                started = upgrade.infer_version(original)
+                self.put("application-documentation.md", original)
+                rc, log = self.upgrade()
+                self.assertEqual(rc, 0, log)
+                once = self.snapshot()
+                rc, log = self.upgrade()                                          # the second run is a no-op
+                self.assertEqual(rc, 0, log)
+                self.assertIn("already on template", log)
+                self.assertEqual(self.snapshot(), once)
+                # and the steps themselves are idempotent: applying them again to their own output adds nothing
+                text = self.narrative()
+                again, entries = upgrade.upgrade_text(text, started)
+                self.assertEqual(again, text)
+                self.assertEqual(entries, [])
+
+    def test_upgrade_never_drops_text(self):
+        from appdoc import docmodel as dm
+        from appdoc import fill
+        for which, repo in (("docs-2.1", "flaskr-tdd"), ("docs-2.1", "eShop"), ("docs-2.2", "flaskr-tdd")):
+            with self.subTest(which=which, repo=repo):
+                old = self.doc_from_fixture(which, repo)
+                self.put("application-documentation.md", old)
+                self.assertEqual(self.upgrade()[0], 0)
+                new = self.narrative()
+                new_lines = set(new.split("\n"))
+                new_rows = [dm.split_row(l) for l in new.split("\n") if l.lstrip().startswith("|")]
+                stamp = "<!-- appdoc:template"
+                generated = set()          # lines of a generated block are the tool's, `fill` rewrites them
+                for m in fill.BLOCK_RE.finditer(old):
+                    generated.update(m.group(0).split("\n"))
+                for line in old.split("\n"):
+                    if not line.strip() or line.startswith(stamp) or line in generated:
+                        continue
+                    if line.lstrip().startswith("|"):
+                        cells = dm.split_row(line)
+                        header_like = all(c.strip("-: ") == "" for c in cells)
+                        if header_like:
+                            continue
+                        # a row keeps every cell (columns were only added); a renamed header keeps all but the renamed one
+                        kept = any(all(c in row for c in cells) for row in new_rows)
+                        renamed = any(sum(c not in row for c in cells) == 1 and len(row) >= len(cells) for row in new_rows)
+                        self.assertTrue(kept or renamed, f"a table row was lost: {line[:100]}")
+                    else:
+                        self.assertIn(line, new_lines, f"a line was lost: {line[:100]}")
+
+    def test_upgrade_never_touches_register(self):
+        import hashlib
+        reg = '{"type": "audit", "performed": true, "auditor": "independent", "scope": "a read"}\n' \
+              '{"id": "E-1", "ref": "10.1/V-1", "claim": "c", "result": "Supported", "cites": ["app/main.py:6"], ' \
+              '"anchor": "line 6", "limitation": "none"}\n'
+        self.put("application-documentation.md", self.doc_from_fixture("docs-2.2", "spring-petclinic"))
+        # absent: the command creates none of the three files
+        rc, log = self.upgrade()
+        self.assertEqual(rc, 0, log)
+        for name in ("evidence.jsonl", "notes.jsonl", "audit-plan.json"):
+            self.assertFalse(os.path.exists(os.path.join(self.out, name)), name)
+        # present: byte for byte unchanged (no seal, no note sha, no plan)
+        self.put("application-documentation.md", self.doc_from_fixture("docs-2.2", "spring-petclinic"))
+        self.put("evidence.jsonl", reg)
+        self.put("notes.jsonl", '{"block": "entry-points", "text": "t", "cites": [], "block_sha": ""}\n')
+        self.put("audit-plan.json", '{"sections": {}, "stale": true}\n')
+        before = {n: hashlib.sha256(open(os.path.join(self.out, n), "rb").read()).hexdigest()
+                  for n in ("evidence.jsonl", "notes.jsonl", "audit-plan.json")}
+        rc, log = self.upgrade()
+        self.assertEqual(rc, 0, log)
+        after = {n: hashlib.sha256(open(os.path.join(self.out, n), "rb").read()).hexdigest() for n in before}
+        self.assertEqual(after, before)
+
+    # --- the command's edges
+
+    def test_upgrade_errors_and_noop(self):
+        rc, log = self.upgrade()                                                  # no document
+        self.assertEqual(rc, 1)
+        self.assertIn("not found", log)
+        self.put("application-documentation.md", "# T\n<!-- appdoc:template 3.0 -->\n")   # newer than this tool
+        before = self.snapshot()
+        rc, log = self.upgrade()
+        self.assertEqual(rc, 1)
+        self.assertIn("newer than this AppDoc", log)
+        self.assertEqual(self.snapshot(), before)
+
+    def test_upgrade_keeps_crlf(self):
+        text = self.doc_from_fixture().replace("\n", "\r\n")
+        self.put("application-documentation.md", text)
+        self.assertEqual(self.upgrade()[0], 0)
+        new = self.narrative()
+        from appdoc import fill
+        self.assertNotRegex(fill.BLOCK_RE.sub("", new), r"(?<!\r)\n")           # every line break outside a block is CRLF
+        self.assertIn("\r\n## 17. Build, Run and Test Locally\r\n", new)
+
+    def test_upgrade_2_4_adds_only_the_2_7_parts(self):
+        """A 2.4 document (what AppDoc 2.4 to 2.6 wrote) gets the stamp, the closed-questions markers and section 17."""
+        from appdoc import upgrade
+        from tests.test_check import build_doc
+        old = build_doc()
+        new, log = upgrade.upgrade_text(old, "2.4")
+        self.assertEqual(log, ["added the closed-questions block", "added section 17 Build, Run and Test Locally",
+                               "stamp 2.7"])
+        self.assertIn("<!-- appdoc:template 2.7 -->", new)
+        self.assertIn("<!-- appdoc:generated closed-questions -->", new)
+        self.assertIn("## 17. Build, Run and Test Locally", new)
+        self.assertEqual(new.count("appdoc:upgrade-orphan"), 0)
+
+
 if __name__ == "__main__":
     unittest.main()
 

@@ -55,7 +55,8 @@ RULES = (
                  "cite the full path"),
     Rule("C2", "Security lines", "a Citation in section 10 has no line"),
     Rule("C3", "Sections complete",
-         "a section is missing, out of order, empty or a placeholder, or the stamp is not the running template"),
+         "a section is missing, out of order, empty or a placeholder, the stamp is not the running template, or an "
+         "`appdoc:upgrade-orphan` comment from `appdoc upgrade` is left"),
     Rule("C4", "Gaps declared",
          "section 14 is empty while Unknowns exist, or Data and Integrations is empty though Facts exist"),
     Rule("C5", "Claims grounded",
@@ -1432,6 +1433,10 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         add("C3", 1, f"the document is not on template {spec.TEMPLATE_VERSION} (stamp: {found_v}); "
                       "structure rules C8-C13 were not run",
             f"upgrade it to the current template ({spec.UPGRADE_NOTES}) and keep `{spec.STAMP}`")
+    for m in spec.ORPHAN_RE.finditer(raw):
+        add("C3", raw.count("\n", 0, m.start()) + 1, "`appdoc upgrade` left text it could not map to the template "
+            f"(an `{spec.ORPHAN_MARK}` comment)",
+            "move what still applies into the template's table or section, then delete the leftover text and the comment")
     found = [s["num"] for s in secs]
     doc_sections = spec.sections(doc_ver)
     for n, title in enumerate(doc_sections, 1):

@@ -47,6 +47,7 @@ All commands:
 | `appdoc build <target>` | `--out OUT`, `--expand-citations`, `--require-audit`, `--strict` | seal (rows and notes), fill, check and render in one step |
 | `appdoc gate <target>` | `--out OUT`, `--workers WORKERS`, `--require-audit`, `--strict` | CI gate: regenerate the Facts and compare with the committed facts.json, then check; exit 0 pass, 1 tool error, 2 Facts changed, 3 AppDoc upgraded |
 | `appdoc audit-plan <target>` | `--out OUT` | write docs/appdoc/audit-plan.json: the ids the independent audit must cover (a sample is chosen by the tool) |
+| `appdoc upgrade <target>` | `--out OUT`, `--workers WORKERS`, `--no-ownership` | bring a document of an older template to the running one: add the missing headings, blocks, columns and rows, keep every line of text, then extract and fill; the rest is for a person |
 <!-- /appdoc-self:generated commands -->
 
 Run these from the AppDoc folder (or call `python run_appdoc.py ...` from anywhere). On Windows use `py -3 -m appdoc ...` if `python` is not on PATH. Run on a **scratch copy** of the Target if you do not want files added to its `docs/appdoc/`. All output goes to `<target>/docs/appdoc/` (override with `--out`, which must stay inside the Target).
@@ -106,7 +107,7 @@ Rules C1-C20. Each rule fails or is not reported; there is no score.
 |---|---|---|---|
 | C1 | Citations resolve | a Citation points to a missing file or a line past the end (folders and unique bare filenames resolve; extensionless non-existent spans are not Citations) | fails |
 | C2 | Security lines | a Citation in section 10 has no line | fails |
-| C3 | Sections complete | a section is missing, out of order, empty or a placeholder, or the stamp is not the running template | fails |
+| C3 | Sections complete | a section is missing, out of order, empty or a placeholder, the stamp is not the running template, or an `appdoc:upgrade-orphan` comment from `appdoc upgrade` is left | fails |
 | C4 | Gaps declared | section 14 is empty while Unknowns exist, or Data and Integrations is empty though Facts exist | fails |
 | C5 | Claims grounded | a paragraph, list item or table row in sections 3 to 10 is neither cited, Inferred nor Unknown | fails |
 | C6 | No secrets | secret-shaped text, or a `never-mention` term, appears in a published file | fails |

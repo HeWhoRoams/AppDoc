@@ -196,6 +196,8 @@ REGISTER_PREFIX = "E-"
 #                                     "ids" (sequential IDs of the table's prefix) or "unknown" (UNKNOWN_TEXT)
 #   ("line", key, text)               add a fixed line after the first table under `key`
 #   ("stamp",)                        write this step's version as the template stamp (always the last operation)
+ORPHAN_MARK = "appdoc:upgrade-orphan"   # the comment `appdoc upgrade` leaves above text it could not map; C3 fails on it
+ORPHAN_RE = re.compile(r"<!--\s*" + re.escape(ORPHAN_MARK) + r"\b.*?-->", re.S)
 UPGRADE_FROM = "2.0"   # a document with no stamp and without the 2.1 subsections
 SUBSECTIONS_2_1 = ("4.1", "5.1", "5.2", "5.3", "8.4", "8.5", "10.1", "10.2", "15.1",
                    "16.1", "16.2", "16.3", "16.4", "16.5")   # a document with no stamp that has them is a 2.1 document

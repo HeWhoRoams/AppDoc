@@ -10,7 +10,7 @@ from . import __version__
 from .version import bundle_hash
 
 DEFAULT_OUT = os.path.join("docs", "appdoc")
-COMMANDS = ("extract", "fill", "check", "render", "seal", "build", "gate", "audit-plan")
+COMMANDS = ("extract", "fill", "check", "render", "seal", "build", "gate", "audit-plan", "upgrade")
 COMMAND_HELP = {
     "extract": "write facts.json, facts-summary.md and provenance.json",
     "fill": "write the generated blocks of the Narrative from the Facts and the register",
@@ -20,6 +20,8 @@ COMMAND_HELP = {
     "build": "seal (rows and notes), fill, check and render in one step",
     "audit-plan": "write docs/appdoc/audit-plan.json: the ids the independent audit must cover (a sample is "
                   "chosen by the tool)",
+    "upgrade": "bring a document of an older template to the running one: add the missing headings, blocks, "
+               "columns and rows, keep every line of text, then extract and fill; the rest is for a person",
     "gate": "CI gate: regenerate the Facts and compare with the committed facts.json, then check; "
             "exit 0 pass, 1 tool error, 2 Facts changed, 3 AppDoc upgraded",
 }
@@ -67,9 +69,11 @@ def build_parser() -> argparse.ArgumentParser:
                             help="fail when the source-to-claim audit was declared not performed")
             sp.add_argument("--strict", action="store_true",
                             help="fail when an entry point file is not cited anywhere in the document")
-        if name == "gate":
+        if name in ("gate", "upgrade"):
             sp.add_argument("--workers", type=int, default=None,
                             help="process-pool workers for the regeneration; default min(cpu,8); 0 = serial")
+        if name == "upgrade":
+            sp.add_argument("--no-ownership", action="store_true", help="skip git ownership Facts")
         if name == "build":
             sp.add_argument("--expand-citations", action="store_true",
                             help="first rewrite each bare file name that has one full path (`main.py:5`) to the "
@@ -123,6 +127,9 @@ def main(argv=None) -> int:
                                       ownership_top=args.ownership_top):
                 print(f"wrote {path}")
             return 0
+        if args.cmd == "upgrade":
+            from . import upgrade
+            return upgrade.run(args.target, out_dir, args.workers, args.no_ownership)
         if args.cmd == "audit-plan":
             from . import audit_plan
             return audit_plan.run(args.target, out_dir)
