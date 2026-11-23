@@ -4,6 +4,12 @@
 
 AppDoc 2.6.0 (in development): tooling and Facts release. See `docs/remediation-plan-2.6.md`.
 
+### Added
+- `appdoc gate <target> [--require-audit] [--strict] [--workers N]`: regenerates the Facts (no cache) and compares them with the committed `facts.json` (exit 2 "Facts changed" with a diff of at most 200 lines; exit 3 "AppDoc upgraded" when the schema differs), then runs the Check. The checkout-dependent fields (`target.commit`, `target.history`, git `ownership` Facts) are not compared. The gate YAML clones the pinned release to `$RUNNER_TEMP/appdoc-skill` and calls `gate` from there.
+- C20 Citation precision (advisory; fails under `--strict`): a range over 100 lines as a claim's only lined Citation in sections 4, 7 and 10, and more than 5 Citations in a section 4 or 10.1 cell.
+- Previews of template 2.7 rules, printed as "fails from template 2.7" and never failing a 2.4 document: C9 severity order in 10.1 and 15, C1 bare-name Citations (the message names the full path), C17 audit scope text with an ID or a digit.
+- `tools/gen_docs.py` writes the generated blocks of README.md, SKILL.md and the gate YAML (`--check` for CI); `appdoc/workflow.py` holds the skill's steps; `tools/release.py X.Y.Z [--dry-run]` cuts a release; CI runs the gate self-test and `tests/test_release.py`.
+
 ### Changed
 - The cache key is salted with `version.bundle_hash()` (every file of the `appdoc` package) plus the Facts schema. `extract.EXTRACTOR_VERSION` is deleted; nothing is bumped by hand, and the first run after any AppDoc change is a cold run.
 - `scan` records `retired_candidates` by folder name only and a new `duplicate_folders` list (`{a, b, files}`) for byte-identical folders; both lists collapse nested entries; test paths are never compared. `scan-coverage` renders both, capped at 10 each. C7 asks section 2 to name a duplicate pair (an advisory; it fails under `--strict`).

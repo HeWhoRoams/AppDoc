@@ -12,6 +12,14 @@
 #
 # What this gate does (all deterministic; AppDoc holds no LLM key here)
 # appdoc-self:generated gate-header
+#   Pinned release writes Facts schema appdoc-facts/6; the Check runs rules C1-C20.
+#   `appdoc gate` regenerates the Facts in memory (no cache) and compares them with the committed
+#   docs/appdoc/facts.json, then runs the Check. Exit codes:
+#     0  the Facts match and the Check passes
+#     1  tool error (for example the committed facts.json is missing)
+#     2  Facts changed (the code changed since the docs were generated; prints a diff of at most 200 lines), or the Check failed
+#     3  AppDoc upgraded (the committed Facts schema differs from the pinned AppDoc's; re-extract and refresh the docs)
+#   A difference in the AppDoc version recorded in provenance.json is informational only.
 # /appdoc-self:generated gate-header
 #
 # Pin AppDoc: APPDOC_REF below is the release tag your docs were written with.

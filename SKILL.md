@@ -41,7 +41,15 @@ If `<target>/docs/appdoc/application-documentation.md` already exists, run `chec
 8. **Render.** `python SKILL_DIR/run_appdoc.py render <target>`. Writes `application-documentation.html` next to the Markdown; the HTML shows the Appendix A block from the Markdown.
 9. **Tell the user** where the files are, whether the Check passed, and who audited (independent or same-session).
 
-Optional flags: `--out DIR` (inside the target) on every command; `--css FILE` on `render` to replace the theme; `--require-audit` and `--strict` on `check`.
+<!-- appdoc-self:generated run-commands -->
+Commands, in order (generated from `appdoc/workflow.py`):
+
+1. Extract: `python SKILL_DIR/run_appdoc.py extract <target>` (writes facts.json, facts-summary.md and provenance.json; re-running gives identical output)
+2. Build: `python SKILL_DIR/run_appdoc.py build <target>` (seal, fill, check and render; repeat until it passes, and after 3 failures report the problems verbatim)
+3. Build: `python SKILL_DIR/run_appdoc.py build <target> --require-audit` (the same command, now that the audit exists)
+<!-- /appdoc-self:generated run-commands -->
+
+Optional flags: `--out DIR` (inside the target) on every command; `--css FILE` on `render` to replace the theme; `--require-audit` and `--strict` on `check`, `build` and `gate`.
 
 ## Writing rules
 
