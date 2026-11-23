@@ -404,6 +404,69 @@ class NotesTests(unittest.TestCase):
                          fill.render_block("entry-points", self.doc))
 
 
+class CountMarkerTests(unittest.TestCase):
+    """`<!-- appdoc:count CLASS -->N<!-- /appdoc:count -->`: fill writes N, the marker stays (T27.17)."""
+
+    CLASSES = ("V", "F", "UI", "C", "X", "Q", "R", "rows", "superseded", "routes", "jobs", "pages", "commands",
+               "config-keys")
+    EXPECT = {"V": 1, "F": 1, "UI": 1, "C": 1, "X": 1, "Q": 1, "R": 1, "rows": 2, "superseded": 1,
+              "routes": 2, "jobs": 1, "pages": 1, "commands": 1, "config-keys": 2}
+
+    @staticmethod
+    def marker(cls, n="99"):
+        return f"<!-- appdoc:count {cls} -->{n}<!-- /appdoc:count -->"
+
+    def setUp(self):
+        from tests.test_check import AUDIT, ROWS, build_doc
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        rows = ROWS + [dict(ROWS[0], id="E-3", supersedes="E-1")]
+        with open(os.path.join(self.tmp.name, "evidence.jsonl"), "w", encoding="utf-8") as fh:
+            fh.write("\n".join(json.dumps(r) for r in [AUDIT] + rows) + "\n")
+        self.facts = doc(route("web/a.py", 1), route("web/a.py", 5), route("web/t.py", 9, test=True),
+                         fact("entry_point", "web/pages.py", 3, "home", type="page"),
+                         fact("entry_point", "cli.py", 4, "run", type="command"),
+                         fact("entry_point", "jobs.py", 6, "nightly", type="job"),
+                         cfg("conf/app.ini", 1, "DEBUG"), cfg("conf/app.ini", 2, "PORT"), cfg("conf/app.ini", 3, "PORT"))
+        line = "; ".join(f"{c} {self.marker(c)}" for c in self.CLASSES)
+        self.text = build_doc({3: "- The entry module wires the handlers in `app/main.py:3-5`.\n\n- Counts: " + line + "."})
+        self.ctx = {"out_dir": self.tmp.name}
+
+    def counts(self, text):
+        import re
+        return {m.group(1): m.group(2) for m in re.finditer(
+            r"<!-- appdoc:count (\S+) -->(.*?)<!-- /appdoc:count -->", text)}
+
+    def test_count_marker_filled(self):
+        out, _ = fill.fill_text(self.text, self.facts, self.ctx)
+        self.assertEqual(self.counts(out), {c: str(n) for c, n in self.EXPECT.items()})
+        # the marker stays: only the number between the two comments changed
+        self.assertEqual(out.replace("99", "").count("appdoc:count"), 2 * len(self.CLASSES))
+
+    def test_count_marker_idempotent(self):
+        once, _ = fill.fill_text(self.text, self.facts, self.ctx)
+        self.assertEqual(fill.fill_text(once, self.facts, self.ctx)[0], once)
+        # a changed Fact changes the number on the next fill, nothing else
+        self.facts["facts"].append(route("web/b.py", 2))
+        twice, _ = fill.fill_text(once, self.facts, self.ctx)
+        self.assertEqual(self.counts(twice), {**self.counts(once), "routes": "3"})
+
+    def test_unknown_class_and_missing_inputs_are_left_alone(self):
+        text = self.text + "\nx " + self.marker("widgets", "7") + "\n"
+        out, _ = fill.fill_text(text, self.facts, self.ctx)
+        self.assertIn(self.marker("widgets", "7"), out)
+        # no register beside the Facts: the register classes are left alone, the rest is still filled
+        out, _ = fill.fill_text(self.text, self.facts, {"out_dir": self.tmp.name + "-none"})
+        self.assertEqual((self.counts(out)["rows"], self.counts(out)["V"], self.counts(out)["jobs"]), ("99", "1", "1"))
+
+    def test_markers_leave_the_audit_fingerprint_alone(self):
+        from appdoc import check
+        out, _ = fill.fill_text(self.text, self.facts, self.ctx)
+        other = out.replace("<!-- appdoc:count routes -->2", "<!-- appdoc:count routes -->7")
+        self.assertNotEqual(other, out)
+        self.assertEqual(check.doc_sha(out), check.doc_sha(other))
+
+
 class FillTextTests(unittest.TestCase):
     TEXT = ("# T\n\n<!-- appdoc:generated entry-points -->\nold\n<!-- /appdoc:generated entry-points -->\n\n"
             "<!-- appdoc:generated scheduled-jobs -->\n<!-- /appdoc:generated scheduled-jobs -->\n"

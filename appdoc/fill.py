@@ -12,6 +12,7 @@ import re
 import sys
 
 from . import notes as notes_mod
+from . import template_spec as spec
 from . import version
 from .textutil import plural, read_text
 from .stacks.generic import GENERIC_KINDS
@@ -257,16 +258,19 @@ def _config_reference(doc: dict, ctx: dict | None = None) -> str:
     return "\n".join(out)
 
 
+def _register(ctx: dict | None):
+    """The Evidence Register beside facts.json (`ctx["out_dir"]`), or None when there is none."""
+    from . import register
+    out_dir = (ctx or {}).get("out_dir")
+    path = os.path.join(out_dir, register.REGISTER) if out_dir else None
+    return register.parse(read_text(path)) if path and os.path.isfile(path) else None
+
+
 def _appendix_a(doc: dict, ctx: dict | None = None) -> str:
     """Appendix A from the Evidence Register beside facts.json (None when the file is missing)."""
     from . import check, register
     from . import docmodel as dm
-    from . import template_spec as spec
-    out_dir = (ctx or {}).get("out_dir")
-    path = os.path.join(out_dir, register.REGISTER) if out_dir else None
-    reg = None
-    if path and os.path.isfile(path):
-        reg = register.parse(read_text(path))
+    reg = _register(ctx)
     coverage = None
     text = (ctx or {}).get("text")
     if reg is not None and reg.performed and text is not None:
@@ -301,6 +305,45 @@ def render_block(name: str, doc: dict, ctx: dict | None = None) -> str | None:
     return "\n\n".join([body] + [notes_mod.render(n) for n in mine])
 
 
+_ENTRY_COUNT = {"routes": "routes", "jobs": "jobs", "pages": "pages", "commands": "commands"}
+
+
+def count_marker_value(cls: str, doc: dict, ids: dict | None, reg) -> int | None:
+    """The number a count marker of this class holds, or None when it cannot be computed (an unknown class, no
+    register, no document text). Classes are `template_spec.COUNT_CLASSES`.
+
+    `ids` maps the document's defined IDs (check.defined_ids); `reg` is the Evidence Register. `rows` counts live
+    rows (see CONTEXT: Register count) and `superseded` the rows another row supersedes.
+    """
+    kind = spec.COUNT_CLASSES.get(cls)
+    if kind == "id":
+        return None if ids is None else sum(1 for k in ids if k.startswith(cls + "-"))
+    if kind == "register":
+        if reg is None or not reg.performed:
+            return None
+        return len(reg.live_rows()) if cls == "rows" else len(reg.rows) - len(reg.live_rows())
+    if kind == "facts":
+        return config_app_count(doc) if cls == "config-keys" else entry_point_counts(doc)[_ENTRY_COUNT[cls]]
+    return None
+
+
+def fill_counts(text: str, doc: dict, ctx: dict | None = None) -> str:
+    """Write the current number between every count marker's comments (the marker stays). Idempotent; a marker
+    whose number cannot be computed is left as written, and C15 reports an unknown class."""
+    from . import check
+    from . import docmodel as dm
+    if not spec.COUNT_MARKER_RE.search(text):
+        return text
+    lines = check.document_text(text).splitlines()
+    ids = check.defined_ids(lines, dm.headings(lines), lambda *a: None)
+    reg = _register(ctx)
+
+    def repl(m):
+        n = count_marker_value(m.group(2).strip(), doc, ids, reg)
+        return m.group(0) if n is None else f"{m.group(1)}{n}{m.group(4)}"
+    return spec.COUNT_MARKER_RE.sub(repl, text)
+
+
 def mask_blocks(text: str, names) -> str:
     """Replace the content of the named blocks with one placeholder line, keeping the line count."""
     def repl(m):
@@ -326,7 +369,8 @@ def fill_text(text: str, doc: dict, ctx: dict | None = None) -> tuple[str, list[
             return m.group(0)
         filled.append(m.group(2))
         return f"{m.group(1)}\n{body}\n{m.group(4)}"
-    return BLOCK_RE.sub(repl, text), filled
+    new = BLOCK_RE.sub(repl, text)
+    return fill_counts(new, doc, ctx), filled
 
 
 def run(target: str, out_dir: str) -> int:

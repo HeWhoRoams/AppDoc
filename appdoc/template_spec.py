@@ -29,7 +29,8 @@ def version_tuple(s) -> tuple:
 
 # A hand-written count the tool fills: <!-- appdoc:count V -->14<!-- /appdoc:count -->. The text between the
 # two comments is the filled number; doc_sha masks the whole marker so fill never changes the fingerprint.
-COUNT_MARKER_RE = re.compile(r"<!--\s*appdoc:count\s+[^>]*?-->[^<]*<!--\s*/appdoc:count\s*-->")
+# Groups: 1 the opening comment, 2 the class, 3 the number, 4 the closing comment.
+COUNT_MARKER_RE = re.compile(r"(<!--\s*appdoc:count\s+([^>]*?)\s*-->)([^<]*)(<!--\s*/appdoc:count\s*-->)")
 
 # The closed list of count-marker classes, each with where the number comes from: "id" (the defined IDs of that
 # prefix), "register" (rows of the Evidence Register) or "facts" (Facts, through fill.entry_point_counts and the
