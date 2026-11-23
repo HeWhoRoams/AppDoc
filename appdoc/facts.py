@@ -52,10 +52,10 @@ DETAIL_KEYS = {
     "external_call": frozenset("call client method mode operation type via".split()),
     "auth_check": frozenset("applies_to mechanism policy roles scope".split()),
     "message": frozenset("context exception".split()),
-    "ownership": frozenset(),
+    "ownership": frozenset("authors commits role source".split()),  # authors leave in 2.6 (Q32)
     "smell": frozenset("constant fid pattern".split()),
     "schema_object": frozenset("columns dialect expression type unique".split()),
-    "owner_file": frozenset(),
+    "owner_file": frozenset("entries kind".split()),
     "ui_page": frozenset("root route x_class".split()),
 }
 

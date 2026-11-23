@@ -416,5 +416,32 @@ class GenericTests(unittest.TestCase):
         self.assertNotIn("hunter2pw", repr(out))
 
 
+class OwnerContextTests(unittest.TestCase):
+    def case(self, name):
+        from tests.test_corpus import run_case
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        return run_case(name, tmp=tmp)
+
+    def test_owner_context_detected(self):
+        r = self.case("owner-present")
+        files = [f for f in r.facts_of("owner_file") if f["path"] == "appdoc-context.md"]
+        self.assertEqual(len(files), 1, r.facts_of("owner_file"))
+        own = [f for f in r.facts_of("ownership") if f["detail"].get("source") == "appdoc-context.md"]
+        self.assertEqual(sorted(f["detail"]["role"] for f in own), ["Business owner", "Technical owner"])
+        self.assertEqual(sorted(f["line"] for f in own), [3, 4])
+        self.assertNotIn("Registrar", json.dumps(r.facts))  # values (possibly personal) never enter Facts
+        self.assertFalse(self.case("owner-absent").facts_of("owner_file"))
+
+    def test_owner_absent_advisory(self):
+        absent = self.case("owner-absent")
+        self.assertEqual(absent.code, 0, absent.report)
+        self.assertIn("ownership is Unknown by absence (no appdoc-context.md)", absent.report)
+        self.assertIn("deployment runbook is Unknown by absence (no appdoc-context.md)", absent.report)
+        present = self.case("owner-present")
+        self.assertEqual(present.code, 0, present.report)
+        self.assertNotIn("Unknown by absence", present.report)
+
+
 if __name__ == "__main__":
     unittest.main()

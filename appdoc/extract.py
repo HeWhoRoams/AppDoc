@@ -16,8 +16,10 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
 
+from . import context
 from . import facts as F
 from . import scan, smells
+from .citations import OWNER_CONTEXT
 from .stacks import generic, load
 from .summary import render_summary
 
@@ -74,6 +76,24 @@ def _ownership(root: str, files: list[scan.SourceFile], ownership_top: int | Non
         top = sorted(names.items(), key=lambda kv: (-kv[1], kv[0]))[:3]
         yield F.Fact.make("ownership", "generic", folder, None, folder,
                           authors=[n for n, _ in top], commits=sum(names.values()))
+
+
+def _owner_context(root: str):
+    """Facts from `appdoc-context.md` at the Target root: one owner_file, one ownership per `Ownership:` line.
+
+    Only the role (e.g. "Business owner") and line are recorded, never the value, which may name a person.
+    """
+    path = os.path.join(root, OWNER_CONTEXT)
+    if not os.path.isfile(path):
+        return
+    with open(path, encoding="utf-8", errors="replace") as fh:
+        ctx = context.parse(fh.read())
+    # `kind` is a detail key and Fact.make's own first parameter, so build this Fact directly.
+    yield F.Fact("owner_file", "generic", OWNER_CONTEXT, None, OWNER_CONTEXT,
+                 (("entries", len(ctx.ownership) + len(ctx.never_mention)), ("kind", "context")))
+    for o in ctx.ownership:
+        yield F.Fact.make("ownership", "generic", OWNER_CONTEXT, o.line, o.role,
+                          role=o.role, source=OWNER_CONTEXT)
 
 
 # ------------------------------------------------------------------ caching
@@ -259,6 +279,7 @@ def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: boo
     for eco, markers in generic.unsupported_stacks(paths, set(detected)):
         facts.append(F.Fact.make("stack", "generic", markers[0], None, eco,
                                  marker_files=markers, file_count=len(markers), supported=False))
+    facts.extend(_owner_context(root))
     if not no_ownership:
         facts.extend(_ownership(root, files, ownership_top))
 

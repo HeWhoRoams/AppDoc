@@ -39,7 +39,6 @@ CORPUS = os.path.join(HERE, "corpus")
 PENDING: dict = {
     "test_config_env_roles": ("T25.21", "post-pass does not yet split code reads into env/ci/app; env keys flagged secret"),
     "test_config_env_reference_block": ("T25.23", "16.6 trailer does not yet report excluded env-var and CI keys"),
-    "test_owner_absent_advisory": ("T25.13", "C4 has no Unknown-by-absence advisory for ownership or the runbook"),
     "test_razor_page_is_a_ui_page": ("T25.30", "aspnet_core emits ui_page for XAML only, not .razor"),
     "test_ef_dbset_and_query_are_data_access": ("T25.31", "aspnet_core emits no EF data_access Facts"),
     "test_go_sql_open_and_xorm_are_connections": ("T25.33", "go stack emits no connection Facts"),

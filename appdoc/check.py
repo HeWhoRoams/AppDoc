@@ -9,6 +9,7 @@ import re
 import sys
 
 from . import __version__
+from . import context
 from . import docmodel as dm
 from . import fill as fill_mod
 from . import register as reg_mod
@@ -245,17 +246,33 @@ def _resolve(target: str, cache: dict, c) -> tuple[bool | None, str]:
 
 def _never_mention(target: str) -> list[str]:
     path = os.path.join(target, OWNER_CONTEXT)
-    if not os.path.isfile(path):
+    return context.parse(_read_text(path) if os.path.isfile(path) else None).never_mention
+
+
+def _rows_all_unknown(rows) -> bool:
+    return bool(rows) and all(_UNKNOWN_RE.search(r) for _, r in rows)
+
+
+def _absent_owner_advisories(lines, by_num, facts) -> list[str]:
+    """C4 advisories (never failures): ownership / runbook Unknown by absence of an owner file.
+
+    Needs the Facts file: without it, whether an owner file exists is not known, so say nothing.
+    """
+    if not facts or any(f.get("kind") == "owner_file" for f in facts.get("facts", [])):
         return []
-    terms, active = [], False
-    for line in _read_text(path).splitlines():
-        s = line.strip()
-        if s.startswith("```"):
-            active = (not active) and s[3:].strip() == "never-mention"
-            continue
-        if active and s:
-            terms.append(s)
-    return terms
+    out = []
+    s11 = by_num.get(11)
+    if s11 and _rows_all_unknown([c for c in _content_lines(lines, s11) if c[1].startswith("|")]):
+        out.append("ownership is Unknown by absence (no appdoc-context.md); add one to fill section 11")
+    s16 = by_num.get(16)
+    sub = _subsection(lines, s16, "16.5") if s16 else None
+    if sub:
+        rows = [(no, r) for no, r in _content_lines(lines, sub) if r.startswith("|")
+                and r.strip("| ").split("|")[0].strip().lower() in ("rollback", "backup", "restore")]
+        if _rows_all_unknown(rows):
+            out.append("deployment runbook is Unknown by absence (no appdoc-context.md); "
+                       "add one to fill section 16.5 Rollback, Backup and Restore")
+    return out
 
 
 def _spec_table(lines, heads, key):
@@ -961,6 +978,8 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
             add("C4", s8["start"], f"section 8 is empty but facts.json has {', '.join(kinds)} facts",
                 "document the connections, SQL and external calls, or state Unknown")
 
+    absent = _absent_owner_advisories(lines, by_num, facts)
+
     # C5
     c5 = []
     for n in range(3, 11):
@@ -1093,6 +1112,8 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                      "This is not a problem; `appdoc check --strict` fails on it.", ""]
         advisory += [f"- line {no}: `{text}`" for no, text in quant_hits[:RULE_CAP]]
         advisory.append("")
+    if absent:
+        advisory += ["## Gaps declared: Unknown by absence", "Advisory only; this is not a problem.", ""] + [f"- {m}" for m in absent] + [""]
     head = "# Check: PASS" if total == 0 else f"# Check: FAIL ({total} problem{'s' if total != 1 else ''})"
     cite_reg = ["## Citation register", "", "| Doc line | Cited path | Line/range | Resolved |", "|---|---|---|---|"]
     for c, ok in sorted(register, key=lambda r: (r[0].doc_line, r[0].raw)):
