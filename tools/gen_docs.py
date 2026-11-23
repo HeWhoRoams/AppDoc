@@ -10,7 +10,7 @@ A block is the text between `<!-- appdoc-self:generated NAME -->` and `<!-- /app
     SKILL.md                  run-commands
     ci/appdoc-docs-gate.yml   gate-header, gate-pin
 
-The sources are `__main__.build_parser()`, `check.RULE_TITLES`/`RULE_SUMMARIES`/`RULE_FLAGS`/`PREVIEW_RULES`,
+The sources are `__main__.build_parser()`, `check.RULES`,
 `facts.SCHEMA`/`KINDS`, `workflow.SKILL_STEPS` and `gate`'s exit codes. The gate pin is `v<version>` for a release
 version; a `.dev` version keeps the pin it has (the last tag that exists). Stdlib only.
 """
@@ -73,7 +73,9 @@ def commands(_current: str) -> str:
 
 
 def _kind(rule: str) -> str:
-    flags = check.RULE_FLAGS.get(rule, ())
+    flags = next(r.flags for r in check.RULES if r.id == rule)
+    if flags == ("advisory",):
+        return "advisory before template 2.7; fails from 2.7"
     if "advisory" in flags and "strict" in flags:
         return "advisory; fails under `--strict`"
     if "strict" in flags:
@@ -84,11 +86,11 @@ def _kind(rule: str) -> str:
 def rules(_current: str) -> str:
     out = [f"Rules {check.RULE_RANGE}. Each rule fails or is not reported; there is no score.", "",
            "| Rule | Name | Fails when | Kind |", "|---|---|---|---|"]
-    for rule, title in check.RULE_TITLES.items():
-        out.append(f"| {rule} | {title} | {_cell(check.RULE_SUMMARIES[rule])} | {_kind(rule)} |")
+    for r in check.RULES:
+        out.append(f"| {r.id} | {r.title} | {_cell(r.summary)} | {_kind(r.id)} |")
     out += ["", "Previews of template 2.7 rules. On a template 2.4 document these are advisories, listed in "
             "`check-report.md` as \"fails from template 2.7\"; they fail only on a document stamped 2.7:", ""]
-    out += [f"- {rule}: {text}" for rule, text in check.PREVIEW_RULES.items()]
+    out += [f"- {r.id}: {r.preview}" for r in check.RULES if r.preview]
     return "\n".join(out)
 
 

@@ -1437,5 +1437,30 @@ class Frozen22Tests(unittest.TestCase):
         return out
 
 
+class RuleRegistryTests(unittest.TestCase):
+    """F2: one registry; every rule check.py can raise is in it."""
+
+    def test_every_raised_rule_is_registered(self):
+        with open(check.__file__, encoding="utf-8") as fh:
+            src = fh.read()
+        raised = set(re.findall(r'\badd(?:27)?\(\s*"(C\d+)"', src)) | set(re.findall(r'problems\["(C\d+)"\]', src))
+        self.assertIn("C17", raised)
+        self.assertEqual(sorted(raised - {r.id for r in check.RULES}), [])
+
+    def test_rule_range_matches_registry(self):
+        ids = [r.id for r in check.RULES]
+        self.assertEqual(len(ids), len(set(ids)))
+        self.assertEqual(check.RULE_RANGE, "C1-C" + str(max(int(i[1:]) for i in ids)))
+        self.assertEqual(list(check.RULE_TITLES), ids)
+        self.assertEqual(list(check.RULE_SUMMARIES), ids)
+        self.assertTrue(all(r.title and r.summary for r in check.RULES))
+        self.assertEqual(set(check.RULE_FLAGS), {r.id for r in check.RULES if r.flags})
+        self.assertEqual(check.PREVIEW_RULES, {r.id: r.preview for r in check.RULES if r.preview})
+
+    def test_c17_is_titled_and_summarised(self):
+        self.assertTrue(check.RULE_TITLES["C17"])
+        self.assertIn("C17", check.RULE_SUMMARIES)
+
+
 if __name__ == "__main__":
     unittest.main()

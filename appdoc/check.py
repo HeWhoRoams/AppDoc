@@ -1,6 +1,6 @@
 """The Check: pass/fail verification of a finished Narrative. No score, no warnings.
 
-The module docstring is assigned below, after RULE_TITLES, so the rule range it names is the constant.
+The module docstring is assigned below, after RULES, so the rule range it names is the constant.
 """
 
 from __future__ import annotations
@@ -10,6 +10,7 @@ import json
 import os
 import re
 import sys
+from typing import NamedTuple
 
 from . import __version__, version
 from . import context
@@ -31,52 +32,69 @@ REGISTER = reg_mod.REGISTER
 
 SECTIONS = list(spec.SECTIONS)
 REQUIRED_SUBSECTIONS = spec.REQUIRED_SUBSECTIONS
-RULE_TITLES = {
-    "C1": "Citations resolve", "C2": "Security lines", "C3": "Sections complete", "C4": "Gaps declared",
-    "C5": "Claims grounded", "C6": "No secrets", "C7": "Coverage honest", "C8": "Structure complete",
-    "C9": "Tables conform", "C10": "References resolve", "C11": "Register valid",
-    "C12": "Finding candidates addressed", "C13": "Entry points not cited",  # C13 fails only under --strict
-    "C14": "Unknowns match the register", "C15": "Register counts in prose",
-    "C16": "Universal claims cite single lines",  # C16 is advisory; fails only under --strict
-    "C20": "Citation precision",                   # C20 is advisory; fails only under --strict
-}
-RULE_RANGE = f"C1-C{max(int(k[1:]) for k in RULE_TITLES)}"
+
+
+class Rule(NamedTuple):
+    """One Check rule. ``flags``: "advisory" and/or "strict" (see tools/gen_docs.py). ``preview`` is the
+    text of a 2.7 rule that is only an advisory on an older template ("" when there is none)."""
+    id: str
+    title: str
+    summary: str   # one sentence: what makes it fail; tools/gen_docs.py writes it into the README
+    flags: tuple = ()
+    preview: str = ""
+
+
+# The one rule registry (R5). Everything else about rules is derived from it below.
+RULES = (
+    Rule("C1", "Citations resolve",
+         "a Citation points to a missing file or a line past the end (folders and unique bare filenames resolve; "
+         "extensionless non-existent spans are not Citations)",
+         preview="a bare file name that resolves to a file in a folder: cite the full path"),
+    Rule("C2", "Security lines", "a Citation in section 10 has no line"),
+    Rule("C3", "Sections complete",
+         "a section is missing, out of order, empty or a placeholder, or the document is not on the current template"),
+    Rule("C4", "Gaps declared",
+         "section 14 is empty while Unknowns exist, or Data and Integrations is empty though Facts exist"),
+    Rule("C5", "Claims grounded",
+         "a paragraph, list item or table row in sections 3 to 10 is neither cited, Inferred nor Unknown"),
+    Rule("C6", "No secrets", "secret-shaped text, or a `never-mention` term, appears in a published file"),
+    Rule("C7", "Coverage honest",
+         "an unsupported Stack is not named in section 2; a count or a generated block differs from the Facts; "
+         "facts.json was written by another major.minor of AppDoc", ("strict",)),
+    Rule("C8", "Structure complete", "a required numbered subsection is missing, outside its section or empty"),
+    Rule("C9", "Tables conform",
+         "a table differs from the template (header, cell count, ID prefix, allowed value, required row), "
+         "the 5.3 Restriction line is missing, or a guidance comment remains",
+         preview="a section 10.1 or 15 row that outranks the row before it (Critical, High, Medium, Low)"),
+    Rule("C10", "References resolve",
+         "an ID is defined twice or referenced but not defined, or a reference between sections does not resolve"),
+    Rule("C11", "Register valid",
+         "`evidence.jsonl` is missing, malformed or does not cover the document; an anchor is not in its cited lines"),
+    Rule("C12", "Finding candidates addressed",
+         "a finding candidate is neither cited in 10.1 nor Dismissed in the register"),
+    Rule("C13", "Entry points not cited", "an entry point file is not cited anywhere in the document",
+         ("advisory", "strict")),   # fails only under --strict
+    Rule("C14", "Unknowns match the register",
+         "section 14 lists a question the register resolved, or its unknown count disagrees with the register"),
+    Rule("C15", "Register counts in prose", "a register count written in prose disagrees with the register"),
+    Rule("C16", "Universal claims cite single lines",
+         "a universal claim (all, every, never) cites only single lines", ("advisory", "strict")),
+    Rule("C17", "Audit scope names the method only",
+         "the audit record's scope text holds an ID or a digit (fails from template 2.7)", ("advisory",),
+         preview="the audit record's scope text holds an ID or a digit"),
+    Rule("C20", "Citation precision",
+         "a range over 100 lines is a claim's only lined Citation in section 4, 7 or 10, "
+         "or a section 4 or 10.1 table cell holds more than 5 Citations", ("advisory", "strict")),
+)
+RULE_TITLES = {r.id: r.title for r in RULES}
+RULE_SUMMARIES = {r.id: r.summary for r in RULES}
+# Rules that are advisory by default ("advisory") or fail only under --strict ("strict").
+RULE_FLAGS = {r.id: r.flags for r in RULES if r.flags}
+# Previews of template 2.7 rules: printed as "fails from template 2.7", never failing a 2.4 document.
+PREVIEW_RULES = {r.id: r.preview for r in RULES if r.preview}
+RULE_RANGE = f"C1-C{max(int(r.id[1:]) for r in RULES)}"
 __doc__ = (f"The Check: pass/fail verification of a finished Narrative (rules {RULE_RANGE}). "
            "No score, no warnings.")
-
-# One sentence per rule: what makes it fail. tools/gen_docs.py writes these into the README.
-RULE_SUMMARIES = {
-    "C1": "a Citation points to a missing file or a line past the end (folders and unique bare filenames resolve; "
-          "extensionless non-existent spans are not Citations)",
-    "C2": "a Citation in section 10 has no line",
-    "C3": "a section is missing, out of order, empty or a placeholder, or the document is not on the current template",
-    "C4": "section 14 is empty while Unknowns exist, or Data and Integrations is empty though Facts exist",
-    "C5": "a paragraph, list item or table row in sections 3 to 10 is neither cited, Inferred nor Unknown",
-    "C6": "secret-shaped text, or a `never-mention` term, appears in a published file",
-    "C7": "an unsupported Stack is not named in section 2; a count or a generated block differs from the Facts; "
-          "facts.json was written by another major.minor of AppDoc",
-    "C8": "a required numbered subsection is missing, outside its section or empty",
-    "C9": "a table differs from the template (header, cell count, ID prefix, allowed value, required row), "
-          "the 5.3 Restriction line is missing, or a guidance comment remains",
-    "C10": "an ID is defined twice or referenced but not defined, or a reference between sections does not resolve",
-    "C11": "`evidence.jsonl` is missing, malformed or does not cover the document; an anchor is not in its cited lines",
-    "C12": "a finding candidate is neither cited in 10.1 nor Dismissed in the register",
-    "C13": "an entry point file is not cited anywhere in the document",
-    "C14": "section 14 lists a question the register resolved, or its unknown count disagrees with the register",
-    "C15": "a register count written in prose disagrees with the register",
-    "C16": "a universal claim (all, every, never) cites only single lines",
-    "C20": "a range over 100 lines is a claim's only lined Citation in section 4, 7 or 10, "
-           "or a section 4 or 10.1 table cell holds more than 5 Citations",
-}
-# Rules that are advisory by default ("advisory") or fail only under --strict ("strict").
-RULE_FLAGS = {"C7": ("strict",), "C13": ("advisory", "strict"), "C16": ("advisory", "strict"),
-              "C20": ("advisory", "strict")}
-# Previews of template 2.7 rules: printed as "fails from template 2.7", never failing a 2.4 document.
-PREVIEW_RULES = {
-    "C1": "a bare file name that resolves to a file in a folder: cite the full path",
-    "C9": "a section 10.1 or 15 row that outranks the row before it (Critical, High, Medium, Low)",
-    "C17": "the audit record's scope text holds an ID or a digit",
-}
 FAILS_FROM = (2, 7)
 PREVIEW_HEADING = "## Template 2.7 previews (advisory)"
 WIDE_RANGE = 100   # C20: a lined range spanning more lines than this is imprecise
@@ -1033,7 +1051,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     dup_missing: list[dict] = []  # duplicate-folder pairs section 2 does not name (advisory unless --strict)
 
     def add(rule, line, msg, fix):
-        problems.setdefault(rule, []).append((line, msg, fix))
+        problems[rule].append((line, msg, fix))
 
     previews: list[tuple[str, int, str, str]] = []  # 2.7 rules on a document older than 2.7: advisory only
     bare: list = []                                  # (Citation, full path) bare names, a C1 preview
@@ -1258,7 +1276,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     body = []
     for rule, items in problems.items():
         if items:
-            body.append(f"## {rule} {RULE_TITLES.get(rule, '')}".rstrip())
+            body.append(f"## {rule} {RULE_TITLES[rule]}")
             body += [f"- line {no}: {msg}. Fix: {fix}" for no, msg, fix in items]
             body.append("")
     advisory = []

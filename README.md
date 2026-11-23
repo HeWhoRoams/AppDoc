@@ -119,6 +119,7 @@ Rules C1-C20. Each rule fails or is not reported; there is no score.
 | C14 | Unknowns match the register | section 14 lists a question the register resolved, or its unknown count disagrees with the register | fails |
 | C15 | Register counts in prose | a register count written in prose disagrees with the register | fails |
 | C16 | Universal claims cite single lines | a universal claim (all, every, never) cites only single lines | advisory; fails under `--strict` |
+| C17 | Audit scope names the method only | the audit record's scope text holds an ID or a digit (fails from template 2.7) | advisory before template 2.7; fails from 2.7 |
 | C20 | Citation precision | a range over 100 lines is a claim's only lined Citation in section 4, 7 or 10, or a section 4 or 10.1 table cell holds more than 5 Citations | advisory; fails under `--strict` |
 
 Previews of template 2.7 rules. On a template 2.4 document these are advisories, listed in `check-report.md` as "fails from template 2.7"; they fail only on a document stamped 2.7:
