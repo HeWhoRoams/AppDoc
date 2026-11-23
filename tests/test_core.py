@@ -402,6 +402,14 @@ class ScanTests(unittest.TestCase):
         _, stats = self.walk_stats()  # alpha: 4 of 9 (<50%)
         self.assertEqual(stats["duplicate_folders"], [])
 
+    def test_duplicate_threshold_ignores_empty_files(self):
+        for d in ("alpha", "beta"):
+            self._twin(d, 4)
+            for i in range(5):
+                self.write(f"{d}/empty{i}.py", "")
+        _, stats = self.walk_stats()  # 4 of the 4 hashed files match; the 5 empty files are not in the denominator
+        self.assertEqual(stats["duplicate_folders"], [{"a": "alpha/", "b": "beta/", "files": 4}])
+
     def test_duplicate_tie_break_sorted(self):
         # alpha, beta and gamma are identical: each pairs with the smallest other path.
         self._twin("gamma")
