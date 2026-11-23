@@ -616,10 +616,10 @@ def _block_detail(name, body, facts) -> str:
             f"application keys; the block has {len(rows)} shown)")
 
 
-def _c7_blocks(raw, heads, facts, out_dir, target, add):
+def _c7_blocks(raw, heads, facts, out_dir, target, add, doc_ver=()):
     ctx = {"out_dir": out_dir, "text": raw, "target": target}
     found = {name: (body, line) for name, body, line in fill_mod.blocks(normalize_newlines(raw))}
-    for key, name in spec.GENERATED.items():
+    for key, name in spec.generated_blocks(doc_ver).items():
         h = heads.get(key)
         line = h.idx + 1 if h else 1
         if name not in found:
@@ -1324,7 +1324,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         heads = dm.headings(lines)
         _c7_counts(target, lines, heads, facts, add)
         _c7_prose(lines, by_num, facts, add)
-        _c7_blocks(raw, heads, facts, out_dir, target, add)
+        _c7_blocks(raw, heads, facts, out_dir, target, add, doc_ver)
         _c9_tables(lines, raw, heads, add)
         ids = defined_ids(lines, heads, add)
         smell_fids = None if facts is None else {

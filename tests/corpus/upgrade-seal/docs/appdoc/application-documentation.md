@@ -151,6 +151,9 @@ flowchart LR
 |---|---|---|---|---|---|
 | Q-1 | Unknown: who deploys the service | Releases | Ask the team | Unknown | Medium |
 
+<!-- appdoc:generated closed-questions -->
+<!-- /appdoc:generated closed-questions -->
+
 ## 15. Recommendations
 
 | ID | Severity | Effort | Recommendation | Addresses |

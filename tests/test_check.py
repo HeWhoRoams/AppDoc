@@ -317,10 +317,19 @@ class CheckTests(unittest.TestCase):
 
     # --- 2.7: superseded rows (append-only register)
 
-    def run27(self, doc=None, **kw):
-        """Check a document stamped 2.7 (the running template patched to 2.7 for the call)."""
-        from unittest import mock
+    def doc27(self, doc=None, cq=True):
         doc = (doc or build_doc()).replace(spec.STAMP, "<!-- appdoc:template 2.7 -->")
+        if cq and "appdoc:generated closed-questions" not in doc:
+            doc = doc.replace("\n## 15. ", "\n" + self.CQ.format("") + "\n\n## 15. ", 1)
+        return doc
+
+    def run27(self, doc=None, cq=True, **kw):
+        """Check a document stamped 2.7 (the running template patched to 2.7 for the call).
+
+        A 2.7 document carries the closed-questions block under 14; `cq` adds empty markers when the test
+        document has none (pass cq=False to check the document as given)."""
+        from unittest import mock
+        doc = self.doc27(doc, cq)
         with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"):
             self.run_check(doc, **kw)                        # seals the register (sealed_by is printed in A.1) ...
             return self.run_check(doc, seal=False, **kw)     # ... so fill again, as `build` does, and check
@@ -379,7 +388,7 @@ class CheckTests(unittest.TestCase):
 
     def _audited(self, **extra):
         """A register whose line 1 carries the full audit provenance for the document under test."""
-        doc27 = build_doc().replace(spec.STAMP, "<!-- appdoc:template 2.7 -->")
+        doc27 = self.doc27()
         rec = dict(AUDIT, audited_on="2026-11-23", audited_with="2.7.0", audited_bundle="0123456789ab",
                    doc_sha=check.doc_sha(self.fill_doc(doc27)), **extra)
         self.write_register(rec, ROWS)
@@ -440,6 +449,31 @@ class CheckTests(unittest.TestCase):
         code, report, _ = self.run27()
         self.assertEqual(code, 0, report)
         self.assertIn("2 rows (1 superseded):", report.split("## Verification")[1])
+
+    # --- 2.7: the closed-questions block (T27.10)
+
+    CQ = "<!-- appdoc:generated closed-questions -->\n{}\n<!-- /appdoc:generated closed-questions -->"
+
+    def with_cq(self, body=""):
+        return build_doc({14: SECTION_BODY[14] + "\n\n" + self.CQ.format(body)})
+
+    def test_closed_questions_is_opaque(self):
+        self.assertEqual(spec.GENERATED["14"], "closed-questions")
+        self.assertIn("closed-questions", spec.OPAQUE_BLOCKS)
+        # opaque: what the block says changes neither the audit fingerprint nor the text the Check reads
+        a, b = self.with_cq("No questions were closed by the audit."), self.with_cq("Closed by the audit: Q-11 (16.3).")
+        self.assertEqual(check.doc_sha(a), check.doc_sha(b))
+        self.assertEqual(check.document_text(a), check.document_text(b))
+        self.assertNotIn("Q-11", check.document_text(b))
+        # it is required on 2.7 and later, never on 2.4
+        self.assertEqual(self.fired(build_doc()), set())
+        code, report, _ = self.run27(build_doc(), cq=False)
+        self.assertEqual(code, 2, report)
+        self.assertIn("generated block 'closed-questions' is missing from 14", report)
+        code, report, _ = self.run27(self.with_cq())
+        self.assertEqual(code, 0, report)
+        self.assertEqual(spec.generated_blocks((2, 4)), {k: v for k, v in spec.GENERATED.items() if k != "14"})
+        self.assertEqual(spec.generated_blocks((2, 7)), spec.GENERATED)
 
     def test_c11_2_4_document_keeps_the_old_duplicate_message(self):
         self.write_register(AUDIT, ROWS + [self.SECOND_V1])
@@ -817,13 +851,14 @@ class CheckTests(unittest.TestCase):
             self.assertRegex(text, rf"(?m)^### {re.escape(key)} {re.escape(title)}$")
         lines = dm.strip_comments(text).splitlines()
         heads = dm.headings(lines)
+        gen = spec.generated_blocks(spec.version_tuple(spec.TEMPLATE_VERSION))   # the blocks this template carries
         for key, ts in spec.TABLES.items():
-            if spec.GENERATED.get(key) not in (None, *spec.OPAQUE_BLOCKS):
+            if gen.get(key) not in (None, *spec.OPAQUE_BLOCKS):
                 continue  # its first table is the generated one
             t = dm.first_table(lines, heads[key])
             self.assertIsNotNone(t, key)
             self.assertEqual(t.header[:len(ts.columns)], list(ts.columns), key)
-        for name in spec.GENERATED.values():
+        for name in gen.values():
             self.assertIn(f"<!-- appdoc:generated {name} -->", text)
         self.assertIn(spec.RESTRICTION_LINE, text)
         self.assertIn("## Appendix A. Evidence Register and Verification", text)

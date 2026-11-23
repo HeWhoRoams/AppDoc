@@ -126,12 +126,21 @@ TABLES = {
 
 # Generated blocks: `appdoc fill` writes them from facts.json; the Check fails if they differ.
 # The key is the section it sits in; "appendix" is the unnumbered Appendix A heading.
-GENERATED = {"2.1": "scan-coverage", "4": "entry-points", "16.6": "config-reference",
+GENERATED = {"2.1": "scan-coverage", "4": "entry-points", "14": "closed-questions", "16.6": "config-reference",
              "16.7": "scheduled-jobs", "appendix": "appendix-a"}
+# A block a template added after 2.4: name -> the first template version that carries it. An older document is
+# not asked for it.
+GENERATED_SINCE = {"closed-questions": (2, 7)}
+
+
+def generated_blocks(version: tuple) -> dict:
+    """The GENERATED blocks a document of this template version (a `version_tuple`) must carry."""
+    return {key: name for key, name in GENERATED.items() if version >= GENERATED_SINCE.get(name, ())}
+
 
 # Generated blocks the Check does not read as Narrative: their tables, IDs and Citations are not the
 # writer's (a Citation inside one does not count as the document citing that file).
-OPAQUE_BLOCKS = ("entry-points", "scheduled-jobs", "appendix-a")
+OPAQUE_BLOCKS = ("entry-points", "scheduled-jobs", "closed-questions", "appendix-a")
 
 ID_PREFIXES = tuple(t.id_prefix for t in TABLES.values() if t.id_prefix)
 REGISTER_PREFIX = "E-"
