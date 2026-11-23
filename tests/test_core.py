@@ -683,6 +683,67 @@ class OwnerContextTests(unittest.TestCase):
         self.assertNotIn("Unknown by absence", present.report)
 
 
+
+class UpgradeStepTableTests(unittest.TestCase):
+    """T27.30: template_spec.UPGRADE_STEPS, the machine-readable steps `appdoc upgrade` applies."""
+
+    @staticmethod
+    def ops(version=None):
+        from appdoc import template_spec as spec
+        steps = spec.UPGRADE_STEPS
+        return [op for v in sorted(steps, key=spec.version_tuple) if version in (None, v) for op in steps[v]]
+
+    def test_upgrade_step_table_covers_every_version(self):
+        from appdoc import template_spec as spec
+        vt = spec.version_tuple
+        versions = sorted(spec.UPGRADE_STEPS, key=vt)
+        # one entry for each template that changed what a document holds: 2.1, 2.2, 2.3, 2.4 and the running 2.7
+        # (AppDoc 2.5 and 2.6 kept template 2.4); the chain starts at the template with no stamp
+        self.assertEqual(versions, ["2.1", "2.2", "2.3", "2.4", "2.7"])
+        self.assertEqual(spec.UPGRADE_FROM, "2.0")
+        self.assertEqual(versions[-1], spec.TEMPLATE_VERSION)
+        for v in versions:
+            self.assertEqual(spec.UPGRADE_STEPS[v][-1], ("stamp",), v)         # every step ends by stamping its version
+        # the closed vocabulary, each operation with arguments that name real spec entries
+        arity = {"stamp": 0, "section": 1, "subsection": 1, "appendix": 0, "block": 1, "reshape": 1, "rows": 1,
+                 "rename": 3, "column": 4, "line": 2}
+        for op in self.ops():
+            self.assertIn(op[0], arity, op)
+            self.assertEqual(len(op) - 1, arity[op[0]], op)
+        sections = {str(n) for n in range(1, len(spec.SECTIONS) + 1)}
+        for op in self.ops():
+            if op[0] == "section":
+                self.assertIn(op[1], sections)
+            if op[0] == "subsection":
+                self.assertIn(op[1], spec.REQUIRED_SUBSECTIONS)
+            if op[0] == "block":
+                self.assertIn(op[1], spec.GENERATED.values())
+            if op[0] in ("reshape", "rows", "rename", "column"):
+                self.assertIn(op[1], spec.TABLES)
+            if op[0] == "rows":
+                self.assertTrue(spec.TABLES[op[1]].required_rows, op)
+        # everything the current template carries beyond a bare 2.0 document is added by some step ...
+        self.assertTrue(set(spec.REQUIRED_SUBSECTIONS) <= {o[1] for o in self.ops() if o[0] == "subsection"})
+        self.assertEqual({o[1] for o in self.ops() if o[0] == "block"}, set(spec.GENERATED.values()))
+        self.assertTrue(any(o[0] == "appendix" for o in self.ops()))
+        tables = {o[1] for o in self.ops() if o[0] == "reshape"} | {"17"}   # 17 comes with its section
+        self.assertEqual(tables, set(spec.TABLES) - {"16.6"})              # 16.6 is the generated block's table
+        self.assertEqual({o[1] for o in self.ops() if o[0] == "rows"}, {"11", "16.5"})   # 17's rows come with the section
+        self.assertIn(("line", "5.3", spec.RESTRICTION_LINE), self.ops())
+        # ... and what a later template added is added by the step of that template
+        for n, since in spec.SECTIONS_SINCE.items():
+            self.assertIn(("section", str(n)), self.ops(".".join(map(str, since))))
+        for name, since in spec.GENERATED_SINCE.items():
+            self.assertIn(("block", name), self.ops(".".join(map(str, since))))
+        # the 2.2 to 2.4 renames and insertions a 2.1 or 2.2 document needs
+        self.assertIn(("rename", "5.3", "Area", "Capability"), self.ops("2.3"))
+        self.assertIn(("rename", "6", "Route", "Route or entry"), self.ops("2.2"))
+        self.assertTrue({"4", "4.1", "6", "8.1"} <= {o[1] for o in self.ops("2.2") if o[0] == "column"})
+        # a document is inferred as 2.1 when it carries these subsections
+        self.assertEqual(spec.SUBSECTIONS_2_1, ("4.1", "5.1", "5.2", "5.3", "8.4", "8.5", "10.1", "10.2", "15.1",
+                                                "16.1", "16.2", "16.3", "16.4", "16.5"))
+
+
 if __name__ == "__main__":
     unittest.main()
 

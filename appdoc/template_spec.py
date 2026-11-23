@@ -71,7 +71,8 @@ CONTROL_STATUS = ("Verified absent", "Not established", "Present")
 CONTROL_STATUS_PRESENT = "Present"
 RUNBOOK_STEPS = ("Build", "Test", "Deploy", "Upgrade", "Rollback", "Backup", "Restore", "Secret rotation")
 BUILD_STEPS = ("Prerequisites", "Restore dependencies", "Build", "Run", "Test")   # section 17, in order
-BUILD_UNKNOWN = "Unknown - see Open questions."   # the 17 Command cell values that are not a command
+UNKNOWN_TEXT = "Unknown - see Open questions."   # what a cell says when the repository does not show it
+BUILD_UNKNOWN = UNKNOWN_TEXT   # the 17 Command cell values that are not a command
 BUILD_NOT_APPLICABLE = "Not applicable"
 OWNERSHIP_ROWS = ("Business owner", "Technical owner", "Process owner", "Data and integration owners",
                   "Documentation owner", "Release and change process")
@@ -174,3 +175,66 @@ OPAQUE_BLOCKS = ("entry-points", "scheduled-jobs", "closed-questions", "appendix
 
 ID_PREFIXES = tuple(t.id_prefix for t in TABLES.values() if t.id_prefix)
 REGISTER_PREFIX = "E-"
+
+
+# --- `appdoc upgrade`: the steps that bring a document of an older template to the running one -------------------
+#
+# UPGRADE_STEPS[version] is the list of operations that take a document from the template before `version` to
+# `version`, applied in version order. Only the template versions that changed what a document holds have an
+# entry (AppDoc 2.5 and 2.6 kept template 2.4). Each operation is a tuple, from this closed vocabulary (appdoc/
+# upgrade.py applies it; every operation adds or renames and never removes text):
+#   ("section", n)                    add `## n. Title` with its guide comment and skeleton table, from the template
+#   ("subsection", ref)               add `### ref Title` likewise
+#   ("appendix",)                     add the Appendix A heading
+#   ("block", name)                   add the marker pair of the generated block `name` at its position (BLOCK_AT)
+#   ("reshape", key)                  the first table under heading `key` must match TABLES[key]; when it does not,
+#                                     add the template's skeleton and leave the old text under an
+#                                     `appdoc:upgrade-orphan` comment (C3 fails until it is moved and deleted)
+#   ("rows", key)                     add the required rows of TABLES[key] that are missing, as Unknown skeletons
+#   ("rename", key, old, new)         rename a header cell of the first table under `key`
+#   ("column", key, name, after, fill)  insert column `name` after column `after` (None = first), its cells `fill`:
+#                                     "ids" (sequential IDs of the table's prefix) or "unknown" (UNKNOWN_TEXT)
+#   ("line", key, text)               add a fixed line after the first table under `key`
+#   ("stamp",)                        write this step's version as the template stamp (always the last operation)
+UPGRADE_FROM = "2.0"   # a document with no stamp and without the 2.1 subsections
+SUBSECTIONS_2_1 = ("4.1", "5.1", "5.2", "5.3", "8.4", "8.5", "10.1", "10.2", "15.1",
+                   "16.1", "16.2", "16.3", "16.4", "16.5")   # a document with no stamp that has them is a 2.1 document
+
+# Where a block sits under its heading: "top" right after the heading's guide comment, "end" after the last
+# content of the heading's own body. The key is GENERATED's (the section the block lives in).
+BLOCK_AT = {"closed-questions": "end"}   # every other block is "top"
+
+UPGRADE_STEPS = {
+    "2.1": (
+        *(("subsection", k) for k in SUBSECTIONS_2_1 + ("8.1", "8.2", "8.3")),
+        *(("reshape", k) for k in ("1", "4", "4.1", "5.3", "6", "8.1", "8.3", "8.4", "9", "11", "13", "15", "16.4")),
+        ("stamp",),
+    ),
+    "2.2": (
+        ("subsection", "16.6"),
+        ("block", "scan-coverage"), ("block", "config-reference"),
+        ("column", "4", "Area", "ID", "unknown"),
+        ("column", "4.1", "Features", "Files", "unknown"),
+        ("rename", "6", "Route", "Route or entry"),
+        ("column", "6", "Reached from", "Route or entry", "unknown"),
+        ("column", "6", "ID", None, "ids"),
+        ("column", "8.1", "ID", None, "ids"),
+        *(("reshape", k) for k in ("1", "8.5", "10.1", "10.2", "14", "16.5")),
+        ("rows", "16.5"),
+        ("stamp",),
+    ),
+    "2.3": (
+        ("subsection", "16.7"), ("appendix",),
+        ("block", "entry-points"), ("block", "scheduled-jobs"), ("block", "appendix-a"),
+        ("rename", "5.3", "Area", "Capability"),
+        ("line", "5.3", RESTRICTION_LINE),
+        ("reshape", "11"), ("rows", "11"),
+        ("stamp",),
+    ),
+    "2.4": (("stamp",),),   # the tool changed (claim_sha, build, Facts schema 5); no heading, marker or header did
+    "2.7": (
+        ("block", "closed-questions"),
+        ("section", "17"),
+        ("stamp",),
+    ),
+}
