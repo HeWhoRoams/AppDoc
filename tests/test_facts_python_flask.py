@@ -150,6 +150,9 @@ class PythonFlaskFacts(unittest.TestCase):
     def test_byte_identical_two_runs(self):
         self.assertEqual(_run()[0], _run()[0])
 
+    def test_sqlalchemy_connection(self):
+        self.has("connection", "extensions.py", 4, "SQLAlchemy", type="sqlalchemy")
+
 
 if __name__ == "__main__":
     unittest.main()

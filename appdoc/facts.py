@@ -41,7 +41,7 @@ DETAIL_KEYS = {
     "file": frozenset("encoding ext lines size stacks".split()),
     "stack": frozenset("capabilities file_count marker_files supported".split()),
     "entry_point": frozenset(
-        "class codebehind controller enabled exists framework handler inherits inputs "
+        "class codebehind component controller enabled exists framework handler inherits inputs "
         "master method middleware page prefix_unresolved route_name schedule scheduler "
         "source type usage view".split()),
     "data_access": frozenset(

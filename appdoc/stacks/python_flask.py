@@ -237,6 +237,7 @@ def _extract(path: str, text: str) -> Iterable[Fact]:
     out.extend(_models(path, t))
     out.extend(_sql(path, t))
     out.extend(_connections(path, t))
+    out.extend(_flask_sqlalchemy(path, t))
     out.extend(_config(path, t))
     out.extend(_jobs(path, t))
     out.extend(_external(path, t))
@@ -375,6 +376,17 @@ def _connections(path, t):
                       or find_secret_shapes(probe) or re.search(r"://[^/\s\"']+:[^/\s\"']*@", probe))
         yield Fact.make("connection", STACK_ID, path, line_of(t, m.start()), name,
                         type="database", secret_location=bool(secret))
+
+
+_SQLA = re.compile(r"(?<![\w.])(?:flask_sqlalchemy\.)?SQLAlchemy\s*\(")
+
+
+def _flask_sqlalchemy(path, t):
+    for m in _SQLA.finditer(t):
+        if re.match(r"[ \t]*(?:class|def)\b", t[t.rfind("\n", 0, m.start()) + 1:m.start()]):
+            continue
+        yield Fact.make("connection", STACK_ID, path, line_of(t, m.start()), "SQLAlchemy", type="sqlalchemy",
+                        secret_location=False)
 
 
 def _split_pos(args: str):

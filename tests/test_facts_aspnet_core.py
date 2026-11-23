@@ -181,7 +181,7 @@ class AspNetCoreFacts(unittest.TestCase):
             if f["kind"] == "entry_point":
                 self.assertIn(f["detail"]["type"], ("route", "page", "handler", "job"))
             if f["kind"] == "data_access":
-                self.assertIn(f["detail"]["type"], ("stored_procedure", "sql", "entity", "repository"))
+                self.assertIn(f["detail"]["type"], ("stored_procedure", "sql", "entity", "repository", "ef"))
 
     def test_no_secret_values_in_facts(self):
         secrets = set()
@@ -200,6 +200,25 @@ class AspNetCoreFacts(unittest.TestCase):
 
     def test_two_runs_identical(self):
         self.assertEqual(run(), run())
+
+    def test_razor_ui_page(self):
+        self.assertTrue(self.has("ui_page", "Pages/Counter.razor", 1, "Pages/Counter.razor",
+                                 root="Pages/Counter.razor", route="/counter"))
+
+    def test_ef_dbset_data_access(self):
+        self.assertTrue(self.has("data_access", "Data/AppDbContext.cs", 8, "Tickets", type="ef", operation="set"))
+        self.assertTrue(self.has("data_access", "Data/AppDbContext.cs", 9, "Comments", type="ef", operation="set",
+                                 entity="Comment"))
+        self.assertTrue(self.has("data_access", "Data/AppDbContext.cs", 18, "ExecuteSqlRaw", type="ef", operation="query"))
+        qs = [f for f in self.facts if f["path"] == "Data/TicketQueries.cs" and f["kind"] == "data_access"]
+        self.assertEqual([(f["line"], f["detail"]["operation"]) for f in qs], [(10, "query"), (12, "query")])
+
+    def test_httpclient_external_call(self):
+        self.assertTrue(self.has("external_call", "Services/PagerClient.cs", 9, "https://status.fixture.internal/v1/health",
+                                 type="http", via="HttpClient", method="GET"))
+        self.assertTrue(self.has("external_call", "Services/PagerClient.cs", 11, "HttpClient.SendAsync", via="HttpClient"))
+        self.assertTrue(self.has("external_call", "Services/NotificationService.cs", 21,
+                                 "https://pager.fixture.internal/v1/notify", via="HttpClient", method="POST"))
 
 
 if __name__ == "__main__":

@@ -284,6 +284,50 @@ def _data_and_calls(path, ctx: Ctx):
         yield Fact.make("connection", STACK_ID, path, ctx.line(m.start()), m.group(1), type="database", secret_location=True)
 
 
+_EF_HINT = re.compile(r"EntityFrameworkCore|\bDbContext\b|\bDbSet\s*<")
+_DBSET = re.compile(r"\bDbSet\s*<\s*([\w.]+)\s*>\s+(\w+)\s*(?:\{|=>|;)")
+_EF_QUERY = re.compile(r"(?:\b(\w+)\s*)?\.\s*(Where|ToListAsync|FirstOrDefaultAsync|ExecuteSqlRaw)\s*\(")
+_HTTP_VERBS = re.compile(r"\.\s*(SendAsync|PostAsync|GetAsync|GetStringAsync)\s*\(\s*(" + STR + ")?")
+
+
+def _ef(path, ctx: Ctx):
+    t = ctx.t
+    if not _EF_HINT.search(t):
+        return
+    for m in _DBSET.finditer(t):
+        yield Fact.make("data_access", STACK_ID, path, ctx.line(m.start()), m.group(2), type="ef", operation="set",
+                        entity=m.group(1).rsplit(".", 1)[-1])
+    seen = set()
+    for m in _EF_QUERY.finditer(t):
+        line = ctx.line(m.start(2))
+        if line in seen:
+            continue
+        seen.add(line)
+        recv = m.group(1)
+        name = recv if recv and m.group(2) != "ExecuteSqlRaw" else m.group(2)
+        yield Fact.make("data_access", STACK_ID, path, line, name, type="ef", operation="query")
+
+
+def _httpclient(path, ctx: Ctx):
+    t = ctx.t
+    if "HttpClient" not in t and "CreateClient" not in t:
+        return
+    for m in _HTTP_VERBS.finditer(t):
+        verb = m.group(1)
+        d = dict(type="http", via="HttpClient")
+        if verb != "SendAsync":
+            d["method"] = {"PostAsync": "POST"}.get(verb, "GET")
+        name = f"HttpClient.{verb}"
+        if m.group(2):
+            lit = _unq(m.group(2))
+            sp = urlsplit(lit)
+            if sp.scheme and sp.netloc:
+                name = f"{sp.scheme}://{sp.netloc.rsplit('@', 1)[-1]}{sp.path}"
+            elif lit and not sp.scheme:
+                name = sp.path or name
+        yield Fact.make("external_call", STACK_ID, path, ctx.line(m.start()), _safe(name, 200), **d)
+
+
 def _messages(path, ctx: Ctx):
     t = ctx.t
     verbs = r"BadRequest|NotFound|Unauthorized|Conflict|UnprocessableEntity|Forbid|ValidationProblem"
@@ -332,6 +376,7 @@ def _razor_pages(path, text):
         if path.lower().endswith(".razor"):
             route = _norm(tm) if tm is not None else _norm(path)
             yield Fact.make("entry_point", STACK_ID, path, line, route, type="page", component=True)
+            yield Fact.make("ui_page", STACK_ID, path, line, path, root=path, route=route)
         else:
             yield Fact.make("entry_point", STACK_ID, path, line, _page_route(path, tm), type="page", method="GET,POST")
 
@@ -523,6 +568,8 @@ class AspNetCoreStack(Stack):
             yield from _page_models(path, ctx, classes)
             yield from _minimal_apis(path, ctx)
             yield from _data_and_calls(path, ctx)
+            yield from _ef(path, ctx)
+            yield from _httpclient(path, ctx)
             yield from _messages(path, ctx)
             yield from integrations.scan_facts("dotnet", STACK_ID, path, strip_comments(text, "c"))
         elif ext in (".cshtml", ".razor"):

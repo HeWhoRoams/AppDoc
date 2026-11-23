@@ -150,6 +150,22 @@ class GoFacts(unittest.TestCase):
     def test_byte_identical_two_runs(self):
         self.assertEqual(_run()[0], _run()[0])
 
+    def test_go_connection(self):
+        p = "store/db.go"
+        self.has("connection", p, 11, "sql.Open", type="database")
+        self.has("connection", p, 12, "sqlx.Open", type="database")
+        self.has("connection", p, 13, "xorm.NewEngine", type="database")
+
+    def test_go_register_model_schema(self):
+        p = "store/db.go"
+        self.has("schema_object", p, 15, "Ticket", type="table")
+        self.has("schema_object", p, 16, "Comment", type="table")
+
+    def test_go_template_ui_page(self):
+        self.has("ui_page", "templates/home.html", 1, "templates/home.html", root="templates/home.html")
+        self.has("ui_page", "templates/admin/users.html", 1, "templates/admin/users.html")
+        self.assertEqual(len([f for f in self.facts if f["kind"] == "ui_page"]), 2)
+
 
 if __name__ == "__main__":
     unittest.main()

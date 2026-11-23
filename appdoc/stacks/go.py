@@ -14,7 +14,7 @@ from bisect import bisect_left, bisect_right
 from typing import Iterable
 
 from ..facts import Fact
-from ..secrets import is_secret_key
+from ..secrets import find_secret_shapes, is_secret_key
 from .base import Stack
 
 STACK_ID = "go"
@@ -22,7 +22,7 @@ STACK_ID = "go"
 
 class GoStack(Stack):
     id = STACK_ID
-    extensions = frozenset({".go"})
+    extensions = frozenset({".go", ".html"})
 
     def detect(self, files: list[str]) -> list[str]:
         def vendored(f):
@@ -34,8 +34,11 @@ class GoStack(Stack):
         return []
 
     def extract(self, path: str, text: str) -> Iterable[Fact]:
-        if "vendor" in path.split("/")[:-1]:
+        parts = path.split("/")[:-1]
+        if "vendor" in parts:
             return ()
+        if path.lower().endswith(".html"):
+            return _templates(path, parts)
         return _extract(path, text)
 
 
@@ -625,13 +628,48 @@ def _external(src: _Src, path: str):
         yield Fact.make("external_call", STACK_ID, path, src.line(m.start()), _safe_url(url) if url else "http." + verb, **d)
 
 
+# ---------------------------------------------------------------- connections, models, templates
+
+_CONNECT = re.compile(r"(?<![\w.])(sql\.Open|sqlx\.Open|xorm\.NewEngine)\s*\(")
+_REGISTER = re.compile(r"\.\s*RegisterModel\s*\(")
+
+
+def _connections(src: _Src, path: str):
+    t = src.t
+    for m in _CONNECT.finditer(t):
+        spans, _ = _scan(t, m.end() - 1)
+        probe = " ".join(t[a:b] for a, b in spans[1:])
+        secret = bool(is_secret_key(probe) or find_secret_shapes(probe)
+                      or re.search(r"(?i)password=|://[^/\s\"'`:@]+:[^/\s\"'`@]*@", probe))
+        yield Fact.make("connection", STACK_ID, path, src.line(m.start()), m.group(1), type="database",
+                        secret_location=secret)
+
+
+def _models(src: _Src, path: str):
+    t = src.t
+    for m in _REGISTER.finditer(t):
+        spans, _ = _scan(t, m.end() - 1)
+        for a, b in spans:
+            arg = t[a:b].strip()
+            mm = re.fullmatch(r"(?:new\s*\(\s*([\w.]+)\s*\)|&?\s*([\w.]+)\s*\{\s*\})", arg)
+            if mm:
+                yield Fact.make("schema_object", STACK_ID, path, src.line(m.start()), mm.group(1) or mm.group(2),
+                                type="table")
+
+
+def _templates(path: str, dirs: list[str]):
+    if "templates" in dirs:
+        yield Fact.make("ui_page", STACK_ID, path, 1, path, root=path)
+
+
 # ---------------------------------------------------------------- main
 
 # Cheap substring gates on the raw text: most files carry none of these and skip the comment pass.
 _GATES = (".Group(", ".Route(", ".Combo(", ".Methods(", "Handle", ".Get(", ".Post(", ".Put(", ".Patch(", ".Delete(",
           ".Head(", ".Options(", ".Any(", ".GET(", ".POST(", ".PUT(", ".PATCH(", ".DELETE(", ".Use(", ".Connect(",
           "Command", "RegisterTask", ".AddFunc(", ".AddJob(", ".Key(", "Getenv", "LookupEnv", "viper", ".Query", ".Exec",
-          ".Prepare", ".Select(", ".NamedExec", ".MustExec", "http.")
+          ".Prepare", ".Select(", ".NamedExec", ".MustExec", "http.", "sql.Open", "sqlx.Open", "NewEngine",
+          "RegisterModel")
 
 
 def _extract(path: str, text: str) -> Iterable[Fact]:
@@ -646,10 +684,13 @@ def _extract(path: str, text: str) -> Iterable[Fact]:
         out.extend(_jobs(src, path))
     out.extend(_config(src, path))
     out.extend(_sql(src, path))
+    out.extend(_connections(src, path))
+    if "RegisterModel" in t:
+        out.extend(_models(src, path))
     if "http." in t:
         out.extend(_external(src, path))
     return list(dict.fromkeys(out))
 
 
 capabilities = frozenset(
-    "auth_check config_key data_access entry_point external_call".split())
+    "auth_check config_key connection data_access entry_point external_call schema_object ui_page".split())
