@@ -112,6 +112,41 @@ def analyze(base, name):
         "scan": cov, "retired_candidates": ret,
     }
 
+def _json(path):
+    try:
+        return json.loads(_read(path))
+    except ValueError:
+        return {}
+
+def baselines(base, name):
+    """Facts-level numbers the 2.6.0 work must move, read from one example folder.
+
+    Tolerant of both layouts: 2.5.0 examples carry `generator` in facts.json and no provenance.json;
+    2.6.0 examples carry provenance.json instead.
+    """
+    d = os.path.join(base, name)
+    doc = _json(os.path.join(d, "facts.json"))
+    narrative = _read(os.path.join(d, "application-documentation.md"))
+    report = _read(os.path.join(d, "check-report.md"))
+    scan = (doc.get("target") or {}).get("scan") or {}
+    retired = scan.get("retired_candidates") or []
+    cites = CITE_LINE.findall(report)
+    prov = _json(os.path.join(d, "provenance.json"))
+    m = re.search(r"(\d+) keys? in (\d+) file\S* were not classified", narrative)
+    return {
+        "retired_name": sum(1 for c in retired if c.get("signal") == "name"),
+        "retired_content": sum(1 for c in retired if c.get("signal") == "content"),
+        "duplicate_pairs": len(scan.get("duplicate_folders") or []),
+        "capabilities": sorted({c for st in doc.get("stacks", []) for c in (st.get("detail") or {}).get("capabilities") or []}),
+        "stacks": len(doc.get("stacks", [])),
+        "secret_locations": sum(1 for f in doc.get("facts", [])
+                                if f.get("kind") == "config_key" and (f.get("detail") or {}).get("secret_location")),
+        "not_classified": (int(m.group(1)), int(m.group(2))) if m else None,
+        "bare_name_cites": sum(1 for _, path, _, _ in cites if "/" not in path.strip("/")),
+        "cites_total": len(cites),
+        "generator": doc.get("generator") or prov.get("generator"),
+    }
+
 def main():
     base = sys.argv[1]
     names = sys.argv[2:]

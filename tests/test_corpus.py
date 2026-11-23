@@ -36,7 +36,34 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CORPUS = os.path.join(HERE, "corpus")
 
 # test method name -> (task ID, why it fails today). Delete the entry when the task lands.
-PENDING: dict = {}
+PENDING: dict = {
+    "test_caps_routes_stack_declares_route_capability":
+        ("T26.22", "stack capabilities are recorded as [] (CRIT-01)"),
+    "test_caps_routes_16_7_never_says_no_capability":
+        ("T26.24", "16.7 prints 'no entry-point capability' for a Stack that extracts routes"),
+    "test_dup_twins_are_a_duplicate_pair_not_retired":
+        ("T26.31", "byte-identical folders are reported as retired by content; no duplicate_folders list"),
+    "test_dup_tests_under_test_paths_are_ignored":
+        ("T26.30", "duplicate test folders are reported as retired by content"),
+    "test_dup_nested_reports_the_outer_folder_once":
+        ("T26.32", "old/ and old/sub/ are both reported"),
+    "test_prior_appdoc_output_is_pruned":
+        ("T26.35", "a folder holding AppDoc output is scanned as source (T26.36 adds the 2.1 disclosure copy)"),
+    "test_skill_bundle_in_target_is_pruned":
+        ("T26.35", "an AppDoc skill bundle inside the Target is scanned as source"),
+    "test_ini_split_promotes_the_file":
+        ("T26.37", "keys of a file that code reads stay 'unclassified'"),
+    "test_ini_split_secret_names_are_segment_aware":
+        ("T26.38", "MIN_PASSWORD_LENGTH is marked secret_location by substring"),
+    "test_wide_range_is_a_c20_advisory":
+        ("T26.50", "C20 does not exist"),
+    "test_wide_range_fails_under_strict":
+        ("T26.50", "C20 does not exist"),
+    "test_gate_layout_exit_codes":
+        ("T26.52", "there is no `gate` command"),
+    "test_patch_upgrade_gate_exits_0":
+        ("T26.52", "there is no `gate` command"),
+}
 
 
 @dataclass
@@ -206,6 +233,149 @@ class OpenItems(CorpusCase):
         r = self.case("flask-sa")
         self.assertEqual([(f["path"], f["line"]) for f in r.facts_of("connection", type="sqlalchemy")],
                          [("app.py", 5)])
+
+
+def _facts_scan(r):
+    return (r.facts.get("target") or {}).get("scan") or {}
+
+
+def _block(r, name):
+    m = re.search(rf"<!-- appdoc:generated {name} -->(.*?)<!-- /appdoc:generated {name} -->", r.narrative, re.S)
+    return m.group(1) if m else ""
+
+
+class Phase1Behaviour(CorpusCase):
+    """Release 2.6.0 cases, written to the NEW behaviour; PENDING lists the task that makes each pass."""
+
+    def test_caps_routes_stack_declares_route_capability(self):
+        r = self.case("caps-routes")
+        self.assertTrue(r.facts_of("entry_point", type="route"), "the case must extract a route")
+        caps = r.facts["stacks"][0]["detail"]["capabilities"]
+        self.assertIn("entry_point.route", caps)
+
+    def test_caps_routes_16_7_never_says_no_capability(self):
+        r = self.case("caps-routes")
+        self.assertEqual(r.fill_code, 0, r.log)
+        for name in ("scheduled-jobs", "entry-points"):
+            self.assertNotIn("no entry-point capability", _block(r, name))
+        self.assertTrue(_block(r, "scheduled-jobs").strip())
+
+    def test_dup_twins_are_a_duplicate_pair_not_retired(self):
+        sc = _facts_scan(self.case("dup-twins"))
+        self.assertEqual(sc.get("retired_candidates"), [])
+        pairs = sc.get("duplicate_folders")
+        self.assertEqual(len(pairs or []), 1, pairs)
+        a, b = pairs[0]["a"], pairs[0]["b"]
+        self.assertEqual((a.rstrip("/"), b.rstrip("/"), pairs[0]["files"]), ("alpha", "beta", 5))
+
+    def test_dup_tests_under_test_paths_are_ignored(self):
+        sc = _facts_scan(self.case("dup-tests"))
+        self.assertEqual(sc.get("retired_candidates"), [])
+        self.assertEqual(sc.get("duplicate_folders", []), [])
+
+    def test_dup_nested_reports_the_outer_folder_once(self):
+        sc = _facts_scan(self.case("dup-nested"))
+        retired = [c["path"] for c in sc.get("retired_candidates", [])]
+        self.assertEqual(retired, ["old/"])
+        for pair in sc.get("duplicate_folders", []):
+            for side in (pair["a"], pair["b"]):
+                self.assertFalse(side.startswith("old/sub"), pair)
+
+    def test_prior_appdoc_output_is_pruned(self):
+        r = self.case("prior-output")
+        pruned = {p["path"]: p for p in _facts_scan(r).get("pruned", [])}
+        self.assertEqual(pruned.get("previous-docs/", {}).get("rule"), "AppDoc output", pruned)
+        self.assertFalse([f for f in r.facts_of("file") if f["path"].startswith("previous-docs/")])
+
+    def test_skill_bundle_in_target_is_pruned(self):
+        r = self.case("skill-in-target")
+        pruned = {p["path"]: p for p in _facts_scan(r).get("pruned", [])}
+        self.assertEqual(pruned.get("tools/appdoc-skill/", {}).get("rule"), "AppDoc skill bundle", pruned)
+        self.assertFalse([f for f in r.facts_of("file") if f["path"].startswith("tools/appdoc-skill/")])
+
+    def test_ini_split_promotes_the_file(self):
+        r = self.case("ini-split")
+        ini = [f for f in r.facts_of("config_key") if f["path"] == "conf/app.ini"]
+        self.assertEqual(sorted(f["name"] for f in ini),
+                         ["MIN_PASSWORD_LENGTH", "SECRET_KEY", "server.DOMAIN", "server.HTTP_PORT"])
+        self.assertEqual({f["detail"]["role"] for f in ini}, {"app"})
+
+    def test_ini_split_secret_names_are_segment_aware(self):
+        r = self.case("ini-split")
+        by = {f["name"]: f["detail"] for f in r.facts_of("config_key") if f["path"] == "conf/app.ini"}
+        self.assertFalse(by["MIN_PASSWORD_LENGTH"].get("secret_location"), "a length is not a secret")
+        self.assertTrue(by["SECRET_KEY"].get("secret_location"))
+
+    def test_wide_range_is_a_c20_advisory(self):
+        r = self.case("wide-range")
+        self.assertEqual(r.code, 0, r.report)
+        self.assertNotIn("C20", r.rules())
+        self.assertIn("## Citation precision (advisory)", r.report)
+        self.assertIn("app/main.py:1-150", r.report.split("## Citation precision (advisory)")[1].split("\n## ")[0])
+
+    def test_wide_range_fails_under_strict(self):
+        r = self.case("wide-range", strict=True)
+        self.assertEqual(r.code, 2, r.report)
+        self.assertIn("C20", r.rules())
+
+
+def _gate(target, *args):
+    import subprocess
+    import sys
+    launcher = os.path.join(os.path.dirname(HERE), "run_appdoc.py")
+    return subprocess.run([sys.executable, launcher, "gate", target, *args], capture_output=True, text=True)
+
+
+class GateCases(CorpusCase):
+    def test_gate_layout_exit_codes(self):
+        r = self.case("gate-layout")
+        self.assertEqual(r.code, 0, r.report)
+        res = _gate(r.target)
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+        self.assertFalse(os.path.exists(os.path.join(r.target, ".appdoc-regen")), "the regen folder must be removed")
+        with open(os.path.join(r.target, "app", "main.py"), "a", encoding="utf-8") as fh:
+            fh.write("# line 11 a code change after the Facts were committed\n")
+        res = _gate(r.target)
+        self.assertEqual(res.returncode, 2, res.stdout + res.stderr)
+        self.assertIn("Facts changed", res.stdout + res.stderr)
+        with open(os.path.join(r.target, "app", "main.py"), encoding="utf-8") as fh:
+            lines = fh.read().splitlines(True)
+        with open(os.path.join(r.target, "app", "main.py"), "w", encoding="utf-8", newline="") as fh:
+            fh.write("".join(lines[:-1]))
+        facts_path = os.path.join(r.out, "facts.json")
+        with open(facts_path, encoding="utf-8") as fh:
+            doc = json.load(fh)
+        doc["schema"] = "appdoc-facts/0"
+        with open(facts_path, "w", encoding="utf-8", newline="\n") as fh:
+            json.dump(doc, fh, indent=1, sort_keys=True)
+        res = _gate(r.target)
+        self.assertEqual(res.returncode, 3, res.stdout + res.stderr)
+        self.assertIn("AppDoc upgraded", res.stdout + res.stderr)
+
+    def test_patch_upgrade_gate_exits_0(self):
+        r = self.case("patch-upgrade")
+        prov_path = os.path.join(r.out, "provenance.json")
+        with open(prov_path, encoding="utf-8") as fh:
+            prov = json.load(fh)
+        prov.update(generator="2.6.0", bundle="0" * 12)   # committed by an older patch of the same major.minor
+        with open(prov_path, "w", encoding="utf-8", newline="\n") as fh:
+            json.dump(prov, fh, indent=1, sort_keys=True)
+        res = _gate(r.target)
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+
+    def test_patch_upgrade_check_passes(self):
+        """T26.06: a patch difference in provenance.json is not version skew (a regular test, not pending)."""
+        r = self.case("patch-upgrade")
+        prov_path = os.path.join(r.out, "provenance.json")
+        with open(prov_path, encoding="utf-8") as fh:
+            prov = json.load(fh)
+        major_minor = ".".join(prov["generator"].split(".")[:2])
+        prov.update(generator=major_minor + ".99", bundle="f" * 12)
+        with open(prov_path, "w", encoding="utf-8", newline="\n") as fh:
+            json.dump(prov, fh, indent=1, sort_keys=True)
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = check.run(r.target, r.out)
+        self.assertEqual(code, 0)
 
 
 def _apply_pending():
