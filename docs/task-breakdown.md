@@ -9,12 +9,26 @@
 
 ---
 
+## Decisions taken 2026-11-23
+
+| Q | Decision | Effect on the tasks |
+|---|---|---|
+| Q23 | `appdoc upgrade` ships in **2.7.0** | T27.30–32 are in scope; T28.B0 is dropped; 2.7 ≈ 103 h |
+| Q24 | Synthetic `mvc5-classic` Target now; real public repository later | T90.03 stays deferred |
+| Q31 | Record connection targets: **yes**, behind `Record connection targets: yes` in `appdoc-context.md`, off by default | T28.22 parses the directive; T29.04 builds the matrix |
+| Q32 | Remove git author names from `ownership` Facts in **2.6.0** (same schema bump); R18 carries a written exemption naming `ownership` until then | new task T26.66 (≈ 4 h) |
+| Tag | Tag `v2.4.0` at `9241c2f`; push the tag with the next push to `main` | T00.1 |
+| Order | 2.5 → 2.6 → 2.7 → 2.8 → 2.9; the 2.8 `.config` slice is not pulled forward | — |
+| Process | Parallel subagent streams in isolated worktrees, merged by the integrator | — |
+
+---
+
 ## 0. Do first (independent of everything)
 
 | ID | Task | Where | Done when | Needs | h |
 |---|---|---|---|---|---|
 | T00.1 | Tag `v2.4.0` at `9241c2f` and push the tag | git | `git ls-remote --tags origin` lists `v2.4.0`; the gate YAML's pin has a target | — | 0.25 |
-| T00.2 | Decide Q23 (`appdoc upgrade` in 2.7 or 2.8), Q24 (public MVC example), Q31 (record connection targets?), Q32 (`ownership` author names) | plans | decisions written into the plans' tables | — | 0.5 |
+| T00.2 | **Done 2026-11-23** (see Decisions): Q23 (`appdoc upgrade` in 2.7 or 2.8), Q24 (public MVC example), Q31 (record connection targets?), Q32 (`ownership` author names) | plans | decisions written into the plans' tables | — | 0.5 |
 | T00.3 | Confirm `ws1/foundation-standardize-output` is not wanted, or merge it | git | branch deleted or merged | — | 0.5 |
 
 ---
@@ -148,6 +162,7 @@ Start: set `__version__ = "2.6.0.dev0"`, add `## Unreleased` to the CHANGELOG (T
 | T26.62 | `tests/test_scale.py`: 10,000-file synthetic tree within time budget; content index reads each file once | `tests/test_scale.py` | green on both OSes | T26.30 | 2 |
 | T26.63 | Example layout migration: `examples/current/<app>/` and `examples/previous/<app>/` with `VERSION`; previous = 2.5.0 examples; delete older folders (unsuffixed 2.3, `*-2.4`); `examples/helpweb/` stays gitignored | `examples/` | `test_release::test_examples_current_and_previous` | T26.57 | 2 |
 | T26.64 | Mechanical regeneration of `current` (clean clone at each `target.commit`, assert no `docs/appdoc*`, copy 2.5.0 Narrative and register, `extract`, `build`); A.1 discloses regeneration after the audit; generate `docs/diagnostic-2.6.0-comparison.md`; confirm expected movement (name-only retired 0, duplicate pairs, capabilities non-empty, gitea trailer drops `app.example.ini`, secret-location count falls, no AppDoc output scanned, cross-OS hashes equal) | `examples/`, docs | `build` passes for all four | T26.63, all Phase 1 | 8 |
+| T26.66 | Remove git author names from `ownership` Facts (keep counts and dates); update R18 text, `facts.DETAIL_KEYS["ownership"]`, summary, examples | `extract.py`, `facts.py`, docs | `test_core::test_ownership_has_no_author_names` | T26.20 | 4 |
 | T26.65 | `facts.SCHEMA = "appdoc-facts/7"`; fix pinned `/6` tests; `CHANGELOG 2.6.0` with upgrade notes (re-extract; expect "fails from template 2.7" advisories; gate exits 3 until `facts.json` re-extracted); run `tools/release.py 2.6.0`; tag | `facts.py`, CHANGELOG | tag exists, CI green | all of 2.6 | 2 |
 
 **2.6 critical path:** T26.03 → T26.04 → T26.52 → T26.55 → T26.57 → T26.63 → T26.64 → T26.65. Streams that run in parallel after T26.12: capabilities (2B), scan and config (2C), C20 (T26.50).

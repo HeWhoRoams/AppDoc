@@ -645,15 +645,15 @@ Two advisories in the 2.6 §5.1 family (citation precision; same file list), lab
 |---|---|---|
 | **Q30** | **Resolved 2026-11-23: `main` is the base.** (Was: base reconciliation, blocking.) The plan builds on the `v2.5.0` line; GitHub `main` is a separate 2.0.0 line with the performance and integration work. Merge the performance line onto `v2.5.0` (or the reverse), or choose another base? | Done: the `v2.5.0` branch and the performance and integration work are merged on `main` (`2e59393`). |
 | Q22 | Split into **2.8.0** (security and access, every template change) and **2.9.0** (integrations, CI, repository docs; no template bump)? | **Yes.** Each release stays near the size of 2.6/2.7 and the security gaps ship first. (Under rev 3's estimates 2.8 is still large; the first slice is in §12.) |
-| Q23 | Ship `appdoc upgrade` in **2.7.0**? | **Yes if 2.7 can take about 2 days.** 2.7 rev 2 §3.11 now holds the specification; W15 here covers only 2.8's steps. Otherwise 2.8 carries all of it. Decide before 2.7 starts. |
-| Q24 | Classic MVC public example: synthetic `mvc5-classic`, or a public repository? | Synthetic now. Adopt a real public repository with transforms and Windows auth when one is found, to supply real-world false-positive data. |
+| Q23 | Ship `appdoc upgrade` in **2.7.0**? | **Yes if 2.7 can take about 2 days.** 2.7 rev 2 §3.11 now holds the specification; W15 here covers only 2.8's steps. Otherwise 2.8 carries all of it. Decide before 2.7 starts. **DECIDED 2026-11-23: 2.7.0.** |
+| Q24 | Classic MVC public example: synthetic `mvc5-classic`, or a public repository? | Synthetic now. Adopt a real public repository with transforms and Windows auth when one is found, to supply real-world false-positive data. **DECIDED 2026-11-23: synthetic now.** |
 | Q25 | Record role names and role-constant values? | Yes for groups and `Roles=` constants (never `Users=`, never secrets, never emails or SIDs). Users counted (R18). |
 | ~~Q26~~ | ~~C22 advisory on 2.7 stamps~~ | **Withdrawn** (the Check runs no structure rules on a stale stamp). |
 | Q27 | `appdoc upgrade` converts `verification.md` to `evidence.jsonl`? | No (P4; the register needs source anchors). |
 | Q28 | The C12 gate | `smells.OBLIGING` plus the rule in W11 Part C: deterministic reads oblige on shipping; heuristics need ≥0.8 on the hand-labelled set. |
 | Q29 | Fold 2.8 template work into 2.7 (rev 1's "Q21")? | No (2.5 is still on its branch; 2.8's blocks need 2.8 Facts). |
-| Q31 | May the per-configuration **connection target matrix** (server token, database name) be recorded? (Spike G-13; it answers "does testing touch production data".) | Owner decision; recommend a yes behind an `appdoc-context.md` opt-in (`Record connection targets: yes`), off by default. |
-| Q32 | `ownership` Facts record git author names, which R18 says should not be Facts. Remove them now or schedule with the performance work? | Schedule; exempt in R18 for now. |
+| Q31 | May the per-configuration **connection target matrix** (server token, database name) be recorded? (Spike G-13; it answers "does testing touch production data".) | Owner decision; recommend a yes behind an `appdoc-context.md` opt-in (`Record connection targets: yes`), off by default. **DECIDED 2026-11-23: yes, opt-in, off by default.** |
+| Q32 | `ownership` Facts record git author names, which R18 says should not be Facts. Remove them now or schedule with the performance work? | Schedule; exempt in R18 for now. **DECIDED 2026-11-23: remove in 2.6.0 (task T26.66); R18 exempts `ownership` until then.** |
 
 ---
 
