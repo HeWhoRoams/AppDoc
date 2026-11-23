@@ -928,7 +928,7 @@ def _c16_quantifier(lines, cites, add, strict):
     return hits
 
 
-def _c20_precision(lines, heads, cites_of=find_citations):
+def _c20_precision(lines, heads):
     """(line, message) for imprecise Citations in sections 4, 7 and 10 (C20).
 
     A claim (paragraph, list item or table row) whose only lined Citation is a range over WIDE_RANGE
@@ -940,7 +940,7 @@ def _c20_precision(lines, heads, cites_of=find_citations):
         if not h:
             continue
         for no, blk in _blocks(lines, h.idx + 1, h.end):
-            lined = [c for c in cites_of(blk) if c.start is not None]
+            lined = [c for c in find_citations(blk) if c.start is not None]
             if len(lined) == 1 and lined[0].end - lined[0].start + 1 > WIDE_RANGE:
                 c = lined[0]
                 hits.append((no, f"`{c.path}:{c.start}-{c.end}` spans {c.end - c.start + 1} lines "
@@ -952,7 +952,7 @@ def _c20_precision(lines, heads, cites_of=find_citations):
         for t in dm.tables(lines, h.idx + 1, h.end):
             for no, cells in t.rows:
                 for col, cell in enumerate(cells):
-                    n = len(cites_of(cell))
+                    n = len(find_citations(cell))
                     if n > CELL_CITES:
                         name = dm.cell_text(t.header[col]) if col < len(t.header) else str(col + 1)
                         hits.append((no, f"the {name} cell cites {n} sources (more than {CELL_CITES})"))
