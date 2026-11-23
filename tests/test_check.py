@@ -322,7 +322,8 @@ class CheckTests(unittest.TestCase):
         from unittest import mock
         doc = (doc or build_doc()).replace(spec.STAMP, "<!-- appdoc:template 2.7 -->")
         with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"):
-            return self.run_check(doc, **kw)
+            self.run_check(doc, **kw)                        # seals the register (sealed_by is printed in A.1) ...
+            return self.run_check(doc, seal=False, **kw)     # ... so fill again, as `build` does, and check
 
     SECOND_V1 = {"id": "E-3", "ref": "10.1/V-1", "claim": "A password is set in code (re-read)",
                  "result": "Corrected", "cites": ["app/main.py:6"], "anchor": "line 6", "limitation": "none"}

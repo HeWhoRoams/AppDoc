@@ -311,6 +311,63 @@ class AuditRecordTests(unittest.TestCase):
             self.assertTrue(any(key in e[1] for e in reg.errors), key)
 
 
+class AppendixHistoryTests(unittest.TestCase):
+    FULL = AuditRecordTests.FULL
+
+    def reg(self):
+        # E-3 supersedes E-1 (same ref 10.1/V-1 in this fixture)
+        return reg_of(row(1, anchor="line 6", cites=("app/main.py:6",)),
+                      {**row(2, "Corrected", anchor="line 6", cites=("app/main.py:6",)), "supersedes": "E-1"},
+                      row(3, "Downgraded", ref="10.1/V-2"))
+
+    def test_a1_audit_provenance_line(self):
+        md = appendix_markdown(reg_of(row(1), audit={**AUDIT, **self.FULL}), {},
+                               blocks_by={"generator": "2.7.0", "bundle": "7c1e5a9b03d2"})
+        a1 = block(md, "A.1 Audit state")
+        self.assertIn("Audited on 2026-11-23 with AppDoc 2.7.0 (bundle 0123456789ab).", a1)
+        self.assertLess(a1.index("Generated blocks written by AppDoc"), a1.index("Audited on"))
+        # a register from before 2.7 has none of the fields: no line
+        self.assertNotIn("Audited on", block(appendix_markdown(reg_of(row(1)), {}), "A.1 Audit state"))
+        # a partial record prints what it has
+        part = appendix_markdown(reg_of(row(1), audit={**AUDIT, "audited_on": "2026-11-23"}), {})
+        self.assertIn("Audited on 2026-11-23.", block(part, "A.1 Audit state"))
+
+    def test_a1_upgrade_sealed_note(self):
+        note = "rows were sealed at upgrade; their text was not re-audited."
+        reg = reg_of({**row(1), "sealed_by": "upgrade"}, {**row(2, ref="7.1"), "sealed_by": "upgrade"},
+                     {**row(3, ref="10.1/V-2"), "sealed_by": "audit"})
+        self.assertIn("2 " + note, block(appendix_markdown(reg, {}), "A.1 Audit state"))
+        one = reg_of({**row(1), "sealed_by": "upgrade"}, row(2, ref="7.1"))
+        self.assertIn("1 row was sealed at upgrade; their text was not re-audited.".replace("their", "its"),
+                      block(appendix_markdown(one, {}), "A.1 Audit state"))
+        self.assertNotIn("sealed at upgrade", block(appendix_markdown(reg_of(row(1)), {}), "A.1 Audit state"))
+        # a superseded upgrade-sealed row no longer counts: the text it covered is gone
+        gone = reg_of({**row(1), "sealed_by": "upgrade"}, {**row(2), "supersedes": "E-1", "sealed_by": "audit"})
+        self.assertNotIn("sealed at upgrade", block(appendix_markdown(gone, {}), "A.1 Audit state"))
+
+    def test_superseded_rows_counted_separately(self):
+        a2 = block(appendix_markdown(self.reg(), {}), "A.2 Coverage")
+        self.assertIn("3 rows (1 superseded). Current: 0 Supported, 1 Corrected, 1 Downgraded. "
+                      "As first audited: 1 Supported, 0 Corrected, 1 Downgraded.", a2)
+        # no superseded row: the 2.4 wording is untouched
+        self.assertIn("2 rows: 1 Supported, 1 Corrected, 0 Downgraded. Each Supported",
+                      block(appendix_markdown(reg_of(row(1), row(2, "Corrected", ref="7.1")), {}), "A.2 Coverage"))
+
+    def test_a3_marks_superseded(self):
+        a3 = block(appendix_markdown(self.reg(), {}), "A.3 Register")
+        rows = {l.split("|")[1].strip(): l for l in a3.splitlines() if l.startswith("| E-")}
+        self.assertIn("Supported (superseded by E-2)", rows["E-1"])
+        self.assertNotIn("superseded", rows["E-2"])
+        self.assertNotIn("superseded", rows["E-3"])
+
+    def test_a4_skips_superseded(self):
+        tmp, target = make_target()
+        self.addCleanup(tmp.cleanup)
+        a4 = block(appendix_markdown(self.reg(), {}, root=target), "A.4 Verification commands")
+        self.assertNotIn("**E-1**", a4)
+        self.assertIn("**E-2**", a4)
+
+
 class SupersedesTests(unittest.TestCase):
     def test_supersedes_parsed(self):
         reg = reg_of(row(1), {**row(2), "supersedes": "E-1"}, {**row(3), "supersedes": ["E-1", "E-2"], "sealed_by": "audit"},

@@ -237,11 +237,20 @@ def _audit_state(reg: Register | None) -> list[str]:
     return [f"**Auditor:** {_cell(reg.audit.get('auditor'))}. **Scope:** {_cell(reg.audit.get('scope') or 'not stated')}"]
 
 
+def _result_parts(c: dict) -> str:
+    return ", ".join(f"{c[r]} {r}" for r in RESULTS if r in COUNTED_ALWAYS or c[r])
+
+
 def _coverage(reg: Register, coverage) -> list[str]:
-    c = reg.counts()
-    parts = [f"{c[r]} {r}" for r in RESULTS if r in COUNTED_ALWAYS or c[r]]
-    out = [f"{plural(len(reg.rows), 'row')}: {', '.join(parts)}. "
-           "Each Supported or Corrected row's anchor text was found in its cited lines by the Check."]
+    live = reg.live_rows()
+    anchors = "Each Supported or Corrected row's anchor text was found in its cited lines by the Check."
+    if len(live) == len(reg.rows):
+        out = [f"{plural(len(reg.rows), 'row')}: {_result_parts(reg.counts())}. {anchors}"]
+    else:
+        first = [(no, r) for no, r in reg.rows if not Register.supersedes_of(r)]   # the rows that replace none
+        out = [f"{plural(len(reg.rows), 'row')} ({len(reg.rows) - len(live)} superseded). "
+               f"Current: {_result_parts(reg.counts(live))}. As first audited: {_result_parts(reg.counts(first))}. "
+               f"{anchors}"]
     if coverage:
         out += ["", "| Section | IDs with a register row |", "|---|---|"]
         out += [f"| {_cell(sec)} | {hit} of {n} |" for sec, hit, n in coverage]
@@ -254,7 +263,9 @@ def _table(reg: Register) -> list[str]:
     out = ["| ID | Ref | Claim | Result | Cites | Limitation |", "|---|---|---|---|---|---|"]
     for _, row in reg.rows:
         cites = " ".join(f"`{str(c).strip('`')}`" for c in row["cites"])
-        out.append(f"| {_cell(row['id'])} | {_cell(row['ref'])} | {_cell(row['claim'])} | {_cell(row['result'])} | "
+        by = reg.superseded_by(str(row["id"]))
+        result = _cell(row["result"]) + (f" (superseded by {by})" if by else "")
+        out.append(f"| {_cell(row['id'])} | {_cell(row['ref'])} | {_cell(row['claim'])} | {result} | "
                    f"{cites} | {_cell(row['limitation'])} |")
     return out
 
@@ -265,7 +276,7 @@ def _commands(reg: Register, root: str | None = None) -> list[str]:
     root = os.path.realpath(root)
     basenames = _build_basenames(root)
     out = []
-    for _, row in reg.rows:
+    for _, row in reg.live_rows():
         anchor = str(row.get("anchor") or "")
         if (row.get("result") not in VERIFIABLE or not anchor.strip()
                 or "\n" in anchor or "\r" in anchor or len(anchor) > MAX_ANCHOR):
@@ -338,6 +349,26 @@ def _blocks_lines(reg: Register | None, blocks_by: dict | None) -> list[str]:
     return out
 
 
+def _provenance_lines(reg: Register | None) -> list[str]:
+    """A.1 lines from the audit record: when and with what the audit was sealed, and any upgrade-sealed rows."""
+    if reg is None or not reg.performed:
+        return []
+    out = []
+    a = reg.audit or {}
+    if a.get("audited_on"):
+        line = f"Audited on {a['audited_on']}"
+        if a.get("audited_with"):
+            line += f" with AppDoc {a['audited_with']}"
+        if a.get("audited_bundle"):
+            line += f" (bundle {a['audited_bundle']})"
+        out += ["", line + "."]
+    n = sum(1 for _, r in reg.live_rows() if r.get("sealed_by") == "upgrade")
+    if n:
+        out += ["", f"{n} rows were sealed at upgrade; their text was not re-audited." if n != 1
+                else "1 row was sealed at upgrade; its text was not re-audited."]
+    return out
+
+
 def appendix_markdown(reg: Register | None, facts: dict | None = None, coverage=None,
                       root: str | None = None, blocks_by: dict | None = None) -> str:
     """Body of Appendix A (the `appendix-a` generated block), computed from the register.
@@ -347,7 +378,7 @@ def appendix_markdown(reg: Register | None, facts: dict | None = None, coverage=
     root is the Target directory; when given, A.4 commands are generated from locate().
     blocks_by is {"generator", "bundle"} of the running AppDoc; when given, A.1 says who wrote the blocks.
     """
-    out = ["### A.1 Audit state", "", *_audit_state(reg), *_blocks_lines(reg, blocks_by)]
+    out = ["### A.1 Audit state", "", *_audit_state(reg), *_blocks_lines(reg, blocks_by), *_provenance_lines(reg)]
     if reg is not None and reg.performed:
         out += ["", "### A.2 Coverage", "", *_coverage(reg, coverage),
                 "", "### A.3 Register", "", *_table(reg),

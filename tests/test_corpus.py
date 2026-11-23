@@ -381,6 +381,8 @@ class RegisterHistory(CorpusCase):
         self.assertEqual([x["id"] for x in rows], ["E-1", "E-2", "E-3"])   # the older row is kept, not deleted
         self.assertNotIn("claim_sha", rows[0])
         self.assertIn("claim_sha", rows[2])
+        self.assertIn("3 rows (1 superseded). Current: 1 Supported, 1 Corrected, 0 Downgraded.", r.narrative)
+        self.assertIn("| E-1 | 10.1/V-1 | A password is set in code | Supported (superseded by E-3) |", r.narrative)
 
     def test_superseded_without_supersedes_fails_with_the_fix(self):
         from unittest import mock
@@ -411,6 +413,7 @@ class RegisterHistory(CorpusCase):
         audit, *rows = self._rows(r)
         self.assertNotIn("doc_sha", audit)
         self.assertEqual([x["sealed_by"] for x in rows], ["upgrade", "upgrade"])
+        self.assertIn("2 rows were sealed at upgrade; their text was not re-audited.", r.narrative)
 
     def test_seal_audit_turns_the_rows_into_audited_ones(self):
         from unittest import mock
@@ -426,10 +429,12 @@ class RegisterHistory(CorpusCase):
             fh.write("\n".join(stripped) + "\n")
         with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"), contextlib.redirect_stdout(io.StringIO()):
             check.seal_register(r.target, r.out, audit=True, date="2026-11-23")
+            self.assertEqual(fill.run(r.target, r.out), 0)     # Appendix A.1 now prints the audit date
             self.assertEqual(check.run(r.target, r.out), 0)
         audit, *rows = self._rows(r)
         self.assertEqual(audit["audited_on"], "2026-11-23")
         self.assertEqual([x["sealed_by"] for x in rows], ["audit", "audit"])
+        self.assertIn("Audited on 2026-11-23 with AppDoc", r.narrative)
 
 
 def _apply_pending():
