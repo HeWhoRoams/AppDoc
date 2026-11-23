@@ -93,8 +93,16 @@ An advisory in `check-report.md` listing entry-point Facts (route, page, command
 _Avoid_: coverage gap, missing endpoints
 
 **Retired candidate**:
-A folder `scan` records as looking retired — by name (a whole token such as `old`, `backup`, `deprecated`, or "to be deleted") or by content (at least five files, at least half byte-identical to a file outside the folder). It is rendered in scan coverage as "Folders that look retired (not excluded)" and raises a question the writer must answer in 2.1; it never prunes.
-_Avoid_: pruned folder, dead code, excluded folder
+A folder `scan` records as looking retired **by name only**: a whole token such as `old`, `backup`, `deprecated`, or "to be deleted" in the folder's own name (`wwwroot` and `oldest` are not candidates). A candidate nested inside another is not listed again. It is rendered in scan coverage as "Folders that look retired by name (not excluded)" and raises a question the writer must name and answer in 2.1; it never prunes. Whether a folder is a copy of another is not a name signal: see **Duplicate folders**.
+_Avoid_: pruned folder, dead code, excluded folder, "retired by content"
+
+**Duplicate folders**:
+Pairs `{a, b, files}` in `target.scan.duplicate_folders`: folder `a` (at least five non-test files) has at least half of its files byte-identical to files in folder `b`, the folder holding most of those matches. A pair is stored once with `a < b`; ties go to the smallest path; test paths are ignored; the list is sorted and rendered (cap 10) as "Folders that duplicate another folder (not excluded; say in 2.1 which copy is live)". The writer says in 2.1 which copy is live. C7 reports a pair 2.1 does not name as an advisory, which fails under `--strict`. It never prunes.
+_Avoid_: retired candidate (that is a name signal), mirror, fork, clone
+
+**Provenance sidecar**:
+`docs/appdoc/provenance.json`, written by `extract`: `{generator, bundle, schema}` for the AppDoc that wrote the Facts (version, a 12-hex hash of the `appdoc/` package, Facts schema), with no timestamps; `fill` adds `blocks_by` for the AppDoc that wrote the generated blocks. `facts.json` itself carries no generator, so an AppDoc patch that changes no Facts changes no Facts file. Appendix A.1 prints the `blocks_by` line; the Check's scope line and C7 version skew read the sidecar; a sidecar whose `schema` disagrees with `facts.json` fails C7. A version difference alone is informational.
+_Avoid_: generator stamp, build info, version file
 
 **Anchor**:
 A short literal string copied from a claim's cited lines into its Evidence Register row. The Check confirms it is still there, so a code change that moves or removes the evidence is caught.
