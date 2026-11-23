@@ -535,6 +535,11 @@ def _jobs(path, ctx: Ctx):
 
 class AspNetCoreStack(Stack):
     id = STACK_ID
+    capabilities = frozenset((
+        "auth_check config_key connection data_access entry_point.route "
+        "entry_point.page entry_point.handler entry_point.job external_call "
+        "message ui_page"
+    ).split())
     extensions = frozenset({".cs", ".cshtml", ".razor", ".xaml"})
 
     def __init__(self):
@@ -584,7 +589,7 @@ class AspNetCoreStack(Stack):
             yield from _messages(path, ctx)
 
 
-capabilities = frozenset(
-    "auth_check config_key connection data_access entry_point external_call message ui_page".split())
+# Module alias kept for one release; use stacks.capabilities_of(stack).
+capabilities = AspNetCoreStack.capabilities
 
 STACK = AspNetCoreStack()

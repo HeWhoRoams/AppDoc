@@ -36,6 +36,10 @@ _ROUTE_VERB_RE = re.compile(r"\s*\.\s*(get|post|put|delete|patch|all|options|hea
 
 class NodeExpressStack(Stack):
     id = STACK_ID
+    capabilities = frozenset((
+        "auth_check config_key connection data_access entry_point.route "
+        "entry_point.job external_call message smell"
+    ).split())
     extensions = frozenset({".js", ".ts", ".mjs", ".cjs", ".jsx", ".tsx"})
 
     def detect(self, files: list[str]) -> list[str]:
@@ -633,5 +637,5 @@ def _messages(path, t):
                 yield f
 
 
-capabilities = frozenset(
-    "auth_check config_key connection data_access entry_point external_call message smell".split())
+# Module alias kept for one release; use stacks.capabilities_of(stack).
+capabilities = NodeExpressStack.capabilities

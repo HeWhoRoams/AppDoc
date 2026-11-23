@@ -871,6 +871,11 @@ def _ojb_xml(path, clean, L):
 
 class JavaSpring(Stack):
     id = STACK_ID
+    capabilities = frozenset((
+        "auth_check config_key connection data_access entry_point.route "
+        "entry_point.page entry_point.job entry_point.handler external_call "
+        "message smell"
+    ).split())
     extensions = frozenset({".java", ".xml", ".jsp", ".jspx"})
 
     def detect(self, files: list[str]) -> list[str]:
@@ -896,7 +901,7 @@ class JavaSpring(Stack):
         return ()
 
 
-capabilities = frozenset(
-    "auth_check config_key connection data_access entry_point external_call message smell".split())
+# Module alias kept for one release; use stacks.capabilities_of(stack).
+capabilities = JavaSpring.capabilities
 
 STACK = JavaSpring()

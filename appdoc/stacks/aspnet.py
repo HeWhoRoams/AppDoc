@@ -597,6 +597,10 @@ def _strip_markup_comments(text: str) -> str:
 
 class AspNetStack(Stack):
     id = STACK_ID
+    capabilities = frozenset((
+        "auth_check config_key connection data_access entry_point.route "
+        "entry_point.page entry_point.handler external_call message smell"
+    ).split())
     extensions = frozenset({".aspx", ".ascx", ".master", ".asax", ".cs", ".vb", ".cshtml"})
 
     def __init__(self):
@@ -679,7 +683,7 @@ class AspNetStack(Stack):
         return Fact.make("entry_point", STACK_ID, path, ctx.line(m.start()) if m else 1, "/" + path, **detail)
 
 
-capabilities = frozenset(
-    "auth_check config_key connection data_access entry_point external_call message smell".split())
+# Module alias kept for one release; use stacks.capabilities_of(stack).
+capabilities = AspNetStack.capabilities
 
 STACK = AspNetStack()

@@ -281,6 +281,10 @@ def _safe(text: str) -> bool:
 
 class ClassicAsp(Stack):
     id = ID
+    capabilities = frozenset((
+        "auth_check connection data_access dependency entry_point.page "
+        "external_call message"
+    ).split())
     extensions = frozenset({".asp", ".inc", ".asa"})
 
     def detect(self, files: list[str]) -> list[str]:
@@ -468,7 +472,7 @@ class ClassicAsp(Stack):
         return list(dict.fromkeys(facts))
 
 
-capabilities = frozenset(
-    "auth_check connection data_access dependency entry_point external_call message".split())
+# Module alias kept for one release; use stacks.capabilities_of(stack).
+capabilities = ClassicAsp.capabilities
 
 STACK = ClassicAsp()

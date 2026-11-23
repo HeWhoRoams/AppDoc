@@ -31,6 +31,10 @@ _TABLE = r"([A-Za-z_#@\[\"`{][\w.\[\]\"`{}#@$]*)"
 
 class PythonFlaskStack(Stack):
     id = STACK_ID
+    capabilities = frozenset((
+        "auth_check config_key connection data_access entry_point.route "
+        "entry_point.job external_call message smell"
+    ).split())
     extensions = frozenset({".py"})
 
     def detect(self, files: list[str]) -> list[str]:
@@ -703,5 +707,5 @@ def _messages(path, t):
                 yield f
 
 
-capabilities = frozenset(
-    "auth_check config_key connection data_access entry_point external_call message smell".split())
+# Module alias kept for one release; use stacks.capabilities_of(stack).
+capabilities = PythonFlaskStack.capabilities

@@ -33,16 +33,26 @@ def _facts(doc: dict, kind: str) -> list[dict]:
     return [f for f in doc.get("facts", []) if f["kind"] == kind and not f["detail"].get("test")]
 
 
-def _stack_capabilities(doc: dict) -> tuple[list[str], list[str]]:
-    """(stacks that can report, stacks that cannot) from the stack Facts."""
-    can, cannot = [], []
-    for s in doc.get("stacks", []):
-        d = s.get("detail", {})
-        if not d.get("supported"):
-            continue
-        caps = d.get("capabilities") or []
-        (can if caps else cannot).append(s["name"])
-    return can, cannot
+def _supported_stacks(doc: dict) -> list[dict]:
+    return [s for s in doc.get("stacks", []) if (s.get("detail") or {}).get("supported")]
+
+
+def _stacks_reporting(doc: dict, cap: str) -> list[str]:
+    """Names of the supported Stacks whose stack Fact declares ``cap``, in document order.
+
+    ``cap`` is a Fact kind or a dotted capability. A name without a dot (``entry_point``) matches the
+    kind itself or any subtype of it (``entry_point.route``).
+    """
+    out = []
+    for s in _supported_stacks(doc):
+        caps = (s.get("detail") or {}).get("capabilities") or []
+        if any(c == cap or (c.startswith(cap + ".") and "." not in cap) for c in caps):
+            out.append(s["name"])
+    return out
+
+
+def _names(stacks: list[str]) -> str:
+    return ", ".join(f"`{n}`" for n in stacks)
 
 
 def entry_point_counts(doc: dict) -> dict:
@@ -103,12 +113,13 @@ def _scan_coverage(doc: dict, ctx: dict | None = None) -> str:
 def _entry_points(doc: dict, ctx: dict | None = None) -> str:
     entries = _facts(doc, "entry_point")
     if not entries:
-        can, cannot = _stack_capabilities(doc)
+        can = _stacks_reporting(doc, "entry_point")
+        cannot = [s["name"] for s in _supported_stacks(doc) if s["name"] not in can]
         msg = "No entry points were extracted."
         if can:
-            msg += f" Stacks that can report them: {', '.join(f'`{s}`' for s in can)}."
+            msg += f" Stacks that report them: {_names(can)}."
         if cannot:
-            msg += f" Not covered: {', '.join(f'`{s}`' for s in cannot)} (no entry-point capability)."
+            msg += f" These supported Stacks report none: {_names(cannot)}; read the source for entry points."
         return msg
     n = entry_point_counts(doc)
     rows: dict[str, dict] = {}
@@ -137,13 +148,13 @@ def _entry_points(doc: dict, ctx: dict | None = None) -> str:
 def _scheduled_jobs(doc: dict, ctx: dict | None = None) -> str:
     jobs = [f for f in _facts(doc, "entry_point") if f["detail"].get("type") == "job"]
     if not jobs:
-        can, cannot = _stack_capabilities(doc)
-        msg = "No scheduled or background jobs were extracted."
+        can = _stacks_reporting(doc, "entry_point.job")
         if can:
-            msg += f" Stacks that can report them: {', '.join(f'`{s}`' for s in can)}."
-        if cannot:
-            msg += f" Not covered: {', '.join(f'`{s}`' for s in cannot)} (no entry-point capability)."
-        return msg
+            return f"No scheduled or background jobs were extracted. Stacks that report jobs: {_names(can)}."
+        detected = [s["name"] for s in _supported_stacks(doc)]
+        if detected:
+            return f"No supported Stack reports jobs ({_names(detected)}); read the source for job runners."
+        return "No scheduled or background jobs were extracted."
     jobs.sort(key=lambda f: (f["path"], f["line"] or 0, f["name"]))
     out = ["| Job | Schedule | Enabled by default | Defined at | Stack |", "|---|---|---|---|---|"]
     for f in jobs:

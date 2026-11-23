@@ -37,10 +37,6 @@ CORPUS = os.path.join(HERE, "corpus")
 
 # test method name -> (task ID, why it fails today). Delete the entry when the task lands.
 PENDING: dict = {
-    "test_caps_routes_stack_declares_route_capability":
-        ("T26.22", "stack capabilities are recorded as [] (CRIT-01)"),
-    "test_caps_routes_16_7_never_says_no_capability":
-        ("T26.24", "16.7 prints 'no entry-point capability' for a Stack that extracts routes"),
     "test_dup_twins_are_a_duplicate_pair_not_retired":
         ("T26.31", "byte-identical folders are reported as retired by content; no duplicate_folders list"),
     "test_dup_tests_under_test_paths_are_ignored":

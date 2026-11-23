@@ -22,6 +22,11 @@ STACK_ID = "go"
 
 class GoStack(Stack):
     id = STACK_ID
+    capabilities = frozenset((
+        "auth_check config_key connection data_access entry_point.route "
+        "entry_point.command entry_point.job external_call schema_object "
+        "ui_page"
+    ).split())
     extensions = frozenset({".go", ".html"})
 
     def detect(self, files: list[str]) -> list[str]:
@@ -692,5 +697,5 @@ def _extract(path: str, text: str) -> Iterable[Fact]:
     return list(dict.fromkeys(out))
 
 
-capabilities = frozenset(
-    "auth_check config_key connection data_access entry_point external_call schema_object ui_page".split())
+# Module alias kept for one release; use stacks.capabilities_of(stack).
+capabilities = GoStack.capabilities

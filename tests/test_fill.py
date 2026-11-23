@@ -74,7 +74,47 @@ class EntryPointTests(unittest.TestCase):
         self.assertEqual(once, fill.render_block("entry-points", json.loads(json.dumps(self.doc))))
 
 
+def stack(name, *caps, supported=True):
+    return {"name": name, "detail": {"supported": supported, "capabilities": sorted(caps), "file_count": 1}}
+
+
+class StacksReportingTests(unittest.TestCase):
+    def setUp(self):
+        self.doc = {"stacks": [stack("go", "entry_point.job", "entry_point.route"),
+                               stack("python-flask", "entry_point.route"),
+                               stack("classic-asp", supported=False)], "facts": []}
+
+    def test_exact_capability_and_supported_only(self):
+        self.assertEqual(fill._stacks_reporting(self.doc, "entry_point.job"), ["go"])
+        self.assertEqual(fill._stacks_reporting(self.doc, "entry_point.route"), ["go", "python-flask"])
+
+    def test_bare_kind_matches_any_subtype(self):
+        self.assertEqual(fill._stacks_reporting(self.doc, "entry_point"), ["go", "python-flask"])
+
+    def test_no_stacks(self):
+        self.assertEqual(fill._stacks_reporting(doc(), "entry_point.job"), [])
+
+
 class ScheduledJobTests(unittest.TestCase):
+    def test_16_7_no_supported_stack_reports_jobs(self):
+        d = {"stacks": [stack("python-flask", "entry_point.route")], "facts": [route("a.py")]}
+        self.assertEqual(fill.render_block("scheduled-jobs", d),
+                         "No supported Stack reports jobs (`python-flask`); read the source for job runners.")
+
+    def test_16_7_names_the_stacks_that_report_jobs(self):
+        d = {"stacks": [stack("go", "entry_point.job"), stack("python-flask", "entry_point.route")], "facts": []}
+        out = fill.render_block("scheduled-jobs", d)
+        self.assertTrue(out.startswith("No scheduled or background jobs were extracted."))
+        self.assertIn("Stacks that report jobs: `go`.", out)
+        self.assertNotIn("No supported Stack", out)
+        self.assertNotIn("no entry-point capability", out)
+
+    def test_entry_points_empty_never_says_no_capability(self):
+        d = {"stacks": [stack("go", "entry_point.route"), stack("x", "config_key")], "facts": []}
+        out = fill.render_block("entry-points", d)
+        self.assertIn("`go`", out)
+        self.assertNotIn("no entry-point capability", out)
+
     def test_rows_unknowns_and_no_test_jobs(self):
         d = doc(
             fact("entry_point", "b.go", 9, "sync", "go", type="job", schedule="@every 1h", enabled=False),

@@ -20,7 +20,7 @@ from . import context, version
 from . import facts as F
 from . import scan, smells
 from .citations import OWNER_CONTEXT
-from .stacks import generic, load
+from .stacks import capabilities_of, generic, load
 from .summary import render_summary
 
 PARALLEL_THRESHOLD = 50  # below this file count, the pool's overhead isn't worth it
@@ -290,7 +290,7 @@ def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: boo
 
     for sid, (st, markers) in sorted(detected.items()):
         count = sum(1 for sf in files if sf.ext in st.extensions)
-        caps = sorted(getattr(st, "capabilities", frozenset()))
+        caps = sorted(capabilities_of(st))
         facts.append(F.Fact.make("stack", sid, markers[0], None, sid,
                                  marker_files=markers, file_count=count, supported=True,
                                  capabilities=caps))

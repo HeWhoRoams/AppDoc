@@ -13,4 +13,8 @@
     <web-resource-collection><url-pattern>/admin/*</url-pattern></web-resource-collection>
     <auth-constraint><role-name>ops</role-name></auth-constraint>
   </security-constraint>
+  <servlet>
+    <servlet-name>warmup</servlet-name>
+    <servlet-class>com.acme.web.WarmupServlet</servlet-class>
+  </servlet>
 </web-app>
