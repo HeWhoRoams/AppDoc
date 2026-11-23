@@ -47,3 +47,27 @@ keys appear in the application table; the trailer counts the `env` and `ci` keys
 roles `env` and `ci` are not `secret_location`, because the variable is the name of a secret held
 elsewhere, not the secret itself. The cache keeps pre-promotion Facts, so the split stays in the
 post-pass.
+
+## Amendment (2026-11-23, 2.6.0): file-level promotion and segment-aware secret naming
+
+1. **File-level promotion.** Role `app` was assigned key by key, so a file that an application
+   plainly reads (a gitea `app.ini` read through `setting.Cfg.Section(...).Key("X")`) still had
+   most of its keys classified as `unclassified`, and 16.6 listed a few keys and called the rest
+   "not classified". In the post-pass, any unclassified key in a file that has at least one
+   code-read key (matched through `_key_variants`: the full name and the last dotted segment, so
+   `server.HTTP_PORT` in an INI matches a read of `HTTP_PORT`) becomes `app`. File promotion runs
+   after the read-kind split and never promotes `env` or `ci` keys. The trailer guard raises an
+   internal error if a file is both `app` and "not classified".
+2. **Segment-aware secret names.** `secret_location` was a substring test, so `MIN_PASSWORD_LENGTH`
+   was a secret location. `secrets.is_secret_key` now tokenizes the name on separators and camel
+   case. A name is a secret when it has a secret noun (password, passwd, pwd, secret, token, credential,
+   sas) or a secret pair (api key, private key, account key, connection string) and none of a closed set of modifiers: `length min max size count ttl lifetime expiry
+   expires minutes seconds hours days algo algorithm hash complexity policy check pwn enable enabled
+   disable disabled allow require required form cache uri url path file header name type mode scope
+   scopes regex pattern`. The set is closed and lives in code, not in configuration.
+3. **`secret_ref`.** A name whose modifier is `uri`, `path` or `file` (`SECRET_KEY_URI`) is not a
+   secret location but refers to one; the Fact carries `secret_ref: true` (a `DETAIL_KEYS` entry)
+   and still holds no value.
+4. The finding-candidate and secret-shape scan (C6, `find_secret_shapes`) is independent of key
+   naming and is unchanged; a test proves it.
+
