@@ -3,7 +3,7 @@
 - Target: `spring-petclinic`
 - Commit: `500158f732419217507c7656904b8e6aa1bcc0d6`
 - Git history: shallow
-- Schema: `appdoc-facts/6`
+- Schema: `appdoc-facts/7`
 
 > Facts show what the extractors found. An empty list is not proof that something is absent: the extractors only recognise the patterns of the Stacks below, so read the source before writing "none". Facts from test code are marked `test` in `facts.json` and left out of the lists.
 

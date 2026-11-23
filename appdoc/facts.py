@@ -7,7 +7,7 @@ import hashlib
 import re
 from dataclasses import dataclass, field
 
-SCHEMA = "appdoc-facts/6"
+SCHEMA = "appdoc-facts/7"
 
 _TEST_DIRS = {"test", "tests", "__tests__", "spec", "specs", "testing"}
 _TEST_FILE_RE = re.compile(

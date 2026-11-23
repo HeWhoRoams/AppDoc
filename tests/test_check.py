@@ -8,6 +8,7 @@ import tempfile
 import unittest
 
 from appdoc import check, fill
+from appdoc import facts as facts_mod
 from appdoc import template_spec as spec
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -506,15 +507,15 @@ class CheckTests(unittest.TestCase):
     def test_c7_provenance_schema_mismatch_fails(self):
         doc = self.fill_doc(build_doc())
         self.write_facts(self.facts["stacks"], self.facts["facts"])
-        self.facts["schema"] = "appdoc-facts/6"
+        self.facts["schema"] = facts_mod.SCHEMA
         with open(os.path.join(self.out, "facts.json"), "w") as fh:
             json.dump(self.facts, fh)
         self.write_provenance(schema="appdoc-facts/5")
         code, report, _ = self.run_check(doc, filled=False)
         self.assertIn("C7", self.rules(report))
-        self.assertIn("provenance.json schema appdoc-facts/5 does not match facts.json schema appdoc-facts/6", report)
+        self.assertIn(f"provenance.json schema appdoc-facts/5 does not match facts.json schema {facts_mod.SCHEMA}", report)
         self.assertEqual(code, 2)
-        self.write_provenance(schema="appdoc-facts/6")
+        self.write_provenance(schema=facts_mod.SCHEMA)
         code, report, _ = self.run_check(doc, filled=False)
         self.assertEqual(code, 0, report)
 

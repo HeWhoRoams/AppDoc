@@ -3,7 +3,7 @@ import os
 import tempfile
 import unittest
 
-from appdoc import register
+from appdoc import facts, register
 from appdoc.register import appendix_markdown, locate, parse
 
 AUDIT = {"type": "audit", "performed": True, "auditor": "independent", "scope": "sections 3-10"}
@@ -232,7 +232,7 @@ class BlocksProvenanceTests(unittest.TestCase):
         out = os.path.join(target, "docs", "appdoc")
         os.makedirs(out)
         with open(os.path.join(out, "facts.json"), "w") as fh:
-            json.dump({"schema": "appdoc-facts/6", "facts": [], "stacks": [], "target": {}}, fh)
+            json.dump({"schema": facts.SCHEMA, "facts": [], "stacks": [], "target": {}}, fh)
         with open(os.path.join(out, "evidence.jsonl"), "w") as fh:
             fh.write(json.dumps({**AUDIT, "audited_with": "1.0.0"}) + "\n")
         with open(os.path.join(out, "application-documentation.md"), "w") as fh:

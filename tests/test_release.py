@@ -181,6 +181,16 @@ def _tree_copy(dest):
         text = fh.read()
     with open(gate, "w", encoding="utf-8", newline="") as fh:
         fh.write(text.replace("APPDOC_REF: v2.6.0", "APPDOC_REF: v2.5.0"))  # the pin of the last release
+    # The tree as it is before the release: dev version, an Unreleased heading (the real tree may already be released).
+    for rel, a, b in (("CHANGELOG.md", "## " + appdoc.__version__.split(".dev")[0] + "\n", "## Unreleased\n"),
+                      (os.path.join("appdoc", "__init__.py"), f'__version__ = "{appdoc.__version__}"',
+                       '__version__ = "2.6.0.dev0"')):
+        path = os.path.join(dest, rel)
+        with open(path, encoding="utf-8", newline="") as fh:
+            text = fh.read()
+        if a in text:
+            with open(path, "w", encoding="utf-8", newline="") as fh:
+                fh.write(text.replace(a, b, 1))
     env = dict(os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@example.com",
                GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@example.com")
     git(dest, "init", "-q", "-b", "main", env=env)

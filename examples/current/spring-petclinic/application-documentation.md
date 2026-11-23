@@ -591,7 +591,7 @@ No scheduled or background jobs were extracted. Stacks that report jobs: `java-s
 
 **Auditor:** independent. **Scope:** All sections that make claims were covered: 2, 3, 4 (11 of 14 features sampled), 4.1 (sampled), 5.2-5.3, 6 (all 9 screens), 7.1-7.8 (all), 8.1-8.5 (entity tables checked in full, rows grouped), 9 (6 of 12 rows), 10.1 (all 8), 10.2 (3 of 9 controls), 11 (all owner rows, test-suite rows), 12-13 (sampled), 14 (all 9), 15 (5 of 12 plus 15.1), 16.1-16.7 (sampled). 16.6 generated table not compared line by line. Smell candidates 4b908b79, 3d09653b and 1562fac5 are covered by V-6 and V-2, so no Dismissed rows. Not run: no application was executed.
 
-Generated blocks written by AppDoc 2.6.0.dev0 (bundle 8700443cb563).
+Generated blocks written by AppDoc 2.6.0 (bundle c0768e029882).
 Generated blocks were regenerated after the audit and are not covered by it.
 
 ### A.2 Coverage

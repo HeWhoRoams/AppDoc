@@ -3,7 +3,7 @@
 - Target: `gitea`
 - Commit: `a61ad4876a6c8e6b3803c74d4423615e2571613b`
 - Git history: shallow
-- Schema: `appdoc-facts/6`
+- Schema: `appdoc-facts/7`
 
 > Facts show what the extractors found. An empty list is not proof that something is absent: the extractors only recognise the patterns of the Stacks below, so read the source before writing "none". Facts from test code are marked `test` in `facts.json` and left out of the lists.
 

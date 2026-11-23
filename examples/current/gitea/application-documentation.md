@@ -1173,7 +1173,7 @@ Jobs that matter to findings or workflows: `delete_old_audit_events` prunes reco
 
 **Auditor:** independent. **Scope:** Independent audit, read-only against the Target. Covered every 10.1 finding (V-1 to V-10), every workflow 7.1 to 7.10 (key steps traced in source), and all 14 section 14 questions. Sections 3, 4, 5, 6, 8, 9, 10.2, 11, 15 and 16 were sampled, prioritising auth and authorization statements, defaults and settings, counts and enumerations: all 31 scheduled jobs in 16.7 were compared with services/cron/tasks_actions.go, tasks_basic.go and tasks_extended.go, and the entry-point totals were reconciled with facts.json. Not audited: section 12 diagrams, section 13 glossary, most UI-n rows (only UI-3, UI-26, UI-27 and the count of 27), 4.1 file counts (generated, covered by the Check), the 16.6 key table beyond sampling, templates and web_src. 8.4 field tables were spot-checked for User, Repository, access token, two-factor, secret and auth source. The Facts contain no smell Facts for this target.
 
-Generated blocks written by AppDoc 2.6.0.dev0 (bundle 8700443cb563).
+Generated blocks written by AppDoc 2.6.0 (bundle c0768e029882).
 Generated blocks were regenerated after the audit and are not covered by it.
 
 ### A.2 Coverage

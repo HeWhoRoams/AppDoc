@@ -1,16 +1,28 @@
 # Changelog
 
-## Unreleased
+## 2.6.0
 
-AppDoc 2.6.0 (in development): tooling and Facts release. See `docs/remediation-plan-2.6.md`.
+Tooling, provenance and Facts release. Schema `appdoc-facts/7`; template stays 2.4. Plan: `docs/remediation-plan-2.6.md`.
+
+### Upgrade notes (2.5.0 to 2.6.0)
+1. Re-run `extract` on every Target. It writes the new `provenance.json` next to `facts.json` and `facts-summary.md`, and `facts.json` now carries schema `appdoc-facts/7` (typed capabilities, `scan.duplicate_folders`, `secret_ref`, no `generator` field, no author names in `ownership`). Then run `build`.
+2. Expect advisories marked "fails from template 2.7" (C1 bare-name Citations, C9 severity order, C17 scope text) and the C7 duplicate-folder advisory. They need no action on a template 2.4 document; the duplicate-folder advisory asks you to name both folders in 2.1 and say which copy is live.
+3. The docs-as-code gate exits 3 ("AppDoc upgraded") until `facts.json` is re-extracted and committed, because the schema changed. From 2.6.0 on, an AppDoc patch release with the same schema never trips the gate: the version in `provenance.json` is informational.
+4. Update the `APPDOC_REF` pin in `.github/workflows/appdoc-docs-gate.yml` to `v2.6.0` (the shipped `ci/appdoc-docs-gate.yml` already pins it).
+5. Examples: `examples/current/` (2.6.0) and `examples/previous/` (2.5.0) replace the unsuffixed and `*-2.4` folders. The 2.6.0 examples were regenerated mechanically from the 2.5.0 Narratives and registers with no new audit; Appendix A.1 says the generated blocks were regenerated after the audit. See `docs/diagnostic-2.6.0-comparison.md`.
 
 ### Added
+- `provenance.json` sidecar (`generator`, `bundle` hash, `schema`, and `blocks_by` written by `fill`), replacing the `generator` field in `facts.json`; C7 reads it (ADR 0013). Appendix A.1 prints the AppDoc version and bundle that wrote the generated blocks.
+- Stack `capabilities` live on the Stack class with `entry_point` subtypes; `stacks.capabilities_of` is the only lookup and `fill` names the Stacks that report a kind instead of a "not covered" list.
+- Determinism harness (`tests.test_determinism`, `tools/artifact_hashes.py`, a CI job comparing hashes across the OS matrix), the shared `textnorm.normalize_text`, and ten corpus cases for 2.6.
+- Extractor answer keys with precision and recall per Stack and kind (`eval/extractor_checks.py`, `eval/baseline.json`) and narrative answer keys for all four examples (`eval/score.py`); `tools/release.py` runs both and refuses a regression. `tests/test_scale.py` runs a 10,000-file tree.
 - `appdoc gate <target> [--require-audit] [--strict] [--workers N]`: regenerates the Facts (no cache) and compares them with the committed `facts.json` (exit 2 "Facts changed" with a diff of at most 200 lines; exit 3 "AppDoc upgraded" when the schema differs), then runs the Check. The checkout-dependent fields (`target.commit`, `target.history`, git `ownership` Facts) are not compared. The gate YAML clones the pinned release to `$RUNNER_TEMP/appdoc-skill` and calls `gate` from there.
 - C20 Citation precision (advisory; fails under `--strict`): a range over 100 lines as a claim's only lined Citation in sections 4, 7 and 10, and more than 5 Citations in a section 4 or 10.1 cell.
 - Previews of template 2.7 rules, printed as "fails from template 2.7" and never failing a 2.4 document: C9 severity order in 10.1 and 15, C1 bare-name Citations (the message names the full path), C17 audit scope text with an ID or a digit.
 - `tools/gen_docs.py` writes the generated blocks of README.md, SKILL.md and the gate YAML (`--check` for CI); `appdoc/workflow.py` holds the skill's steps; `tools/release.py X.Y.Z [--dry-run]` cuts a release; CI runs the gate self-test and `tests/test_release.py`.
 
 ### Changed
+- Example layout and rotation: `tools/release.py` deletes `examples/previous`, moves `examples/current` to it, regenerates `current`, writes the `VERSION` files and `docs/diagnostic-<version>-comparison.md` (`test_release::test_examples_current_and_previous`).
 - The cache key is salted with `version.bundle_hash()` (every file of the `appdoc` package) plus the Facts schema. `extract.EXTRACTOR_VERSION` is deleted; nothing is bumped by hand, and the first run after any AppDoc change is a cold run.
 - `scan` records `retired_candidates` by folder name only and a new `duplicate_folders` list (`{a, b, files}`) for byte-identical folders; both lists collapse nested entries; test paths are never compared. `scan-coverage` renders both, capped at 10 each. C7 asks section 2 to name a duplicate pair (an advisory; it fails under `--strict`).
 - Folders holding AppDoc output (`facts.json` with an `appdoc-facts/` schema, or a Narrative with the template stamp) and AppDoc skill bundles inside a Target are pruned and disclosed in 2.1; `.appdocignore` `!name` re-includes them.
@@ -18,6 +30,9 @@ AppDoc 2.6.0 (in development): tooling and Facts release. See `docs/remediation-
 - Secret naming is segment-aware (`MIN_PASSWORD_LENGTH` is not a secret location); keys ending in `uri`, `path` or `file` carry the new `config_key` detail `secret_ref`.
 - Generated copy uses one `plural()` helper everywhere; the A.4 verification label reads `**E-1** (section N), expect `path:line``.
 - `ownership` Facts no longer record git author names (R18): they hold `commits`, `contributors` (a count) and `first_commit`/`last_commit` dates; `facts.DETAIL_KEYS` drops `authors`.
+
+### Fixed
+- ASP.NET Core: one `HttpClient` call produced two `external_call` Facts (a plain `http` one and one with `via: HttpClient`); the `HttpClient` emission now supersedes the generic one at the same file and line.
 
 ## 2.5.0 — remediation of the 2.4 diagnostic
 
