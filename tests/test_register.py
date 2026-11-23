@@ -296,6 +296,21 @@ class SealTests(unittest.TestCase):
         self.assertTrue(any("claim_sha" in e[1] for e in reg.errors))
 
 
+class AuditRecordTests(unittest.TestCase):
+    FULL = {"audited_on": "2026-11-23", "audited_with": "2.7.0", "audited_bundle": "0123456789ab",
+            "doc_sha": "abcdef012345"}
+
+    def test_audit_record_fields_parse(self):
+        self.assertEqual(reg_of(row(1), audit={**AUDIT, **self.FULL}).errors, [])
+        self.assertEqual(register.AUDIT_RECORD_KEYS, tuple(self.FULL))
+
+    def test_audit_record_fields_are_validated(self):
+        for key, bad in (("audited_on", "23/11/2026"), ("audited_with", "latest"),
+                         ("audited_bundle", "xyz"), ("doc_sha", "ABCDEF012345")):
+            reg = reg_of(row(1), audit={**AUDIT, **self.FULL, key: bad})
+            self.assertTrue(any(key in e[1] for e in reg.errors), key)
+
+
 class SupersedesTests(unittest.TestCase):
     def test_supersedes_parsed(self):
         reg = reg_of(row(1), {**row(2), "supersedes": "E-1"}, {**row(3), "supersedes": ["E-1", "E-2"], "sealed_by": "audit"},

@@ -710,3 +710,34 @@ class VersionCompareTests(unittest.TestCase):
                             if re.search(r"(?:>=|<=|<|>)\s*[\"']\d+\.\d", line):
                                 bad.append(f"{n}:{i}: {line.strip()}")
         self.assertEqual(bad, [])
+
+
+class DocShaTests(unittest.TestCase):
+    DOC = ("# T\n<!-- appdoc:template 2.4 -->\n\n## 3. Architecture\n\nThe service has "
+           "<!-- appdoc:count V -->3<!-- /appdoc:count --> findings. <!-- a comment -->\n\n"
+           "<!-- appdoc:generated entry-points -->\nold rows\n<!-- /appdoc:generated entry-points -->\n")
+
+    def test_doc_sha_matches_c11_text(self):
+        import hashlib
+        from appdoc import check
+        from appdoc.textnorm import normalize_text
+        raw = self.DOC.replace("<!-- appdoc:count V -->3<!-- /appdoc:count -->", "many")
+        want = hashlib.sha1(normalize_text(check.document_text(raw)).encode("utf-8")).hexdigest()[:12]
+        self.assertEqual(check.doc_sha(raw), want)
+        self.assertRegex(check.doc_sha(raw), r"^[0-9a-f]{12}$")
+
+    def test_doc_sha_ignores_generated_blocks_counts_comments_and_newline_style(self):
+        from appdoc import check
+        base = check.doc_sha(self.DOC)
+        self.assertEqual(check.doc_sha(self.DOC.replace("old rows", "new rows\nmore")), base)
+        self.assertEqual(check.doc_sha(self.DOC.replace(">3<", ">14<")), base)
+        self.assertEqual(check.doc_sha(self.DOC.replace("a comment", "another comment")), base)
+        self.assertEqual(check.doc_sha(self.DOC.replace("\n", "\r\n")), base)
+        self.assertNotEqual(check.doc_sha(self.DOC.replace("The service", "A service")), base)
+
+    def test_check_and_fill_share_the_one_text_helper(self):
+        import inspect
+        from appdoc import check, fill
+        self.assertIn("document_text(", inspect.getsource(check.run))
+        self.assertIn("document_text(", inspect.getsource(check.seal_register))
+        self.assertIn("document_text(", inspect.getsource(fill._appendix_a))

@@ -650,6 +650,22 @@ def _claim_sha(lines, heads, ids, ref):
     return hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
 
 
+def document_text(raw: str, mask_counts: bool = False) -> str:
+    """The Narrative text the Check reads (C11, claim_sha) and the audit fingerprint hashes: newlines
+    normalized, opaque generated blocks masked, comments stripped, line numbering kept. With
+    `mask_counts` the count markers are removed too (their number is filled by `fill`, not written)."""
+    text = fill_mod.mask_blocks(normalize_newlines(raw), spec.OPAQUE_BLOCKS)
+    if mask_counts:
+        text = spec.COUNT_MARKER_RE.sub(lambda m: "\n" * m.group(0).count("\n"), text)
+    return _strip_comments(text)
+
+
+def doc_sha(raw: str) -> str:
+    """12-hex SHA-1 fingerprint of the Narrative as the auditor read it (line 1 `doc_sha` of the register)."""
+    text = normalize_text(document_text(raw, mask_counts=True))
+    return hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
+
+
 def seal_register(target, out_dir) -> int:
     """Write claim_sha into every ID/workflow register row that lacks one. Returns rows sealed."""
     md_path = os.path.join(out_dir, NARRATIVE)
@@ -657,7 +673,7 @@ def seal_register(target, out_dir) -> int:
     if not os.path.isfile(md_path) or not os.path.isfile(reg_path):
         return 0
     raw = _read_text(md_path)
-    lines = _strip_comments(fill_mod.mask_blocks(normalize_newlines(raw), spec.OPAQUE_BLOCKS)).splitlines()
+    lines = document_text(raw).splitlines()
     heads = dm.headings(lines)
     ids = defined_ids(lines, heads, lambda *a: None)
     reg = reg_mod.parse(_read_text(reg_path))
@@ -1040,7 +1056,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
             return 1
 
     prov = version.read_provenance(out_dir) if facts is not None else None
-    text = _strip_comments(fill_mod.mask_blocks(normalize_newlines(raw), spec.OPAQUE_BLOCKS))
+    text = document_text(raw)
     lines = text.splitlines()
     secs = _sections(lines)
     by_num = {s["num"]: s for s in secs}

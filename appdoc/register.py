@@ -32,6 +32,8 @@ OPTIONAL_KEYS = ("claim_sha", "supersedes", "sealed_by")
 SEALED_BY = ("audit", "upgrade")
 CLAIM_SHA_RE = re.compile(r"^[0-9a-f]{12}$")
 ID_RE = re.compile(r"^E-\d+$")
+AUDIT_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+AUDIT_RECORD_KEYS = ("audited_on", "audited_with", "audited_bundle", "doc_sha")   # required on 2.7 (C17)
 REF_RE = re.compile(r"^(\d+(?:\.\d+)?)(?:/([A-Z]+-\d+))?$")
 SMELL_REF_RE = re.compile(r"^smell/([0-9a-f]{8})$")      # only with result Dismissed
 ANSWERABLE_REF_RE = re.compile(r"^14/(Q-\d+)$")         # only with result Answerable
@@ -102,6 +104,12 @@ def parse(text: str) -> Register:
                 reg.errors.append((no, '"performed" must be true or false'))
             elif obj["performed"] and obj.get("auditor") not in AUDITORS:
                 reg.errors.append((no, f'"auditor" must be one of {", ".join(AUDITORS)}'))
+            for key, rx in (("audited_on", AUDIT_DATE_RE), ("audited_bundle", CLAIM_SHA_RE), ("doc_sha", CLAIM_SHA_RE)):
+                if key in obj and not rx.match(str(obj[key])):
+                    what = "YYYY-MM-DD" if rx is AUDIT_DATE_RE else "12 lowercase hex characters"
+                    reg.errors.append((no, f'"{key}" must be {what}'))
+            if "audited_with" in obj and not version_tuple(obj["audited_with"]):
+                reg.errors.append((no, '"audited_with" must be an AppDoc version such as 2.7.0'))
             continue
         missing = [k for k in ROW_KEYS if k not in obj]
         if missing:

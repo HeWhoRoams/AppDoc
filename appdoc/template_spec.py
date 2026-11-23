@@ -27,6 +27,10 @@ def version_tuple(s) -> tuple:
     return tuple(out)
 
 
+# A hand-written count the tool fills: <!-- appdoc:count V -->14<!-- /appdoc:count -->. The text between the
+# two comments is the filled number; doc_sha masks the whole marker so fill never changes the fingerprint.
+COUNT_MARKER_RE = re.compile(r"<!--\s*appdoc:count\s+[^>]*?-->[^<]*<!--\s*/appdoc:count\s*-->")
+
 STAMP_RE = re.compile(r"<!--\s*appdoc:template\s+([\w.]+)\s*-->")
 GUIDE_RE = re.compile(r"<!--\s*appdoc:guide\b")
 UPGRADE_NOTES = ("CHANGELOG.md, 2.4.0 upgrade notes. 2.3 -> 2.4: per-claim C2 (security citations need a line); "

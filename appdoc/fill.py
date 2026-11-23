@@ -275,7 +275,7 @@ def _appendix_a(doc: dict, ctx: dict | None = None) -> str:
     text = (ctx or {}).get("text")
     if reg is not None and reg.performed and text is not None:
         # the same masking the Check applies, so the appendix never reads itself
-        lines = check._strip_comments(mask_blocks(text, spec.OPAQUE_BLOCKS)).splitlines()
+        lines = check.document_text(text).splitlines()
         heads = dm.headings(lines)
         ids = check.defined_ids(lines, heads, lambda *a: None)
         workflows = sorted((k for k in heads if k.startswith("7.")), key=lambda k: int(k.split(".")[1]))
