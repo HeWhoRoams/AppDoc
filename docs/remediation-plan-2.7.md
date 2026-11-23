@@ -1,6 +1,6 @@
 # AppDoc v2.6.0 → v2.7.0 Remediation Plan: Template release
 
-**Date:** 2026-11-13 (formerly drafted as `remediation-plan-2.6.md` revs 1–3; renumbered after 2.5.0 turned out to be in flight)
+**Date:** 2026-11-13, rev 2 2026-11-23 (formerly drafted as `remediation-plan-2.6.md` revs 1–3; renumbered after 2.5.0 turned out to be in flight)
 **Status:** Phase after next. Release sequence: 2.5.0 (`remediation-plan-2.5.md`, in flight, unchanged) → 2.6.0 (`remediation-plan-2.6.md`, tooling and Facts) → **2.7.0 (this plan, template)**.
 **Basis:**
 - the 2.4 example audit (`AppDoc-v2.4-Examples-Audit-2026-11-13.md`, AppDoc project);
@@ -22,6 +22,31 @@ Users upgrade each document once, and the examples get a fresh run and a fresh a
 - everything 2.6.0 ships: tags, the provenance sidecar and `version_tuple`, the determinism harness, capabilities, duplicate folders and pruning, config and secret naming, `appdoc gate`, generated AppDoc docs, the release script, answer keys, example rotation, C20, and previews of the rules below.
 
 **Format:** house convention. Every item has a failing test (TDD), a corpus case where a Target is needed, and a "why this is not a weakening" line.
+
+---
+
+## Status and amendments (rev 2, 2026-11-23)
+
+**Not started**, and it cannot start until 2.5.0 (partly done; see its status table) and 2.6.0 (not started) ship. Amendments:
+
+| # | Amendment |
+|---|---|
+| **C-1 Name collision** | The rows "Q5 eShop chatbot PII flow" and "Q6 No 'how to run it' section" in §2 and §7 are **audit questions**, not decisions, and they reuse the numbers of decisions Q5 and Q6 in §1 (2.6 uses them too). Rename them **AQ5** and **AQ6** everywhere in this plan. |
+| **C-2 Block registry** | The `closed-questions` block (§3.8) is added to `template_spec.OPAQUE_BLOCKS` as well as `GENERATED` (key `"14"`), so that `doc_sha`, the seals (`_claim_sha`) and the audit plan mask it like the other generated blocks. 2.8 adds five more blocks the same way and needs each to be opaque; a block that is not opaque makes a sealed register row fail C11 when its content changes between releases. Test: `test_check::test_closed_questions_is_opaque`. |
+| **C-3 Count-marker classes** | The closed `CLASS` list in §3.5 is extended in 2.8 (areas, state-changing handlers by label, access rules, role constants, guard shapes, secret-location files, configurations; 2.9 adds CI jobs and test suites). Implement the list as one constant in `template_spec` so 2.8 adds to it without changing the marker syntax. |
+| **C-4 Audit plan scope** | §3.4 samples sections 4, 6, 8.1, 8.3, 9 and 15 and covers 10.1, 7, 14, smells, 10.2, 16.5 and §17 fully. Generated and opaque blocks (including 2.8's access model in template §5.4) are **not audited**; say so in the A.1 line and in SKILL.md, so the omission is stated rather than assumed. |
+| **C-5 `appdoc upgrade` (proposed; decision Q23, take before 2.7 starts)** | 2.7 is the release that makes every committed document change template once, and it has no tool for it. §5.1's eight steps are mostly mechanical. If Q23 is accepted, add **§3.11** below (about 2 d, taking the total to about 8.5 d). If not, 2.8 carries it (its W15). |
+| **C-6 Schema** | §5.1's "schema stays `/7`" depends on 2.6 landing at `/7` (2.5 `/6`, 2.6 `/7`). 2.8 therefore writes its schema as "the next after 2.7's" and re-checks at its start. |
+| **C-7 Rules** | C21–C23 are free after C17–C20 and are reserved for 2.8 (mandatory inputs, area and protection coverage, unknowns the repository may answer). C20 stays advisory. |
+
+### 3.11 `appdoc upgrade <target>` (proposed, pending Q23)
+
+1. Add `template_spec.UPGRADE_STEPS[version]`, a **machine-readable** list of operations for each template version: add block markers at a given `GENERATED` position, add headings with `appdoc:guide` comments, add required-row skeletons with `Unknown - see Open questions.`, rename table headers. Today `UPGRADE_NOTES` is prose and cannot be applied. 2.7 supplies the 2.4 to 2.7 steps (stamp, `closed-questions` markers, §17 skeleton, the 2.2 to 2.4 header renames and block markers); 2.8 adds its own.
+2. A document with no stamp is treated as 2.1 when it has the 2.1 subsections (4.1, 5.1–5.3, 8.4, 8.5, 10.1/10.2, 15.1, 16.1–16.5), otherwise as 2.0.
+3. After the mechanical steps it re-runs `extract` and `fill` and writes `docs/appdoc/UPGRADE-TODO.md` listing the non-mechanical steps (convert `verification.md` to `evidence.jsonl`, write register rows for new finding candidates, replace hand-written counts with markers), each with the Check rule that fails until it is done.
+4. It never deletes Narrative (unmappable text goes under an `appdoc:upgrade-orphan` comment that C3 fails on) and never writes `evidence.jsonl`, `notes.jsonl` or `audit-plan.json` (P4). It does not convert `verification.md` automatically (the register needs source anchors).
+
+**Tests:** `test_core::test_upgrade_2_1_to_current_mechanical`, `::test_upgrade_2_0_adds_2_1_subsections`, `::test_upgrade_idempotent`, `::test_upgrade_never_drops_text`, `::test_upgrade_never_touches_register`, `::test_upgrade_todo_lists_failing_rules`, `::test_upgrade_step_table_covers_every_version`. Corpus `upgrade-2-1`, and `upgrade-2-6-to-2-7` replaces the hand-run §5.1 corpus test.
 
 ---
 
@@ -58,8 +83,8 @@ Users upgrade each document once, and the examples get a fresh run and a fresh a
 | MIN-05 | Q-/E-ID gaps unexplained | 3.8 |
 | F2 (diagnostic) | §14/register reconciliation uses live rows | 3.10 |
 | F4 (diagnostic) | Stale hand-written counts | 3.5 |
-| Q5 | eShop chatbot PII flow | 5.2 |
-| Q6 | No "how to run it" section | 3.9 |
+| AQ5 | eShop chatbot PII flow | 5.2 |
+| AQ6 | No "how to run it" section | 3.9 |
 
 ---
 
@@ -329,8 +354,8 @@ fresh regeneration of four examples + audits, diagnostic, release              2
 | MIN-05 | 3.8 | `test_fill::test_closed_questions_block` | — |
 | F2 | 3.10 | `test_check::test_c14_uses_live_rows` | unknowns-leak |
 | F4 | 3.5 | `test_check::test_c15_stale_marker_fails` | stale-count |
-| Q5 | 5.2 | eShop 2.7 example: V-finding or 10.2 row present | — |
-| Q6 | 3.9 | `test_check::test_c9_section_17_rows` | — |
+| AQ5 | 5.2 | eShop 2.7 example: V-finding or 10.2 row present | — |
+| AQ6 | 3.9 | `test_check::test_c9_section_17_rows` | — |
 | Upgrade path | 5.1 | `test_corpus::test_upgrade_2_5_to_2_7` | upgrade-2-6-to-2-7 |
 
 ---

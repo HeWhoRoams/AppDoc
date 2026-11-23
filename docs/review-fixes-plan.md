@@ -1,5 +1,7 @@
 # AppDoc Review-Remediation Plan
 
+> **Status (2026-11-23): done.** The fixes are on `main` and recorded in the CHANGELOG (`## Unreleased`: versioned cache key, `smtp` in the view vocabulary, ASCII view, `read_bytes` TOCTOU, cache cap, Windows CI, de-duplication, scratch exclusion in `conftest.py`). The cache-key part is superseded by 2.6 §4.6.
+
 Fixes the findings from the pre-push code review (5 commits, `bb86a08 → main 5a9af09`).
 The review found **no blockers / no HIGH** — determinism, default-neutrality, stdlib-only, and
 redaction all hold with byte-level evidence. Two **MEDIUM** issues are worth fixing before
