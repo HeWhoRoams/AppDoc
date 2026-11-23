@@ -416,6 +416,31 @@ class CheckTests(unittest.TestCase):
         code, report, _ = self.run27(require_audit=True, strict=True)
         self.assertEqual(code, 0, report)
 
+    def test_c12_c10_and_verification_read_live_rows(self):
+        """T27.19: a superseded row is history; it no longer dismisses a candidate, names a register id or counts."""
+        self.with_facts(self.smell("aaaa0009", 9))
+        old = {"id": "E-3", "ref": "smell/aaaa0009", "claim": "A fixture constant, not a credential",
+               "result": "Dismissed", "cites": ["app/main.py:9"], "anchor": "line 9", "limitation": "test fixture"}
+        self.write_register(AUDIT, ROWS + [old])
+        self.assertEqual(self.run27()[0], 0)                       # live: the dismissal counts
+        # E-4 replaces the dismissal with one that gives no reason: the candidate is no longer dismissed
+        self.write_register(AUDIT, ROWS + [old, dict(old, id="E-4", limitation="", supersedes="E-3")])
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("C12", self.rules(report))
+        self.assertIn("smell aaaa0009", report)
+        # prose may not cite a superseded row, and says what replaced it
+        self.with_facts()
+        self.write_register(AUDIT, ROWS + [dict(self.SECOND_V1, supersedes="E-1")])
+        doc = build_doc().replace("- The entry module wires", "- See E-1 for the first audit. The entry module wires")
+        code, report, _ = self.run27(doc)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C10", self.rules(report))
+        self.assertIn("E-1 is superseded by E-3", report)
+        code, report, _ = self.run27()
+        self.assertEqual(code, 0, report)
+        self.assertIn("2 rows (1 superseded):", report.split("## Verification")[1])
+
     def test_c11_2_4_document_keeps_the_old_duplicate_message(self):
         self.write_register(AUDIT, ROWS + [self.SECOND_V1])
         code, report, _ = self.run_check(build_doc())

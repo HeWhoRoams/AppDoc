@@ -411,7 +411,7 @@ def defined_ids(lines, heads, add) -> dict[str, int]:
     return ids
 
 
-def _c10_refs(lines, heads, ids, register_ids, add):
+def _c10_refs(lines, heads, ids, register_ids, add, superseded=None):
     fence = dm.fenced(lines)
     slugs = dm.all_slugs(lines) | {APPENDIX_SLUG}
     for i, line in enumerate(lines):
@@ -422,7 +422,10 @@ def _c10_refs(lines, heads, ids, register_ids, add):
             ref = m.group(1)
             if ref.startswith("E-"):
                 if register_ids is not None and ref not in register_ids:
-                    add("C10", i + 1, f"{ref} is not a row of {REGISTER}", "cite an existing register ID")
+                    if ref in (superseded or {}):
+                        add("C10", i + 1, f"{ref} is superseded by {superseded[ref]}", f"cite {superseded[ref]}")
+                    else:
+                        add("C10", i + 1, f"{ref} is not a row of {REGISTER}", "cite an existing register ID")
             elif ref not in ids:
                 add("C10", i + 1, f"{ref} is not defined in any table", "define the ID in its table or correct the reference")
         for m in _ANCHOR_RE.finditer(text):
@@ -572,7 +575,7 @@ def _c12_smells(target, cache, lines, heads, facts, reg, add):
             for p in _cited_paths(target, cache, [c]):
                 spans.append((p, c.start, c.end))
     dismissed = set()
-    for _, row in (reg.rows if reg else ()):
+    for _, row in (reg.live_rows() if reg else ()):   # a superseded dismissal is history
         m = reg_mod.SMELL_REF_RE.match(str(row["ref"]))
         if m and row["result"] == "Dismissed" and str(row["limitation"]).strip():
             dismissed.add(m.group(1))
@@ -956,7 +959,7 @@ def _c15_register_counts(lines, ids, reg, add):
     if reg is None or not reg.performed:
         return
     refs = set()
-    for _, row in reg.rows:
+    for _, row in reg.live_rows():
         m = reg_mod.REF_RE.match(str(row.get("ref", "")))
         if m:
             refs.add(m.group(2) or m.group(1))
@@ -1345,8 +1348,9 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         _c17_scope(reg, add27)
         if doc_ver >= FAILS_FROM:
             _c17_provenance(reg, require_audit, strict, add)
-        reg_ids = {str(r["id"]) for _, r in reg.rows} if reg else None
-        _c10_refs(lines, heads, ids, reg_ids, add)
+        reg_ids = {str(r["id"]) for _, r in reg.live_rows()} if reg else None   # a superseded row is history
+        gone = {t: reg.superseded_by(t) for t in reg.superseded_ids()} if reg else None
+        _c10_refs(lines, heads, ids, reg_ids, add, gone)
         _c10_coverage(lines, heads, facts, add)
         if facts is not None:
             _c12_smells(target, cache, lines, heads, facts, reg, add)
@@ -1448,15 +1452,17 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         verification.append(f"**Source-to-claim audit:** not performed ({why}). The HTML shows a banner.")
         verification_status = "Source-to-claim audit: declared not performed."
     else:
-        c = reg.counts()
+        live = reg.live_rows()
+        c = reg.counts(live)
+        n_old = len(reg.rows) - len(live)
         verification += [
             f"**Source-to-claim audit:** performed (auditor: {reg.audit.get('auditor')}). "
-            f"{len(reg.rows)} rows: {c['Supported']} Supported, {c['Corrected']} Corrected, "
+            f"{len(live)} rows{f' ({n_old} superseded)' if n_old else ''}: {c['Supported']} Supported, {c['Corrected']} Corrected, "
             f"{c['Downgraded']} Downgraded"
             + "".join(f", {c[r]} {r}" for r in ("Dismissed", "Answerable") if c[r]) + ".", "",
             "| Section | IDs with a register row |", "|---|---|",
         ] + [f"| {s} | {hit} of {n} |" for s, hit, n in cov]
-        verification_status = f"Source-to-claim audit: {len(reg.rows)} rows ({reg.audit.get('auditor')})."
+        verification_status = f"Source-to-claim audit: {len(live)} rows ({reg.audit.get('auditor')})."
 
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, REPORT), "w", encoding="utf-8", newline="\n") as fh:
