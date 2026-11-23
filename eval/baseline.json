@@ -45,7 +45,7 @@
     "fp": 0,
     "precision": 1.0,
     "recall": 1.0,
-    "tp": 12
+    "tp": 10
   },
   "aspnet-core/message": {
     "expected": 5,

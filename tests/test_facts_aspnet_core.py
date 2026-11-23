@@ -103,6 +103,14 @@ class AspNetCoreFacts(unittest.TestCase):
         missing = [e[:4] for e in expected if not self.has(*e[:4], **e[4])]
         self.assertEqual(missing, [])
 
+    def test_httpclient_call_supersedes_generic_http_emission(self):
+        """One HttpClient call at a line is one external_call, not a plain http Fact plus a via:HttpClient Fact."""
+        for path, line in (("Services/NotificationService.cs", 21), ("Services/PagerClient.cs", 9)):
+            with self.subTest(path=path):
+                at = [f for f in self.facts if f["kind"] == "external_call" and f["path"] == path and f["line"] == line]
+                self.assertEqual(len(at), 1, at)
+                self.assertEqual(at[0]["detail"].get("via"), "HttpClient")
+
     def test_commented_out_code_yields_nothing(self):
         names = " ".join(f["name"] for f in self.facts)
         self.assertNotIn("Commented out", names)

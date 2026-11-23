@@ -2,7 +2,7 @@
   "type": "extractor",
   "target": "tests/samples/aspnet-core",
   "exhaustive": true,
-  "note": "ASP.NET Core: controllers, minimal APIs, Razor pages, hosted services, EF, HttpClient. The two external_call Facts at Services/NotificationService.cs:21 and Services/PagerClient.cs:9 describe one call each (see known_gaps).",
+  "note": "ASP.NET Core: controllers, minimal APIs, Razor pages, hosted services, EF, HttpClient. An HttpClient emission at a line supersedes the generic http emission for the same file and line, so Services/NotificationService.cs:21 and Services/PagerClient.cs:9 are one external_call each.",
   "must_exist": [
     {"kind": "auth_check", "stack": "aspnet-core", "path": "Controllers/AdminController.cs", "line": 8, "name": "[Authorize(Roles = \"Admin,Support\")]", "detail": {"mechanism": "attribute"}},
     {"kind": "auth_check", "stack": "aspnet-core", "path": "Controllers/AdminController.cs", "line": 12, "name": "[Authorize(Policy = \"CanViewUsers\")]", "detail": {"mechanism": "attribute"}},

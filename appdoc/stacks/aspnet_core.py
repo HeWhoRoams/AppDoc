@@ -566,7 +566,13 @@ class AspNetCoreStack(Stack):
             yield from _config_reads(path, ctx)
             if not _CORE_HINT.search(text):
                 return
+            http_client = list(_httpclient(path, ctx))
+            http_lines = {f.line for f in http_client}
             for f in dotnet_common(STACK_ID, path, ctx, web_forms=False):
+                # An HttpClient emission at a line supersedes the generic http emission for the same file and line.
+                d = dict(f.detail)
+                if f.kind == "external_call" and d.get("type") == "http" and "via" not in d and f.line in http_lines:
+                    continue
                 yield _as_define(f) if f.kind == "config_key" else f
             yield from error_messages(STACK_ID, path, ctx)
             yield from _controllers(path, ctx, classes, self._files)
@@ -574,7 +580,7 @@ class AspNetCoreStack(Stack):
             yield from _minimal_apis(path, ctx)
             yield from _data_and_calls(path, ctx)
             yield from _ef(path, ctx)
-            yield from _httpclient(path, ctx)
+            yield from http_client
             yield from _messages(path, ctx)
             yield from integrations.scan_facts("dotnet", STACK_ID, path, strip_comments(text, "c"))
         elif ext in (".cshtml", ".razor"):
