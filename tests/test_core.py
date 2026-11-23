@@ -741,3 +741,98 @@ class DocShaTests(unittest.TestCase):
         self.assertIn("document_text(", inspect.getsource(check.run))
         self.assertIn("document_text(", inspect.getsource(check.seal_register))
         self.assertIn("document_text(", inspect.getsource(fill._appendix_a))
+
+
+class SealProvenanceTests(unittest.TestCase):
+    """T27.04: `seal --audit --date` and the audit/upgrade provenance of sealed rows."""
+
+    def setUp(self):
+        from tests.test_check import AUDIT, ROWS, build_doc
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.target = os.path.join(self.tmp.name, "t")
+        self.out = os.path.join(self.target, "docs", "appdoc")
+        os.makedirs(self.out)
+        self.build_doc, self.AUDIT, self.ROWS = build_doc, AUDIT, ROWS
+
+    def write(self, stamp="2.7", audit=None):
+        from appdoc import template_spec as spec
+        doc = self.build_doc().replace(spec.STAMP, f"<!-- appdoc:template {stamp} -->")
+        with open(os.path.join(self.out, "application-documentation.md"), "w", encoding="utf-8") as fh:
+            fh.write(doc)
+        lines = [json.dumps(audit or self.AUDIT)] + [json.dumps(r) for r in self.ROWS]
+        with open(os.path.join(self.out, "evidence.jsonl"), "w", encoding="utf-8") as fh:
+            fh.write("\n".join(lines) + "\n")
+        return doc
+
+    def read(self):
+        with open(os.path.join(self.out, "evidence.jsonl"), encoding="utf-8") as fh:
+            return [json.loads(l) for l in fh if l.strip()]
+
+    def main(self, *args):
+        import contextlib, io
+        from appdoc.__main__ import main
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+            try:
+                rc = main(["seal", self.target, *args])
+            except SystemExit as exc:
+                rc = exc.code
+        return rc, buf.getvalue()
+
+    def test_seal_audit_requires_date(self):
+        self.write()
+        before = self.read()
+        for args in (["--audit"], ["--audit", "--date", "23/11/2026"], ["--audit", "--date", "2026-13-40"],
+                     ["--date", "2026-11-23"]):
+            rc, out = self.main(*args)
+            self.assertNotEqual(rc, 0, args)
+            self.assertEqual(self.read(), before, args)   # nothing is written on a refusal
+        rc, out = self.main("--audit", "--date", "2026-11-23")
+        self.assertEqual(rc, 0, out)
+        self.assertIn("sealed 2 row(s)", out)
+
+    def test_seal_audit_writes_provenance_and_marks_rows_audit(self):
+        from appdoc import __version__, check, version
+        doc = self.write()
+        self.main("--audit", "--date", "2026-11-23")
+        audit, *rows = self.read()
+        self.assertEqual(audit["audited_on"], "2026-11-23")
+        self.assertEqual(audit["audited_with"], __version__)
+        self.assertEqual(audit["audited_bundle"], version.bundle_hash()[:version.BUNDLE_LEN])
+        self.assertEqual(audit["doc_sha"], check.doc_sha(doc))
+        self.assertEqual([r["sealed_by"] for r in rows], ["audit", "audit"])
+        self.assertTrue(all("claim_sha" in r for r in rows))
+        self.assertEqual(self.AUDIT["scope"], audit["scope"])      # the writer's fields are kept
+        # re-running on the same text changes nothing
+        again = self.read()
+        self.main("--audit", "--date", "2026-11-23")
+        self.assertEqual(self.read(), again)
+
+    def test_seal_marks_upgrade_without_matching_doc_sha(self):
+        from appdoc import check
+        doc = self.write()                       # a 2.7 document whose line 1 has no doc_sha
+        rc, out = self.main()
+        self.assertEqual(rc, 0, out)
+        self.assertEqual([r["sealed_by"] for r in self.read()[1:]], ["upgrade", "upgrade"])
+        # a doc_sha that matches the current text seals as audit; one that does not, as upgrade
+        for sha, want in ((check.doc_sha(doc), "audit"), ("0" * 12, "upgrade")):
+            self.write(audit=dict(self.AUDIT, doc_sha=sha))
+            self.main()
+            self.assertEqual({r["sealed_by"] for r in self.read()[1:]}, {want}, sha)
+
+    def test_seal_on_a_2_4_document_writes_no_sealed_by(self):
+        self.write(stamp="2.4")
+        self.main()
+        rows = self.read()[1:]
+        self.assertTrue(all("claim_sha" in r and "sealed_by" not in r for r in rows))
+
+    def test_seal_never_marks_or_seals_a_superseded_row(self):
+        self.write()
+        self.ROWS = [self.ROWS[0], self.ROWS[1], dict(self.ROWS[0], id="E-3", supersedes="E-1")]
+        self.write()
+        self.main("--audit", "--date", "2026-11-23")
+        by_id = {r["id"]: r for r in self.read()[1:]}
+        self.assertNotIn("sealed_by", by_id["E-1"])
+        self.assertNotIn("claim_sha", by_id["E-1"])
+        self.assertEqual(by_id["E-3"]["sealed_by"], "audit")

@@ -400,6 +400,37 @@ class RegisterHistory(CorpusCase):
         self.assertIn("two live rows for 10.1/V-1", report)
         self.assertIn('add "supersedes": "E-1" to the newer row; do not delete the older row', report)
 
+    def _rows(self, r):
+        with open(os.path.join(r.out, "evidence.jsonl"), encoding="utf-8") as fh:
+            return [json.loads(l) for l in fh if l.strip()]
+
+    def test_upgrade_seal_marks_rows_sealed_without_an_audit(self):
+        """A 2.7 register whose line 1 has no doc_sha was not audited against this text: plain seal says so."""
+        r = self.case27("upgrade-seal")
+        self.assertEqual(r.code, 0, r.report)
+        audit, *rows = self._rows(r)
+        self.assertNotIn("doc_sha", audit)
+        self.assertEqual([x["sealed_by"] for x in rows], ["upgrade", "upgrade"])
+
+    def test_seal_audit_turns_the_rows_into_audited_ones(self):
+        from unittest import mock
+        from appdoc import template_spec as spec
+        r = self.case27("upgrade-seal")
+        reg_path = os.path.join(r.out, "evidence.jsonl")
+        with open(reg_path, encoding="utf-8") as fh:
+            lines = fh.read().splitlines()
+        # restore the rows to unsealed, as the register looked when the writer handed it to the auditor
+        stripped = [lines[0]] + [json.dumps({k: v for k, v in json.loads(l).items()
+                                             if k not in ("claim_sha", "sealed_by")}) for l in lines[1:]]
+        with open(reg_path, "w", encoding="utf-8") as fh:
+            fh.write("\n".join(stripped) + "\n")
+        with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"), contextlib.redirect_stdout(io.StringIO()):
+            check.seal_register(r.target, r.out, audit=True, date="2026-11-23")
+            self.assertEqual(check.run(r.target, r.out), 0)
+        audit, *rows = self._rows(r)
+        self.assertEqual(audit["audited_on"], "2026-11-23")
+        self.assertEqual([x["sealed_by"] for x in rows], ["audit", "audit"])
+
 
 def _apply_pending():
     for cls in CorpusCase.__subclasses__():

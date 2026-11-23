@@ -43,7 +43,7 @@ All commands:
 | `appdoc fill <target>` | `--out OUT` | write the generated blocks of the Narrative from the Facts and the register |
 | `appdoc check <target>` | `--out OUT`, `--require-audit`, `--strict` | verify the Narrative; exit 0 pass, 2 problems, 1 tool error |
 | `appdoc render <target>` | `--out OUT`, `--css CSS` | write application-documentation.html |
-| `appdoc seal <target>` | `--out OUT` | write claim_sha into the register rows that lack one |
+| `appdoc seal <target>` | `--out OUT`, `--audit`, `--date DATE` | write claim_sha into the register rows that lack one; --audit --date records the audit |
 | `appdoc build <target>` | `--out OUT`, `--require-audit`, `--strict` | seal, fill, check and render in one step |
 | `appdoc gate <target>` | `--out OUT`, `--workers WORKERS`, `--require-audit`, `--strict` | CI gate: regenerate the Facts and compare with the committed facts.json, then check; exit 0 pass, 1 tool error, 2 Facts changed, 3 AppDoc upgraded |
 <!-- /appdoc-self:generated commands -->

@@ -666,8 +666,14 @@ def doc_sha(raw: str) -> str:
     return hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
 
 
-def seal_register(target, out_dir) -> int:
-    """Write claim_sha into every ID/workflow register row that lacks one. Returns rows sealed."""
+def seal_register(target, out_dir, audit: bool = False, date: str | None = None) -> int:
+    """Write claim_sha into every ID/workflow register row that lacks one. Returns rows sealed.
+
+    From template 2.7 the rows also get `sealed_by`: "audit" when line 1's doc_sha equals the Narrative's
+    current fingerprint (the text was audited), else "upgrade". `audit` (with `date`, YYYY-MM-DD) is the
+    auditor finishing the audit: line 1 gets audited_on/audited_with/audited_bundle/doc_sha and the rows
+    sealed now are "audit". Superseded rows are never sealed.
+    """
     md_path = os.path.join(out_dir, NARRATIVE)
     reg_path = os.path.join(out_dir, REGISTER)
     if not os.path.isfile(md_path) or not os.path.isfile(reg_path):
@@ -677,6 +683,16 @@ def seal_register(target, out_dir) -> int:
     heads = dm.headings(lines)
     ids = defined_ids(lines, heads, lambda *a: None)
     reg = reg_mod.parse(_read_text(reg_path))
+    fingerprint = doc_sha(raw)
+    audit_fields = sealed_by = None
+    if audit:
+        audit_fields = {"audited_on": date, "audited_with": __version__,
+                        "audited_bundle": version.bundle_hash()[:version.BUNDLE_LEN], "doc_sha": fingerprint}
+        sealed_by = "audit"
+    else:
+        stamp = spec.STAMP_RE.search(raw)
+        if spec.version_tuple(stamp.group(1) if stamp else "") >= FAILS_FROM:
+            sealed_by = "audit" if (reg.audit or {}).get("doc_sha") == fingerprint else "upgrade"
     claim_shas: dict[str, str] = {}
     for _, row in reg.live_rows():   # a superseded row records history and is never sealed
         if row["result"] in ("Dismissed", "Answerable"):
@@ -690,7 +706,7 @@ def seal_register(target, out_dir) -> int:
         sha = _claim_sha(lines, heads, ids, str(row["ref"]))
         if sha:
             claim_shas[str(row["id"])] = sha
-    return reg_mod.seal(reg_path, claim_shas)
+    return reg_mod.seal(reg_path, claim_shas, sealed_by, audit_fields)
 
 
 def _c2_per_claim(lines, s10, add):

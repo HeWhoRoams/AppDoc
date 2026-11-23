@@ -285,10 +285,13 @@ def _commands(reg: Register, root: str | None = None) -> list[str]:
             ""] + out[:-1]
 
 
-def seal(path: str, claim_shas: dict[str, str]) -> int:
+def seal(path: str, claim_shas: dict[str, str], sealed_by: str | None = None,
+         audit_fields: dict | None = None) -> int:
     """Write claim_sha into every row that lacks one. Never overwrites an existing one.
 
     claim_shas maps row id ("E-1") to the 12-hex-char SHA. Returns the number of rows sealed.
+    `sealed_by` ("audit" | "upgrade") is written beside each claim_sha this call adds; None writes none.
+    `audit_fields` (audited_on, audited_with, audited_bundle, doc_sha) replaces those keys on line 1.
     Preserves the file's existing line ending and key order.
     """
     with open(path, encoding="utf-8-sig", newline="") as fh:
@@ -305,12 +308,18 @@ def seal(path: str, claim_shas: dict[str, str]) -> int:
         except ValueError:
             out.append(line)
             continue
+        if isinstance(obj, dict) and obj.get("type") == "audit" and audit_fields:
+            obj.update(audit_fields)
+            out.append(json.dumps(obj, ensure_ascii=False))
+            continue
         if not isinstance(obj, dict) or obj.get("type") == "audit":
             out.append(line)
             continue
         rid = str(obj.get("id", ""))
         if rid in claim_shas and "claim_sha" not in obj:
             obj["claim_sha"] = claim_shas[rid]
+            if sealed_by:
+                obj["sealed_by"] = sealed_by
             sealed += 1
         out.append(json.dumps(obj, ensure_ascii=False))
     with open(path, "w", encoding="utf-8", newline="") as fh:
