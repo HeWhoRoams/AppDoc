@@ -5,7 +5,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 1,
-    "size": 16,
+    "size": 15,
     "stacks": []
    },
    "kind": "file",
@@ -32,7 +32,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 29,
-    "size": 732,
+    "size": 703,
     "stacks": []
    },
    "kind": "file",
@@ -163,7 +163,7 @@
     "encoding": "utf-8",
     "ext": ".gitignore",
     "lines": 5,
-    "size": 46,
+    "size": 41,
     "stacks": []
    },
    "kind": "file",
@@ -177,7 +177,7 @@
     "encoding": "utf-8",
     "ext": "",
     "lines": 21,
-    "size": 1092,
+    "size": 1071,
     "stacks": []
    },
    "kind": "file",
@@ -191,7 +191,7 @@
     "encoding": "utf-8",
     "ext": "",
     "lines": 1,
-    "size": 31,
+    "size": 30,
     "stacks": []
    },
    "kind": "file",
@@ -205,7 +205,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 1760,
-    "size": 48164,
+    "size": 46404,
     "stacks": []
    },
    "kind": "file",
@@ -219,7 +219,7 @@
     "encoding": "utf-8",
     "ext": ".py",
     "lines": 12,
-    "size": 200,
+    "size": 188,
     "stacks": [
      "python-flask"
     ]
@@ -228,252 +228,6 @@
    "line": null,
    "name": "create_db.py",
    "path": "create_db.py",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "ext": ".html",
-    "size": 3621861,
-    "skipped": "size"
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2-seeded/application-documentation.html",
-   "path": "docs/appdoc-2.2-seeded/application-documentation.html",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 381,
-    "size": 26950,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2-seeded/application-documentation.md",
-   "path": "docs/appdoc-2.2-seeded/application-documentation.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 247,
-    "size": 10236,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2-seeded/check-report.md",
-   "path": "docs/appdoc-2.2-seeded/check-report.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".jsonl",
-    "lines": 1,
-    "size": 92,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2-seeded/evidence.jsonl",
-   "path": "docs/appdoc-2.2-seeded/evidence.jsonl",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 113,
-    "size": 2719,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2-seeded/facts-summary.md",
-   "path": "docs/appdoc-2.2-seeded/facts-summary.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".json",
-    "lines": 983,
-    "size": 17875,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2-seeded/facts.json",
-   "path": "docs/appdoc-2.2-seeded/facts.json",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "ext": ".html",
-    "size": 3621861,
-    "skipped": "size"
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/application-documentation.html",
-   "path": "docs/appdoc-2.2/application-documentation.html",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 370,
-    "size": 26524,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/application-documentation.md",
-   "path": "docs/appdoc-2.2/application-documentation.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 247,
-    "size": 10236,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/check-report.md",
-   "path": "docs/appdoc-2.2/check-report.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".jsonl",
-    "lines": 1,
-    "size": 92,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/evidence.jsonl",
-   "path": "docs/appdoc-2.2/evidence.jsonl",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 113,
-    "size": 2719,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/facts-summary.md",
-   "path": "docs/appdoc-2.2/facts-summary.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".json",
-    "lines": 983,
-    "size": 17875,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/facts.json",
-   "path": "docs/appdoc-2.2/facts.json",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "ext": ".html",
-    "size": 3670036,
-    "skipped": "size"
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/application-documentation.html",
-   "path": "docs/appdoc/application-documentation.html",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 485,
-    "size": 47510,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/application-documentation.md",
-   "path": "docs/appdoc/application-documentation.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 535,
-    "size": 33656,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/check-report.md",
-   "path": "docs/appdoc/check-report.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 93,
-    "size": 2230,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/facts-summary.md",
-   "path": "docs/appdoc/facts-summary.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".json",
-    "lines": 884,
-    "size": 15962,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/facts.json",
-   "path": "docs/appdoc/facts.json",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 63,
-    "size": 13573,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/verification.md",
-   "path": "docs/appdoc/verification.md",
    "stack": "generic"
   },
   {
@@ -509,7 +263,7 @@
     "encoding": "utf-8",
     "ext": ".py",
     "lines": 125,
-    "size": 3405,
+    "size": 3280,
     "stacks": [
      "python-flask"
     ]
@@ -598,6 +352,8 @@
   },
   {
    "detail": {
+    "read_kind": "env",
+    "role": "env",
     "secret_location": false,
     "source": "code",
     "use": "read",
@@ -632,6 +388,17 @@
    "kind": "config_key",
    "line": 32,
    "name": "SQLALCHEMY_TRACK_MODIFICATIONS",
+   "path": "project/app.py",
+   "stack": "python-flask"
+  },
+  {
+   "detail": {
+    "secret_location": false,
+    "type": "sqlalchemy"
+   },
+   "kind": "connection",
+   "line": 40,
+   "name": "SQLAlchemy",
    "path": "project/app.py",
    "stack": "python-flask"
   },
@@ -705,6 +472,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read",
@@ -731,6 +500,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": true,
     "source": "code",
     "use": "read",
@@ -849,7 +620,7 @@
     "encoding": "utf-8",
     "ext": ".py",
     "lines": 14,
-    "size": 365,
+    "size": 351,
     "stacks": [
      "python-flask"
     ]
@@ -877,7 +648,7 @@
     "encoding": "utf-8",
     "ext": ".js",
     "lines": 26,
-    "size": 717,
+    "size": 691,
     "stacks": []
    },
    "kind": "file",
@@ -891,7 +662,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 74,
-    "size": 1025,
+    "size": 951,
     "stacks": []
    },
    "kind": "file",
@@ -905,7 +676,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 86,
-    "size": 2183,
+    "size": 2097,
     "stacks": []
    },
    "kind": "file",
@@ -932,7 +703,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 62,
-    "size": 1579,
+    "size": 1517,
     "stacks": []
    },
    "kind": "file",
@@ -946,7 +717,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 65,
-    "size": 1785,
+    "size": 1720,
     "stacks": []
    },
    "kind": "file",
@@ -973,7 +744,7 @@
     "encoding": "utf-8",
     "ext": ".txt",
     "lines": 8,
-    "size": 129,
+    "size": 121,
     "stacks": []
    },
    "kind": "file",
@@ -1064,7 +835,7 @@
     "encoding": "utf-8",
     "ext": ".txt",
     "lines": 1,
-    "size": 15,
+    "size": 14,
     "stacks": []
    },
    "kind": "file",
@@ -1118,7 +889,7 @@
     "encoding": "utf-8",
     "ext": ".py",
     "lines": 88,
-    "size": 2619,
+    "size": 2531,
     "stacks": [
      "python-flask"
     ]
@@ -1173,6 +944,7 @@
   },
   {
    "detail": {
+    "read_kind": "file",
     "secret_location": true,
     "source": "code",
     "test": true,
@@ -1187,6 +959,7 @@
   },
   {
    "detail": {
+    "read_kind": "file",
     "secret_location": false,
     "source": "code",
     "test": true,
@@ -1201,6 +974,7 @@
   },
   {
    "detail": {
+    "read_kind": "file",
     "secret_location": true,
     "source": "code",
     "test": true,
@@ -1215,6 +989,7 @@
   },
   {
    "detail": {
+    "read_kind": "file",
     "secret_location": false,
     "source": "code",
     "test": true,
@@ -1243,6 +1018,7 @@
   },
   {
    "detail": {
+    "read_kind": "file",
     "secret_location": true,
     "source": "code",
     "test": true,
@@ -1257,6 +1033,7 @@
   },
   {
    "detail": {
+    "read_kind": "file",
     "secret_location": false,
     "source": "code",
     "test": true,
@@ -1271,6 +1048,7 @@
   },
   {
    "detail": {
+    "read_kind": "file",
     "secret_location": true,
     "source": "code",
     "test": true,
@@ -1285,6 +1063,7 @@
   },
   {
    "detail": {
+    "read_kind": "file",
     "secret_location": false,
     "source": "code",
     "test": true,
@@ -1299,6 +1078,7 @@
   },
   {
    "detail": {
+    "read_kind": "file",
     "secret_location": true,
     "source": "code",
     "test": true,
@@ -1313,6 +1093,7 @@
   },
   {
    "detail": {
+    "read_kind": "file",
     "secret_location": false,
     "source": "code",
     "test": true,
@@ -1326,10 +1107,12 @@
    "stack": "python-flask"
   }
  ],
- "schema": "appdoc-facts/4",
+ "generator": "2.5.0",
+ "schema": "appdoc-facts/6",
  "stacks": [
   {
    "detail": {
+    "capabilities": [],
     "file_count": 6,
     "marker_files": [
      "requirements.txt"
@@ -1348,11 +1131,13 @@
   "history": "shallow",
   "name": "flaskr-tdd",
   "scan": {
-   "found": 41,
+   "found": 23,
    "ignored": 0,
+   "metadata": 0,
    "pruned": [],
    "pruned_files": 0,
-   "scanned": 41
+   "retired_candidates": [],
+   "scanned": 23
   }
  }
 }

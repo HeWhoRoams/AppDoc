@@ -92,3 +92,21 @@ These recur across the set and point at the tool, not the individual docs:
 | 4 | **flaskr-tdd** | Most honest and the only execution-verified finding (V-9), but the smallest and its extractor coverage is thinnest, so the gaps are most visible. |
 
 **Bottom line:** all four are structurally valid and honest. The 2.4 bump delivered the honesty features (retired candidates, config roles, version skew, per-claim C2) cleanly. The remaining quality gap is *first-draft accuracy* (over-claiming + citation precision) and *extractor coverage* on UI/external-call/data-access/schema facts — those two are the v2.5 targets.
+
+## Post-remediation (2.5.0)
+
+The four unsuffixed example folders were regenerated with AppDoc 2.5.0 from clean clones at the recorded commits (no `docs/appdoc*` in the Target), keeping the 2.4 Narrative and register and editing them only where the 2.5.0 Check or the new Facts required it. All four pass `check --require-audit`; each `facts.json` is byte-identical across repeated `extract` runs.
+
+| Example | Check | Citations | % with line | Audit rows | % Supported | Facts |
+|---|---|---|---|---|---|---|
+| flaskr-tdd | PASS | 356 | 86.0 | 91 | 87.9 | 84 |
+| spring-petclinic | PASS | 650 | 95.5 | 123 | 83.7 | 409 |
+| eShop | PASS | 1298 | 94.6 | 113 | 83.2 | 1765 |
+| gitea | PASS | 1299 | 88.9 | 141 | 85.8 | 19536 |
+
+- **No regression:** % Supported and % citations-with-line are equal or higher than 2.4 in every example (`tests/test_diag_metrics.py::DiagMetricsPost25`).
+- **Config reference (16.6):** shows only application keys, with a trailer counting excluded env-var and CI keys. eShop 258 → 49 application keys; gitea shows 150 of 341, with `GO` and `SSH_ORIGINAL_COMMAND` no longer flagged as secret locations.
+- **New Facts:** gitea gains `connection` (8) and `schema_object` (116); eShop's external calls, data access and UI pages rise (7 → 43, 9 → 36, 13 → 26); flaskr-tdd gains one SQLAlchemy `connection`. The Narrative describes only what an agent re-verified in source, so it lags the eShop growth.
+- **Clean Target:** three 2.4 runs (flaskr-tdd, spring-petclinic, eShop) had been built on a Target that already held earlier AppDoc output under `docs/`. The clean clones have none, so the `docs/` rows in 4.1 and citations into old output were removed (eShop register row E-88 was deleted for that reason).
+- **Unchanged:** retired candidates (gitea 40, eShop 9) are name-signal work for 2.6. Ownership stays Unknown by absence, shown as an advisory. One single-line universal-claim advisory remains in each example.
+

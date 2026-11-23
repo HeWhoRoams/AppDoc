@@ -1,5 +1,5 @@
 # spring-petclinic Documentation
-<!-- appdoc:template 2.3 -->
+<!-- appdoc:template 2.4 -->
 
 **Target:** spring-petclinic | **Commit:** 500158f732419217507c7656904b8e6aa1bcc0d6 | **Evidence date:** 2026-11-11
 
@@ -23,26 +23,26 @@
 ## 2. Coverage and Overview
 
 ### 2.1 What was inspected
-Not read: the static assets (CSS, fonts, images) under `src/main/resources/static/`, the SCSS sources under `src/main/scss/`, the localized message files other than `messages.properties`, the JMeter test plan `petclinic_test_plan.jmx`, and the `docs/` folder. No application was run, so runtime behavior was not observed. AppDoc extracts Facts only for the java-spring Stack; the Kubernetes manifests, Thymeleaf templates, SQL scripts and CI workflows are covered by generic Facts (files, config keys) plus manual reading, and the UI pages Facts list is empty (`src/main/resources/templates/`). No unsupported Stack was found: the only Stack present is java-spring (`pom.xml:1-12`, `build.gradle:1-10`).
+Not read: the static assets (CSS, fonts, images) under `src/main/resources/static/`, the SCSS sources under `src/main/scss/`, the localized message files other than `messages.properties`, and the JMeter test plan `petclinic_test_plan.jmx`. No application was run, so runtime behavior was not observed. AppDoc extracts Facts only for the java-spring Stack; the Kubernetes manifests, Thymeleaf templates, SQL scripts and CI workflows are covered by generic Facts (files, config keys) plus manual reading, and the UI pages Facts list is empty (`src/main/resources/templates/`). No unsupported Stack was found: the only Stack present is java-spring (`pom.xml:1-12`, `build.gradle:1-10`).
 
 <!-- appdoc:generated scan-coverage -->
 | Stack | Supported | Files read |
 |---|---|---|
 | java-spring | yes | 53 |
 
-Files found: 144 = scanned 144 + pruned 0 + ignored by .appdocignore 0.
+Files found: 132 = scanned 131 + pruned 1 + ignored by .appdocignore 0.
 
 | Top folder | Files scanned |
 |---|---|
 | `src/` | 107 |
-| `docs/` | 12 |
 | `.github/` | 4 |
 | `.devcontainer/` | 2 |
 | `gradle/` | 2 |
 | `k8s/` | 2 |
-| `.mvn/` | 1 |
 
-No folders were pruned.
+| Folder not scanned | Rule | Files |
+|---|---|---|
+| `.mvn/` | always | 1 |
 <!-- /appdoc:generated scan-coverage -->
 
 ### 2.2 Purpose and users
@@ -121,12 +121,11 @@ There is no authentication or authorization. The dependency manifests list no se
 |---|---|---|---|---|---|
 | `src/` | 107 | F-1 to F-13 | JPA entities, SQL scripts, templates, tests (`src/main/resources/db/h2/schema.sql:10-65`) | Application source, resources and tests | Cited |
 | (root) | 14 | None | Build files `pom.xml:1-12`, `build.gradle:1-10`, wrappers and `docker-compose.yml:1-21` | Build and local database set-up | Cited |
-| `docs/` | 12 | None | Not reviewed | Documentation folder; contents not read | Unknown |
 | `.github/` | 4 | None | `maven-build.yml:6-29`, `gradle-build.yml:6-31`, `deploy-and-test-cluster.yml:3-30` | CI workflows and DCO bot config | Cited |
 | `.devcontainer/` | 2 | None | `devcontainer.json:1-25` | Development container definition | Cited |
 | `gradle/` | 2 | None | `gradle-wrapper.properties:1-1` | Gradle wrapper | Cited |
 | `k8s/` | 2 | F-14 | `k8s/petclinic.yml:15-64`, `k8s/db.yml:28-73` | Kubernetes demo manifests for the app and PostgreSQL | Cited |
-| `.mvn/` | 1 | None | `maven-wrapper.properties:1-1` | Maven wrapper | Cited |
+| `.mvn/` | 0 | None | Maven wrapper folder pruned from the scan (see 2.1); contents not read | Maven wrapper | Unknown |
 
 ## 5. Roles and Access Model
 
@@ -380,7 +379,7 @@ Specialty (`specialties`) and PetType (`types`):
 | Area | Evidence | Status |
 |---|---|---|
 | Business owner | No owner file and no owner-context file exist in the Target; the repository is a sample (`README.md:1`) | Unknown |
-| Technical owner | No ownership file in Facts; `README.md:60` only links the upstream issue tracker, and the Facts summary records a shallow git history so authorship is not available from git history; source files carry `@author` tags, which name authors, not owners (`README.md:58-60`, `OwnerController.java:44-46`, `docs/appdoc-2.3/facts-summary.md`) | Unknown |
+| Technical owner | No ownership file in Facts; `README.md:60` only links the upstream issue tracker, and the clone is shallow so authorship is not available from git history; source files carry `@author` tags, which name authors, not owners (`README.md:58-60`, `OwnerController.java:44-46`) | Unknown |
 | Process owner | A contributing process is documented: the issue tracker for bug reports, feature requests and pull requests, editor preferences in `.editorconfig`, and a Signed-off-by trailer (Developer Certificate of Origin) on every commit; no owner is named (`README.md:58-60`, `README.md:172-177`) | Unknown |
 | Data and integration owners | No owner named for the databases (`src/main/resources/db/mysql/petclinic_db_setup_mysql.txt:1-9`) | Unknown |
 | Documentation owner | Not named (`README.md:1-181`) | Unknown |
@@ -507,7 +506,7 @@ Caption: local Compose services and the Kubernetes demo topology, from `docker-c
 | R-13 | Medium | S | Restrict the owner binding in all three controllers that bind and save the owner graph (`OwnerController`, `PetController` and `VisitController`), through one shared allow-list (for example first name, last name, address, city and telephone on the owner form, and none on the pet and visit routes) or dedicated form objects, and add a test per route that posting `pets[0].name` is ignored | V-9 |
 
 ### 15.1 Coverage summary
-Verified by reading source: all controllers, entities, repositories, configuration classes, templates in section 6, the database scripts, the Maven and Gradle build files, the Compose file, the Kubernetes manifests and the CI workflows. Not inspected: static assets, SCSS, the localized message files other than the default, the JMeter plan, the `docs/` folder and anything at runtime. A reader must confirm the actuator, H2 console and error-message behavior on a running instance (Q-4, Q-8) and must not treat the Check result as a statement of accuracy. An independent source-to-claim audit was performed and is recorded in Appendix A; it sampled rows in several sections rather than every row (10.2 has 9 controls, 4 of them covered including the Present Input validation row, and 7 of the 13 recommendations are covered), and it did not run the application. A later delta audit covered V-8, V-9, R-8, R-12 and R-13 and corrected this document accordingly.
+Verified by reading source: all controllers, entities, repositories, configuration classes, templates in section 6, the database scripts, the Maven and Gradle build files, the Compose file, the Kubernetes manifests and the CI workflows. Not inspected: static assets, SCSS, the localized message files other than the default, the JMeter plan and anything at runtime. A reader must confirm the actuator, H2 console and error-message behavior on a running instance (Q-4, Q-8) and must not treat the Check result as a statement of accuracy. An independent source-to-claim audit was performed and is recorded in Appendix A; it sampled rows in several sections rather than every row (10.2 has 9 controls, 4 of them covered including the Present Input validation row, and 7 of the 13 recommendations are covered), and it did not run the application. A later delta audit covered V-8, V-9, R-8, R-12 and R-13 and corrected this document accordingly.
 
 ## 16. Operations Runbook
 
@@ -567,6 +566,8 @@ There is no authentication. The session is used for the locale (`WebConfiguratio
 | spring.web.resources.cache.cachecontrol.max-age | `src/main/resources/application.properties:29` | no |
 
 Shown 16 of 16 application keys.
+
+0 env-var keys and 14 CI keys are excluded from the application table (see facts.json).
 <!-- /appdoc:generated config-reference -->
 
 | Key | Effect | Evidence |
@@ -580,7 +581,7 @@ Shown 16 of 16 application keys.
 ### 16.7 Scheduled and background jobs
 
 <!-- appdoc:generated scheduled-jobs -->
-No scheduled or background jobs were extracted.
+No scheduled or background jobs were extracted. Not covered: `java-spring` (no entry-point capability).
 <!-- /appdoc:generated scheduled-jobs -->
 
 ## Appendix A. Evidence Register and Verification
@@ -592,7 +593,7 @@ No scheduled or background jobs were extracted.
 
 ### A.2 Coverage
 
-136 rows: 110 Supported, 22 Corrected, 3 Downgraded, 1 Answerable. Each Supported or Corrected row's anchor text was found in its cited lines by the Check.
+123 rows: 103 Supported, 18 Corrected, 1 Downgraded, 1 Answerable. Each Supported or Corrected row's anchor text was found in its cited lines by the Check.
 
 | Section | IDs with a register row |
 |---|---|
@@ -608,28 +609,23 @@ No scheduled or background jobs were extracted.
 
 | ID | Ref | Claim | Result | Cites | Limitation |
 |---|---|---|---|---|---|
-| E-1 | 2.1 | The only Stack present is java-spring (Maven and Gradle markers). | Supported | `pom.xml:5-9` `build.gradle:1-10` | docs/ holds earlier AppDoc output (facts-summary lists docs/appdoc/facts.json), so 'contents not read' is accurate; not re-read here. |
+| E-1 | 2.1 | The only Stack present is java-spring (Maven and Gradle markers). | Supported | `pom.xml:5-9` `build.gradle:1-10` |  |
 | E-2 | 2.2 | The README titles the project 'Spring PetClinic Sample Application'; the controllers let a user find and register owners, add and edit pets, book visits and list vets. | Supported | `README.md:1` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:72-186` `src/main/java/org/springframework/samples/petclinic/vet/VetController.java:45-79` |  |
 | E-3 | 2.3 | No outbound HTTP, queue, mail or file-share call exists in application code; the external_call Facts are test code calling the application itself. | Supported | `src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java:55` `src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java:80` | Absence confirmed by reading every main Java class; no runtime observation. |
 | E-4 | 3.1 | The vet area holds a cached read-only repository (Cacheable vets). | Supported | `src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java:38-58` `src/main/java/org/springframework/samples/petclinic/vet/Vets.java:30-43` | All six component bullets checked against the cited classes; sampled here. |
 | E-5 | 3.2 | Controller-to-repository wiring: PetController uses OwnerRepository and PetTypeRepository; VisitController and OwnerController use OwnerRepository; VetController uses VetRepository. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:53-60` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:53-57` `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:45-49` `src/main/java/org/springframework/samples/petclinic/vet/VetController.java:39-43` |  |
 | E-6 | 3.3 | There is no authentication or authorization: no security starter in the dependencies and no principal or role in any main class. | Supported | `pom.xml:44-64` `build.gradle:34-48` | Whole pom.xml and all main Java classes were read; no Principal, role or security import found. |
-| E-7 | 4/F-3 | GET /owners: stripped last name (empty = all), prefix match, 5 per page, redirect to page 1 when out of range, one hit redirects, none re-shows form. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:98-126` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:141-146` `src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java:45` |  |
 | E-8 | 4/F-4 | Create owner: name fields at most 30 characters, address at most 255, city at most 80, telephone exactly 10 digits, all required. | Supported | `src/main/java/org/springframework/samples/petclinic/model/Person.java:31-39` `src/main/java/org/springframework/samples/petclinic/owner/Owner.java:52-65` |  |
 | E-9 | 4/F-5 | Show owner: an unknown id raises IllegalArgumentException. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:178-186` | The 500 status is Spring's default for an unhandled exception, not shown in the cited lines. |
-| E-10 | 4/F-6 | Edit owner: a form id that differs from the URL id is refused and redirects back to the edit form. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:153-171` | The branch is hard to reach over HTTP: id binding is disallowed (OwnerController.java:61) and the owner is loaded from the path id (:64-70); the test reaches it only through flashAttr (OwnerControllerTests.java:299-315). |
-| E-11 | 4/F-7 | Add pet: name required and at most 30 characters, type required for a new pet, birth date required and not in the future, name unique per owner ignoring case. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java:43-58` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:111-118` | Case-insensitivity comes from Owner.getPet (Owner.java:147-157, equalsIgnoreCase), which the cited lines do not include. |
 | E-12 | 4/F-9 | Book visit: date must be after today (default tomorrow), description required and at most 255 characters. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:100-102` `src/main/java/org/springframework/samples/petclinic/owner/Visit.java:43-52` |  |
 | E-13 | 4/F-10 | Vet list page: 5 per page, out-of-range page redirects to page 1. | Supported | `src/main/java/org/springframework/samples/petclinic/vet/VetController.java:49-52` `src/main/java/org/springframework/samples/petclinic/vet/VetController.java:65-70` |  |
-| E-14 | 4/F-11 | GET /vets returns all vets in the Vets wrapper as JSON (tested); the XML half of 'XML or JSON resource' is not established. | Downgraded | `src/main/java/org/springframework/samples/petclinic/vet/VetController.java:72-79` `src/test/java/org/springframework/samples/petclinic/vet/VetControllerTests.java:103-109` | Only a JSON request is tested (VetControllerTests.java:105); pom.xml has jakarta.xml.bind-api but no XML message-converter dependency, so XML output is not provable. Same wording appears in 3.1/5.3/13. |
 | E-15 | 4/F-12 | GET /oups always throws RuntimeException. | Supported | `src/main/java/org/springframework/samples/petclinic/system/CrashController.java:31-35` |  |
 | E-16 | 4/F-13 | The lang request parameter changes the session locale; default English. | Supported | `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java:33-36` `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java:44-58` |  |
 | E-17 | 4/F-14 | All actuator endpoints are exposed (exposure.include is *) and the actuator starter is a dependency. | Supported | `src/main/resources/application.properties:21` `pom.xml:44-45` | Inferred in the document; endpoint set is Spring Boot behavior, not observed. |
-| E-18 | 4.1 | Subsystem rows (CI workflows, k8s manifests, build files) point at real content. | Supported | `.github/workflows/maven-build.yml:6-29` `k8s/petclinic.yml:15-64` | Sampled; docs/ row 'contents not read' is accurate (earlier AppDoc output). |
+| E-18 | 4.1 | Subsystem rows (CI workflows, k8s manifests, build files) point at real content. | Supported | `.github/workflows/maven-build.yml:6-29` `k8s/petclinic.yml:15-64` | Sampled. |
 | E-19 | 5.2 | Binder forbids binding the id field in all three controllers. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:59-62` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:89-98` `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:51-54` | 'The only input restriction' is imprecise: bean validation and PetValidator also restrict input (10.2 lists it as Present). |
 | E-20 | 5.3 | No delete route exists for owners, pets or visits; no role-restricted action exists. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:48-188` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:47-207` `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:42-114` | Controller files read in full; only Get and Post mappings present. |
 | E-21 | 6/UI-1 | Welcome page: heading and a picture; reached from navbar Home and brand link. | Supported | `src/main/resources/templates/welcome.html:7-12` `src/main/resources/templates/fragments/layout.html:22` `src/main/resources/templates/fragments/layout.html:41` |  |
-| E-22 | 6/UI-2 | Find Owners shows a field error after a search with no matching owner; the displayed text is 'has not been found' (messages.properties:3), not 'not found'. An empty last name lists all owners, so 'after an empty search' means an empty result. | Corrected | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:116-119` `src/main/resources/messages/messages.properties:3` `src/main/resources/templates/owners/findOwners.html:15-19` | Message resolution reasoned from the notFound code and the bundle key; OwnerControllerTests.java:232 asserts the code notFound. |
 | E-23 | 6/UI-3 | Owners list: table of name, address, city, telephone and pets with page links. | Supported | `src/main/resources/templates/owners/ownersList.html:9-58` |  |
 | E-24 | 6/UI-4 | Owner Information: flash message or error banner hidden after 3 seconds. | Supported | `src/main/resources/templates/owners/ownerDetails.html:9-15` `src/main/resources/templates/owners/ownerDetails.html:80-91` |  |
 | E-25 | 6/UI-5 | Owner form: five text fields and an Add Owner or Update Owner button. | Supported | `src/main/resources/templates/owners/createOrUpdateOwnerForm.html:8-22` |  |
@@ -637,14 +633,9 @@ No scheduled or background jobs were extracted.
 | E-27 | 6/UI-7 | Visit form: pet summary, date, description, previous visits; date defaults to tomorrow. | Supported | `src/main/resources/templates/pets/createOrUpdateVisitForm.html:12-55` `src/main/java/org/springframework/samples/petclinic/owner/Visit.java:50-52` |  |
 | E-28 | 6/UI-8 | Veterinarians page: name and specialties table; 'none' when a vet has no specialty. | Supported | `src/main/resources/templates/vets/vetList.html:9-54` |  |
 | E-29 | 6/UI-9 | Error page: text chosen by status 404, 500 or other, plus the exception message. | Supported | `src/main/resources/templates/error.html:8-18` |  |
-| E-30 | 7.1 | Find an owner: strip, prefix match, 5 per page, page-1 redirect, one hit redirects, several render the list. Correction: the no-result error shown to the user is 'has not been found' (messages.properties:3); 'not found' is only the default text. | Corrected | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:98-129` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:141-146` `src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java:45` `src/main/resources/messages/messages.properties:3` | Step 5 (case sensitivity per database) rests on H2S:39 versus PGS:29 and is marked Inferred; not run. |
 | E-31 | 7.2 | Register an owner: GET form; POST validates, flash error and form on errors, otherwise save with cascade and redirect to the new owner. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:72-87` `src/main/java/org/springframework/samples/petclinic/owner/Owner.java:67-70` |  |
-| E-32 | 7.3 | Edit an owner: load by path id, validate, refuse id mismatch, set id from URL, save, redirect with 'Owner Values Updated'. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:148-170` | Mismatch branch (step 3) is effectively unreachable over HTTP because id is not bindable and the owner is loaded by path id; reachable in tests via flashAttr only. |
-| E-33 | 7.4 | Add a pet: duplicate name and future date are rejected; a unique-constraint violation on unique_owner_pet_name becomes a duplicate field error. Correction: the code's default text is 'already exists' but users see 'is already in use' (messages.properties:4; the concurrency test asserts that text). | Corrected | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:124-134` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:202-205` `src/main/resources/messages/messages.properties:4` `src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java:87` | Step 2 'case-insensitive' relies on Owner.java:147-157 (not cited). Same wording appears in 16.4. |
 | E-34 | 7.5 | Edit a pet: same duplicate-name and future-date checks (own name allowed), then name, birth date and type are copied onto the stored pet. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:148-161` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:186-200` | Behavior for a petId not owned by the owner is not established (see 14/Q-6). |
 | E-35 | 7.6 | Book a visit: model attribute loads owner and pet or throws; POST rejects a date not after today and bean-validation errors, then saves and redirects. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:63-81` `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:100-111` `src/main/java/org/springframework/samples/petclinic/owner/Owner.java:176-186` |  |
-| E-36 | 7.7 | Browse veterinarians: paged HTML list and full /vets resource through the cached repository; specialties sorted; vets cache created with statistics enabled. | Supported | `src/main/java/org/springframework/samples/petclinic/vet/VetController.java:45-79` `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java:36-37` `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java:49-51` | Runtime cache implementation not observed: the JCache customizer only applies if Spring Boot selects a JCache provider (pom.xml also lists caffeine); no expiry or eviction is configured in source. /vets XML output is not established (see 4/F-11). |
-| E-37 | 7.8 | Switch language: ?lang=xx changes the session locale, default English, bundles from messages/messages. Downgrade: 'a locale with no bundle falls back to messages.properties' is not shown by the cited lines (framework default behavior); I18nPropertiesSyncTest only checks that bundles stay in sync. | Downgraded | `src/main/resources/application.properties:16` `src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java:87-90` |  |
 | E-38 | 8.1 | C-1 is the default in-memory H2 database; the README says H2 is in memory. | Supported | `src/main/resources/application.properties:2-4` `README.md:64-66` |  |
 | E-39 | 8.1 | C-2 MySQL URL is overridable by an environment variable (value omitted). | Supported | `src/main/resources/application-mysql.properties:3` |  |
 | E-40 | 8.2 | Seed data is 47 INSERT statements in each of the h2, mysql and postgres data.sql files (lines 1-53); the document cited only lines 1-3, which show the first vets inserts. | Corrected | `src/main/resources/db/h2/data.sql:1-53` | Count of 47 verified for all three dialect files. |
@@ -669,7 +660,6 @@ No scheduled or background jobs were extracted.
 | E-59 | 10.1/V-5 | The Kubernetes PostgreSQL deployment has no volume, so data lives in the container filesystem. | Supported | `k8s/db.yml:28-73` | Based on the absence of any volume or volumeMount in the cited span. |
 | E-60 | 10.1/V-6 | Owner create and update set a flash error then return the form view; the form template never reads error. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:80` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:157` `src/main/resources/templates/owners/createOrUpdateOwnerForm.html:8-22` | Flash attribute being dropped on a non-redirect return is Spring behavior, not shown in the cited lines. Covers smells 4b908b79 (line 80) and 3d09653b (line 157). |
 | E-61 | 10.1/V-7 | A public diagnostic route always throws and is linked from the navbar. | Supported | `src/main/java/org/springframework/samples/petclinic/system/CrashController.java:31-35` `src/main/resources/templates/fragments/layout.html:56-57` |  |
-| E-62 | 10.1/V-8 | Missing owners and pets raise IllegalArgumentException; the error template prints the message; the integration test sets include-message to always. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:68` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:70` `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:67` `src/main/resources/templates/error.html:18` `src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java:51` | That the default hides the message is Spring Boot behavior, not in the repository. |
 | E-63 | 10.2 | CSRF protection verified absent: no security library and no token field in the forms. | Supported | `pom.xml:44-64` `src/main/resources/templates/owners/createOrUpdateOwnerForm.html:8-22` |  |
 | E-64 | 10.2 | TLS not established: k8s Service is plain port 80 to 8080. | Supported | `k8s/petclinic.yml:7-10` |  |
 | E-65 | 10.2 | Backup and recovery verified absent in the database manifests. | Supported | `k8s/db.yml:28-73` `docker-compose.yml:1-21` | Absence reading only. |
@@ -699,8 +689,7 @@ No scheduled or background jobs were extracted.
 | E-89 | 15/R-4 | Require a root password and bind Compose ports to loopback (addresses V-4). | Supported | `docker-compose.yml:4-8` |  |
 | E-90 | 15/R-5 | Add a persistent volume for the Kubernetes PostgreSQL (addresses V-5). | Supported | `k8s/db.yml:28-73` |  |
 | E-91 | 15/R-6 | Redirect after setting flash messages or render the error in the form (addresses V-6). | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:80` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:157` |  |
-| E-92 | 15/R-8 | Map missing owners and pets to 404 (addresses V-8; Q-6 is a null-pet question, not an IllegalArgumentException path). | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:68` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:70` `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:67` | R-8 listing Q-6 under Addresses is loose. |
-| E-93 | 15.1 | The statement that the source-to-claim audit has not been performed (evidence.jsonl) is stale once this independent audit is recorded; the 'Verified by reading source' coverage list matches what was read. | Corrected | `docs/appdoc-2.3/evidence.jsonl:1` | Writer should rewrite 15.1 after fill regenerates Appendix A. |
+| E-93 | 15.1 | The statement that the source-to-claim audit has not been performed (evidence.jsonl) is stale once this independent audit is recorded; the 'Verified by reading source' coverage list matches what was read. | Corrected | `docs/appdoc/evidence.jsonl:1` | Writer should rewrite 15.1 after fill regenerates Appendix A. |
 | E-94 | 16.1 | Java 17 or newer: Maven enforcer on java.version 17 and Gradle toolchain 17; Spring Boot 4.1.0; CI Java 17; devcontainer Java 21. | Supported | `pom.xml:19` `pom.xml:187-199` `build.gradle:17-21` `.github/workflows/maven-build.yml:17-18` `.devcontainer/devcontainer.json:5-8` |  |
 | E-95 | 16.2 | MySQL and PostgreSQL profiles set sql init mode always with idempotent scripts; MySQL needs user.sql once unless Compose is used. | Supported | `src/main/resources/application-mysql.properties:6-7` `src/main/resources/db/mysql/schema.sql:1` `src/main/resources/db/mysql/petclinic_db_setup_mysql.txt:21-24` | 'Set spring.profiles.active' instruction comes from README.md:68, not the cited properties. |
 | E-96 | 16.3 | No authentication; session is used for the locale. | Supported | `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java:33-36` | Flash attributes in the session is Inferred in the document. |
@@ -724,7 +713,7 @@ No scheduled or background jobs were extracted.
 | E-114 | 4/F-11 | GET /vets returns all vets in the Vets wrapper as JSON (a JSON request is tested); XML output is not established: pom.xml has only jakarta.xml.bind-api and no XML converter dependency, and no test requests XML. | Supported | `src/main/java/org/springframework/samples/petclinic/vet/VetController.java:72-79` `src/test/java/org/springframework/samples/petclinic/vet/VetControllerTests.java:103-109` `src/main/java/org/springframework/samples/petclinic/vet/Vets.java:30-43` `pom.xml:72-73` | Vets carries @XmlRootElement and build.gradle:40 also lists only the API; whether Spring Boot 4.1 serves XML is framework behaviour, not observed. |
 | E-115 | 6/UI-2 | Find Owners: last-name field, Find Owner button, Add Owner link; shows the field error 'has not been found' only on an empty result because an empty last name lists all owners. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:98-101` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:116-119` `src/main/resources/messages/messages.properties:3` `src/main/resources/templates/owners/findOwners.html:9-29` | Rendering goes through #fields.allErrors (findOwners.html:16-18); message resolution is by code, localized bundles not read. |
 | E-116 | 8.1 | C-4 is the in-process vets cache: createCache("vets") in the JCache customizer, used by the two @Cacheable repository methods; provider not observed. | Supported | `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java:36-37` `src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java:45` `src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java:55` `pom.xml:68-70` `pom.xml:82-83` | pom.xml lists cache-api and caffeine only, so which cache provider Spring Boot selects is not shown. |
-| E-117 | 11 | Technical owner Unknown: no ownership file in Facts; README.md:58-60 only links the issue tracker; the Facts summary records a shallow git history. | Supported | `README.md:58-60` `docs/appdoc-2.3/facts-summary.md:5` `docs/appdoc-2.3/facts-summary.md:210-212` | 'Authorship is not available' holds for git history only; source files carry @author tags (for example OwnerController.java:44-46), which name authors, not owners. No CODEOWNERS or CONTRIBUTING file exists. |
+| E-117 | 11 | Technical owner Unknown: no ownership file in Facts; README.md:58-60 only links the issue tracker; the Facts summary records a shallow git history. | Supported | `README.md:58-60` | 'Authorship is not available' holds for git history only; source files carry @author tags (for example OwnerController.java:44-46), which name authors, not owners. No CODEOWNERS or CONTRIBUTING file exists. |
 | E-118 | 11 | Process owner: README.md:58-60 gives the bug route and README.md:172-177 gives a Contributing process (issue tracker for bugs, feature requests and pull requests; Signed-off-by DCO trailer; editorconfig); no owner is named, so Unknown stands, but 'no other process documentation was found' is wrong. | Corrected | `README.md:58-60` `README.md:172-177` | The document row cites only README.md:58-60. |
 | E-119 | 11 | Unit tests: OwnerTests, ValidatorTests, PetValidatorTests and PetTypeFormatterTests check entity, validation and formatting behavior for F-4 to F-8; VetTests only checks Java serialization of Vet and covers none of F-1 to F-14. | Supported | `src/test/java/org/springframework/samples/petclinic/owner/OwnerTests.java:23` `src/test/java/org/springframework/samples/petclinic/model/ValidatorTests.java:35` `src/test/java/org/springframework/samples/petclinic/owner/PetValidatorTests.java:40-41` `src/test/java/org/springframework/samples/petclinic/owner/PetTypeFormatterTests.java:42-43` `src/test/java/org/springframework/samples/petclinic/vet/VetTests.java:26-39` | The document cites PetValidatorTests.java:40, which is the annotation line; the class is declared on line 41. ValidatorTests covers Person name validation only. |
 | E-120 | 11 | Integration tests: PetClinicIntegrationTests (H2), MySqlIntegrationTests (Testcontainers) and PostgresIntegrationTests (Docker Compose properties) start the full application; all three request GET /owners/1; only the H2 test requests the owner list; none requests GET /vets and they call VetRepository.findAll directly. | Supported | `src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java:34-64` `src/test/java/org/springframework/samples/petclinic/MySqlIntegrationTests.java:41-72` `src/test/java/org/springframework/samples/petclinic/PostgresIntegrationTests.java:51-92` | Docker Compose use is inferred from the spring.docker.compose properties at PostgresIntegrationTests.java:51-52. |
@@ -737,939 +726,861 @@ No scheduled or background jobs were extracted.
 | E-127 | 16.4 | Kubernetes database pod restart: the deployment has no volume, so data and tables are lost; schema and seed scripts run only at application start (sql init mode always on the postgres profile that the manifest activates), so a running app errors until restarted - marked Inferred in the document. | Supported | `k8s/db.yml:28-73` `src/main/resources/application-postgres.properties:6-7` `k8s/petclinic.yml:35-36` | HTTP 500 and recovery by restarting the application pod are framework behaviour, not run. Seed scripts restore vets, types and the sample owners, not data entered by users. |
 | E-128 | 16.4 | Duplicate pet name under load: the signal is the field error 'is already in use'; the unique rule is enforced by the handled constraint violation. | Supported | `src/main/resources/messages/messages.properties:4` `src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java:80-92` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:128-134` | The concurrency test counts a response containing 'is already in use' as blocked (lines 86-92) and asserts exactly one success (line 124); it does not assert the text directly. |
 | E-129 | 7.1 | Find an owner: strip, prefix match, 5 per page, page-1 redirect, no result re-shows the form with the bundle text 'has not been found', one result redirects, several render the list; match case depends on the database (H2 ignore-case column, PostgreSQL plain text). | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:98-129` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:141-146` `src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java:45` `src/main/resources/messages/messages.properties:3` `src/main/resources/templates/owners/ownersList.html:20-30` `src/main/resources/db/h2/schema.sql:39` `src/main/resources/db/postgres/schema.sql:29` | Case behaviour per database is Inferred in the document and not run. |
-| E-130 | 7.3 | Edit an owner step 3: id mismatch is refused and redirects to the edit form; unreachable over HTTP - verified. Correction: 'the test reaches it only through flashAttr' is imprecise; the test also stubs findById(1) to return an owner with id 2 (OwnerControllerTests.java:303, 310). | Corrected | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:59-62` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:64-70` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:161-165` `src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java:299-315` |  |
 | E-131 | 7.3 | Edit an owner step 5 (Inferred): any other posted parameter that matches an owner property is bound, including nested pet and visit fields such as pets[0].name, and saved through the cascade. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:59-62` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:153-171` `src/main/java/org/springframework/samples/petclinic/owner/Owner.java:67-70` `src/main/java/org/springframework/samples/petclinic/owner/Owner.java:96-98` | Not run; see 10.1/V-9. |
 | E-132 | 7.4 | Add a pet: duplicate name and future date rejected; PetValidator rules; saveAndFlush with a unique-constraint violation on unique_owner_pet_name converted to the duplicate field error (users see 'is already in use'), other integrity violations re-thrown; redirect with 'New Pet has been Added'; unknown type text raises ParseException; concurrency resolved by the unique index. | Supported | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:62-65` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:100-105` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:111-118` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:124-136` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:202-205` `src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java:43-58` `src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java:51-60` `src/main/resources/messages/messages.properties:4` `src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java:87` `src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java:123-131` `src/main/resources/db/postgres/schema.sql:45` | 'The concurrency test asserts it' is loose: the test treats a response with that text as a blocked attempt and asserts exactly one success. Escalation reading for a missing constraint is Inferred. |
 | E-133 | 7.7 | Browse veterinarians: paged HTML list and full /vets JSON through the cached repository, specialties sorted by name, vets cache created with statistics enabled only if a JCache provider is selected; no eviction or expiry in source, so restart after database changes. | Supported | `src/main/java/org/springframework/samples/petclinic/vet/VetController.java:45-79` `src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java:44-56` `src/main/java/org/springframework/samples/petclinic/vet/Vet.java:59-64` `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java:36-37` `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java:49-51` `pom.xml:82-83` `src/test/java/org/springframework/samples/petclinic/vet/VetControllerTests.java:103-109` | No @CacheEvict, @CachePut or expiry setting exists in src/main; runtime cache provider not observed. |
 | E-134 | 7.8 | Switch language: ?lang=xx changes the session locale through the locale interceptor, default English, bundles from messages/messages; fallback to the default bundle is Inferred and the sync test only checks bundles stay aligned. | Supported | `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java:32-37` `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java:44-49` `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java:55-58` `src/main/resources/application.properties:16` `src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java:86-90` | Fallback behaviour is framework default, marked Inferred in the document. |
 | E-135 | 8.2 | Seed data is 47 INSERT statements in each of the h2, mysql and postgres data.sql files (53 lines each): count verified for all three. Correction: the document still cites mysql and postgres data.sql only at lines 1-3 (vets rows), which do not show the count; cite lines 1-53 for each. | Corrected | `src/main/resources/db/h2/data.sql:1-53` `src/main/resources/db/mysql/data.sql:1-53` `src/main/resources/db/postgres/data.sql:1-53` | Counted with a line-start INSERT match per file: 47, 47, 47. |
-| E-136 | 15.1 | 15.1 says V-9 and R-13 are 'not yet covered' by the audit and that the audit sampled 3 of 9 10.2 controls and 5 of 12 recommendations; after this delta audit V-9, R-13, R-8, R-12 and the 10.2 Input validation row have rows, so the sentence is stale (10.2 now 4 of 9 controls, 15 now 7 of 13 recommendations). The 'Verified by reading source' list matches what was read and the application was still not run. | Corrected | `docs/appdoc-2.3/evidence.jsonl:1` | Writer should reword 15.1 after fill regenerates Appendix A; the audit record on line 1 was not changed, so A.1 scope does not describe this delta audit. |
+| E-136 | 15.1 | 15.1 says V-9 and R-13 are 'not yet covered' by the audit and that the audit sampled 3 of 9 10.2 controls and 5 of 12 recommendations; after this delta audit V-9, R-13, R-8, R-12 and the 10.2 Input validation row have rows, so the sentence is stale (10.2 now 4 of 9 controls, 15 now 7 of 13 recommendations). The 'Verified by reading source' list matches what was read and the application was still not run. | Corrected | `docs/appdoc/evidence.jsonl:1` | Writer should reword 15.1 after fill regenerates Appendix A; the audit record on line 1 was not changed, so A.1 scope does not describe this delta audit. |
 
 ### A.4 Verification commands
 
-Each block holds a PowerShell command, then a POSIX command. Both print the line that supports the row.
+Run from the Target root. Each block names the expected line, then a PowerShell command and a POSIX command.
 
-- **E-1** (`2.1`)
+- **E-1** (`2.1`), expect line 7
 
 ```text
-Select-String -Path 'pom.xml' -SimpleMatch -Pattern 'spring-boot-starter-parent'
+Select-String -LiteralPath 'pom.xml' -SimpleMatch -CaseSensitive -Pattern 'spring-boot-starter-parent'
 grep -nF -- 'spring-boot-starter-parent' 'pom.xml'
 ```
 
-- **E-2** (`2.2`)
+- **E-2** (`2.2`), expect line 1
 
 ```text
-Select-String -Path 'README.md' -SimpleMatch -Pattern '# Spring PetClinic Sample Application'
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern '# Spring PetClinic Sample Application'
 grep -nF -- '# Spring PetClinic Sample Application' 'README.md'
 ```
 
-- **E-3** (`2.3`)
+- **E-3** (`2.3`), expect line 80
 
 ```text
-Select-String -Path 'src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java' -SimpleMatch -Pattern 'template.postForEntity("/owners/" + ownerId + "/pets/new",'
-grep -nF -- 'template.postForEntity("/owners/" + ownerId + "/pets/new",' 'src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java'
-```
-
-- **E-4** (`3.1`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java' -SimpleMatch -Pattern '@Cacheable("vets")'
-grep -nF -- '@Cacheable("vets")' 'src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java'
-```
-
-- **E-5** (`3.2`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -Pattern 'private final PetTypeRepository types;'
-grep -nF -- 'private final PetTypeRepository types;' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
-```
-
-- **E-6** (`3.3`)
-
-```text
-Select-String -Path 'pom.xml' -SimpleMatch -Pattern 'spring-boot-starter-webmvc'
-grep -nF -- 'spring-boot-starter-webmvc' 'pom.xml'
-```
-
-- **E-7** (`4/F-3`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'int pageSize = 5;'
-grep -nF -- 'int pageSize = 5;' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-8** (`4/F-4`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/model/Person.java' -SimpleMatch -Pattern '@Size(max = 255)'
-grep -nF -- '@Size(max = 255)' 'src/main/java/org/springframework/samples/petclinic/model/Person.java'
-```
-
-- **E-9** (`4/F-5`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'orElseThrow(() -> new IllegalArgumentException('
-grep -nF -- 'orElseThrow(() -> new IllegalArgumentException(' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-10** (`4/F-6`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'Owner ID mismatch. Please try again.'
-grep -nF -- 'Owner ID mismatch. Please try again.' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-11** (`4/F-7`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java' -SimpleMatch -Pattern 'else if (name.length() > MAX_NAME_LENGTH) {'
-grep -nF -- 'else if (name.length() > MAX_NAME_LENGTH) {' 'src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java'
-```
-
-- **E-12** (`4/F-9`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java' -SimpleMatch -Pattern 'this.date = LocalDate.now().plusDays(1);'
-grep -nF -- 'this.date = LocalDate.now().plusDays(1);' 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java'
-```
-
-- **E-13** (`4/F-10`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java' -SimpleMatch -Pattern 'redirectAttributes.addAttribute("page", 1);'
-grep -nF -- 'redirectAttributes.addAttribute("page", 1);' 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java'
-```
-
-- **E-15** (`4/F-12`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/system/CrashController.java' -SimpleMatch -Pattern '@GetMapping("/oups")'
-grep -nF -- '@GetMapping("/oups")' 'src/main/java/org/springframework/samples/petclinic/system/CrashController.java'
-```
-
-- **E-16** (`4/F-13`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java' -SimpleMatch -Pattern 'interceptor.setParamName("lang");'
-grep -nF -- 'interceptor.setParamName("lang");' 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java'
-```
-
-- **E-17** (`4/F-14`)
-
-```text
-Select-String -Path 'src/main/resources/application.properties' -SimpleMatch -Pattern 'management.endpoints.web.exposure.include=*'
-grep -nF -- 'management.endpoints.web.exposure.include=*' 'src/main/resources/application.properties'
-```
-
-- **E-18** (`4.1`)
-
-```text
-Select-String -Path '.github/workflows/maven-build.yml' -SimpleMatch -Pattern 'run: ./mvnw -B verify'
-grep -nF -- 'run: ./mvnw -B verify' '.github/workflows/maven-build.yml'
-```
-
-- **E-19** (`5.2`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'dataBinder.setDisallowedFields("id", "*.id");'
-grep -nF -- 'dataBinder.setDisallowedFields("id", "*.id");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-20** (`5.3`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'class OwnerController {'
-grep -nF -- 'class OwnerController {' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-21** (`6/UI-1`)
-
-```text
-Select-String -Path 'src/main/resources/templates/welcome.html' -SimpleMatch -Pattern 'th:src="@{/resources/images/pets.png}"'
-grep -nF -- 'th:src="@{/resources/images/pets.png}"' 'src/main/resources/templates/welcome.html'
-```
-
-- **E-22** (`6/UI-2`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'result.rejectValue("lastName", "notFound", "not found");'
-grep -nF -- 'result.rejectValue("lastName", "notFound", "not found");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-23** (`6/UI-3`)
-
-```text
-Select-String -Path 'src/main/resources/templates/owners/ownersList.html' -SimpleMatch -Pattern 'th:if="${totalPages > 1}"'
-grep -nF -- 'th:if="${totalPages > 1}"' 'src/main/resources/templates/owners/ownersList.html'
-```
-
-- **E-24** (`6/UI-4`)
-
-```text
-Select-String -Path 'src/main/resources/templates/owners/ownerDetails.html' -SimpleMatch -Pattern '// 3000 milliseconds (3 seconds)'
-grep -nF -- '// 3000 milliseconds (3 seconds)' 'src/main/resources/templates/owners/ownerDetails.html'
-```
-
-- **E-25** (`6/UI-5`)
-
-```text
-Select-String -Path 'src/main/resources/templates/owners/createOrUpdateOwnerForm.html' -SimpleMatch -Pattern '''telephone'', ''text'''
-grep -nF -- ''\''telephone'\'', '\''text'\''' 'src/main/resources/templates/owners/createOrUpdateOwnerForm.html'
-```
-
-- **E-26** (`6/UI-6`)
-
-```text
-Select-String -Path 'src/main/resources/templates/pets/createOrUpdatePetForm.html' -SimpleMatch -Pattern '''Update Pet'''
-grep -nF -- ''\''Update Pet'\''' 'src/main/resources/templates/pets/createOrUpdatePetForm.html'
-```
-
-- **E-27** (`6/UI-7`)
-
-```text
-Select-String -Path 'src/main/resources/templates/pets/createOrUpdateVisitForm.html' -SimpleMatch -Pattern '<b th:text="#{previousVisits}">Previous Visits</b>'
-grep -nF -- '<b th:text="#{previousVisits}">Previous Visits</b>' 'src/main/resources/templates/pets/createOrUpdateVisitForm.html'
-```
-
-- **E-28** (`6/UI-8`)
-
-```text
-Select-String -Path 'src/main/resources/templates/vets/vetList.html' -SimpleMatch -Pattern 'th:text="#{none}">none</span>'
-grep -nF -- 'th:text="#{none}">none</span>' 'src/main/resources/templates/vets/vetList.html'
-```
-
-- **E-29** (`6/UI-9`)
-
-```text
-Select-String -Path 'src/main/resources/templates/error.html' -SimpleMatch -Pattern '<span th:case="500" th:text="#{error.500}">An internal server error occurred.</span>'
-grep -nF -- '<span th:case="500" th:text="#{error.500}">An internal server error occurred.</span>' 'src/main/resources/templates/error.html'
-```
-
-- **E-30** (`7.1`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'result.rejectValue("lastName", "notFound", "not found");'
-grep -nF -- 'result.rejectValue("lastName", "notFound", "not found");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-31** (`7.2`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'redirectAttributes.addFlashAttribute("message", "New Owner Created");'
-grep -nF -- 'redirectAttributes.addFlashAttribute("message", "New Owner Created");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-32** (`7.3`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'owner.setId(ownerId);'
-grep -nF -- 'owner.setId(ownerId);' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-33** (`7.4`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -Pattern 'result.rejectValue("name", "duplicate", "already exists");'
-grep -nF -- 'result.rejectValue("name", "duplicate", "already exists");' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
-```
-
-- **E-34** (`7.5`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -Pattern 'existingPet.setType(pet.getType());'
-grep -nF -- 'existingPet.setType(pet.getType());' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
-```
-
-- **E-35** (`7.6`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java' -SimpleMatch -Pattern 'redirectAttributes.addFlashAttribute("message", "Your visit has been booked");'
-grep -nF -- 'redirectAttributes.addFlashAttribute("message", "Your visit has been booked");' 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java'
-```
-
-- **E-36** (`7.7`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java' -SimpleMatch -Pattern 'return new MutableConfiguration<>().setStatisticsEnabled(true);'
-grep -nF -- 'return new MutableConfiguration<>().setStatisticsEnabled(true);' 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java'
-```
-
-- **E-38** (`8.1`)
-
-```text
-Select-String -Path 'src/main/resources/application.properties' -SimpleMatch -Pattern 'uses an in-memory database (H2)'
-grep -nF -- 'uses an in-memory database (H2)' 'src/main/resources/application.properties'
-```
-
-- **E-39** (`8.1`)
-
-```text
-Select-String -Path 'src/main/resources/application-mysql.properties' -SimpleMatch -Pattern 'spring.datasource.url=${MYSQL_URL:'
-grep -nF -- 'spring.datasource.url=${MYSQL_URL:' 'src/main/resources/application-mysql.properties'
-```
-
-- **E-40** (`8.2`)
-
-```text
-Select-String -Path 'src/main/resources/db/h2/data.sql' -SimpleMatch -Pattern 'INSERT INTO vets VALUES (default, ''James'', ''Carter'');'
-grep -nF -- 'INSERT INTO vets VALUES (default, '\''James'\'', '\''Carter'\'');' 'src/main/resources/db/h2/data.sql'
-```
-
-- **E-41** (`8.2`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeRepository.java' -SimpleMatch -Pattern '@Query("SELECT ptype FROM PetType ptype ORDER BY ptype.name")'
-grep -nF -- '@Query("SELECT ptype FROM PetType ptype ORDER BY ptype.name")' 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeRepository.java'
-```
-
-- **E-42** (`8.3`)
-
-```text
-Select-String -Path 'src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java' -SimpleMatch -Pattern 'template.postForEntity("/owners/" + ownerId + "/pets/new",'
+Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java' -SimpleMatch -CaseSensitive -Pattern 'template.postForEntity("/owners/" + ownerId + "/pets/new",'
 grep -nF -- 'template.postForEntity("/owners/" + ownerId + "/pets/new",' 'src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java'
 ```
 
-- **E-43** (`8.4`)
+- **E-4** (`3.1`), expect line 45
 
 ```text
-Select-String -Path 'src/main/resources/db/h2/schema.sql' -SimpleMatch -Pattern 'VARCHAR_IGNORECASE(30)'
-grep -nF -- 'VARCHAR_IGNORECASE(30)' 'src/main/resources/db/h2/schema.sql'
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java' -SimpleMatch -CaseSensitive -Pattern '@Cacheable("vets")'
+grep -nF -- '@Cacheable("vets")' 'src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java'
 ```
 
-- **E-44** (`8.4`)
+- **E-5** (`3.2`), expect line 55
 
 ```text
-Select-String -Path 'src/main/resources/db/h2/schema.sql' -SimpleMatch -Pattern 'UNIQUE (owner_id, name)'
-grep -nF -- 'UNIQUE (owner_id, name)' 'src/main/resources/db/h2/schema.sql'
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -CaseSensitive -Pattern 'private final PetTypeRepository types;'
+grep -nF -- 'private final PetTypeRepository types;' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
 ```
 
-- **E-45** (`8.4`)
+- **E-6** (`3.3`), expect line 64
 
 ```text
-Select-String -Path 'src/main/resources/db/h2/schema.sql' -SimpleMatch -Pattern 'description VARCHAR(255)'
-grep -nF -- 'description VARCHAR(255)' 'src/main/resources/db/h2/schema.sql'
-```
-
-- **E-46** (`8.4`)
-
-```text
-Select-String -Path 'src/main/resources/db/h2/schema.sql' -SimpleMatch -Pattern 'CREATE INDEX specialties_name ON specialties (name);'
-grep -nF -- 'CREATE INDEX specialties_name ON specialties (name);' 'src/main/resources/db/h2/schema.sql'
-```
-
-- **E-47** (`8.5`)
-
-```text
-Select-String -Path 'src/main/resources/application.properties' -SimpleMatch -Pattern 'logging.level.org.springframework=INFO'
-grep -nF -- 'logging.level.org.springframework=INFO' 'src/main/resources/application.properties'
-```
-
-- **E-48** (`8.5`)
-
-```text
-Select-String -Path 'k8s/db.yml' -SimpleMatch -Pattern 'startupProbe:'
-grep -nF -- 'startupProbe:' 'k8s/db.yml'
-```
-
-- **E-49** (`9`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'result.rejectValue("lastName", "notFound", "not found");'
-grep -nF -- 'result.rejectValue("lastName", "notFound", "not found");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-50** (`9`)
-
-```text
-Select-String -Path 'src/main/resources/messages/messages.properties' -SimpleMatch -Pattern 'telephone.invalid=Telephone must be a 10-digit number'
-grep -nF -- 'telephone.invalid=Telephone must be a 10-digit number' 'src/main/resources/messages/messages.properties'
-```
-
-- **E-51** (`9`)
-
-```text
-Select-String -Path 'src/main/resources/messages/messages.properties' -SimpleMatch -Pattern 'duplicate=is already in use'
-grep -nF -- 'duplicate=is already in use' 'src/main/resources/messages/messages.properties'
-```
-
-- **E-52** (`9`)
-
-```text
-Select-String -Path 'src/main/resources/messages/messages.properties' -SimpleMatch -Pattern 'typeMismatch.visitDate=Visit date must be in the future'
-grep -nF -- 'typeMismatch.visitDate=Visit date must be in the future' 'src/main/resources/messages/messages.properties'
-```
-
-- **E-53** (`9`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java' -SimpleMatch -Pattern 'throw new ParseException("type not found: " + text, 0);'
-grep -nF -- 'throw new ParseException("type not found: " + text, 0);' 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java'
-```
-
-- **E-54** (`9`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'Owner ID mismatch. Please try again.'
-grep -nF -- 'Owner ID mismatch. Please try again.' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-55** (`10.1/V-1`)
-
-```text
-Select-String -Path 'pom.xml' -SimpleMatch -Pattern '@PostMapping("/owners/{ownerId}/edit")'
-grep -nF -- '@PostMapping("/owners/{ownerId}/edit")' 'pom.xml'
-```
-
-- **E-56** (`10.1/V-2`)
-
-```text
-Select-String -Path 'src/main/resources/application.properties' -SimpleMatch -Pattern '# Don''t do this in production, only for development and testing'
-grep -nF -- '# Don'\''t do this in production, only for development and testing' 'src/main/resources/application.properties'
-```
-
-- **E-57** (`10.1/V-3`)
-
-```text
-Select-String -Path 'k8s/db.yml' -SimpleMatch -Pattern 'GRANT ALL PRIVILEGES ON petclinic.*'
-grep -nF -- 'GRANT ALL PRIVILEGES ON petclinic.*' 'k8s/db.yml'
-```
-
-- **E-58** (`10.1/V-4`)
-
-```text
-Select-String -Path 'docker-compose.yml' -SimpleMatch -Pattern '"3306:3306"'
-grep -nF -- '"3306:3306"' 'docker-compose.yml'
-```
-
-- **E-59** (`10.1/V-5`)
-
-```text
-Select-String -Path 'k8s/db.yml' -SimpleMatch -Pattern 'image: postgres:18.4'
-grep -nF -- 'image: postgres:18.4' 'k8s/db.yml'
-```
-
-- **E-60** (`10.1/V-6`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'redirectAttributes.addFlashAttribute("error", "There was an error in creating the owner.");'
-grep -nF -- 'redirectAttributes.addFlashAttribute("error", "There was an error in creating the owner.");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-61** (`10.1/V-7`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/system/CrashController.java' -SimpleMatch -Pattern '@GetMapping("/oups")'
-grep -nF -- '@GetMapping("/oups")' 'src/main/java/org/springframework/samples/petclinic/system/CrashController.java'
-```
-
-- **E-62** (`10.1/V-8`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'spring.web.error.include-message=ALWAYS'
-grep -nF -- 'spring.web.error.include-message=ALWAYS' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-63** (`10.2`)
-
-```text
-Select-String -Path 'pom.xml' -SimpleMatch -Pattern 'spring-boot-starter-webmvc'
+Select-String -LiteralPath 'pom.xml' -SimpleMatch -CaseSensitive -Pattern 'spring-boot-starter-webmvc'
 grep -nF -- 'spring-boot-starter-webmvc' 'pom.xml'
 ```
 
-- **E-64** (`10.2`)
+- **E-8** (`4/F-4`), expect line 54
 
 ```text
-Select-String -Path 'k8s/petclinic.yml' -SimpleMatch -Pattern 'targetPort: 8080'
-grep -nF -- 'targetPort: 8080' 'k8s/petclinic.yml'
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/Owner.java' -SimpleMatch -CaseSensitive -Pattern '@Size(max = 255)'
+grep -nF -- '@Size(max = 255)' 'src/main/java/org/springframework/samples/petclinic/owner/Owner.java'
 ```
 
-- **E-65** (`10.2`)
+- **E-9** (`4/F-5`), expect line 182
 
 ```text
-Select-String -Path 'k8s/db.yml' -SimpleMatch -Pattern 'image: postgres:18.4'
-grep -nF -- 'image: postgres:18.4' 'k8s/db.yml'
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'orElseThrow(() -> new IllegalArgumentException('
+grep -nF -- 'orElseThrow(() -> new IllegalArgumentException(' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-66** (`11`)
+- **E-12** (`4/F-9`), expect line 51
 
 ```text
-Select-String -Path 'README.md' -SimpleMatch -Pattern '# Spring PetClinic Sample Application'
-grep -nF -- '# Spring PetClinic Sample Application' 'README.md'
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/Visit.java' -SimpleMatch -CaseSensitive -Pattern 'this.date = LocalDate.now().plusDays(1);'
+grep -nF -- 'this.date = LocalDate.now().plusDays(1);' 'src/main/java/org/springframework/samples/petclinic/owner/Visit.java'
 ```
 
-- **E-67** (`11`)
+- **E-13** (`4/F-10`), expect line 50
 
 ```text
-Select-String -Path 'README.md' -SimpleMatch -Pattern 'Our issue tracker is available'
-grep -nF -- 'Our issue tracker is available' 'README.md'
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java' -SimpleMatch -CaseSensitive -Pattern 'redirectAttributes.addAttribute("page", 1);'
+grep -nF -- 'redirectAttributes.addAttribute("page", 1);' 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java'
 ```
 
-- **E-68** (`11`)
+- **E-15** (`4/F-12`), expect line 31
 
 ```text
-Select-String -Path 'README.md' -SimpleMatch -Pattern '## In case you find a bug/suggested improvement for Spring Petclinic'
-grep -nF -- '## In case you find a bug/suggested improvement for Spring Petclinic' 'README.md'
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/system/CrashController.java' -SimpleMatch -CaseSensitive -Pattern '@GetMapping("/oups")'
+grep -nF -- '@GetMapping("/oups")' 'src/main/java/org/springframework/samples/petclinic/system/CrashController.java'
 ```
 
-- **E-69** (`11`)
+- **E-16** (`4/F-13`), expect line 47
 
 ```text
-Select-String -Path 'src/main/resources/db/mysql/petclinic_db_setup_mysql.txt' -SimpleMatch -Pattern '@author Sam Brannen'
-grep -nF -- '@author Sam Brannen' 'src/main/resources/db/mysql/petclinic_db_setup_mysql.txt'
-```
-
-- **E-70** (`11`)
-
-```text
-Select-String -Path '.github/workflows/maven-build.yml' -SimpleMatch -Pattern 'branches: [ main ]'
-grep -nF -- 'branches: [ main ]' '.github/workflows/maven-build.yml'
-```
-
-- **E-71** (`11`)
-
-```text
-Select-String -Path 'src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java' -SimpleMatch -Pattern '@WebMvcTest(OwnerController.class)'
-grep -nF -- '@WebMvcTest(OwnerController.class)' 'src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java'
-```
-
-- **E-72** (`11`)
-
-```text
-Select-String -Path 'src/test/java/org/springframework/samples/petclinic/vet/VetTests.java' -SimpleMatch -Pattern 'void serialization() {'
-grep -nF -- 'void serialization() {' 'src/test/java/org/springframework/samples/petclinic/vet/VetTests.java'
-```
-
-- **E-73** (`11`)
-
-```text
-Select-String -Path 'src/test/java/org/springframework/samples/petclinic/service/ClinicServiceTests.java' -SimpleMatch -Pattern 'assertThrows(DataIntegrityViolationException.class, () -> {'
-grep -nF -- 'assertThrows(DataIntegrityViolationException.class, () -> {' 'src/test/java/org/springframework/samples/petclinic/service/ClinicServiceTests.java'
-```
-
-- **E-74** (`11`)
-
-```text
-Select-String -Path 'src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java' -SimpleMatch -Pattern 'vets.findAll(); // served from cache'
-grep -nF -- 'vets.findAll(); // served from cache' 'src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java'
-```
-
-- **E-75** (`11`)
-
-```text
-Select-String -Path 'src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java' -SimpleMatch -Pattern 'assertThat(successCount.get()).isEqualTo(1);'
-grep -nF -- 'assertThat(successCount.get()).isEqualTo(1);' 'src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java'
-```
-
-- **E-76** (`11`)
-
-```text
-Select-String -Path 'src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java' -SimpleMatch -Pattern 'void checkNonInternationalizedStrings() throws Exception {'
-grep -nF -- 'void checkNonInternationalizedStrings() throws Exception {' 'src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java'
-```
-
-- **E-77** (`12`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java' -SimpleMatch -Pattern 'if (visit.getDate() != null && !visit.getDate().isAfter(LocalDate.now())) {'
-grep -nF -- 'if (visit.getDate() != null && !visit.getDate().isAfter(LocalDate.now())) {' 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java'
-```
-
-- **E-78** (`13`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java' -SimpleMatch -Pattern 'return LocalDate.now().plusDays(1);'
-grep -nF -- 'return LocalDate.now().plusDays(1);' 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java'
-```
-
-- **E-79** (`14/Q-1`)
-
-```text
-Select-String -Path 'README.md' -SimpleMatch -Pattern '# Spring PetClinic Sample Application'
-grep -nF -- '# Spring PetClinic Sample Application' 'README.md'
-```
-
-- **E-80** (`14/Q-2`)
-
-```text
-Select-String -Path 'k8s/petclinic.yml' -SimpleMatch -Pattern 'image: dsyer/petclinic'
-grep -nF -- 'image: dsyer/petclinic' 'k8s/petclinic.yml'
-```
-
-- **E-81** (`14/Q-3`)
-
-```text
-Select-String -Path '.github/workflows/deploy-and-test-cluster.yml' -SimpleMatch -Pattern 'kubectl apply -f k8s/'
-grep -nF -- 'kubectl apply -f k8s/' '.github/workflows/deploy-and-test-cluster.yml'
-```
-
-- **E-82** (`14/Q-4`)
-
-```text
-Select-String -Path 'README.md' -SimpleMatch -Pattern 'The h2 console is exposed at'
-grep -nF -- 'The h2 console is exposed at' 'README.md'
-```
-
-- **E-84** (`14/Q-6`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -Pattern 'return owner.getPet(petId);'
-grep -nF -- 'return owner.getPet(petId);' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
-```
-
-- **E-85** (`14/Q-7`)
-
-```text
-Select-String -Path 'src/main/resources/application.properties' -SimpleMatch -Pattern 'spring.web.resources.cache.cachecontrol.max-age=12h'
-grep -nF -- 'spring.web.resources.cache.cachecontrol.max-age=12h' 'src/main/resources/application.properties'
-```
-
-- **E-86** (`14/Q-8`)
-
-```text
-Select-String -Path 'src/main/resources/application.properties' -SimpleMatch -Pattern 'management.endpoints.web.exposure.include=*'
-grep -nF -- 'management.endpoints.web.exposure.include=*' 'src/main/resources/application.properties'
-```
-
-- **E-87** (`14/Q-9`)
-
-```text
-Select-String -Path 'README.md' -SimpleMatch -Pattern '# Spring PetClinic Sample Application'
-grep -nF -- '# Spring PetClinic Sample Application' 'README.md'
-```
-
-- **E-88** (`15/R-2`)
-
-```text
-Select-String -Path 'src/main/resources/application.properties' -SimpleMatch -Pattern 'management.endpoints.web.exposure.include=*'
-grep -nF -- 'management.endpoints.web.exposure.include=*' 'src/main/resources/application.properties'
-```
-
-- **E-89** (`15/R-4`)
-
-```text
-Select-String -Path 'docker-compose.yml' -SimpleMatch -Pattern '"3306:3306"'
-grep -nF -- '"3306:3306"' 'docker-compose.yml'
-```
-
-- **E-90** (`15/R-5`)
-
-```text
-Select-String -Path 'k8s/db.yml' -SimpleMatch -Pattern 'image: postgres:18.4'
-grep -nF -- 'image: postgres:18.4' 'k8s/db.yml'
-```
-
-- **E-91** (`15/R-6`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'redirectAttributes.addFlashAttribute("error", "There was an error in creating the owner.");'
-grep -nF -- 'redirectAttributes.addFlashAttribute("error", "There was an error in creating the owner.");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-92** (`15/R-8`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'Owner not found with id: " + ownerId'
-grep -nF -- 'Owner not found with id: " + ownerId' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-93** (`15.1`)
-
-```text
-Select-String -Path 'docs/appdoc-2.3/evidence.jsonl' -SimpleMatch -Pattern '"performed": true'
-grep -nF -- '"performed": true' 'docs/appdoc-2.3/evidence.jsonl'
-```
-
-- **E-94** (`16.1`)
-
-```text
-Select-String -Path 'pom.xml' -SimpleMatch -Pattern '<java.version>17</java.version>'
-grep -nF -- '<java.version>17</java.version>' 'pom.xml'
-```
-
-- **E-95** (`16.2`)
-
-```text
-Select-String -Path 'src/main/resources/application-mysql.properties' -SimpleMatch -Pattern '(Once only) create the PetClinic database and user'
-grep -nF -- '(Once only) create the PetClinic database and user' 'src/main/resources/application-mysql.properties'
-```
-
-- **E-96** (`16.3`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java' -SimpleMatch -Pattern 'resolver.setDefaultLocale(Locale.ENGLISH);'
-grep -nF -- 'resolver.setDefaultLocale(Locale.ENGLISH);' 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java'
-```
-
-- **E-97** (`16.4`)
-
-```text
-Select-String -Path 'k8s/db.yml' -SimpleMatch -Pattern 'spring.sql.init.mode=always'
-grep -nF -- 'spring.sql.init.mode=always' 'k8s/db.yml'
-```
-
-- **E-98** (`16.4`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -Pattern 'duplicate=is already in use'
-grep -nF -- 'duplicate=is already in use' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
-```
-
-- **E-99** (`16.4`)
-
-```text
-Select-String -Path 'k8s/petclinic.yml' -SimpleMatch -Pattern 'path: /readyz'
-grep -nF -- 'path: /readyz' 'k8s/petclinic.yml'
-```
-
-- **E-100** (`16.5`)
-
-```text
-Select-String -Path '.github/workflows/maven-build.yml' -SimpleMatch -Pattern 'run: ./mvnw -B verify'
-grep -nF -- 'run: ./mvnw -B verify' '.github/workflows/maven-build.yml'
-```
-
-- **E-101** (`16.5`)
-
-```text
-Select-String -Path '.github/workflows/deploy-and-test-cluster.yml' -SimpleMatch -Pattern 'kubectl apply -f k8s/'
-grep -nF -- 'kubectl apply -f k8s/' '.github/workflows/deploy-and-test-cluster.yml'
-```
-
-- **E-102** (`16.6`)
-
-```text
-Select-String -Path 'src/main/resources/application.properties' -SimpleMatch -Pattern 'spring.jpa.open-in-view=false'
-grep -nF -- 'spring.jpa.open-in-view=false' 'src/main/resources/application.properties'
-```
-
-- **E-103** (`16.7`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java' -SimpleMatch -Pattern '@SpringBootApplication'
-grep -nF -- '@SpringBootApplication' 'src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java'
-```
-
-- **E-104** (`10.1/V-9`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'dataBinder.setDisallowedFields("id", "*.id");'
-grep -nF -- 'dataBinder.setDisallowedFields("id", "*.id");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-105** (`5.2`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'dataBinder.setDisallowedFields("id", "*.id");'
-grep -nF -- 'dataBinder.setDisallowedFields("id", "*.id");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-106** (`15/R-13`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -Pattern '@InitBinder("owner")'
-grep -nF -- '@InitBinder("owner")' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
-```
-
-- **E-107** (`15/R-8`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'Owner not found with id: " + ownerId'
-grep -nF -- 'Owner not found with id: " + ownerId' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-108** (`15/R-12`)
-
-```text
-Select-String -Path 'README.md' -SimpleMatch -Pattern 'return owner.getPet(petId);'
-grep -nF -- 'return owner.getPet(petId);' 'README.md'
-```
-
-- **E-109** (`10.1/V-8`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java' -SimpleMatch -Pattern '"Pet with id " + petId'
-grep -nF -- '"Pet with id " + petId' 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java'
-```
-
-- **E-110** (`10.2`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/Owner.java' -SimpleMatch -Pattern 'errors.rejectValue("name", REQUIRED, REQUIRED);'
-grep -nF -- 'errors.rejectValue("name", REQUIRED, REQUIRED);' 'src/main/java/org/springframework/samples/petclinic/owner/Owner.java'
-```
-
-- **E-111** (`4/F-3`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'notFound=has not been found'
-grep -nF -- 'notFound=has not been found' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-112** (`4/F-6`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'Owner ID mismatch. Please try again.'
-grep -nF -- 'Owner ID mismatch. Please try again.' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-113** (`4/F-7`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java' -SimpleMatch -Pattern 'compName.equalsIgnoreCase(name)'
-grep -nF -- 'compName.equalsIgnoreCase(name)' 'src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java'
-```
-
-- **E-114** (`4/F-11`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java' -SimpleMatch -Pattern 'public @ResponseBody Vets showResourcesVetList() {'
-grep -nF -- 'public @ResponseBody Vets showResourcesVetList() {' 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java'
-```
-
-- **E-115** (`6/UI-2`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'notFound=has not been found'
-grep -nF -- 'notFound=has not been found' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-116** (`8.1`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java' -SimpleMatch -Pattern '@Cacheable("vets")'
-grep -nF -- '@Cacheable("vets")' 'src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java'
-```
-
-- **E-117** (`11`)
-
-```text
-Select-String -Path 'README.md' -SimpleMatch -Pattern 'Our issue tracker is available'
-grep -nF -- 'Our issue tracker is available' 'README.md'
-```
-
-- **E-118** (`11`)
-
-```text
-Select-String -Path 'README.md' -SimpleMatch -Pattern 'All commits must include a __Signed-off-by__ trailer'
-grep -nF -- 'All commits must include a __Signed-off-by__ trailer' 'README.md'
-```
-
-- **E-119** (`11`)
-
-```text
-Select-String -Path 'src/test/java/org/springframework/samples/petclinic/owner/OwnerTests.java' -SimpleMatch -Pattern 'void serialization() {'
-grep -nF -- 'void serialization() {' 'src/test/java/org/springframework/samples/petclinic/owner/OwnerTests.java'
-```
-
-- **E-120** (`11`)
-
-```text
-Select-String -Path 'src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java' -SimpleMatch -Pattern 'vets.findAll(); // served from cache'
-grep -nF -- 'vets.findAll(); // served from cache' 'src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java'
-```
-
-- **E-121** (`11`)
-
-```text
-Select-String -Path 'src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java' -SimpleMatch -Pattern 'void checkNonInternationalizedStrings() throws Exception {'
-grep -nF -- 'void checkNonInternationalizedStrings() throws Exception {' 'src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java'
-```
-
-- **E-122** (`9`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'notFound=has not been found'
-grep -nF -- 'notFound=has not been found' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-123** (`9`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -Pattern 'duplicate=is already in use'
-grep -nF -- 'duplicate=is already in use' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
-```
-
-- **E-125** (`9`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java' -SimpleMatch -Pattern 'INSERT INTO types VALUES (default, ''cat'');'
-grep -nF -- 'INSERT INTO types VALUES (default, '\''cat'\'');' 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java'
-```
-
-- **E-126** (`9`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'Owner ID mismatch. Please try again.'
-grep -nF -- 'Owner ID mismatch. Please try again.' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-127** (`16.4`)
-
-```text
-Select-String -Path 'k8s/db.yml' -SimpleMatch -Pattern 'spring.sql.init.mode=always'
-grep -nF -- 'spring.sql.init.mode=always' 'k8s/db.yml'
-```
-
-- **E-128** (`16.4`)
-
-```text
-Select-String -Path 'src/main/resources/messages/messages.properties' -SimpleMatch -Pattern 'duplicate=is already in use'
-grep -nF -- 'duplicate=is already in use' 'src/main/resources/messages/messages.properties'
-```
-
-- **E-129** (`7.1`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'VARCHAR_IGNORECASE(30)'
-grep -nF -- 'VARCHAR_IGNORECASE(30)' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-130** (`7.3`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'Owner ID mismatch. Please try again.'
-grep -nF -- 'Owner ID mismatch. Please try again.' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-131** (`7.3`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -Pattern 'dataBinder.setDisallowedFields("id", "*.id");'
-grep -nF -- 'dataBinder.setDisallowedFields("id", "*.id");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
-```
-
-- **E-132** (`7.4`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -Pattern 'result.rejectValue("name", "duplicate", "already exists");'
-grep -nF -- 'result.rejectValue("name", "duplicate", "already exists");' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
-```
-
-- **E-133** (`7.7`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java' -SimpleMatch -Pattern '.sorted(Comparator.comparing(NamedEntity::getName))'
-grep -nF -- '.sorted(Comparator.comparing(NamedEntity::getName))' 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java'
-```
-
-- **E-134** (`7.8`)
-
-```text
-Select-String -Path 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java' -SimpleMatch -Pattern 'interceptor.setParamName("lang");'
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java' -SimpleMatch -CaseSensitive -Pattern 'interceptor.setParamName("lang");'
 grep -nF -- 'interceptor.setParamName("lang");' 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java'
 ```
 
-- **E-135** (`8.2`)
+- **E-17** (`4/F-14`), expect line 21
 
 ```text
-Select-String -Path 'src/main/resources/db/h2/data.sql' -SimpleMatch -Pattern 'INSERT INTO vets VALUES (default, ''James'', ''Carter'');'
+Select-String -LiteralPath 'src/main/resources/application.properties' -SimpleMatch -CaseSensitive -Pattern 'management.endpoints.web.exposure.include=*'
+grep -nF -- 'management.endpoints.web.exposure.include=*' 'src/main/resources/application.properties'
+```
+
+- **E-18** (`4.1`), expect line 29
+
+```text
+Select-String -LiteralPath '.github/workflows/maven-build.yml' -SimpleMatch -CaseSensitive -Pattern 'run: ./mvnw -B verify'
+grep -nF -- 'run: ./mvnw -B verify' '.github/workflows/maven-build.yml'
+```
+
+- **E-19** (`5.2`), expect line 61
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'dataBinder.setDisallowedFields("id", "*.id");'
+grep -nF -- 'dataBinder.setDisallowedFields("id", "*.id");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-20** (`5.3`), expect line 49
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'class OwnerController {'
+grep -nF -- 'class OwnerController {' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-21** (`6/UI-1`), expect line 10
+
+```text
+Select-String -LiteralPath 'src/main/resources/templates/welcome.html' -SimpleMatch -CaseSensitive -Pattern 'th:src="@{/resources/images/pets.png}"'
+grep -nF -- 'th:src="@{/resources/images/pets.png}"' 'src/main/resources/templates/welcome.html'
+```
+
+- **E-23** (`6/UI-3`), expect line 31
+
+```text
+Select-String -LiteralPath 'src/main/resources/templates/owners/ownersList.html' -SimpleMatch -CaseSensitive -Pattern 'th:if="${totalPages > 1}"'
+grep -nF -- 'th:if="${totalPages > 1}"' 'src/main/resources/templates/owners/ownersList.html'
+```
+
+- **E-24** (`6/UI-4`), expect line 86
+
+```text
+Select-String -LiteralPath 'src/main/resources/templates/owners/ownerDetails.html' -SimpleMatch -CaseSensitive -Pattern '// 3000 milliseconds (3 seconds)'
+grep -nF -- '// 3000 milliseconds (3 seconds)' 'src/main/resources/templates/owners/ownerDetails.html'
+```
+
+- **E-25** (`6/UI-5`), expect line 14
+
+```text
+Select-String -LiteralPath 'src/main/resources/templates/owners/createOrUpdateOwnerForm.html' -SimpleMatch -CaseSensitive -Pattern '''telephone'', ''text'''
+grep -nF -- ''\''telephone'\'', '\''text'\''' 'src/main/resources/templates/owners/createOrUpdateOwnerForm.html'
+```
+
+- **E-26** (`6/UI-6`), expect line 26
+
+```text
+Select-String -LiteralPath 'src/main/resources/templates/pets/createOrUpdatePetForm.html' -SimpleMatch -CaseSensitive -Pattern '''Update Pet'''
+grep -nF -- ''\''Update Pet'\''' 'src/main/resources/templates/pets/createOrUpdatePetForm.html'
+```
+
+- **E-27** (`6/UI-7`), expect line 45
+
+```text
+Select-String -LiteralPath 'src/main/resources/templates/pets/createOrUpdateVisitForm.html' -SimpleMatch -CaseSensitive -Pattern '<b th:text="#{previousVisits}">Previous Visits</b>'
+grep -nF -- '<b th:text="#{previousVisits}">Previous Visits</b>' 'src/main/resources/templates/pets/createOrUpdateVisitForm.html'
+```
+
+- **E-28** (`6/UI-8`), expect line 21
+
+```text
+Select-String -LiteralPath 'src/main/resources/templates/vets/vetList.html' -SimpleMatch -CaseSensitive -Pattern 'th:text="#{none}">none</span>'
+grep -nF -- 'th:text="#{none}">none</span>' 'src/main/resources/templates/vets/vetList.html'
+```
+
+- **E-29** (`6/UI-9`), expect line 13
+
+```text
+Select-String -LiteralPath 'src/main/resources/templates/error.html' -SimpleMatch -CaseSensitive -Pattern '<span th:case="500" th:text="#{error.500}">An internal server error occurred.</span>'
+grep -nF -- '<span th:case="500" th:text="#{error.500}">An internal server error occurred.</span>' 'src/main/resources/templates/error.html'
+```
+
+- **E-31** (`7.2`), expect line 85
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'redirectAttributes.addFlashAttribute("message", "New Owner Created");'
+grep -nF -- 'redirectAttributes.addFlashAttribute("message", "New Owner Created");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-34** (`7.5`), expect line 194
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -CaseSensitive -Pattern 'existingPet.setType(pet.getType());'
+grep -nF -- 'existingPet.setType(pet.getType());' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
+```
+
+- **E-35** (`7.6`), expect line 110
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java' -SimpleMatch -CaseSensitive -Pattern 'redirectAttributes.addFlashAttribute("message", "Your visit has been booked");'
+grep -nF -- 'redirectAttributes.addFlashAttribute("message", "Your visit has been booked");' 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java'
+```
+
+- **E-38** (`8.1`), expect line 64
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'uses an in-memory database (H2)'
+grep -nF -- 'uses an in-memory database (H2)' 'README.md'
+```
+
+- **E-39** (`8.1`), expect line 3
+
+```text
+Select-String -LiteralPath 'src/main/resources/application-mysql.properties' -SimpleMatch -CaseSensitive -Pattern 'spring.datasource.url=${MYSQL_URL:'
+grep -nF -- 'spring.datasource.url=${MYSQL_URL:' 'src/main/resources/application-mysql.properties'
+```
+
+- **E-40** (`8.2`), expect line 1
+
+```text
+Select-String -LiteralPath 'src/main/resources/db/h2/data.sql' -SimpleMatch -CaseSensitive -Pattern 'INSERT INTO vets VALUES (default, ''James'', ''Carter'');'
 grep -nF -- 'INSERT INTO vets VALUES (default, '\''James'\'', '\''Carter'\'');' 'src/main/resources/db/h2/data.sql'
 ```
 
-- **E-136** (`15.1`)
+- **E-41** (`8.2`), expect line 36
 
 ```text
-Select-String -Path 'docs/appdoc-2.3/evidence.jsonl' -SimpleMatch -Pattern '"performed": true'
-grep -nF -- '"performed": true' 'docs/appdoc-2.3/evidence.jsonl'
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeRepository.java' -SimpleMatch -CaseSensitive -Pattern '@Query("SELECT ptype FROM PetType ptype ORDER BY ptype.name")'
+grep -nF -- '@Query("SELECT ptype FROM PetType ptype ORDER BY ptype.name")' 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeRepository.java'
+```
+
+- **E-42** (`8.3`), expect line 80
+
+```text
+Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java' -SimpleMatch -CaseSensitive -Pattern 'template.postForEntity("/owners/" + ownerId + "/pets/new",'
+grep -nF -- 'template.postForEntity("/owners/" + ownerId + "/pets/new",' 'src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java'
+```
+
+- **E-43** (`8.4`), expect line 39
+
+```text
+Select-String -LiteralPath 'src/main/resources/db/h2/schema.sql' -SimpleMatch -CaseSensitive -Pattern 'VARCHAR_IGNORECASE(30)'
+grep -nF -- 'VARCHAR_IGNORECASE(30)' 'src/main/resources/db/h2/schema.sql'
+```
+
+- **E-44** (`8.4`), expect line 55
+
+```text
+Select-String -LiteralPath 'src/main/resources/db/h2/schema.sql' -SimpleMatch -CaseSensitive -Pattern 'UNIQUE (owner_id, name)'
+grep -nF -- 'UNIQUE (owner_id, name)' 'src/main/resources/db/h2/schema.sql'
+```
+
+- **E-45** (`8.4`), expect line 62
+
+```text
+Select-String -LiteralPath 'src/main/resources/db/h2/schema.sql' -SimpleMatch -CaseSensitive -Pattern 'description VARCHAR(255)'
+grep -nF -- 'description VARCHAR(255)' 'src/main/resources/db/h2/schema.sql'
+```
+
+- **E-46** (`8.4`), expect line 21
+
+```text
+Select-String -LiteralPath 'src/main/resources/db/h2/schema.sql' -SimpleMatch -CaseSensitive -Pattern 'CREATE INDEX specialties_name ON specialties (name);'
+grep -nF -- 'CREATE INDEX specialties_name ON specialties (name);' 'src/main/resources/db/h2/schema.sql'
+```
+
+- **E-47** (`8.5`), expect line 24
+
+```text
+Select-String -LiteralPath 'src/main/resources/application.properties' -SimpleMatch -CaseSensitive -Pattern 'logging.level.org.springframework=INFO'
+grep -nF -- 'logging.level.org.springframework=INFO' 'src/main/resources/application.properties'
+```
+
+- **E-48** (`8.5`), expect line 71
+
+```text
+Select-String -LiteralPath 'k8s/db.yml' -SimpleMatch -CaseSensitive -Pattern 'startupProbe:'
+grep -nF -- 'startupProbe:' 'k8s/db.yml'
+```
+
+- **E-49** (`9`), expect line 118
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'result.rejectValue("lastName", "notFound", "not found");'
+grep -nF -- 'result.rejectValue("lastName", "notFound", "not found");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-50** (`9`), expect line 34
+
+```text
+Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'telephone.invalid=Telephone must be a 10-digit number'
+grep -nF -- 'telephone.invalid=Telephone must be a 10-digit number' 'src/main/resources/messages/messages.properties'
+```
+
+- **E-51** (`9`), expect line 4
+
+```text
+Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'duplicate=is already in use'
+grep -nF -- 'duplicate=is already in use' 'src/main/resources/messages/messages.properties'
+```
+
+- **E-52** (`9`), expect line 9
+
+```text
+Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'typeMismatch.visitDate=Visit date must be in the future'
+grep -nF -- 'typeMismatch.visitDate=Visit date must be in the future' 'src/main/resources/messages/messages.properties'
+```
+
+- **E-53** (`9`), expect line 59
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java' -SimpleMatch -CaseSensitive -Pattern 'throw new ParseException("type not found: " + text, 0);'
+grep -nF -- 'throw new ParseException("type not found: " + text, 0);' 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java'
+```
+
+- **E-54** (`9`), expect line 163
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'Owner ID mismatch. Please try again.'
+grep -nF -- 'Owner ID mismatch. Please try again.' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-55** (`10.1/V-1`), expect line 153
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern '@PostMapping("/owners/{ownerId}/edit")'
+grep -nF -- '@PostMapping("/owners/{ownerId}/edit")' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-56** (`10.1/V-2`), expect line 20
+
+```text
+Select-String -LiteralPath 'src/main/resources/application.properties' -SimpleMatch -CaseSensitive -Pattern '# Don''t do this in production, only for development and testing'
+grep -nF -- '# Don'\''t do this in production, only for development and testing' 'src/main/resources/application.properties'
+```
+
+- **E-57** (`10.1/V-3`), expect line 9
+
+```text
+Select-String -LiteralPath 'src/main/resources/db/mysql/user.sql' -SimpleMatch -CaseSensitive -Pattern 'GRANT ALL PRIVILEGES ON petclinic.*'
+grep -nF -- 'GRANT ALL PRIVILEGES ON petclinic.*' 'src/main/resources/db/mysql/user.sql'
+```
+
+- **E-58** (`10.1/V-4`), expect line 5
+
+```text
+Select-String -LiteralPath 'docker-compose.yml' -SimpleMatch -CaseSensitive -Pattern '"3306:3306"'
+grep -nF -- '"3306:3306"' 'docker-compose.yml'
+```
+
+- **E-59** (`10.1/V-5`), expect line 44
+
+```text
+Select-String -LiteralPath 'k8s/db.yml' -SimpleMatch -CaseSensitive -Pattern 'image: postgres:18.4'
+grep -nF -- 'image: postgres:18.4' 'k8s/db.yml'
+```
+
+- **E-60** (`10.1/V-6`), expect line 80
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'redirectAttributes.addFlashAttribute("error", "There was an error in creating the owner.");'
+grep -nF -- 'redirectAttributes.addFlashAttribute("error", "There was an error in creating the owner.");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-61** (`10.1/V-7`), expect line 31
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/system/CrashController.java' -SimpleMatch -CaseSensitive -Pattern '@GetMapping("/oups")'
+grep -nF -- '@GetMapping("/oups")' 'src/main/java/org/springframework/samples/petclinic/system/CrashController.java'
+```
+
+- **E-63** (`10.2`), expect line 64
+
+```text
+Select-String -LiteralPath 'pom.xml' -SimpleMatch -CaseSensitive -Pattern 'spring-boot-starter-webmvc'
+grep -nF -- 'spring-boot-starter-webmvc' 'pom.xml'
+```
+
+- **E-64** (`10.2`), expect line 10
+
+```text
+Select-String -LiteralPath 'k8s/petclinic.yml' -SimpleMatch -CaseSensitive -Pattern 'targetPort: 8080'
+grep -nF -- 'targetPort: 8080' 'k8s/petclinic.yml'
+```
+
+- **E-65** (`10.2`), expect line 44
+
+```text
+Select-String -LiteralPath 'k8s/db.yml' -SimpleMatch -CaseSensitive -Pattern 'image: postgres:18.4'
+grep -nF -- 'image: postgres:18.4' 'k8s/db.yml'
+```
+
+- **E-66** (`11`), expect line 1
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern '# Spring PetClinic Sample Application'
+grep -nF -- '# Spring PetClinic Sample Application' 'README.md'
+```
+
+- **E-67** (`11`), expect line 60
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'Our issue tracker is available'
+grep -nF -- 'Our issue tracker is available' 'README.md'
+```
+
+- **E-68** (`11`), expect line 58
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern '## In case you find a bug/suggested improvement for Spring Petclinic'
+grep -nF -- '## In case you find a bug/suggested improvement for Spring Petclinic' 'README.md'
+```
+
+- **E-69** (`11`), expect line 5
+
+```text
+Select-String -LiteralPath 'src/main/resources/db/mysql/petclinic_db_setup_mysql.txt' -SimpleMatch -CaseSensitive -Pattern '@author Sam Brannen'
+grep -nF -- '@author Sam Brannen' 'src/main/resources/db/mysql/petclinic_db_setup_mysql.txt'
+```
+
+- **E-70** (`11`), expect line 8
+
+```text
+Select-String -LiteralPath '.github/workflows/maven-build.yml' -SimpleMatch -CaseSensitive -Pattern 'branches: [ main ]'
+grep -nF -- 'branches: [ main ]' '.github/workflows/maven-build.yml'
+```
+
+- **E-71** (`11`), expect line 60
+
+```text
+Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java' -SimpleMatch -CaseSensitive -Pattern '@WebMvcTest(OwnerController.class)'
+grep -nF -- '@WebMvcTest(OwnerController.class)' 'src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java'
+```
+
+- **E-72** (`11`), expect line 29
+
+```text
+Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/vet/VetTests.java' -SimpleMatch -CaseSensitive -Pattern 'void serialization() {'
+grep -nF -- 'void serialization() {' 'src/test/java/org/springframework/samples/petclinic/vet/VetTests.java'
+```
+
+- **E-73** (`11`), expect line 274
+
+```text
+Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/service/ClinicServiceTests.java' -SimpleMatch -CaseSensitive -Pattern 'assertThrows(DataIntegrityViolationException.class, () -> {'
+grep -nF -- 'assertThrows(DataIntegrityViolationException.class, () -> {' 'src/test/java/org/springframework/samples/petclinic/service/ClinicServiceTests.java'
+```
+
+- **E-74** (`11`), expect line 49
+
+```text
+Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java' -SimpleMatch -CaseSensitive -Pattern 'vets.findAll(); // served from cache'
+grep -nF -- 'vets.findAll(); // served from cache' 'src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java'
+```
+
+- **E-75** (`11`), expect line 124
+
+```text
+Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java' -SimpleMatch -CaseSensitive -Pattern 'assertThat(successCount.get()).isEqualTo(1);'
+grep -nF -- 'assertThat(successCount.get()).isEqualTo(1);' 'src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java'
+```
+
+- **E-76** (`11`), expect line 40
+
+```text
+Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java' -SimpleMatch -CaseSensitive -Pattern 'void checkNonInternationalizedStrings() throws Exception {'
+grep -nF -- 'void checkNonInternationalizedStrings() throws Exception {' 'src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java'
+```
+
+- **E-77** (`12`), expect line 100
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java' -SimpleMatch -CaseSensitive -Pattern 'if (visit.getDate() != null && !visit.getDate().isAfter(LocalDate.now())) {'
+grep -nF -- 'if (visit.getDate() != null && !visit.getDate().isAfter(LocalDate.now())) {' 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java'
+```
+
+- **E-78** (`13`), expect line 85
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java' -SimpleMatch -CaseSensitive -Pattern 'return LocalDate.now().plusDays(1);'
+grep -nF -- 'return LocalDate.now().plusDays(1);' 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java'
+```
+
+- **E-79** (`14/Q-1`), expect line 1
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern '# Spring PetClinic Sample Application'
+grep -nF -- '# Spring PetClinic Sample Application' 'README.md'
+```
+
+- **E-80** (`14/Q-2`), expect line 33
+
+```text
+Select-String -LiteralPath 'k8s/petclinic.yml' -SimpleMatch -CaseSensitive -Pattern 'image: dsyer/petclinic'
+grep -nF -- 'image: dsyer/petclinic' 'k8s/petclinic.yml'
+```
+
+- **E-81** (`14/Q-3`), expect line 25
+
+```text
+Select-String -LiteralPath '.github/workflows/deploy-and-test-cluster.yml' -SimpleMatch -CaseSensitive -Pattern 'kubectl apply -f k8s/'
+grep -nF -- 'kubectl apply -f k8s/' '.github/workflows/deploy-and-test-cluster.yml'
+```
+
+- **E-82** (`14/Q-4`), expect line 65
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'The h2 console is exposed at'
+grep -nF -- 'The h2 console is exposed at' 'README.md'
+```
+
+- **E-84** (`14/Q-6`), expect line 86
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -CaseSensitive -Pattern 'return owner.getPet(petId);'
+grep -nF -- 'return owner.getPet(petId);' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
+```
+
+- **E-85** (`14/Q-7`), expect line 29
+
+```text
+Select-String -LiteralPath 'src/main/resources/application.properties' -SimpleMatch -CaseSensitive -Pattern 'spring.web.resources.cache.cachecontrol.max-age=12h'
+grep -nF -- 'spring.web.resources.cache.cachecontrol.max-age=12h' 'src/main/resources/application.properties'
+```
+
+- **E-86** (`14/Q-8`), expect line 21
+
+```text
+Select-String -LiteralPath 'src/main/resources/application.properties' -SimpleMatch -CaseSensitive -Pattern 'management.endpoints.web.exposure.include=*'
+grep -nF -- 'management.endpoints.web.exposure.include=*' 'src/main/resources/application.properties'
+```
+
+- **E-87** (`14/Q-9`), expect line 1
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern '# Spring PetClinic Sample Application'
+grep -nF -- '# Spring PetClinic Sample Application' 'README.md'
+```
+
+- **E-88** (`15/R-2`), expect line 21
+
+```text
+Select-String -LiteralPath 'src/main/resources/application.properties' -SimpleMatch -CaseSensitive -Pattern 'management.endpoints.web.exposure.include=*'
+grep -nF -- 'management.endpoints.web.exposure.include=*' 'src/main/resources/application.properties'
+```
+
+- **E-89** (`15/R-4`), expect line 5
+
+```text
+Select-String -LiteralPath 'docker-compose.yml' -SimpleMatch -CaseSensitive -Pattern '"3306:3306"'
+grep -nF -- '"3306:3306"' 'docker-compose.yml'
+```
+
+- **E-90** (`15/R-5`), expect line 44
+
+```text
+Select-String -LiteralPath 'k8s/db.yml' -SimpleMatch -CaseSensitive -Pattern 'image: postgres:18.4'
+grep -nF -- 'image: postgres:18.4' 'k8s/db.yml'
+```
+
+- **E-91** (`15/R-6`), expect line 80
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'redirectAttributes.addFlashAttribute("error", "There was an error in creating the owner.");'
+grep -nF -- 'redirectAttributes.addFlashAttribute("error", "There was an error in creating the owner.");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-93** (`15.1`), expect line 1
+
+```text
+Select-String -LiteralPath 'docs/appdoc/evidence.jsonl' -SimpleMatch -CaseSensitive -Pattern '"performed": true'
+grep -nF -- '"performed": true' 'docs/appdoc/evidence.jsonl'
+```
+
+- **E-94** (`16.1`), expect line 19
+
+```text
+Select-String -LiteralPath 'pom.xml' -SimpleMatch -CaseSensitive -Pattern '<java.version>17</java.version>'
+grep -nF -- '<java.version>17</java.version>' 'pom.xml'
+```
+
+- **E-95** (`16.2`), expect line 21
+
+```text
+Select-String -LiteralPath 'src/main/resources/db/mysql/petclinic_db_setup_mysql.txt' -SimpleMatch -CaseSensitive -Pattern '(Once only) create the PetClinic database and user'
+grep -nF -- '(Once only) create the PetClinic database and user' 'src/main/resources/db/mysql/petclinic_db_setup_mysql.txt'
+```
+
+- **E-96** (`16.3`), expect line 35
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java' -SimpleMatch -CaseSensitive -Pattern 'resolver.setDefaultLocale(Locale.ENGLISH);'
+grep -nF -- 'resolver.setDefaultLocale(Locale.ENGLISH);' 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java'
+```
+
+- **E-97** (`16.4`), expect line 7
+
+```text
+Select-String -LiteralPath 'src/main/resources/application-postgres.properties' -SimpleMatch -CaseSensitive -Pattern 'spring.sql.init.mode=always'
+grep -nF -- 'spring.sql.init.mode=always' 'src/main/resources/application-postgres.properties'
+```
+
+- **E-98** (`16.4`), expect line 4
+
+```text
+Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'duplicate=is already in use'
+grep -nF -- 'duplicate=is already in use' 'src/main/resources/messages/messages.properties'
+```
+
+- **E-99** (`16.4`), expect line 53
+
+```text
+Select-String -LiteralPath 'k8s/petclinic.yml' -SimpleMatch -CaseSensitive -Pattern 'path: /readyz'
+grep -nF -- 'path: /readyz' 'k8s/petclinic.yml'
+```
+
+- **E-100** (`16.5`), expect line 29
+
+```text
+Select-String -LiteralPath '.github/workflows/maven-build.yml' -SimpleMatch -CaseSensitive -Pattern 'run: ./mvnw -B verify'
+grep -nF -- 'run: ./mvnw -B verify' '.github/workflows/maven-build.yml'
+```
+
+- **E-101** (`16.5`), expect line 25
+
+```text
+Select-String -LiteralPath '.github/workflows/deploy-and-test-cluster.yml' -SimpleMatch -CaseSensitive -Pattern 'kubectl apply -f k8s/'
+grep -nF -- 'kubectl apply -f k8s/' '.github/workflows/deploy-and-test-cluster.yml'
+```
+
+- **E-102** (`16.6`), expect line 11
+
+```text
+Select-String -LiteralPath 'src/main/resources/application.properties' -SimpleMatch -CaseSensitive -Pattern 'spring.jpa.open-in-view=false'
+grep -nF -- 'spring.jpa.open-in-view=false' 'src/main/resources/application.properties'
+```
+
+- **E-103** (`16.7`), expect line 28
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java' -SimpleMatch -CaseSensitive -Pattern '@SpringBootApplication'
+grep -nF -- '@SpringBootApplication' 'src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java'
+```
+
+- **E-104** (`10.1/V-9`), expect line 61
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'dataBinder.setDisallowedFields("id", "*.id");'
+grep -nF -- 'dataBinder.setDisallowedFields("id", "*.id");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-105** (`5.2`), expect line 61
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'dataBinder.setDisallowedFields("id", "*.id");'
+grep -nF -- 'dataBinder.setDisallowedFields("id", "*.id");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-106** (`15/R-13`), expect line 89
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -CaseSensitive -Pattern '@InitBinder("owner")'
+grep -nF -- '@InitBinder("owner")' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
+```
+
+- **E-107** (`15/R-8`), expect line 68
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'Owner not found with id: " + ownerId'
+grep -nF -- 'Owner not found with id: " + ownerId' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-108** (`15/R-12`), expect line 86
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -CaseSensitive -Pattern 'return owner.getPet(petId);'
+grep -nF -- 'return owner.getPet(petId);' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
+```
+
+- **E-109** (`10.1/V-8`), expect line 73
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java' -SimpleMatch -CaseSensitive -Pattern '"Pet with id " + petId'
+grep -nF -- '"Pet with id " + petId' 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java'
+```
+
+- **E-110** (`10.2`), expect line 44
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java' -SimpleMatch -CaseSensitive -Pattern 'errors.rejectValue("name", REQUIRED, REQUIRED);'
+grep -nF -- 'errors.rejectValue("name", REQUIRED, REQUIRED);' 'src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java'
+```
+
+- **E-111** (`4/F-3`), expect line 3
+
+```text
+Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'notFound=has not been found'
+grep -nF -- 'notFound=has not been found' 'src/main/resources/messages/messages.properties'
+```
+
+- **E-112** (`4/F-6`), expect line 163
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'Owner ID mismatch. Please try again.'
+grep -nF -- 'Owner ID mismatch. Please try again.' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-113** (`4/F-7`), expect line 150
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/Owner.java' -SimpleMatch -CaseSensitive -Pattern 'compName.equalsIgnoreCase(name)'
+grep -nF -- 'compName.equalsIgnoreCase(name)' 'src/main/java/org/springframework/samples/petclinic/owner/Owner.java'
+```
+
+- **E-114** (`4/F-11`), expect line 73
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java' -SimpleMatch -CaseSensitive -Pattern 'public @ResponseBody Vets showResourcesVetList() {'
+grep -nF -- 'public @ResponseBody Vets showResourcesVetList() {' 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java'
+```
+
+- **E-115** (`6/UI-2`), expect line 3
+
+```text
+Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'notFound=has not been found'
+grep -nF -- 'notFound=has not been found' 'src/main/resources/messages/messages.properties'
+```
+
+- **E-116** (`8.1`), expect line 45
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java' -SimpleMatch -CaseSensitive -Pattern '@Cacheable("vets")'
+grep -nF -- '@Cacheable("vets")' 'src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java'
+```
+
+- **E-117** (`11`), expect line 60
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'Our issue tracker is available'
+grep -nF -- 'Our issue tracker is available' 'README.md'
+```
+
+- **E-118** (`11`), expect line 176
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'All commits must include a __Signed-off-by__ trailer'
+grep -nF -- 'All commits must include a __Signed-off-by__ trailer' 'README.md'
+```
+
+- **E-119** (`11`), expect line 29
+
+```text
+Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/vet/VetTests.java' -SimpleMatch -CaseSensitive -Pattern 'void serialization() {'
+grep -nF -- 'void serialization() {' 'src/test/java/org/springframework/samples/petclinic/vet/VetTests.java'
+```
+
+- **E-120** (`11`), expect line 49
+
+```text
+Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java' -SimpleMatch -CaseSensitive -Pattern 'vets.findAll(); // served from cache'
+grep -nF -- 'vets.findAll(); // served from cache' 'src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java'
+```
+
+- **E-121** (`11`), expect line 40
+
+```text
+Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java' -SimpleMatch -CaseSensitive -Pattern 'void checkNonInternationalizedStrings() throws Exception {'
+grep -nF -- 'void checkNonInternationalizedStrings() throws Exception {' 'src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java'
+```
+
+- **E-122** (`9`), expect line 3
+
+```text
+Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'notFound=has not been found'
+grep -nF -- 'notFound=has not been found' 'src/main/resources/messages/messages.properties'
+```
+
+- **E-123** (`9`), expect line 4
+
+```text
+Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'duplicate=is already in use'
+grep -nF -- 'duplicate=is already in use' 'src/main/resources/messages/messages.properties'
+```
+
+- **E-125** (`9`), expect line 18
+
+```text
+Select-String -LiteralPath 'src/main/resources/db/h2/data.sql' -SimpleMatch -CaseSensitive -Pattern 'INSERT INTO types VALUES (default, ''cat'');'
+grep -nF -- 'INSERT INTO types VALUES (default, '\''cat'\'');' 'src/main/resources/db/h2/data.sql'
+```
+
+- **E-126** (`9`), expect line 163
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'Owner ID mismatch. Please try again.'
+grep -nF -- 'Owner ID mismatch. Please try again.' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-127** (`16.4`), expect line 7
+
+```text
+Select-String -LiteralPath 'src/main/resources/application-postgres.properties' -SimpleMatch -CaseSensitive -Pattern 'spring.sql.init.mode=always'
+grep -nF -- 'spring.sql.init.mode=always' 'src/main/resources/application-postgres.properties'
+```
+
+- **E-128** (`16.4`), expect line 4
+
+```text
+Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'duplicate=is already in use'
+grep -nF -- 'duplicate=is already in use' 'src/main/resources/messages/messages.properties'
+```
+
+- **E-129** (`7.1`), expect line 39
+
+```text
+Select-String -LiteralPath 'src/main/resources/db/h2/schema.sql' -SimpleMatch -CaseSensitive -Pattern 'VARCHAR_IGNORECASE(30)'
+grep -nF -- 'VARCHAR_IGNORECASE(30)' 'src/main/resources/db/h2/schema.sql'
+```
+
+- **E-131** (`7.3`), expect line 61
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'dataBinder.setDisallowedFields("id", "*.id");'
+grep -nF -- 'dataBinder.setDisallowedFields("id", "*.id");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-132** (`7.4`), expect line 112
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -CaseSensitive -Pattern 'result.rejectValue("name", "duplicate", "already exists");'
+grep -nF -- 'result.rejectValue("name", "duplicate", "already exists");' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
+```
+
+- **E-133** (`7.7`), expect line 62
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/vet/Vet.java' -SimpleMatch -CaseSensitive -Pattern '.sorted(Comparator.comparing(NamedEntity::getName))'
+grep -nF -- '.sorted(Comparator.comparing(NamedEntity::getName))' 'src/main/java/org/springframework/samples/petclinic/vet/Vet.java'
+```
+
+- **E-134** (`7.8`), expect line 47
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java' -SimpleMatch -CaseSensitive -Pattern 'interceptor.setParamName("lang");'
+grep -nF -- 'interceptor.setParamName("lang");' 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java'
+```
+
+- **E-135** (`8.2`), expect line 1
+
+```text
+Select-String -LiteralPath 'src/main/resources/db/h2/data.sql' -SimpleMatch -CaseSensitive -Pattern 'INSERT INTO vets VALUES (default, ''James'', ''Carter'');'
+grep -nF -- 'INSERT INTO vets VALUES (default, '\''James'\'', '\''Carter'\'');' 'src/main/resources/db/h2/data.sql'
+```
+
+- **E-136** (`15.1`), expect line 1
+
+```text
+Select-String -LiteralPath 'docs/appdoc/evidence.jsonl' -SimpleMatch -CaseSensitive -Pattern '"performed": true'
+grep -nF -- '"performed": true' 'docs/appdoc/evidence.jsonl'
 ```
 <!-- /appdoc:generated appendix-a -->

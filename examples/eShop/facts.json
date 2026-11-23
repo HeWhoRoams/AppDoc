@@ -5,7 +5,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 3,
-    "size": 66,
+    "size": 64,
     "stacks": []
    },
    "kind": "file",
@@ -32,7 +32,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 13,
-    "size": 241,
+    "size": 228,
     "stacks": []
    },
    "kind": "file",
@@ -46,7 +46,7 @@
     "encoding": "utf-8",
     "ext": ".winget",
     "lines": 116,
-    "size": 4528,
+    "size": 4412,
     "stacks": []
    },
    "kind": "file",
@@ -60,7 +60,7 @@
     "encoding": "utf-8",
     "ext": ".winget",
     "lines": 181,
-    "size": 6339,
+    "size": 6158,
     "stacks": []
    },
    "kind": "file",
@@ -74,7 +74,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 12,
-    "size": 353,
+    "size": 342,
     "stacks": []
    },
    "kind": "file",
@@ -88,7 +88,7 @@
     "encoding": "utf-8",
     "ext": ".yaml",
     "lines": 1,
-    "size": 16,
+    "size": 15,
     "stacks": []
    },
    "kind": "file",
@@ -102,7 +102,7 @@
     "encoding": "utf-8",
     "ext": ".editorconfig",
     "lines": 132,
-    "size": 6257,
+    "size": 6126,
     "stacks": []
    },
    "kind": "file",
@@ -116,7 +116,7 @@
     "encoding": "utf-8",
     "ext": ".gitattributes",
     "lines": 71,
-    "size": 2808,
+    "size": 2737,
     "stacks": []
    },
    "kind": "file",
@@ -130,7 +130,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 71,
-    "size": 1703,
+    "size": 1632,
     "stacks": []
    },
    "kind": "file",
@@ -274,7 +274,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 222,
-    "size": 16164,
+    "size": 15942,
     "stacks": []
    },
    "kind": "file",
@@ -288,7 +288,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 176,
-    "size": 8813,
+    "size": 8637,
     "stacks": []
    },
    "kind": "file",
@@ -302,7 +302,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 316,
-    "size": 19861,
+    "size": 19545,
     "stacks": []
    },
    "kind": "file",
@@ -316,7 +316,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 342,
-    "size": 15103,
+    "size": 14761,
     "stacks": []
    },
    "kind": "file",
@@ -330,7 +330,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 155,
-    "size": 7072,
+    "size": 6917,
     "stacks": []
    },
    "kind": "file",
@@ -344,7 +344,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 53,
-    "size": 1647,
+    "size": 1594,
     "stacks": []
    },
    "kind": "file",
@@ -382,7 +382,7 @@
   {
    "detail": {
     "role": "ci",
-    "secret_location": true,
+    "secret_location": false,
     "source": "github-actions-azure-csharp.yml",
     "use": "define"
    },
@@ -655,7 +655,7 @@
   {
    "detail": {
     "role": "ci",
-    "secret_location": true,
+    "secret_location": false,
     "source": "github-actions-azure-csharp.yml",
     "use": "define"
    },
@@ -670,7 +670,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 53,
-    "size": 1612,
+    "size": 1559,
     "stacks": []
    },
    "kind": "file",
@@ -708,7 +708,7 @@
   {
    "detail": {
     "role": "ci",
-    "secret_location": true,
+    "secret_location": false,
     "source": "github-actions-azure-typescript.yml",
     "use": "define"
    },
@@ -942,7 +942,7 @@
   {
    "detail": {
     "role": "ci",
-    "secret_location": true,
+    "secret_location": false,
     "source": "github-actions-azure-typescript.yml",
     "use": "define"
    },
@@ -957,7 +957,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 126,
-    "size": 8262,
+    "size": 8136,
     "stacks": []
    },
    "kind": "file",
@@ -971,7 +971,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 236,
-    "size": 13956,
+    "size": 13720,
     "stacks": []
    },
    "kind": "file",
@@ -985,7 +985,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 189,
-    "size": 10032,
+    "size": 9843,
     "stacks": []
    },
    "kind": "file",
@@ -999,7 +999,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 146,
-    "size": 7872,
+    "size": 7726,
     "stacks": []
    },
    "kind": "file",
@@ -1013,7 +1013,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 123,
-    "size": 6098,
+    "size": 5975,
     "stacks": []
    },
    "kind": "file",
@@ -1027,7 +1027,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 92,
-    "size": 4001,
+    "size": 3909,
     "stacks": []
    },
    "kind": "file",
@@ -1041,7 +1041,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 197,
-    "size": 12719,
+    "size": 12522,
     "stacks": []
    },
    "kind": "file",
@@ -1055,7 +1055,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 209,
-    "size": 11627,
+    "size": 11418,
     "stacks": []
    },
    "kind": "file",
@@ -1069,7 +1069,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 200,
-    "size": 10394,
+    "size": 10194,
     "stacks": []
    },
    "kind": "file",
@@ -1083,7 +1083,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 21,
-    "size": 984,
+    "size": 963,
     "stacks": []
    },
    "kind": "file",
@@ -1097,7 +1097,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 204,
-    "size": 13421,
+    "size": 13217,
     "stacks": []
    },
    "kind": "file",
@@ -1111,7 +1111,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 119,
-    "size": 6138,
+    "size": 6019,
     "stacks": []
    },
    "kind": "file",
@@ -1125,7 +1125,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 123,
-    "size": 6396,
+    "size": 6273,
     "stacks": []
    },
    "kind": "file",
@@ -1139,7 +1139,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 160,
-    "size": 5374,
+    "size": 5214,
     "stacks": []
    },
    "kind": "file",
@@ -1153,7 +1153,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 38,
-    "size": 1972,
+    "size": 1934,
     "stacks": []
    },
    "kind": "file",
@@ -1167,7 +1167,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 272,
-    "size": 10825,
+    "size": 10553,
     "stacks": []
    },
    "kind": "file",
@@ -1181,7 +1181,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 159,
-    "size": 10923,
+    "size": 10764,
     "stacks": []
    },
    "kind": "file",
@@ -1195,7 +1195,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 110,
-    "size": 7042,
+    "size": 6932,
     "stacks": []
    },
    "kind": "file",
@@ -1209,7 +1209,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 329,
-    "size": 18625,
+    "size": 18296,
     "stacks": []
    },
    "kind": "file",
@@ -1223,7 +1223,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 393,
-    "size": 18552,
+    "size": 18159,
     "stacks": []
    },
    "kind": "file",
@@ -1237,7 +1237,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 179,
-    "size": 6539,
+    "size": 6360,
     "stacks": []
    },
    "kind": "file",
@@ -1251,7 +1251,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 214,
-    "size": 10049,
+    "size": 9835,
     "stacks": []
    },
    "kind": "file",
@@ -1265,7 +1265,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 332,
-    "size": 16346,
+    "size": 16014,
     "stacks": []
    },
    "kind": "file",
@@ -1279,7 +1279,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 150,
-    "size": 7231,
+    "size": 7081,
     "stacks": []
    },
    "kind": "file",
@@ -1293,7 +1293,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 112,
-    "size": 3985,
+    "size": 3873,
     "stacks": []
    },
    "kind": "file",
@@ -1307,7 +1307,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 121,
-    "size": 6666,
+    "size": 6545,
     "stacks": []
    },
    "kind": "file",
@@ -1321,7 +1321,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 114,
-    "size": 3662,
+    "size": 3548,
     "stacks": []
    },
    "kind": "file",
@@ -1335,7 +1335,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 246,
-    "size": 8862,
+    "size": 8616,
     "stacks": []
    },
    "kind": "file",
@@ -1349,7 +1349,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 97,
-    "size": 3677,
+    "size": 3580,
     "stacks": []
    },
    "kind": "file",
@@ -1363,7 +1363,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 120,
-    "size": 6263,
+    "size": 6144,
     "stacks": []
    },
    "kind": "file",
@@ -1377,7 +1377,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 388,
-    "size": 11651,
+    "size": 11263,
     "stacks": []
    },
    "kind": "file",
@@ -1391,7 +1391,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 23,
-    "size": 688,
+    "size": 665,
     "stacks": []
    },
    "kind": "file",
@@ -1405,7 +1405,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 39,
-    "size": 1729,
+    "size": 1690,
     "stacks": []
    },
    "kind": "file",
@@ -1419,7 +1419,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 87,
-    "size": 2269,
+    "size": 2182,
     "stacks": []
    },
    "kind": "file",
@@ -1433,7 +1433,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 241,
-    "size": 5883,
+    "size": 5642,
     "stacks": []
    },
    "kind": "file",
@@ -1447,7 +1447,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 225,
-    "size": 5896,
+    "size": 5671,
     "stacks": []
    },
    "kind": "file",
@@ -1461,7 +1461,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 305,
-    "size": 11883,
+    "size": 11578,
     "stacks": []
    },
    "kind": "file",
@@ -1475,7 +1475,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 275,
-    "size": 5473,
+    "size": 5198,
     "stacks": []
    },
    "kind": "file",
@@ -1489,7 +1489,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 134,
-    "size": 4719,
+    "size": 4585,
     "stacks": []
    },
    "kind": "file",
@@ -1503,7 +1503,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 139,
-    "size": 3579,
+    "size": 3440,
     "stacks": []
    },
    "kind": "file",
@@ -1517,7 +1517,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 143,
-    "size": 5528,
+    "size": 5385,
     "stacks": []
    },
    "kind": "file",
@@ -1531,7 +1531,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 17,
-    "size": 423,
+    "size": 406,
     "stacks": []
    },
    "kind": "file",
@@ -1545,7 +1545,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 26,
-    "size": 599,
+    "size": 573,
     "stacks": []
    },
    "kind": "file",
@@ -1637,7 +1637,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 44,
-    "size": 1182,
+    "size": 1138,
     "stacks": []
    },
    "kind": "file",
@@ -1805,7 +1805,7 @@
   {
    "detail": {
     "role": "ci",
-    "secret_location": true,
+    "secret_location": false,
     "source": "playwright.yml",
     "use": "define"
    },
@@ -1990,7 +1990,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 29,
-    "size": 766,
+    "size": 738,
     "stacks": []
    },
    "kind": "file",
@@ -2069,7 +2069,7 @@
     "encoding": "utf-8",
     "ext": ".gitignore",
     "lines": 495,
-    "size": 8615,
+    "size": 8120,
     "stacks": []
    },
    "kind": "file",
@@ -2083,7 +2083,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 20,
-    "size": 992,
+    "size": 972,
     "stacks": []
    },
    "kind": "file",
@@ -2097,7 +2097,7 @@
     "encoding": "utf-8",
     "ext": ".markdownlintignore",
     "lines": 2,
-    "size": 82,
+    "size": 80,
     "stacks": []
    },
    "kind": "file",
@@ -2111,7 +2111,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 40,
-    "size": 1074,
+    "size": 1034,
     "stacks": []
    },
    "kind": "file",
@@ -2372,7 +2372,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 3,
-    "size": 52,
+    "size": 50,
     "stacks": []
    },
    "kind": "file",
@@ -2383,7 +2383,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "build",
     "secret_location": false,
     "source": "settings.json",
     "use": "define"
@@ -2399,7 +2399,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 6,
-    "size": 265,
+    "size": 259,
     "stacks": []
    },
    "kind": "file",
@@ -2413,7 +2413,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 38,
-    "size": 2715,
+    "size": 2677,
     "stacks": []
    },
    "kind": "file",
@@ -2438,7 +2438,7 @@
     "encoding": "utf-8",
     "ext": ".props",
     "lines": 21,
-    "size": 846,
+    "size": 825,
     "stacks": []
    },
    "kind": "file",
@@ -2452,7 +2452,7 @@
     "encoding": "utf-8",
     "ext": ".targets",
     "lines": 11,
-    "size": 362,
+    "size": 352,
     "stacks": []
    },
    "kind": "file",
@@ -2466,7 +2466,7 @@
     "encoding": "utf-8",
     "ext": ".props",
     "lines": 92,
-    "size": 6485,
+    "size": 6394,
     "stacks": []
    },
    "kind": "file",
@@ -2480,7 +2480,7 @@
     "encoding": "utf-8",
     "ext": "",
     "lines": 21,
-    "size": 1105,
+    "size": 1084,
     "stacks": []
    },
    "kind": "file",
@@ -2494,7 +2494,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 156,
-    "size": 6843,
+    "size": 6687,
     "stacks": []
    },
    "kind": "file",
@@ -2508,7 +2508,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 8,
-    "size": 122,
+    "size": 115,
     "stacks": []
    },
    "kind": "file",
@@ -2522,7 +2522,7 @@
     "encoding": "utf-8",
     "ext": ".ps1",
     "lines": 33,
-    "size": 2160,
+    "size": 2127,
     "stacks": []
    },
    "kind": "file",
@@ -2536,7 +2536,7 @@
     "encoding": "utf-8",
     "ext": ".ps1",
     "lines": 26,
-    "size": 1461,
+    "size": 1436,
     "stacks": []
    },
    "kind": "file",
@@ -2550,7 +2550,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 45,
-    "size": 1121,
+    "size": 1076,
     "stacks": []
    },
    "kind": "file",
@@ -2561,7 +2561,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2574,7 +2574,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2587,7 +2587,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2600,7 +2600,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2613,7 +2613,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2626,7 +2626,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2639,7 +2639,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2652,7 +2652,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2665,7 +2665,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2678,7 +2678,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2691,7 +2691,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2704,7 +2704,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2717,7 +2717,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2730,7 +2730,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2743,7 +2743,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2756,7 +2756,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2769,7 +2769,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "ci.yml",
     "use": "define"
@@ -2782,174 +2782,10 @@
   },
   {
    "detail": {
-    "ext": ".html",
-    "size": 3798599,
-    "skipped": "size"
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/application-documentation.html",
-   "path": "docs/appdoc-2.2/application-documentation.html",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 957,
-    "size": 157813,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/application-documentation.md",
-   "path": "docs/appdoc-2.2/application-documentation.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 1292,
-    "size": 82726,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/check-report.md",
-   "path": "docs/appdoc-2.2/check-report.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".jsonl",
-    "lines": 1,
-    "size": 92,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/evidence.jsonl",
-   "path": "docs/appdoc-2.2/evidence.jsonl",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 232,
-    "size": 11176,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/facts-summary.md",
-   "path": "docs/appdoc-2.2/facts-summary.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".json",
-    "lines": 22042,
-    "size": 478414,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/facts.json",
-   "path": "docs/appdoc-2.2/facts.json",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "ext": ".html",
-    "size": 3806659,
-    "skipped": "size"
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/application-documentation.html",
-   "path": "docs/appdoc/application-documentation.html",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 803,
-    "size": 144727,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/application-documentation.md",
-   "path": "docs/appdoc/application-documentation.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 1223,
-    "size": 99031,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/check-report.md",
-   "path": "docs/appdoc/check-report.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 193,
-    "size": 9922,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/facts-summary.md",
-   "path": "docs/appdoc/facts-summary.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".json",
-    "lines": 21711,
-    "size": 472079,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/facts.json",
-   "path": "docs/appdoc/facts.json",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 105,
-    "size": 25993,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/verification.md",
-   "path": "docs/appdoc/verification.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
     "encoding": "utf-8",
     "ext": ".ts",
     "lines": 14,
-    "size": 632,
+    "size": 619,
     "stacks": []
    },
    "kind": "file",
@@ -2963,7 +2799,7 @@
     "encoding": "utf-8",
     "ext": ".ts",
     "lines": 26,
-    "size": 1176,
+    "size": 1151,
     "stacks": []
    },
    "kind": "file",
@@ -2977,7 +2813,7 @@
     "encoding": "utf-8",
     "ext": ".ts",
     "lines": 24,
-    "size": 1181,
+    "size": 1158,
     "stacks": []
    },
    "kind": "file",
@@ -2991,7 +2827,7 @@
     "encoding": "utf-8",
     "ext": ".ts",
     "lines": 34,
-    "size": 1434,
+    "size": 1400,
     "stacks": []
    },
    "kind": "file",
@@ -3005,7 +2841,7 @@
     "encoding": "utf-8",
     "ext": ".ts",
     "lines": 20,
-    "size": 922,
+    "size": 902,
     "stacks": []
    },
    "kind": "file",
@@ -3019,7 +2855,7 @@
     "encoding": "utf-8",
     "ext": ".slnf",
     "lines": 32,
-    "size": 1539,
+    "size": 1508,
     "stacks": []
    },
    "kind": "file",
@@ -3033,7 +2869,7 @@
     "encoding": "utf-8",
     "ext": ".slnx",
     "lines": 40,
-    "size": 2247,
+    "size": 2208,
     "stacks": []
    },
    "kind": "file",
@@ -3047,7 +2883,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 8,
-    "size": 189,
+    "size": 181,
     "stacks": []
    },
    "kind": "file",
@@ -3058,7 +2894,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "es-metadata.yml",
     "use": "define"
@@ -3071,7 +2907,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "es-metadata.yml",
     "use": "define"
@@ -3084,7 +2920,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "es-metadata.yml",
     "use": "define"
@@ -3097,7 +2933,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "es-metadata.yml",
     "use": "define"
@@ -3110,7 +2946,7 @@
   },
   {
    "detail": {
-    "role": "app",
+    "role": "unclassified",
     "secret_location": false,
     "source": "es-metadata.yml",
     "use": "define"
@@ -3126,7 +2962,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 13,
-    "size": 235,
+    "size": 222,
     "stacks": []
    },
    "kind": "file",
@@ -3176,7 +3012,7 @@
     "encoding": "utf-8",
     "ext": ".config",
     "lines": 15,
-    "size": 541,
+    "size": 527,
     "stacks": []
    },
    "kind": "file",
@@ -3190,7 +3026,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 110,
-    "size": 3478,
+    "size": 3368,
     "stacks": []
    },
    "kind": "file",
@@ -3204,7 +3040,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 21,
-    "size": 555,
+    "size": 534,
     "stacks": []
    },
    "kind": "file",
@@ -3251,7 +3087,7 @@
     "encoding": "utf-8",
     "ext": ".ts",
     "lines": 94,
-    "size": 2793,
+    "size": 2699,
     "stacks": []
    },
    "kind": "file",
@@ -3265,7 +3101,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 24,
-    "size": 841,
+    "size": 817,
     "stacks": []
    },
    "kind": "file",
@@ -3301,7 +3137,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 28,
-    "size": 959,
+    "size": 931,
     "stacks": [
      "aspnet-core"
     ]
@@ -3317,7 +3153,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 417,
+    "size": 408,
     "stacks": [
      "aspnet-core"
     ]
@@ -3333,7 +3169,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 11,
-    "size": 433,
+    "size": 422,
     "stacks": [
      "aspnet-core"
     ]
@@ -3349,7 +3185,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 111,
-    "size": 3465,
+    "size": 3354,
     "stacks": [
      "aspnet-core"
     ]
@@ -3365,7 +3201,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 647,
+    "size": 631,
     "stacks": [
      "aspnet-core"
     ]
@@ -3381,7 +3217,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 397,
+    "size": 391,
     "stacks": [
      "aspnet-core"
     ]
@@ -3397,7 +3233,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 24,
-    "size": 719,
+    "size": 695,
     "stacks": [
      "aspnet-core"
     ]
@@ -3413,7 +3249,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 301,
+    "size": 286,
     "stacks": [
      "aspnet-core"
     ]
@@ -3429,7 +3265,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 272,
+    "size": 258,
     "stacks": [
      "aspnet-core"
     ]
@@ -3445,7 +3281,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 13,
-    "size": 303,
+    "size": 291,
     "stacks": []
    },
    "kind": "file",
@@ -3459,7 +3295,7 @@
     "encoding": "utf-8",
     "ext": ".proto",
     "lines": 33,
-    "size": 681,
+    "size": 649,
     "stacks": []
    },
    "kind": "file",
@@ -3473,7 +3309,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 297,
+    "size": 287,
     "stacks": [
      "aspnet-core"
     ]
@@ -3489,7 +3325,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 56,
-    "size": 1954,
+    "size": 1898,
     "stacks": [
      "aspnet-core"
     ]
@@ -3505,7 +3341,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 3,
-    "size": 8,
+    "size": 6,
     "stacks": []
    },
    "kind": "file",
@@ -3519,7 +3355,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 23,
-    "size": 418,
+    "size": 395,
     "stacks": []
    },
    "kind": "file",
@@ -3620,7 +3456,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 468,
-    "size": 21309,
+    "size": 20841,
     "stacks": [
      "aspnet-core"
     ]
@@ -3777,6 +3613,17 @@
   },
   {
    "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 86,
+   "name": "ToListAsync",
+   "path": "src/Catalog.API/Apis/CatalogApi.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "handler": "(inline)",
     "method": "GET",
     "type": "route"
@@ -3784,6 +3631,17 @@
    "kind": "entry_point",
    "line": 91,
    "name": "/api/catalog/catalogbrands",
+   "path": "src/Catalog.API/Apis/CatalogApi.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 93,
+   "name": "ToListAsync",
    "path": "src/Catalog.API/Apis/CatalogApi.cs",
    "stack": "aspnet-core"
   },
@@ -3837,10 +3695,153 @@
   },
   {
    "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 145,
+   "name": "root",
+   "path": "src/Catalog.API/Apis/CatalogApi.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 149,
+   "name": "root",
+   "path": "src/Catalog.API/Apis/CatalogApi.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 153,
+   "name": "root",
+   "path": "src/Catalog.API/Apis/CatalogApi.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 164,
+   "name": "ToListAsync",
+   "path": "src/Catalog.API/Apis/CatalogApi.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 183,
+   "name": "brandScope",
+   "path": "src/Catalog.API/Apis/CatalogApi.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 188,
+   "name": "ToListAsync",
+   "path": "src/Catalog.API/Apis/CatalogApi.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 193,
+   "name": "typeScope",
+   "path": "src/Catalog.API/Apis/CatalogApi.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 198,
+   "name": "ToListAsync",
+   "path": "src/Catalog.API/Apis/CatalogApi.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 212,
+   "name": "CatalogItems",
+   "path": "src/Catalog.API/Apis/CatalogApi.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 316,
+   "name": "CatalogItems",
+   "path": "src/Catalog.API/Apis/CatalogApi.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 321,
+   "name": "ToListAsync",
+   "path": "src/Catalog.API/Apis/CatalogApi.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 330,
+   "name": "CatalogItems",
+   "path": "src/Catalog.API/Apis/CatalogApi.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 334,
+   "name": "ToListAsync",
+   "path": "src/Catalog.API/Apis/CatalogApi.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 53,
-    "size": 2071,
+    "size": 2018,
     "stacks": []
    },
    "kind": "file",
@@ -3942,7 +3943,7 @@
     "encoding": "utf-8",
     "ext": ".http",
     "lines": 53,
-    "size": 1069,
+    "size": 1016,
     "stacks": []
    },
    "kind": "file",
@@ -3956,7 +3957,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 1288,
-    "size": 34673,
+    "size": 33386,
     "stacks": []
    },
    "kind": "file",
@@ -3970,7 +3971,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 1065,
-    "size": 28362,
+    "size": 27298,
     "stacks": []
    },
    "kind": "file",
@@ -3984,7 +3985,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 167,
+    "size": 160,
     "stacks": [
      "aspnet-core"
     ]
@@ -4000,7 +4001,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 51,
-    "size": 2188,
+    "size": 2137,
     "stacks": [
      "aspnet-core"
     ]
@@ -4013,6 +4014,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -4039,7 +4042,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 574,
+    "size": 560,
     "stacks": [
      "aspnet-core"
     ]
@@ -4055,7 +4058,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 20,
-    "size": 936,
+    "size": 916,
     "stacks": [
      "aspnet-core"
     ]
@@ -4071,7 +4074,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 28,
-    "size": 1096,
+    "size": 1068,
     "stacks": [
      "aspnet-core"
     ]
@@ -4096,6 +4099,18 @@
   },
   {
    "detail": {
+    "entity": "CatalogItem",
+    "operation": "set",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 14,
+   "name": "CatalogItems",
+   "path": "src/Catalog.API/Infrastructure/CatalogContext.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "operation": "access",
     "property": "CatalogBrands",
     "type": "entity"
@@ -4103,6 +4118,18 @@
    "kind": "data_access",
    "line": 15,
    "name": "CatalogBrand",
+   "path": "src/Catalog.API/Infrastructure/CatalogContext.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "entity": "CatalogBrand",
+    "operation": "set",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 15,
+   "name": "CatalogBrands",
    "path": "src/Catalog.API/Infrastructure/CatalogContext.cs",
    "stack": "aspnet-core"
   },
@@ -4120,10 +4147,22 @@
   },
   {
    "detail": {
+    "entity": "CatalogType",
+    "operation": "set",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 16,
+   "name": "CatalogTypes",
+   "path": "src/Catalog.API/Infrastructure/CatalogContext.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 86,
-    "size": 3864,
+    "size": 3778,
     "stacks": [
      "aspnet-core"
     ]
@@ -4139,7 +4178,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 367,
+    "size": 354,
     "stacks": [
      "aspnet-core"
     ]
@@ -4155,7 +4194,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 24,
-    "size": 642,
+    "size": 618,
     "stacks": [
      "aspnet-core"
     ]
@@ -4171,7 +4210,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 362,
+    "size": 349,
     "stacks": [
      "aspnet-core"
     ]
@@ -4187,7 +4226,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 448,
+    "size": 430,
     "stacks": [
      "aspnet-core"
     ]
@@ -4203,7 +4242,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 147,
-    "size": 5346,
+    "size": 5199,
     "stacks": [
      "aspnet-core"
     ]
@@ -4219,7 +4258,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 120,
-    "size": 4903,
+    "size": 4783,
     "stacks": [
      "aspnet-core"
     ]
@@ -4235,7 +4274,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 140,
-    "size": 5156,
+    "size": 5016,
     "stacks": [
      "aspnet-core"
     ]
@@ -4251,7 +4290,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 103,
-    "size": 3769,
+    "size": 3666,
     "stacks": [
      "aspnet-core"
     ]
@@ -4267,7 +4306,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 172,
-    "size": 6249,
+    "size": 6077,
     "stacks": [
      "aspnet-core"
     ]
@@ -4283,7 +4322,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 39,
-    "size": 1517,
+    "size": 1478,
     "stacks": [
      "aspnet-core"
     ]
@@ -4299,7 +4338,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 169,
-    "size": 6161,
+    "size": 5992,
     "stacks": [
      "aspnet-core"
     ]
@@ -4315,7 +4354,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 60,
-    "size": 2368,
+    "size": 2308,
     "stacks": [
      "aspnet-core"
     ]
@@ -4331,7 +4370,7 @@
     "encoding": "utf-8",
     "ext": ".txt",
     "lines": 3,
-    "size": 57,
+    "size": 54,
     "stacks": []
    },
    "kind": "file",
@@ -4345,7 +4384,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 34,
-    "size": 1744,
+    "size": 1710,
     "stacks": [
      "aspnet-core"
     ]
@@ -4361,7 +4400,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 22,
-    "size": 876,
+    "size": 854,
     "stacks": [
      "aspnet-core"
     ]
@@ -4377,7 +4416,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 130,
+    "size": 127,
     "stacks": [
      "aspnet-core"
     ]
@@ -4393,7 +4432,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 208,
+    "size": 205,
     "stacks": [
      "aspnet-core"
     ]
@@ -4409,7 +4448,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 194,
+    "size": 191,
     "stacks": [
      "aspnet-core"
     ]
@@ -4425,7 +4464,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 144,
+    "size": 141,
     "stacks": [
      "aspnet-core"
     ]
@@ -4441,7 +4480,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 117,
+    "size": 114,
     "stacks": [
      "aspnet-core"
     ]
@@ -4457,7 +4496,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 190,
+    "size": 187,
     "stacks": [
      "aspnet-core"
     ]
@@ -4473,7 +4512,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 443,
+    "size": 437,
     "stacks": [
      "aspnet-core"
     ]
@@ -4489,7 +4528,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 242,
+    "size": 235,
     "stacks": [
      "aspnet-core"
     ]
@@ -4505,7 +4544,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 283,
+    "size": 268,
     "stacks": [
      "aspnet-core"
     ]
@@ -4521,7 +4560,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 266,
+    "size": 257,
     "stacks": [
      "aspnet-core"
     ]
@@ -4537,7 +4576,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 106,
-    "size": 3718,
+    "size": 3612,
     "stacks": [
      "aspnet-core"
     ]
@@ -4553,7 +4592,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 645,
+    "size": 629,
     "stacks": [
      "aspnet-core"
     ]
@@ -4569,7 +4608,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 277,
+    "size": 262,
     "stacks": [
      "aspnet-core"
     ]
@@ -4585,7 +4624,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 411,
+    "size": 397,
     "stacks": [
      "aspnet-core"
     ]
@@ -4601,7 +4640,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 388,
+    "size": 375,
     "stacks": [
      "aspnet-core"
     ]
@@ -5829,7 +5868,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 269,
+    "size": 263,
     "stacks": [
      "aspnet-core"
     ]
@@ -5845,7 +5884,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 29,
-    "size": 831,
+    "size": 802,
     "stacks": [
      "aspnet-core"
     ]
@@ -5861,7 +5900,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 12,
-    "size": 253,
+    "size": 242,
     "stacks": []
    },
    "kind": "file",
@@ -5875,7 +5914,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 76,
-    "size": 2684,
+    "size": 2608,
     "stacks": [
      "aspnet-core"
     ]
@@ -5891,7 +5930,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 657,
+    "size": 639,
     "stacks": [
      "aspnet-core"
     ]
@@ -5907,7 +5946,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 810,
-    "size": 51219,
+    "size": 50409,
     "stacks": []
    },
    "kind": "file",
@@ -5921,7 +5960,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 5,
-    "size": 136,
+    "size": 132,
     "stacks": []
    },
    "kind": "file",
@@ -5946,7 +5985,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 27,
-    "size": 607,
+    "size": 580,
     "stacks": []
    },
    "kind": "file",
@@ -6075,7 +6114,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 111,
-    "size": 3467,
+    "size": 3356,
     "stacks": [
      "aspnet-core"
     ]
@@ -6091,7 +6130,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 239,
+    "size": 223,
     "stacks": [
      "aspnet-core"
     ]
@@ -6107,7 +6146,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 155,
-    "size": 4458,
+    "size": 4303,
     "stacks": [
      "aspnet-core"
     ]
@@ -6123,7 +6162,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 45,
-    "size": 1001,
+    "size": 956,
     "stacks": [
      "aspnet-core"
     ]
@@ -6139,7 +6178,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 15,
-    "size": 612,
+    "size": 598,
     "stacks": [
      "aspnet-core"
     ]
@@ -6155,7 +6194,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 167,
-    "size": 4838,
+    "size": 4671,
     "stacks": [
      "aspnet-core"
     ]
@@ -6171,7 +6210,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 201,
+    "size": 194,
     "stacks": [
      "aspnet-core"
     ]
@@ -6187,7 +6226,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 60,
-    "size": 3171,
+    "size": 3112,
     "stacks": [
      "aspnet-core"
     ]
@@ -6215,7 +6254,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 38,
-    "size": 1139,
+    "size": 1101,
     "stacks": [
      "aspnet-core"
     ]
@@ -6231,7 +6270,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 109,
-    "size": 6275,
+    "size": 6166,
     "stacks": []
    },
    "kind": "file",
@@ -6366,7 +6405,7 @@
     "encoding": "utf-8",
     "ext": ".sln",
     "lines": 37,
-    "size": 2035,
+    "size": 1998,
     "stacks": []
    },
    "kind": "file",
@@ -6380,7 +6419,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 21,
-    "size": 655,
+    "size": 635,
     "stacks": [
      "aspnet-core"
     ]
@@ -6396,7 +6435,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 169,
+    "size": 160,
     "stacks": [
      "aspnet-core"
     ]
@@ -6412,7 +6451,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 30,
-    "size": 983,
+    "size": 953,
     "stacks": [
      "aspnet-core"
     ]
@@ -6428,7 +6467,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 122,
-    "size": 3677,
+    "size": 3555,
     "stacks": [
      "aspnet-core"
     ]
@@ -6444,7 +6483,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 384,
+    "size": 370,
     "stacks": [
      "aspnet-core"
     ]
@@ -6460,7 +6499,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 20,
-    "size": 661,
+    "size": 641,
     "stacks": [
      "aspnet-core"
     ]
@@ -6476,7 +6515,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 475,
+    "size": 461,
     "stacks": [
      "aspnet-core"
     ]
@@ -6492,7 +6531,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 375,
+    "size": 361,
     "stacks": [
      "aspnet-core"
     ]
@@ -6508,7 +6547,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 434,
+    "size": 418,
     "stacks": [
      "aspnet-core"
     ]
@@ -6524,7 +6563,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 454,
+    "size": 440,
     "stacks": [
      "aspnet-core"
     ]
@@ -6540,7 +6579,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 22,
-    "size": 679,
+    "size": 657,
     "stacks": [
      "aspnet-core"
     ]
@@ -6556,7 +6595,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 197,
+    "size": 188,
     "stacks": [
      "aspnet-core"
     ]
@@ -6572,7 +6611,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 49,
-    "size": 1310,
+    "size": 1261,
     "stacks": [
      "aspnet-core"
     ]
@@ -6588,7 +6627,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 307,
+    "size": 292,
     "stacks": [
      "aspnet-core"
     ]
@@ -6604,7 +6643,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 25,
-    "size": 866,
+    "size": 841,
     "stacks": [
      "aspnet-core"
     ]
@@ -6620,7 +6659,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 355,
+    "size": 340,
     "stacks": [
      "aspnet-core"
     ]
@@ -6636,7 +6675,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 399,
-    "size": 14458,
+    "size": 14059,
     "stacks": [
      "aspnet-core"
     ]
@@ -6652,7 +6691,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 485,
+    "size": 473,
     "stacks": [
      "aspnet-core"
     ]
@@ -6668,7 +6707,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 140,
+    "size": 137,
     "stacks": [
      "aspnet-core"
     ]
@@ -6684,7 +6723,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 25,
-    "size": 839,
+    "size": 814,
     "stacks": [
      "aspnet-core"
     ]
@@ -6700,7 +6739,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 21,
-    "size": 605,
+    "size": 584,
     "stacks": [
      "aspnet-core"
     ]
@@ -6716,7 +6755,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 185,
-    "size": 7945,
+    "size": 7760,
     "stacks": [
      "aspnet-core"
     ]
@@ -6732,7 +6771,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 5,
-    "size": 180,
+    "size": 175,
     "stacks": [
      "aspnet-core"
     ]
@@ -6748,7 +6787,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 37,
-    "size": 790,
+    "size": 753,
     "stacks": [
      "aspnet-core"
     ]
@@ -6764,7 +6803,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 41,
-    "size": 984,
+    "size": 943,
     "stacks": [
      "aspnet-core"
     ]
@@ -6780,7 +6819,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 231,
+    "size": 219,
     "stacks": [
      "aspnet-core"
     ]
@@ -6796,7 +6835,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 474,
+    "size": 459,
     "stacks": [
      "aspnet-core"
     ]
@@ -6812,7 +6851,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 244,
+    "size": 235,
     "stacks": [
      "aspnet-core"
     ]
@@ -6828,7 +6867,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 228,
+    "size": 216,
     "stacks": [
      "aspnet-core"
     ]
@@ -6844,7 +6883,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 129,
+    "size": 122,
     "stacks": [
      "aspnet-core"
     ]
@@ -6860,7 +6899,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 28,
-    "size": 895,
+    "size": 867,
     "stacks": [
      "aspnet-core"
     ]
@@ -6876,7 +6915,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 163,
+    "size": 156,
     "stacks": [
      "aspnet-core"
     ]
@@ -6892,7 +6931,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 41,
-    "size": 1144,
+    "size": 1103,
     "stacks": [
      "aspnet-core"
     ]
@@ -6908,7 +6947,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 327,
+    "size": 311,
     "stacks": [
      "aspnet-core"
     ]
@@ -6924,7 +6963,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 377,
+    "size": 359,
     "stacks": [
      "aspnet-core"
     ]
@@ -6940,7 +6979,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 248,
+    "size": 239,
     "stacks": [
      "aspnet-core"
     ]
@@ -6956,7 +6995,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 123,
+    "size": 117,
     "stacks": [
      "aspnet-core"
     ]
@@ -6972,7 +7011,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 11,
-    "size": 223,
+    "size": 212,
     "stacks": [
      "aspnet-core"
     ]
@@ -6988,7 +7027,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 147,
+    "size": 140,
     "stacks": [
      "aspnet-core"
     ]
@@ -7004,7 +7043,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 51,
-    "size": 1454,
+    "size": 1403,
     "stacks": [
      "aspnet-core"
     ]
@@ -7020,7 +7059,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 37,
-    "size": 889,
+    "size": 852,
     "stacks": [
      "aspnet-core"
     ]
@@ -7036,7 +7075,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 30,
-    "size": 773,
+    "size": 743,
     "stacks": [
      "aspnet-core"
     ]
@@ -7052,7 +7091,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 155,
+    "size": 146,
     "stacks": [
      "aspnet-core"
     ]
@@ -7068,7 +7107,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 160,
+    "size": 150,
     "stacks": [
      "aspnet-core"
     ]
@@ -7084,7 +7123,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 452,
+    "size": 436,
     "stacks": [
      "aspnet-core"
     ]
@@ -7100,7 +7139,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 479,
+    "size": 464,
     "stacks": [
      "aspnet-core"
     ]
@@ -7116,7 +7155,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 119,
+    "size": 113,
     "stacks": [
      "aspnet-core"
     ]
@@ -7132,7 +7171,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 470,
+    "size": 455,
     "stacks": [
      "aspnet-core"
     ]
@@ -7148,7 +7187,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 43,
-    "size": 1475,
+    "size": 1432,
     "stacks": [
      "aspnet-core"
     ]
@@ -7164,7 +7203,7 @@
     "encoding": "utf-8",
     "ext": ".xml",
     "lines": 15,
-    "size": 938,
+    "size": 924,
     "stacks": []
    },
    "kind": "file",
@@ -7178,7 +7217,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 26,
-    "size": 839,
+    "size": 813,
     "stacks": [
      "aspnet-core"
     ]
@@ -7194,7 +7233,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 352,
+    "size": 337,
     "stacks": [
      "aspnet-core"
     ]
@@ -7210,7 +7249,7 @@
     "encoding": "utf-8",
     "ext": ".xml",
     "lines": 6,
-    "size": 212,
+    "size": 207,
     "stacks": []
    },
    "kind": "file",
@@ -7224,7 +7263,7 @@
     "encoding": "utf-8",
     "ext": ".xml",
     "lines": 6,
-    "size": 229,
+    "size": 224,
     "stacks": []
    },
    "kind": "file",
@@ -7238,7 +7277,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 514,
+    "size": 500,
     "stacks": [
      "aspnet-core"
     ]
@@ -7254,7 +7293,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 221,
+    "size": 212,
     "stacks": [
      "aspnet-core"
     ]
@@ -7270,7 +7309,7 @@
     "encoding": "utf-8",
     "ext": ".plist",
     "lines": 11,
-    "size": 428,
+    "size": 417,
     "stacks": []
    },
    "kind": "file",
@@ -7284,7 +7323,7 @@
     "encoding": "utf-8",
     "ext": ".plist",
     "lines": 12,
-    "size": 466,
+    "size": 454,
     "stacks": []
    },
    "kind": "file",
@@ -7298,7 +7337,7 @@
     "encoding": "utf-8",
     "ext": ".plist",
     "lines": 37,
-    "size": 1477,
+    "size": 1440,
     "stacks": []
    },
    "kind": "file",
@@ -7312,7 +7351,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 373,
+    "size": 359,
     "stacks": [
      "aspnet-core"
     ]
@@ -7328,7 +7367,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 8,
-    "size": 324,
+    "size": 316,
     "stacks": [
      "aspnet-core"
     ]
@@ -7344,7 +7383,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 19,
-    "size": 706,
+    "size": 687,
     "stacks": [
      "aspnet-core"
     ]
@@ -7360,7 +7399,7 @@
     "encoding": "utf-8",
     "ext": ".appxmanifest",
     "lines": 33,
-    "size": 1170,
+    "size": 1137,
     "stacks": []
    },
    "kind": "file",
@@ -7374,7 +7413,7 @@
     "encoding": "utf-8",
     "ext": ".manifest",
     "lines": 16,
-    "size": 808,
+    "size": 792,
     "stacks": []
    },
    "kind": "file",
@@ -7388,7 +7427,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 221,
+    "size": 212,
     "stacks": [
      "aspnet-core"
     ]
@@ -7404,7 +7443,7 @@
     "encoding": "utf-8",
     "ext": ".plist",
     "lines": 10,
-    "size": 315,
+    "size": 305,
     "stacks": []
    },
    "kind": "file",
@@ -7418,7 +7457,7 @@
     "encoding": "utf-8",
     "ext": ".plist",
     "lines": 39,
-    "size": 1538,
+    "size": 1500,
     "stacks": []
    },
    "kind": "file",
@@ -7432,7 +7471,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 373,
+    "size": 359,
     "stacks": [
      "aspnet-core"
     ]
@@ -7448,7 +7487,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 8,
-    "size": 128,
+    "size": 121,
     "stacks": []
    },
    "kind": "file",
@@ -7462,7 +7501,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 4,
-    "size": 230,
+    "size": 227,
     "stacks": []
    },
    "kind": "file",
@@ -7476,7 +7515,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 43,
-    "size": 14263,
+    "size": 14220,
     "stacks": []
    },
    "kind": "file",
@@ -7538,7 +7577,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 7,
-    "size": 855,
+    "size": 848,
     "stacks": []
    },
    "kind": "file",
@@ -7552,7 +7591,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 12,
-    "size": 903,
+    "size": 891,
     "stacks": []
    },
    "kind": "file",
@@ -7566,7 +7605,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 8,
-    "size": 841,
+    "size": 833,
     "stacks": []
    },
    "kind": "file",
@@ -7652,7 +7691,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 7,
-    "size": 960,
+    "size": 953,
     "stacks": []
    },
    "kind": "file",
@@ -7690,7 +7729,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 43,
-    "size": 14263,
+    "size": 14220,
     "stacks": []
    },
    "kind": "file",
@@ -7704,7 +7743,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 40,
-    "size": 14119,
+    "size": 14079,
     "stacks": []
    },
    "kind": "file",
@@ -7730,7 +7769,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 9,
-    "size": 901,
+    "size": 892,
     "stacks": []
    },
    "kind": "file",
@@ -7744,7 +7783,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 6,
-    "size": 600,
+    "size": 594,
     "stacks": []
    },
    "kind": "file",
@@ -7758,7 +7797,7 @@
     "encoding": "utf-8",
     "ext": ".txt",
     "lines": 14,
-    "size": 507,
+    "size": 493,
     "stacks": []
    },
    "kind": "file",
@@ -7772,7 +7811,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 43,
-    "size": 14263,
+    "size": 14220,
     "stacks": []
    },
    "kind": "file",
@@ -7786,7 +7825,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 45,
-    "size": 2086,
+    "size": 2042,
     "stacks": [
      "aspnet-core"
     ]
@@ -7802,7 +7841,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 342,
-    "size": 15022,
+    "size": 14681,
     "stacks": [
      "aspnet-core"
     ]
@@ -7818,7 +7857,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 66,
-    "size": 2274,
+    "size": 2208,
     "stacks": [
      "aspnet-core"
     ]
@@ -7834,7 +7873,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 19,
-    "size": 501,
+    "size": 482,
     "stacks": [
      "aspnet-core"
     ]
@@ -7850,7 +7889,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 59,
-    "size": 1585,
+    "size": 1526,
     "stacks": [
      "aspnet-core"
     ]
@@ -7866,7 +7905,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 151,
-    "size": 4498,
+    "size": 4347,
     "stacks": [
      "aspnet-core"
     ]
@@ -7882,7 +7921,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 11,
-    "size": 338,
+    "size": 327,
     "stacks": [
      "aspnet-core"
     ]
@@ -7898,7 +7937,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 1152,
-    "size": 43812,
+    "size": 42660,
     "stacks": [
      "aspnet-core"
     ]
@@ -7914,7 +7953,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 186,
-    "size": 13617,
+    "size": 13431,
     "stacks": [
      "aspnet-core"
     ]
@@ -7930,7 +7969,7 @@
     "encoding": "utf-8",
     "ext": ".proto",
     "lines": 33,
-    "size": 692,
+    "size": 660,
     "stacks": []
    },
    "kind": "file",
@@ -7944,7 +7983,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 116,
-    "size": 5872,
+    "size": 5756,
     "stacks": [
      "aspnet-core"
     ]
@@ -7960,7 +7999,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 84,
-    "size": 3218,
+    "size": 3134,
     "stacks": [
      "aspnet-core"
     ]
@@ -7976,7 +8015,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 456,
+    "size": 443,
     "stacks": [
      "aspnet-core"
     ]
@@ -7992,7 +8031,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 415,
+    "size": 402,
     "stacks": [
      "aspnet-core"
     ]
@@ -8008,7 +8047,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 265,
+    "size": 256,
     "stacks": [
      "aspnet-core"
     ]
@@ -8024,7 +8063,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 157,
+    "size": 151,
     "stacks": [
      "aspnet-core"
     ]
@@ -8040,7 +8079,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 21,
-    "size": 768,
+    "size": 747,
     "stacks": [
      "aspnet-core"
     ]
@@ -8056,7 +8095,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 108,
-    "size": 3543,
+    "size": 3435,
     "stacks": [
      "aspnet-core"
     ]
@@ -8072,7 +8111,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 433,
+    "size": 421,
     "stacks": [
      "aspnet-core"
     ]
@@ -8088,7 +8127,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 21,
-    "size": 646,
+    "size": 625,
     "stacks": [
      "aspnet-core"
     ]
@@ -8104,7 +8143,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 275,
+    "size": 261,
     "stacks": [
      "aspnet-core"
     ]
@@ -8120,7 +8159,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 58,
-    "size": 1514,
+    "size": 1456,
     "stacks": [
      "aspnet-core"
     ]
@@ -8136,7 +8175,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 153,
-    "size": 5881,
+    "size": 5728,
     "stacks": [
      "aspnet-core"
     ]
@@ -8152,7 +8191,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 158,
+    "size": 152,
     "stacks": [
      "aspnet-core"
     ]
@@ -8168,7 +8207,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 30,
-    "size": 947,
+    "size": 917,
     "stacks": [
      "aspnet-core"
     ]
@@ -8184,7 +8223,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 233,
+    "size": 223,
     "stacks": [
      "aspnet-core"
     ]
@@ -8200,7 +8239,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 35,
-    "size": 1085,
+    "size": 1050,
     "stacks": [
      "aspnet-core"
     ]
@@ -8216,7 +8255,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 121,
+    "size": 115,
     "stacks": [
      "aspnet-core"
     ]
@@ -8232,7 +8271,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 273,
+    "size": 261,
     "stacks": [
      "aspnet-core"
     ]
@@ -8248,7 +8287,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 421,
+    "size": 405,
     "stacks": [
      "aspnet-core"
     ]
@@ -8264,7 +8303,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 187,
-    "size": 6499,
+    "size": 6312,
     "stacks": [
      "aspnet-core"
     ]
@@ -8280,7 +8319,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 128,
-    "size": 4346,
+    "size": 4218,
     "stacks": [
      "aspnet-core"
     ]
@@ -8296,7 +8335,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 21,
-    "size": 557,
+    "size": 536,
     "stacks": [
      "aspnet-core"
     ]
@@ -8312,7 +8351,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 664,
+    "size": 648,
     "stacks": [
      "aspnet-core"
     ]
@@ -8328,7 +8367,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 181,
-    "size": 6495,
+    "size": 6314,
     "stacks": [
      "aspnet-core"
     ]
@@ -8344,7 +8383,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 38,
-    "size": 858,
+    "size": 820,
     "stacks": [
      "aspnet-core"
     ]
@@ -8360,7 +8399,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 152,
-    "size": 5260,
+    "size": 5108,
     "stacks": [
      "aspnet-core"
     ]
@@ -8376,7 +8415,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 145,
+    "size": 139,
     "stacks": [
      "aspnet-core"
     ]
@@ -8392,7 +8431,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 8,
-    "size": 169,
+    "size": 161,
     "stacks": [
      "aspnet-core"
     ]
@@ -8408,7 +8447,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 372,
+    "size": 356,
     "stacks": [
      "aspnet-core"
     ]
@@ -8424,7 +8463,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 8,
-    "size": 160,
+    "size": 152,
     "stacks": [
      "aspnet-core"
     ]
@@ -8440,7 +8479,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 106,
+    "size": 100,
     "stacks": [
      "aspnet-core"
     ]
@@ -8456,7 +8495,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 297,
+    "size": 285,
     "stacks": [
      "aspnet-core"
     ]
@@ -8472,7 +8511,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 47,
-    "size": 1098,
+    "size": 1051,
     "stacks": [
      "aspnet-core"
     ]
@@ -8488,7 +8527,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 375,
+    "size": 359,
     "stacks": [
      "aspnet-core"
     ]
@@ -8504,7 +8543,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 55,
-    "size": 1445,
+    "size": 1390,
     "stacks": [
      "aspnet-core"
     ]
@@ -8520,7 +8559,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 113,
-    "size": 3659,
+    "size": 3546,
     "stacks": [
      "aspnet-core"
     ]
@@ -8536,7 +8575,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 65,
-    "size": 2002,
+    "size": 1937,
     "stacks": [
      "aspnet-core"
     ]
@@ -8552,7 +8591,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 205,
-    "size": 6247,
+    "size": 6042,
     "stacks": [
      "aspnet-core"
     ]
@@ -8568,7 +8607,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 170,
-    "size": 6253,
+    "size": 6083,
     "stacks": [
      "aspnet-core"
     ]
@@ -8584,7 +8623,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 137,
-    "size": 3942,
+    "size": 3805,
     "stacks": [
      "aspnet-core"
     ]
@@ -8600,7 +8639,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 428,
+    "size": 410,
     "stacks": [
      "aspnet-core"
     ]
@@ -8616,7 +8655,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 37,
-    "size": 935,
+    "size": 898,
     "stacks": [
      "aspnet-core"
     ]
@@ -8632,7 +8671,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 54,
-    "size": 1515,
+    "size": 1461,
     "stacks": [
      "aspnet-core"
     ]
@@ -8648,7 +8687,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 75,
-    "size": 2471,
+    "size": 2396,
     "stacks": [
      "aspnet-core"
     ]
@@ -8664,7 +8703,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 78,
-    "size": 2158,
+    "size": 2080,
     "stacks": [
      "aspnet-core"
     ]
@@ -8680,7 +8719,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 207,
+    "size": 200,
     "stacks": [
      "aspnet-core"
     ]
@@ -8696,7 +8735,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 344,
-    "size": 11512,
+    "size": 11168,
     "stacks": [
      "aspnet-core"
     ]
@@ -8712,7 +8751,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 140,
-    "size": 4108,
+    "size": 3968,
     "stacks": [
      "aspnet-core"
     ]
@@ -8728,7 +8767,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 98,
-    "size": 3767,
+    "size": 3670,
     "stacks": [
      "aspnet-core"
     ]
@@ -8756,7 +8795,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 211,
+    "size": 201,
     "stacks": [
      "aspnet-core"
     ]
@@ -8772,7 +8811,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 104,
-    "size": 4100,
+    "size": 3997,
     "stacks": [
      "aspnet-core"
     ]
@@ -8800,7 +8839,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 226,
+    "size": 216,
     "stacks": [
      "aspnet-core"
     ]
@@ -8816,7 +8855,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 239,
-    "size": 12184,
+    "size": 11946,
     "stacks": [
      "aspnet-core"
     ]
@@ -8844,7 +8883,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 57,
-    "size": 1539,
+    "size": 1482,
     "stacks": [
      "aspnet-core"
     ]
@@ -8860,7 +8899,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 170,
-    "size": 6722,
+    "size": 6553,
     "stacks": [
      "aspnet-core"
     ]
@@ -8888,7 +8927,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 217,
+    "size": 207,
     "stacks": [
      "aspnet-core"
     ]
@@ -8904,7 +8943,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 23,
-    "size": 505,
+    "size": 482,
     "stacks": [
      "aspnet-core"
     ]
@@ -8920,7 +8959,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 9,
-    "size": 382,
+    "size": 374,
     "stacks": [
      "aspnet-core"
     ]
@@ -8948,7 +8987,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 291,
+    "size": 277,
     "stacks": [
      "aspnet-core"
     ]
@@ -8964,7 +9003,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 76,
-    "size": 3970,
+    "size": 3895,
     "stacks": [
      "aspnet-core"
     ]
@@ -8992,7 +9031,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 11,
-    "size": 230,
+    "size": 219,
     "stacks": [
      "aspnet-core"
     ]
@@ -9008,7 +9047,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 85,
-    "size": 3069,
+    "size": 2985,
     "stacks": [
      "aspnet-core"
     ]
@@ -9036,7 +9075,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 22,
-    "size": 538,
+    "size": 516,
     "stacks": [
      "aspnet-core"
     ]
@@ -9052,7 +9091,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 42,
-    "size": 1711,
+    "size": 1670,
     "stacks": [
      "aspnet-core"
     ]
@@ -9080,7 +9119,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 26,
-    "size": 574,
+    "size": 548,
     "stacks": [
      "aspnet-core"
     ]
@@ -9096,7 +9135,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 27,
-    "size": 925,
+    "size": 898,
     "stacks": [
      "aspnet-core"
     ]
@@ -9112,7 +9151,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 206,
-    "size": 8725,
+    "size": 8520,
     "stacks": [
      "aspnet-core"
     ]
@@ -9140,7 +9179,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 226,
+    "size": 216,
     "stacks": [
      "aspnet-core"
     ]
@@ -9156,7 +9195,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 52,
-    "size": 2344,
+    "size": 2293,
     "stacks": [
      "aspnet-core"
     ]
@@ -9184,7 +9223,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 23,
-    "size": 505,
+    "size": 482,
     "stacks": [
      "aspnet-core"
     ]
@@ -9200,7 +9239,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 258,
-    "size": 11966,
+    "size": 11709,
     "stacks": [
      "aspnet-core"
     ]
@@ -9228,7 +9267,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 231,
+    "size": 221,
     "stacks": [
      "aspnet-core"
     ]
@@ -9244,7 +9283,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 131,
-    "size": 5637,
+    "size": 5507,
     "stacks": [
      "aspnet-core"
     ]
@@ -9260,7 +9299,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 175,
+    "size": 166,
     "stacks": [
      "aspnet-core"
     ]
@@ -9276,7 +9315,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 39,
-    "size": 1586,
+    "size": 1548,
     "stacks": [
      "aspnet-core"
     ]
@@ -9292,7 +9331,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 185,
+    "size": 176,
     "stacks": [
      "aspnet-core"
     ]
@@ -9308,7 +9347,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 102,
-    "size": 4344,
+    "size": 4243,
     "stacks": [
      "aspnet-core"
     ]
@@ -9324,7 +9363,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 187,
+    "size": 178,
     "stacks": [
      "aspnet-core"
     ]
@@ -9340,7 +9379,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 67,
-    "size": 2521,
+    "size": 2455,
     "stacks": [
      "aspnet-core"
     ]
@@ -9356,7 +9395,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 179,
+    "size": 170,
     "stacks": [
      "aspnet-core"
     ]
@@ -9372,7 +9411,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 77,
-    "size": 3287,
+    "size": 3211,
     "stacks": [
      "aspnet-core"
     ]
@@ -9388,7 +9427,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 183,
+    "size": 174,
     "stacks": [
      "aspnet-core"
     ]
@@ -9404,7 +9443,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 23,
-    "size": 1030,
+    "size": 1007,
     "stacks": [
      "aspnet-core"
     ]
@@ -9420,7 +9459,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 128,
+    "size": 122,
     "stacks": [
      "aspnet-core"
     ]
@@ -9436,7 +9475,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 148,
+    "size": 142,
     "stacks": [
      "aspnet-core"
     ]
@@ -9452,7 +9491,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 436,
+    "size": 422,
     "stacks": [
      "aspnet-core"
     ]
@@ -9468,7 +9507,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 13,
-    "size": 333,
+    "size": 321,
     "stacks": []
    },
    "kind": "file",
@@ -9493,7 +9532,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 317,
+    "size": 301,
     "stacks": [
      "aspnet-core"
     ]
@@ -9509,7 +9548,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 40,
-    "size": 1742,
+    "size": 1702,
     "stacks": [
      "aspnet-core"
     ]
@@ -9525,7 +9564,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 26,
-    "size": 682,
+    "size": 656,
     "stacks": [
      "aspnet-core"
     ]
@@ -9541,7 +9580,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 2,
-    "size": 86,
+    "size": 84,
     "stacks": [
      "aspnet-core"
     ]
@@ -9557,7 +9596,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 179,
+    "size": 172,
     "stacks": [
      "aspnet-core"
     ]
@@ -9573,7 +9612,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 22,
-    "size": 638,
+    "size": 617,
     "stacks": []
    },
    "kind": "file",
@@ -9598,7 +9637,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 352,
+    "size": 342,
     "stacks": [
      "aspnet-core"
     ]
@@ -9614,7 +9653,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 321,
-    "size": 12948,
+    "size": 12627,
     "stacks": [
      "aspnet-core"
     ]
@@ -9644,7 +9683,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 386,
+    "size": 374,
     "stacks": [
      "aspnet-core"
     ]
@@ -9660,7 +9699,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 46,
-    "size": 1631,
+    "size": 1585,
     "stacks": [
      "aspnet-core"
     ]
@@ -9676,7 +9715,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 26,
-    "size": 1138,
+    "size": 1113,
     "stacks": [
      "aspnet-core"
     ]
@@ -9692,7 +9731,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 287,
+    "size": 273,
     "stacks": [
      "aspnet-core"
     ]
@@ -9708,7 +9747,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 8,
-    "size": 240,
+    "size": 233,
     "stacks": [
      "aspnet-core"
     ]
@@ -9724,7 +9763,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 23,
-    "size": 372,
+    "size": 350,
     "stacks": []
    },
    "kind": "file",
@@ -9738,7 +9777,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 34,
-    "size": 1311,
+    "size": 1277,
     "stacks": [
      "aspnet-core"
     ]
@@ -9754,7 +9793,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 68,
-    "size": 1195,
+    "size": 1127,
     "stacks": []
    },
    "kind": "file",
@@ -9768,7 +9807,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 13,
-    "size": 309,
+    "size": 296,
     "stacks": [
      "aspnet-core"
     ]
@@ -9784,7 +9823,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 18,
-    "size": 400,
+    "size": 382,
     "stacks": []
    },
    "kind": "file",
@@ -9798,7 +9837,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 61,
-    "size": 2028,
+    "size": 1967,
     "stacks": [
      "aspnet-core"
     ]
@@ -9822,10 +9861,21 @@
   },
   {
    "detail": {
+    "root": "src/HybridApp/Components/Pages/Catalog/Catalog.razor",
+    "route": "/"
+   },
+   "kind": "ui_page",
+   "line": 1,
+   "name": "src/HybridApp/Components/Pages/Catalog/Catalog.razor",
+   "path": "src/HybridApp/Components/Pages/Catalog/Catalog.razor",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 116,
-    "size": 2366,
+    "size": 2250,
     "stacks": []
    },
    "kind": "file",
@@ -9839,7 +9889,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 75,
-    "size": 2744,
+    "size": 2669,
     "stacks": [
      "aspnet-core"
     ]
@@ -9855,7 +9905,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 108,
-    "size": 2014,
+    "size": 1907,
     "stacks": []
    },
    "kind": "file",
@@ -9869,7 +9919,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 87,
-    "size": 2677,
+    "size": 2590,
     "stacks": [
      "aspnet-core"
     ]
@@ -9893,10 +9943,21 @@
   },
   {
    "detail": {
+    "root": "src/HybridApp/Components/Pages/Item/ItemPage.razor",
+    "route": "/item/{itemId:int}"
+   },
+   "kind": "ui_page",
+   "line": 1,
+   "name": "src/HybridApp/Components/Pages/Item/ItemPage.razor",
+   "path": "src/HybridApp/Components/Pages/Item/ItemPage.razor",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 54,
-    "size": 814,
+    "size": 761,
     "stacks": []
    },
    "kind": "file",
@@ -9910,7 +9971,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 12,
-    "size": 521,
+    "size": 509,
     "stacks": [
      "aspnet-core"
     ]
@@ -9926,7 +9987,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 13,
-    "size": 504,
+    "size": 491,
     "stacks": [
      "aspnet-core"
     ]
@@ -9942,7 +10003,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 32,
-    "size": 1807,
+    "size": 1776,
     "stacks": [
      "aspnet-core"
     ]
@@ -9958,7 +10019,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 87,
-    "size": 5178,
+    "size": 5091,
     "stacks": []
    },
    "kind": "file",
@@ -10027,7 +10088,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 14,
-    "size": 652,
+    "size": 638,
     "stacks": [
      "aspnet-core"
     ]
@@ -10055,7 +10116,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 138,
+    "size": 129,
     "stacks": [
      "aspnet-core"
     ]
@@ -10071,7 +10132,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 35,
-    "size": 1129,
+    "size": 1094,
     "stacks": [
      "aspnet-core"
     ]
@@ -10087,7 +10148,7 @@
     "encoding": "utf-8",
     "ext": ".xml",
     "lines": 8,
-    "size": 546,
+    "size": 539,
     "stacks": []
    },
    "kind": "file",
@@ -10101,7 +10162,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 414,
+    "size": 404,
     "stacks": [
      "aspnet-core"
     ]
@@ -10117,7 +10178,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 352,
+    "size": 337,
     "stacks": [
      "aspnet-core"
     ]
@@ -10133,7 +10194,7 @@
     "encoding": "utf-8",
     "ext": ".xml",
     "lines": 6,
-    "size": 212,
+    "size": 207,
     "stacks": []
    },
    "kind": "file",
@@ -10147,7 +10208,7 @@
     "encoding": "utf-8",
     "ext": ".xml",
     "lines": 6,
-    "size": 229,
+    "size": 224,
     "stacks": []
    },
    "kind": "file",
@@ -10161,7 +10222,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 221,
+    "size": 212,
     "stacks": [
      "aspnet-core"
     ]
@@ -10177,7 +10238,7 @@
     "encoding": "utf-8",
     "ext": ".plist",
     "lines": 10,
-    "size": 426,
+    "size": 416,
     "stacks": []
    },
    "kind": "file",
@@ -10191,7 +10252,7 @@
     "encoding": "utf-8",
     "ext": ".plist",
     "lines": 12,
-    "size": 466,
+    "size": 454,
     "stacks": []
    },
    "kind": "file",
@@ -10205,7 +10266,7 @@
     "encoding": "utf-8",
     "ext": ".plist",
     "lines": 43,
-    "size": 1838,
+    "size": 1795,
     "stacks": []
    },
    "kind": "file",
@@ -10219,7 +10280,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 393,
+    "size": 378,
     "stacks": [
      "aspnet-core"
     ]
@@ -10235,7 +10296,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 343,
+    "size": 327,
     "stacks": [
      "aspnet-core"
     ]
@@ -10251,7 +10312,7 @@
     "encoding": "utf-8",
     "ext": ".xml",
     "lines": 15,
-    "size": 752,
+    "size": 738,
     "stacks": []
    },
    "kind": "file",
@@ -10265,7 +10326,7 @@
     "encoding": "utf-8",
     "ext": ".xaml",
     "lines": 8,
-    "size": 322,
+    "size": 314,
     "stacks": [
      "aspnet-core"
     ]
@@ -10281,7 +10342,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 23,
-    "size": 752,
+    "size": 729,
     "stacks": [
      "aspnet-core"
     ]
@@ -10297,7 +10358,7 @@
     "encoding": "utf-8",
     "ext": ".appxmanifest",
     "lines": 46,
-    "size": 1863,
+    "size": 1817,
     "stacks": []
    },
    "kind": "file",
@@ -10311,7 +10372,7 @@
     "encoding": "utf-8",
     "ext": ".manifest",
     "lines": 15,
-    "size": 744,
+    "size": 729,
     "stacks": []
    },
    "kind": "file",
@@ -10325,7 +10386,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 221,
+    "size": 212,
     "stacks": [
      "aspnet-core"
     ]
@@ -10341,7 +10402,7 @@
     "encoding": "utf-8",
     "ext": ".plist",
     "lines": 37,
-    "size": 1266,
+    "size": 1229,
     "stacks": []
    },
    "kind": "file",
@@ -10355,7 +10416,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 393,
+    "size": 378,
     "stacks": [
      "aspnet-core"
     ]
@@ -10371,7 +10432,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 8,
-    "size": 128,
+    "size": 121,
     "stacks": []
    },
    "kind": "file",
@@ -10385,7 +10446,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 4,
-    "size": 231,
+    "size": 228,
     "stacks": []
    },
    "kind": "file",
@@ -10399,7 +10460,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 43,
-    "size": 14263,
+    "size": 14220,
     "stacks": []
    },
    "kind": "file",
@@ -10425,7 +10486,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 93,
-    "size": 12862,
+    "size": 12769,
     "stacks": []
    },
    "kind": "file",
@@ -10439,7 +10500,7 @@
     "encoding": "utf-8",
     "ext": ".txt",
     "lines": 15,
-    "size": 686,
+    "size": 671,
     "stacks": []
    },
    "kind": "file",
@@ -10453,7 +10514,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 43,
-    "size": 14263,
+    "size": 14220,
     "stacks": []
    },
    "kind": "file",
@@ -10467,7 +10528,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 584,
+    "size": 569,
     "stacks": [
      "aspnet-core"
     ]
@@ -10483,7 +10544,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 69,
-    "size": 2804,
+    "size": 2735,
     "stacks": [
      "aspnet-core"
     ]
@@ -10499,7 +10560,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 301,
+    "size": 292,
     "stacks": [
      "aspnet-core"
     ]
@@ -10527,7 +10588,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 184,
-    "size": 6186,
+    "size": 6003,
     "stacks": []
    },
    "kind": "file",
@@ -10541,7 +10602,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 344,
-    "size": 6985,
+    "size": 6642,
     "stacks": []
    },
    "kind": "file",
@@ -10735,7 +10796,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 5,
-    "size": 809,
+    "size": 804,
     "stacks": []
    },
    "kind": "file",
@@ -10749,7 +10810,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 7,
-    "size": 796,
+    "size": 789,
     "stacks": []
    },
    "kind": "file",
@@ -10763,7 +10824,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 6,
-    "size": 787,
+    "size": 781,
     "stacks": []
    },
    "kind": "file",
@@ -10777,7 +10838,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 5,
-    "size": 914,
+    "size": 909,
     "stacks": []
    },
    "kind": "file",
@@ -10791,7 +10852,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 6,
-    "size": 832,
+    "size": 826,
     "stacks": []
    },
    "kind": "file",
@@ -10805,7 +10866,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 4,
-    "size": 570,
+    "size": 566,
     "stacks": []
    },
    "kind": "file",
@@ -10819,7 +10880,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 7,
-    "size": 2675,
+    "size": 2668,
     "stacks": []
    },
    "kind": "file",
@@ -10833,7 +10894,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 17,
-    "size": 2907,
+    "size": 2890,
     "stacks": []
    },
    "kind": "file",
@@ -10871,7 +10932,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 31,
-    "size": 24444,
+    "size": 24413,
     "stacks": []
    },
    "kind": "file",
@@ -10885,7 +10946,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 18,
-    "size": 24088,
+    "size": 24071,
     "stacks": []
    },
    "kind": "file",
@@ -10935,7 +10996,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 24,
-    "size": 702,
+    "size": 679,
     "stacks": []
    },
    "kind": "file",
@@ -10949,7 +11010,7 @@
     "encoding": "utf-8",
     "ext": ".gitignore",
     "lines": 2,
-    "size": 21,
+    "size": 19,
     "stacks": []
    },
    "kind": "file",
@@ -10963,7 +11024,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 192,
-    "size": 8494,
+    "size": 8302,
     "stacks": [
      "aspnet-core"
     ]
@@ -10976,6 +11037,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -10988,6 +11051,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -11000,6 +11065,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -11012,6 +11079,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -11024,6 +11093,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -11036,6 +11107,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -11048,6 +11121,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -11060,6 +11135,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -11072,6 +11149,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -11084,6 +11163,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -11096,6 +11177,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -11108,6 +11191,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -11120,6 +11205,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -11132,6 +11219,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -11147,7 +11236,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 22,
-    "size": 788,
+    "size": 766,
     "stacks": [
      "aspnet-core"
     ]
@@ -11163,7 +11252,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 324,
-    "size": 12110,
+    "size": 11786,
     "stacks": [
      "aspnet-core"
     ]
@@ -11179,7 +11268,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 235,
-    "size": 11368,
+    "size": 11133,
     "stacks": [
      "aspnet-core"
     ]
@@ -11195,7 +11284,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 321,
-    "size": 12008,
+    "size": 11687,
     "stacks": [
      "aspnet-core"
     ]
@@ -11211,7 +11300,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 156,
-    "size": 2134,
+    "size": 1978,
     "stacks": [
      "aspnet-core"
     ]
@@ -11227,7 +11316,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 57,
-    "size": 2632,
+    "size": 2575,
     "stacks": []
    },
    "kind": "file",
@@ -11340,7 +11429,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 209,
+    "size": 200,
     "stacks": [
      "aspnet-core"
     ]
@@ -11356,7 +11445,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 280,
+    "size": 271,
     "stacks": [
      "aspnet-core"
     ]
@@ -11372,7 +11461,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 17,
-    "size": 443,
+    "size": 426,
     "stacks": [
      "aspnet-core"
     ]
@@ -11388,7 +11477,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 159,
+    "size": 152,
     "stacks": [
      "aspnet-core"
     ]
@@ -11404,7 +11493,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 163,
+    "size": 156,
     "stacks": [
      "aspnet-core"
     ]
@@ -11420,7 +11509,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 23,
-    "size": 808,
+    "size": 785,
     "stacks": [
      "aspnet-core"
     ]
@@ -11436,7 +11525,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 21,
-    "size": 731,
+    "size": 710,
     "stacks": [
      "aspnet-core"
     ]
@@ -11452,7 +11541,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 340,
+    "size": 327,
     "stacks": [
      "aspnet-core"
     ]
@@ -11468,7 +11557,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 19,
-    "size": 496,
+    "size": 477,
     "stacks": [
      "aspnet-core"
     ]
@@ -11484,7 +11573,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 31,
-    "size": 1097,
+    "size": 1066,
     "stacks": [
      "aspnet-core"
     ]
@@ -11500,7 +11589,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 11,
-    "size": 371,
+    "size": 360,
     "stacks": [
      "aspnet-core"
     ]
@@ -11516,7 +11605,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 572,
+    "size": 560,
     "stacks": [
      "aspnet-core"
     ]
@@ -11532,7 +11621,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 478,
+    "size": 465,
     "stacks": [
      "aspnet-core"
     ]
@@ -11548,7 +11637,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 500,
+    "size": 485,
     "stacks": [
      "aspnet-core"
     ]
@@ -11564,7 +11653,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 384,
+    "size": 372,
     "stacks": [
      "aspnet-core"
     ]
@@ -11580,7 +11669,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 321,
+    "size": 312,
     "stacks": [
      "aspnet-core"
     ]
@@ -11596,7 +11685,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 249,
+    "size": 239,
     "stacks": [
      "aspnet-core"
     ]
@@ -11612,7 +11701,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 21,
-    "size": 809,
+    "size": 788,
     "stacks": [
      "aspnet-core"
     ]
@@ -11628,7 +11717,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 250,
+    "size": 241,
     "stacks": [
      "aspnet-core"
     ]
@@ -11644,7 +11733,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 158,
+    "size": 151,
     "stacks": [
      "aspnet-core"
     ]
@@ -11660,7 +11749,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 376,
+    "size": 361,
     "stacks": [
      "aspnet-core"
     ]
@@ -11676,7 +11765,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 649,
+    "size": 633,
     "stacks": [
      "aspnet-core"
     ]
@@ -11692,7 +11781,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 317,
+    "size": 304,
     "stacks": [
      "aspnet-core"
     ]
@@ -11708,7 +11797,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 57,
-    "size": 2018,
+    "size": 1961,
     "stacks": [
      "aspnet-core"
     ]
@@ -11724,7 +11813,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 20,
-    "size": 503,
+    "size": 484,
     "stacks": []
    },
    "kind": "file",
@@ -11738,7 +11827,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 334,
-    "size": 14062,
+    "size": 13729,
     "stacks": [
      "aspnet-core"
     ]
@@ -11895,7 +11984,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 645,
+    "size": 629,
     "stacks": [
      "aspnet-core"
     ]
@@ -11911,7 +12000,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 238,
-    "size": 10137,
+    "size": 9899,
     "stacks": [
      "aspnet-core"
     ]
@@ -11962,7 +12051,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 363,
+    "size": 353,
     "stacks": [
      "aspnet-core"
     ]
@@ -11978,7 +12067,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 667,
+    "size": 649,
     "stacks": [
      "aspnet-core"
     ]
@@ -11994,7 +12083,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 469,
+    "size": 454,
     "stacks": [
      "aspnet-core"
     ]
@@ -12010,7 +12099,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 17,
-    "size": 890,
+    "size": 873,
     "stacks": [
      "aspnet-core"
     ]
@@ -12026,7 +12115,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 308,
+    "size": 298,
     "stacks": [
      "aspnet-core"
     ]
@@ -12042,7 +12131,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 340,
+    "size": 330,
     "stacks": [
      "aspnet-core"
     ]
@@ -12058,7 +12147,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 11,
-    "size": 314,
+    "size": 303,
     "stacks": [
      "aspnet-core"
     ]
@@ -12074,7 +12163,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 247,
-    "size": 8948,
+    "size": 8701,
     "stacks": [
      "aspnet-core"
     ]
@@ -12181,7 +12270,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 504,
+    "size": 490,
     "stacks": [
      "aspnet-core"
     ]
@@ -12197,7 +12286,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 705,
+    "size": 690,
     "stacks": [
      "aspnet-core"
     ]
@@ -12213,7 +12302,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 607,
+    "size": 591,
     "stacks": [
      "aspnet-core"
     ]
@@ -12229,7 +12318,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 17,
-    "size": 623,
+    "size": 606,
     "stacks": [
      "aspnet-core"
     ]
@@ -12245,7 +12334,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 513,
+    "size": 498,
     "stacks": [
      "aspnet-core"
     ]
@@ -12261,7 +12350,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 341,
+    "size": 331,
     "stacks": [
      "aspnet-core"
     ]
@@ -12277,7 +12366,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 11,
-    "size": 386,
+    "size": 375,
     "stacks": [
      "aspnet-core"
     ]
@@ -12293,7 +12382,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 214,
-    "size": 8269,
+    "size": 8055,
     "stacks": [
      "aspnet-core"
     ]
@@ -12454,7 +12543,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 22,
-    "size": 754,
+    "size": 732,
     "stacks": [
      "aspnet-core"
     ]
@@ -12507,7 +12596,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 28,
-    "size": 896,
+    "size": 868,
     "stacks": [
      "aspnet-core"
     ]
@@ -12523,7 +12612,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 22,
-    "size": 816,
+    "size": 794,
     "stacks": [
      "aspnet-core"
     ]
@@ -12539,7 +12628,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 85,
-    "size": 2853,
+    "size": 2768,
     "stacks": [
      "aspnet-core"
     ]
@@ -12604,7 +12693,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 23,
-    "size": 796,
+    "size": 773,
     "stacks": [
      "aspnet-core"
     ]
@@ -12620,7 +12709,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 462,
+    "size": 444,
     "stacks": [
      "aspnet-core"
     ]
@@ -12636,7 +12725,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 59,
-    "size": 1859,
+    "size": 1801,
     "stacks": [
      "aspnet-core"
     ]
@@ -12715,7 +12804,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 52,
-    "size": 2572,
+    "size": 2520,
     "stacks": [
      "aspnet-core"
     ]
@@ -12731,7 +12820,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 34,
-    "size": 1205,
+    "size": 1171,
     "stacks": [
      "aspnet-core"
     ]
@@ -12747,7 +12836,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 357,
+    "size": 344,
     "stacks": [
      "aspnet-core"
     ]
@@ -12763,7 +12852,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 162,
+    "size": 155,
     "stacks": [
      "aspnet-core"
     ]
@@ -12779,7 +12868,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 118,
-    "size": 4767,
+    "size": 4649,
     "stacks": [
      "aspnet-core"
     ]
@@ -12795,7 +12884,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 29,
-    "size": 873,
+    "size": 844,
     "stacks": [
      "aspnet-core"
     ]
@@ -12811,7 +12900,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 98,
-    "size": 3026,
+    "size": 2928,
     "stacks": [
      "aspnet-core"
     ]
@@ -12827,7 +12916,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 7,
-    "size": 158,
+    "size": 152,
     "stacks": [
      "aspnet-core"
     ]
@@ -12857,7 +12946,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 34,
-    "size": 824,
+    "size": 790,
     "stacks": [
      "aspnet-core"
     ]
@@ -12887,7 +12976,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 52,
-    "size": 2177,
+    "size": 2126,
     "stacks": [
      "aspnet-core"
     ]
@@ -12917,7 +13006,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 15,
-    "size": 410,
+    "size": 395,
     "stacks": [
      "aspnet-core"
     ]
@@ -12947,7 +13036,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 104,
-    "size": 4157,
+    "size": 4053,
     "stacks": [
      "aspnet-core"
     ]
@@ -12977,7 +13066,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 7,
-    "size": 167,
+    "size": 160,
     "stacks": [
      "aspnet-core"
     ]
@@ -13007,7 +13096,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 23,
-    "size": 687,
+    "size": 664,
     "stacks": [
      "aspnet-core"
     ]
@@ -13037,7 +13126,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 108,
-    "size": 4383,
+    "size": 4275,
     "stacks": [
      "aspnet-core"
     ]
@@ -13067,7 +13156,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 64,
-    "size": 2088,
+    "size": 2024,
     "stacks": [
      "aspnet-core"
     ]
@@ -13097,7 +13186,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 87,
-    "size": 3366,
+    "size": 3280,
     "stacks": [
      "aspnet-core"
     ]
@@ -13127,7 +13216,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 32,
-    "size": 1174,
+    "size": 1142,
     "stacks": [
      "aspnet-core"
     ]
@@ -13157,7 +13246,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 40,
-    "size": 998,
+    "size": 958,
     "stacks": [
      "aspnet-core"
     ]
@@ -13187,7 +13276,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 11,
-    "size": 365,
+    "size": 354,
     "stacks": [
      "aspnet-core"
     ]
@@ -13217,7 +13306,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 50,
-    "size": 1742,
+    "size": 1692,
     "stacks": [
      "aspnet-core"
     ]
@@ -13233,7 +13322,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 34,
-    "size": 974,
+    "size": 941,
     "stacks": [
      "aspnet-core"
     ]
@@ -13249,7 +13338,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 7,
-    "size": 198,
+    "size": 192,
     "stacks": [
      "aspnet-core"
     ]
@@ -13265,7 +13354,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 2,
-    "size": 95,
+    "size": 93,
     "stacks": [
      "aspnet-core"
     ]
@@ -13281,7 +13370,7 @@
     "encoding": "utf-8",
     "ext": ".cshtml",
     "lines": 3,
-    "size": 32,
+    "size": 29,
     "stacks": [
      "aspnet-core"
     ]
@@ -13297,7 +13386,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 5,
-    "size": 138,
+    "size": 134,
     "stacks": []
    },
    "kind": "file",
@@ -13322,7 +13411,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 12,
-    "size": 273,
+    "size": 261,
     "stacks": []
    },
    "kind": "file",
@@ -13414,7 +13503,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 24,
-    "size": 627,
+    "size": 603,
     "stacks": []
    },
    "kind": "file",
@@ -13428,7 +13517,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 34,
-    "size": 851,
+    "size": 818,
     "stacks": []
    },
    "kind": "file",
@@ -13456,7 +13545,7 @@
     "encoding": "utf-8",
     "ext": ".js",
     "lines": 6,
-    "size": 349,
+    "size": 343,
     "stacks": []
    },
    "kind": "file",
@@ -13470,7 +13559,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 1494,
-    "size": 28965,
+    "size": 27472,
     "stacks": []
    },
    "kind": "file",
@@ -13508,7 +13597,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 1933,
-    "size": 115990,
+    "size": 114057,
     "stacks": []
    },
    "kind": "file",
@@ -13570,7 +13659,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 1743,
-    "size": 108236,
+    "size": 106493,
     "stacks": []
    },
    "kind": "file",
@@ -13632,7 +13721,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 3184,
-    "size": 297556,
+    "size": 294372,
     "stacks": []
    },
    "kind": "file",
@@ -13694,7 +13783,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 2860,
-    "size": 279279,
+    "size": 276419,
     "stacks": []
    },
    "kind": "file",
@@ -13756,7 +13845,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 2902,
-    "size": 284462,
+    "size": 281560,
     "stacks": []
    },
    "kind": "file",
@@ -13818,7 +13907,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 3232,
-    "size": 300249,
+    "size": 297017,
     "stacks": []
    },
    "kind": "file",
@@ -13880,7 +13969,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 2720,
-    "size": 273197,
+    "size": 270477,
     "stacks": []
    },
    "kind": "file",
@@ -13942,7 +14031,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 3197,
-    "size": 298938,
+    "size": 295741,
     "stacks": []
    },
    "kind": "file",
@@ -14314,7 +14403,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 7,
-    "size": 403,
+    "size": 396,
     "stacks": []
    },
    "kind": "file",
@@ -14340,7 +14429,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 31,
-    "size": 24444,
+    "size": 24413,
     "stacks": []
    },
    "kind": "file",
@@ -14354,7 +14443,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 18,
-    "size": 24088,
+    "size": 24071,
     "stacks": []
    },
    "kind": "file",
@@ -14368,7 +14457,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 14,
-    "size": 20900,
+    "size": 20887,
     "stacks": []
    },
    "kind": "file",
@@ -14382,7 +14471,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 14,
-    "size": 20913,
+    "size": 20900,
     "stacks": []
    },
    "kind": "file",
@@ -14432,7 +14521,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 6,
-    "size": 11799,
+    "size": 11794,
     "stacks": []
    },
    "kind": "file",
@@ -14470,7 +14559,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 44,
-    "size": 1248,
+    "size": 1204,
     "stacks": []
    },
    "kind": "file",
@@ -14484,7 +14573,7 @@
     "encoding": "utf-8",
     "ext": ".js",
     "lines": 1,
-    "size": 101,
+    "size": 100,
     "stacks": []
    },
    "kind": "file",
@@ -14498,7 +14587,7 @@
     "encoding": "utf-8",
     "ext": ".js",
     "lines": 6,
-    "size": 172,
+    "size": 166,
     "stacks": []
    },
    "kind": "file",
@@ -14512,7 +14601,7 @@
     "encoding": "utf-8",
     "ext": ".js",
     "lines": 1,
-    "size": 35,
+    "size": 34,
     "stacks": []
    },
    "kind": "file",
@@ -14540,7 +14629,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 170,
+    "size": 160,
     "stacks": [
      "aspnet-core"
     ]
@@ -14556,7 +14645,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 8,
-    "size": 360,
+    "size": 352,
     "stacks": [
      "aspnet-core"
     ]
@@ -14572,7 +14661,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 17,
-    "size": 449,
+    "size": 433,
     "stacks": []
    },
    "kind": "file",
@@ -14597,7 +14686,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 40,
-    "size": 1616,
+    "size": 1576,
     "stacks": [
      "aspnet-core"
     ]
@@ -14613,7 +14702,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 371,
+    "size": 357,
     "stacks": [
      "aspnet-core"
     ]
@@ -14629,7 +14718,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 452,
+    "size": 442,
     "stacks": [
      "aspnet-core"
     ]
@@ -14645,7 +14734,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 91,
-    "size": 2862,
+    "size": 2771,
     "stacks": [
      "aspnet-core"
     ]
@@ -14658,10 +14747,43 @@
   },
   {
    "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 15,
+   "name": "Where",
+   "path": "src/IntegrationEventLogEF/Services/IntegrationEventLogService.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 22,
+   "name": "Where",
+   "path": "src/IntegrationEventLogEF/Services/IntegrationEventLogService.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "operation": "query",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 23,
+   "name": "ToListAsync",
+   "path": "src/IntegrationEventLogEF/Services/IntegrationEventLogService.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 23,
-    "size": 949,
+    "size": 926,
     "stacks": [
      "aspnet-core"
     ]
@@ -14677,7 +14799,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 8,
-    "size": 174,
+    "size": 166,
     "stacks": [
      "aspnet-core"
     ]
@@ -14693,7 +14815,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 313,
+    "size": 301,
     "stacks": [
      "aspnet-core"
     ]
@@ -14709,7 +14831,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 27,
-    "size": 927,
+    "size": 900,
     "stacks": [
      "aspnet-core"
     ]
@@ -14725,7 +14847,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 320,
+    "size": 313,
     "stacks": [
      "aspnet-core"
     ]
@@ -14741,7 +14863,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 20,
-    "size": 690,
+    "size": 670,
     "stacks": []
    },
    "kind": "file",
@@ -14766,7 +14888,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 212,
+    "size": 202,
     "stacks": [
      "aspnet-core"
     ]
@@ -14782,7 +14904,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 11,
-    "size": 229,
+    "size": 219,
     "stacks": []
    },
    "kind": "file",
@@ -14796,7 +14918,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 65,
-    "size": 2519,
+    "size": 2454,
     "stacks": [
      "aspnet-core"
     ]
@@ -14826,7 +14948,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 47,
-    "size": 1659,
+    "size": 1612,
     "stacks": [
      "aspnet-core"
     ]
@@ -14842,7 +14964,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 12,
-    "size": 279,
+    "size": 267,
     "stacks": []
    },
    "kind": "file",
@@ -14906,7 +15028,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 18,
-    "size": 358,
+    "size": 341,
     "stacks": []
    },
    "kind": "file",
@@ -14996,7 +15118,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 11,
-    "size": 411,
+    "size": 400,
     "stacks": [
      "aspnet-core"
     ]
@@ -15012,7 +15134,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 185,
-    "size": 7093,
+    "size": 6908,
     "stacks": [
      "aspnet-core"
     ]
@@ -15162,7 +15284,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 840,
+    "size": 824,
     "stacks": [
      "aspnet-core"
     ]
@@ -15178,7 +15300,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 64,
-    "size": 2681,
+    "size": 2617,
     "stacks": [
      "aspnet-core"
     ]
@@ -15194,7 +15316,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 38,
-    "size": 1609,
+    "size": 1571,
     "stacks": [
      "aspnet-core"
     ]
@@ -15210,7 +15332,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 4,
-    "size": 128,
+    "size": 124,
     "stacks": [
      "aspnet-core"
     ]
@@ -15226,7 +15348,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 48,
-    "size": 1559,
+    "size": 1511,
     "stacks": [
      "aspnet-core"
     ]
@@ -15242,7 +15364,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 85,
-    "size": 2732,
+    "size": 2647,
     "stacks": [
      "aspnet-core"
     ]
@@ -15258,7 +15380,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 71,
-    "size": 3394,
+    "size": 3323,
     "stacks": [
      "aspnet-core"
     ]
@@ -15274,7 +15396,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 4,
-    "size": 216,
+    "size": 212,
     "stacks": [
      "aspnet-core"
     ]
@@ -15290,7 +15412,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 59,
-    "size": 1765,
+    "size": 1706,
     "stacks": [
      "aspnet-core"
     ]
@@ -15306,7 +15428,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 312,
+    "size": 299,
     "stacks": [
      "aspnet-core"
     ]
@@ -15322,7 +15444,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 105,
-    "size": 4258,
+    "size": 4153,
     "stacks": [
      "aspnet-core"
     ]
@@ -15338,7 +15460,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 147,
+    "size": 144,
     "stacks": [
      "aspnet-core"
     ]
@@ -15354,7 +15476,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 48,
-    "size": 1721,
+    "size": 1673,
     "stacks": [
      "aspnet-core"
     ]
@@ -15370,7 +15492,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 133,
+    "size": 130,
     "stacks": [
      "aspnet-core"
     ]
@@ -15386,7 +15508,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 51,
-    "size": 1723,
+    "size": 1672,
     "stacks": [
      "aspnet-core"
     ]
@@ -15402,7 +15524,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 143,
+    "size": 140,
     "stacks": [
      "aspnet-core"
     ]
@@ -15418,7 +15540,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 51,
-    "size": 1808,
+    "size": 1757,
     "stacks": [
      "aspnet-core"
     ]
@@ -15434,7 +15556,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 169,
+    "size": 166,
     "stacks": [
      "aspnet-core"
     ]
@@ -15450,7 +15572,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 52,
-    "size": 1837,
+    "size": 1785,
     "stacks": [
      "aspnet-core"
     ]
@@ -15466,7 +15588,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 124,
+    "size": 121,
     "stacks": [
      "aspnet-core"
     ]
@@ -15482,7 +15604,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 48,
-    "size": 1544,
+    "size": 1496,
     "stacks": [
      "aspnet-core"
     ]
@@ -15498,7 +15620,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 33,
-    "size": 1702,
+    "size": 1669,
     "stacks": [
      "aspnet-core"
     ]
@@ -15514,7 +15636,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 33,
-    "size": 1680,
+    "size": 1647,
     "stacks": [
      "aspnet-core"
     ]
@@ -15530,7 +15652,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 36,
-    "size": 1934,
+    "size": 1898,
     "stacks": [
      "aspnet-core"
     ]
@@ -15546,7 +15668,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 41,
-    "size": 2034,
+    "size": 1993,
     "stacks": [
      "aspnet-core"
     ]
@@ -15562,7 +15684,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 33,
-    "size": 1802,
+    "size": 1769,
     "stacks": [
      "aspnet-core"
     ]
@@ -15578,7 +15700,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 25,
-    "size": 1396,
+    "size": 1371,
     "stacks": [
      "aspnet-core"
     ]
@@ -15594,7 +15716,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 54,
-    "size": 2758,
+    "size": 2704,
     "stacks": [
      "aspnet-core"
     ]
@@ -15610,7 +15732,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 30,
-    "size": 1227,
+    "size": 1197,
     "stacks": [
      "aspnet-core"
     ]
@@ -15626,7 +15748,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 23,
-    "size": 884,
+    "size": 861,
     "stacks": [
      "aspnet-core"
     ]
@@ -15642,7 +15764,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 23,
-    "size": 903,
+    "size": 880,
     "stacks": [
      "aspnet-core"
     ]
@@ -15658,7 +15780,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 23,
-    "size": 905,
+    "size": 882,
     "stacks": [
      "aspnet-core"
     ]
@@ -15674,7 +15796,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 26,
-    "size": 1085,
+    "size": 1059,
     "stacks": [
      "aspnet-core"
     ]
@@ -15690,7 +15812,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 280,
+    "size": 270,
     "stacks": [
      "aspnet-core"
     ]
@@ -15706,7 +15828,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 8,
-    "size": 265,
+    "size": 257,
     "stacks": [
      "aspnet-core"
     ]
@@ -15722,7 +15844,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 8,
-    "size": 271,
+    "size": 263,
     "stacks": [
      "aspnet-core"
     ]
@@ -15738,7 +15860,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 519,
+    "size": 507,
     "stacks": [
      "aspnet-core"
     ]
@@ -15754,7 +15876,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 33,
-    "size": 1041,
+    "size": 1008,
     "stacks": [
      "aspnet-core"
     ]
@@ -15770,7 +15892,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 631,
+    "size": 613,
     "stacks": [
      "aspnet-core"
     ]
@@ -15786,7 +15908,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 22,
-    "size": 785,
+    "size": 763,
     "stacks": [
      "aspnet-core"
     ]
@@ -15802,7 +15924,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 627,
+    "size": 609,
     "stacks": [
      "aspnet-core"
     ]
@@ -15818,7 +15940,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 641,
+    "size": 623,
     "stacks": [
      "aspnet-core"
     ]
@@ -15834,7 +15956,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 631,
+    "size": 613,
     "stacks": [
      "aspnet-core"
     ]
@@ -15850,7 +15972,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 8,
-    "size": 267,
+    "size": 259,
     "stacks": [
      "aspnet-core"
     ]
@@ -15866,7 +15988,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 27,
-    "size": 715,
+    "size": 688,
     "stacks": [
      "aspnet-core"
     ]
@@ -15882,7 +16004,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 242,
+    "size": 235,
     "stacks": [
      "aspnet-core"
     ]
@@ -15898,7 +16020,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 42,
-    "size": 2162,
+    "size": 2120,
     "stacks": [
      "aspnet-core"
     ]
@@ -15914,7 +16036,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 390,
+    "size": 377,
     "stacks": [
      "aspnet-core"
     ]
@@ -15930,7 +16052,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 315,
+    "size": 302,
     "stacks": [
      "aspnet-core"
     ]
@@ -15946,7 +16068,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 268,
+    "size": 258,
     "stacks": [
      "aspnet-core"
     ]
@@ -15962,7 +16084,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 53,
-    "size": 1874,
+    "size": 1821,
     "stacks": [
      "aspnet-core"
     ]
@@ -15978,7 +16100,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 38,
-    "size": 1062,
+    "size": 1024,
     "stacks": [
      "aspnet-core"
     ]
@@ -15994,7 +16116,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 487,
+    "size": 473,
     "stacks": [
      "aspnet-core"
     ]
@@ -16010,7 +16132,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 33,
-    "size": 1456,
+    "size": 1423,
     "stacks": [
      "aspnet-core"
     ]
@@ -16026,7 +16148,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 472,
+    "size": 458,
     "stacks": [
      "aspnet-core"
     ]
@@ -16042,7 +16164,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 479,
+    "size": 465,
     "stacks": [
      "aspnet-core"
     ]
@@ -16058,7 +16180,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 24,
-    "size": 674,
+    "size": 650,
     "stacks": [
      "aspnet-core"
     ]
@@ -16074,7 +16196,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 61,
-    "size": 2963,
+    "size": 2902,
     "stacks": [
      "aspnet-core"
     ]
@@ -16101,7 +16223,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 45,
-    "size": 1859,
+    "size": 1814,
     "stacks": [
      "aspnet-core"
     ]
@@ -16117,7 +16239,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 1047,
+    "size": 1034,
     "stacks": [
      "aspnet-core"
     ]
@@ -16133,7 +16255,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 30,
-    "size": 1514,
+    "size": 1484,
     "stacks": [
      "aspnet-core"
     ]
@@ -16149,7 +16271,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 25,
-    "size": 751,
+    "size": 726,
     "stacks": [
      "aspnet-core"
     ]
@@ -16165,7 +16287,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 163,
+    "size": 154,
     "stacks": [
      "aspnet-core"
     ]
@@ -16181,7 +16303,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 334,
+    "size": 324,
     "stacks": [
      "aspnet-core"
     ]
@@ -16197,7 +16319,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 45,
-    "size": 1926,
+    "size": 1882,
     "stacks": []
    },
    "kind": "file",
@@ -16266,7 +16388,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 271,
+    "size": 265,
     "stacks": [
      "aspnet-core"
     ]
@@ -16282,7 +16404,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 25,
-    "size": 631,
+    "size": 606,
     "stacks": [
      "aspnet-core"
     ]
@@ -16308,7 +16430,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 12,
-    "size": 253,
+    "size": 242,
     "stacks": []
    },
    "kind": "file",
@@ -16322,7 +16444,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 5,
-    "size": 138,
+    "size": 134,
     "stacks": []
    },
    "kind": "file",
@@ -16347,7 +16469,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 35,
-    "size": 727,
+    "size": 692,
     "stacks": []
    },
    "kind": "file",
@@ -16518,7 +16640,7 @@
     "use": "define"
    },
    "kind": "config_key",
-   "line": 30,
+   "line": 32,
    "name": "Identity:Scopes:orders",
    "path": "src/Ordering.API/appsettings.json",
    "stack": "generic"
@@ -16528,7 +16650,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 51,
-    "size": 1670,
+    "size": 1619,
     "stacks": [
      "aspnet-core"
     ]
@@ -16544,7 +16666,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 188,
+    "size": 181,
     "stacks": [
      "aspnet-core"
     ]
@@ -16560,7 +16682,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 412,
+    "size": 399,
     "stacks": [
      "aspnet-core"
     ]
@@ -16576,7 +16698,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 43,
-    "size": 1544,
+    "size": 1501,
     "stacks": [
      "aspnet-core"
     ]
@@ -16592,7 +16714,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 33,
-    "size": 971,
+    "size": 938,
     "stacks": [
      "aspnet-core"
     ]
@@ -16608,7 +16730,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 359,
+    "size": 346,
     "stacks": [
      "aspnet-core"
     ]
@@ -16624,7 +16746,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 186,
-    "size": 7050,
+    "size": 6864,
     "stacks": [
      "aspnet-core"
     ]
@@ -16640,7 +16762,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 63,
-    "size": 1583,
+    "size": 1520,
     "stacks": [
      "aspnet-core"
     ]
@@ -16656,7 +16778,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 318,
+    "size": 304,
     "stacks": [
      "aspnet-core"
     ]
@@ -16672,7 +16794,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 474,
+    "size": 458,
     "stacks": [
      "aspnet-core"
     ]
@@ -16688,7 +16810,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 234,
+    "size": 222,
     "stacks": [
      "aspnet-core"
     ]
@@ -16704,7 +16826,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 11,
-    "size": 228,
+    "size": 217,
     "stacks": [
      "aspnet-core"
     ]
@@ -16720,7 +16842,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 379,
+    "size": 364,
     "stacks": [
      "aspnet-core"
     ]
@@ -16736,7 +16858,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 514,
+    "size": 496,
     "stacks": [
      "aspnet-core"
     ]
@@ -16752,7 +16874,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 461,
+    "size": 443,
     "stacks": [
      "aspnet-core"
     ]
@@ -16768,7 +16890,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 358,
+    "size": 345,
     "stacks": [
      "aspnet-core"
     ]
@@ -16784,7 +16906,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 444,
+    "size": 426,
     "stacks": [
      "aspnet-core"
     ]
@@ -16800,7 +16922,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 333,
+    "size": 326,
     "stacks": [
      "aspnet-core"
     ]
@@ -16816,7 +16938,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 12,
-    "size": 287,
+    "size": 275,
     "stacks": []
    },
    "kind": "file",
@@ -16852,7 +16974,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 87,
-    "size": 2174,
+    "size": 2087,
     "stacks": [
      "aspnet-core"
     ]
@@ -16868,7 +16990,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 5,
-    "size": 89,
+    "size": 84,
     "stacks": [
      "aspnet-core"
     ]
@@ -16884,7 +17006,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 149,
+    "size": 143,
     "stacks": [
      "aspnet-core"
     ]
@@ -16900,7 +17022,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 260,
+    "size": 253,
     "stacks": [
      "aspnet-core"
     ]
@@ -16916,7 +17038,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 44,
-    "size": 1186,
+    "size": 1142,
     "stacks": [
      "aspnet-core"
     ]
@@ -16932,7 +17054,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 24,
-    "size": 690,
+    "size": 666,
     "stacks": [
      "aspnet-core"
     ]
@@ -16948,7 +17070,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 17,
-    "size": 513,
+    "size": 496,
     "stacks": [
      "aspnet-core"
     ]
@@ -16964,7 +17086,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 312,
+    "size": 302,
     "stacks": [
      "aspnet-core"
     ]
@@ -16980,7 +17102,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 36,
-    "size": 1138,
+    "size": 1102,
     "stacks": [
      "aspnet-core"
     ]
@@ -16996,7 +17118,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 17,
-    "size": 522,
+    "size": 505,
     "stacks": [
      "aspnet-core"
     ]
@@ -17012,7 +17134,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 46,
-    "size": 1367,
+    "size": 1321,
     "stacks": [
      "aspnet-core"
     ]
@@ -17028,7 +17150,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 619,
+    "size": 607,
     "stacks": [
      "aspnet-core"
     ]
@@ -17044,7 +17166,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 11,
-    "size": 269,
+    "size": 258,
     "stacks": [
      "aspnet-core"
     ]
@@ -17060,7 +17182,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 8,
-    "size": 190,
+    "size": 182,
     "stacks": [
      "aspnet-core"
     ]
@@ -17076,7 +17198,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 38,
-    "size": 987,
+    "size": 949,
     "stacks": [
      "aspnet-core"
     ]
@@ -17092,7 +17214,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 21,
-    "size": 697,
+    "size": 676,
     "stacks": [
      "aspnet-core"
     ]
@@ -17108,7 +17230,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 332,
-    "size": 12879,
+    "size": 12547,
     "stacks": [
      "aspnet-core"
     ]
@@ -17124,7 +17246,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 281,
-    "size": 11853,
+    "size": 11572,
     "stacks": [
      "aspnet-core"
     ]
@@ -17140,7 +17262,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 329,
-    "size": 12650,
+    "size": 12321,
     "stacks": [
      "aspnet-core"
     ]
@@ -17156,7 +17278,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 68,
-    "size": 2154,
+    "size": 2086,
     "stacks": [
      "aspnet-core"
     ]
@@ -17172,7 +17294,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 360,
-    "size": 13742,
+    "size": 13382,
     "stacks": [
      "aspnet-core"
     ]
@@ -17188,7 +17310,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 41,
-    "size": 1582,
+    "size": 1541,
     "stacks": [
      "aspnet-core"
     ]
@@ -17204,7 +17326,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 336,
-    "size": 12823,
+    "size": 12487,
     "stacks": [
      "aspnet-core"
     ]
@@ -17220,7 +17342,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 112,
-    "size": 3994,
+    "size": 3882,
     "stacks": [
      "aspnet-core"
     ]
@@ -17236,7 +17358,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 333,
-    "size": 12706,
+    "size": 12373,
     "stacks": [
      "aspnet-core"
     ]
@@ -17252,7 +17374,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 17,
-    "size": 491,
+    "size": 474,
     "stacks": []
    },
    "kind": "file",
@@ -17277,7 +17399,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 115,
-    "size": 4350,
+    "size": 4235,
     "stacks": [
      "aspnet-core"
     ]
@@ -17302,6 +17424,18 @@
   },
   {
    "detail": {
+    "entity": "Order",
+    "operation": "set",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 12,
+   "name": "Orders",
+   "path": "src/Ordering.Infrastructure/OrderingContext.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "operation": "access",
     "property": "OrderItems",
     "type": "entity"
@@ -17309,6 +17443,18 @@
    "kind": "data_access",
    "line": 13,
    "name": "OrderItem",
+   "path": "src/Ordering.Infrastructure/OrderingContext.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "entity": "OrderItem",
+    "operation": "set",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 13,
+   "name": "OrderItems",
    "path": "src/Ordering.Infrastructure/OrderingContext.cs",
    "stack": "aspnet-core"
   },
@@ -17326,6 +17472,18 @@
   },
   {
    "detail": {
+    "entity": "PaymentMethod",
+    "operation": "set",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 14,
+   "name": "Payments",
+   "path": "src/Ordering.Infrastructure/OrderingContext.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "operation": "access",
     "property": "Buyers",
     "type": "entity"
@@ -17333,6 +17491,18 @@
    "kind": "data_access",
    "line": 15,
    "name": "Buyer",
+   "path": "src/Ordering.Infrastructure/OrderingContext.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "entity": "Buyer",
+    "operation": "set",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 15,
+   "name": "Buyers",
    "path": "src/Ordering.Infrastructure/OrderingContext.cs",
    "stack": "aspnet-core"
   },
@@ -17350,10 +17520,22 @@
   },
   {
    "detail": {
+    "entity": "CardType",
+    "operation": "set",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 16,
+   "name": "CardTypes",
+   "path": "src/Ordering.Infrastructure/OrderingContext.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 52,
-    "size": 1266,
+    "size": 1214,
     "stacks": [
      "aspnet-core"
     ]
@@ -17369,7 +17551,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 38,
-    "size": 896,
+    "size": 858,
     "stacks": [
      "aspnet-core"
     ]
@@ -17385,7 +17567,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 335,
+    "size": 328,
     "stacks": [
      "aspnet-core"
     ]
@@ -17401,7 +17583,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 34,
-    "size": 1600,
+    "size": 1566,
     "stacks": [
      "aspnet-core"
     ]
@@ -17417,7 +17599,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 148,
+    "size": 145,
     "stacks": [
      "aspnet-core"
     ]
@@ -17433,7 +17615,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 151,
+    "size": 148,
     "stacks": [
      "aspnet-core"
     ]
@@ -17449,7 +17631,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 164,
+    "size": 161,
     "stacks": [
      "aspnet-core"
     ]
@@ -17465,7 +17647,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 125,
+    "size": 118,
     "stacks": [
      "aspnet-core"
     ]
@@ -17481,7 +17663,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 12,
-    "size": 348,
+    "size": 336,
     "stacks": []
    },
    "kind": "file",
@@ -17495,7 +17677,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 449,
+    "size": 434,
     "stacks": [
      "aspnet-core"
     ]
@@ -17511,7 +17693,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 12,
-    "size": 265,
+    "size": 254,
     "stacks": []
    },
    "kind": "file",
@@ -17525,7 +17707,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 12,
-    "size": 205,
+    "size": 193,
     "stacks": []
    },
    "kind": "file",
@@ -17591,7 +17773,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 17,
-    "size": 328,
+    "size": 312,
     "stacks": []
    },
    "kind": "file",
@@ -17668,7 +17850,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 587,
+    "size": 569,
     "stacks": [
      "aspnet-core"
     ]
@@ -17684,7 +17866,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 93,
-    "size": 3646,
+    "size": 3553,
     "stacks": [
      "aspnet-core"
     ]
@@ -17714,7 +17896,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 28,
-    "size": 904,
+    "size": 876,
     "stacks": [
      "aspnet-core"
     ]
@@ -17730,7 +17912,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 178,
-    "size": 6608,
+    "size": 6430,
     "stacks": [
      "aspnet-core"
     ]
@@ -17746,7 +17928,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 138,
-    "size": 6446,
+    "size": 6308,
     "stacks": [
      "aspnet-core"
     ]
@@ -17762,7 +17944,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 392,
-    "size": 9932,
+    "size": 9540,
     "stacks": []
    },
    "kind": "file",
@@ -17776,7 +17958,7 @@
     "encoding": "utf-8",
     "ext": ".js",
     "lines": 12,
-    "size": 417,
+    "size": 405,
     "stacks": []
    },
    "kind": "file",
@@ -17790,7 +17972,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 35,
-    "size": 1421,
+    "size": 1386,
     "stacks": [
      "aspnet-core"
     ]
@@ -17806,7 +17988,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 20,
-    "size": 808,
+    "size": 788,
     "stacks": [
      "aspnet-core"
     ]
@@ -17822,7 +18004,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 301,
-    "size": 10016,
+    "size": 9715,
     "stacks": []
    },
    "kind": "file",
@@ -17836,7 +18018,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 60,
-    "size": 1948,
+    "size": 1888,
     "stacks": [
      "aspnet-core"
     ]
@@ -17852,7 +18034,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 77,
-    "size": 2131,
+    "size": 2054,
     "stacks": []
    },
    "kind": "file",
@@ -17866,7 +18048,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 72,
-    "size": 6060,
+    "size": 5989,
     "stacks": [
      "aspnet-core"
     ]
@@ -17882,7 +18064,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 199,
-    "size": 4040,
+    "size": 3841,
     "stacks": []
    },
    "kind": "file",
@@ -17896,7 +18078,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 48,
-    "size": 1945,
+    "size": 1897,
     "stacks": [
      "aspnet-core"
     ]
@@ -17912,7 +18094,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 244,
-    "size": 6360,
+    "size": 6116,
     "stacks": []
    },
    "kind": "file",
@@ -17926,7 +18108,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 15,
-    "size": 324,
+    "size": 309,
     "stacks": [
      "aspnet-core"
     ]
@@ -17942,7 +18124,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 18,
-    "size": 400,
+    "size": 382,
     "stacks": []
    },
    "kind": "file",
@@ -17956,7 +18138,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 35,
-    "size": 1419,
+    "size": 1384,
     "stacks": [
      "aspnet-core"
     ]
@@ -17972,7 +18154,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 69,
-    "size": 1707,
+    "size": 1638,
     "stacks": []
    },
    "kind": "file",
@@ -17986,7 +18168,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 140,
-    "size": 7009,
+    "size": 6869,
     "stacks": [
      "aspnet-core"
     ]
@@ -18010,6 +18192,17 @@
   },
   {
    "detail": {
+    "root": "src/WebApp/Components/Pages/Cart/CartPage.razor",
+    "route": "/cart"
+   },
+   "kind": "ui_page",
+   "line": 1,
+   "name": "src/WebApp/Components/Pages/Cart/CartPage.razor",
+   "path": "src/WebApp/Components/Pages/Cart/CartPage.razor",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "mechanism": "attribute"
    },
    "kind": "auth_check",
@@ -18023,7 +18216,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 380,
-    "size": 8692,
+    "size": 8312,
     "stacks": []
    },
    "kind": "file",
@@ -18037,7 +18230,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 204,
-    "size": 8774,
+    "size": 8570,
     "stacks": [
      "aspnet-core"
     ]
@@ -18061,10 +18254,21 @@
   },
   {
    "detail": {
+    "root": "src/WebApp/Components/Pages/Catalog/Catalog.razor",
+    "route": "/"
+   },
+   "kind": "ui_page",
+   "line": 1,
+   "name": "src/WebApp/Components/Pages/Catalog/Catalog.razor",
+   "path": "src/WebApp/Components/Pages/Catalog/Catalog.razor",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 423,
-    "size": 9953,
+    "size": 9530,
     "stacks": []
    },
    "kind": "file",
@@ -18078,7 +18282,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 130,
-    "size": 4583,
+    "size": 4453,
     "stacks": [
      "aspnet-core"
     ]
@@ -18102,6 +18306,17 @@
   },
   {
    "detail": {
+    "root": "src/WebApp/Components/Pages/Checkout/Checkout.razor",
+    "route": "/checkout"
+   },
+   "kind": "ui_page",
+   "line": 1,
+   "name": "src/WebApp/Components/Pages/Checkout/Checkout.razor",
+   "path": "src/WebApp/Components/Pages/Checkout/Checkout.razor",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "mechanism": "attribute"
    },
    "kind": "auth_check",
@@ -18115,7 +18330,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 108,
-    "size": 2320,
+    "size": 2212,
     "stacks": []
    },
    "kind": "file",
@@ -18129,7 +18344,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 165,
-    "size": 7822,
+    "size": 7657,
     "stacks": [
      "aspnet-core"
     ]
@@ -18153,6 +18368,17 @@
   },
   {
    "detail": {
+    "root": "src/WebApp/Components/Pages/Item/ItemPage.razor",
+    "route": "/item/{itemId:int}"
+   },
+   "kind": "ui_page",
+   "line": 1,
+   "name": "src/WebApp/Components/Pages/Item/ItemPage.razor",
+   "path": "src/WebApp/Components/Pages/Item/ItemPage.razor",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "mechanism": "identity"
    },
    "kind": "auth_check",
@@ -18166,7 +18392,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 276,
-    "size": 6008,
+    "size": 5732,
     "stacks": []
    },
    "kind": "file",
@@ -18180,7 +18406,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 21,
-    "size": 680,
+    "size": 659,
     "stacks": [
      "aspnet-core"
     ]
@@ -18204,6 +18430,17 @@
   },
   {
    "detail": {
+    "root": "src/WebApp/Components/Pages/User/LogIn.razor",
+    "route": "/user/login"
+   },
+   "kind": "ui_page",
+   "line": 1,
+   "name": "src/WebApp/Components/Pages/User/LogIn.razor",
+   "path": "src/WebApp/Components/Pages/User/LogIn.razor",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "mechanism": "attribute"
    },
    "kind": "auth_check",
@@ -18217,7 +18454,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 5,
-    "size": 187,
+    "size": 182,
     "stacks": [
      "aspnet-core"
     ]
@@ -18241,10 +18478,21 @@
   },
   {
    "detail": {
+    "root": "src/WebApp/Components/Pages/User/LogOut.razor",
+    "route": "/user/logout"
+   },
+   "kind": "ui_page",
+   "line": 1,
+   "name": "src/WebApp/Components/Pages/User/LogOut.razor",
+   "path": "src/WebApp/Components/Pages/User/LogOut.razor",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 68,
-    "size": 2099,
+    "size": 2031,
     "stacks": [
      "aspnet-core"
     ]
@@ -18268,6 +18516,17 @@
   },
   {
    "detail": {
+    "root": "src/WebApp/Components/Pages/User/Orders.razor",
+    "route": "/user/orders"
+   },
+   "kind": "ui_page",
+   "line": 1,
+   "name": "src/WebApp/Components/Pages/User/Orders.razor",
+   "path": "src/WebApp/Components/Pages/User/Orders.razor",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "mechanism": "attribute"
    },
    "kind": "auth_check",
@@ -18281,7 +18540,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 142,
-    "size": 2944,
+    "size": 2802,
     "stacks": []
    },
    "kind": "file",
@@ -18295,7 +18554,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 41,
-    "size": 1290,
+    "size": 1249,
     "stacks": [
      "aspnet-core"
     ]
@@ -18311,7 +18570,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 6,
-    "size": 266,
+    "size": 260,
     "stacks": [
      "aspnet-core"
     ]
@@ -18327,7 +18586,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 15,
-    "size": 595,
+    "size": 581,
     "stacks": [
      "aspnet-core"
     ]
@@ -18343,7 +18602,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 124,
-    "size": 5768,
+    "size": 5644,
     "stacks": [
      "aspnet-core"
     ]
@@ -18388,6 +18647,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -18400,6 +18661,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -18412,6 +18675,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -18436,6 +18701,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -18462,7 +18729,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 116,
+    "size": 113,
     "stacks": [
      "aspnet-core"
     ]
@@ -18478,7 +18745,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 34,
-    "size": 869,
+    "size": 835,
     "stacks": [
      "aspnet-core"
     ]
@@ -18494,7 +18761,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 23,
-    "size": 639,
+    "size": 616,
     "stacks": []
    },
    "kind": "file",
@@ -18508,7 +18775,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 34,
-    "size": 750,
+    "size": 716,
     "stacks": [
      "aspnet-core"
     ]
@@ -18524,7 +18791,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 11,
-    "size": 339,
+    "size": 328,
     "stacks": [
      "aspnet-core"
     ]
@@ -18540,7 +18807,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 49,
-    "size": 1474,
+    "size": 1425,
     "stacks": [
      "aspnet-core"
     ]
@@ -18556,7 +18823,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 172,
-    "size": 6248,
+    "size": 6076,
     "stacks": [
      "aspnet-core"
     ]
@@ -18572,7 +18839,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 11,
-    "size": 260,
+    "size": 249,
     "stacks": [
      "aspnet-core"
     ]
@@ -18588,7 +18855,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 480,
+    "size": 466,
     "stacks": [
      "aspnet-core"
     ]
@@ -18604,7 +18871,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 767,
+    "size": 752,
     "stacks": [
      "aspnet-core"
     ]
@@ -18620,7 +18887,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 731,
+    "size": 716,
     "stacks": [
      "aspnet-core"
     ]
@@ -18636,7 +18903,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 711,
+    "size": 696,
     "stacks": [
      "aspnet-core"
     ]
@@ -18652,7 +18919,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 723,
+    "size": 708,
     "stacks": [
      "aspnet-core"
     ]
@@ -18668,7 +18935,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 751,
+    "size": 736,
     "stacks": [
      "aspnet-core"
     ]
@@ -18684,7 +18951,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 731,
+    "size": 716,
     "stacks": [
      "aspnet-core"
     ]
@@ -18700,7 +18967,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 21,
-    "size": 669,
+    "size": 648,
     "stacks": [
      "aspnet-core"
     ]
@@ -18716,7 +18983,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 21,
-    "size": 651,
+    "size": 630,
     "stacks": [
      "aspnet-core"
     ]
@@ -18732,7 +18999,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 20,
-    "size": 639,
+    "size": 619,
     "stacks": [
      "aspnet-core"
     ]
@@ -18748,7 +19015,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 21,
-    "size": 647,
+    "size": 626,
     "stacks": [
      "aspnet-core"
     ]
@@ -18764,7 +19031,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 20,
-    "size": 659,
+    "size": 639,
     "stacks": [
      "aspnet-core"
     ]
@@ -18780,7 +19047,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 20,
-    "size": 649,
+    "size": 629,
     "stacks": [
      "aspnet-core"
     ]
@@ -18796,7 +19063,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 62,
-    "size": 2002,
+    "size": 1940,
     "stacks": [
      "aspnet-core"
     ]
@@ -18812,7 +19079,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 25,
-    "size": 795,
+    "size": 770,
     "stacks": [
      "aspnet-core"
     ]
@@ -18828,7 +19095,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 264,
+    "size": 255,
     "stacks": [
      "aspnet-core"
     ]
@@ -18844,7 +19111,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 34,
-    "size": 1403,
+    "size": 1369,
     "stacks": []
    },
    "kind": "file",
@@ -18946,7 +19213,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 8,
-    "size": 127,
+    "size": 119,
     "stacks": []
    },
    "kind": "file",
@@ -18986,7 +19253,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 13,
-    "size": 262,
+    "size": 249,
     "stacks": []
    },
    "kind": "file",
@@ -19089,7 +19356,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 574,
-    "size": 18407,
+    "size": 17834,
     "stacks": []
    },
    "kind": "file",
@@ -19103,7 +19370,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 344,
-    "size": 6985,
+    "size": 6642,
     "stacks": []
    },
    "kind": "file",
@@ -19429,7 +19696,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 5,
-    "size": 809,
+    "size": 804,
     "stacks": []
    },
    "kind": "file",
@@ -19443,7 +19710,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 7,
-    "size": 796,
+    "size": 789,
     "stacks": []
    },
    "kind": "file",
@@ -19457,7 +19724,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 6,
-    "size": 787,
+    "size": 781,
     "stacks": []
    },
    "kind": "file",
@@ -19471,7 +19738,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 5,
-    "size": 914,
+    "size": 909,
     "stacks": []
    },
    "kind": "file",
@@ -19485,7 +19752,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 6,
-    "size": 832,
+    "size": 826,
     "stacks": []
    },
    "kind": "file",
@@ -19499,7 +19766,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 4,
-    "size": 570,
+    "size": 566,
     "stacks": []
    },
    "kind": "file",
@@ -19549,7 +19816,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 43,
-    "size": 14263,
+    "size": 14220,
     "stacks": []
    },
    "kind": "file",
@@ -19563,7 +19830,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 40,
-    "size": 14119,
+    "size": 14079,
     "stacks": []
    },
    "kind": "file",
@@ -19577,7 +19844,7 @@
     "encoding": "utf-8",
     "ext": ".js",
     "lines": 77,
-    "size": 3117,
+    "size": 3040,
     "stacks": []
    },
    "kind": "file",
@@ -19591,7 +19858,7 @@
     "encoding": "utf-8",
     "ext": ".js",
     "lines": 56,
-    "size": 1948,
+    "size": 1892,
     "stacks": []
    },
    "kind": "file",
@@ -19605,7 +19872,7 @@
     "encoding": "utf-8",
     "ext": ".js",
     "lines": 266,
-    "size": 10283,
+    "size": 10017,
     "stacks": []
    },
    "kind": "file",
@@ -19619,7 +19886,7 @@
     "encoding": "utf-8",
     "ext": ".js",
     "lines": 233,
-    "size": 10112,
+    "size": 9879,
     "stacks": []
    },
    "kind": "file",
@@ -19633,7 +19900,7 @@
     "encoding": "utf-8",
     "ext": ".js",
     "lines": 151,
-    "size": 7269,
+    "size": 7118,
     "stacks": []
    },
    "kind": "file",
@@ -19647,7 +19914,7 @@
     "encoding": "utf-8",
     "ext": ".js",
     "lines": 146,
-    "size": 7432,
+    "size": 7286,
     "stacks": []
    },
    "kind": "file",
@@ -19661,7 +19928,7 @@
     "encoding": "utf-8",
     "ext": ".js",
     "lines": 25,
-    "size": 1200,
+    "size": 1175,
     "stacks": []
    },
    "kind": "file",
@@ -19675,7 +19942,7 @@
     "encoding": "utf-8",
     "ext": ".js",
     "lines": 64,
-    "size": 3217,
+    "size": 3153,
     "stacks": []
    },
    "kind": "file",
@@ -19689,7 +19956,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 273,
+    "size": 264,
     "stacks": [
      "aspnet-core"
     ]
@@ -19705,7 +19972,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 492,
+    "size": 476,
     "stacks": [
      "aspnet-core"
     ]
@@ -19721,7 +19988,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 29,
-    "size": 1023,
+    "size": 994,
     "stacks": [
      "aspnet-core"
     ]
@@ -19737,7 +20004,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 128,
-    "size": 3633,
+    "size": 3505,
     "stacks": []
    },
    "kind": "file",
@@ -19751,7 +20018,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 190,
-    "size": 7446,
+    "size": 7256,
     "stacks": [
      "aspnet-core"
     ]
@@ -19767,7 +20034,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 201,
-    "size": 5245,
+    "size": 5044,
     "stacks": []
    },
    "kind": "file",
@@ -19781,7 +20048,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 203,
+    "size": 194,
     "stacks": [
      "aspnet-core"
     ]
@@ -19797,7 +20064,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 84,
-    "size": 3102,
+    "size": 3018,
     "stacks": [
      "aspnet-core"
     ]
@@ -19813,7 +20080,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 16,
-    "size": 649,
+    "size": 633,
     "stacks": [
      "aspnet-core"
     ]
@@ -19829,7 +20096,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 11,
-    "size": 278,
+    "size": 267,
     "stacks": [
      "aspnet-core"
     ]
@@ -19845,7 +20112,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 11,
-    "size": 410,
+    "size": 399,
     "stacks": [
      "aspnet-core"
     ]
@@ -19861,7 +20128,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 19,
-    "size": 466,
+    "size": 447,
     "stacks": []
    },
    "kind": "file",
@@ -19886,7 +20153,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 2,
-    "size": 87,
+    "size": 85,
     "stacks": [
      "aspnet-core"
     ]
@@ -19902,7 +20169,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 18,
-    "size": 481,
+    "size": 463,
     "stacks": [
      "aspnet-core"
     ]
@@ -19918,7 +20185,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 6,
-    "size": 130,
+    "size": 124,
     "stacks": []
    },
    "kind": "file",
@@ -19932,7 +20199,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 16,
-    "size": 339,
+    "size": 323,
     "stacks": [
      "aspnet-core"
     ]
@@ -19948,7 +20215,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 51,
-    "size": 874,
+    "size": 823,
     "stacks": []
    },
    "kind": "file",
@@ -19962,7 +20229,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 24,
-    "size": 718,
+    "size": 694,
     "stacks": [
      "aspnet-core"
     ]
@@ -19978,7 +20245,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 3,
-    "size": 48,
+    "size": 45,
     "stacks": []
    },
    "kind": "file",
@@ -19992,7 +20259,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 65,
-    "size": 1771,
+    "size": 1706,
     "stacks": [
      "aspnet-core"
     ]
@@ -20016,10 +20283,21 @@
   },
   {
    "detail": {
+    "root": "src/WebhookClient/Components/Pages/AddWebhook.razor",
+    "route": "/add-webhook"
+   },
+   "kind": "ui_page",
+   "line": 1,
+   "name": "src/WebhookClient/Components/Pages/AddWebhook.razor",
+   "path": "src/WebhookClient/Components/Pages/AddWebhook.razor",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 36,
-    "size": 1215,
+    "size": 1179,
     "stacks": [
      "aspnet-core"
     ]
@@ -20043,10 +20321,21 @@
   },
   {
    "detail": {
+    "root": "src/WebhookClient/Components/Pages/Error.razor",
+    "route": "/Error"
+   },
+   "kind": "ui_page",
+   "line": 1,
+   "name": "src/WebhookClient/Components/Pages/Error.razor",
+   "path": "src/WebhookClient/Components/Pages/Error.razor",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 22,
-    "size": 554,
+    "size": 532,
     "stacks": [
      "aspnet-core"
     ]
@@ -20070,10 +20359,21 @@
   },
   {
    "detail": {
+    "root": "src/WebhookClient/Components/Pages/Home/Home.razor",
+    "route": "/"
+   },
+   "kind": "ui_page",
+   "line": 1,
+   "name": "src/WebhookClient/Components/Pages/Home/Home.razor",
+   "path": "src/WebhookClient/Components/Pages/Home/Home.razor",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 7,
-    "size": 83,
+    "size": 76,
     "stacks": []
    },
    "kind": "file",
@@ -20087,7 +20387,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 54,
-    "size": 1493,
+    "size": 1439,
     "stacks": [
      "aspnet-core"
     ]
@@ -20103,7 +20403,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 27,
-    "size": 841,
+    "size": 814,
     "stacks": [
      "aspnet-core"
     ]
@@ -20119,7 +20419,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 12,
-    "size": 390,
+    "size": 378,
     "stacks": [
      "aspnet-core"
     ]
@@ -20143,6 +20443,17 @@
   },
   {
    "detail": {
+    "root": "src/WebhookClient/Components/Pages/LogIn.razor",
+    "route": "/login"
+   },
+   "kind": "ui_page",
+   "line": 1,
+   "name": "src/WebhookClient/Components/Pages/LogIn.razor",
+   "path": "src/WebhookClient/Components/Pages/LogIn.razor",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "mechanism": "attribute"
    },
    "kind": "auth_check",
@@ -20156,7 +20467,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 6,
-    "size": 266,
+    "size": 260,
     "stacks": [
      "aspnet-core"
     ]
@@ -20172,7 +20483,7 @@
     "encoding": "utf-8",
     "ext": ".razor",
     "lines": 9,
-    "size": 393,
+    "size": 384,
     "stacks": [
      "aspnet-core"
     ]
@@ -20188,7 +20499,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 21,
-    "size": 800,
+    "size": 779,
     "stacks": [
      "aspnet-core"
     ]
@@ -20216,7 +20527,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 57,
-    "size": 2282,
+    "size": 2225,
     "stacks": [
      "aspnet-core"
     ]
@@ -20229,6 +20540,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": true,
     "source": "code",
     "use": "read"
@@ -20241,6 +20554,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": true,
     "source": "code",
     "use": "read"
@@ -20278,7 +20593,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 66,
-    "size": 2844,
+    "size": 2778,
     "stacks": [
      "aspnet-core"
     ]
@@ -20312,6 +20627,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -20324,6 +20641,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -20336,6 +20655,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -20363,7 +20684,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 5,
-    "size": 221,
+    "size": 216,
     "stacks": [
      "aspnet-core"
     ]
@@ -20379,7 +20700,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 31,
-    "size": 766,
+    "size": 735,
     "stacks": [
      "aspnet-core"
     ]
@@ -20395,7 +20716,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 38,
-    "size": 1102,
+    "size": 1064,
     "stacks": []
    },
    "kind": "file",
@@ -20409,7 +20730,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 48,
-    "size": 1425,
+    "size": 1377,
     "stacks": [
      "aspnet-core"
     ]
@@ -20425,7 +20746,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 205,
+    "size": 195,
     "stacks": [
      "aspnet-core"
     ]
@@ -20441,7 +20762,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 454,
+    "size": 440,
     "stacks": [
      "aspnet-core"
     ]
@@ -20457,7 +20778,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 8,
-    "size": 214,
+    "size": 206,
     "stacks": [
      "aspnet-core"
     ]
@@ -20473,7 +20794,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 230,
+    "size": 218,
     "stacks": [
      "aspnet-core"
     ]
@@ -20489,7 +20810,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 8,
-    "size": 204,
+    "size": 196,
     "stacks": [
      "aspnet-core"
     ]
@@ -20505,7 +20826,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 254,
+    "size": 245,
     "stacks": [
      "aspnet-core"
     ]
@@ -20521,7 +20842,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 8,
-    "size": 152,
+    "size": 144,
     "stacks": [
      "aspnet-core"
     ]
@@ -20537,7 +20858,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 17,
-    "size": 626,
+    "size": 609,
     "stacks": []
    },
    "kind": "file",
@@ -20584,7 +20905,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 8,
-    "size": 127,
+    "size": 119,
     "stacks": []
    },
    "kind": "file",
@@ -20624,7 +20945,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 12,
-    "size": 239,
+    "size": 227,
     "stacks": []
    },
    "kind": "file",
@@ -20690,7 +21011,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 118,
-    "size": 3903,
+    "size": 3785,
     "stacks": []
    },
    "kind": "file",
@@ -20704,7 +21025,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 86,
-    "size": 3169,
+    "size": 3083,
     "stacks": [
      "aspnet-core"
     ]
@@ -20798,7 +21119,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 5,
-    "size": 97,
+    "size": 92,
     "stacks": [
      "aspnet-core"
     ]
@@ -20814,7 +21135,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 25,
-    "size": 1139,
+    "size": 1114,
     "stacks": [
      "aspnet-core"
     ]
@@ -20830,7 +21151,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 49,
-    "size": 1792,
+    "size": 1743,
     "stacks": [
      "aspnet-core"
     ]
@@ -20846,7 +21167,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 465,
+    "size": 453,
     "stacks": [
      "aspnet-core"
     ]
@@ -20862,7 +21183,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 20,
-    "size": 636,
+    "size": 616,
     "stacks": [
      "aspnet-core"
     ]
@@ -20872,6 +21193,18 @@
    "name": "src/Webhooks.API/Infrastructure/WebhooksContext.cs",
    "path": "src/Webhooks.API/Infrastructure/WebhooksContext.cs",
    "stack": "generic"
+  },
+  {
+   "detail": {
+    "entity": "WebhookSubscription",
+    "operation": "set",
+    "type": "ef"
+   },
+   "kind": "data_access",
+   "line": 10,
+   "name": "Subscriptions",
+   "path": "src/Webhooks.API/Infrastructure/WebhooksContext.cs",
+   "stack": "aspnet-core"
   },
   {
    "detail": {
@@ -20890,7 +21223,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 182,
+    "size": 179,
     "stacks": [
      "aspnet-core"
     ]
@@ -20906,7 +21239,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 803,
+    "size": 785,
     "stacks": [
      "aspnet-core"
     ]
@@ -20936,7 +21269,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 178,
+    "size": 175,
     "stacks": [
      "aspnet-core"
     ]
@@ -20952,7 +21285,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 18,
-    "size": 815,
+    "size": 797,
     "stacks": [
      "aspnet-core"
     ]
@@ -20968,7 +21301,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 105,
+    "size": 102,
     "stacks": [
      "aspnet-core"
     ]
@@ -20984,7 +21317,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 170,
+    "size": 167,
     "stacks": [
      "aspnet-core"
     ]
@@ -21000,7 +21333,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 293,
+    "size": 284,
     "stacks": [
      "aspnet-core"
     ]
@@ -21016,7 +21349,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 58,
-    "size": 1959,
+    "size": 1901,
     "stacks": [
      "aspnet-core"
     ]
@@ -21032,7 +21365,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 40,
-    "size": 1542,
+    "size": 1502,
     "stacks": [
      "aspnet-core"
     ]
@@ -21048,7 +21381,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 61,
-    "size": 2036,
+    "size": 1975,
     "stacks": [
      "aspnet-core"
     ]
@@ -21064,7 +21397,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 17,
-    "size": 372,
+    "size": 355,
     "stacks": [
      "aspnet-core"
     ]
@@ -21080,7 +21413,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 14,
-    "size": 346,
+    "size": 332,
     "stacks": [
      "aspnet-core"
     ]
@@ -21096,7 +21429,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 29,
-    "size": 981,
+    "size": 952,
     "stacks": [
      "aspnet-core"
     ]
@@ -21112,7 +21445,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 8,
-    "size": 142,
+    "size": 134,
     "stacks": [
      "aspnet-core"
     ]
@@ -21128,7 +21461,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 24,
-    "size": 603,
+    "size": 579,
     "stacks": [
      "aspnet-core"
     ]
@@ -21154,7 +21487,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 12,
-    "size": 252,
+    "size": 241,
     "stacks": []
    },
    "kind": "file",
@@ -21168,7 +21501,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 46,
-    "size": 1966,
+    "size": 1920,
     "stacks": [
      "aspnet-core"
     ]
@@ -21195,10 +21528,21 @@
   },
   {
    "detail": {
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 21,
+   "name": "HttpClient.SendAsync",
+   "path": "src/Webhooks.API/Services/GrantUrlTesterService.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 158,
+    "size": 152,
     "stacks": [
      "aspnet-core"
     ]
@@ -21214,7 +21558,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 170,
+    "size": 163,
     "stacks": [
      "aspnet-core"
     ]
@@ -21230,7 +21574,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 6,
-    "size": 160,
+    "size": 154,
     "stacks": [
      "aspnet-core"
     ]
@@ -21246,7 +21590,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 311,
+    "size": 302,
     "stacks": [
      "aspnet-core"
     ]
@@ -21262,7 +21606,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 35,
-    "size": 1215,
+    "size": 1180,
     "stacks": [
      "aspnet-core"
     ]
@@ -21275,10 +21619,21 @@
   },
   {
    "detail": {
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 32,
+   "name": "HttpClient.SendAsync",
+   "path": "src/Webhooks.API/Services/WebhooksSender.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 27,
-    "size": 1095,
+    "size": 1068,
     "stacks": []
    },
    "kind": "file",
@@ -21325,7 +21680,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 12,
-    "size": 281,
+    "size": 269,
     "stacks": []
    },
    "kind": "file",
@@ -21389,7 +21744,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 37,
-    "size": 868,
+    "size": 831,
     "stacks": []
    },
    "kind": "file",
@@ -21573,7 +21928,7 @@
     "use": "define"
    },
    "kind": "config_key",
-   "line": 31,
+   "line": 33,
    "name": "Identity:Scopes:webhooks",
    "path": "src/Webhooks.API/appsettings.json",
    "stack": "generic"
@@ -21596,7 +21951,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 117,
-    "size": 4843,
+    "size": 4726,
     "stacks": [
      "aspnet-core"
     ]
@@ -21612,7 +21967,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 154,
-    "size": 7963,
+    "size": 7809,
     "stacks": [
      "aspnet-core"
     ]
@@ -21625,6 +21980,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -21640,7 +21997,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 17,
-    "size": 576,
+    "size": 559,
     "stacks": []
    },
    "kind": "file",
@@ -21654,7 +22011,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 12,
-    "size": 241,
+    "size": 229,
     "stacks": []
    },
    "kind": "file",
@@ -21707,7 +22064,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 27,
-    "size": 1001,
+    "size": 974,
     "stacks": []
    },
    "kind": "file",
@@ -21809,7 +22166,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 56,
-    "size": 1903,
+    "size": 1847,
     "stacks": [
      "aspnet-core"
     ]
@@ -21822,6 +22179,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -21834,6 +22193,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -21846,6 +22207,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -21861,7 +22224,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 12,
-    "size": 386,
+    "size": 374,
     "stacks": [
      "aspnet-core"
     ]
@@ -21877,7 +22240,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 377,
+    "size": 370,
     "stacks": [
      "aspnet-core"
     ]
@@ -21893,7 +22256,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 129,
-    "size": 4831,
+    "size": 4702,
     "stacks": [
      "aspnet-core"
     ]
@@ -21906,6 +22269,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -21921,7 +22286,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 52,
-    "size": 1849,
+    "size": 1797,
     "stacks": [
      "aspnet-core"
     ]
@@ -21934,10 +22299,21 @@
   },
   {
    "detail": {
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 48,
+   "name": "HttpClient.SendAsync",
+   "path": "src/eShop.ServiceDefaults/HttpClientExtensions.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 87,
-    "size": 3244,
+    "size": 3157,
     "stacks": [
      "aspnet-core"
     ]
@@ -21950,6 +22326,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -21974,6 +22352,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -21986,6 +22366,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -21998,6 +22380,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -22010,6 +22394,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -22022,6 +22408,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -22037,7 +22425,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 191,
-    "size": 6979,
+    "size": 6788,
     "stacks": [
      "aspnet-core"
     ]
@@ -22050,6 +22438,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -22062,6 +22452,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -22074,6 +22466,8 @@
   },
   {
    "detail": {
+    "read_kind": "file",
+    "role": "app",
     "secret_location": false,
     "source": "code",
     "use": "read"
@@ -22089,7 +22483,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 28,
-    "size": 1281,
+    "size": 1253,
     "stacks": []
    },
    "kind": "file",
@@ -22257,7 +22651,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 30,
-    "size": 1220,
+    "size": 1190,
     "stacks": []
    },
    "kind": "file",
@@ -22307,7 +22701,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 23,
-    "size": 836,
+    "size": 813,
     "stacks": [
      "aspnet-core"
     ]
@@ -22323,7 +22717,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 4,
-    "size": 163,
+    "size": 159,
     "stacks": [
      "aspnet-core"
     ]
@@ -22339,7 +22733,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 51,
-    "size": 2199,
+    "size": 2148,
     "stacks": [
      "aspnet-core"
     ]
@@ -22355,7 +22749,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 41,
-    "size": 1481,
+    "size": 1440,
     "stacks": [
      "aspnet-core"
     ]
@@ -22371,7 +22765,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 41,
-    "size": 1654,
+    "size": 1613,
     "stacks": [
      "aspnet-core"
     ]
@@ -22387,7 +22781,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 100,
-    "size": 3781,
+    "size": 3681,
     "stacks": [
      "aspnet-core"
     ]
@@ -22413,6 +22807,7 @@
   },
   {
    "detail": {
+    "read_kind": "file",
     "secret_location": true,
     "source": "code",
     "test": true,
@@ -22426,6 +22821,7 @@
   },
   {
    "detail": {
+    "read_kind": "file",
     "secret_location": true,
     "source": "code",
     "test": true,
@@ -22442,7 +22838,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 71,
-    "size": 2418,
+    "size": 2347,
     "stacks": [
      "aspnet-core"
     ]
@@ -22482,7 +22878,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 22,
-    "size": 669,
+    "size": 647,
     "stacks": []
    },
    "kind": "file",
@@ -22520,7 +22916,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 7,
-    "size": 296,
+    "size": 289,
     "stacks": [
      "aspnet-core"
     ]
@@ -22536,7 +22932,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 51,
-    "size": 1758,
+    "size": 1707,
     "stacks": [
      "aspnet-core"
     ]
@@ -22552,7 +22948,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 54,
-    "size": 1718,
+    "size": 1664,
     "stacks": [
      "aspnet-core"
     ]
@@ -22568,7 +22964,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 25,
-    "size": 900,
+    "size": 875,
     "stacks": []
    },
    "kind": "file",
@@ -22630,7 +23026,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 153,
-    "size": 6743,
+    "size": 6590,
     "stacks": [
      "aspnet-core"
     ]
@@ -22646,7 +23042,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 381,
+    "size": 371,
     "stacks": [
      "aspnet-core"
     ]
@@ -22662,7 +23058,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 61,
-    "size": 2720,
+    "size": 2659,
     "stacks": [
      "aspnet-core"
     ]
@@ -22678,7 +23074,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 23,
-    "size": 796,
+    "size": 773,
     "stacks": []
    },
    "kind": "file",
@@ -22752,7 +23148,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 58,
-    "size": 1814,
+    "size": 1756,
     "stacks": [
      "aspnet-core"
     ]
@@ -22768,7 +23164,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 507,
-    "size": 20318,
+    "size": 19811,
     "stacks": [
      "aspnet-core"
     ]
@@ -22778,6 +23174,162 @@
    "name": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
    "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
    "stack": "generic"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 37,
+   "name": "/api/catalog/items",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 57,
+   "name": "/api/catalog/items/1",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 74,
+   "name": "/api/catalog/items/1",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 92,
+   "name": "/api/catalog/items/1",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 110,
+   "name": "/api/catalog/items/1",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 129,
+   "name": "/api/catalog/items/by",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 148,
+   "name": "/api/catalog/items/2",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 170,
+   "name": "api/catalog/items/by/Wanderer%20Black%20Hiking%20Boots",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 171,
+   "name": "api/catalog/items",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 198,
+   "name": "api/catalog/items/by/Alpine",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 199,
+   "name": "api/catalog/items",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 224,
+   "name": "api/catalog/items/1/pic",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
   },
   {
    "detail": {
@@ -22793,10 +23345,192 @@
   },
   {
    "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 259,
+   "name": "/api/catalog/items/{id}/pic",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 280,
+   "name": "api/catalog/items/withsemanticrelevance/Wanderer",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 281,
+   "name": "api/catalog/items/withsemanticrelevance",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 307,
+   "name": "api/catalog/items/type/3/brand/3",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 308,
+   "name": "api/catalog/items",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 336,
+   "name": "api/catalog/items/type/all/brand/3",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 337,
+   "name": "api/catalog/items",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 362,
+   "name": "api/catalog/catalogtypes",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 382,
+   "name": "api/catalog/catalogbrands",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 426,
+   "name": "/api/catalog/items/{id}",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 454,
+   "name": "/api/catalog/items/{id}",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 469,
+   "name": "/api/catalog/items/0",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 482,
+   "name": "/api/catalog/items/{missingId}",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 496,
+   "name": "/api/catalog/items",
+   "path": "tests/Catalog.FunctionalTests/CatalogApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 367,
+    "size": 357,
     "stacks": [
      "aspnet-core"
     ]
@@ -22812,7 +23546,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 24,
-    "size": 775,
+    "size": 751,
     "stacks": []
    },
    "kind": "file",
@@ -22862,7 +23596,7 @@
     "encoding": "utf-8",
     "ext": ".sln",
     "lines": 25,
-    "size": 1139,
+    "size": 1114,
     "stacks": []
    },
    "kind": "file",
@@ -22876,7 +23610,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 466,
+    "size": 456,
     "stacks": [
      "aspnet-core"
     ]
@@ -22892,7 +23626,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 10,
-    "size": 232,
+    "size": 222,
     "stacks": [
      "aspnet-core"
     ]
@@ -22908,7 +23642,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 20,
-    "size": 425,
+    "size": 405,
     "stacks": [
      "aspnet-core"
     ]
@@ -22924,7 +23658,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 192,
-    "size": 6613,
+    "size": 6421,
     "stacks": [
      "aspnet-core"
     ]
@@ -22940,7 +23674,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 28,
-    "size": 960,
+    "size": 932,
     "stacks": [
      "aspnet-core"
     ]
@@ -22956,7 +23690,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 347,
+    "size": 334,
     "stacks": [
      "aspnet-core"
     ]
@@ -22972,7 +23706,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 32,
-    "size": 901,
+    "size": 869,
     "stacks": [
      "aspnet-core"
     ]
@@ -22988,7 +23722,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 32,
-    "size": 779,
+    "size": 747,
     "stacks": [
      "aspnet-core"
     ]
@@ -23004,7 +23738,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 19,
-    "size": 443,
+    "size": 424,
     "stacks": [
      "aspnet-core"
     ]
@@ -23020,7 +23754,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 62,
-    "size": 2174,
+    "size": 2112,
     "stacks": [
      "aspnet-core"
     ]
@@ -23036,7 +23770,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 148,
-    "size": 5052,
+    "size": 4904,
     "stacks": [
      "aspnet-core"
     ]
@@ -23052,7 +23786,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 28,
-    "size": 757,
+    "size": 729,
     "stacks": [
      "aspnet-core"
     ]
@@ -23068,7 +23802,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 118,
-    "size": 4010,
+    "size": 3892,
     "stacks": [
      "aspnet-core"
     ]
@@ -23084,7 +23818,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 73,
-    "size": 2576,
+    "size": 2503,
     "stacks": [
      "aspnet-core"
     ]
@@ -23100,7 +23834,7 @@
     "encoding": "utf-8",
     "ext": ".props",
     "lines": 13,
-    "size": 299,
+    "size": 287,
     "stacks": []
    },
    "kind": "file",
@@ -23114,7 +23848,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 26,
-    "size": 722,
+    "size": 696,
     "stacks": [
      "aspnet-core"
     ]
@@ -23130,7 +23864,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 13,
-    "size": 502,
+    "size": 489,
     "stacks": [
      "aspnet-core"
     ]
@@ -23146,7 +23880,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 26,
-    "size": 1128,
+    "size": 1103,
     "stacks": []
    },
    "kind": "file",
@@ -23220,7 +23954,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 77,
-    "size": 2663,
+    "size": 2586,
     "stacks": [
      "aspnet-core"
     ]
@@ -23236,7 +23970,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 243,
-    "size": 9436,
+    "size": 9193,
     "stacks": [
      "aspnet-core"
     ]
@@ -23249,10 +23983,101 @@
   },
   {
    "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 30,
+   "name": "api/orders",
+   "path": "tests/Ordering.FunctionalTests/OrderingApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 101,
+   "name": "api/orders/cardtypes",
+   "path": "tests/Ordering.FunctionalTests/OrderingApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "GET",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 113,
+   "name": "api/orders/1",
+   "path": "tests/Ordering.FunctionalTests/OrderingApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "POST",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 128,
+   "name": "api/orders",
+   "path": "tests/Ordering.FunctionalTests/OrderingApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "POST",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 155,
+   "name": "api/orders",
+   "path": "tests/Ordering.FunctionalTests/OrderingApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "POST",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 181,
+   "name": "api/orders/draft",
+   "path": "tests/Ordering.FunctionalTests/OrderingApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
+    "method": "POST",
+    "test": true,
+    "type": "http",
+    "via": "HttpClient"
+   },
+   "kind": "external_call",
+   "line": 196,
+   "name": "api/orders/draft",
+   "path": "tests/Ordering.FunctionalTests/OrderingApiTests.cs",
+   "stack": "aspnet-core"
+  },
+  {
+   "detail": {
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 77,
-    "size": 3663,
+    "size": 3586,
     "stacks": [
      "aspnet-core"
     ]
@@ -23268,7 +24093,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 83,
-    "size": 3834,
+    "size": 3751,
     "stacks": [
      "aspnet-core"
     ]
@@ -23284,7 +24109,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 182,
-    "size": 6796,
+    "size": 6614,
     "stacks": [
      "aspnet-core"
     ]
@@ -23315,7 +24140,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 31,
-    "size": 1036,
+    "size": 1005,
     "stacks": [
      "aspnet-core"
     ]
@@ -23331,7 +24156,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 46,
-    "size": 1065,
+    "size": 1019,
     "stacks": [
      "aspnet-core"
     ]
@@ -23347,7 +24172,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 130,
-    "size": 4020,
+    "size": 3890,
     "stacks": [
      "aspnet-core"
     ]
@@ -23363,7 +24188,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 178,
-    "size": 6042,
+    "size": 5864,
     "stacks": [
      "aspnet-core"
     ]
@@ -23379,7 +24204,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 197,
-    "size": 7454,
+    "size": 7257,
     "stacks": [
      "aspnet-core"
     ]
@@ -23395,7 +24220,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 21,
-    "size": 903,
+    "size": 882,
     "stacks": [
      "aspnet-core"
     ]
@@ -23411,7 +24236,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 25,
-    "size": 948,
+    "size": 923,
     "stacks": []
    },
    "kind": "file",
@@ -23449,7 +24274,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 5,
-    "size": 303,
+    "size": 299,
     "stacks": []
    },
    "kind": "file",
@@ -23463,7 +24288,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 9,
-    "size": 371,
+    "size": 362,
     "stacks": [
      "aspnet-core"
     ]
@@ -23479,7 +24304,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 15,
-    "size": 478,
+    "size": 463,
     "stacks": [
      "aspnet-core"
     ]
@@ -23495,7 +24320,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 26,
-    "size": 936,
+    "size": 910,
     "stacks": []
    },
    "kind": "file",
@@ -23581,7 +24406,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 85,
-    "size": 3156,
+    "size": 3071,
     "stacks": [
      "aspnet-core"
     ]
@@ -23597,7 +24422,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 87,
-    "size": 3579,
+    "size": 3492,
     "stacks": [
      "aspnet-core"
     ]
@@ -23613,7 +24438,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 116,
-    "size": 4920,
+    "size": 4804,
     "stacks": [
      "aspnet-core"
     ]
@@ -23629,7 +24454,7 @@
     "encoding": "utf-8",
     "ext": ".cs",
     "lines": 3,
-    "size": 136,
+    "size": 133,
     "stacks": [
      "aspnet-core"
     ]
@@ -23645,7 +24470,7 @@
     "encoding": "utf-8",
     "ext": ".csproj",
     "lines": 16,
-    "size": 467,
+    "size": 451,
     "stacks": []
    },
    "kind": "file",
@@ -23655,7 +24480,8 @@
    "stack": "generic"
   }
  ],
- "schema": "appdoc-facts/4",
+ "generator": "2.5.0",
+ "schema": "appdoc-facts/6",
  "stacks": [
   {
    "detail": {
@@ -23673,6 +24499,7 @@
   },
   {
    "detail": {
+    "capabilities": [],
     "file_count": 630,
     "marker_files": [
      "src/Basket.API/Basket.API.csproj",
@@ -23731,11 +24558,59 @@
   "history": "shallow",
   "name": "eShop",
   "scan": {
-   "found": 1157,
+   "found": 1145,
    "ignored": 0,
+   "metadata": 0,
    "pruned": [],
    "pruned_files": 0,
-   "scanned": 1157
+   "retired_candidates": [
+    {
+     "files": 5,
+     "path": "src/ClientApp/Platforms/MacCatalyst/",
+     "signal": "content"
+    },
+    {
+     "files": 5,
+     "path": "src/HybridApp/Platforms/MacCatalyst/",
+     "signal": "content"
+    },
+    {
+     "files": 34,
+     "path": "src/HybridApp/wwwroot/",
+     "signal": "content"
+    },
+    {
+     "files": 14,
+     "path": "src/HybridApp/wwwroot/fonts/",
+     "signal": "content"
+    },
+    {
+     "files": 6,
+     "path": "src/HybridApp/wwwroot/icons/",
+     "signal": "content"
+    },
+    {
+     "files": 49,
+     "path": "src/WebApp/wwwroot/",
+     "signal": "content"
+    },
+    {
+     "files": 26,
+     "path": "src/WebApp/wwwroot/fonts/",
+     "signal": "content"
+    },
+    {
+     "files": 6,
+     "path": "src/WebApp/wwwroot/icons/",
+     "signal": "content"
+    },
+    {
+     "files": 5,
+     "path": "src/WebApp/wwwroot/images/",
+     "signal": "content"
+    }
+   ],
+   "scanned": 1145
   }
  }
 }

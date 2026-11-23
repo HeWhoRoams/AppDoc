@@ -1,6 +1,17 @@
 # Check: PASS
 
-**Scope.** This Check verifies **resolution and structure**: every Citation points to a real file and line inside the Target (see the Citation register), and every Evidence Register row's anchor text appears in the lines it cites. It does **not** judge whether a claim's wording follows from those lines; that is the source-to-claim audit, recorded in `evidence.jsonl`. A PASS is not an accuracy certification.
+**Scope.** Run by AppDoc 2.5.0. This Check verifies **resolution and structure**: every Citation points to a real file and line inside the Target (see the Citation register), and every Evidence Register row's anchor text appears in the lines it cites. It does **not** judge whether a claim's wording follows from those lines; that is the source-to-claim audit, recorded in `evidence.jsonl`. A PASS is not an accuracy certification.
+
+## Universal claims cite single lines (advisory)
+
+1 universal claim cites only single lines. This is not a problem; `appdoc check --strict` fails on it.
+
+- line 152: `All three pages of the Target are catalogued (`project/templates/index.html:1`, `project/templates/login.html:1`, `project/templates/search.html:1`).`
+
+## Gaps declared: Unknown by absence
+Advisory only; this is not a problem.
+
+- deployment runbook is Unknown by absence (no appdoc-context.md); add one to fill section 16.5 Rollback, Backup and Restore
 
 ## Citation register
 
@@ -30,349 +41,342 @@
 | 27 | `runtime.txt` |  | yes |
 | 27 | `tdd.png` |  | yes |
 | 27 | `tests/` |  | yes |
-| 38 | `docs/` |  | yes |
-| 39 | `project/` |  | yes |
-| 40 | `.github/` |  | yes |
-| 41 | `tests/` |  | yes |
-| 48 | `README.md` | 3 | yes |
-| 48 | `project/app.py` | 56-112 | yes |
-| 52 | `project/app.py` | 1-125 | yes |
-| 52 | `project/app.py` | 26-32 | yes |
-| 52 | `project/app.py` | 36-40 | yes |
-| 52 | `project/models.py` | 4-8 | yes |
-| 52 | `project/templates/index.html` | 5-9 | yes |
-| 58 | `project/app.py` |  | yes |
-| 58 | `project/app.py` | 36-125 | yes |
-| 59 | `project/models.py` |  | yes |
-| 59 | `project/models.py` | 4-8 | yes |
-| 60 | `project/templates/` |  | yes |
-| 60 | `project/templates/index.html` | 1-86 | yes |
-| 60 | `project/templates/login.html` | 1-62 | yes |
-| 60 | `project/templates/search.html` | 1-65 | yes |
-| 61 | `project/static/main.js` |  | yes |
-| 61 | `project/static/main.js` | 5-24 | yes |
-| 62 | `create_db.py` |  | yes |
-| 62 | `create_db.py` | 7-12 | yes |
-| 63 | `tests/app_test.py` |  | yes |
-| 63 | `tests/app_test.py` | 1-88 | yes |
-| 64 | `Procfile` |  | yes |
-| 64 | `Procfile` | 1 | yes |
-| 79 | `project/app.py` | 56-125 | yes |
-| 79 | `project/static/main.js` | 11 | yes |
-| 79 | `project/templates/index.html` | 5-9 | yes |
-| 83 | `project/app.py` | 100 | yes |
-| 83 | `project/app.py` | 45-53 | yes |
-| 83 | `project/app.py` | 66-67 | yes |
-| 83 | `project/app.py` | 75-87 | yes |
-| 83 | `project/models.py` | 4-14 | yes |
-| 97 | `project/app.py` | 56-60 | yes |
-| 97 | `project/models.py` | 4 | yes |
-| 97 | `project/templates/index.html` | 72-77 | yes |
-| 98 | `project/app.py` | 63-72 | yes |
-| 98 | `project/app.py` | 66-72 | yes |
-| 99 | `project/app.py` | 23-24 | yes |
-| 99 | `project/app.py` | 75-88 | yes |
-| 99 | `project/app.py` | 80-83 | yes |
-| 100 | `project/app.py` | 91-96 | yes |
-| 100 | `project/app.py` | 91-96 | yes |
-| 101 | `project/app.py` | 103-112 | yes |
-| 101 | `project/app.py` | 99-112 | yes |
-| 102 | `project/app.py` | 115-121 | yes |
-| 102 | `project/app.py` | 117-120 | yes |
-| 102 | `project/templates/search.html` | 51-52 | yes |
-| 103 | `project/static/main.js` | 7-20 | yes |
-| 103 | `project/static/main.js` | 7-21 | yes |
-| 104 | `create_db.py` | 7-12 | yes |
-| 104 | `create_db.py` | 7-12 | yes |
-| 110 | `docs/` |  | yes |
-| 110 | `docs/` |  | yes |
-| 111 | `Procfile` |  | yes |
-| 111 | `README.md` |  | yes |
-| 111 | `create_db.py` |  | yes |
-| 111 | `requirements.txt` |  | yes |
-| 111 | `requirements.txt` | 1-8 | yes |
-| 111 | `runtime.txt` |  | yes |
-| 111 | `runtime.txt` | 1 | yes |
-| 112 | `project/` |  | yes |
-| 112 | `requirements.txt` | 1-2 | yes |
-| 113 | `.github/` |  | yes |
-| 113 | `.github/workflows/main.yml` | 1-29 | yes |
-| 114 | `project/flaskr.db` |  | yes |
-| 114 | `tests/` |  | yes |
-| 114 | `tests/app_test.py` | 1-88 | yes |
-| 120 | `project/app.py` | 21-125 | yes |
-| 120 | `project/app.py` | 23-24 | yes |
-| 120 | `project/app.py` | 48 | yes |
-| 120 | `project/app.py` | 85 | yes |
-| 124 | `project/app.py` | 100 | yes |
-| 124 | `project/app.py` | 45-53 | yes |
-| 125 | `project/app.py` | 66-67 | yes |
-| 126 | `project/app.py` | 115-121 | yes |
-| 126 | `project/app.py` | 56-60 | yes |
-| 126 | `project/app.py` | 75-88 | yes |
-| 126 | `project/app.py` | 91-96 | yes |
-| 127 | `project/templates/index.html` | 19 | yes |
-| 127 | `project/templates/index.html` | 35 | yes |
-| 128 | `create_db.py` | 7-12 | yes |
-| 134 | `project/app.py` | 56-60 | yes |
-| 134 | `project/app.py` | 56-60 | yes |
-| 135 | `project/app.py` | 66-72 | yes |
-| 136 | `project/app.py` | 75-88 | yes |
-| 136 | `project/app.py` | 91-96 | yes |
-| 137 | `project/app.py` | 99-112 | yes |
-| 138 | `project/app.py` | 115-121 | yes |
-| 138 | `project/app.py` | 115-121 | yes |
-| 140 | `project/app.py` | 56-125 | yes |
-| 146 | `project/templates/index.html` | 1 | yes |
-| 150 | `project/app.py` | 56-60 | yes |
-| 150 | `project/app.py` | 72 | yes |
-| 150 | `project/app.py` | 87 | yes |
-| 150 | `project/app.py` | 96 | yes |
-| 150 | `project/templates/index.html` | 17-77 | yes |
-| 150 | `project/templates/index.html` | 35 | yes |
-| 150 | `project/templates/index.html` | 73-74 | yes |
-| 150 | `project/templates/index.html` | 77 | yes |
-| 150 | `project/templates/search.html` | 17-19 | yes |
-| 151 | `project/app.py` | 75-88 | yes |
-| 151 | `project/app.py` | 75-88 | yes |
-| 151 | `project/app.py` | 81 | yes |
-| 151 | `project/app.py` | 83 | yes |
-| 151 | `project/templates/index.html` | 19-22 | yes |
-| 151 | `project/templates/login.html` | 25-53 | yes |
-| 151 | `project/templates/search.html` | 21-24 | yes |
-| 152 | `project/app.py` | 115-121 | yes |
-| 152 | `project/app.py` | 115-121 | yes |
-| 152 | `project/app.py` | 119-121 | yes |
-| 152 | `project/templates/index.html` | 17 | yes |
-| 152 | `project/templates/search.html` | 39-57 | yes |
-| 152 | `project/templates/search.html` | 54 | yes |
-| 154 | `project/templates/index.html` | 1 | yes |
-| 154 | `project/templates/login.html` | 1 | yes |
-| 154 | `project/templates/search.html` | 1 | yes |
-| 160 | `project/app.py` | 56-60 | yes |
-| 161 | `project/templates/index.html` | 72-77 | yes |
-| 162 | `project/templates/index.html` | 31-35 | yes |
-| 164 | `project/app.py` | 26 | yes |
-| 164 | `project/app.py` | 56-60 | yes |
-| 168 | `project/app.py` | 88 | yes |
-| 169 | `project/app.py` | 80-83 | yes |
-| 170 | `project/app.py` | 84-87 | yes |
-| 171 | `project/app.py` | 91-96 | yes |
-| 172 | `tests/app_test.py` | 55-64 | yes |
-| 174 | `project/app.py` | 23-24 | yes |
-| 174 | `project/app.py` | 80-88 | yes |
-| 178 | `project/templates/index.html` | 35-36 | yes |
-| 179 | `project/app.py` | 66-67 | yes |
-| 180 | `project/app.py` | 68-72 | yes |
-| 181 | `tests/app_test.py` | 67-77 | yes |
-| 183 | `project/app.py` | 68 | yes |
-| 183 | `project/app.py` | 70 | yes |
-| 187 | `project/static/main.js` | 7-11 | yes |
-| 188 | `project/app.py` | 48-50 | yes |
-| 189 | `project/app.py` | 106-109 | yes |
-| 189 | `project/app.py` | 112 | yes |
-| 190 | `project/static/main.js` | 15-20 | yes |
-| 191 | `tests/app_test.py` | 80-88 | yes |
-| 193 | `project/app.py` | 106-109 | yes |
-| 193 | `project/app.py` | 110-112 | yes |
-| 193 | `project/static/main.js` | 20 | yes |
-| 197 | `project/templates/search.html` | 39 | yes |
-| 198 | `project/app.py` | 117-121 | yes |
-| 199 | `project/templates/search.html` | 51-52 | yes |
-| 201 | `project/templates/search.html` | 50-57 | yes |
-| 205 | `create_db.py` |  | yes |
-| 205 | `create_db.py` | 7-12 | yes |
-| 206 | `README.md` | 1717 | yes |
-| 208 | `create_db.py` | 7-12 | yes |
-| 208 | `project/app.py` | 26 | yes |
-| 216 | `create_db.py` | 7-12 | yes |
-| 216 | `project/app.py` | 106-107 | yes |
-| 216 | `project/app.py` | 118 | yes |
-| 216 | `project/app.py` | 22-31 | yes |
-| 216 | `project/app.py` | 40 | yes |
-| 216 | `project/app.py` | 59 | yes |
-| 216 | `project/app.py` | 69-70 | yes |
-| 216 | `project/app.py` | 75-96 | yes |
-| 220 | `project/app.py` | 106 | yes |
-| 220 | `project/app.py` | 59 | yes |
-| 220 | `project/models.py` | 4-8 | yes |
-| 226 | `project/templates/index.html` | 5-9 | yes |
-| 226 | `project/templates/login.html` | 5-9 | yes |
-| 226 | `project/templates/search.html` | 5-9 | yes |
-| 232 | `project/models.py` | 4-7 | yes |
-| 232 | `project/templates/index.html` | 74 | yes |
-| 238 | `project/models.py` | 5 | yes |
-| 239 | `project/models.py` | 6 | yes |
-| 240 | `project/models.py` | 7 | yes |
-| 242 | `.gitignore` |  | yes |
-| 242 | `.gitignore` | 5 | yes |
-| 242 | `project/flaskr.db` |  | yes |
-| 242 | `project/flaskr.db` | 1 | yes |
-| 242 | `test.db` | 1 | yes |
-| 248 | `project/app.py` | 1-125 | yes |
-| 248 | `project/app.py` | 110-112 | yes |
-| 248 | `project/app.py` | 21-32 | yes |
-| 249 | `project/static/main.js` | 1-3 | yes |
-| 249 | `project/static/main.js` | 18 | yes |
-| 249 | `project/static/main.js` | 23 | yes |
-| 249 | `project/templates/index.html` | 5-9 | yes |
-| 249 | `project/templates/index.html` | 5-9 | yes |
-| 255 | `project/app.py` | 25 | yes |
-| 255 | `project/app.py` | 48 | yes |
-| 255 | `project/app.py` | 75-88 | yes |
-| 256 | `project/app.py` | 66-67 | yes |
-| 257 | `project/app.py` | 80-83 | yes |
-| 258 | `project/app.py` | 71-72 | yes |
-| 259 | `project/app.py` | 110-112 | yes |
-| 259 | `project/app.py` | 26-32 | yes |
-| 260 | `project/models.py` | 5 | yes |
-| 260 | `project/templates/index.html` | 73 | yes |
-| 260 | `project/templates/search.html` | 54 | yes |
-| 261 | `project/templates/index.html` | 77 | yes |
-| 262 | `project/app.py` | 109 | yes |
-| 262 | `project/app.py` | 49 | yes |
-| 270 | `project/app.py` | 24 | yes |
-| 270 | `project/app.py` | 26 | yes |
-| 270 | `project/app.py` | 80 | yes |
-| 270 | `project/templates/login.html` | 53 | yes |
-| 271 | `project/app.py` | 25 | yes |
-| 271 | `project/app.py` | 48 | yes |
-| 271 | `project/app.py` | 66 | yes |
-| 271 | `project/app.py` | 85 | yes |
-| 272 | `project/templates/index.html` | 74 | yes |
-| 272 | `project/templates/search.html` | 55 | yes |
-| 272 | `tests/app_test.py` | 77 | yes |
-| 272 | `tests/app_test.py` | 77 | yes |
-| 273 | `project/app.py` | 21-32 | yes |
-| 273 | `project/app.py` | 99 | yes |
-| 273 | `project/static/main.js` | 7-11 | yes |
-| 273 | `project/templates/index.html` | 36 | yes |
-| 273 | `requirements.txt` | 1-4 | yes |
-| 274 | `project/app.py` | 23 | yes |
-| 274 | `project/app.py` | 81 | yes |
-| 274 | `project/app.py` | 83 | yes |
-| 274 | `project/templates/login.html` | 53 | yes |
-| 275 | `project/app.py` | 111-112 | yes |
-| 276 | `project/models.py` | 5 | yes |
-| 276 | `project/templates/search.html` | 54 | yes |
-| 277 | `project/app.py` | 118-120 | yes |
-| 277 | `project/app.py` | 59 | yes |
-| 277 | `project/templates/search.html` | 51-52 | yes |
-| 278 | `project/app.py` | 22 | yes |
-| 278 | `project/app.py` | 26 | yes |
-| 278 | `project/app.py` | 40 | yes |
-| 278 | `tests/app_test.py` | 13-21 | yes |
-| 278 | `tests/app_test.py` | 43-46 | yes |
-| 279 | `.gitignore` | 5 | yes |
-| 279 | `project/flaskr.db` | 1 | yes |
-| 279 | `project/models.py` | 4-8 | yes |
-| 279 | `test.db` | 1 | yes |
-| 285 | `Procfile` | 1 | yes |
-| 285 | `project/app.py` | 21-32 | yes |
-| 286 | `project/templates/index.html` | 36-70 | yes |
-| 286 | `project/templates/login.html` | 31-50 | yes |
-| 286 | `requirements.txt` | 1-8 | yes |
+| 38 | `project/` |  | yes |
+| 39 | `.github/` |  | yes |
+| 40 | `tests/` |  | yes |
+| 47 | `README.md` | 3 | yes |
+| 47 | `project/app.py` | 56-112 | yes |
+| 51 | `project/app.py` | 1-125 | yes |
+| 51 | `project/app.py` | 26-32 | yes |
+| 51 | `project/app.py` | 36-40 | yes |
+| 51 | `project/models.py` | 4-8 | yes |
+| 51 | `project/templates/index.html` | 5-9 | yes |
+| 57 | `project/app.py` |  | yes |
+| 57 | `project/app.py` | 36-125 | yes |
+| 58 | `project/models.py` |  | yes |
+| 58 | `project/models.py` | 4-8 | yes |
+| 59 | `project/templates/` |  | yes |
+| 59 | `project/templates/index.html` | 1-86 | yes |
+| 59 | `project/templates/login.html` | 1-62 | yes |
+| 59 | `project/templates/search.html` | 1-65 | yes |
+| 60 | `project/static/main.js` |  | yes |
+| 60 | `project/static/main.js` | 5-24 | yes |
+| 61 | `create_db.py` |  | yes |
+| 61 | `create_db.py` | 7-12 | yes |
+| 62 | `tests/app_test.py` |  | yes |
+| 62 | `tests/app_test.py` | 1-88 | yes |
+| 63 | `Procfile` |  | yes |
+| 63 | `Procfile` | 1 | yes |
+| 78 | `project/app.py` | 56-125 | yes |
+| 78 | `project/static/main.js` | 11 | yes |
+| 78 | `project/templates/index.html` | 5-9 | yes |
+| 82 | `project/app.py` | 100 | yes |
+| 82 | `project/app.py` | 45-53 | yes |
+| 82 | `project/app.py` | 66-67 | yes |
+| 82 | `project/app.py` | 75-87 | yes |
+| 82 | `project/models.py` | 4-14 | yes |
+| 96 | `project/app.py` | 56-60 | yes |
+| 96 | `project/models.py` | 4 | yes |
+| 96 | `project/templates/index.html` | 72-77 | yes |
+| 97 | `project/app.py` | 63-72 | yes |
+| 97 | `project/app.py` | 66-72 | yes |
+| 98 | `project/app.py` | 23-24 | yes |
+| 98 | `project/app.py` | 75-88 | yes |
+| 98 | `project/app.py` | 80-83 | yes |
+| 99 | `project/app.py` | 91-96 | yes |
+| 99 | `project/app.py` | 91-96 | yes |
+| 100 | `project/app.py` | 103-112 | yes |
+| 100 | `project/app.py` | 99-112 | yes |
+| 101 | `project/app.py` | 115-121 | yes |
+| 101 | `project/app.py` | 117-120 | yes |
+| 101 | `project/templates/search.html` | 51-52 | yes |
+| 102 | `project/static/main.js` | 7-20 | yes |
+| 102 | `project/static/main.js` | 7-21 | yes |
+| 103 | `create_db.py` | 7-12 | yes |
+| 103 | `create_db.py` | 7-12 | yes |
+| 109 | `Procfile` |  | yes |
+| 109 | `README.md` |  | yes |
+| 109 | `create_db.py` |  | yes |
+| 109 | `requirements.txt` |  | yes |
+| 109 | `requirements.txt` | 1-8 | yes |
+| 109 | `runtime.txt` |  | yes |
+| 109 | `runtime.txt` | 1 | yes |
+| 110 | `project/` |  | yes |
+| 110 | `requirements.txt` | 1-2 | yes |
+| 111 | `.github/` |  | yes |
+| 111 | `.github/workflows/main.yml` | 1-29 | yes |
+| 112 | `project/flaskr.db` |  | yes |
+| 112 | `tests/` |  | yes |
+| 112 | `tests/app_test.py` | 1-88 | yes |
+| 118 | `project/app.py` | 21-125 | yes |
+| 118 | `project/app.py` | 23-24 | yes |
+| 118 | `project/app.py` | 48 | yes |
+| 118 | `project/app.py` | 85 | yes |
+| 122 | `project/app.py` | 100 | yes |
+| 122 | `project/app.py` | 45-53 | yes |
+| 123 | `project/app.py` | 66-67 | yes |
+| 124 | `project/app.py` | 115-121 | yes |
+| 124 | `project/app.py` | 56-60 | yes |
+| 124 | `project/app.py` | 75-88 | yes |
+| 124 | `project/app.py` | 91-96 | yes |
+| 125 | `project/templates/index.html` | 19 | yes |
+| 125 | `project/templates/index.html` | 35 | yes |
+| 126 | `create_db.py` | 7-12 | yes |
+| 132 | `project/app.py` | 56-60 | yes |
+| 132 | `project/app.py` | 56-60 | yes |
+| 133 | `project/app.py` | 66-72 | yes |
+| 134 | `project/app.py` | 75-88 | yes |
+| 134 | `project/app.py` | 91-96 | yes |
+| 135 | `project/app.py` | 99-112 | yes |
+| 136 | `project/app.py` | 115-121 | yes |
+| 136 | `project/app.py` | 115-121 | yes |
+| 138 | `project/app.py` | 56-125 | yes |
+| 144 | `project/templates/index.html` | 1 | yes |
+| 148 | `project/app.py` | 56-60 | yes |
+| 148 | `project/app.py` | 72 | yes |
+| 148 | `project/app.py` | 87 | yes |
+| 148 | `project/app.py` | 96 | yes |
+| 148 | `project/templates/index.html` | 17-77 | yes |
+| 148 | `project/templates/index.html` | 35 | yes |
+| 148 | `project/templates/index.html` | 73-74 | yes |
+| 148 | `project/templates/index.html` | 77 | yes |
+| 148 | `project/templates/search.html` | 17-19 | yes |
+| 149 | `project/app.py` | 75-88 | yes |
+| 149 | `project/app.py` | 75-88 | yes |
+| 149 | `project/app.py` | 81 | yes |
+| 149 | `project/app.py` | 83 | yes |
+| 149 | `project/templates/index.html` | 19-22 | yes |
+| 149 | `project/templates/login.html` | 25-53 | yes |
+| 149 | `project/templates/search.html` | 21-24 | yes |
+| 150 | `project/app.py` | 115-121 | yes |
+| 150 | `project/app.py` | 115-121 | yes |
+| 150 | `project/app.py` | 119-121 | yes |
+| 150 | `project/templates/index.html` | 17 | yes |
+| 150 | `project/templates/search.html` | 39-57 | yes |
+| 150 | `project/templates/search.html` | 54 | yes |
+| 152 | `project/templates/index.html` | 1 | yes |
+| 152 | `project/templates/login.html` | 1 | yes |
+| 152 | `project/templates/search.html` | 1 | yes |
+| 158 | `project/app.py` | 56-60 | yes |
+| 159 | `project/templates/index.html` | 72-77 | yes |
+| 160 | `project/templates/index.html` | 31-35 | yes |
+| 162 | `project/app.py` | 26 | yes |
+| 162 | `project/app.py` | 56-60 | yes |
+| 166 | `project/app.py` | 88 | yes |
+| 167 | `project/app.py` | 80-83 | yes |
+| 168 | `project/app.py` | 84-87 | yes |
+| 169 | `project/app.py` | 91-96 | yes |
+| 170 | `tests/app_test.py` | 55-64 | yes |
+| 172 | `project/app.py` | 23-24 | yes |
+| 172 | `project/app.py` | 80-88 | yes |
+| 176 | `project/templates/index.html` | 35-36 | yes |
+| 177 | `project/app.py` | 66-67 | yes |
+| 178 | `project/app.py` | 68-72 | yes |
+| 179 | `tests/app_test.py` | 67-77 | yes |
+| 181 | `project/app.py` | 68 | yes |
+| 181 | `project/app.py` | 70 | yes |
+| 185 | `project/static/main.js` | 7-11 | yes |
+| 186 | `project/app.py` | 48-50 | yes |
+| 187 | `project/app.py` | 106-109 | yes |
+| 187 | `project/app.py` | 112 | yes |
+| 188 | `project/static/main.js` | 15-20 | yes |
+| 189 | `tests/app_test.py` | 80-88 | yes |
+| 191 | `project/app.py` | 106-109 | yes |
+| 191 | `project/app.py` | 110-112 | yes |
+| 191 | `project/static/main.js` | 20 | yes |
+| 195 | `project/templates/search.html` | 39 | yes |
+| 196 | `project/app.py` | 117-121 | yes |
+| 197 | `project/templates/search.html` | 51-52 | yes |
+| 199 | `project/templates/search.html` | 50-57 | yes |
+| 203 | `create_db.py` |  | yes |
+| 203 | `create_db.py` | 7-12 | yes |
+| 204 | `README.md` | 1717 | yes |
+| 206 | `create_db.py` | 7-12 | yes |
+| 206 | `project/app.py` | 26 | yes |
+| 214 | `create_db.py` | 7-12 | yes |
+| 214 | `project/app.py` | 106-107 | yes |
+| 214 | `project/app.py` | 118 | yes |
+| 214 | `project/app.py` | 22-31 | yes |
+| 214 | `project/app.py` | 40 | yes |
+| 214 | `project/app.py` | 59 | yes |
+| 214 | `project/app.py` | 69-70 | yes |
+| 214 | `project/app.py` | 75-96 | yes |
+| 218 | `project/app.py` | 106 | yes |
+| 218 | `project/app.py` | 59 | yes |
+| 218 | `project/models.py` | 4-8 | yes |
+| 224 | `project/templates/index.html` | 5-9 | yes |
+| 224 | `project/templates/login.html` | 5-9 | yes |
+| 224 | `project/templates/search.html` | 5-9 | yes |
+| 230 | `project/models.py` | 4-7 | yes |
+| 230 | `project/templates/index.html` | 74 | yes |
+| 236 | `project/models.py` | 5 | yes |
+| 237 | `project/models.py` | 6 | yes |
+| 238 | `project/models.py` | 7 | yes |
+| 240 | `.gitignore` |  | yes |
+| 240 | `.gitignore` | 5 | yes |
+| 240 | `project/flaskr.db` |  | yes |
+| 240 | `project/flaskr.db` |  | yes |
+| 246 | `project/app.py` | 1-125 | yes |
+| 246 | `project/app.py` | 110-112 | yes |
+| 246 | `project/app.py` | 21-32 | yes |
+| 247 | `project/static/main.js` | 1-3 | yes |
+| 247 | `project/static/main.js` | 18 | yes |
+| 247 | `project/static/main.js` | 23 | yes |
+| 247 | `project/templates/index.html` | 5-9 | yes |
+| 247 | `project/templates/index.html` | 5-9 | yes |
+| 253 | `project/app.py` | 25 | yes |
+| 253 | `project/app.py` | 48 | yes |
+| 253 | `project/app.py` | 75-88 | yes |
+| 254 | `project/app.py` | 66-67 | yes |
+| 255 | `project/app.py` | 80-83 | yes |
+| 256 | `project/app.py` | 71-72 | yes |
+| 257 | `project/app.py` | 110-112 | yes |
+| 257 | `project/app.py` | 26-32 | yes |
+| 258 | `project/models.py` | 5 | yes |
+| 258 | `project/templates/index.html` | 73 | yes |
+| 258 | `project/templates/search.html` | 54 | yes |
+| 259 | `project/templates/index.html` | 77 | yes |
+| 260 | `project/app.py` | 109 | yes |
+| 260 | `project/app.py` | 49 | yes |
+| 268 | `project/app.py` | 24 | yes |
+| 268 | `project/app.py` | 26 | yes |
+| 268 | `project/app.py` | 80 | yes |
+| 268 | `project/templates/login.html` | 53 | yes |
+| 269 | `project/app.py` | 25 | yes |
+| 269 | `project/app.py` | 48 | yes |
+| 269 | `project/app.py` | 66 | yes |
+| 269 | `project/app.py` | 85 | yes |
+| 270 | `project/templates/index.html` | 74 | yes |
+| 270 | `project/templates/search.html` | 55 | yes |
+| 270 | `tests/app_test.py` | 77 | yes |
+| 270 | `tests/app_test.py` | 77 | yes |
+| 271 | `project/app.py` | 21-32 | yes |
+| 271 | `project/app.py` | 99 | yes |
+| 271 | `project/static/main.js` | 7-11 | yes |
+| 271 | `project/templates/index.html` | 36 | yes |
+| 271 | `requirements.txt` | 1-4 | yes |
+| 272 | `project/app.py` | 23 | yes |
+| 272 | `project/app.py` | 81 | yes |
+| 272 | `project/app.py` | 83 | yes |
+| 272 | `project/templates/login.html` | 53 | yes |
+| 273 | `project/app.py` | 111-112 | yes |
+| 274 | `project/models.py` | 5 | yes |
+| 274 | `project/templates/search.html` | 54 | yes |
+| 275 | `project/app.py` | 118-120 | yes |
+| 275 | `project/app.py` | 59 | yes |
+| 275 | `project/templates/search.html` | 51-52 | yes |
+| 276 | `project/app.py` | 22 | yes |
+| 276 | `project/app.py` | 26 | yes |
+| 276 | `project/app.py` | 40 | yes |
+| 276 | `tests/app_test.py` | 13-21 | yes |
+| 276 | `tests/app_test.py` | 43-46 | yes |
+| 277 | `.gitignore` | 5 | yes |
+| 277 | `project/flaskr.db` |  | yes |
+| 277 | `project/models.py` | 4-8 | yes |
+| 283 | `Procfile` | 1 | yes |
+| 283 | `project/app.py` | 21-32 | yes |
+| 284 | `project/templates/index.html` | 36-70 | yes |
+| 284 | `project/templates/login.html` | 31-50 | yes |
+| 284 | `requirements.txt` | 1-8 | yes |
+| 285 | `project/app.py` | 75-88 | yes |
+| 286 | `project/app.py` | 21-32 | yes |
 | 287 | `project/app.py` | 75-88 | yes |
-| 288 | `project/app.py` | 21-32 | yes |
-| 289 | `project/app.py` | 75-88 | yes |
-| 289 | `requirements.txt` | 1-8 | yes |
-| 290 | `project/app.py` | 1-125 | yes |
-| 291 | `Procfile` | 1 | yes |
-| 291 | `project/models.py` | 1-14 | yes |
-| 292 | `project/app.py` | 23-26 | yes |
-| 302 | `README.md` | 3 | yes |
-| 303 | `.github/workflows/main.yml` | 19-29 | yes |
-| 303 | `.github/workflows/main.yml` | 3 | yes |
-| 304 | `tests/app_test.py` |  | yes |
-| 304 | `tests/app_test.py` | 38-52 | yes |
-| 304 | `tests/app_test.py` | 55-64 | yes |
-| 304 | `tests/app_test.py` | 67-77 | yes |
-| 304 | `tests/app_test.py` | 80-88 | yes |
-| 306 | `project/app.py` | 40 | yes |
-| 306 | `project/flaskr.db` |  | yes |
-| 306 | `project/flaskr.db` |  | yes |
-| 306 | `tests/app_test.py` | 13-16 | yes |
-| 306 | `tests/app_test.py` | 19-21 | yes |
-| 306 | `tests/app_test.py` | 43-46 | yes |
-| 310 | `project/app.py` | 23-25 | yes |
-| 311 | `.github/workflows/main.yml` | 23-29 | yes |
-| 312 | `tests/app_test.py` | 1-88 | yes |
-| 330 | `project/app.py` | 75-87 | yes |
-| 330 | `project/app.py` | 99-112 | yes |
-| 330 | `project/static/main.js` | 7-20 | yes |
-| 341 | `project/models.py` | 4-7 | yes |
-| 347 | `project/templates/index.html` | 72-77 | yes |
-| 348 | `project/models.py` | 4-7 | yes |
-| 349 | `project/app.py` | 48 | yes |
-| 350 | `project/app.py` | 45-53 | yes |
-| 351 | `project/app.py` | 49 | yes |
-| 351 | `project/templates/index.html` | 31-35 | yes |
-| 352 | `project/app.py` | 26 | yes |
-| 353 | `project/app.py` | 25 | yes |
-| 354 | `project/app.py` | 38 | yes |
-| 355 | `Procfile` | 1 | yes |
-| 356 | `create_db.py` |  | yes |
-| 356 | `create_db.py` | 7-12 | yes |
-| 363 | `.github/workflows/main.yml` | 1-29 | yes |
-| 364 | `project/app.py` | 23-25 | yes |
-| 365 | `project/app.py` | 21-32 | yes |
-| 366 | `project/app.py` | 106-107 | yes |
-| 381 | `create_db.py` |  | yes |
-| 381 | `project/flaskr.db` |  | yes |
-| 385 | `LICENSE` |  | yes |
-| 385 | `docs/` |  | yes |
-| 391 | `.github/workflows/main.yml` | 11 | yes |
-| 391 | `runtime.txt` | 1 | yes |
-| 392 | `requirements.txt` | 1-4 | yes |
-| 392 | `requirements.txt` | 6-8 | yes |
-| 393 | `Procfile` | 1 | yes |
-| 397 | `project/` |  | yes |
-| 397 | `project/app.py` | 22 | yes |
-| 397 | `project/app.py` | 26 | yes |
-| 397 | `project/app.py` | 26-31 | yes |
-| 398 | `create_db.py` |  | yes |
-| 398 | `create_db.py` | 7-12 | yes |
-| 398 | `project/flaskr.db` |  | yes |
-| 398 | `requirements.txt` | 1-8 | yes |
-| 398 | `tests/app_test.py` | 19-21 | yes |
-| 402 | `project/app.py` | 21-32 | yes |
-| 402 | `project/app.py` | 85 | yes |
-| 402 | `project/app.py` | 94 | yes |
-| 402 | `project/app.py` | 94 | yes |
-| 408 | `create_db.py` |  | yes |
-| 408 | `create_db.py` | 7-12 | yes |
-| 408 | `project/app.py` | 110-112 | yes |
-| 408 | `project/app.py` | 118-120 | yes |
-| 408 | `project/app.py` | 26 | yes |
-| 408 | `project/app.py` | 59-60 | yes |
-| 408 | `project/app.py` | 69-70 | yes |
-| 408 | `project/app.py` | 75-96 | yes |
-| 409 | `project/app.py` | 110-112 | yes |
-| 410 | `project/app.py` | 25 | yes |
-| 410 | `project/app.py` | 50 | yes |
-| 410 | `project/app.py` | 67 | yes |
-| 411 | `project/app.py` | 28-29 | yes |
-| 417 | `.github/workflows/main.yml` | 19-22 | yes |
-| 418 | `.github/workflows/main.yml` | 23-29 | yes |
-| 419 | `Procfile` | 1 | yes |
-| 419 | `README.md` | 1082-1083 | yes |
-| 424 | `project/app.py` | 23-25 | yes |
-| 431 | `project/app.py` | 24 | yes |
-| 432 | `project/app.py` | 25 | yes |
-| 433 | `project/app.py` | 22 | yes |
-| 434 | `project/app.py` | 23 | yes |
-| 435 | `project/app.py` | 26 | yes |
-| 436 | `project/app.py` | 31 | yes |
-| 437 | `project/app.py` | 32 | yes |
-| 444 | `project/app.py` | 80 | yes |
-| 445 | `project/app.py` | 82 | yes |
-| 446 | `project/app.py` | 25 | yes |
-| 447 | `project/app.py` | 26 | yes |
-| 448 | `project/app.py` | 22 | yes |
+| 287 | `requirements.txt` | 1-8 | yes |
+| 288 | `project/app.py` | 1-125 | yes |
+| 289 | `Procfile` | 1 | yes |
+| 289 | `project/models.py` | 1-14 | yes |
+| 290 | `project/app.py` | 23-26 | yes |
+| 300 | `README.md` | 3 | yes |
+| 301 | `.github/workflows/main.yml` | 19-29 | yes |
+| 301 | `.github/workflows/main.yml` | 3 | yes |
+| 302 | `tests/app_test.py` |  | yes |
+| 302 | `tests/app_test.py` | 38-52 | yes |
+| 302 | `tests/app_test.py` | 55-64 | yes |
+| 302 | `tests/app_test.py` | 67-77 | yes |
+| 302 | `tests/app_test.py` | 80-88 | yes |
+| 304 | `project/app.py` | 40 | yes |
+| 304 | `project/flaskr.db` |  | yes |
+| 304 | `project/flaskr.db` |  | yes |
+| 304 | `tests/app_test.py` | 13-16 | yes |
+| 304 | `tests/app_test.py` | 19-21 | yes |
+| 304 | `tests/app_test.py` | 43-46 | yes |
+| 308 | `project/app.py` | 23-25 | yes |
+| 309 | `.github/workflows/main.yml` | 23-29 | yes |
+| 310 | `tests/app_test.py` | 1-88 | yes |
+| 328 | `project/app.py` | 75-87 | yes |
+| 328 | `project/app.py` | 99-112 | yes |
+| 328 | `project/static/main.js` | 7-20 | yes |
+| 339 | `project/models.py` | 4-7 | yes |
+| 345 | `project/templates/index.html` | 72-77 | yes |
+| 346 | `project/models.py` | 4-7 | yes |
+| 347 | `project/app.py` | 48 | yes |
+| 348 | `project/app.py` | 45-53 | yes |
+| 349 | `project/app.py` | 49 | yes |
+| 349 | `project/templates/index.html` | 31-35 | yes |
+| 350 | `project/app.py` | 26 | yes |
+| 351 | `project/app.py` | 25 | yes |
+| 352 | `project/app.py` | 38 | yes |
+| 353 | `Procfile` | 1 | yes |
+| 354 | `create_db.py` |  | yes |
+| 354 | `create_db.py` | 7-12 | yes |
+| 361 | `.github/workflows/main.yml` | 1-29 | yes |
+| 362 | `project/app.py` | 23-25 | yes |
+| 363 | `project/app.py` | 21-32 | yes |
+| 364 | `project/app.py` | 106-107 | yes |
+| 379 | `create_db.py` |  | yes |
+| 379 | `project/flaskr.db` |  | yes |
+| 383 | `LICENSE` |  | yes |
+| 389 | `.github/workflows/main.yml` | 11 | yes |
+| 389 | `runtime.txt` | 1 | yes |
+| 390 | `requirements.txt` | 1-4 | yes |
+| 390 | `requirements.txt` | 6-8 | yes |
+| 391 | `Procfile` | 1 | yes |
+| 395 | `project/` |  | yes |
+| 395 | `project/app.py` | 22 | yes |
+| 395 | `project/app.py` | 26 | yes |
+| 395 | `project/app.py` | 26-31 | yes |
+| 396 | `create_db.py` |  | yes |
+| 396 | `create_db.py` | 7-12 | yes |
+| 396 | `project/flaskr.db` |  | yes |
+| 396 | `requirements.txt` | 1-8 | yes |
+| 396 | `tests/app_test.py` | 19-21 | yes |
+| 400 | `project/app.py` | 21-32 | yes |
+| 400 | `project/app.py` | 85 | yes |
+| 400 | `project/app.py` | 94 | yes |
+| 400 | `project/app.py` | 94 | yes |
+| 406 | `create_db.py` |  | yes |
+| 406 | `create_db.py` | 7-12 | yes |
+| 406 | `project/app.py` | 110-112 | yes |
+| 406 | `project/app.py` | 118-120 | yes |
+| 406 | `project/app.py` | 26 | yes |
+| 406 | `project/app.py` | 59-60 | yes |
+| 406 | `project/app.py` | 69-70 | yes |
+| 406 | `project/app.py` | 75-96 | yes |
+| 407 | `project/app.py` | 110-112 | yes |
+| 408 | `project/app.py` | 25 | yes |
+| 408 | `project/app.py` | 50 | yes |
+| 408 | `project/app.py` | 67 | yes |
+| 409 | `project/app.py` | 28-29 | yes |
+| 415 | `.github/workflows/main.yml` | 19-22 | yes |
+| 416 | `.github/workflows/main.yml` | 23-29 | yes |
+| 417 | `Procfile` | 1 | yes |
+| 417 | `README.md` | 1082-1083 | yes |
+| 422 | `project/app.py` | 23-25 | yes |
+| 429 | `project/app.py` | 24 | yes |
+| 430 | `project/app.py` | 25 | yes |
+| 431 | `project/app.py` | 22 | yes |
+| 432 | `project/app.py` | 23 | yes |
+| 433 | `project/app.py` | 31 | yes |
+| 434 | `project/app.py` | 32 | yes |
+| 443 | `project/app.py` | 80 | yes |
+| 444 | `project/app.py` | 82 | yes |
+| 445 | `project/app.py` | 25 | yes |
+| 446 | `project/app.py` | 26 | yes |
+| 447 | `project/app.py` | 22 | yes |
 
 ## Verification
 
-**Source-to-claim audit:** performed (auditor: independent). 95 rows: 80 Supported, 11 Corrected, 1 Downgraded, 1 Dismissed, 2 Answerable.
+**Source-to-claim audit:** performed (auditor: independent). 91 rows: 80 Supported, 7 Corrected, 1 Downgraded, 1 Dismissed, 2 Answerable.
 
 | Section | IDs with a register row |
 |---|---|

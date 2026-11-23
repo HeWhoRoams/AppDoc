@@ -3,9 +3,33 @@
 - Target: `flaskr-tdd`
 - Commit: `305122f48823d98fd7fe8de989af2821b3c5d46d`
 - Git history: shallow
-- Schema: `appdoc-facts/4`
+- Schema: `appdoc-facts/6`
 
 > Facts show what the extractors found. An empty list is not proof that something is absent: the extractors only recognise the patterns of the Stacks below, so read the source before writing "none". Facts from test code are marked `test` in `facts.json` and left out of the lists.
+
+## System Connections
+
+> Derived deterministically from the `connection`, `external_call` and `dependency` Facts in `facts.json` - a pure function of the Facts, byte-identical across runs. A group with no rows is not proof of absence; the extractors only recognise the patterns of the detected Stacks.
+
+### Integration map
+
+app -> { sqlalchemy }
+
+| System | Kind | Count | Drivers / targets |
+|---|---|---:|---|
+| Sqlalchemy | connection | 1 | `SQLAlchemy` |
+
+### Provenance
+
+- **Sqlalchemy** - 1 x `SQLAlchemy`
+  - `project/app.py:40`
+
+### Dependencies
+
+| Manager | Count | Examples |
+|---|---:|---|
+| pip | 7 | `Flask`, `Flask-SQLAlchemy`, `black`, `flake8`, `gunicorn`, ... +2 more |
+
 
 ## Stacks
 
@@ -19,21 +43,22 @@
 |---|---|
 | auth_check | 1 |
 | config_key | 32 |
+| connection | 1 |
 | data_access | 1 |
 | dependency | 7 |
 | entry_point | 7 |
-| file | 41 |
+| file | 23 |
 | message | 5 |
 | smell | 7 |
 
 | Stack | Facts |
 |---|---|
-| generic | 60 |
-| python-flask | 41 |
+| generic | 42 |
+| python-flask | 42 |
 
 ## Scan coverage
 
-Files found: 41 = scanned 41 + pruned 0 + ignored by `.appdocignore` 0.
+Files found: 23 = scanned 23 + pruned 0 + ignored by `.appdocignore` 0.
 
 No folders were pruned.
 
@@ -41,7 +66,7 @@ No folders were pruned.
 
 | Application config file | Keys |
 |---|---|
-| `project/app.py` | 9 |
+| `project/app.py` | 8 |
 
 - ci: 2 files, 10 keys (not application settings)
 
@@ -49,7 +74,6 @@ No folders were pruned.
 
 | Folder | Files | Entry points | Data access | External calls |
 |---|---|---|---|---|
-| `docs` | 18 | 0 | 0 | 0 |
 | `(root)` | 10 | 0 | 0 | 0 |
 | `project` | 9 | 7 | 1 | 0 |
 | `.github` | 2 | 0 | 0 | 0 |
@@ -60,30 +84,22 @@ No folders were pruned.
 | File | Lines |
 |---|---|
 | `README.md` | 1760 |
-| `docs/appdoc-2.2-seeded/facts.json` | 983 |
-| `docs/appdoc-2.2/facts.json` | 983 |
-| `docs/appdoc/facts.json` | 884 |
-| `docs/appdoc/check-report.md` | 535 |
-| `docs/appdoc/application-documentation.md` | 485 |
-| `docs/appdoc-2.2-seeded/application-documentation.md` | 381 |
-| `docs/appdoc-2.2/application-documentation.md` | 370 |
-| `docs/appdoc-2.2-seeded/check-report.md` | 247 |
-| `docs/appdoc-2.2/check-report.md` | 247 |
 | `project/app.py` | 125 |
-| `docs/appdoc-2.2-seeded/facts-summary.md` | 113 |
-| `docs/appdoc-2.2/facts-summary.md` | 113 |
-| `docs/appdoc/facts-summary.md` | 93 |
 | `tests/app_test.py` | 88 |
 | `project/templates/index.html` | 86 |
 | `project/static/style.css` | 74 |
 | `project/templates/search.html` | 65 |
-| `docs/appdoc/verification.md` | 63 |
 | `project/templates/login.html` | 62 |
 | `.github/workflows/main.yml` | 29 |
 | `project/static/main.js` | 26 |
 | `LICENSE` | 21 |
 | `project/models.py` | 14 |
 | `create_db.py` | 12 |
+| `requirements.txt` | 8 |
+| `.gitignore` | 5 |
+| `.github/FUNDING.yml` | 1 |
+| `Procfile` | 1 |
+| `runtime.txt` | 1 |
 
 ## Entry points
 
@@ -101,7 +117,7 @@ No folders were pruned.
 
 ## Connections (locations only)
 
-None extracted. This is not proof of absence.
+- `SQLAlchemy` — `project/app.py:40`
 
 ## Config keys flagged as secret locations
 

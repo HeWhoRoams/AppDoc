@@ -1,5 +1,5 @@
 # flaskr-tdd Documentation
-<!-- appdoc:template 2.3 -->
+<!-- appdoc:template 2.4 -->
 
 **Target:** flaskr-tdd | **Commit:** 305122f48823d98fd7fe8de989af2821b3c5d46d | **Evidence date:** 2026-11-11
 
@@ -24,18 +24,17 @@ The Target is a small Flask web application with one Python module for the web l
 
 ### 2.1 What was inspected
 
-Every Python, template and JavaScript file in `project/`, plus `tests/`, `create_db.py`, `requirements.txt`, `runtime.txt`, `Procfile` and `.github/workflows/main.yml`, was opened. `project/static/style.css` was also read: it holds presentation rules only, and no template or script references it. The binary files `project/flaskr.db` and `test.db` were opened read-only for table names and row counts (8.4). Not reviewed: the images `flaskr-app.png` and `tdd.png`; `LICENSE`; the body of `README.md` beyond its headings and deployment commands (`README.md:1013-1083`); and `docs/`, which holds generated documentation output rather than application source. No deployed instance was observed; the only run was the audit's pytest run on a scratch copy (section 11).
+Every Python, template and JavaScript file in `project/`, plus `tests/`, `create_db.py`, `requirements.txt`, `runtime.txt`, `Procfile` and `.github/workflows/main.yml`, was opened. `project/static/style.css` was also read: it holds presentation rules only, and no template or script references it. The binary files `project/flaskr.db` and `test.db` were opened read-only for table names and row counts (8.4). Not reviewed: the images `flaskr-app.png` and `tdd.png`; `LICENSE`; the body of `README.md` beyond its headings and deployment commands (`README.md:1013-1083`); no `docs/` folder exists in this Target. No deployed instance was observed; the only run was the audit's pytest run on a scratch copy (section 11).
 
 <!-- appdoc:generated scan-coverage -->
 | Stack | Supported | Files read |
 |---|---|---|
 | python-flask | yes | 6 |
 
-Files found: 41 = scanned 41 + pruned 0 + ignored by .appdocignore 0.
+Files found: 23 = scanned 23 + pruned 0 + ignored by .appdocignore 0.
 
 | Top folder | Files scanned |
 |---|---|
-| `docs/` | 18 |
 | `project/` | 9 |
 | `.github/` | 2 |
 | `tests/` | 2 |
@@ -107,7 +106,6 @@ Authentication is a single username and password compared to module-level consta
 
 | Subsystem | Files | Features | Primary data and dependencies | Purpose | Status |
 |---|---|---|---|---|---|
-| `docs/` | 18 | none | Generated documentation output | Not application source (`docs/`) | Cited |
 | Repository root: `create_db.py`, `Procfile`, `requirements.txt`, `runtime.txt`, `README.md` | 10 | F-8 | pip dependencies (`requirements.txt:1-8`); Python runtime pin (`runtime.txt:1`) | Setup script, process definition, dependency list, tutorial README | Cited |
 | `project/` | 9 | F-1 to F-7 | `Post` entity; Flask, Flask-SQLAlchemy (`requirements.txt:1-2`) | The web application | Cited |
 | `.github/` | 2 | none | GitHub Actions workflow (`.github/workflows/main.yml:1-29`) | CI: install, lint, test | Cited |
@@ -239,7 +237,7 @@ No stored procedures or raw SQL were found; data access is through the SQLAlchem
 | `title` | String | No | None | Public | `project/models.py:6` |
 | `text` | String | No | None | Public, may contain markup | `project/models.py:7` |
 
-Committed database files, opened read-only: `project/flaskr.db` holds the table `post` with 0 rows; `test.db` holds the tables `entries` and `sqlite_sequence`, both with 0 rows, and is tracked although `.gitignore` lists it (`project/flaskr.db:1`, `test.db:1`, `.gitignore:5`). No entry data is exposed today (V-10).
+Committed database files, opened read-only: `project/flaskr.db` holds the table `post` with 0 rows; `test.db` holds the tables `entries` and `sqlite_sequence`, both with 0 rows, and is tracked although `.gitignore` lists it (`project/flaskr.db`, `test.db`, `.gitignore:5`). No entry data is exposed today (V-10).
 
 ### 8.5 Failure, fallback and observability
 
@@ -276,7 +274,7 @@ Committed database files, opened read-only: `project/flaskr.db` holds the table 
 | V-7 | Low | The search page writes `entry.post_id` as the heading id but the model column is `id` | `project/templates/search.html:54`, `project/models.py:5` | **Inferred:** the id is empty, so a click on a search result calls the delete route without an id and cannot delete the entry; the page misleads users and the delete feature is inconsistent |
 | V-8 | Low | The home page and a search with a query load the whole `Post` table with no paging; search filters in the template | `project/app.py:59`, `project/app.py:118-120`, `project/templates/search.html:51-52` | Response time and memory on those two requests grow with the number of entries; no limit exists |
 | V-9 | High | Running the test suite drops the `post` table of the application's default database: the engine is created from the application URL when `db = SQLAlchemy(app)` runs, the fixture changes `SQLALCHEMY_DATABASE_URI` only afterwards, and teardown calls `drop_all`; the suite therefore uses the default SQLite file (`DATABASE`, `project/app.py:22`), not `test.db` | `project/app.py:26`, `project/app.py:40`, `tests/app_test.py:13-21`, `tests/app_test.py:43-46` | Observed by an audit run on a scratch copy (Flask 3.0.0, Flask-SQLAlchemy 3.1.1): 6 tests passed, the default SQLite file changed and `test.db` did not. Every entry in the default database is lost when a developer runs pytest there. `test_database` passes only because the tracked `test.db` exists in the working directory. **Inferred:** with `DATABASE_URL` set, the same engine points at that database, so running pytest in such a shell would drop its `post` table. CI is unaffected: it runs on a fresh checkout whose tracked database has no rows (8.4) |
-| V-10 | Low | Binary database files are committed: the default SQLite store and `test.db`, which the gitignore lists but which is tracked | `.gitignore:5`, `project/flaskr.db:1`, `test.db:1` | Both hold no entry rows today (8.4), so nothing is exposed now; entries saved to the default database can be committed with the repository, and `test.db` carries an `entries` table the model does not define (`project/models.py:4-8`) |
+| V-10 | Low | Binary database files are committed: the default SQLite store and `test.db`, which the gitignore lists but which is tracked | `.gitignore:5`, `project/flaskr.db`, `test.db` | Both hold no entry rows today (8.4), so nothing is exposed now; entries saved to the default database can be committed with the repository, and `test.db` carries an `entries` table the model does not define (`project/models.py:4-8`) |
 
 ### 10.2 Unknowns that must not be treated as controls
 
@@ -382,7 +380,7 @@ Caption: the only entity (`project/models.py:4-7`).
 
 ### 15.1 Coverage summary
 
-Verified by reading source: every handler, the model, all templates, the click script, the setup script, the tests, the dependency list, the process file and the CI workflow. The two database files were opened read-only (8.4). Not inspected: the images, `LICENSE`, most of the README and `docs/`. An independent source-to-claim audit, followed by a delta audit of V-9, V-10, R-9 and R-10, was performed and its corrections are applied (see Appendix A). The only run was the audit's pytest run on a scratch copy (the question about which file the tests use is answered in V-9), so behavior marked **Inferred:** is otherwise unconfirmed. Before relying on this document, confirm Q-1, Q-2, Q-3, Q-5 and Q-6.
+Verified by reading source: every handler, the model, all templates, the click script, the setup script, the tests, the dependency list, the process file and the CI workflow. The two database files were opened read-only (8.4). Not inspected: the images, `LICENSE`, most of the README. An independent source-to-claim audit, followed by a delta audit of V-9, V-10, R-9 and R-10, was performed and its corrections are applied (see Appendix A). The only run was the audit's pytest run on a scratch copy (the question about which file the tests use is answered in V-9), so behavior marked **Inferred:** is otherwise unconfirmed. Before relying on this document, confirm Q-1, Q-2, Q-3, Q-5 and Q-6.
 
 ## 16. Operations Runbook
 
@@ -432,11 +430,12 @@ The session is Flask's default signed cookie holding `logged_in` (`project/app.p
 | SECRET_KEY | `project/app.py:25` | yes |
 | DATABASE | `project/app.py:22` | no |
 | USERNAME | `project/app.py:23` | no |
-| DATABASE_URL | `project/app.py:26` | no |
 | SQLALCHEMY_DATABASE_URI | `project/app.py:31` | no |
 | SQLALCHEMY_TRACK_MODIFICATIONS | `project/app.py:32` | no |
 
-Shown 7 of 7 application keys.
+Shown 6 of 6 application keys.
+
+1 env-var keys and 8 CI keys are excluded from the application table (see facts.json).
 <!-- /appdoc:generated config-reference -->
 
 | Key | Effect | Evidence |
@@ -450,7 +449,7 @@ Shown 7 of 7 application keys.
 ### 16.7 Scheduled and background jobs
 
 <!-- appdoc:generated scheduled-jobs -->
-No scheduled or background jobs were extracted.
+No scheduled or background jobs were extracted. Not covered: `python-flask` (no entry-point capability).
 <!-- /appdoc:generated scheduled-jobs -->
 
 ## Appendix A. Evidence Register and Verification
@@ -462,7 +461,7 @@ No scheduled or background jobs were extracted.
 
 ### A.2 Coverage
 
-95 rows: 80 Supported, 11 Corrected, 1 Downgraded, 1 Dismissed, 2 Answerable. Each Supported or Corrected row's anchor text was found in its cited lines by the Check.
+91 rows: 80 Supported, 7 Corrected, 1 Downgraded, 1 Dismissed, 2 Answerable. Each Supported or Corrected row's anchor text was found in its cited lines by the Check.
 
 | Section | IDs with a register row |
 |---|---|
@@ -480,7 +479,7 @@ No scheduled or background jobs were extracted.
 | ID | Ref | Claim | Result | Cites | Limitation |
 |---|---|---|---|---|---|
 | E-1 | 1 | Index rows point to the right screens: entries loop, search form, post form, delete click handler, login form, create_db script (all 8 rows checked) | Supported | `project/templates/index.html:71-78` `project/templates/search.html:39` `project/static/main.js:7-21` `project/templates/login.html:31` `create_db.py:7-12` |  |
-| E-2 | 2.1 | README deployment commands lie in README.md:1013-1083; the listed unreviewed files are binaries, LICENSE, CSS and generated docs/ output | Supported | `README.md:1013-1083` | style.css described as presentation only: auditor saw only its font and colour rules |
+| E-2 | 2.1 | README deployment commands lie in README.md:1013-1083; the listed unreviewed files are binaries and LICENSE (the Target has no docs/ folder) | Supported | `README.md:1013-1083` | style.css described as presentation only: auditor saw only its font and colour rules |
 | E-3 | 2.2 | Flaskr lets visitors read entries and a logged-in user post and delete them; README describes the Flask tutorial extended with TDD, JavaScript and deployment | Supported | `project/app.py:56-112` `README.md:3` | no owner statement exists, as the document says |
 | E-4 | 2.3 | One database selected by DATABASE_URL or a local SQLite file; only external dependency is the Bootstrap CDN stylesheet; no outbound server-side calls | Supported | `project/app.py:26-32` `project/templates/index.html:5-9` | absence of outbound calls rests on reading app.py in full (no HTTP client imported) |
 | E-5 | 3.1 | app.py creates the app, loads module constants with from_object, creates the SQLAlchemy handle, defines login_required and all handlers; models.py holds Post; main.js attaches the click handler; Procfile starts gunicorn | Supported | `project/app.py:36-125` `project/models.py:4-8` `project/static/main.js:5-24` `create_db.py:7-12` `Procfile:1` |  |
@@ -499,12 +498,10 @@ No scheduled or background jobs were extracted.
 | E-18 | 5.2 | Enforcement: login_required on delete, inline test on add, none on /, /login, /logout, /search/; templates only hide controls | Supported | `project/app.py:66-67` `project/app.py:100` `project/templates/index.html:19` `project/templates/index.html:35` |  |
 | E-19 | 5.3 | Capability matrix matches the route checks; no edit route exists | Supported | `project/app.py:66-72` `project/app.py:99-112` `project/app.py:115-121` | /login has no check, so a logged-in user can open it; the matrix shows Y for both roles, which is right |
 | E-20 | 6/UI-1 | Home page: search, login or logout button, flash messages, add form only when logged in, entries list; empty-state text; title escaped and text unescaped | Supported | `project/templates/index.html:17-77` `project/app.py:72` |  |
-| E-21 | 6/UI-2 | Imprecise citation: the error banner is at login.html:25-29, outside the cited 31-53; the Log in button on UI-3 is at search.html:21-24 while only index.html:19-22 (UI-1) is cited. Page content otherwise matches | Corrected | `project/templates/login.html:25-53` `project/templates/search.html:21-24` |  |
 | E-22 | 6/UI-3 | Search page: box, button, filtered entries; with no query parameter no entries are listed | Supported | `project/templates/search.html:39-57` `project/app.py:119-121` |  |
 | E-23 | 7.1 | Home handler queries all Posts, template prints them or the empty-state message, flashes print once; no error handling in the handler | Supported | `project/app.py:56-60` `project/templates/index.html:31-35` `project/templates/index.html:72-77` | database failure behavior is inferred from the absence of a try block |
 | E-24 | 7.2 | Login compares username then password, sets logged_in, flashes, redirects; logout pops the key; tests assert the messages | Supported | `project/app.py:80-88` `project/app.py:91-96` `tests/app_test.py:55-64` | no lockout is shown by absence of any counter in app.py |
 | E-25 | 7.3 | Logged-in user posts via /add: 401 without session, Post built, committed, flashed, redirected; test asserts title escaped and text raw | Supported | `project/app.py:66-72` `project/templates/index.html:35-36` `tests/app_test.py:67-77` | a missing field makes Flask answer 400 (BadRequestKeyError); 'unhandled' means no application-level handler |
-| E-26 | 7.4 | Step 4 is imprecise: the script removes the element only when result.status === 1; the page reloads in every case, including 401 and status 0. Other steps (GET /delete/<id>, JSON 401, delete and commit, tests) are supported | Corrected | `project/static/main.js:15-20` `project/app.py:48-50` `project/app.py:106-112` `tests/app_test.py:80-88` |  |
 | E-27 | 7.5 | Search form submits query by GET; handler loads all entries and passes them only when query is truthy; template filters; no match prints an empty list | Supported | `project/templates/search.html:39` `project/templates/search.html:50-57` `project/app.py:117-121` |  |
 | E-28 | 7.6 | Operator runs create_db.py (create_all and commit); the README runs it on Heroku after attaching Postgres | Supported | `create_db.py:7-12` `README.md:1717` |  |
 | E-29 | 8.1 | C-1 is not used by 'all handlers': index (59), add (69-70), delete (106-107) and search (118) use SQLAlchemy; login and logout (75-96) never touch the database | Corrected | `project/app.py:59` `project/app.py:69-70` `project/app.py:75-96` `project/app.py:106-107` | SQLite default, Postgres via DATABASE_URL and the postgres:// rewrite at 28-29 are supported |
@@ -523,11 +520,9 @@ No scheduled or background jobs were extracted.
 | E-42 | 10.1/V-1 | Login name and password are hardcoded constants (values omitted), compared at login; the login page tells visitors what to use; not read from the environment | Supported | `project/app.py:24` `project/app.py:80` `project/templates/login.html:53` | values deliberately not reproduced; severity follows the template rubric |
 | E-43 | 10.1/V-2 | SECRET_KEY is a hardcoded placeholder constant (value omitted) used to sign the session that holds logged_in | Supported | `project/app.py:25` `project/app.py:85` | cookie forgery is Inferred from Flask behavior; not exercised |
 | E-44 | 10.1/V-3 | Entry text is rendered with the safe filter on the home and search pages; the test asserts raw markup in the output | Supported | `project/templates/index.html:74` `project/templates/search.html:55` `tests/app_test.py:77` | script execution in browsers not run |
-| E-45 | 10.1/V-4 | Core finding supported (delete is GET, any entry click triggers it, no token in forms, no CSRF package). The Impact vector 'a link, image or prefetch from another site' is imprecise: Flask sets no SameSite attribute (app.py:21-32), so cross-site image or prefetch requests depend on browser defaults; a top-level link or accidental click is the reliable vector | Corrected | `project/app.py:99` `project/static/main.js:7-11` `project/templates/index.html:36` | browser SameSite defaults are outside the repository |
 | E-46 | 10.1/V-5 | Login returns 'Invalid username' for an unknown user and 'Invalid password' for a wrong password; a single account exists | Supported | `project/app.py:81` `project/app.py:83` `project/app.py:23` |  |
 | E-47 | 10.1/V-6 | The delete handler returns repr(e) of any exception to the client | Supported | `project/app.py:111-112` |  |
 | E-48 | 10.1/V-7 | Search template writes entry.post_id as the heading id but Post has only id | Supported | `project/templates/search.html:54` `project/models.py:5` | empty id effect Inferred (marked so in the document); not run |
-| E-49 | 10.1/V-8 | Imprecise: not 'every request'. Only the home page (59) and a search with a query (118-120, template filter 51-52) iterate the whole Post table; login, logout, add and delete do not. No paging exists in either | Corrected | `project/app.py:59` `project/app.py:118-121` `project/templates/search.html:51-52` |  |
 | E-50 | 10.2 | TLS, CSRF, MFA, cookie flags, rate limiting, audit logging, backup and production secret management are absent or not established in source; only DATABASE_URL comes from the environment | Supported | `project/app.py:21-32` `requirements.txt:1-8` `Procfile:1` | Flask cookie defaults and hosting-level TLS were not observed (Q-5) |
 | E-51 | 11 | No owner or context file exists; .github/FUNDING.yml holds a sponsorship handle only and is not an ownership file | Supported | `.github/FUNDING.yml:1` | authorship unavailable because the clone is shallow (facts-summary.md) |
 | E-52 | 11 | CI runs on push and has one job that installs, lints and tests; no release or deploy job; the suite covers F-1 to F-5 and not F-6, F-7 or F-8 | Supported | `.github/workflows/main.yml:3` `.github/workflows/main.yml:19-29` `tests/app_test.py:38-88` |  |
@@ -577,642 +572,614 @@ No scheduled or background jobs were extracted.
 
 ### A.4 Verification commands
 
-Each block holds a PowerShell command, then a POSIX command. Both print the line that supports the row.
+Run from the Target root. Each block names the expected line, then a PowerShell command and a POSIX command.
 
-- **E-1** (`1`)
+- **E-1** (`1`), expect line 71
 
 ```text
-Select-String -Path 'project/templates/index.html' -SimpleMatch -Pattern '{% for entry in entries %}'
+Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern '{% for entry in entries %}'
 grep -nF -- '{% for entry in entries %}' 'project/templates/index.html'
 ```
 
-- **E-2** (`2.1`)
+- **E-2** (`2.1`), expect line 1083
 
 ```text
-Select-String -Path 'README.md' -SimpleMatch -Pattern 'git push heroku main'
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'git push heroku main'
 grep -nF -- 'git push heroku main' 'README.md'
 ```
 
-- **E-3** (`2.2`)
+- **E-3** (`2.2`), expect line 3
 
 ```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'a bit of JavaScript, and deployment'
-grep -nF -- 'a bit of JavaScript, and deployment' 'project/app.py'
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'a bit of JavaScript, and deployment'
+grep -nF -- 'a bit of JavaScript, and deployment' 'README.md'
 ```
 
-- **E-4** (`2.3`)
+- **E-4** (`2.3`), expect line 26
 
 ```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'os.getenv("DATABASE_URL"'
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'os.getenv("DATABASE_URL"'
 grep -nF -- 'os.getenv("DATABASE_URL"' 'project/app.py'
 ```
 
-- **E-5** (`3.1`)
+- **E-5** (`3.1`), expect line 38
 
 ```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'app.config.from_object(__name__)'
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'app.config.from_object(__name__)'
 grep -nF -- 'app.config.from_object(__name__)' 'project/app.py'
 ```
 
-- **E-6** (`3.2`)
+- **E-6** (`3.2`), expect line 11
 
 ```text
-Select-String -Path 'project/static/main.js' -SimpleMatch -Pattern 'fetch(`/delete/${postId}`)'
+Select-String -LiteralPath 'project/static/main.js' -SimpleMatch -CaseSensitive -Pattern 'fetch(`/delete/${postId}`)'
 grep -nF -- 'fetch(`/delete/${postId}`)' 'project/static/main.js'
 ```
 
-- **E-7** (`3.3`)
+- **E-7** (`3.3`), expect line 48
 
 ```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'if not session.get("logged_in"):'
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'if not session.get("logged_in"):'
 grep -nF -- 'if not session.get("logged_in"):' 'project/app.py'
 ```
 
-- **E-8** (`4/F-1`)
+- **E-8** (`4/F-1`), expect line 77
 
 ```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern '<li><em>No entries yet. Add some!</em></li>'
-grep -nF -- '<li><em>No entries yet. Add some!</em></li>' 'project/app.py'
-```
-
-- **E-9** (`4/F-2`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern '@app.route("/add", methods=["POST"])'
-grep -nF -- '@app.route("/add", methods=["POST"])' 'project/app.py'
-```
-
-- **E-10** (`4/F-3`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'error = "Invalid password"'
-grep -nF -- 'error = "Invalid password"' 'project/app.py'
-```
-
-- **E-11** (`4/F-4`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'session.pop("logged_in", None)'
-grep -nF -- 'session.pop("logged_in", None)' 'project/app.py'
-```
-
-- **E-12** (`4/F-5`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'result = {"status": 1, "message": "Post Deleted"}'
-grep -nF -- 'result = {"status": 1, "message": "Post Deleted"}' 'project/app.py'
-```
-
-- **E-13** (`4/F-6`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'query.lower() in entry.text.lower()'
-grep -nF -- 'query.lower() in entry.text.lower()' 'project/app.py'
-```
-
-- **E-14** (`4/F-7`)
-
-```text
-Select-String -Path 'project/static/main.js' -SimpleMatch -Pattern 'location.reload();'
-grep -nF -- 'location.reload();' 'project/static/main.js'
-```
-
-- **E-15** (`4/F-8`)
-
-```text
-Select-String -Path 'create_db.py' -SimpleMatch -Pattern 'db.create_all()'
-grep -nF -- 'db.create_all()' 'create_db.py'
-```
-
-- **E-16** (`4.1`)
-
-```text
-Select-String -Path 'requirements.txt' -SimpleMatch -Pattern 'Flask-SQLAlchemy==3.1.1'
-grep -nF -- 'Flask-SQLAlchemy==3.1.1' 'requirements.txt'
-```
-
-- **E-17** (`5.1`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'session["logged_in"] = True'
-grep -nF -- 'session["logged_in"] = True' 'project/app.py'
-```
-
-- **E-18** (`5.2`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'abort(401)'
-grep -nF -- 'abort(401)' 'project/app.py'
-```
-
-- **E-19** (`5.3`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'abort(401)'
-grep -nF -- 'abort(401)' 'project/app.py'
-```
-
-- **E-20** (`6/UI-1`)
-
-```text
-Select-String -Path 'project/templates/index.html' -SimpleMatch -Pattern '<li><em>No entries yet. Add some!</em></li>'
+Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern '<li><em>No entries yet. Add some!</em></li>'
 grep -nF -- '<li><em>No entries yet. Add some!</em></li>' 'project/templates/index.html'
 ```
 
-- **E-21** (`6/UI-2`)
+- **E-9** (`4/F-2`), expect line 63
 
 ```text
-Select-String -Path 'project/templates/login.html' -SimpleMatch -Pattern '<strong>Error:</strong> {{ error }}'
-grep -nF -- '<strong>Error:</strong> {{ error }}' 'project/templates/login.html'
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern '@app.route("/add", methods=["POST"])'
+grep -nF -- '@app.route("/add", methods=["POST"])' 'project/app.py'
 ```
 
-- **E-22** (`6/UI-3`)
+- **E-10** (`4/F-3`), expect line 83
 
 ```text
-Select-String -Path 'project/templates/search.html' -SimpleMatch -Pattern 'return render_template("search.html")'
-grep -nF -- 'return render_template("search.html")' 'project/templates/search.html'
-```
-
-- **E-23** (`7.1`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'entries = db.session.query(models.Post)'
-grep -nF -- 'entries = db.session.query(models.Post)' 'project/app.py'
-```
-
-- **E-24** (`7.2`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'error = "Invalid username"'
-grep -nF -- 'error = "Invalid username"' 'project/app.py'
-```
-
-- **E-25** (`7.3`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'new_entry = models.Post(request.form["title"], request.form["text"])'
-grep -nF -- 'new_entry = models.Post(request.form["title"], request.form["text"])' 'project/app.py'
-```
-
-- **E-26** (`7.4`)
-
-```text
-Select-String -Path 'project/static/main.js' -SimpleMatch -Pattern 'if (result.status === 1) {'
-grep -nF -- 'if (result.status === 1) {' 'project/static/main.js'
-```
-
-- **E-27** (`7.5`)
-
-```text
-Select-String -Path 'project/templates/search.html' -SimpleMatch -Pattern 'if query:'
-grep -nF -- 'if query:' 'project/templates/search.html'
-```
-
-- **E-28** (`7.6`)
-
-```text
-Select-String -Path 'create_db.py' -SimpleMatch -Pattern 'heroku run python create_db.py'
-grep -nF -- 'heroku run python create_db.py' 'create_db.py'
-```
-
-- **E-29** (`8.1`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'db.session.add(new_entry)'
-grep -nF -- 'db.session.add(new_entry)' 'project/app.py'
-```
-
-- **E-30** (`8.2`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern '.filter_by(id=new_id).delete()'
-grep -nF -- '.filter_by(id=new_id).delete()' 'project/app.py'
-```
-
-- **E-31** (`8.3`)
-
-```text
-Select-String -Path 'project/templates/index.html' -SimpleMatch -Pattern 'bootstrap@5.3.2'
-grep -nF -- 'bootstrap@5.3.2' 'project/templates/index.html'
-```
-
-- **E-32** (`8.4`)
-
-```text
-Select-String -Path 'project/models.py' -SimpleMatch -Pattern 'id = db.Column(db.Integer, primary_key=True)'
-grep -nF -- 'id = db.Column(db.Integer, primary_key=True)' 'project/models.py'
-```
-
-- **E-33** (`8.5`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'except Exception as e:'
-grep -nF -- 'except Exception as e:' 'project/app.py'
-```
-
-- **E-35** (`9`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'abort(401)'
-grep -nF -- 'abort(401)' 'project/app.py'
-```
-
-- **E-36** (`9`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'error = "Invalid username"'
-grep -nF -- 'error = "Invalid username"' 'project/app.py'
-```
-
-- **E-37** (`9`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'flash("New entry was successfully posted")'
-grep -nF -- 'flash("New entry was successfully posted")' 'project/app.py'
-```
-
-- **E-38** (`9`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'result = {"status": 0, "message": repr(e)}'
-grep -nF -- 'result = {"status": 0, "message": repr(e)}' 'project/app.py'
-```
-
-- **E-39** (`9`)
-
-```text
-Select-String -Path 'project/templates/search.html' -SimpleMatch -Pattern 'entry.post_id'
-grep -nF -- 'entry.post_id' 'project/templates/search.html'
-```
-
-- **E-40** (`9`)
-
-```text
-Select-String -Path 'project/templates/index.html' -SimpleMatch -Pattern 'No entries yet. Add some!'
-grep -nF -- 'No entries yet. Add some!' 'project/templates/index.html'
-```
-
-- **E-41** (`9`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'flash("The entry was deleted.")'
-grep -nF -- 'flash("The entry was deleted.")' 'project/app.py'
-```
-
-- **E-42** (`10.1/V-1`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'for username and password</span>'
-grep -nF -- 'for username and password</span>' 'project/app.py'
-```
-
-- **E-43** (`10.1/V-2`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'SECRET_KEY ='
-grep -nF -- 'SECRET_KEY =' 'project/app.py'
-```
-
-- **E-44** (`10.1/V-3`)
-
-```text
-Select-String -Path 'project/templates/index.html' -SimpleMatch -Pattern '{{ entry.text|safe }}'
-grep -nF -- '{{ entry.text|safe }}' 'project/templates/index.html'
-```
-
-- **E-45** (`10.1/V-4`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'methods=["GET"]'
-grep -nF -- 'methods=["GET"]' 'project/app.py'
-```
-
-- **E-46** (`10.1/V-5`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'error = "Invalid password"'
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'error = "Invalid password"'
 grep -nF -- 'error = "Invalid password"' 'project/app.py'
 ```
 
-- **E-47** (`10.1/V-6`)
+- **E-11** (`4/F-4`), expect line 94
 
 ```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'repr(e)'
-grep -nF -- 'repr(e)' 'project/app.py'
-```
-
-- **E-48** (`10.1/V-7`)
-
-```text
-Select-String -Path 'project/templates/search.html' -SimpleMatch -Pattern 'entry.post_id'
-grep -nF -- 'entry.post_id' 'project/templates/search.html'
-```
-
-- **E-49** (`10.1/V-8`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'entries = db.session.query(models.Post)'
-grep -nF -- 'entries = db.session.query(models.Post)' 'project/app.py'
-```
-
-- **E-50** (`10.2`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'SQLALCHEMY_TRACK_MODIFICATIONS = False'
-grep -nF -- 'SQLALCHEMY_TRACK_MODIFICATIONS = False' 'project/app.py'
-```
-
-- **E-51** (`11`)
-
-```text
-Select-String -Path '.github/FUNDING.yml' -SimpleMatch -Pattern 'github:'
-grep -nF -- 'github:' '.github/FUNDING.yml'
-```
-
-- **E-52** (`11`)
-
-```text
-Select-String -Path '.github/workflows/main.yml' -SimpleMatch -Pattern 'on: [push]'
-grep -nF -- 'on: [push]' '.github/workflows/main.yml'
-```
-
-- **E-53** (`11`)
-
-```text
-Select-String -Path 'tests/app_test.py' -SimpleMatch -Pattern 'app.config["SQLALCHEMY_DATABASE_URI"]'
-grep -nF -- 'app.config["SQLALCHEMY_DATABASE_URI"]' 'tests/app_test.py'
-```
-
-- **E-54** (`12`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'location.reload();'
-grep -nF -- 'location.reload();' 'project/app.py'
-```
-
-- **E-55** (`13`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'app.config.from_object(__name__)'
-grep -nF -- 'app.config.from_object(__name__)' 'project/app.py'
-```
-
-- **E-56** (`14/Q-1`)
-
-```text
-Select-String -Path 'Procfile' -SimpleMatch -Pattern 'web: gunicorn project.app:app'
-grep -nF -- 'web: gunicorn project.app:app' 'Procfile'
-```
-
-- **E-57** (`14/Q-2`)
-
-```text
-Select-String -Path 'README.md' -SimpleMatch -Pattern 'git push heroku main'
-grep -nF -- 'git push heroku main' 'README.md'
-```
-
-- **E-58** (`14/Q-3`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'SECRET_KEY ='
-grep -nF -- 'SECRET_KEY =' 'project/app.py'
-```
-
-- **E-60** (`14/Q-5`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'SQLALCHEMY_TRACK_MODIFICATIONS = False'
-grep -nF -- 'SQLALCHEMY_TRACK_MODIFICATIONS = False' 'project/app.py'
-```
-
-- **E-61** (`14/Q-6`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern '.delete()'
-grep -nF -- '.delete()' 'project/app.py'
-```
-
-- **E-63** (`15/R-1`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'os.getenv("DATABASE_URL"'
-grep -nF -- 'os.getenv("DATABASE_URL"' 'project/app.py'
-```
-
-- **E-64** (`15/R-2`)
-
-```text
-Select-String -Path 'project/templates/index.html' -SimpleMatch -Pattern '{{ entry.text|safe }}'
-grep -nF -- '{{ entry.text|safe }}' 'project/templates/index.html'
-```
-
-- **E-65** (`15/R-5`)
-
-```text
-Select-String -Path 'project/templates/index.html' -SimpleMatch -Pattern 'entry.post_id'
-grep -nF -- 'entry.post_id' 'project/templates/index.html'
-```
-
-- **E-66** (`15.1`)
-
-```text
-Select-String -Path '.github/workflows/main.yml' -SimpleMatch -Pattern 'python -m pytest'
-grep -nF -- 'python -m pytest' '.github/workflows/main.yml'
-```
-
-- **E-67** (`16.1`)
-
-```text
-Select-String -Path 'runtime.txt' -SimpleMatch -Pattern 'python-3.12.0'
-grep -nF -- 'python-3.12.0' 'runtime.txt'
-```
-
-- **E-68** (`16.2`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'db.create_all()'
-grep -nF -- 'db.create_all()' 'project/app.py'
-```
-
-- **E-69** (`16.3`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'session.pop("logged_in", None)'
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'session.pop("logged_in", None)'
 grep -nF -- 'session.pop("logged_in", None)' 'project/app.py'
 ```
 
-- **E-70** (`16.4`)
+- **E-12** (`4/F-5`), expect line 108
 
 ```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'entries = db.session.query(models.Post)'
-grep -nF -- 'entries = db.session.query(models.Post)' 'project/app.py'
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'result = {"status": 1, "message": "Post Deleted"}'
+grep -nF -- 'result = {"status": 1, "message": "Post Deleted"}' 'project/app.py'
 ```
 
-- **E-71** (`16.4`)
+- **E-13** (`4/F-6`), expect line 52
 
 ```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'url = url.replace("postgres://", "postgresql://", 1)'
-grep -nF -- 'url = url.replace("postgres://", "postgresql://", 1)' 'project/app.py'
+Select-String -LiteralPath 'project/templates/search.html' -SimpleMatch -CaseSensitive -Pattern 'query.lower() in entry.text.lower()'
+grep -nF -- 'query.lower() in entry.text.lower()' 'project/templates/search.html'
 ```
 
-- **E-72** (`16.5`)
+- **E-14** (`4/F-7`), expect line 20
 
 ```text
-Select-String -Path '.github/workflows/main.yml' -SimpleMatch -Pattern 'pip install -r requirements.txt'
-grep -nF -- 'pip install -r requirements.txt' '.github/workflows/main.yml'
+Select-String -LiteralPath 'project/static/main.js' -SimpleMatch -CaseSensitive -Pattern 'location.reload();'
+grep -nF -- 'location.reload();' 'project/static/main.js'
 ```
 
-- **E-73** (`16.5`)
+- **E-15** (`4/F-8`), expect line 9
 
 ```text
-Select-String -Path 'README.md' -SimpleMatch -Pattern 'git push heroku main'
-grep -nF -- 'git push heroku main' 'README.md'
+Select-String -LiteralPath 'create_db.py' -SimpleMatch -CaseSensitive -Pattern 'db.create_all()'
+grep -nF -- 'db.create_all()' 'create_db.py'
 ```
 
-- **E-74** (`16.6`)
+- **E-16** (`4.1`), expect line 2
 
 ```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'os.getenv("DATABASE_URL"'
-grep -nF -- 'os.getenv("DATABASE_URL"' 'project/app.py'
+Select-String -LiteralPath 'requirements.txt' -SimpleMatch -CaseSensitive -Pattern 'Flask-SQLAlchemy==3.1.1'
+grep -nF -- 'Flask-SQLAlchemy==3.1.1' 'requirements.txt'
 ```
 
-- **E-75** (`16.7`)
+- **E-17** (`5.1`), expect line 85
 
 ```text
-Select-String -Path 'Procfile' -SimpleMatch -Pattern 'web: gunicorn project.app:app'
-grep -nF -- 'web: gunicorn project.app:app' 'Procfile'
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'session["logged_in"] = True'
+grep -nF -- 'session["logged_in"] = True' 'project/app.py'
 ```
 
-- **E-77** (`10.1/V-4`)
+- **E-18** (`5.2`), expect line 67
 
 ```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'methods=["GET"]'
-grep -nF -- 'methods=["GET"]' 'project/app.py'
-```
-
-- **E-78** (`10.1/V-8`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'entries = db.session.query(models.Post)'
-grep -nF -- 'entries = db.session.query(models.Post)' 'project/app.py'
-```
-
-- **E-79** (`10.1/V-9`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'db = SQLAlchemy(app)'
-grep -nF -- 'db = SQLAlchemy(app)' 'project/app.py'
-```
-
-- **E-80** (`10.1/V-10`)
-
-```text
-Select-String -Path 'project/flaskr.db' -SimpleMatch -Pattern 'class Post(db.Model):'
-grep -nF -- 'class Post(db.Model):' 'project/flaskr.db'
-```
-
-- **E-81** (`15/R-9`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'os.getenv("DATABASE_URL"'
-grep -nF -- 'os.getenv("DATABASE_URL"' 'project/app.py'
-```
-
-- **E-82** (`15/R-10`)
-
-```text
-Select-String -Path 'tests/app_test.py' -SimpleMatch -Pattern 'Path("test.db").is_file()'
-grep -nF -- 'Path("test.db").is_file()' 'tests/app_test.py'
-```
-
-- **E-83** (`6/UI-2`)
-
-```text
-Select-String -Path 'project/templates/login.html' -SimpleMatch -Pattern '<strong>Error:</strong> {{ error }}'
-grep -nF -- '<strong>Error:</strong> {{ error }}' 'project/templates/login.html'
-```
-
-- **E-84** (`8.1/C-1`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'db.session.add(new_entry)'
-grep -nF -- 'db.session.add(new_entry)' 'project/app.py'
-```
-
-- **E-85** (`8.3/X-1`)
-
-```text
-Select-String -Path 'project/templates/index.html' -SimpleMatch -Pattern 'bootstrap@5.3.2'
-grep -nF -- 'bootstrap@5.3.2' 'project/templates/index.html'
-```
-
-- **E-86** (`8.5/X-1`)
-
-```text
-Select-String -Path 'project/templates/index.html' -SimpleMatch -Pattern 'console.log(result);'
-grep -nF -- 'console.log(result);' 'project/templates/index.html'
-```
-
-- **E-87** (`9`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'return jsonify({"status": 0, "message": "Please log in."}), 401'
-grep -nF -- 'return jsonify({"status": 0, "message": "Please log in."}), 401' 'project/app.py'
-```
-
-- **E-88** (`9`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'abort(401)'
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'abort(401)'
 grep -nF -- 'abort(401)' 'project/app.py'
 ```
 
-- **E-89** (`7.4`)
+- **E-19** (`5.3`), expect line 67
 
 ```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'location.reload();'
-grep -nF -- 'location.reload();' 'project/app.py'
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'abort(401)'
+grep -nF -- 'abort(401)' 'project/app.py'
 ```
 
-- **E-90** (`11`)
+- **E-20** (`6/UI-1`), expect line 77
 
 ```text
-Select-String -Path 'tests/app_test.py' -SimpleMatch -Pattern 'db = SQLAlchemy(app)'
-grep -nF -- 'db = SQLAlchemy(app)' 'tests/app_test.py'
+Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern '<li><em>No entries yet. Add some!</em></li>'
+grep -nF -- '<li><em>No entries yet. Add some!</em></li>' 'project/templates/index.html'
 ```
 
-- **E-91** (`8.4`)
+- **E-22** (`6/UI-3`), expect line 121
 
 ```text
-Select-String -Path 'project/flaskr.db' -SimpleMatch -Pattern 'class Post(db.Model):'
-grep -nF -- 'class Post(db.Model):' 'project/flaskr.db'
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'return render_template("search.html")'
+grep -nF -- 'return render_template("search.html")' 'project/app.py'
 ```
 
-- **E-92** (`2.1`)
+- **E-23** (`7.1`), expect line 59
 
 ```text
-Select-String -Path 'README.md' -SimpleMatch -Pattern 'font-family: sans-serif;'
-grep -nF -- 'font-family: sans-serif;' 'README.md'
-```
-
-- **E-93** (`15.1`)
-
-```text
-Select-String -Path '.github/workflows/main.yml' -SimpleMatch -Pattern 'python -m pytest'
-grep -nF -- 'python -m pytest' '.github/workflows/main.yml'
-```
-
-- **E-94** (`16.4`)
-
-```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'entries = db.session.query(models.Post)'
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'entries = db.session.query(models.Post)'
 grep -nF -- 'entries = db.session.query(models.Post)' 'project/app.py'
 ```
 
-- **E-95** (`16.6`)
+- **E-24** (`7.2`), expect line 81
 
 ```text
-Select-String -Path 'project/app.py' -SimpleMatch -Pattern 'app.config["USERNAME"]'
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'error = "Invalid username"'
+grep -nF -- 'error = "Invalid username"' 'project/app.py'
+```
+
+- **E-25** (`7.3`), expect line 68
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'new_entry = models.Post(request.form["title"], request.form["text"])'
+grep -nF -- 'new_entry = models.Post(request.form["title"], request.form["text"])' 'project/app.py'
+```
+
+- **E-27** (`7.5`), expect line 119
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'if query:'
+grep -nF -- 'if query:' 'project/app.py'
+```
+
+- **E-28** (`7.6`), expect line 1717
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'heroku run python create_db.py'
+grep -nF -- 'heroku run python create_db.py' 'README.md'
+```
+
+- **E-29** (`8.1`), expect line 69
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'db.session.add(new_entry)'
+grep -nF -- 'db.session.add(new_entry)' 'project/app.py'
+```
+
+- **E-30** (`8.2`), expect line 106
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern '.filter_by(id=new_id).delete()'
+grep -nF -- '.filter_by(id=new_id).delete()' 'project/app.py'
+```
+
+- **E-31** (`8.3`), expect line 8
+
+```text
+Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern 'bootstrap@5.3.2'
+grep -nF -- 'bootstrap@5.3.2' 'project/templates/index.html'
+```
+
+- **E-32** (`8.4`), expect line 5
+
+```text
+Select-String -LiteralPath 'project/models.py' -SimpleMatch -CaseSensitive -Pattern 'id = db.Column(db.Integer, primary_key=True)'
+grep -nF -- 'id = db.Column(db.Integer, primary_key=True)' 'project/models.py'
+```
+
+- **E-33** (`8.5`), expect line 110
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'except Exception as e:'
+grep -nF -- 'except Exception as e:' 'project/app.py'
+```
+
+- **E-35** (`9`), expect line 67
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'abort(401)'
+grep -nF -- 'abort(401)' 'project/app.py'
+```
+
+- **E-36** (`9`), expect line 81
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'error = "Invalid username"'
+grep -nF -- 'error = "Invalid username"' 'project/app.py'
+```
+
+- **E-37** (`9`), expect line 71
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'flash("New entry was successfully posted")'
+grep -nF -- 'flash("New entry was successfully posted")' 'project/app.py'
+```
+
+- **E-38** (`9`), expect line 111
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'result = {"status": 0, "message": repr(e)}'
+grep -nF -- 'result = {"status": 0, "message": repr(e)}' 'project/app.py'
+```
+
+- **E-39** (`9`), expect line 54
+
+```text
+Select-String -LiteralPath 'project/templates/search.html' -SimpleMatch -CaseSensitive -Pattern 'entry.post_id'
+grep -nF -- 'entry.post_id' 'project/templates/search.html'
+```
+
+- **E-40** (`9`), expect line 77
+
+```text
+Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern 'No entries yet. Add some!'
+grep -nF -- 'No entries yet. Add some!' 'project/templates/index.html'
+```
+
+- **E-41** (`9`), expect line 109
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'flash("The entry was deleted.")'
+grep -nF -- 'flash("The entry was deleted.")' 'project/app.py'
+```
+
+- **E-42** (`10.1/V-1`), expect line 53
+
+```text
+Select-String -LiteralPath 'project/templates/login.html' -SimpleMatch -CaseSensitive -Pattern 'for username and password</span>'
+grep -nF -- 'for username and password</span>' 'project/templates/login.html'
+```
+
+- **E-43** (`10.1/V-2`), expect line 25
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'SECRET_KEY ='
+grep -nF -- 'SECRET_KEY =' 'project/app.py'
+```
+
+- **E-44** (`10.1/V-3`), expect line 74
+
+```text
+Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern '{{ entry.text|safe }}'
+grep -nF -- '{{ entry.text|safe }}' 'project/templates/index.html'
+```
+
+- **E-46** (`10.1/V-5`), expect line 83
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'error = "Invalid password"'
+grep -nF -- 'error = "Invalid password"' 'project/app.py'
+```
+
+- **E-47** (`10.1/V-6`), expect line 111
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'repr(e)'
+grep -nF -- 'repr(e)' 'project/app.py'
+```
+
+- **E-48** (`10.1/V-7`), expect line 54
+
+```text
+Select-String -LiteralPath 'project/templates/search.html' -SimpleMatch -CaseSensitive -Pattern 'entry.post_id'
+grep -nF -- 'entry.post_id' 'project/templates/search.html'
+```
+
+- **E-50** (`10.2`), expect line 32
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'SQLALCHEMY_TRACK_MODIFICATIONS = False'
+grep -nF -- 'SQLALCHEMY_TRACK_MODIFICATIONS = False' 'project/app.py'
+```
+
+- **E-51** (`11`), expect line 1
+
+```text
+Select-String -LiteralPath '.github/FUNDING.yml' -SimpleMatch -CaseSensitive -Pattern 'github:'
+grep -nF -- 'github:' '.github/FUNDING.yml'
+```
+
+- **E-52** (`11`), expect line 3
+
+```text
+Select-String -LiteralPath '.github/workflows/main.yml' -SimpleMatch -CaseSensitive -Pattern 'on: [push]'
+grep -nF -- 'on: [push]' '.github/workflows/main.yml'
+```
+
+- **E-53** (`11`), expect line 16
+
+```text
+Select-String -LiteralPath 'tests/app_test.py' -SimpleMatch -CaseSensitive -Pattern 'app.config["SQLALCHEMY_DATABASE_URI"]'
+grep -nF -- 'app.config["SQLALCHEMY_DATABASE_URI"]' 'tests/app_test.py'
+```
+
+- **E-54** (`12`), expect line 20
+
+```text
+Select-String -LiteralPath 'project/static/main.js' -SimpleMatch -CaseSensitive -Pattern 'location.reload();'
+grep -nF -- 'location.reload();' 'project/static/main.js'
+```
+
+- **E-55** (`13`), expect line 38
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'app.config.from_object(__name__)'
+grep -nF -- 'app.config.from_object(__name__)' 'project/app.py'
+```
+
+- **E-56** (`14/Q-1`), expect line 1
+
+```text
+Select-String -LiteralPath 'Procfile' -SimpleMatch -CaseSensitive -Pattern 'web: gunicorn project.app:app'
+grep -nF -- 'web: gunicorn project.app:app' 'Procfile'
+```
+
+- **E-57** (`14/Q-2`), expect line 1083
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'git push heroku main'
+grep -nF -- 'git push heroku main' 'README.md'
+```
+
+- **E-58** (`14/Q-3`), expect line 25
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'SECRET_KEY ='
+grep -nF -- 'SECRET_KEY =' 'project/app.py'
+```
+
+- **E-60** (`14/Q-5`), expect line 32
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'SQLALCHEMY_TRACK_MODIFICATIONS = False'
+grep -nF -- 'SQLALCHEMY_TRACK_MODIFICATIONS = False' 'project/app.py'
+```
+
+- **E-61** (`14/Q-6`), expect line 106
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern '.delete()'
+grep -nF -- '.delete()' 'project/app.py'
+```
+
+- **E-63** (`15/R-1`), expect line 26
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'os.getenv("DATABASE_URL"'
+grep -nF -- 'os.getenv("DATABASE_URL"' 'project/app.py'
+```
+
+- **E-64** (`15/R-2`), expect line 74
+
+```text
+Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern '{{ entry.text|safe }}'
+grep -nF -- '{{ entry.text|safe }}' 'project/templates/index.html'
+```
+
+- **E-65** (`15/R-5`), expect line 54
+
+```text
+Select-String -LiteralPath 'project/templates/search.html' -SimpleMatch -CaseSensitive -Pattern 'entry.post_id'
+grep -nF -- 'entry.post_id' 'project/templates/search.html'
+```
+
+- **E-66** (`15.1`), expect line 29
+
+```text
+Select-String -LiteralPath '.github/workflows/main.yml' -SimpleMatch -CaseSensitive -Pattern 'python -m pytest'
+grep -nF -- 'python -m pytest' '.github/workflows/main.yml'
+```
+
+- **E-67** (`16.1`), expect line 1
+
+```text
+Select-String -LiteralPath 'runtime.txt' -SimpleMatch -CaseSensitive -Pattern 'python-3.12.0'
+grep -nF -- 'python-3.12.0' 'runtime.txt'
+```
+
+- **E-68** (`16.2`), expect line 9
+
+```text
+Select-String -LiteralPath 'create_db.py' -SimpleMatch -CaseSensitive -Pattern 'db.create_all()'
+grep -nF -- 'db.create_all()' 'create_db.py'
+```
+
+- **E-69** (`16.3`), expect line 94
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'session.pop("logged_in", None)'
+grep -nF -- 'session.pop("logged_in", None)' 'project/app.py'
+```
+
+- **E-70** (`16.4`), expect line 59
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'entries = db.session.query(models.Post)'
+grep -nF -- 'entries = db.session.query(models.Post)' 'project/app.py'
+```
+
+- **E-71** (`16.4`), expect line 29
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'url = url.replace("postgres://", "postgresql://", 1)'
+grep -nF -- 'url = url.replace("postgres://", "postgresql://", 1)' 'project/app.py'
+```
+
+- **E-72** (`16.5`), expect line 22
+
+```text
+Select-String -LiteralPath '.github/workflows/main.yml' -SimpleMatch -CaseSensitive -Pattern 'pip install -r requirements.txt'
+grep -nF -- 'pip install -r requirements.txt' '.github/workflows/main.yml'
+```
+
+- **E-73** (`16.5`), expect line 1083
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'git push heroku main'
+grep -nF -- 'git push heroku main' 'README.md'
+```
+
+- **E-74** (`16.6`), expect line 26
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'os.getenv("DATABASE_URL"'
+grep -nF -- 'os.getenv("DATABASE_URL"' 'project/app.py'
+```
+
+- **E-75** (`16.7`), expect line 1
+
+```text
+Select-String -LiteralPath 'Procfile' -SimpleMatch -CaseSensitive -Pattern 'web: gunicorn project.app:app'
+grep -nF -- 'web: gunicorn project.app:app' 'Procfile'
+```
+
+- **E-77** (`10.1/V-4`), expect line 99
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'methods=["GET"]'
+grep -nF -- 'methods=["GET"]' 'project/app.py'
+```
+
+- **E-78** (`10.1/V-8`), expect line 59
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'entries = db.session.query(models.Post)'
+grep -nF -- 'entries = db.session.query(models.Post)' 'project/app.py'
+```
+
+- **E-79** (`10.1/V-9`), expect line 40
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'db = SQLAlchemy(app)'
+grep -nF -- 'db = SQLAlchemy(app)' 'project/app.py'
+```
+
+- **E-80** (`10.1/V-10`), expect line 4
+
+```text
+Select-String -LiteralPath 'project/models.py' -SimpleMatch -CaseSensitive -Pattern 'class Post(db.Model):'
+grep -nF -- 'class Post(db.Model):' 'project/models.py'
+```
+
+- **E-81** (`15/R-9`), expect line 26
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'os.getenv("DATABASE_URL"'
+grep -nF -- 'os.getenv("DATABASE_URL"' 'project/app.py'
+```
+
+- **E-82** (`15/R-10`), expect line 45
+
+```text
+Select-String -LiteralPath 'tests/app_test.py' -SimpleMatch -CaseSensitive -Pattern 'Path("test.db").is_file()'
+grep -nF -- 'Path("test.db").is_file()' 'tests/app_test.py'
+```
+
+- **E-83** (`6/UI-2`), expect line 27
+
+```text
+Select-String -LiteralPath 'project/templates/login.html' -SimpleMatch -CaseSensitive -Pattern '<strong>Error:</strong> {{ error }}'
+grep -nF -- '<strong>Error:</strong> {{ error }}' 'project/templates/login.html'
+```
+
+- **E-84** (`8.1/C-1`), expect line 69
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'db.session.add(new_entry)'
+grep -nF -- 'db.session.add(new_entry)' 'project/app.py'
+```
+
+- **E-85** (`8.3/X-1`), expect line 8
+
+```text
+Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern 'bootstrap@5.3.2'
+grep -nF -- 'bootstrap@5.3.2' 'project/templates/index.html'
+```
+
+- **E-86** (`8.5/X-1`), expect line 18
+
+```text
+Select-String -LiteralPath 'project/static/main.js' -SimpleMatch -CaseSensitive -Pattern 'console.log(result);'
+grep -nF -- 'console.log(result);' 'project/static/main.js'
+```
+
+- **E-87** (`9`), expect line 50
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'return jsonify({"status": 0, "message": "Please log in."}), 401'
+grep -nF -- 'return jsonify({"status": 0, "message": "Please log in."}), 401' 'project/app.py'
+```
+
+- **E-88** (`9`), expect line 67
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'abort(401)'
+grep -nF -- 'abort(401)' 'project/app.py'
+```
+
+- **E-89** (`7.4`), expect line 20
+
+```text
+Select-String -LiteralPath 'project/static/main.js' -SimpleMatch -CaseSensitive -Pattern 'location.reload();'
+grep -nF -- 'location.reload();' 'project/static/main.js'
+```
+
+- **E-90** (`11`), expect line 40
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'db = SQLAlchemy(app)'
+grep -nF -- 'db = SQLAlchemy(app)' 'project/app.py'
+```
+
+- **E-91** (`8.4`), expect line 4
+
+```text
+Select-String -LiteralPath 'project/models.py' -SimpleMatch -CaseSensitive -Pattern 'class Post(db.Model):'
+grep -nF -- 'class Post(db.Model):' 'project/models.py'
+```
+
+- **E-92** (`2.1`), expect line 2
+
+```text
+Select-String -LiteralPath 'project/static/style.css' -SimpleMatch -CaseSensitive -Pattern 'font-family: sans-serif;'
+grep -nF -- 'font-family: sans-serif;' 'project/static/style.css'
+```
+
+- **E-93** (`15.1`), expect line 29
+
+```text
+Select-String -LiteralPath '.github/workflows/main.yml' -SimpleMatch -CaseSensitive -Pattern 'python -m pytest'
+grep -nF -- 'python -m pytest' '.github/workflows/main.yml'
+```
+
+- **E-94** (`16.4`), expect line 59
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'entries = db.session.query(models.Post)'
+grep -nF -- 'entries = db.session.query(models.Post)' 'project/app.py'
+```
+
+- **E-95** (`16.6`), expect line 80
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'app.config["USERNAME"]'
 grep -nF -- 'app.config["USERNAME"]' 'project/app.py'
 ```
 <!-- /appdoc:generated appendix-a -->

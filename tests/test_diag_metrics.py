@@ -75,3 +75,37 @@ class DiagMetricsBaseline(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# 2.5.0 regeneration (docs/diagnostic-2.4-comparison.md "Post-remediation (2.5.0)")
+# name -> (check, citations, pct_cites_with_line, audit_rows, pct_supported, facts_total)
+POST_2_5 = {
+    "flaskr-tdd": ("PASS", 356, 86.0, 91, 87.9, 84),
+    "spring-petclinic": ("PASS", 650, 95.5, 123, 83.7, 409),
+    "eShop": ("PASS", 1298, 94.6, 113, 83.2, 1765),
+    "gitea": ("PASS", 1299, 88.9, 141, 85.8, 19536),
+}
+
+
+class DiagMetricsPost25(unittest.TestCase):
+    def _m(self, name):
+        if not os.path.isdir(os.path.join(EXAMPLES, name)):
+            self.skipTest(f"example {name} not present")
+        return diag_metrics.analyze(EXAMPLES, name)
+
+    def test_pinned_post_2_5(self):
+        for name, want in POST_2_5.items():
+            with self.subTest(example=name):
+                m = self._m(name)
+                got = (m["check"], m["citations"], m["pct_cites_with_line"],
+                       m["audit_rows"], m["pct_supported"], m["facts_total"])
+                self.assertEqual(got, want)
+
+    def test_no_regression_against_2_4(self):
+        for name in POST_2_5:
+            with self.subTest(example=name):
+                new = self._m(name)
+                old = self._m(name + "-2.4")
+                self.assertGreaterEqual(new["pct_supported"], old["pct_supported"])
+                self.assertGreaterEqual(new["pct_cites_with_line"], old["pct_cites_with_line"])
+

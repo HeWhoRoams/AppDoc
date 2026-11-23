@@ -1,6 +1,20 @@
 # Changelog
 
-## Unreleased
+## 2.5.0 — remediation of the 2.4 diagnostic
+
+Schema `appdoc-facts/6`. Template stays 2.4. Re-run `extract`, then `fill` and `build`; the gate exits with "AppDoc upgraded" until `facts.json` is re-extracted and committed.
+
+### Added
+- **Owner context** (`appdoc/context.py`): one parser for `appdoc-context.md` (`never-mention` block, `Ownership: <role>: <value>` lines). `extract` emits `owner_file` and `ownership` Facts from it (values are never stored). When §11 or the §16.5 runbook rows are all Unknown and no owner file exists, the Check prints an advisory "Unknown by absence" (C4).
+- **Config role split by read kind.** `config_key` gains `read_kind` (`env` or `file`); a post-pass assigns role `env`, `ci` or `app`. Only `app` keys appear in the application table; the 16.6 trailer counts the `env` and `ci` keys it excludes, and C7 compares the block with the `app` count. Env and CI keys are no longer `secret_location`.
+- **Extractor coverage:** ASP.NET Core Razor `ui_page`, EF `data_access type=ef`, `HttpClient` `external_call`; Go `connection`, xorm `schema_object`, `templates/**/*.html` `ui_page`; Flask `SQLAlchemy(...)` `connection`. Each is declared in the Stack's capabilities and exercised by a sample.
+- **Corpus** (`tests/corpus/`, `tests/test_corpus.py`): small Targets with expected Facts and Check output.
+- ADRs 0011 (the register is the single source of truth for unknowns) and 0012 (extractor coverage); ADR 0009 amended.
+
+### Changed
+- `facts.SCHEMA` is `appdoc-facts/6`; `extract.EXTRACTOR_VERSION` is 2 (cache salt). Facts for Targets using the newly detected libraries change.
+- The four public examples were regenerated from clean clones with 2.5.0 (see `docs/diagnostic-2.4-comparison.md`, "Post-remediation (2.5.0)").
+
 
 ### Added — the integration picture (content Phases 6a + 6b)
 - **Widened the `connection.type` vocabulary** (an *additive convention* change — `KINDS` and `SCHEMA` in `facts.py` are unchanged). A shared catalog (`appdoc/stacks/integrations.py`) now detects the non-database system connections the per-stack extractors previously missed: `cache` (Redis/Memcached), `queue` (Kafka, RabbitMQ, SQS, pika, kombu, MassTransit, Confluent), `object_storage` (S3, Azure Blob, GCS), `grpc`, `ldap`, and `search` (Elasticsearch/OpenSearch), wired into the python, java, node and dotnet Stacks. Each yields a `connection` Fact with the correct `type`; `external_call.type` also accepts `grpc`.

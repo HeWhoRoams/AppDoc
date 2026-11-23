@@ -3,9 +3,35 @@
 - Target: `spring-petclinic`
 - Commit: `500158f732419217507c7656904b8e6aa1bcc0d6`
 - Git history: shallow
-- Schema: `appdoc-facts/4`
+- Schema: `appdoc-facts/6`
 
 > Facts show what the extractors found. An empty list is not proof that something is absent: the extractors only recognise the patterns of the Stacks below, so read the source before writing "none". Facts from test code are marked `test` in `facts.json` and left out of the lists.
+
+## System Connections
+
+> Derived deterministically from the `connection`, `external_call` and `dependency` Facts in `facts.json` - a pure function of the Facts, byte-identical across runs. A group with no rows is not proof of absence; the extractors only recognise the patterns of the detected Stacks.
+
+### Integration map
+
+app -> { database }
+
+| System | Kind | Count | Drivers / targets |
+|---|---|---:|---|
+| Database | connection | 2 | `spring.datasource.url` |
+
+### Provenance
+
+- **Database** - 2 x `spring.datasource.url`
+  - `src/main/resources/application-mysql.properties:3`
+  - `src/main/resources/application-postgres.properties:3`
+
+### Dependencies
+
+| Manager | Count | Examples |
+|---|---:|---|
+| gradle | 22 | `com.github.ben-manes.caffeine:caffeine`, `com.h2database:h2`, `com.mysql:mysql-connector-j`, `jakarta.xml.bind:jakarta.xml.bind-api`, `javax.cache:cache-api`, ... +17 more |
+| maven | 30 | `com.github.ben-manes.caffeine:caffeine`, `com.h2database:h2`, `com.mysql:mysql-connector-j`, `com.puppycrawl.tools:checkstyle`, `io.spring.nohttp:nohttp-checkstyle`, ... +25 more |
+
 
 ## Stacks
 
@@ -17,27 +43,31 @@
 
 | Kind | Count |
 |---|---|
-| config_key | 125 |
+| config_key | 122 |
 | connection | 2 |
 | data_access | 10 |
 | dependency | 52 |
 | entry_point | 17 |
 | external_call | 11 |
-| file | 144 |
+| file | 131 |
 | message | 11 |
 | schema_object | 50 |
 | smell | 3 |
 
 | Stack | Facts |
 |---|---|
-| generic | 373 |
+| generic | 357 |
 | java-spring | 52 |
 
 ## Scan coverage
 
-Files found: 144 = scanned 144 + pruned 0 + ignored by `.appdocignore` 0.
+Files found: 132 = scanned 131 + pruned 1 + ignored by `.appdocignore` 0.
 
-No folders were pruned.
+| Folder not scanned | Rule | Files |
+|---|---|---|
+| `.mvn/` | always | 1 |
+
+Add `!name` to `.appdocignore` to scan a pruned folder.
 
 ## Config files
 
@@ -47,7 +77,7 @@ No folders were pruned.
 | `src/main/resources/application-mysql.properties` | 5 |
 | `src/main/resources/application-postgres.properties` | 5 |
 
-- build: 2 files, 12 keys (not application settings)
+- build: 1 file, 9 keys (not application settings)
 - ci: 4 files, 30 keys (not application settings)
 - orchestration: 4 files, 60 keys (not application settings)
 
@@ -57,27 +87,19 @@ No folders were pruned.
 |---|---|---|---|---|
 | `src` | 107 | 17 | 10 | 11 |
 | `(root)` | 14 | 0 | 0 | 0 |
-| `docs` | 12 | 0 | 0 | 0 |
 | `.github` | 4 | 0 | 0 | 0 |
 | `.devcontainer` | 2 | 0 | 0 | 0 |
 | `gradle` | 2 | 0 | 0 | 0 |
 | `k8s` | 2 | 0 | 0 | 0 |
-| `.mvn` | 1 | 0 | 0 | 0 |
 
 ## Largest source files
 
 | File | Lines |
 |---|---|
-| `docs/appdoc/facts.json` | 10174 |
 | `src/main/resources/static/resources/css/petclinic.css` | 9532 |
 | `src/main/resources/static/resources/fonts/varela_round-webfont.svg` | 7875 |
-| `docs/appdoc-2.2/facts.json` | 4714 |
 | `src/main/resources/static/resources/fonts/montserrat-webfont.svg` | 1283 |
-| `docs/appdoc-2.2/application-documentation.md` | 685 |
-| `docs/appdoc/check-report.md` | 583 |
-| `docs/appdoc/application-documentation.md` | 577 |
 | `src/test/jmeter/petclinic_test_plan.jmx` | 540 |
-| `docs/appdoc-2.2/check-report.md` | 539 |
 | `pom.xml` | 440 |
 | `src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java` | 318 |
 | `src/test/java/org/springframework/samples/petclinic/service/ClinicServiceTests.java` | 315 |
@@ -91,8 +113,14 @@ No folders were pruned.
 | `src/main/java/org/springframework/samples/petclinic/owner/Owner.java` | 188 |
 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 188 |
 | `README.md` | 181 |
-| `docs/appdoc-2.2/facts-summary.md` | 151 |
 | `src/test/java/org/springframework/samples/petclinic/PostgresIntegrationTests.java` | 150 |
+| `src/test/java/org/springframework/samples/petclinic/owner/PetValidatorTests.java` | 139 |
+| `src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java` | 138 |
+| `src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java` | 134 |
+| `src/test/java/org/springframework/samples/petclinic/owner/VisitControllerTests.java` | 121 |
+| `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java` | 114 |
+| `src/test/java/org/springframework/samples/petclinic/vet/VetControllerTests.java` | 111 |
+| `src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java` | 101 |
 
 ## Entry points
 

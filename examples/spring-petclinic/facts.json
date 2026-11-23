@@ -5,7 +5,7 @@
     "encoding": "utf-8",
     "ext": "",
     "lines": 11,
-    "size": 653,
+    "size": 643,
     "stacks": []
    },
    "kind": "file",
@@ -19,7 +19,7 @@
     "encoding": "utf-8",
     "ext": ".json",
     "lines": 25,
-    "size": 648,
+    "size": 623,
     "stacks": []
    },
    "kind": "file",
@@ -33,7 +33,7 @@
     "encoding": "utf-8",
     "ext": ".editorconfig",
     "lines": 24,
-    "size": 368,
+    "size": 344,
     "stacks": []
    },
    "kind": "file",
@@ -47,7 +47,7 @@
     "encoding": "utf-8",
     "ext": ".gitattributes",
     "lines": 6,
-    "size": 151,
+    "size": 145,
     "stacks": []
    },
    "kind": "file",
@@ -61,7 +61,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 2,
-    "size": 26,
+    "size": 25,
     "stacks": []
    },
    "kind": "file",
@@ -88,7 +88,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 31,
-    "size": 704,
+    "size": 673,
     "stacks": []
    },
    "kind": "file",
@@ -206,7 +206,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 31,
-    "size": 869,
+    "size": 838,
     "stacks": []
    },
    "kind": "file",
@@ -363,7 +363,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 29,
-    "size": 800,
+    "size": 771,
     "stacks": []
    },
    "kind": "file",
@@ -507,7 +507,7 @@
     "encoding": "utf-8",
     "ext": ".gitignore",
     "lines": 48,
-    "size": 646,
+    "size": 598,
     "stacks": []
    },
    "kind": "file",
@@ -521,7 +521,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 9,
-    "size": 295,
+    "size": 287,
     "stacks": []
    },
    "kind": "file",
@@ -546,62 +546,9 @@
   {
    "detail": {
     "encoding": "utf-8",
-    "ext": ".properties",
-    "lines": 3,
-    "size": 171,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": ".mvn/wrapper/maven-wrapper.properties",
-   "path": ".mvn/wrapper/maven-wrapper.properties",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "role": "build",
-    "secret_location": false,
-    "source": "maven-wrapper.properties",
-    "use": "define"
-   },
-   "kind": "config_key",
-   "line": 1,
-   "name": "wrapperVersion",
-   "path": ".mvn/wrapper/maven-wrapper.properties",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "role": "build",
-    "secret_location": false,
-    "source": "maven-wrapper.properties",
-    "use": "define"
-   },
-   "kind": "config_key",
-   "line": 2,
-   "name": "distributionType",
-   "path": ".mvn/wrapper/maven-wrapper.properties",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "role": "build",
-    "secret_location": false,
-    "source": "maven-wrapper.properties",
-    "use": "define"
-   },
-   "kind": "config_key",
-   "line": 3,
-   "name": "distributionUrl",
-   "path": ".mvn/wrapper/maven-wrapper.properties",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
     "ext": ".txt",
     "lines": 202,
-    "size": 11562,
+    "size": 11360,
     "stacks": []
    },
    "kind": "file",
@@ -615,7 +562,7 @@
     "encoding": "utf-8",
     "ext": ".md",
     "lines": 181,
-    "size": 10728,
+    "size": 10547,
     "stacks": []
    },
    "kind": "file",
@@ -629,7 +576,7 @@
     "encoding": "utf-8",
     "ext": ".gradle",
     "lines": 93,
-    "size": 3474,
+    "size": 3382,
     "stacks": []
    },
    "kind": "file",
@@ -885,7 +832,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 21,
-    "size": 509,
+    "size": 488,
     "stacks": []
    },
    "kind": "file",
@@ -922,170 +869,6 @@
   },
   {
    "detail": {
-    "ext": ".html",
-    "size": 3694983,
-    "skipped": "size"
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/application-documentation.html",
-   "path": "docs/appdoc-2.2/application-documentation.html",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 685,
-    "size": 84220,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/application-documentation.md",
-   "path": "docs/appdoc-2.2/application-documentation.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 539,
-    "size": 40479,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/check-report.md",
-   "path": "docs/appdoc-2.2/check-report.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".jsonl",
-    "lines": 1,
-    "size": 92,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/evidence.jsonl",
-   "path": "docs/appdoc-2.2/evidence.jsonl",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 151,
-    "size": 7299,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/facts-summary.md",
-   "path": "docs/appdoc-2.2/facts-summary.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".json",
-    "lines": 4714,
-    "size": 104907,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc-2.2/facts.json",
-   "path": "docs/appdoc-2.2/facts.json",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "ext": ".html",
-    "size": 3717908,
-    "skipped": "size"
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/application-documentation.html",
-   "path": "docs/appdoc/application-documentation.html",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 577,
-    "size": 77950,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/application-documentation.md",
-   "path": "docs/appdoc/application-documentation.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 583,
-    "size": 63237,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/check-report.md",
-   "path": "docs/appdoc/check-report.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 131,
-    "size": 6943,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/facts-summary.md",
-   "path": "docs/appdoc/facts-summary.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".json",
-    "lines": 10174,
-    "size": 228805,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/facts.json",
-   "path": "docs/appdoc/facts.json",
-   "stack": "generic"
-  },
-  {
-   "detail": {
-    "encoding": "utf-8",
-    "ext": ".md",
-    "lines": 81,
-    "size": 25319,
-    "stacks": []
-   },
-   "kind": "file",
-   "line": null,
-   "name": "docs/appdoc/verification.md",
-   "path": "docs/appdoc/verification.md",
-   "stack": "generic"
-  },
-  {
-   "detail": {
     "ext": ".jar",
     "size": 48462,
     "skipped": "binary"
@@ -1101,7 +884,7 @@
     "encoding": "utf-8",
     "ext": ".properties",
     "lines": 9,
-    "size": 290,
+    "size": 281,
     "stacks": []
    },
    "kind": "file",
@@ -1260,7 +1043,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 73,
-    "size": 1531,
+    "size": 1458,
     "stacks": []
    },
    "kind": "file",
@@ -1690,7 +1473,7 @@
     "encoding": "utf-8",
     "ext": ".yml",
     "lines": 64,
-    "size": 1422,
+    "size": 1358,
     "stacks": []
    },
    "kind": "file",
@@ -2057,7 +1840,7 @@
     "encoding": "utf-8",
     "ext": ".xml",
     "lines": 440,
-    "size": 16395,
+    "size": 15955,
     "stacks": [
      "java-spring"
     ]
@@ -2403,7 +2186,7 @@
     "encoding": "utf-8",
     "ext": ".gradle",
     "lines": 1,
-    "size": 39,
+    "size": 38,
     "stacks": []
    },
    "kind": "file",
@@ -2417,7 +2200,7 @@
     "encoding": "utf-8",
     "ext": ".xml",
     "lines": 11,
-    "size": 481,
+    "size": 470,
     "stacks": [
      "java-spring"
     ]
@@ -2433,7 +2216,7 @@
     "encoding": "utf-8",
     "ext": ".xml",
     "lines": 10,
-    "size": 422,
+    "size": 412,
     "stacks": [
      "java-spring"
     ]
@@ -3376,7 +3159,7 @@
     "encoding": "utf-8",
     "ext": ".properties",
     "lines": 7,
-    "size": 306,
+    "size": 299,
     "stacks": []
    },
    "kind": "file",
@@ -3466,7 +3249,7 @@
     "encoding": "utf-8",
     "ext": ".properties",
     "lines": 7,
-    "size": 326,
+    "size": 319,
     "stacks": []
    },
    "kind": "file",
@@ -3556,7 +3339,7 @@
     "encoding": "utf-8",
     "ext": ".properties",
     "lines": 29,
-    "size": 1010,
+    "size": 981,
     "stacks": []
    },
    "kind": "file",
@@ -3738,7 +3521,7 @@
     "encoding": "utf-8",
     "ext": ".txt",
     "lines": 15,
-    "size": 724,
+    "size": 709,
     "stacks": []
    },
    "kind": "file",
@@ -3752,7 +3535,7 @@
     "encoding": "utf-8",
     "ext": ".sql",
     "lines": 53,
-    "size": 3171,
+    "size": 3118,
     "stacks": []
    },
    "kind": "file",
@@ -3766,7 +3549,7 @@
     "encoding": "utf-8",
     "ext": ".sql",
     "lines": 65,
-    "size": 2211,
+    "size": 2146,
     "stacks": []
    },
    "kind": "file",
@@ -4056,7 +3839,7 @@
     "encoding": "utf-8",
     "ext": ".sql",
     "lines": 53,
-    "size": 3253,
+    "size": 3200,
     "stacks": []
    },
    "kind": "file",
@@ -4070,7 +3853,7 @@
     "encoding": "utf-8",
     "ext": ".txt",
     "lines": 36,
-    "size": 1726,
+    "size": 1690,
     "stacks": []
    },
    "kind": "file",
@@ -4084,7 +3867,7 @@
     "encoding": "utf-8",
     "ext": ".sql",
     "lines": 56,
-    "size": 1629,
+    "size": 1573,
     "stacks": []
    },
    "kind": "file",
@@ -4290,7 +4073,7 @@
     "encoding": "utf-8",
     "ext": ".sql",
     "lines": 11,
-    "size": 288,
+    "size": 277,
     "stacks": []
    },
    "kind": "file",
@@ -4304,7 +4087,7 @@
     "encoding": "utf-8",
     "ext": ".sql",
     "lines": 53,
-    "size": 6475,
+    "size": 6422,
     "stacks": []
    },
    "kind": "file",
@@ -4318,7 +4101,7 @@
     "encoding": "utf-8",
     "ext": ".txt",
     "lines": 19,
-    "size": 876,
+    "size": 857,
     "stacks": []
    },
    "kind": "file",
@@ -4332,7 +4115,7 @@
     "encoding": "utf-8",
     "ext": ".sql",
     "lines": 53,
-    "size": 1752,
+    "size": 1699,
     "stacks": []
    },
    "kind": "file",
@@ -4650,7 +4433,7 @@
     "encoding": "utf-8",
     "ext": ".properties",
     "lines": 52,
-    "size": 1284,
+    "size": 1232,
     "stacks": []
    },
    "kind": "file",
@@ -4664,7 +4447,7 @@
     "encoding": "utf-8",
     "ext": ".properties",
     "lines": 52,
-    "size": 1499,
+    "size": 1447,
     "stacks": []
    },
    "kind": "file",
@@ -4692,7 +4475,7 @@
     "encoding": "utf-8",
     "ext": ".properties",
     "lines": 52,
-    "size": 1483,
+    "size": 1431,
     "stacks": []
    },
    "kind": "file",
@@ -4706,7 +4489,7 @@
     "encoding": "utf-8",
     "ext": ".properties",
     "lines": 52,
-    "size": 1739,
+    "size": 1687,
     "stacks": []
    },
    "kind": "file",
@@ -4720,7 +4503,7 @@
     "encoding": "utf-8",
     "ext": ".properties",
     "lines": 54,
-    "size": 4218,
+    "size": 4164,
     "stacks": []
    },
    "kind": "file",
@@ -4734,7 +4517,7 @@
     "encoding": "utf-8",
     "ext": ".properties",
     "lines": 54,
-    "size": 1656,
+    "size": 1602,
     "stacks": []
    },
    "kind": "file",
@@ -4748,7 +4531,7 @@
     "encoding": "utf-8",
     "ext": ".properties",
     "lines": 52,
-    "size": 1545,
+    "size": 1493,
     "stacks": []
    },
    "kind": "file",
@@ -4762,7 +4545,7 @@
     "encoding": "utf-8",
     "ext": ".properties",
     "lines": 52,
-    "size": 1526,
+    "size": 1474,
     "stacks": []
    },
    "kind": "file",
@@ -4776,7 +4559,7 @@
     "encoding": "utf-8",
     "ext": ".properties",
     "lines": 52,
-    "size": 2084,
+    "size": 2032,
     "stacks": []
    },
    "kind": "file",
@@ -4790,7 +4573,7 @@
     "encoding": "utf-8",
     "ext": ".properties",
     "lines": 52,
-    "size": 1370,
+    "size": 1318,
     "stacks": []
    },
    "kind": "file",
@@ -4804,7 +4587,7 @@
     "encoding": "utf-8",
     "ext": ".css",
     "lines": 9532,
-    "size": 288462,
+    "size": 278931,
     "stacks": []
    },
    "kind": "file",
@@ -4830,7 +4613,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 1283,
-    "size": 85916,
+    "size": 84634,
     "stacks": []
    },
    "kind": "file",
@@ -4880,7 +4663,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 7875,
-    "size": 378147,
+    "size": 370273,
     "stacks": []
    },
    "kind": "file",
@@ -4966,7 +4749,7 @@
     "encoding": "utf-8",
     "ext": ".svg",
     "lines": 66,
-    "size": 8001,
+    "size": 7935,
     "stacks": []
    },
    "kind": "file",
@@ -4980,7 +4763,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 21,
-    "size": 797,
+    "size": 776,
     "stacks": []
    },
    "kind": "file",
@@ -4994,7 +4777,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 27,
-    "size": 1118,
+    "size": 1091,
     "stacks": []
    },
    "kind": "file",
@@ -5008,7 +4791,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 88,
-    "size": 3298,
+    "size": 3211,
     "stacks": []
    },
    "kind": "file",
@@ -5022,7 +4805,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 27,
-    "size": 1006,
+    "size": 980,
     "stacks": []
    },
    "kind": "file",
@@ -5036,7 +4819,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 25,
-    "size": 1097,
+    "size": 1073,
     "stacks": []
    },
    "kind": "file",
@@ -5050,7 +4833,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 35,
-    "size": 1184,
+    "size": 1150,
     "stacks": []
    },
    "kind": "file",
@@ -5064,7 +4847,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 96,
-    "size": 2982,
+    "size": 2887,
     "stacks": []
    },
    "kind": "file",
@@ -5078,7 +4861,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 61,
-    "size": 2483,
+    "size": 2423,
     "stacks": []
    },
    "kind": "file",
@@ -5092,7 +4875,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 34,
-    "size": 1263,
+    "size": 1230,
     "stacks": []
    },
    "kind": "file",
@@ -5106,7 +4889,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 59,
-    "size": 1846,
+    "size": 1788,
     "stacks": []
    },
    "kind": "file",
@@ -5120,7 +4903,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 57,
-    "size": 2248,
+    "size": 2192,
     "stacks": []
    },
    "kind": "file",
@@ -5134,7 +4917,7 @@
     "encoding": "utf-8",
     "ext": ".html",
     "lines": 16,
-    "size": 390,
+    "size": 375,
     "stacks": []
    },
    "kind": "file",
@@ -5148,7 +4931,7 @@
     "encoding": "utf-8",
     "ext": ".scss",
     "lines": 73,
-    "size": 1459,
+    "size": 1386,
     "stacks": []
    },
    "kind": "file",
@@ -5162,7 +4945,7 @@
     "encoding": "utf-8",
     "ext": ".scss",
     "lines": 214,
-    "size": 4617,
+    "size": 4403,
     "stacks": []
    },
    "kind": "file",
@@ -5176,7 +4959,7 @@
     "encoding": "utf-8",
     "ext": ".scss",
     "lines": 41,
-    "size": 719,
+    "size": 678,
     "stacks": []
    },
    "kind": "file",
@@ -5190,7 +4973,7 @@
     "encoding": "utf-8",
     "ext": ".scss",
     "lines": 60,
-    "size": 1532,
+    "size": 1472,
     "stacks": []
    },
    "kind": "file",
@@ -5530,6 +5313,7 @@
   },
   {
    "detail": {
+    "read_kind": "file",
     "secret_location": false,
     "source": "code",
     "test": true,
@@ -5700,7 +5484,7 @@
     "encoding": "utf-8",
     "ext": ".jmx",
     "lines": 540,
-    "size": 32638,
+    "size": 32098,
     "stacks": []
    },
    "kind": "file",
@@ -5710,10 +5494,12 @@
    "stack": "generic"
   }
  ],
- "schema": "appdoc-facts/4",
+ "generator": "2.5.0",
+ "schema": "appdoc-facts/6",
  "stacks": [
   {
    "detail": {
+    "capabilities": [],
     "file_count": 53,
     "marker_files": [
      "build.gradle",
@@ -5733,11 +5519,19 @@
   "history": "shallow",
   "name": "spring-petclinic",
   "scan": {
-   "found": 144,
+   "found": 132,
    "ignored": 0,
-   "pruned": [],
-   "pruned_files": 0,
-   "scanned": 144
+   "metadata": 0,
+   "pruned": [
+    {
+     "files": 1,
+     "path": ".mvn/",
+     "rule": "always"
+    }
+   ],
+   "pruned_files": 1,
+   "retired_candidates": [],
+   "scanned": 131
   }
  }
 }

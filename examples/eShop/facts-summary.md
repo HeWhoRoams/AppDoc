@@ -3,9 +3,43 @@
 - Target: `eShop`
 - Commit: `913acea66708a59595351174cee9b29f37179d29`
 - Git history: shallow
-- Schema: `appdoc-facts/4`
+- Schema: `appdoc-facts/6`
 
 > Facts show what the extractors found. An empty list is not proof that something is absent: the extractors only recognise the patterns of the Stacks below, so read the source before writing "none". Facts from test code are marked `test` in `facts.json` and left out of the lists.
+
+## System Connections
+
+> Derived deterministically from the `connection`, `external_call` and `dependency` Facts in `facts.json` - a pure function of the Facts, byte-identical across runs. A group with no rows is not proof of absence; the extractors only recognise the patterns of the detected Stacks.
+
+### Integration map
+
+app -> { database, http }
+
+| System | Kind | Count | Drivers / targets |
+|---|---|---:|---|
+| Database | connection | 15 | `CatalogDB`, `EventBus`, `IdentityDB`, `OrderingDB`, `Redis`, ... +5 more |
+| Outbound HTTP | external call | 8 | `CatalogService`, `HttpClient.SendAsync`, `OrderingService`, `WebhooksClient`, `http://basket-api`, ... +1 more |
+
+### Provenance
+
+- **Database** - 15 x `CatalogDB`, `EventBus`, `IdentityDB`, `OrderingDB`, `Redis` (+5 more)
+  - `src/Basket.API/appsettings.json:14`
+  - `src/Basket.API/appsettings.json:15`
+  - `src/Catalog.API/Extensions/Extensions.cs:43`
+  - ... 12 more in `facts.json`
+- **Outbound HTTP** - 8 x `CatalogService`, `HttpClient.SendAsync`, `OrderingService`, `WebhooksClient`, `http://basket-api` (+1 more)
+  - `src/WebApp/Extensions/Extensions.cs:31`
+  - `src/WebApp/Extensions/Extensions.cs:34`
+  - `src/WebApp/Extensions/Extensions.cs:38`
+  - ... 4 more in `facts.json`
+
+### Dependencies
+
+| Manager | Count | Examples |
+|---|---:|---|
+| npm | 3 | `@playwright/test`, `@types/node`, `dotenv` |
+| nuget | 84 | `Asp.Versioning.Http`, `Asp.Versioning.Http.Client`, `Asp.Versioning.Mvc.ApiExplorer`, `Asp.Versioning.OpenApi`, `Aspire.Azure.AI.OpenAI`, ... +61 more |
+
 
 ## Stacks
 
@@ -21,24 +55,24 @@
 | auth_check | 15 |
 | config_key | 258 |
 | connection | 15 |
-| data_access | 9 |
+| data_access | 36 |
 | dependency | 117 |
 | entry_point | 97 |
-| external_call | 7 |
-| file | 1157 |
+| external_call | 43 |
+| file | 1145 |
 | message | 9 |
 | owner_file | 1 |
 | smell | 3 |
-| ui_page | 13 |
+| ui_page | 26 |
 
 | Stack | Facts |
 |---|---|
-| aspnet-core | 200 |
-| generic | 1501 |
+| aspnet-core | 276 |
+| generic | 1489 |
 
 ## Scan coverage
 
-Files found: 1157 = scanned 1157 + pruned 0 + ignored by `.appdocignore` 0.
+Files found: 1145 = scanned 1145 + pruned 0 + ignored by `.appdocignore` 0.
 
 No folders were pruned.
 
@@ -46,14 +80,12 @@ No folders were pruned.
 
 | Application config file | Keys |
 |---|---|
-| `ci.yml` | 17 |
 | `src/Identity.API/Configuration/Config.cs` | 14 |
 | `src/Webhooks.API/appsettings.json` | 14 |
 | `src/Ordering.API/appsettings.json` | 12 |
 | `src/Catalog.API/appsettings.json` | 8 |
 | `src/Identity.API/appsettings.json` | 6 |
 | `src/eShop.ServiceDefaults/OpenApi.Extensions.cs` | 6 |
-| `es-metadata.yml` | 5 |
 | `src/Basket.API/appsettings.json` | 5 |
 | `src/OrderProcessor/appsettings.json` | 5 |
 | `src/WebApp/Extensions/Extensions.cs` | 5 |
@@ -71,20 +103,21 @@ No folders were pruned.
 | `src/WebhookClient/Endpoints/WebhookEndpoints.cs` | 2 |
 | `src/WebhookClient/appsettings.Development.json` | 2 |
 | `.aspire/settings.json` | 1 |
-| … 4 more files | |
+| `src/Catalog.API/Extensions/Extensions.cs` | 1 |
+| `src/eShop.AppHost/Extensions.cs` | 1 |
+| … 1 more files | |
 
-- build: 1 file, 19 keys (not application settings)
+- build: 2 files, 20 keys (not application settings)
 - ci: 7 files, 91 keys (not application settings)
 
 ## Top folders by file count
 
 | Folder | Files | Entry points | Data access | External calls |
 |---|---|---|---|---|
-| `src` | 990 | 97 | 9 | 5 |
-| `tests` | 61 | 0 | 0 | 2 |
+| `src` | 990 | 97 | 36 | 8 |
+| `tests` | 61 | 0 | 0 | 35 |
 | `.github` | 54 | 0 | 0 | 0 |
 | `(root)` | 23 | 0 | 0 | 0 |
-| `docs` | 12 | 0 | 0 | 0 |
 | `e2e` | 5 | 0 | 0 | 0 |
 | `.config` | 4 | 0 | 0 | 0 |
 | `img` | 3 | 0 | 0 | 0 |
@@ -97,8 +130,6 @@ No folders were pruned.
 
 | File | Lines |
 |---|---|
-| `docs/appdoc-2.2/facts.json` | 22042 |
-| `docs/appdoc/facts.json` | 21711 |
 | `src/Identity.API/wwwroot/fonts/Oswald-Medium.svg` | 3232 |
 | `src/Identity.API/wwwroot/fonts/Oswald-SemiBold.svg` | 3197 |
 | `src/Identity.API/wwwroot/fonts/Oswald-Bold.svg` | 3184 |
@@ -108,20 +139,22 @@ No folders were pruned.
 | `src/Identity.API/wwwroot/fonts/Montserrat-Bold.svg` | 1933 |
 | `src/Identity.API/wwwroot/fonts/Montserrat-Regular.svg` | 1743 |
 | `src/Identity.API/wwwroot/css/site.css` | 1494 |
-| `docs/appdoc-2.2/check-report.md` | 1292 |
 | `src/Catalog.API/Catalog.API.json` | 1288 |
-| `docs/appdoc/check-report.md` | 1223 |
 | `src/ClientApp/Services/Basket/Protos/Basket.cs` | 1152 |
 | `src/Catalog.API/Catalog.API_v2.json` | 1065 |
-| `docs/appdoc-2.2/application-documentation.md` | 957 |
 | `src/Catalog.API/Setup/catalog.json` | 810 |
-| `docs/appdoc/application-documentation.md` | 803 |
 | `src/WebApp/wwwroot/css/app.css` | 574 |
 | `tests/Catalog.FunctionalTests/CatalogApiTests.cs` | 507 |
 | `.gitignore` | 495 |
 | `src/Catalog.API/Apis/CatalogApi.cs` | 468 |
 | `src/WebApp/Components/Pages/Catalog/Catalog.razor.css` | 423 |
 | `src/ClientApp/Extensions/VisualElementExtensions.cs` | 399 |
+| `.github/skills/aspireify/references/apphost-wiring.md` | 393 |
+| `src/WebApp/Components/Chatbot/Chatbot.razor.css` | 392 |
+| `.github/skills/playwright-cli/SKILL.md` | 388 |
+| `src/WebApp/Components/Pages/Cart/CartPage.razor.css` | 380 |
+| `src/Ordering.Infrastructure/Migrations/20231026091055_Outbox.Designer.cs` | 360 |
+| `src/ClientApp/ViewModels/SettingsViewModel.cs` | 344 |
 
 ## Entry points
 
@@ -179,14 +212,41 @@ No folders were pruned.
 
 ## Data access
 
+- `ToListAsync` — `src/Catalog.API/Apis/CatalogApi.cs:86`
+- `ToListAsync` — `src/Catalog.API/Apis/CatalogApi.cs:93`
+- `root` — `src/Catalog.API/Apis/CatalogApi.cs:145`
+- `root` — `src/Catalog.API/Apis/CatalogApi.cs:149`
+- `root` — `src/Catalog.API/Apis/CatalogApi.cs:153`
+- `ToListAsync` — `src/Catalog.API/Apis/CatalogApi.cs:164`
+- `brandScope` — `src/Catalog.API/Apis/CatalogApi.cs:183`
+- `ToListAsync` — `src/Catalog.API/Apis/CatalogApi.cs:188`
+- `typeScope` — `src/Catalog.API/Apis/CatalogApi.cs:193`
+- `ToListAsync` — `src/Catalog.API/Apis/CatalogApi.cs:198`
+- `CatalogItems` — `src/Catalog.API/Apis/CatalogApi.cs:212`
+- `CatalogItems` — `src/Catalog.API/Apis/CatalogApi.cs:316`
+- `ToListAsync` — `src/Catalog.API/Apis/CatalogApi.cs:321`
+- `CatalogItems` — `src/Catalog.API/Apis/CatalogApi.cs:330`
+- `ToListAsync` — `src/Catalog.API/Apis/CatalogApi.cs:334`
 - `CatalogItem` — `src/Catalog.API/Infrastructure/CatalogContext.cs:14`
+- `CatalogItems` — `src/Catalog.API/Infrastructure/CatalogContext.cs:14`
 - `CatalogBrand` — `src/Catalog.API/Infrastructure/CatalogContext.cs:15`
+- `CatalogBrands` — `src/Catalog.API/Infrastructure/CatalogContext.cs:15`
 - `CatalogType` — `src/Catalog.API/Infrastructure/CatalogContext.cs:16`
+- `CatalogTypes` — `src/Catalog.API/Infrastructure/CatalogContext.cs:16`
+- `Where` — `src/IntegrationEventLogEF/Services/IntegrationEventLogService.cs:15`
+- `Where` — `src/IntegrationEventLogEF/Services/IntegrationEventLogService.cs:22`
+- `ToListAsync` — `src/IntegrationEventLogEF/Services/IntegrationEventLogService.cs:23`
 - `Order` — `src/Ordering.Infrastructure/OrderingContext.cs:12`
+- `Orders` — `src/Ordering.Infrastructure/OrderingContext.cs:12`
 - `OrderItem` — `src/Ordering.Infrastructure/OrderingContext.cs:13`
+- `OrderItems` — `src/Ordering.Infrastructure/OrderingContext.cs:13`
 - `PaymentMethod` — `src/Ordering.Infrastructure/OrderingContext.cs:14`
+- `Payments` — `src/Ordering.Infrastructure/OrderingContext.cs:14`
 - `Buyer` — `src/Ordering.Infrastructure/OrderingContext.cs:15`
+- `Buyers` — `src/Ordering.Infrastructure/OrderingContext.cs:15`
 - `CardType` — `src/Ordering.Infrastructure/OrderingContext.cs:16`
+- `CardTypes` — `src/Ordering.Infrastructure/OrderingContext.cs:16`
+- `Subscriptions` — `src/Webhooks.API/Infrastructure/WebhooksContext.cs:10`
 - `WebhookSubscription` — `src/Webhooks.API/Infrastructure/WebhooksContext.cs:10`
 
 ## Connections (locations only)
@@ -209,11 +269,6 @@ No folders were pruned.
 
 ## Config keys flagged as secret locations
 
-- `permissions.id-token` — `.github/skills/aspire-deployment/references/github-actions-azure-csharp.yml:9`
-- `jobs.deploy.steps.env.Parameters__admin_password` — `.github/skills/aspire-deployment/references/github-actions-azure-csharp.yml:53`
-- `permissions.id-token` — `.github/skills/aspire-deployment/references/github-actions-azure-typescript.yml:9`
-- `jobs.deploy.steps.env.Parameters__admin_password` — `.github/skills/aspire-deployment/references/github-actions-azure-typescript.yml:53`
-- `jobs.test.steps.env.PASSWORD` — `.github/workflows/playwright.yml:38`
 - `TokenLifetimeMinutes` — `src/Identity.API/appsettings.json:10`
 - `PermanentTokenLifetimeDays` — `src/Identity.API/appsettings.json:11`
 - `ClientSecret` — `src/WebApp/Extensions/Extensions.cs:78`
@@ -230,7 +285,10 @@ No folders were pruned.
 - `OrderingService` — `src/WebApp/Extensions/Extensions.cs:38`
 - `WebhooksClient` — `src/WebhookClient/Extensions/Extensions.cs:19`
 - `http://webhooks-api` — `src/WebhookClient/Extensions/Extensions.cs:19`
-- (2 more in test code, not listed)
+- `HttpClient.SendAsync` — `src/Webhooks.API/Services/GrantUrlTesterService.cs:21`
+- `HttpClient.SendAsync` — `src/Webhooks.API/Services/WebhooksSender.cs:32`
+- `HttpClient.SendAsync` — `src/eShop.ServiceDefaults/HttpClientExtensions.cs:48`
+- (35 more in test code, not listed)
 
 ## Auth checks
 
@@ -274,7 +332,20 @@ None extracted. This is not proof of absence.
 - `src/ClientApp/Views/OrderDetailView.xaml:3` — eShop.ClientApp.Views.OrderDetailView
 - `src/ClientApp/Views/ProfileView.xaml:3` — eShop.ClientApp.Views.ProfileView
 - `src/ClientApp/Views/SettingsView.xaml:3` — eShop.ClientApp.Views.SettingsView
+- `src/HybridApp/Components/Pages/Catalog/Catalog.razor:1` — /
+- `src/HybridApp/Components/Pages/Item/ItemPage.razor:1` — /item/{itemId:int}
 - `src/HybridApp/MainPage.xaml:2` — eShop.HybridApp.MainPage
+- `src/WebApp/Components/Pages/Cart/CartPage.razor:1` — /cart
+- `src/WebApp/Components/Pages/Catalog/Catalog.razor:1` — /
+- `src/WebApp/Components/Pages/Checkout/Checkout.razor:1` — /checkout
+- `src/WebApp/Components/Pages/Item/ItemPage.razor:1` — /item/{itemId:int}
+- `src/WebApp/Components/Pages/User/LogIn.razor:1` — /user/login
+- `src/WebApp/Components/Pages/User/LogOut.razor:1` — /user/logout
+- `src/WebApp/Components/Pages/User/Orders.razor:1` — /user/orders
+- `src/WebhookClient/Components/Pages/AddWebhook.razor:1` — /add-webhook
+- `src/WebhookClient/Components/Pages/Error.razor:1` — /Error
+- `src/WebhookClient/Components/Pages/Home/Home.razor:1` — /
+- `src/WebhookClient/Components/Pages/LogIn.razor:1` — /login
 
 ## Finding candidates
 

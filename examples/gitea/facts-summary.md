@@ -3,9 +3,43 @@
 - Target: `gitea`
 - Commit: `a61ad4876a6c8e6b3803c74d4423615e2571613b`
 - Git history: shallow
-- Schema: `appdoc-facts/4`
+- Schema: `appdoc-facts/6`
 
 > Facts show what the extractors found. An empty list is not proof that something is absent: the extractors only recognise the patterns of the Stacks below, so read the source before writing "none". Facts from test code are marked `test` in `facts.json` and left out of the lists.
+
+## System Connections
+
+> Derived deterministically from the `connection`, `external_call` and `dependency` Facts in `facts.json` - a pure function of the Facts, byte-identical across runs. A group with no rows is not proof of absence; the extractors only recognise the patterns of the detected Stacks.
+
+### Integration map
+
+app -> { database, http }
+
+| System | Kind | Count | Drivers / targets |
+|---|---|---:|---|
+| Database | connection | 5 | `sql.Open`, `xorm.NewEngine` |
+| Outbound HTTP | external call | 25 | `http.Get`, `http.NewRequest`, `http.NewRequestWithContext`, `https://challenges.cloudflare.com/turnstile/v0/siteverify` |
+
+### Provenance
+
+- **Database** - 5 x `sql.Open`, `xorm.NewEngine`
+  - `models/db/engine_init.go:34`
+  - `models/unittest/testdb.go:157`
+  - `models/unittest/testdb.go:172`
+  - ... 2 more in `facts.json`
+- **Outbound HTTP** - 25 x `http.Get`, `http.NewRequest`, `http.NewRequestWithContext`, `https://challenges.cloudflare.com/turnstile/v0/siteverify`
+  - `build/generate-emoji.go:81`
+  - `build/generate-gitignores.go:45`
+  - `models/unittest/mock_http.go:87`
+  - ... 22 more in `facts.json`
+
+### Dependencies
+
+| Manager | Count | Examples |
+|---|---:|---|
+| go | 95 | `connectrpc.com/connect/v2`, `gitea.com/lunny/dingtalk_webhook`, `gitea.com/lunny/levelqueue`, `gitea.dev/actionslib`, `gitea.dev/sdk`, ... +90 more |
+| npm | 97 | `@codemirror/autocomplete`, `@codemirror/commands`, `@codemirror/lang-json`, `@codemirror/lang-markdown`, `@codemirror/language`, ... +92 more |
+
 
 ## Stacks
 
@@ -21,21 +55,23 @@
 |---|---|
 | auth_check | 429 |
 | config_key | 10601 |
+| connection | 8 |
 | data_access | 176 |
 | dependency | 192 |
 | entry_point | 1554 |
 | external_call | 43 |
-| file | 6437 |
+| file | 6415 |
 | owner_file | 2 |
+| schema_object | 116 |
 
 | Stack | Facts |
 |---|---|
-| generic | 16735 |
-| go | 2699 |
+| generic | 16713 |
+| go | 2823 |
 
 ## Scan coverage
 
-Files found: 6437 = scanned 6437 + pruned 0 + ignored by `.appdocignore` 0.
+Files found: 6415 = scanned 6415 + pruned 0 + ignored by `.appdocignore` 0.
 
 No folders were pruned.
 
@@ -43,13 +79,12 @@ No folders were pruned.
 
 | Application config file | Keys |
 |---|---|
-| `custom/conf/app.example.ini` | 785 |
-| `options/label/Advanced.yaml` | 62 |
+| `custom/conf/app.example.ini` | 290 |
 | `modules/setting/service.go` | 58 |
 | `modules/setting/server.go` | 44 |
 | `routers/install/install.go` | 42 |
-| `docker/root/etc/templates/app.ini` | 34 |
-| `docker/rootless/etc/templates/app.ini` | 32 |
+| `docker/root/etc/templates/app.ini` | 28 |
+| `docker/rootless/etc/templates/app.ini` | 26 |
 | `modules/setting/security.go` | 24 |
 | `modules/setting/storage.go` | 24 |
 | `modules/setting/log.go` | 23 |
@@ -63,12 +98,13 @@ No folders were pruned.
 | `modules/setting/session.go` | 10 |
 | `modules/setting/task.go` | 9 |
 | `modules/setting/oauth2.go` | 8 |
-| `modules/setting/setting.go` | 8 |
 | `modules/setting/webhook.go` | 7 |
-| `cmd/web.go` | 6 |
-| `modules/setting/testenv.go` | 5 |
-| `tools/lint-go-all.go` | 5 |
-| … 29 more files | |
+| `cmd/web.go` | 5 |
+| `modules/setting/admin.go` | 4 |
+| `modules/setting/attachment.go` | 4 |
+| `modules/setting/cache.go` | 4 |
+| `modules/setting/migrations.go` | 4 |
+| … 14 more files | |
 
 - build: 8 files, 124 keys (not application settings)
 - ci: 30 files, 671 keys (not application settings)
@@ -91,10 +127,10 @@ No folders were pruned.
 | `(root)` | 50 | 0 | 0 | 0 |
 | `.github` | 33 | 0 | 0 | 0 |
 | `contrib` | 31 | 0 | 0 | 0 |
-| `docs` | 31 | 0 | 0 | 0 |
 | `docker` | 21 | 0 | 0 | 0 |
 | `tools` | 19 | 0 | 0 | 0 |
 | `build` | 10 | 0 | 0 | 2 |
+| `docs` | 9 | 0 | 0 | 0 |
 | `assets` | 4 | 0 | 0 | 0 |
 | `snap` | 3 | 0 | 0 | 0 |
 | `.devcontainer` | 1 | 0 | 0 | 0 |
@@ -119,7 +155,6 @@ No folders were pruned.
 | `options/locale/locale_ja-JP.json` | 3972 |
 | `options/locale/locale_pl-PL.json` | 3898 |
 | `options/locale/locale_tr-TR.json` | 3609 |
-| `docs/appdoc/check-report.md` | 3282 |
 | `options/locale/locale_pt-BR.json` | 3270 |
 | `options/locale/locale_cs-CZ.json` | 3158 |
 | `options/locale/locale_zh-TW.json` | 3150 |
@@ -129,6 +164,7 @@ No folders were pruned.
 | `options/locale/locale_el-GR.json` | 2864 |
 | `options/locale/locale_ru-RU.json` | 2848 |
 | `options/locale/locale_es-ES.json` | 2820 |
+| `options/locale/locale_it-IT.json` | 2260 |
 
 ## Entry points
 
@@ -242,38 +278,15 @@ No folders were pruned.
 
 ## Connections (locations only)
 
-None extracted. This is not proof of absence.
+- `xorm.NewEngine` — `models/db/engine_init.go:34`
+- `sql.Open` — `models/unittest/testdb.go:157`
+- `sql.Open` — `models/unittest/testdb.go:172`
+- `sql.Open` — `models/unittest/testdb.go:187`
+- `xorm.NewEngine` — `models/unittest/testdb.go:213`
+- (3 more in test code, not listed)
 
 ## Config keys flagged as secret locations
 
-- `jobs.prune.env.GH_TOKEN` — `.github/workflows/cache-prune.yml:24`
-- `jobs.cron-renovate.steps.with.token` — `.github/workflows/cron-renovate.yml:28`
-- `jobs.giteabot.steps.with.github_token` — `.github/workflows/giteabot-backport.yml:25`
-- `jobs.giteabot.steps.with.github_token` — `.github/workflows/giteabot.yml:55`
-- `jobs.test-pgsql-shard-1.services.pgsql.env.POSTGRES_PASSWORD` — `.github/workflows/pull-db-tests.yml:28`
-- `jobs.test-pgsql-shard-1.services.minio.env.MINIO_ROOT_PASSWORD` — `.github/workflows/pull-db-tests.yml:44`
-- `jobs.test-pgsql-shard-2.services.pgsql.env.POSTGRES_PASSWORD` — `.github/workflows/pull-db-tests.yml:66`
-- `jobs.test-pgsql-shard-2.services.minio.env.MINIO_ROOT_PASSWORD` — `.github/workflows/pull-db-tests.yml:82`
-- `jobs.test-unit.services.minio.env.MINIO_ROOT_PASSWORD` — `.github/workflows/pull-db-tests.yml:149`
-- `jobs.test-unit.steps.env.GITHUB_READ_TOKEN` — `.github/workflows/pull-db-tests.yml:170`
-- `jobs.test-mysql.services.mysql.env.ALLOW_EMPTY_PASSWORD` — `.github/workflows/pull-db-tests.yml:182`
-- `jobs.test-mssql.services.mssql.env.SA_PASSWORD` — `.github/workflows/pull-db-tests.yml:230`
-- `jobs.pr-title.steps.env.GITHUB_TOKEN` — `.github/workflows/pull-labeler.yml:50`
-- `jobs.tag.steps.with.token` — `.github/workflows/release-create-tag.yml:22`
-- `jobs.tag.steps.with.gpg_private_key` — `.github/workflows/release-create-tag.yml:25`
-- `jobs.branches.steps.env.GH_TOKEN` — `.github/workflows/release-nightly.yml:25`
-- `jobs.nightly-binary.permissions.id-token` — `.github/workflows/release-nightly.yml:46`
-- `jobs.nightly-binary.steps.with.gpg_private_key` — `.github/workflows/release-nightly.yml:70`
-- `jobs.nightly-binary.steps.env.AWS_SECRET_ACCESS_KEY` — `.github/workflows/release-nightly.yml:93`
-- `jobs.nightly-container.steps.with.password` — `.github/workflows/release-nightly.yml:158`
-- `jobs.nightly-container.steps.with.password` — `.github/workflows/release-nightly.yml:164`
-- `jobs.nightly-snap.steps.env.SNAPCRAFT_STORE_CREDENTIALS` — `.github/workflows/release-nightly.yml:229`
-- `jobs.binary.permissions.id-token` — `.github/workflows/release-tag-version.yml:21`
-- `jobs.binary.steps.with.gpg_private_key` — `.github/workflows/release-tag-version.yml:41`
-- `jobs.binary.steps.env.AWS_SECRET_ACCESS_KEY` — `.github/workflows/release-tag-version.yml:64`
-- `jobs.binary.steps.env.GITHUB_TOKEN` — `.github/workflows/release-tag-version.yml:85`
-- `jobs.container.steps.with.password` — `.github/workflows/release-tag-version.yml:146`
-- `jobs.container.steps.with.password` — `.github/workflows/release-tag-version.yml:152`
 - `api_token_env` — `crowdin.yml:2`
 - `server.LFS_JWT_SECRET` — `custom/conf/app.example.ini:318`
 - `server.LFS_JWT_SECRET_URI` — `custom/conf/app.example.ini:321`
@@ -296,7 +309,35 @@ None extracted. This is not proof of absence.
 - `oauth2.ACCESS_TOKEN_EXPIRATION_TIME` — `custom/conf/app.example.ini:626`
 - `oauth2.REFRESH_TOKEN_EXPIRATION_TIME` — `custom/conf/app.example.ini:629`
 - `oauth2.INVALIDATE_REFRESH_TOKENS` — `custom/conf/app.example.ini:632`
-- … 50 more in `facts.json`
+- `oauth2.MAX_TOKEN_LENGTH` — `custom/conf/app.example.ini:635`
+- `service.RESET_PASSWD_CODE_LIVE_MINUTES` — `custom/conf/app.example.ini:825`
+- `service.ENABLE_PASSWORD_SIGNIN_FORM` — `custom/conf/app.example.ini:865`
+- `service.RECAPTCHA_SECRET` — `custom/conf/app.example.ini:892`
+- `service.HCAPTCHA_SECRET` — `custom/conf/app.example.ini:896`
+- `service.MCAPTCHA_SECRET` — `custom/conf/app.example.ini:904`
+- `service.CF_TURNSTILE_SECRET` — `custom/conf/app.example.ini:909`
+- `cors.ALLOW_CREDENTIALS` — `custom/conf/app.example.ini:1381`
+- `mailer.PASSWD` — `custom/conf/app.example.ini:1866`
+- `email.incoming.PASSWORD` — `custom/conf/app.example.ini:1921`
+- `attachment.MINIO_SECRET_ACCESS_KEY` — `custom/conf/app.example.ini:2086`
+- `attachment.AZURE_BLOB_ACCOUNT_KEY` — `custom/conf/app.example.ini:2123`
+- `metrics.TOKEN` — `custom/conf/app.example.ini:2758`
+- `storage.minio.MINIO_SECRET_ACCESS_KEY` — `custom/conf/app.example.ini:2978`
+- `storage.azureblob.AZURE_BLOB_ACCOUNT_KEY` — `custom/conf/app.example.ini:3013`
+- `database.PASSWD` — `docker/root/etc/templates/app.ini:30`
+- `security.SECRET_KEY` — `docker/root/etc/templates/app.ini:53`
+- `database.PASSWD` — `docker/rootless/etc/templates/app.ini:33`
+- `security.SECRET_KEY` — `docker/rootless/etc/templates/app.ini:50`
+- `database.PASSWD` — `modules/setting/database.go:61`
+- `server.LFS_JWT_SECRET` — `modules/setting/lfs.go:79`
+- `server.LFS_JWT_SECRET` — `modules/setting/lfs.go:80`
+- `oauth2.JWT_SECRET` — `modules/setting/oauth2.go:147`
+- `oauth2.JWT_SECRET` — `modules/setting/oauth2.go:148`
+- `security.INTERNAL_TOKEN` — `modules/setting/security.go:137`
+- `security.INTERNAL_TOKEN` — `modules/setting/security.go:138`
+- `security.MIN_PASSWORD_LENGTH` — `modules/setting/security.go:167`
+- `security.PASSWORD_HASH_ALGO` — `modules/setting/security.go:175`
+- … 20 more in `facts.json`
 - (8441 more in test code, not listed)
 
 ## External calls
@@ -384,7 +425,54 @@ None extracted. This is not proof of absence.
 
 ## Schema objects
 
-None extracted. This is not proof of absence.
+| Type | Dialect | Count |
+|---|---|---|
+| table | unspecified | 116 |
+
+| Table | Dialect | Columns | Defined at |
+|---|---|---|---|
+| `Access` | unspecified | 0 | `models/perm/access/access.go:33` |
+| `AccessToken` | unspecified | 0 | `models/auth/access_token.go:43` |
+| `Action` | unspecified | 0 | `models/activities/action.go:154` |
+| `ActionArtifact` | unspecified | 0 | `models/actions/artifact.go:53` |
+| `ActionRun` | unspecified | 0 | `models/actions/run.go:79` |
+| `ActionRunAttempt` | unspecified | 0 | `models/actions/run_attempt.go:47` |
+| `ActionRunAttemptJobIDIndex` | unspecified | 0 | `models/actions/run_job.go:150` |
+| `ActionRunIndex` | unspecified | 0 | `models/actions/run.go:80` |
+| `ActionRunJob` | unspecified | 0 | `models/actions/run_job.go:149` |
+| `ActionRunJobSummary` | unspecified | 0 | `models/actions/run_job_summary.go:57` |
+| `ActionRunner` | unspecified | 0 | `models/actions/runner.go:207` |
+| `ActionRunnerToken` | unspecified | 0 | `models/actions/runner_token.go:45` |
+| `ActionSchedule` | unspecified | 0 | `models/actions/schedule.go:41` |
+| `ActionScheduleSpec` | unspecified | 0 | `models/actions/schedule_spec.go:63` |
+| `ActionScopedWorkflowSource` | unspecified | 0 | `models/actions/scoped_workflow.go:41` |
+| `ActionTask` | unspecified | 0 | `models/actions/task.go:68` |
+| `ActionTaskOutput` | unspecified | 0 | `models/actions/task_output.go:24` |
+| `ActionTaskStep` | unspecified | 0 | `models/actions/task_step.go:62` |
+| `ActionTasksVersion` | unspecified | 0 | `models/actions/tasks_version.go:28` |
+| `ActionVariable` | unspecified | 0 | `models/actions/variable.go:48` |
+| `AppState` | unspecified | 0 | `models/system/appstate.go:24` |
+| `Attachment` | unspecified | 0 | `models/repo/attachment.go:42` |
+| `AuthToken` | unspecified | 0 | `models/auth/auth_token.go:29` |
+| `AutoMerge` | unspecified | 0 | `models/pull/automerge.go:35` |
+| `Badge` | unspecified | 0 | `models/user/badge.go:41` |
+| `Blocking` | unspecified | 0 | `models/user/block.go:41` |
+| `Branch` | unspecified | 0 | `models/git/branch.go:155` |
+| `Collaboration` | unspecified | 0 | `models/repo/collaboration.go:30` |
+| `Column` | unspecified | 0 | `models/project/column.go:85` |
+| `Comment` | unspecified | 0 | `models/issues/comment.go:373` |
+| `CommitStatus` | unspecified | 0 | `models/git/commit_status.go:60` |
+| `CommitStatusIndex` | unspecified | 0 | `models/git/commit_status.go:61` |
+| `CommitStatusSummary` | unspecified | 0 | `models/git/commit_status_summary.go:26` |
+| `ContentHistory` | unspecified | 0 | `models/issues/content_history.go:37` |
+| `DeployKey` | unspecified | 0 | `models/deploykey/deploykey.go:58` |
+| `EmailAddress` | unspecified | 0 | `models/user/email_address.go:93` |
+| `EmailHash` | unspecified | 0 | `models/avatars/avatar.go:40` |
+| `Event` | unspecified | 0 | `models/audit/audit_event.go:19` |
+| `ExternalLoginUser` | unspecified | 0 | `models/user/external_login_user.go:79` |
+| `Follow` | unspecified | 0 | `models/user/follow.go:25` |
+
+40 of 116 shown; the rest are in `facts.json`.
 
 ## Ownership files
 
