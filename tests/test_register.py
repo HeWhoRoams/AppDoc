@@ -186,6 +186,61 @@ class AppendixMarkdownTests(unittest.TestCase):
             "grep -nF -- 'line 2' 'app/main.py'", "```"]))
 
 
+class BlocksProvenanceTests(unittest.TestCase):
+    BY = {"generator": "2.6.0", "bundle": "7c1e5a9b03d2"}
+
+    def a1(self, audit=AUDIT, blocks_by=BY):
+        md = appendix_markdown(reg_of(row(1), audit=audit), {}, blocks_by=blocks_by)
+        return block(md, "A.1 Audit state")
+
+    def test_a1_blocks_provenance_line(self):
+        self.assertIn("Generated blocks written by AppDoc 2.6.0 (bundle 7c1e5a9b03d2).", self.a1())
+        self.assertNotIn("regenerated after the audit", self.a1())
+
+    def test_a1_line_absent_without_blocks_by(self):
+        self.assertNotIn("Generated blocks", self.a1(blocks_by=None))
+
+    def test_a1_regenerated_after_audit_line(self):
+        line = "Generated blocks were regenerated after the audit and are not covered by it."
+        self.assertIn(line, self.a1({**AUDIT, "audited_with": "2.5.0"}))
+        self.assertIn(line, self.a1({**AUDIT, "audited_with": "2.5"}))
+        self.assertNotIn(line, self.a1({**AUDIT, "audited_with": "2.6.3"}))   # same major.minor
+        self.assertNotIn(line, self.a1({**AUDIT, "audited_with": "2.6.0.dev0"}))
+        self.assertNotIn(line, self.a1())                                      # audited_with is optional
+
+    def test_a1_line_when_audit_not_performed(self):
+        md = appendix_markdown(reg_of(audit={"type": "audit", "performed": False, "scope": "x"}), {},
+                               blocks_by=self.BY)
+        self.assertIn("Generated blocks written by AppDoc 2.6.0", md)
+
+    def test_fill_writes_the_line_and_blocks_by(self):
+        from appdoc import fill, version
+        tmp, target = make_target()
+        self.addCleanup(tmp.cleanup)
+        out = os.path.join(target, "docs", "appdoc")
+        os.makedirs(out)
+        with open(os.path.join(out, "facts.json"), "w") as fh:
+            json.dump({"schema": "appdoc-facts/6", "facts": [], "stacks": [], "target": {}}, fh)
+        with open(os.path.join(out, "evidence.jsonl"), "w") as fh:
+            fh.write(json.dumps({**AUDIT, "audited_with": "1.0.0"}) + "\n")
+        with open(os.path.join(out, "application-documentation.md"), "w") as fh:
+            fh.write("<!-- appdoc:generated appendix-a -->\n<!-- /appdoc:generated appendix-a -->\n")
+        with open(os.path.join(out, "provenance.json"), "w") as fh:
+            json.dump(version.provenance(), fh)
+        import contextlib, io
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(fill.run(target, out), 0)
+        with open(os.path.join(out, "application-documentation.md"), encoding="utf-8") as fh:
+            md = fh.read()
+        p = version.provenance()
+        self.assertIn(f"Generated blocks written by AppDoc {p['generator']} (bundle {p['bundle']}).", md)
+        self.assertIn("were regenerated after the audit", md)
+        with open(os.path.join(out, "provenance.json"), encoding="utf-8") as fh:
+            prov = json.load(fh)
+        self.assertEqual(prov["blocks_by"], {"generator": p["generator"], "bundle": p["bundle"]})
+        self.assertEqual(prov["generator"], p["generator"])  # extract's keys are kept
+
+
 class SealTests(unittest.TestCase):
     def _write(self, text):
         self.tmp = tempfile.TemporaryDirectory()

@@ -133,7 +133,6 @@ def _freeze_list(values) -> tuple:
 def dumps(target_name: str, commit: str | None, facts, history: str | None = None,
           scan: dict | None = None) -> str:
     """Serialize facts to the canonical Facts file text (sorted, de-duplicated, no timestamps)."""
-    from . import __version__
     unique = sorted(set(facts), key=lambda f: f.sort_key())
     stacks = [f.to_json() for f in unique if f.kind == "stack"]
     others = [f.to_json() for f in unique if f.kind != "stack"]
@@ -142,7 +141,6 @@ def dumps(target_name: str, commit: str | None, facts, history: str | None = Non
         target["scan"] = scan
     doc = {
         "schema": SCHEMA,
-        "generator": __version__,
         "target": target,
         "stacks": stacks,
         "facts": others,

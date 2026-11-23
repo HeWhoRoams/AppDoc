@@ -15,6 +15,7 @@ import os
 import re
 
 from .citations import parse_span
+from .template_spec import version_tuple
 
 REGISTER = "evidence.jsonl"
 RESULTS = ("Supported", "Corrected", "Downgraded", "Dismissed", "Answerable")
@@ -272,15 +273,27 @@ def seal(path: str, claim_shas: dict[str, str]) -> int:
     return sealed
 
 
+def _blocks_lines(reg: Register | None, blocks_by: dict | None) -> list[str]:
+    """A.1 lines naming the AppDoc that wrote the generated blocks (empty when blocks_by is None)."""
+    if not blocks_by:
+        return []
+    out = ["", f"Generated blocks written by AppDoc {blocks_by['generator']} (bundle {blocks_by['bundle']})."]
+    audited = str((reg.audit or {}).get("audited_with") or "") if reg is not None else ""
+    if audited and version_tuple(audited)[:2] != version_tuple(blocks_by["generator"])[:2]:
+        out.append("Generated blocks were regenerated after the audit and are not covered by it.")
+    return out
+
+
 def appendix_markdown(reg: Register | None, facts: dict | None = None, coverage=None,
-                      root: str | None = None) -> str:
+                      root: str | None = None, blocks_by: dict | None = None) -> str:
     """Body of Appendix A (the `appendix-a` generated block), computed from the register.
 
     reg is None when evidence.jsonl does not exist. coverage is check.coverage() output, or None to omit it.
     facts is the facts.json dict; nothing in the appendix reads it yet.
     root is the Target directory; when given, A.4 commands are generated from locate().
+    blocks_by is {"generator", "bundle"} of the running AppDoc; when given, A.1 says who wrote the blocks.
     """
-    out = ["### A.1 Audit state", "", *_audit_state(reg)]
+    out = ["### A.1 Audit state", "", *_audit_state(reg), *_blocks_lines(reg, blocks_by)]
     if reg is not None and reg.performed:
         out += ["", "### A.2 Coverage", "", *_coverage(reg, coverage),
                 "", "### A.3 Register", "", *_table(reg),

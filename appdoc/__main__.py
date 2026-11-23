@@ -3,30 +3,13 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import os
 import sys
 
 from . import __version__
+from .version import bundle_hash
 
 DEFAULT_OUT = os.path.join("docs", "appdoc")
-
-
-def bundle_hash() -> str:
-    """A deterministic SHA-1 over the appdoc package files (path + content)."""
-    pkg_dir = os.path.dirname(os.path.abspath(__file__))
-    h = hashlib.sha1()
-    for dirpath, dirnames, filenames in os.walk(pkg_dir):
-        dirnames.sort()
-        for fname in sorted(filenames):
-            full = os.path.join(dirpath, fname)
-            rel = os.path.relpath(full, pkg_dir).replace(os.sep, "/")
-            h.update(rel.encode("utf-8"))
-            h.update(b"\0")
-            with open(full, "rb") as fh:
-                h.update(fh.read())
-            h.update(b"\0")
-    return h.hexdigest()
 
 
 def _resolve_out(target: str, out: str | None) -> str:

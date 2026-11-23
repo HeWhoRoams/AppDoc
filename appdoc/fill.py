@@ -11,6 +11,8 @@ import os
 import re
 import sys
 
+from . import version
+
 BLOCK_RE = re.compile(r"(<!--\s*appdoc:generated\s+([\w-]+)\s*-->)(.*?)(<!--\s*/appdoc:generated\s+\2\s*-->)", re.S)
 TOP_CAP = 25
 PRUNED_CAP = 50
@@ -225,7 +227,9 @@ def _appendix_a(doc: dict, ctx: dict | None = None) -> str:
         ids = check.defined_ids(lines, heads, lambda *a: None)
         workflows = sorted((k for k in heads if k.startswith("7.")), key=lambda k: int(k.split(".")[1]))
         coverage = check.coverage(heads, ids, reg, workflows)
-    return register.appendix_markdown(reg, doc, coverage, root=(ctx or {}).get("target"))
+    prov = version.provenance()
+    return register.appendix_markdown(reg, doc, coverage, root=(ctx or {}).get("target"),
+                                      blocks_by={"generator": prov["generator"], "bundle": prov["bundle"]})
 
 
 RENDERERS = {"scan-coverage": _scan_coverage, "entry-points": _entry_points, "config-reference": _config_reference,
@@ -284,5 +288,6 @@ def run(target: str, out_dir: str) -> int:
     if new != text:
         with open(md, "w", encoding="utf-8", newline="") as fh:
             fh.write(new)
+    version.write_blocks_by(out_dir)
     print("filled: " + ", ".join(filled))
     return 0

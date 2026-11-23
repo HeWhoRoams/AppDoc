@@ -16,7 +16,7 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
 
-from . import context
+from . import context, version
 from . import facts as F
 from . import scan, smells
 from .citations import OWNER_CONTEXT
@@ -321,7 +321,8 @@ def write(root: str, out_dir: str, workers: int | None = None, skip_tests: bool 
                                        ownership_top=ownership_top)
     os.makedirs(out_dir, exist_ok=True)
     written = []
-    for fname, text in (("facts.json", facts_text), ("facts-summary.md", summary_text)):
+    for fname, text in (("facts.json", facts_text), ("facts-summary.md", summary_text),
+                        (version.PROVENANCE_FILE, version.dumps_provenance(version.provenance()))):
         p = os.path.join(out_dir, fname)
         with open(p, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(text)

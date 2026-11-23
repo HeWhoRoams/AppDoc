@@ -118,6 +118,7 @@ class CheckTests(unittest.TestCase):
                           {"kind": "entry_point", "stack": "python-flask", "path": "app/main.py", "line": 8,
                            "name": "nightly", "detail": {"type": "job", "schedule": "0 2 * * *", "enabled": True}}])
         self.write_register(AUDIT, ROWS)
+        self.write_provenance()
         self.base_facts = list(self.facts["facts"])
 
     def with_facts(self, *extra):
@@ -429,39 +430,62 @@ class CheckTests(unittest.TestCase):
         os.remove(os.path.join(self.out, "facts.json"))
         self.assertEqual(self.fired(doc, filled=False), set())
 
-    def test_c7_version_skew_fails_on_major_minor_difference(self):
+    def write_provenance(self, **over):
+        from appdoc import version
+        prov = {**version.provenance(), **over}
+        with open(os.path.join(self.out, "provenance.json"), "w") as fh:
+            json.dump(prov, fh)
+        return prov
+
+    def test_c7_skew_reads_provenance(self):
         from appdoc import __version__
         doc = self.fill_doc(build_doc())
-        self.write_facts(self.facts["stacks"], self.facts["facts"])
-        # a different major.minor than the running version
         major, minor, *_ = __version__.split(".")
-        self.facts["generator"] = f"{int(major) + 1}.{minor}.0"
-        with open(os.path.join(self.out, "facts.json"), "w") as fh:
-            json.dump(self.facts, fh)
+        gen = f"{int(major) + 1}.{minor}.0"
+        self.write_provenance(generator=gen)
         code, report, _ = self.run_check(doc, filled=False)
-        self.assertIn("C7", set(re.findall(r"^## (C\d+) ", report, re.M)))
-        self.assertIn(f"facts.json was written by AppDoc {self.facts['generator']}; re-run extract", report)
+        self.assertIn("C7", self.rules(report))
+        self.assertIn(f"facts.json was written by AppDoc {gen}; re-run extract", report)
         self.assertEqual(code, 2)
+
+    def test_c7_skew_compares_numerically(self):
+        # 2.10 is newer than 2.9: a string compare of major.minor must not matter, only equality does
+        doc = self.fill_doc(build_doc())
+        self.write_provenance(generator="2.10.0")
+        self.assertIn("C7", self.rules(self.run_check(doc, filled=False)[1]))
 
     def test_c7_version_skew_ignores_patch_difference(self):
         from appdoc import __version__
         doc = self.fill_doc(build_doc())
-        self.write_facts(self.facts["stacks"], self.facts["facts"])
-        # same major.minor, different patch: no skew
         major, minor, *_ = __version__.split(".")
-        self.facts["generator"] = f"{major}.{minor}.99"
-        with open(os.path.join(self.out, "facts.json"), "w") as fh:
-            json.dump(self.facts, fh)
+        self.write_provenance(generator=f"{major}.{minor}.99", bundle="0" * 12)
         code, report, _ = self.run_check(doc, filled=False)
         self.assertNotIn("re-run extract", report)
-        self.assertNotIn("C7", set(re.findall(r"^## (C\d+) ", report, re.M)))
+        self.assertNotIn("C7", self.rules(report))
         self.assertEqual(code, 0, report)
 
-    def test_c7_version_skew_ignores_missing_generator(self):
-        # the base facts.json has no generator field: treated as no skew
+    def test_c7_missing_provenance_is_an_advisory(self):
         doc = self.fill_doc(build_doc())
+        os.remove(os.path.join(self.out, "provenance.json"))
         code, report, _ = self.run_check(doc, filled=False)
-        self.assertNotIn("re-run extract", report)
+        self.assertEqual(code, 0, report)
+        self.assertNotIn("C7", self.rules(report))
+        self.assertIn("## Provenance missing (advisory)", report)
+        self.assertIn("provenance.json", report.split("## Provenance missing (advisory)")[1])
+
+    def test_c7_provenance_schema_mismatch_fails(self):
+        doc = self.fill_doc(build_doc())
+        self.write_facts(self.facts["stacks"], self.facts["facts"])
+        self.facts["schema"] = "appdoc-facts/6"
+        with open(os.path.join(self.out, "facts.json"), "w") as fh:
+            json.dump(self.facts, fh)
+        self.write_provenance(schema="appdoc-facts/5")
+        code, report, _ = self.run_check(doc, filled=False)
+        self.assertIn("C7", self.rules(report))
+        self.assertIn("provenance.json schema appdoc-facts/5 does not match facts.json schema appdoc-facts/6", report)
+        self.assertEqual(code, 2)
+        self.write_provenance(schema="appdoc-facts/6")
+        code, report, _ = self.run_check(doc, filled=False)
         self.assertEqual(code, 0, report)
 
     def test_check_report_prints_running_version(self):

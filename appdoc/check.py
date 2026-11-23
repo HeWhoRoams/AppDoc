@@ -8,7 +8,7 @@ import os
 import re
 import sys
 
-from . import __version__
+from . import __version__, version
 from . import context
 from . import docmodel as dm
 from . import fill as fill_mod
@@ -24,13 +24,6 @@ FACTS = "facts.json"
 REPORT = "check-report.md"
 REGISTER = reg_mod.REGISTER
 
-
-def _major_minor(version: str) -> str | None:
-    """The major.minor of a dotted version string, or None if it is not dotted numeric."""
-    parts = version.split(".")
-    if len(parts) >= 2 and parts[0].isdigit() and parts[1].isdigit():
-        return f"{parts[0]}.{parts[1]}"
-    return None
 
 SECTIONS = list(spec.SECTIONS)
 REQUIRED_SUBSECTIONS = spec.REQUIRED_SUBSECTIONS
@@ -910,6 +903,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
             print(f"appdoc check: facts.json is not valid JSON: {exc}", file=sys.stderr)
             return 1
 
+    prov = version.read_provenance(out_dir) if facts is not None else None
     text = _strip_comments(fill_mod.mask_blocks(raw.replace("\r\n", "\n"), spec.OPAQUE_BLOCKS))
     lines = text.splitlines()
     secs = _sections(lines)
@@ -1032,15 +1026,17 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     s2 = by_num.get(2)
     if facts:
         sec2 = "\n".join(lines[s2["idx"]: s2["end"]]).lower() if s2 else ""
-        # Version skew: facts.json records the AppDoc version that wrote it (generator).
-        # A missing generator (older Facts) is treated as no skew. Only a major.minor
-        # difference fails, so a patch bump (2.3.0 vs 2.3.1) is fine.
-        gen = facts.get("generator")
-        if gen:
-            gen_mm = _major_minor(gen)
-            if gen_mm and _major_minor(__version__) != gen_mm:
+        # Version skew: provenance.json (written by extract) records the AppDoc that wrote the Facts.
+        # Only a major.minor difference fails, so a patch bump (2.6.0 vs 2.6.1) is fine. A missing
+        # file (Facts from before 2.6) is an advisory, never a failure.
+        if prov is not None:
+            gen = str(prov.get("generator") or "")
+            if gen and spec.version_tuple(gen)[:2] != spec.version_tuple(__version__)[:2]:
                 add("C7", 1, f"facts.json was written by AppDoc {gen}; re-run extract",
                     f"re-run `appdoc extract` with AppDoc {__version__}")
+            if prov.get("schema") and facts.get("schema") and prov["schema"] != facts["schema"]:
+                add("C7", 1, f"provenance.json schema {prov['schema']} does not match facts.json schema "
+                    f"{facts['schema']}; re-run extract", "re-run `appdoc extract` so both files come from one run")
         for st in facts.get("stacks", []):
             if (st.get("detail") or {}).get("supported") is False and st.get("name", "").lower() not in sec2:
                 add("C7", s2["start"] if s2 else 1, f"unsupported stack '{st.get('name')}' is not named in section 2",
@@ -1127,6 +1123,10 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                      "This is not a problem; `appdoc check --strict` fails on it.", ""]
         advisory += [f"- line {no}: `{text}`" for no, text in quant_hits[:RULE_CAP]]
         advisory.append("")
+    if facts is not None and prov is None:
+        advisory += ["## Provenance missing (advisory)", "",
+                     f"`{version.PROVENANCE_FILE}` is not beside facts.json, so the AppDoc version that wrote the "
+                     "Facts is unknown and version skew was not checked. Re-run `appdoc extract` to write it.", ""]
     if absent:
         advisory += ["## Gaps declared: Unknown by absence", "Advisory only; this is not a problem.", ""] + [f"- {m}" for m in absent] + [""]
     head = "# Check: PASS" if total == 0 else f"# Check: FAIL ({total} problem{'s' if total != 1 else ''})"
@@ -1136,7 +1136,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         cite_reg.append(f"| {c.doc_line} | `{c.path}` | {rng} | {'yes' if ok else 'no'} |")
 
     scope = [
-        f"**Scope.** Run by AppDoc {__version__}. This Check verifies **resolution and structure**: "
+        f"**Scope.** Run by AppDoc {__version__} (bundle {version.bundle_hash()[:version.BUNDLE_LEN]}). This Check verifies **resolution and structure**: "
         "every Citation points to a real file and line inside the Target (see the Citation register), "
         "and every Evidence Register row's anchor text appears in the lines it cites. It does **not** "
         "judge whether a claim's wording follows from those lines; that is the source-to-claim audit, "
