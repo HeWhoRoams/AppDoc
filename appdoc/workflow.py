@@ -29,6 +29,9 @@ SKILL_STEPS = (
     Step("Write", None, "fill the template from the Facts and the source"),
     Step("Build", "build <target>",
          "seal, fill, check and render; repeat until it passes, and after 3 failures report the problems verbatim"),
+    Step("Fix advisories", "check <target> --strict",
+         "fix every advisory before the audit plan: the plan's sample is seeded by doc_sha, so a later Narrative "
+         "edit reshuffles it"),
     Step("Audit plan", "audit-plan <target>",
          "writes audit-plan.json: the IDs the audit must cover, a sample chosen by the tool"),
     Step("Audit", None,

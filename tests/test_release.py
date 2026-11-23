@@ -120,7 +120,7 @@ class SkillDoc(unittest.TestCase):
     def test_run_steps_in_2_7_order(self):
         steps = [(s.name, s.command.split()[0] if s.command else None) for s in workflow.SKILL_STEPS]
         order = [v for _, v in steps if v]
-        self.assertEqual(order, ["upgrade", "extract", "build", "audit-plan", "seal", "build"])
+        self.assertEqual(order, ["upgrade", "extract", "build", "check", "audit-plan", "seal", "build"])
         names = [n for n, _ in steps]
         self.assertLess(names.index("Audit plan"), names.index("Audit"))
         self.assertLess(names.index("Audit"), names.index("Seal"))
@@ -129,6 +129,20 @@ class SkillDoc(unittest.TestCase):
         last_build = [s for s in workflow.SKILL_STEPS if s.command and s.command.startswith("build")][-1]
         self.assertTrue(last_build.command.endswith("--require-audit"))
         self.assertLess(names.index("Seal"), len(names) - 1 - names[::-1].index("Build"))
+
+    def test_advisories_are_fixed_before_the_audit_plan(self):
+        """S6.2: the plan's sample is seeded by doc_sha, so Narrative edits after it force another audit pass."""
+        names = [s.name for s in workflow.SKILL_STEPS]
+        check = next(s for s in workflow.SKILL_STEPS if s.command and s.command.startswith("check"))
+        self.assertEqual(check.command, "check <target> --strict")
+        self.assertLess(names.index(check.name), names.index("Audit plan"))
+        flat = " ".join(self.skill.split())
+        for needle in ("Before `audit-plan`, run `check --strict` and fix every advisory",
+                       "seeded by `doc_sha`",
+                       "run `audit-plan` again and have the auditor cover the new IDs",
+                       "repeat until the plan is stable, then seal",
+                       "The order is: audit, apply findings, audit the delta, seal, build."):
+            self.assertIn(needle, flat)
 
     def test_every_workflow_command_is_a_real_subcommand(self):
         for step in workflow.SKILL_STEPS:
