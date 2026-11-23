@@ -37,10 +37,45 @@ def _child_names(path: str) -> list[str]:
         return []
 
 
+_HEAD_BYTES = 4096
+
+
+def _head_has(path: str, needle: bytes) -> bool:
+    """True when the first 4 KiB of the file at `path` contains `needle` (False when unreadable)."""
+    try:
+        with open(path, "rb") as fh:
+            return needle in fh.read(_HEAD_BYTES)
+    except OSError:
+        return False
+
+
+def _appdoc_rule(full: str) -> str | None:
+    """"AppDoc output" or "AppDoc skill bundle" when the folder at `full` holds one, else None.
+
+    Evidence only, whatever the folder is called: `facts.json` whose first 4 KiB has `"schema":
+    "appdoc-facts/`, or `application-documentation.md` whose first 4 KiB has `<!-- appdoc:template `;
+    or `run_appdoc.py` together with `appdoc/assets/template.md`. A plain `docs/` folder is untouched.
+    """
+    if _head_has(os.path.join(full, "facts.json"), b'"schema": "appdoc-facts/') \
+            or _head_has(os.path.join(full, "application-documentation.md"), b"<!-- appdoc:template "):
+        return "AppDoc output"
+    if os.path.isfile(os.path.join(full, "run_appdoc.py")) \
+            and os.path.isfile(os.path.join(full, "appdoc", "assets", "template.md")):
+        return "AppDoc skill bundle"
+    return None
+
+
 def prune_rule(name: str, parent_files: list[str], full: str, dotnet_above: bool) -> str | None:
-    """The rule that prunes folder `name`, or None to scan it. Uses the tree only, never git."""
+    """The rule that prunes folder `name`, or None to scan it. Never git.
+
+    Mostly the tree only (the names beside the folder); the AppDoc rules also read a bounded head
+    (4 KiB) of at most two files inside the folder. Deterministic.
+    """
     if name in ALWAYS_IGNORE_DIRS:
         return "always"
+    appdoc = _appdoc_rule(full)
+    if appdoc:
+        return appdoc
     if name in ("bin", "obj"):
         return ".NET build output" if dotnet_above or _has_ext(parent_files, _DOTNET_PROJECT) else None
     if name == "target":
@@ -120,7 +155,8 @@ def walk(root: str, out_dir: str | None = None, stats: dict | None = None,
 
     When `stats` is given it receives `ignored` (files dropped by .appdocignore), `pruned`
     (one {path, rule, files} per pruned folder that held files; VCS metadata is not counted),
-    `metadata`, `retired_candidates` (by name) and `duplicate_folders`. With `skip_tests` a test file is flagged
+    `metadata`, `retired_candidates` (by name) and `duplicate_folders`. A pruned folder is re-included by a
+    `!name` line in .appdocignore. With `skip_tests` a test file is flagged
     ``skipped="test"`` (never read or extracted); the default (``skip_tests=False``) is unchanged.
     """
     root = os.path.abspath(root)

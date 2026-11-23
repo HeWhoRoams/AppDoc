@@ -37,10 +37,6 @@ CORPUS = os.path.join(HERE, "corpus")
 
 # test method name -> (task ID, why it fails today). Delete the entry when the task lands.
 PENDING: dict = {
-    "test_prior_appdoc_output_is_pruned":
-        ("T26.35", "a folder holding AppDoc output is scanned as source (T26.36 adds the 2.1 disclosure copy)"),
-    "test_skill_bundle_in_target_is_pruned":
-        ("T26.35", "an AppDoc skill bundle inside the Target is scanned as source"),
     "test_ini_split_promotes_the_file":
         ("T26.37", "keys of a file that code reads stay 'unclassified'"),
     "test_ini_split_secret_names_are_segment_aware":

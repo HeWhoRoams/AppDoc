@@ -336,6 +336,43 @@ class ScanTests(unittest.TestCase):
             self.assertFalse(d["a"].startswith("old/sub") or d["b"].startswith("old/sub"), d)
         self.assertEqual([(d["a"], d["b"]) for d in stats["duplicate_folders"]], [("live/", "old/")])
 
+    def test_prune_prior_appdoc_output(self):
+        self.write("main.py", "x\n")
+        self.write("old-docs/facts.json", '{\n "facts": [],\n "schema": "appdoc-facts/6"\n}\n')
+        self.write("old-docs/notes.txt", "keep out\n")
+        self.write("more/application-documentation.md", "# T\n<!-- appdoc:template 2.4 -->\nbody\n")
+        paths, stats = self.walk_stats()
+        self.assertEqual(paths, ["main.py"])
+        self.assertEqual(stats["pruned"], [{"path": "more/", "rule": "AppDoc output", "files": 1},
+                                           {"path": "old-docs/", "rule": "AppDoc output", "files": 2}])
+
+    def test_prune_skill_bundle(self):
+        self.write("main.py", "x\n")
+        self.write("tools/skill/run_appdoc.py", "x\n")
+        self.write("tools/skill/appdoc/assets/template.md", "t\n")
+        self.write("tools/skill/appdoc/check.py", "x\n")
+        self.write("other/run_appdoc.py", "x\n")  # a launcher alone is not the bundle
+        paths, stats = self.walk_stats()
+        self.assertEqual(paths, ["main.py", "other/run_appdoc.py"])
+        self.assertEqual(stats["pruned"], [{"path": "tools/skill/", "rule": "AppDoc skill bundle", "files": 3}])
+
+    def test_appdocignore_reincludes_appdoc_output(self):
+        self.write("old-docs/facts.json", '{"schema": "appdoc-facts/6"}\n')
+        self.write(".appdocignore", "!old-docs\n")
+        paths, stats = self.walk_stats()
+        self.assertIn("old-docs/facts.json", paths)
+        self.assertEqual(stats["pruned"], [])
+
+    def test_plain_docs_folder_not_pruned(self):
+        self.write("docs/facts.json", '{"schema": "something-else/1"}\n')
+        self.write("docs/application-documentation.md", "# My own doc\nno marker\n")
+        self.write("docs/late.md", "x\n")
+        # the marker beyond the first 4 KiB is not looked at
+        self.write("docs2/application-documentation.md", "a" * 5000 + "\n<!-- appdoc:template 2.4 -->\n")
+        paths, stats = self.walk_stats()
+        self.assertEqual(len(paths), 4)
+        self.assertEqual(stats["pruned"], [])
+
     def test_retired_token_matcher(self):
         from appdoc.scan import _retired_name_signal
         for name in ("old", "household-old", "site-old", "OLD_site", "To Be Deleted", "tobedeleted",
