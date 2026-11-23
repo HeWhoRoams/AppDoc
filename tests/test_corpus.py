@@ -531,6 +531,147 @@ class RegisterHistory(CorpusCase):
         self.assertIn("Template 2.7 previews (advisory)", report)
         self.assertIn("C17 line 1: evidence.jsonl line 1: the audit scope text holds an ID or a number", report)
 
+class UpgradeCases(CorpusCase):
+    """`appdoc upgrade` on documents of older templates (plan 2.7, 3.11 and the 5.1 upgrade steps)."""
+
+    @staticmethod
+    def main(*argv):
+        from appdoc.__main__ import main
+        with contextlib.redirect_stdout(io.StringIO()) as buf, contextlib.redirect_stderr(buf):
+            rc = main(list(argv))
+        return rc, buf.getvalue()
+
+    @staticmethod
+    def edit(path, old, new, count=1):
+        with open(path, encoding="utf-8", newline="") as fh:
+            text = fh.read()
+        assert old in text, (path, old)
+        with open(path, "w", encoding="utf-8", newline="") as fh:
+            fh.write(text.replace(old, new, count))
+
+    def test_a_2_6_document_fails_c3_on_2_7_and_passes_after_exactly_the_5_1_steps(self):
+        """Plan 2.7, 5.1 and Done means 2: the 2.6 document (stamp 2.4) passes on its own template, fails C3 alone on
+        2.7.0, and passes `build --require-audit` after `appdoc upgrade` and the steps its UPGRADE-TODO.md lists."""
+        r = self.case("upgrade-2-6-to-2-7")
+        self.assertEqual(r.code, 0, r.report)                            # on template 2.4 (run_case pins it) it passes
+        self.assertIn("Template 2.7 previews (advisory)", r.report)
+        for rule in ("C1", "C9", "C11", "C17", "C18"):                     # the 2.7 rules it would fail
+            self.assertRegex(r.report, rf"- {rule} line \d+:")
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(check.run(r.target, r.out), 2)              # the real, strict Check on 2.7.0
+        with open(os.path.join(r.out, "check-report.md"), encoding="utf-8") as fh:
+            self.assertEqual(set(re.findall(r"^## (C\d+) ", fh.read(), re.M)), {"C3"})
+        doc = os.path.join(r.out, check.NARRATIVE)
+        reg = os.path.join(r.out, "evidence.jsonl")
+        # step 1: change the stamp, add the closed-questions markers and section 17
+        rc, log = self.main("upgrade", r.target, "--no-ownership", "--workers", "0")
+        self.assertEqual(rc, 0, log)
+        self.assertIn("added the closed-questions block", log)
+        self.assertIn("added section 17 Build, Run and Test Locally", log)
+        with open(os.path.join(r.out, "UPGRADE-TODO.md"), encoding="utf-8") as fh:
+            todo = fh.read()
+        for what in ("C1 Citations resolve", "C9 Tables conform", "C11 Register valid", "C15 Register counts in prose (advisory)",
+                     "C17 Audit scope", "C18 Notes match their block"):
+            self.assertIn(what, todo, what)
+        # step 1, by hand: section 17 (one cited command, the rest Unknown) and its guide comment
+        with open(doc, encoding="utf-8", newline="") as fh:
+            text = fh.read()
+        text = re.sub(r"(## 17\. Build, Run and Test Locally\n)<!-- appdoc:guide .*?-->\n", r"\1", text, flags=re.S)
+        text = text.replace("| Run | Unknown - see Open questions. | . | Unknown - see Open questions. |",
+                            "| Run | `python app/main.py` | . | `app/main.py:2` |")
+        with open(doc, "w", encoding="utf-8", newline="") as fh:
+            fh.write(text)
+        # step 2: the extractor limitation paragraph moves to notes.jsonl
+        limitation = "Known extractor limitation: Routes registered by decorator are not listed (`app/main.py:2`).\n\n"
+        self.edit(doc, limitation, "")
+        with open(os.path.join(r.out, "notes.jsonl"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(json.dumps({"block": "entry-points", "text": "Routes registered by decorator are not listed",
+                                 "cites": ["app/main.py:2"], "block_sha": ""}) + "\n")
+        # step 3: the hand-written count becomes a count marker
+        self.edit(doc, "The audit covered 2 of 2 findings.",
+                  "The audit covered <!-- appdoc:count V -->2<!-- /appdoc:count --> findings.")
+        # step 4: the audit scope is the method
+        self.edit(reg, '"scope": "sections 3-10"', '"scope": "an independent read of the cited source"')
+        # step 5: build --expand-citations (the Narrative's bare name; the register's is step 6)
+        rc, log = self.main("build", r.target, "--expand-citations")
+        self.assertEqual(rc, 2, log)
+        self.assertIn("expanded 1 citation(s)", log)
+        # step 6: what the Check lists: severity order, the register's bare name, answered_in
+        self.edit(doc, "| V-2 | Low | The health ping is not authenticated | `app/main.py:8` | Information disclosure |\n"
+                       "| V-1 | High | A password is set in code | `app/main.py:6`; value omitted. | Credential exposure |",
+                  "| V-1 | High | A password is set in code | `app/main.py:6`; value omitted. | Credential exposure |\n"
+                  "| V-2 | Low | The health ping is not authenticated | `app/main.py:8` | Information disclosure |")
+        self.edit(reg, '"cites": ["main.py:6"]', '"cites": ["app/main.py:6"]')
+        self.edit(reg, '"result": "Answerable"', '"result": "Answerable", "answered_in": "3"')
+        rc, log = self.main("build", r.target)
+        self.assertEqual(rc, 2, log)                                     # step 5 rewrote the sealed text of 6/UI-1 ...
+        self.assertIn("the text of 6/UI-1 changed after it was audited", self._report(r))
+        rows = self._rows(reg)                                           # ... so that row is re-audited: rewritten
+        for row in rows[1:]:                                             # without its claim_sha, which build reseals
+            if row["ref"] == "6/UI-1":
+                row.pop("claim_sha")
+        with open(reg, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write("\n".join(json.dumps(x) for x in rows) + "\n")
+        rc, log = self.main("build", r.target)
+        self.assertEqual(rc, 0, log + self._report(r))                   # it passes without the audit record
+        # step 7: audit-plan, the audit of the planned IDs, seal --audit --date
+        rc, log = self.main("audit-plan", r.target)
+        self.assertEqual(rc, 0, log)
+        with open(os.path.join(r.out, "audit-plan.json"), encoding="utf-8") as fh:
+            planned = {i for sec in json.load(fh)["sections"] for i in sec["ids"]}
+        self.assertTrue({"V-1", "V-2", "Q-1", "7.1"} <= planned, planned)
+        rows = self._rows(reg)
+        have = {x["ref"].split("/")[-1] for x in rows[1:]}
+        missing = sorted(i for i in planned if i not in have)
+        self.assertEqual(missing, ["17"], "the register already audits every planned ID except the new section 17")
+        rows.append({"id": "E-12", "ref": "17", "claim": "The Run command starts the service", "result": "Supported",
+                     "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"})   # the audit itself
+        with open(reg, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write("\n".join(json.dumps(x) for x in rows) + "\n")
+        rc, log = self.main("seal", r.target, "--audit", "--date", "2026-11-23")
+        self.assertEqual(rc, 0, log)
+        # step 8: build
+        rc, log = self.main("build", r.target, "--require-audit")
+        self.assertEqual(rc, 0, self._report(r))
+        self.assertEqual(self._report(r).splitlines()[0], "# Check: PASS")
+
+    @staticmethod
+    def _report(r):
+        with open(os.path.join(r.out, "check-report.md"), encoding="utf-8") as fh:
+            return fh.read()
+
+    @staticmethod
+    def _rows(path):
+        with open(path, encoding="utf-8") as fh:
+            return [json.loads(l) for l in fh if l.strip()]
+
+    def test_upgrade_2_1_case_gets_the_mechanical_steps_and_a_todo(self):
+        r = self.case("upgrade-2-1")
+        self.assertEqual(r.code, 2)                                      # unstamped: fails C3 with the upgrade problem
+        self.assertEqual(r.rules(), {"C3"})
+        before = self._snapshot(os.path.join(r.out, "verification.md"))
+        rc, log = self.main("upgrade", r.target, "--no-ownership", "--workers", "0")
+        self.assertEqual(rc, 0, log)
+        self.assertIn("template 2.1 -> 2.7", log)
+        self.assertEqual(self._snapshot(os.path.join(r.out, "verification.md")), before)   # never converted
+        for name in ("evidence.jsonl", "notes.jsonl", "audit-plan.json"):
+            self.assertFalse(os.path.exists(os.path.join(r.out, name)), name)
+        with open(os.path.join(r.out, "UPGRADE-TODO.md"), encoding="utf-8") as fh:
+            todo = fh.read()
+        self.assertIn("Convert `verification.md` to `evidence.jsonl`", todo)
+        self.assertIn("appdoc:upgrade-orphan", todo)
+        text = r.narrative
+        self.assertIn("(the old text is kept under an orphan comment)", log)
+        for kept in ("Who deploys the service? Unknown.", "| Section | Contents |", "Build and deploy steps are not in "
+                     "the repository. Unknown."):
+            self.assertIn(kept, text)                                    # the text that did not fit is still there
+
+    @staticmethod
+    def _snapshot(path):
+        with open(path, "rb") as fh:
+            return fh.read()
+
+
 def _apply_pending():
     for cls in CorpusCase.__subclasses__():
         for name in PENDING:

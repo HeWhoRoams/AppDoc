@@ -942,6 +942,40 @@ class UpgradeTests(unittest.TestCase):
         after = {n: hashlib.sha256(open(os.path.join(self.out, n), "rb").read()).hexdigest() for n in before}
         self.assertEqual(after, before)
 
+    # --- UPGRADE-TODO.md (T27.32)
+
+    def test_upgrade_todo_lists_failing_rules(self):
+        """Every rule the Check fails on the upgraded document appears in UPGRADE-TODO.md, each step names its rule,
+        and the steps no rule can see (convert verification.md, the audit) are there too."""
+        import re
+        from tests.test_corpus import CORPUS
+        for case, must in (("upgrade-2-1", ("Convert `verification.md` to `evidence.jsonl`", "appdoc:upgrade-orphan", "C3 ", "C9 ")),
+                           ("upgrade-2-6-to-2-7", ("C1 Citations resolve", "C11 Register valid", "C17 ", "C18 ",
+                                                   "C15 Register counts in prose (advisory)", "--expand-citations"))):
+            with self.subTest(case=case):
+                shutil.rmtree(self.target)
+                shutil.copytree(os.path.join(CORPUS, case), self.target)
+                self.assertEqual(self.upgrade()[0], 0)
+                with open(os.path.join(self.out, "check-report.md"), encoding="utf-8") as fh:
+                    report = fh.read()
+                with open(os.path.join(self.out, "UPGRADE-TODO.md"), encoding="utf-8") as fh:
+                    todo = fh.read()
+                failing = set(re.findall(r"(?m)^## (C\d+) ", report))
+                self.assertTrue(failing, "the upgraded document should still have steps for a person")
+                rule_lines = [l for l in todo.splitlines() if l.startswith("   - Rule: ")]
+                for rule in failing:
+                    self.assertTrue(any(re.search(rf"\b{rule}\b", l) for l in rule_lines), (rule, todo))
+                self.assertEqual(len(rule_lines), len(re.findall(r"(?m)^\d+\. \[ \] ", todo)))   # a rule for every step
+                for text in must:
+                    self.assertIn(text, todo, text)
+                # a step quotes the Check's own message with its line, so it can be found
+                self.assertRegex(todo, r"(?m)^   - line \d+: ")
+                self.assertTrue(todo.startswith(f"# Upgrade TODO: template "))
+                # written by the tool, deterministic, and the register stays the person's
+                for name in ("evidence.jsonl", "notes.jsonl", "audit-plan.json"):
+                    if not os.path.exists(os.path.join(CORPUS, case, "docs", "appdoc", name)):
+                        self.assertFalse(os.path.exists(os.path.join(self.out, name)), name)
+
     # --- the command's edges
 
     def test_upgrade_errors_and_noop(self):

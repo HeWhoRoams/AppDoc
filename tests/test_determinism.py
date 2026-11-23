@@ -125,6 +125,8 @@ class Idempotence(Tmp):
                 continue
             with self.subTest(case=name):
                 reg = os.path.join(r.out, check.REGISTER)
+                if not os.path.isfile(reg):
+                    continue   # upgrade-2-1 has no register yet (a 2.1 document has verification.md): nothing to seal
                 with open(reg, "rb") as fh:
                     once = fh.read()
                 self.assertEqual(check.seal_register(r.target, r.out), 0)

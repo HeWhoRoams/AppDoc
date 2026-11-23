@@ -13,15 +13,20 @@ is the audit's, not the tool's). What cannot be mechanical is for the person to 
 
 from __future__ import annotations
 
+import contextlib
+import io
 import os
+import re
 import sys
 
+from . import __version__
 from . import docmodel as dm
 from . import template_spec as spec
 from .textnorm import normalize_newlines
 from .textutil import read_text
 
 NARRATIVE = "application-documentation.md"
+TODO = "UPGRADE-TODO.md"
 TEMPLATE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "template.md")
 _BLOCK_NAMES = frozenset(spec.GENERATED.values())
 _BLOCK_KEY = {name: key for key, name in spec.GENERATED.items()}
@@ -406,7 +411,7 @@ def run(target: str, out_dir: str, workers: int | None = None, no_ownership: boo
     """`appdoc upgrade`: mechanical steps on the Narrative, then `extract` and `fill`. Exit 0 done (or nothing to do),
     1 tool error. Writes the Narrative, facts.json, facts-summary.md, provenance.json and UPGRADE-TODO.md, and nothing
     of the register."""
-    from . import extract, fill
+    from . import check, extract, fill
     path = os.path.join(out_dir, NARRATIVE)
     if not os.path.isfile(path):
         print(f"appdoc upgrade: {path} not found; there is no document to upgrade", file=sys.stderr)
@@ -429,4 +434,137 @@ def run(target: str, out_dir: str, workers: int | None = None, no_ownership: boo
         print(f"  {entry}")
     for p in extract.write(target, out_dir, workers=workers, no_ownership=no_ownership):
         print(f"wrote {p}")
-    return fill.run(target, out_dir)
+    rc = fill.run(target, out_dir)
+    if rc != 0:
+        return rc
+    with contextlib.redirect_stdout(io.StringIO()):
+        check.run(target, out_dir)   # once, to list what fails; it writes check-report.md
+    todo = write_todo(out_dir, found, log)
+    print(f"wrote {todo}")
+    print(f"appdoc upgrade: the mechanical steps are done; {os.path.basename(todo)} lists what a person must do next")
+    return 0
+
+
+# --- UPGRADE-TODO.md ----------------------------------------------------------------------------------------------
+
+_RULE_HEAD = re.compile(r"^## (C\d+) ")
+_ADVISORY_COUNTS = "## Hand-written counts (advisory)"
+_SHOWN = 8   # problems quoted per rule
+
+
+def _report_problems(report: str) -> tuple[dict[str, list[str]], list[str]]:
+    """The Check report's problems by rule (`- line N: ...` bullets under `## C<n> <title>`), and the lines of its
+    hand-written-count advisory."""
+    problems: dict[str, list[str]] = {}
+    counts: list[str] = []
+    cur = None
+    for line in report.splitlines():
+        m = _RULE_HEAD.match(line)
+        if m:
+            cur = problems.setdefault(m.group(1), [])
+        elif line.startswith("## "):
+            cur = counts if line.startswith(_ADVISORY_COUNTS) else None
+        elif cur is not None and line.startswith("- "):
+            cur.append(line[2:])
+    return problems, counts
+
+
+def write_todo(out_dir: str, from_version: str, log: list[str]) -> str:
+    """Write docs/appdoc/UPGRADE-TODO.md: what the upgrade did, and every step left for a person, each with the
+    Check rule that fails (or advises) until it is done. The steps come from the Check's own report of the upgraded
+    document, plus the ones no rule can see (convert `verification.md`, the audit). Deterministic: no date."""
+    from . import check
+    report_path = os.path.join(out_dir, check.REPORT)
+    report = read_text(report_path) if os.path.isfile(report_path) else ""
+    problems, counts = _report_problems(report)
+    titles = {r.id: r.title for r in check.RULES}
+    claimed: set[str] = set()
+    items: list[tuple[str, str, list[str]]] = []   # (what to do, the rules, the problems quoted)
+
+    def label(rule: str) -> str:
+        return f"{rule} {titles.get(rule, '')}".strip()
+
+    def add(rules: tuple[str, ...], what: str, quoted: list[str], rule_text: str | None = None) -> None:
+        items.append((what, rule_text or ", ".join(label(r) for r in rules), quoted))
+        claimed.update(rules)
+
+    def of(rule: str, keep=lambda p: True) -> list[str]:
+        return [p for p in problems.get(rule, ()) if keep(p)]
+
+    orphan = lambda p: spec.ORPHAN_MARK in p
+    if os.path.isfile(os.path.join(out_dir, "verification.md")):
+        add(("C11",), "Convert `verification.md` to `evidence.jsonl`: one row per claim, with a literal anchor copied "
+            "from the lines it cites (the register needs source anchors, so the tool does not convert it). Delete "
+            "`verification.md` afterwards.", of("C11"), label("C11"))
+    if of("C3", orphan):
+        add((), "Move the text under each `appdoc:upgrade-orphan` comment into the table or section the upgrade added "
+            "above it, then delete the leftover text and the comment.",
+            [f"{p.split(':', 1)[0]}: an `{spec.ORPHAN_MARK}` comment" for p in of("C3", orphan)], label("C3"))
+    guide = lambda p: "guidance comment" in p
+    fills = {"C3": of("C3", lambda p: not orphan(p)), "C8": of("C8"), "C9": of("C9", guide)}
+    if any(fills.values()):
+        add((), "Fill what the upgrade added: sections, subsections and tables carry a template guide comment, and "
+            "cells say `Unknown - see Open questions.` until the repository is read. Delete each `appdoc:guide` "
+            "comment and add a row to section 14 for every Unknown you leave.",
+            [p for ps in fills.values() for p in ps], ", ".join(label(r) for r, ps in fills.items() if ps))
+        claimed.update(r for r in ("C3", "C8") if fills[r])
+    if of("C9", lambda p: not guide(p)):
+        add(("C9",), "Fix the tables the Check lists (a header, a cell, an ID, a value, a required row; section 10.1 and "
+            "15 rows go in severity order, most severe first: move the row and keep its ID).",
+            of("C9", lambda p: not guide(p)))
+    elif fills["C9"]:
+        claimed.add("C9")
+    if "C12" in problems:
+        add(("C12",), "Write register rows for the finding candidates: cite each in section 10.1 (a V- row and an "
+            "`evidence.jsonl` row) or add a `Dismissed` row with ref `smell/<id>` and a reason.", of("C12"))
+    if counts:
+        add((), "Replace each hand-written count with a count marker (`<!-- appdoc:count V -->3<!-- /appdoc:count -->`; "
+            "`appdoc fill` writes the number). C15 only advises on these; it fails on a marker with a stale number "
+            "or an unknown class.", counts, f"{label('C15')} (advisory)")
+    if "C1" in problems:
+        add(("C1",), "Fix the Citations the Check lists. `appdoc build --expand-citations` rewrites the bare names in "
+            "the Narrative only; a bare name in `evidence.jsonl` or `notes.jsonl` is fixed by hand (write the full "
+            "path the message names).", of("C1"))
+    if "C18" in problems:
+        add(("C18",), "Move each \"Known extractor limitation:\" paragraph out of the Narrative into `notes.jsonl` "
+            "(`{\"block\", \"text\", \"cites\", \"block_sha\"}`, leave `block_sha` empty); `appdoc build` seals it.",
+            of("C18"))
+    if "C17" in problems:
+        add(("C17",), "Shorten the audit record's `scope` to the method (no IDs, no numbers) and move per-section "
+            "caveats to `exclusions`.", of("C17"))
+    unsealed = lambda p: "not sealed" in p
+    if of("C11", unsealed) and "C11" not in claimed:
+        add(("C11",), "Run `appdoc build <target>`: it seals the register rows and notes that have no seal yet. Do it after "
+            "the steps above, so a seal is written against the final text.", [], label("C11"))
+    if of("C11", lambda p: not unsealed(p)) and not any(w.startswith("Convert `verification.md`") for w, _, _ in items):
+        add(("C11",), "Fix the register: two live rows on one ref need `\"supersedes\"` on the newer one (never "
+            "delete a row; restore deleted rows from git history); an `Answerable` row needs `answered_in`; a row "
+            "whose text changed after it was sealed (`build --expand-citations` rewrites sealed text) is re-audited "
+            "and rewritten without `claim_sha`, which `appdoc build` writes again.", of("C11", lambda p: not unsealed(p)))
+    for rule in sorted(problems, key=lambda r: int(r[1:])):   # any other failing rule, so none is missing from this file
+        if rule not in claimed:
+            add((rule,), f"Fix what rule {rule} reports (see check-report.md).", of(rule))
+    add((), "After the steps above, run the audit and rebuild: `appdoc audit-plan <target>`, audit every planned ID in "
+        "a fresh agent, `appdoc seal <target> --audit --date YYYY-MM-DD`, `appdoc build <target> --require-audit`. "
+        "The tool never writes `evidence.jsonl`, `notes.jsonl` or `audit-plan.json` for you.", [],
+        f"{label('C17')} and {label('C19')} (with `--require-audit`)")
+
+    out = [f"# Upgrade TODO: template {from_version} to {spec.TEMPLATE_VERSION}", "",
+           f"Written by `appdoc upgrade` (AppDoc {__version__}). The mechanical steps are done; the steps below need a "
+           "person. Each names the Check rule that fails (or advises) until it is done. Run `appdoc build <target>` "
+           "until it passes, then delete this file (the Check does not read it).", "",
+           "## Done by the tool", ""]
+    out += [f"- {entry}" for entry in log] or ["- nothing to add"]
+    out += ["- re-ran `extract` and `fill` (facts.json, facts-summary.md, provenance.json and the generated blocks)",
+            "- did not write `evidence.jsonl`, `notes.jsonl` or `audit-plan.json`, and did not seal the register", "",
+            "## Steps for a person", ""]
+    for n, (what, rules, quoted) in enumerate(items, 1):
+        out.append(f"{n}. [ ] {what}")
+        out.append(f"   - Rule: {rules}")
+        out += [f"   - {q}" for q in quoted[:_SHOWN]]
+        if len(quoted) > _SHOWN:
+            out.append(f"   - ... {len(quoted) - _SHOWN} more in check-report.md")
+    path = os.path.join(out_dir, TODO)
+    with open(path, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write("\n".join(out) + "\n")
+    return path
