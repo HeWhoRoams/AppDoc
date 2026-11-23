@@ -33,7 +33,29 @@ class GateTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.case = run_case("gate-layout", tmp=self.tmp)
         self.target, self.out = self.case.target, self.case.out
-        self.regen = os.path.join(self.target, ".appdoc-regen")
+
+    def tree(self):
+        """{relative path: sha256 of content} for every file under the Target, plus its directories.
+        The Check's own report is the one file the gate's last step is documented to write; it is left out."""
+        import hashlib
+        out = {}
+        for d, dirs, files in os.walk(self.target):
+            dirs.sort()
+            rel = os.path.relpath(d, self.target).replace(os.sep, "/")
+            out[rel + "/"] = None
+            for f in files:
+                if os.path.join(d, f) == os.path.join(self.out, check.REPORT):
+                    continue
+                with open(os.path.join(d, f), "rb") as fh:
+                    out[(rel + "/" + f) if rel != "." else f] = hashlib.sha256(fh.read()).hexdigest()
+        return out
+
+    def gate_leaves_tree(self, *args):
+        """Run the gate and assert it created, changed and deleted nothing in the Target (F4)."""
+        before = self.tree()
+        res = run_gate(self.target, *args)
+        self.assertEqual(self.tree(), before, "the gate touched the Target")
+        return res
 
     def main_py(self):
         return os.path.join(self.target, "app", "main.py")
@@ -51,19 +73,17 @@ class GateTests(unittest.TestCase):
             check.seal_register(self.target, self.out)
             self.assertEqual(fill.run(self.target, self.out), 0)
 
-    def test_unchanged_target_passes_and_regen_folder_is_removed(self):
-        res = run_gate(self.target)
+    def test_unchanged_target_passes_and_leaves_the_target_alone(self):
+        res = self.gate_leaves_tree()
         self.assertEqual(res.returncode, 0, _text(res))
-        self.assertFalse(os.path.exists(self.regen))
 
     def test_code_change_exits_2_with_a_short_diff(self):
         with open(self.main_py(), "a", encoding="utf-8") as fh:
             fh.write("# line 11\n")
-        res = run_gate(self.target)
+        res = self.gate_leaves_tree()
         self.assertEqual(res.returncode, 2, _text(res))
         self.assertIn("Facts changed", _text(res))
         self.assertTrue(re.search(r"^[-+] ", res.stdout + res.stderr, re.M), "the diff must be printed")
-        self.assertFalse(os.path.exists(self.regen))
 
     def test_diff_is_capped_at_200_lines(self):
         for i in range(120):
@@ -77,10 +97,9 @@ class GateTests(unittest.TestCase):
 
     def test_schema_difference_exits_3(self):
         self.set_facts(schema="appdoc-facts/0")
-        res = run_gate(self.target)
+        res = self.gate_leaves_tree()
         self.assertEqual(res.returncode, 3, _text(res))
         self.assertIn("AppDoc upgraded", _text(res))
-        self.assertFalse(os.path.exists(self.regen))
 
     def test_schema_difference_wins_over_a_code_change(self):
         self.set_facts(schema="appdoc-facts/0")
@@ -90,10 +109,9 @@ class GateTests(unittest.TestCase):
 
     def test_missing_facts_exits_1(self):
         os.remove(os.path.join(self.out, "facts.json"))
-        res = run_gate(self.target)
+        res = self.gate_leaves_tree()
         self.assertEqual(res.returncode, 1, _text(res))
         self.assertIn("facts.json", _text(res))
-        self.assertFalse(os.path.exists(self.regen))
 
     def test_patch_only_provenance_change_passes(self):
         path = os.path.join(self.out, "provenance.json")
@@ -131,25 +149,24 @@ class GateTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             extract.write(self.target, self.out, workers=0, use_cache=False, no_ownership=True)
         self.refill()
-        res = run_gate(self.target)
+        res = self.gate_leaves_tree()
         self.assertEqual(res.returncode, 0, _text(res))
-        self.assertFalse(os.path.exists(self.regen))
 
-    def test_a_stale_regen_folder_is_not_scanned_and_is_removed(self):
-        os.makedirs(self.regen)
-        with open(os.path.join(self.regen, "facts.json"), "w", encoding="utf-8") as fh:
-            fh.write("{}")
-        res = run_gate(self.target)
-        self.assertEqual(res.returncode, 0, _text(res))
-        self.assertFalse(os.path.exists(self.regen))
+    def test_gate_does_not_touch_target(self):
+        stale = os.path.join(self.target, ".appdoc-regen")
+        os.makedirs(stale)
+        with open(os.path.join(stale, "keep.txt"), "w", encoding="utf-8") as fh:
+            fh.write("not the gate's to delete")
+        self.gate_leaves_tree()                      # whatever the exit code, nothing changes
+        self.assertTrue(os.path.isfile(os.path.join(stale, "keep.txt")))
 
-    def test_regen_folder_is_removed_when_the_run_fails(self):
+    def test_gate_does_not_touch_target_when_the_run_fails(self):
         def boom(*a, **kw):
-            os.makedirs(self.regen, exist_ok=True)
             raise RuntimeError("boom")
+        before = self.tree()
         with mock.patch.object(extract, "extract", boom), self.assertRaises(RuntimeError):
             gate.run(self.target, self.out)
-        self.assertFalse(os.path.exists(self.regen))
+        self.assertEqual(self.tree(), before)
 
     def test_gate_ignores_stale_cache(self):
         seen = {}

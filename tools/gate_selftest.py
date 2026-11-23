@@ -4,8 +4,8 @@
 
 Extracts the Facts, then checks the gate's exit codes: Facts unchanged -> the gate reaches the Check
 (the sample has no Narrative, so the Check reports a tool error, exit 1, and prints that it ran), a code
-change -> 2 "Facts changed", a different schema -> 3 "AppDoc upgraded"; the .appdoc-regen folder is
-never left behind. Exits 0 when all hold, 1 with the failing step otherwise.
+change -> 2 "Facts changed", a different schema -> 3 "AppDoc upgraded". The gate writes nothing
+in the Target. Exits 0 when all hold, 1 with the failing step otherwise.
 """
 
 from __future__ import annotations
@@ -63,9 +63,6 @@ def main() -> int:
             json.dump(doc, fh, indent=1, sort_keys=True)
         rc, text = _run("gate", target)
         expect("a different schema", rc, 3, text, "AppDoc upgraded")
-        if os.path.exists(os.path.join(target, ".appdoc-regen")):
-            failures.append("regen folder left behind")
-            print("FAIL: .appdoc-regen was not removed")
     return 1 if failures else 0
 
 

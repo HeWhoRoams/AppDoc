@@ -5,9 +5,9 @@ the Check. Exit codes: 0 pass, 1 tool error (no committed facts.json, unreadable
 failed), 3 AppDoc upgraded (the Facts schema differs).
 
 The regeneration runs in memory with the committed output folder excluded from the scan, exactly as the run that
-wrote ``facts.json`` excluded it, so the comparison sees the same files. ``<target>/.appdoc-regen/`` is the fixed
-scratch name AppDoc reserves: a leftover one is removed before the scan (it would be scanned as AppDoc output)
-and again in ``finally``. The cache is never used, so a stale ``.appdoc-cache.json`` cannot mask a code change.
+wrote ``facts.json`` excluded it, so the comparison sees the same files. The gate creates, changes and deletes
+nothing in the Target (the one file it may write is the Check's own report, in the last step). The cache is never
+used, so a stale ``.appdoc-cache.json`` cannot mask a code change.
 
 Compared bytes are the canonical Facts text with the fields that belong to the checkout, not the code, neutralised
 on both sides: ``target.commit``, ``target.history`` and the git ``ownership`` Facts (a CI clone is usually
@@ -20,12 +20,10 @@ from __future__ import annotations
 import difflib
 import json
 import os
-import shutil
 import sys
 
 from . import __version__, check, extract, version
 
-REGEN = ".appdoc-regen"
 FACTS = "facts.json"
 DIFF_CAP = 200
 
@@ -73,26 +71,21 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         print(f"appdoc gate: the committed {rel}/{FACTS} is not readable: {exc}", file=sys.stderr)
         return EXIT_ERROR
 
-    regen_dir = os.path.join(target, REGEN)
-    shutil.rmtree(regen_dir, ignore_errors=True)
-    try:
-        regen_text, _ = extract.extract(target, out_dir, workers=workers, use_cache=False, no_ownership=True)
-        regenerated = json.loads(regen_text)
-        if committed.get("schema") != regenerated.get("schema"):
-            _say(f"appdoc gate: AppDoc upgraded: the committed Facts are {committed.get('schema')}, "
-                 f"AppDoc {__version__} writes {regenerated.get('schema')}. This is not a code change. "
-                 f"Re-run `appdoc extract`, refresh the docs to the current template (see the CHANGELOG upgrade "
-                 f"notes) and commit {rel}/.")
-            return EXIT_UPGRADED
-        a, b = comparable(committed), comparable(regenerated)
-        if a != b:
-            _say(f"appdoc gate: Facts changed: the code changed since the docs were last generated. Re-run the "
-                 f"AppDoc skill in a session to refresh the docs, then commit the updated {rel}/ files.")
-            for line in _diff(a, b, FACTS):
-                _say(line)
-            return EXIT_CHANGED
-    finally:
-        shutil.rmtree(regen_dir, ignore_errors=True)
+    regen_text, _ = extract.extract(target, out_dir, workers=workers, use_cache=False, no_ownership=True)
+    regenerated = json.loads(regen_text)
+    if committed.get("schema") != regenerated.get("schema"):
+        _say(f"appdoc gate: AppDoc upgraded: the committed Facts are {committed.get('schema')}, "
+             f"AppDoc {__version__} writes {regenerated.get('schema')}. This is not a code change. "
+             f"Re-run `appdoc extract`, refresh the docs to the current template (see the CHANGELOG upgrade "
+             f"notes) and commit {rel}/.")
+        return EXIT_UPGRADED
+    a, b = comparable(committed), comparable(regenerated)
+    if a != b:
+        _say(f"appdoc gate: Facts changed: the code changed since the docs were last generated. Re-run the "
+             f"AppDoc skill in a session to refresh the docs, then commit the updated {rel}/ files.")
+        for line in _diff(a, b, FACTS):
+            _say(line)
+        return EXIT_CHANGED
 
     prov = version.read_provenance(out_dir)
     if prov:

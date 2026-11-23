@@ -43,9 +43,9 @@ whole `facts.json`. The implementation differs in two ways, for these reasons.
    folder (`docs/appdoc/`); the regeneration must exclude the same folder or the two scans see
    different files and the Facts differ on every run. Extracting in memory also writes nothing under
    the Target, so a failed or interrupted gate leaves nothing to clean up and cannot be mistaken for
-   code. `.appdoc-regen` remains a reserved name: a leftover one is removed before the scan and
-   again in `finally`, so it can never be scanned as AppDoc output. The cache is never used, so a
-   stale `.appdoc-cache.json` cannot hide a code change.
+   code. The gate creates, changes and deletes nothing in the Target (`.appdoc-regen` is not a name
+   AppDoc uses or reserves; the Check's own report is the one file the last step may write). The
+   cache is never used, so a stale `.appdoc-cache.json` cannot hide a code change.
 2. **The comparison ignores `target.commit`, `target.history` and the git `ownership` Facts.** A CI
    clone is usually shallow (`actions/checkout` fetches one commit), so history and ownership are
    different there than on the machine that generated the docs; and the docs are committed after
