@@ -731,12 +731,11 @@ class VersionCompareTests(unittest.TestCase):
             self.assertIn(phrase, conventions, phrase)
         self.assertEqual(text.count("<!-- appdoc:count"), 0)            # a comment inside a comment would end it early
 
-    def test_older_stamps_are_accepted_not_current(self):
-        """The 2.4 stamp (AppDoc 2.4 to 2.6) is accepted by a 2.7 tool; the 2.7 rules are previews for it."""
+    def test_no_older_stamp_is_accepted(self):
+        """Strict C3 (T27.29): only the running template is current; the 2.4 window is gone."""
         from appdoc import template_spec as spec
-        self.assertEqual(spec.OLDER_STAMPS, ("2.4",))
-        for stamp, want in (("2.7", True), ("2.4", True), ("2.3", False), ("2.2", False), ("2.8", False), ("", False)):
-            self.assertEqual(spec.stamp_accepted(stamp), want, stamp)
+        self.assertFalse(hasattr(spec, "OLDER_STAMPS"))
+        self.assertFalse(hasattr(spec, "stamp_accepted"))
         self.assertEqual(spec.stamp_version("# T\n<!-- appdoc:template 2.4 -->\n"), (2, 4))
         self.assertEqual(spec.stamp_version("# T\n"), ())
 

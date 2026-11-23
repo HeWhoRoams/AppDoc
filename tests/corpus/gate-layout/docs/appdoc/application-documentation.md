@@ -1,5 +1,5 @@
 # Demo Documentation
-<!-- appdoc:template 2.4 -->
+<!-- appdoc:template 2.7 -->
 <!-- a comment `nope/missing.py:99` -->
 
 ## 1. Application Index
@@ -151,6 +151,9 @@ flowchart LR
 |---|---|---|---|---|---|
 | Q-1 | Unknown: who deploys the service | Releases | Ask the team | Unknown | Medium |
 
+<!-- appdoc:generated closed-questions -->
+<!-- /appdoc:generated closed-questions -->
+
 ## 15. Recommendations
 
 | ID | Severity | Effort | Recommendation | Addresses |
@@ -203,6 +206,16 @@ flowchart LR
 
 <!-- appdoc:generated scheduled-jobs -->
 <!-- /appdoc:generated scheduled-jobs -->
+
+## 17. Build, Run and Test Locally
+
+| Step | Command | Working directory | Evidence |
+|---|---|---|---|
+| Prerequisites | Unknown - see Open questions. | . | not in the repository |
+| Restore dependencies | Unknown - see Open questions. | . | not in the repository |
+| Build | Unknown - see Open questions. | . | not in the repository |
+| Run | Unknown - see Open questions. | . | not in the repository |
+| Test | Unknown - see Open questions. | . | not in the repository |
 
 ## Appendix A. Evidence Register and Verification
 

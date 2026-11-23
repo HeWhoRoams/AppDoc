@@ -31,6 +31,7 @@ import unittest
 from dataclasses import dataclass, field
 
 from appdoc import check, extract, fill
+from tests.template_pin import run_as_2_4, run_as_stamped
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CORPUS = os.path.join(HERE, "corpus")
@@ -87,7 +88,9 @@ def run_case(name, strict=False, require_audit=False, tmp=None):
         if os.path.isfile(os.path.join(out, check.NARRATIVE)):  # extract-only cases carry no Narrative
             check.seal_register(target, out)
             fill_code = fill.run(target, out)
-            code = check.run(target, out, require_audit, strict)
+            with open(os.path.join(out, check.NARRATIVE), encoding="utf-8") as fh:
+                narrative = fh.read()   # a 2.4 case tests a rule as the 2.4-era Check (tests/template_pin.py)
+            code = run_as_stamped(narrative, check.run, target, out, require_audit, strict)
     with open(os.path.join(out, "facts.json"), encoding="utf-8") as fh:
         facts = json.load(fh)
     if code is not None:
@@ -506,8 +509,9 @@ class RegisterHistory(CorpusCase):
         self.assertIn("notes.jsonl line 1: `main.py` is a bare name; the file is `app/main.py`", r.report)
 
     def test_scope_ids_is_only_a_preview_on_2_4(self):
-        """The same Target stamped 2.4 (a document the running template still accepts) passes: the scope finding
-        is a preview that says it fails from template 2.7."""
+        """The same Target stamped 2.4, checked as the 2.4-era Check, passes: the scope finding is a preview that
+        says it fails from template 2.7. On the running template (2.7.0) that 2.4 stamp is the one C3 upgrade
+        problem and nothing else."""
         r = self.case("scope-ids")
         self.assertEqual(r.code, 2)                      # stamped 2.7 on disk: C17 fails
         path = os.path.join(r.out, check.NARRATIVE)
@@ -516,10 +520,14 @@ class RegisterHistory(CorpusCase):
         with open(path, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(text.replace("<!-- appdoc:template 2.7 -->", "<!-- appdoc:template 2.4 -->"))
         with contextlib.redirect_stdout(io.StringIO()):
-            code = check.run(r.target, r.out)
+            code = run_as_2_4(check.run, r.target, r.out)
         with open(os.path.join(r.out, "check-report.md"), encoding="utf-8") as fh:
             report = fh.read()
         self.assertEqual(code, 0, report)
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(check.run(r.target, r.out), 2)
+        with open(os.path.join(r.out, "check-report.md"), encoding="utf-8") as fh:
+            self.assertEqual(set(re.findall(r"^## (C\d+) ", fh.read(), re.M)), {"C3"})
         self.assertIn("Template 2.7 previews (advisory)", report)
         self.assertIn("C17 line 1: evidence.jsonl line 1: the audit scope text holds an ID or a number", report)
 

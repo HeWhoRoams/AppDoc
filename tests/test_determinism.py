@@ -26,6 +26,7 @@ import unittest
 from appdoc import __main__ as cli
 from appdoc import check, extract, fill
 from appdoc import textnorm
+from tests.template_pin import run_as_stamped
 from tests.test_corpus import CORPUS, run_case
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -139,9 +140,10 @@ class Idempotence(Tmp):
                 continue
             with self.subTest(case=name):
                 seen += 1
-                self.assertEqual(quiet(main, ["build", r.target]), 0)
+                build = lambda: run_as_stamped(r.narrative, quiet, main, ["build", r.target])   # 2.4 cases: 2.4-era Check
+                self.assertEqual(build(), 0)
                 before = snapshot(r.target)
-                self.assertEqual(quiet(main, ["build", r.target]), 0)
+                self.assertEqual(build(), 0)
                 self.assertEqual(snapshot(r.target), before)
         self.assertGreater(seen, 0)
 

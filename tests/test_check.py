@@ -10,6 +10,7 @@ import unittest
 from appdoc import check, fill
 from appdoc import facts as facts_mod
 from appdoc import template_spec as spec
+from tests.template_pin import STAMP_2_4, run_as_2_4, run_as_stamped
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FIXTURES_21 = os.path.join(HERE, "fixtures", "docs-2.1")
@@ -98,7 +99,7 @@ ROWS = [
 ]
 
 
-OLD_STAMP = "<!-- appdoc:template 2.4 -->"   # the template of AppDoc 2.4 to 2.6, still accepted (spec.OLDER_STAMPS)
+OLD_STAMP = STAMP_2_4
 
 
 def build_doc(override=None):
@@ -169,6 +170,10 @@ class CheckTests(unittest.TestCase):
         return fill.fill_text(doc, self.facts, {"out_dir": self.out, "target": self.target})[0]
 
     def run_check(self, doc, filled=True, require_audit=False, strict=False, seal=True):
+        # a 2.4 document: the rule tests run it as the 2.4-era Check (tests/template_pin.py)
+        return run_as_stamped(doc, self._run_check, doc, filled, require_audit, strict, seal)
+
+    def _run_check(self, doc, filled, require_audit, strict, seal):
         if filled:
             doc = self.fill_doc(doc)
         with open(os.path.join(self.out, "application-documentation.md"), "w") as fh:
@@ -505,7 +510,7 @@ class CheckTests(unittest.TestCase):
         self._write_narrative(build_doc())
         self.write_notes(self.NOTE, dict(self.NOTE, block="scheduled-jobs", text="kept", block_sha="a" * 12))
         with contextlib.redirect_stdout(io.StringIO()):
-            self.assertEqual(cli.main(["build", self.target]), 0)
+            self.assertEqual(run_as_2_4(cli.main, ["build", self.target]), 0)
         first, second = self.read_notes()
         body = fill.generated_body("entry-points", self.facts, {"out_dir": self.out, "target": self.target})
         from appdoc import notes
@@ -705,6 +710,17 @@ class CheckTests(unittest.TestCase):
         self.assertIn(f"not on template {spec.TEMPLATE_VERSION}", report)
         code, report, _ = self.run_check(build_doc().replace(OLD_STAMP, "<!-- appdoc:template 2.1 -->"))
         self.assertIn("(stamp: 2.1)", report)
+
+    def test_a_2_4_document_fails_c3_with_the_upgrade_problem(self):
+        """A 2.4 document (what AppDoc 2.4 to 2.6 wrote) is not on the running template 2.7: one C3 problem that
+        names 2.7 and points to `appdoc upgrade`; no structure rule runs and no preview is printed."""
+        code, report, _ = self._run_check(build_doc(), True, False, False, True)   # unpinned: the real Check
+        self.assertEqual(code, 2)
+        self.assertEqual(self.rules(report), {"C3"})
+        self.assertEqual(len(re.findall(r"^- line \d+", report.split("## C3")[1].split("\n## ")[0], re.M)), 1, report)
+        self.assertIn("not on template 2.7 (stamp: 2.4)", report)
+        self.assertIn("appdoc upgrade", report)
+        self.assertNotIn("previews (advisory)", report)
 
     def test_c4_unknown_without_gaps(self):
         doc = build_doc({14: ""}).replace(
@@ -1302,7 +1318,7 @@ class CheckTests(unittest.TestCase):
         self.assertIn("### A.1 Audit state", once)
         with contextlib.redirect_stdout(io.StringIO()):
             check.seal_register(self.target, self.out)
-            self.assertEqual(check.run(self.target, self.out), 0)  # what `fill` wrote is what the Check expects
+            self.assertEqual(run_as_2_4(check.run, self.target, self.out), 0)  # what `fill` wrote is what the Check expects
 
     # --- C7 prose counts
 
@@ -2010,8 +2026,8 @@ class CheckTests(unittest.TestCase):
         self.run_check(build_doc())
         args = ["check", self.target, "--out", self.out]
         with contextlib.redirect_stdout(io.StringIO()):
-            self.assertEqual(main(args), 0)
-            self.assertEqual(main(args + ["--strict"]), 2)
+            self.assertEqual(run_as_2_4(main, args), 0)
+            self.assertEqual(run_as_2_4(main, args + ["--strict"]), 2)
 
     # --- appendix-a coverage
 
@@ -2032,7 +2048,7 @@ class CheckTests(unittest.TestCase):
             with open(path) as fh:
                 self.assertEqual(fh.read(), once)
             check.seal_register(self.target, self.out)
-            self.assertEqual(check.run(self.target, self.out), 0)
+            self.assertEqual(run_as_2_4(check.run, self.target, self.out), 0)
         appendix = once.split("### A.2 Coverage")[1].split("### A.3")[0]
         for row in ("| 10.1 | 1 of 1 |", "| 7 (workflows) | 1 of 1 |", "| 4 | 0 of 1 |"):
             self.assertIn(row, appendix)
@@ -2041,10 +2057,10 @@ class CheckTests(unittest.TestCase):
                                             "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2",
                                             "limitation": "none"}])
         with contextlib.redirect_stdout(io.StringIO()):
-            self.assertEqual(check.run(self.target, self.out), 2)
+            self.assertEqual(run_as_2_4(check.run, self.target, self.out), 2)
             self.assertEqual(fill.run(self.target, self.out), 0)
             check.seal_register(self.target, self.out)
-            self.assertEqual(check.run(self.target, self.out), 0)
+            self.assertEqual(run_as_2_4(check.run, self.target, self.out), 0)
         with open(path) as fh:
             self.assertIn("| 4 | 1 of 1 |", fh.read())
 
@@ -2098,7 +2114,7 @@ class Frozen22Tests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as tmp:
                 out = self._copy(repo, tmp, restamp=True)
                 with contextlib.redirect_stdout(io.StringIO()):
-                    self.assertEqual(check.run(os.path.join(tmp, "target"), out), 2)
+                    self.assertEqual(run_as_2_4(check.run, os.path.join(tmp, "target"), out), 2)
                 with open(os.path.join(out, "check-report.md")) as fh:
                     report = fh.read()
             rules = set(re.findall(r"^## (C\d+) ", report, re.M))

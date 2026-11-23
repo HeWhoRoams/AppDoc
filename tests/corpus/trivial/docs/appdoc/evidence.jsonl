@@ -1,3 +1,3 @@
-{"type": "audit", "performed": true, "auditor": "independent", "scope": "sections 3-10"}
+{"type": "audit", "performed": true, "auditor": "independent", "scope": "an independent read of the cited source"}
 {"id": "E-1", "ref": "10.1/V-1", "claim": "A password is set in code", "result": "Supported", "cites": ["app/main.py:6"], "anchor": "line 6", "limitation": "value not shown"}
 {"id": "E-2", "ref": "7.1", "claim": "Operators launch the entry point", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}

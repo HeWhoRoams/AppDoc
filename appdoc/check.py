@@ -55,7 +55,7 @@ RULES = (
                  "cite the full path"),
     Rule("C2", "Security lines", "a Citation in section 10 has no line"),
     Rule("C3", "Sections complete",
-         "a section is missing, out of order, empty or a placeholder, or the stamp is not the current template (or an older one still accepted)"),
+         "a section is missing, out of order, empty or a placeholder, or the stamp is not the running template"),
     Rule("C4", "Gaps declared",
          "section 14 is empty while Unknowns exist, or Data and Integrations is empty though Facts exist"),
     Rule("C5", "Claims grounded",
@@ -1423,7 +1423,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
 
     # C3
     stamp = spec.STAMP_RE.search(raw)
-    current = bool(stamp) and spec.stamp_accepted(stamp.group(1))   # the running template or an accepted older one
+    current = bool(stamp) and stamp.group(1) == spec.TEMPLATE_VERSION
     doc_ver = spec.stamp_version(raw)
     # The 2.7 rules are written once. Below the stamp gate they are printed as previews; from 2.7 they fail.
     add27 = add if doc_ver >= FAILS_FROM else (lambda rule, line, msg, fix: previews.append((rule, line, msg, fix)))

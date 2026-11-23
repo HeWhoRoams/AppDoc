@@ -11,16 +11,6 @@ from dataclasses import dataclass, field
 
 TEMPLATE_VERSION = "2.7"
 STAMP = f"<!-- appdoc:template {TEMPLATE_VERSION} -->"
-# Template stamps older than the running template that a document may still carry (the tool released 2.5 and
-# 2.6 on template 2.4). The Check runs every rule on such a document by its own stamp: a rule added by a later
-# template is an advisory preview for it and a failure once the stamp is changed (check.FAILS_FROM).
-OLDER_STAMPS = ("2.4",)
-
-
-def stamp_accepted(stamp: str) -> bool:
-    """Is this stamp (the text of an `appdoc:template` comment) the running template or an accepted older one?"""
-    return stamp == TEMPLATE_VERSION or stamp in OLDER_STAMPS
-
 
 
 def version_tuple(s) -> tuple:
@@ -59,7 +49,7 @@ COUNT_CLASSES = {
 
 STAMP_RE = re.compile(r"<!--\s*appdoc:template\s+([\w.]+)\s*-->")
 GUIDE_RE = re.compile(r"<!--\s*appdoc:guide\b")
-UPGRADE_NOTES = ("CHANGELOG.md, 2.7.0 upgrade notes (and the 2.4.0 notes for a document older than 2.4). 2.4 -> 2.7: change the stamp to 2.7, add the "
+UPGRADE_NOTES = ("run `appdoc upgrade <target>` for the mechanical steps, or see CHANGELOG.md, 2.7.0 upgrade notes (and the 2.4.0 notes for a document older than 2.4). 2.4 -> 2.7: change the stamp to 2.7, add the "
                  "`closed-questions` markers under section 14 and section 17, replace hand-written counts with count "
                  "markers, move extractor limitations to `notes.jsonl`, shorten the audit `scope` to the method, "
                  "run `appdoc build --expand-citations`, then `appdoc audit-plan`, the audit, `appdoc seal --audit "
