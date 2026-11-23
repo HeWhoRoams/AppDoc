@@ -30,6 +30,8 @@ Tooling, provenance and Facts release. Schema `appdoc-facts/7`; template stays 2
 - Secret naming is segment-aware (`MIN_PASSWORD_LENGTH` is not a secret location); keys ending in `uri`, `path` or `file` carry the new `config_key` detail `secret_ref`.
 - Generated copy uses one `plural()` helper everywhere; the A.4 verification label reads `**E-1** (section N), expect `path:line``.
 - `ownership` Facts no longer record git author names (R18): they hold `commits`, `contributors` (a count) and `first_commit`/`last_commit` dates; `facts.DETAIL_KEYS` drops `authors`.
+- The rendered HTML page no longer ends with a `Generated: <date>` footer: it read the clock, so two renders of the same Narrative differed (R13). Rendering twice is byte-identical (`test_render`, `test_determinism`).
+- `facts.DETAIL_KEYS["entry_point"]` accepts `listener` (the Java Spring extractor already emitted it, and conformance now checks detail keys against the table).
 
 ### Fixed
 - ASP.NET Core: one `HttpClient` call produced two `external_call` Facts (a plain `http` one and one with `via: HttpClient`); the `HttpClient` emission now supersedes the generic one at the same file and line.
