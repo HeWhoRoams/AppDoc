@@ -47,7 +47,7 @@ DETAIL_KEYS = {
     "data_access": frozenset(
         "builder class entity namespace native operation orm property statement type via".split()),
     "connection": frozenset("class secret_location source type".split()),
-    "config_key": frozenset("read_kind role secret_location source use via".split()),
+    "config_key": frozenset("read_kind role secret_location secret_ref source use via".split()),
     "dependency": frozenset("manager mode version".split()),
     "external_call": frozenset("call client method mode operation type via".split()),
     "auth_check": frozenset("applies_to mechanism policy roles scope".split()),

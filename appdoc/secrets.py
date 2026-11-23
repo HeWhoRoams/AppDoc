@@ -8,12 +8,6 @@ from __future__ import annotations
 import math
 import re
 
-SECRET_KEY_RE = re.compile(
-    r"(password|passwd|pwd|secret|token|api[_-]?key|connection[_-]?string|credential|"
-    r"private[_-]?key|client[_-]?secret|account[_-]?key|\bsas\b)",
-    re.IGNORECASE,
-)
-
 # (name, regex) pairs for secret-shaped values.
 SHAPES = [
     ("connection-string-password", re.compile(r"(?i)\b(?:password|pwd)\s*=\s*[^;\s\"'<>]{3,}")),
@@ -46,8 +40,71 @@ def entropy(s: str) -> float:
     return -sum((s.count(c) / n) * math.log2(s.count(c) / n) for c in set(s))
 
 
+# Segment-aware key naming (Q6). A name is split on separators and camel case into lower-case words.
+# It is a secret when a secret noun is present and no modifier from the closed set below is. The sets
+# live here, are closed, and are not extended from a Target's names.
+_SECRET_NOUNS = frozenset("password passwords passwd pwd secret secrets token tokens credential credentials sas".split())
+_SECRET_PAIRS = frozenset({("api", "key"), ("api", "keys"), ("private", "key"), ("private", "keys"),
+                           ("account", "key"), ("account", "keys"), ("connection", "string"),
+                           ("connection", "strings")})
+_SECRET_FUSED = frozenset("apikey privatekey accountkey connectionstring".split())
+_FUSE_NOUNS = ("password", "passwd", "secret", "token", "credential", "pwd")
+SECRET_MODIFIERS = frozenset(
+    "length min max size count ttl lifetime expiry expires minutes seconds hours days algo algorithm hash "
+    "complexity policy check pwn enable enabled disable disabled allow require required form cache uri url "
+    "path file header name type mode scope scopes regex pattern".split())
+_REF_MODIFIERS = frozenset(("uri", "path", "file"))  # the value names where a secret lives, it is not one
+_WORD_SPLIT = re.compile(r"[^A-Za-z0-9]+")
+_CAMEL_1 = re.compile(r"([a-z0-9])([A-Z])")
+_CAMEL_2 = re.compile(r"([A-Z]+)([A-Z][a-z])")
+
+
+def _words(name: str) -> list[str]:
+    """Lower-case words of a key name: separators and camel case split it ("DBPassword" -> db, password).
+
+    A lower-case word with a noun fused to one end is split once: "dbpassword" -> db, password and
+    "passwordlength" -> password, length. A word that merely starts with a noun ("secretary") is kept whole.
+    """
+    out: list[str] = []
+    for part in _WORD_SPLIT.split(_CAMEL_2.sub(r"\1 \2", _CAMEL_1.sub(r"\1 \2", name or ""))):
+        w = part.lower()
+        if not w:
+            continue
+        if w not in _SECRET_NOUNS and w not in SECRET_MODIFIERS and w not in _SECRET_FUSED:
+            for noun in _FUSE_NOUNS:
+                if w.endswith(noun) and len(w) > len(noun):
+                    out += [w[:-len(noun)], noun]
+                    break
+                if w.startswith(noun) and w[len(noun):] in SECRET_MODIFIERS:
+                    out += [noun, w[len(noun):]]
+                    break
+            else:
+                out.append(w)
+            continue
+        out.append(w)
+    return out
+
+
+def _secret_kind(name: str) -> str | None:
+    """"secret" (names a secret), "ref" (names where one lives: uri, path, file) or None."""
+    words = _words(name)
+    has_noun = any(w in _SECRET_NOUNS or w in _SECRET_FUSED for w in words) \
+        or any(pair in _SECRET_PAIRS for pair in zip(words, words[1:]))
+    if not has_noun:
+        return None
+    mods = {w for w in words if w in SECRET_MODIFIERS}
+    if not mods:
+        return "secret"
+    return "ref" if mods <= _REF_MODIFIERS else None
+
+
 def is_secret_key(name: str) -> bool:
-    return bool(SECRET_KEY_RE.search(name or ""))
+    return _secret_kind(name) == "secret"
+
+
+def is_secret_ref(name: str) -> bool:
+    """True for a key that points at a secret held elsewhere (`SECRET_KEY_URI`, `DB_PASSWORD_FILE`)."""
+    return _secret_kind(name) == "ref"
 
 
 def find_secret_shapes(text: str) -> list[tuple[int, str]]:

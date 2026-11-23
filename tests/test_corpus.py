@@ -37,10 +37,6 @@ CORPUS = os.path.join(HERE, "corpus")
 
 # test method name -> (task ID, why it fails today). Delete the entry when the task lands.
 PENDING: dict = {
-    "test_ini_split_promotes_the_file":
-        ("T26.37", "keys of a file that code reads stay 'unclassified'"),
-    "test_ini_split_secret_names_are_segment_aware":
-        ("T26.38", "MIN_PASSWORD_LENGTH is marked secret_location by substring"),
     "test_wide_range_is_a_c20_advisory":
         ("T26.50", "C20 does not exist"),
     "test_wide_range_fails_under_strict":

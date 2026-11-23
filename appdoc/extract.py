@@ -20,6 +20,7 @@ from . import context, version
 from . import facts as F
 from . import scan, smells
 from .citations import OWNER_CONTEXT
+from .secrets import is_secret_ref
 from .stacks import capabilities_of, generic, load
 from .summary import render_summary
 
@@ -220,35 +221,51 @@ def _extract_all(root: str, files: list[scan.SourceFile], detected: dict, worker
     return out
 
 
+def _key_variants(name: str) -> set:
+    """The names a config-file key can be read under: the full name and its last dotted segment.
+
+    `server.HTTP_PORT` in an INI file is read from code as `server.HTTP_PORT` or as `HTTP_PORT`.
+    """
+    return {name, name.rsplit(".", 1)[-1]}
+
+
 def _config_roles(facts: list) -> list:
-    """Post-pass over the combined Facts (1.4A, 1.5). The cache stores pre-promotion per-file Facts, so
-    warm == cold only while every role decision stays here and depends on per-file details.
+    """Post-pass over the combined Facts (1.4A, 1.5, 2.6 4.4). The cache stores pre-promotion per-file Facts,
+    so warm == cold only while every role decision stays here and depends on per-file details.
 
     A code read of a config key (a config_key Fact with use="read", source="code") gets a role from
     how it reads: an environment variable (``read_kind`` env) is role ``env``; any read in a CI/build
     file path is ``ci``; any other code read is ``app``. Only ``app`` keys can be secret locations
-    (an env var or CI variable is not an application secret). A config file key classified
-    ``unclassified`` is promoted to ``app`` when one of its keys is read from code.
+    (an env var or CI variable is not an application secret). Promotion is per file: when any key of a
+    config file that is ``unclassified`` matches a code-read key (through ``_key_variants``), every
+    ``unclassified`` key of that file becomes ``app``. ``env`` and ``ci`` keys are never promoted.
+    A key whose name points at a secret held elsewhere (``..._URI``, ``..._FILE``) gets ``secret_ref``.
     """
     def is_code(d):
         return d.get("source") == "code"
     read_keys = {f.name for f in facts if f.kind == "config_key"
                  and f.detail_dict().get("use") == "read" and is_code(f.detail_dict())}
+    promoted = {f.path for f in facts if f.kind == "config_key" and not is_code(f.detail_dict())
+                and f.detail_dict().get("role") == "unclassified" and _key_variants(f.name) & read_keys}
     out = []
     for f in facts:
         if f.kind != "config_key":
             out.append(f)
             continue
         d = f.detail_dict()
+        before = dict(d)
         role = d.get("role")
         if is_code(d) and d.get("read_kind") and not d.get("test"):
             role = "ci" if generic.config_role(f.path) == "ci" else ("env" if d["read_kind"] == "env" else "app")
-        elif role == "unclassified" and f.name in read_keys:
+        elif role == "unclassified" and not is_code(d) and f.path in promoted:
             role = "app"
         if role in ("env", "ci") and d.get("secret_location"):
             d["secret_location"] = False
-        if role != d.get("role") or d != f.detail_dict():
+        if not d.get("secret_location") and is_secret_ref(f.name):
+            d["secret_ref"] = True
+        if role != before.get("role"):
             d["role"] = role
+        if d != before:
             f = F.Fact.make(f.kind, f.stack, f.path, f.line, f.name, **d)
         out.append(f)
     return out

@@ -360,6 +360,51 @@ class ConfigRoleUnclassifiedTests(unittest.TestCase):
         self.assertEqual(roles.get("PORT"), "app")
 
 
+class FilePromotionTests(unittest.TestCase):
+    def _keys(self, files):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = os.path.join(tmp.name, "target")
+        for rel, text in files.items():
+            full = os.path.join(root, rel)
+            os.makedirs(os.path.dirname(full), exist_ok=True)
+            with open(full, "w") as fh:
+                fh.write(text)
+        out = os.path.join(tmp.name, "out")
+        doc = json.loads(extract.extract(root, out)[0])
+        self.assertEqual(doc, json.loads(extract.extract(root, out)[0]), "warm run differs from cold run")
+        return {(f["path"], f["name"]): f["detail"] for f in doc["facts"] if f["kind"] == "config_key"}
+
+    APP = ("from flask import Flask\nimport os\napp = Flask(__name__)\n"
+           "a = app.config['HTTP_PORT']\nb = os.getenv('RUNNER')\n")
+
+    def test_file_level_promotion(self):
+        keys = self._keys({
+            "requirements.txt": "flask\n", "app.py": self.APP,
+            "conf/app.ini": "[server]\nHTTP_PORT = 3000\nDOMAIN = x\n[other]\nUNRELATED = 1\n",
+            "conf/lone.ini": "[a]\nZED = 1\n",
+            ".github/workflows/ci.yml": "env:\n  RUNNER: x\n"})
+        self.assertEqual({d["role"] for (p, n), d in keys.items() if p == "conf/app.ini"}, {"app"})
+        self.assertEqual(keys[("conf/lone.ini", "a.ZED")]["role"], "unclassified")
+        self.assertEqual(keys[("app.py", "RUNNER")]["role"], "env")      # env keys are never promoted
+        self.assertTrue(all(d["role"] == "ci" for (p, n), d in keys.items() if p.startswith(".github/")))
+
+    def test_file_promotion_leaves_a_ci_file_alone(self):
+        keys = self._keys({"requirements.txt": "flask\n", "app.py": self.APP,
+                           ".github/workflows/ci.yml": "env:\n  HTTP_PORT: 1\n"})
+        self.assertEqual({d["role"] for (p, n), d in keys.items() if p.startswith(".github/")}, {"ci"})
+
+    def test_ini_section_key_variants(self):
+        self.assertEqual(extract._key_variants("server.HTTP_PORT"), {"server.HTTP_PORT", "HTTP_PORT"})
+        self.assertEqual(extract._key_variants("PORT"), {"PORT"})
+        by_last = self._keys({"requirements.txt": "flask\n", "app.py": self.APP, "conf/a.ini": "[server]\nHTTP_PORT = 3\n"})
+        self.assertEqual(by_last[("conf/a.ini", "server.HTTP_PORT")]["role"], "app")
+        by_full = self._keys({"requirements.txt": "flask\n",
+                              "app.py": "from flask import Flask\napp = Flask(__name__)\nx = app.config['server.HTTP_PORT']\n",
+                              "conf/a.ini": "[server]\nHTTP_PORT = 3\nDOMAIN = d\n"})
+        self.assertEqual({d["role"] for d in by_full.values() if d.get("source") != "code"}, {"app"})
+
+
 class ConfigRoleSplitTests(unittest.TestCase):
     """T25.21/T25.22: code reads are split into env / ci / app in the post-pass."""
 

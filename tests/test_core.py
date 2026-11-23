@@ -105,6 +105,64 @@ class SecretTests(unittest.TestCase):
             for needle in ("fakepass", "Password=", "Pwd="):
                 self.assertNotIn(needle, text, f"{name}: {needle}")
 
+    SECRET_NAMES = (
+        "PASSWORD", "DB_PASSWORD", "db.password", "dbPassword", "DBPassword", "SECRET_KEY", "SECRET_KEY_BASE",
+        "client_secret", "ClientSecret", "API_TOKEN", "access_token", "accessToken", "AUTH_TOKEN", "api_key",
+        "API-KEY", "apiKey", "APIKey", "private_key", "PrivateKey", "connection_string", "ConnectionString",
+        "account_key", "AccountKey", "credentials", "user_credentials", "pwd", "DB_PWD", "passwd", "sas_token",
+        "SAS", "JWT_SECRET", "jwt.secret", "LDAP_BIND_PASSWORD", "smtp_password", "dbpassword", "accesstoken",
+        "TOKEN", "APP_SECRET", "server.SECRET_KEY")
+    NOT_SECRET_NAMES = (
+        # gitea's
+        "MIN_PASSWORD_LENGTH", "PASSWORD_COMPLEXITY", "PASSWORD_HASH_ALGO", "PASSWORD_CHECK_PWN",
+        "ENABLE_PASSWORD_SIGNIN_FORM", "DISABLE_PASSWORD_RESET", "ALLOW_PASSWORD_CHANGE", "REQUIRE_PASSWORD",
+        "SECRET_KEY_URI", "INTERNAL_TOKEN_URI", "JWT_SECRET_URI",
+        # the closed modifier set, one name each
+        "MAX_PASSWORD_LENGTH", "PASSWORD_POLICY", "password.min.length", "passwordMinLength", "TOKEN_TTL",
+        "TOKEN_LIFETIME", "TOKEN_EXPIRY", "TOKEN_EXPIRES_MINUTES", "SECRET_CACHE_TTL", "SECRET_HEADER",
+        "TOKEN_HEADER_NAME", "SECRET_NAME", "TOKEN_TYPE", "PASSWORD_MODE", "TOKEN_SCOPE", "PASSWORD_REGEX",
+        "PASSWORD_PATTERN", "PASSWORD_RESET_URL", "PASSWORD_FILE", "password_path", "passwordlength",
+        # no secret noun
+        "HTTP_PORT", "DOMAIN", "USERNAME", "KEY", "DB_HOST", "tokenizer", "secretary", "passenger", "server.DOMAIN",
+        "ENCRYPTION_ALGORITHM", "", None)
+
+    def test_secret_key_segments(self):
+        self.assertGreaterEqual(len([n for n in self.SECRET_NAMES]), 20)
+        self.assertGreaterEqual(len([n for n in self.NOT_SECRET_NAMES if n]), 25)
+        for name in self.SECRET_NAMES:
+            self.assertTrue(secrets.is_secret_key(name), name)
+        for name in self.NOT_SECRET_NAMES:
+            self.assertFalse(secrets.is_secret_key(name), name)
+
+    def test_secret_ref_flag(self):
+        for name in ("SECRET_KEY_URI", "INTERNAL_TOKEN_URI", "DB_PASSWORD_FILE", "password_path", "PasswordFile"):
+            self.assertTrue(secrets.is_secret_ref(name), name)
+            self.assertFalse(secrets.is_secret_key(name), name)
+        for name in ("DB_PASSWORD", "MIN_PASSWORD_LENGTH", "PASSWORD_RESET_URL", "HTTP_PORT", "PASSWORD_MIN_FILE", ""):
+            self.assertFalse(secrets.is_secret_ref(name), name)
+        root = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, root, True)
+        os.makedirs(os.path.join(root, "conf"))
+        with open(os.path.join(root, "conf", "app.ini"), "w") as fh:
+            fh.write("[security]\nSECRET_KEY_URI = file:/etc/key\nINTERNAL_TOKEN = abc\nMIN_PASSWORD_LENGTH = 8\n")
+        doc = json.loads(extract.extract(root, os.path.join(root, "out"))[0])
+        keys = {f["name"]: f["detail"] for f in doc["facts"] if f["kind"] == "config_key"}
+        self.assertIs(keys["security.SECRET_KEY_URI"].get("secret_ref"), True)
+        self.assertFalse(keys["security.SECRET_KEY_URI"].get("secret_location"))
+        self.assertIs(keys["security.INTERNAL_TOKEN"].get("secret_location"), True)
+        self.assertNotIn("secret_ref", keys["security.INTERNAL_TOKEN"])
+        self.assertFalse(keys["security.MIN_PASSWORD_LENGTH"].get("secret_location"))
+        self.assertNotIn("secret_ref", keys["security.MIN_PASSWORD_LENGTH"])
+        self.assertIn("secret_ref", facts.DETAIL_KEYS["config_key"])
+
+    def test_c6_unaffected_by_key_naming(self):
+        """C6 finds secret-shaped values by their shape and an assignment's key text, not by is_secret_key."""
+        value = "Xk9fQ2mZp7LwR4tYv8NbC3dHs6JgA1eU"
+        for name in ("MIN_PASSWORD_LENGTH", "PASSWORD_FILE", "SECRET_KEY_URI", "password_policy", "DB_PASSWORD"):
+            self.assertEqual([h[1] for h in secrets.find_secret_shapes(f"{name} = {value}")],
+                             ["high-entropy-secret"], name)
+        self.assertEqual(secrets.find_secret_shapes("Password=abc12345;"), [(1, "connection-string-password")])
+
     def test_secret_shape_finder_reports_lines_not_values(self):
         hits = secrets.find_secret_shapes("ok\nkey AKIAIOSFODNN7EXAMPLE here\nPassword=abc12345;\n")
         self.assertEqual([h[0] for h in hits], [2, 3])
