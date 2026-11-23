@@ -1,4 +1,4 @@
-"""Command line: python -m appdoc <extract|fill|check|render> <target> [--out DIR]."""
+"""Command line entry point; the module docstring is assigned below from COMMANDS."""
 
 from __future__ import annotations
 
@@ -10,6 +10,18 @@ from . import __version__
 from .version import bundle_hash
 
 DEFAULT_OUT = os.path.join("docs", "appdoc")
+COMMANDS = ("extract", "fill", "check", "render", "seal", "build", "gate")
+COMMAND_HELP = {
+    "extract": "write facts.json, facts-summary.md and provenance.json",
+    "fill": "write the generated blocks of the Narrative from the Facts and the register",
+    "check": "verify the Narrative; exit 0 pass, 2 problems, 1 tool error",
+    "render": "write application-documentation.html",
+    "seal": "write claim_sha into the register rows that lack one",
+    "build": "seal, fill, check and render in one step",
+    "gate": "CI gate: regenerate the Facts and compare with the committed facts.json, then check; "
+            "exit 0 pass, 1 tool error, 2 Facts changed, 3 AppDoc upgraded",
+}
+__doc__ = f"Command line: python -m appdoc <{'|'.join(COMMANDS)}> <target> [--out DIR]."
 
 
 def _resolve_out(target: str, out: str | None) -> str:
@@ -20,13 +32,14 @@ def _resolve_out(target: str, out: str | None) -> str:
     return out_abs
 
 
-def main(argv=None) -> int:
+def build_parser() -> argparse.ArgumentParser:
+    """The argument parser; tools/gen_docs.py reads the README command list from it."""
     p = argparse.ArgumentParser(prog="appdoc", description="Document an unfamiliar codebase.")
     p.add_argument("--version", action="version",
                    version=f"appdoc {__version__} (bundle {bundle_hash()})")
     sub = p.add_subparsers(dest="cmd", required=True)
-    for name in ("extract", "fill", "check", "render", "seal", "build"):
-        sp = sub.add_parser(name)
+    for name in COMMANDS:
+        sp = sub.add_parser(name, help=COMMAND_HELP[name], description=COMMAND_HELP[name])
         sp.add_argument("target", help="Target repository root")
         sp.add_argument("--out", help=f"output folder inside the target (default {DEFAULT_OUT})")
         if name == "extract":
@@ -47,11 +60,19 @@ def main(argv=None) -> int:
                             help="fail when the source-to-claim audit was declared not performed")
             sp.add_argument("--strict", action="store_true",
                             help="fail when an entry point file is not cited anywhere in the document")
-        if name == "build":
+        if name == "gate":
+            sp.add_argument("--workers", type=int, default=None,
+                            help="process-pool workers for the regeneration; default min(cpu,8); 0 = serial")
+        if name in ("build", "gate"):
             sp.add_argument("--require-audit", action="store_true",
                             help="fail when the source-to-claim audit was declared not performed")
             sp.add_argument("--strict", action="store_true",
                             help="fail when an entry point file is not cited anywhere in the document")
+    return p
+
+
+def main(argv=None) -> int:
+    p = build_parser()
     args = p.parse_args(argv)
 
     if not os.path.isdir(args.target):
@@ -73,6 +94,9 @@ def main(argv=None) -> int:
         if args.cmd == "check":
             from . import check
             return check.run(args.target, out_dir, args.require_audit, args.strict)
+        if args.cmd == "gate":
+            from . import gate
+            return gate.run(args.target, out_dir, args.require_audit, args.strict, args.workers)
         if args.cmd == "seal":
             from . import check
             n = check.seal_register(args.target, out_dir)

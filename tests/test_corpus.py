@@ -37,10 +37,6 @@ CORPUS = os.path.join(HERE, "corpus")
 
 # test method name -> (task ID, why it fails today). Delete the entry when the task lands.
 PENDING: dict = {
-    "test_gate_layout_exit_codes":
-        ("T26.52", "there is no `gate` command"),
-    "test_patch_upgrade_gate_exits_0":
-        ("T26.52", "there is no `gate` command"),
 }
 
 

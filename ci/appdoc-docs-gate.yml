@@ -7,26 +7,17 @@
 # Requirements on the target repo
 #   - The generated AppDoc docs are committed under docs/appdoc/
 #     (at minimum facts.json and application-documentation.md).
-#   - Python 3.10+ on the runner. The AppDoc Check uses the standard library
-#     only, so there are no packages to install.
+#   - Python 3.10+ on the runner. AppDoc uses the standard library only, so
+#     there are no packages to install.
 #
-# What this gate does (all deterministic — AppDoc holds no LLM key here)
-#   1. Upgrade detection. If the committed facts.json has a different Facts
-#      schema than the pinned AppDoc writes, AppDoc was upgraded: the gate says
-#      so (re-extract and refresh the docs) instead of blaming the code.
-#   2. Change detection. Regenerates the Facts (byte-identical across runs) into
-#      a throwaway directory and diffs them against the committed
-#      docs/appdoc/facts.json. If they differ, the code changed since the docs
-#      were last generated, so the gate fails with a clear instruction.
-#   3. Consistency (C1–C12). Runs the AppDoc Check with --require-audit against
-#      the committed docs. Broken Citations or references, tables that do not
-#      match the template, stale generated blocks, secret-shaped text, a finding
-#      candidate that is neither cited nor dismissed, or an Evidence Register row
-#      whose anchor is no longer in its cited lines fail the gate. The last one
-#      names exactly which audited claims went stale after a code change.
+# What this gate does (all deterministic; AppDoc holds no LLM key here)
+# appdoc-self:generated gate-header
+# /appdoc-self:generated gate-header
 #
-# Pin AppDoc: set APPDOC_REF below to the release tag your docs were written with.
+# Pin AppDoc: APPDOC_REF below is the release tag your docs were written with.
 # Upgrading AppDoc is then a deliberate change (bump the tag, re-extract, refresh).
+# The skill is cloned outside the workspace ($RUNNER_TEMP), so it is never part of
+# the Target the gate scans.
 #
 # What this gate does NOT do
 #   - It does NOT rewrite the Narrative (the AI-written sections). AppDoc
@@ -36,11 +27,10 @@
 #     Narrative, then commit the updated docs/appdoc/ files. This workflow is
 #     the deterministic tripwire that tells you when that refresh is due; the
 #     Narrative refresh itself is the AI-in-the-loop step. See docs/docs-as-code.md.
-#
-# Note on the source-to-claim audit: the gate does not run the audit (an AI
-# accuracy pass). --require-audit fails the gate when docs/appdoc/evidence.jsonl
-# declares the audit not performed. To also fail on entry points the document
-# never cites, add --strict to the check step (optional).
+#   - It does NOT run the source-to-claim audit (an AI accuracy pass).
+#     --require-audit fails the gate when docs/appdoc/evidence.jsonl declares the
+#     audit not performed. To also fail on advisories such as entry points the
+#     document never cites, add --strict to the gate command (optional).
 
 name: AppDoc docs gate
 
@@ -50,7 +40,9 @@ on:
   pull_request:
 
 env:
-  APPDOC_REF: v2.5.0
+  # appdoc-self:generated gate-pin
+  APPDOC_REF: v2.6.0
+  # /appdoc-self:generated gate-pin
 
 jobs:
   appdoc-gate:
@@ -64,58 +56,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Check out the AppDoc skill
-        uses: actions/checkout@v4
-        with:
-          repository: HeWhoRoams/AppDoc
-          ref: ${{ env.APPDOC_REF }}
-          path: appdoc-skill
+      - name: Check out the AppDoc skill (outside the workspace)
+        run: git clone --depth 1 --branch "$APPDOC_REF" https://github.com/HeWhoRoams/AppDoc "$RUNNER_TEMP/appdoc-skill"
 
-      - name: Regenerate the Facts into a throwaway directory
-        working-directory: appdoc-skill
-        run: python -m appdoc extract .. --out "$RUNNER_TEMP/appdoc-regen"
-
-      - name: Detect code changes (Facts diff against the committed facts.json)
-        run: |
-          if [ ! -f docs/appdoc/facts.json ]; then
-            echo "::error::Committed docs/appdoc/facts.json is missing."
-            echo "Generate the AppDoc docs in a session and commit docs/appdoc/ before enabling this gate. See docs/docs-as-code.md in the AppDoc repo."
-            exit 1
-          fi
-          committed=$(python -c "import json;print(json.load(open('docs/appdoc/facts.json')).get('schema'))")
-          current=$(python -c "import json,os;print(json.load(open(os.path.join(os.environ['RUNNER_TEMP'],'appdoc-regen','facts.json'))).get('schema'))")
-          if [ "$committed" != "$current" ]; then
-            echo "::error::AppDoc upgraded: committed Facts are $committed, AppDoc $APPDOC_REF writes $current."
-            echo "This is not a code change. Re-extract, refresh the docs to the new template (see the AppDoc CHANGELOG upgrade notes), and commit docs/appdoc/."
-            exit 1
-          fi
-          if ! diff -u docs/appdoc/facts.json "$RUNNER_TEMP/appdoc-regen/facts.json"; then
-            echo "::error::Facts changed: the code changed since the docs were last generated."
-            echo "Re-run the AppDoc skill in a session to refresh the docs, then commit the updated docs/appdoc/ files."
-            exit 1
-          fi
-          echo "Facts match the committed facts.json — no undetected code changes."
-
-      - name: Run the AppDoc Check (C1–C12, deterministic consistency gate)
-        working-directory: appdoc-skill
-        run: python -m appdoc check .. --require-audit
-
-  # Windows job: proves the ProcessPoolExecutor spawn path (the only
-  # Windows-specific code) by running the full test suite on windows-latest.
-  appdoc-windows-tests:
-    runs-on: windows-latest
-    steps:
-      - name: Check out the AppDoc skill
-        uses: actions/checkout@v4
-        with:
-          repository: HeWhoRoams/AppDoc
-          path: appdoc-skill
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Run the test suite (exercises the Windows spawn path)
-        working-directory: appdoc-skill
-        run: python -m pytest -q
+      - name: Run the AppDoc gate
+        run: python "$RUNNER_TEMP/appdoc-skill/run_appdoc.py" gate "$GITHUB_WORKSPACE" --require-audit
