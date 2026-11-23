@@ -259,12 +259,19 @@ class ConfigTrailerTests(unittest.TestCase):
         self.assertEqual(fill.config_app_count(d), 1)
 
     def test_c7_flags_a_16_6_block_count_that_is_not_the_app_role_count(self):
+        """F3: the exact block comparison replaces the prose parser; it flags the same count mismatch."""
         d = self._doc(("a.py", "K", "app"), ("a.py", "E", "env"))
-        add = lambda *a: found.append(a)
         found = []
-        good = "Shown 1 of 1 application keys.\n2 env-var keys"
-        check._c7_config_count(good, 7, d, add)
-        self.assertEqual(found, [])
-        check._c7_config_count("Shown 2 of 2 application keys.", 7, d, add)
-        self.assertEqual(len(found), 1)
-        self.assertIn("1", found[0][2])
+        add = lambda *a: found.append(a)
+
+        def run(body):
+            raw = "<!-- appdoc:generated config-reference -->\n" + body + "\n<!-- /appdoc:generated config-reference -->\n"
+            del found[:]
+            check._c7_blocks(raw, {}, d, None, None, add)
+            return [f for f in found if "config-reference" in f[2]]
+
+        self.assertEqual(run(fill.render_block("config-reference", d)), [])
+        bad = fill.render_block("config-reference", d).replace("Shown 1 of 1 application key", "Shown 2 of 2 application keys")
+        got = run(bad)
+        self.assertEqual(len(got), 1)
+        self.assertIn("1", got[0][2])

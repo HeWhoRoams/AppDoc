@@ -477,17 +477,6 @@ def _c7_counts(target, lines, heads, facts, add):
             add("C7", no, f"4.1 Files '{stated}' is not a plain number", f"write the Facts count ({n})")
 
 
-_CONFIG_SHOWN_RE = re.compile(r"Shown \d+ of (\d+) application keys?")
-
-
-def _c7_config_count(body: str, line: int, facts, add):
-    """The 16.6 block's "N of M application keys" must equal the Facts' application-role key count."""
-    m = _CONFIG_SHOWN_RE.search(body)
-    if m and facts is not None and int(m.group(1)) != (n := fill_mod.config_app_count(facts)):
-        add("C7", line, f"16.6 states {m.group(1)} application keys but the Facts count {n} with role app",
-            "run `appdoc fill <target>`; never edit a generated block by hand")
-
-
 def _num(s: str) -> int:
     return _NUMBER_WORDS.get(s.lower()) or int(s.replace(",", ""))
 
@@ -612,6 +601,15 @@ def _uncited_entry_points(target, cache, facts, cites) -> list[tuple[str, int, l
     return sorted(((k, len(v), v[:5]) for k, v in groups.items()), key=lambda g: (-g[1], g[0]))
 
 
+def _block_detail(name, body, facts) -> str:
+    """Which count differs, for the 16.6 block (the exact comparison above is the check; this is its message)."""
+    if name != "config-reference":
+        return ""
+    rows = [ln for ln in body.splitlines() if ln.startswith("|")][2:]
+    return (f" (the Facts expect {fill_mod.config_shown_count(facts)} of {fill_mod.config_app_count(facts)} "
+            f"application keys; the block has {len(rows)} shown)")
+
+
 def _c7_blocks(raw, heads, facts, out_dir, target, add):
     ctx = {"out_dir": out_dir, "text": raw, "target": target}
     found = {name: (body, line) for name, body, line in fill_mod.blocks(normalize_newlines(raw))}
@@ -622,10 +620,8 @@ def _c7_blocks(raw, heads, facts, out_dir, target, add):
             add("C7", line, f"generated block '{name}' is missing from {key}",
                 "copy its appdoc:generated markers from the template, then run `appdoc fill`")
             continue
-        if name == "config-reference":
-            _c7_config_count(found[name][0], found[name][1], facts, add)
         if facts is not None and found[name][0] != (fill_mod.render_block(name, facts, ctx) or "").strip():
-            add("C7", found[name][1], f"generated block '{name}' differs from the Facts",
+            add("C7", found[name][1], f"generated block '{name}' differs from the Facts{_block_detail(name, found[name][0], facts)}",
                 "run `appdoc fill <target>`; never edit a generated block by hand")
 
 

@@ -197,6 +197,11 @@ def config_app_count(doc: dict) -> int:
     return len({f["name"] for f in app if not f["detail"].get("commented")})
 
 
+def config_shown_count(doc: dict) -> int:
+    """The N in the 16.6 "Shown N of M": the application keys the table lists (capped)."""
+    return min(config_app_count(doc), CONFIG_CAP)
+
+
 def _config_reference(doc: dict, ctx: dict | None = None) -> str:
     """Application keys that are not commented defaults: one row per key, its definition when it has one."""
     app, commented = _app_config(doc)

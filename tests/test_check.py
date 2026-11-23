@@ -1462,5 +1462,40 @@ class RuleRegistryTests(unittest.TestCase):
         self.assertIn("C17", check.RULE_SUMMARIES)
 
 
+class ConfigBlockCountTests(unittest.TestCase):
+    """F3: the 16.6 count is checked by the exact block comparison; its message says which count differs."""
+
+    @staticmethod
+    def _doc(*names):
+        return {"stacks": [], "facts": [{"kind": "config_key", "stack": "s", "path": "a.py", "line": i + 1, "name": n,
+                                         "detail": {"role": "app"}} for i, n in enumerate(names)]}
+
+    @staticmethod
+    def _raw(body):
+        return ("<!-- appdoc:generated config-reference -->\n" + body + "\n<!-- /appdoc:generated config-reference -->\n")
+
+    def _problems(self, doc_blocks_from, facts):
+        found = []
+        body = fill.render_block("config-reference", doc_blocks_from)
+        check._c7_blocks(self._raw(body), {}, facts, None, None, lambda *a: found.append(a))
+        return [f for f in found if "config-reference" in f[2]]
+
+    def test_c7_config_block_count_message(self):
+        got = self._problems(self._doc("A"), self._doc("A", "B"))
+        self.assertEqual(len(got), 1, got)
+        rule, _line, msg, fix = got[0]
+        self.assertEqual(rule, "C7")
+        self.assertIn("2 application keys", msg)       # what the Facts expect
+        self.assertIn("1 shown", msg)                  # what the block holds
+        self.assertIn("appdoc fill", fix)
+
+    def test_equal_block_raises_nothing(self):
+        self.assertEqual(self._problems(self._doc("A", "B"), self._doc("A", "B")), [])
+
+    def test_no_prose_parser_remains(self):
+        self.assertFalse(hasattr(check, "_c7_config_count"))
+        self.assertFalse(hasattr(check, "_CONFIG_SHOWN_RE"))
+
+
 if __name__ == "__main__":
     unittest.main()
