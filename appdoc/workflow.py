@@ -20,13 +20,23 @@ class Step:
 
 
 SKILL_STEPS = (
+    Step("Upgrade", "upgrade <target>",
+         "only when the existing document carries an older template stamp: adds what the template now requires, "
+         "keeps every line of text, extracts and fills, and writes UPGRADE-TODO.md for the steps left to a person"),
     Step("Extract", "extract <target>",
          "writes facts.json, facts-summary.md and provenance.json; re-running gives identical output"),
     Step("Orient", None, "read facts-summary.md and appdoc-context.md, then drill into the Facts and the source"),
     Step("Write", None, "fill the template from the Facts and the source"),
     Step("Build", "build <target>",
          "seal, fill, check and render; repeat until it passes, and after 3 failures report the problems verbatim"),
-    Step("Audit", None, "a fresh agent audits the document and writes evidence.jsonl"),
+    Step("Audit plan", "audit-plan <target>",
+         "writes audit-plan.json: the IDs the audit must cover, a sample chosen by the tool"),
+    Step("Audit", None,
+         "a fresh agent audits every planned ID (more if useful) and writes evidence.jsonl; generated and opaque "
+         "blocks are not audited"),
+    Step("Seal", "seal <target> --audit --date <YYYY-MM-DD>",
+         "records the audit date and provenance and seals the new rows as audited; the date is given, never read "
+         "from the clock"),
     Step("Build", "build <target> --require-audit", "the same command, now that the audit exists"),
     Step("Report", None, "tell the user where the files are, whether the Check passed, and who audited"),
 )

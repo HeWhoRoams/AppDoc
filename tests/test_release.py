@@ -110,6 +110,49 @@ class GeneratedDocs(unittest.TestCase):
                 self.assertIn(step.command.split()[0], cli.COMMANDS)
 
 
+class SkillDoc(unittest.TestCase):
+    """SKILL.md teaches the 2.7 run order and the 2.7 writing rules (plan 2.7, 4; amendment C-4)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.skill = slurp(os.path.join(ROOT, "SKILL.md"))
+
+    def test_run_steps_in_2_7_order(self):
+        steps = [(s.name, s.command.split()[0] if s.command else None) for s in workflow.SKILL_STEPS]
+        order = [v for _, v in steps if v]
+        self.assertEqual(order, ["upgrade", "extract", "build", "audit-plan", "seal", "build"])
+        names = [n for n, _ in steps]
+        self.assertLess(names.index("Audit plan"), names.index("Audit"))
+        self.assertLess(names.index("Audit"), names.index("Seal"))
+        seal = next(s for s in workflow.SKILL_STEPS if s.command and s.command.startswith("seal"))
+        self.assertIn("--audit --date", seal.command)
+        last_build = [s for s in workflow.SKILL_STEPS if s.command and s.command.startswith("build")][-1]
+        self.assertTrue(last_build.command.endswith("--require-audit"))
+        self.assertLess(names.index("Seal"), len(names) - 1 - names[::-1].index("Build"))
+
+    def test_every_workflow_command_is_a_real_subcommand(self):
+        for step in workflow.SKILL_STEPS:
+            if step.command:
+                self.assertIn(step.command.split()[0], cli.COMMANDS)
+
+    def test_run_prose_names_the_new_steps(self):
+        for needle in ("audit-plan <target>", "every planned", "--audit --date", "`appdoc upgrade`", "UPGRADE-TODO.md"):
+            self.assertIn(needle, self.skill)
+
+    def test_writing_rules_present(self):
+        for needle in ("appdoc:count", "notes.jsonl", "severity order", "--expand-citations", "answered_in",
+                       "supersedes", "Never delete", "method only", "Build, Run and Test Locally"):
+            self.assertIn(needle, self.skill, needle)
+
+    def test_not_audited_blocks_stated(self):
+        self.assertRegex(self.skill, r"(?i)generated and opaque blocks are not audited")
+
+    def test_template_headings_count_is_17(self):
+        self.assertIn("keeping all 17 headings", self.skill)
+        self.assertNotIn("all 16 headings", self.skill)
+        self.assertNotIn("all 16 sections", self.skill)
+
+
 class SharedConstants(unittest.TestCase):
     """The docstrings of __main__ and check.py are built from the same constants the docs are generated from."""
 
