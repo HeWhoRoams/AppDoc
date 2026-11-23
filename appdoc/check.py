@@ -55,7 +55,7 @@ RULES = (
                  "cite the full path"),
     Rule("C2", "Security lines", "a Citation in section 10 has no line"),
     Rule("C3", "Sections complete",
-         "a section is missing, out of order, empty or a placeholder, or the document is not on the current template"),
+         "a section is missing, out of order, empty or a placeholder, or the stamp is not the current template (or an older one still accepted)"),
     Rule("C4", "Gaps declared",
          "section 14 is empty while Unknowns exist, or Data and Integrations is empty though Facts exist"),
     Rule("C5", "Claims grounded",
@@ -1423,7 +1423,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
 
     # C3
     stamp = spec.STAMP_RE.search(raw)
-    current = bool(stamp) and stamp.group(1) == spec.TEMPLATE_VERSION
+    current = bool(stamp) and spec.stamp_accepted(stamp.group(1))   # the running template or an accepted older one
     doc_ver = spec.stamp_version(raw)
     # The 2.7 rules are written once. Below the stamp gate they are printed as previews; from 2.7 they fail.
     add27 = add if doc_ver >= FAILS_FROM else (lambda rule, line, msg, fix: previews.append((rule, line, msg, fix)))
@@ -1676,7 +1676,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         previews = sorted(set(previews), key=lambda p: (p[0], p[1], p[2]))
         advisory += [PREVIEW_HEADING, "",
                      f"{len(previews)} finding{'s' if len(previews) != 1 else ''} would fail a template "
-                     f"{'.'.join(map(str, FAILS_FROM))} document. This document is on template {spec.TEMPLATE_VERSION}, "
+                     f"{'.'.join(map(str, FAILS_FROM))} document. This document is on template {stamp.group(1)}, "
                      "so none of them fails it; they need no action yet.", ""]
         advisory += [f"- {rule} line {no}: {msg}. Fix: {fix} (fails from template {'.'.join(map(str, FAILS_FROM))})"
                      for rule, no, msg, fix in previews[:RULE_CAP]]

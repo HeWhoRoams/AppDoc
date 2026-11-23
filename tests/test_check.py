@@ -98,10 +98,14 @@ ROWS = [
 ]
 
 
+OLD_STAMP = "<!-- appdoc:template 2.4 -->"   # the template of AppDoc 2.4 to 2.6, still accepted (spec.OLDER_STAMPS)
+
+
 def build_doc(override=None):
+    """A document on template 2.4: 16 sections, no closed-questions block. `doc27` makes the 2.7 form of it."""
     override = override or {}
-    parts = ["# Demo Documentation", spec.STAMP, "<!-- a comment `nope/missing.py:99` -->", ""]
-    for n, title in enumerate(check.SECTIONS, 1):
+    parts = ["# Demo Documentation", OLD_STAMP, "<!-- a comment `nope/missing.py:99` -->", ""]
+    for n, title in enumerate(spec.sections((2, 4)), 1):
         parts += [f"## {n}. {title}", "", override.get(n, SECTION_BODY[n]), ""]
     parts += [APPENDIX, ""]
     return "\n".join(parts)
@@ -326,7 +330,7 @@ class CheckTests(unittest.TestCase):
     # --- 2.7: superseded rows (append-only register)
 
     def doc27(self, doc=None, cq=True, s17=True):
-        doc = (doc or build_doc()).replace(spec.STAMP, "<!-- appdoc:template 2.7 -->")
+        doc = (doc or build_doc()).replace(OLD_STAMP, spec.STAMP)
         if s17 and "\n## 17. " not in doc:
             doc = doc.replace("\n## Appendix A.", f"\n## 17. {spec.SECTIONS[16]}\n\n{SECTION_BODY[17]}\n\n## Appendix A.", 1)
         if cq and "appdoc:generated closed-questions" not in doc:
@@ -334,15 +338,13 @@ class CheckTests(unittest.TestCase):
         return doc
 
     def run27(self, doc=None, cq=True, s17=True, **kw):
-        """Check a document stamped 2.7 (the running template patched to 2.7 for the call).
+        """Check a document stamped 2.7.
 
-        A 2.7 document carries the closed-questions block under 14; `cq` adds empty markers when the test
-        document has none (pass cq=False to check the document as given)."""
-        from unittest import mock
+        A 2.7 document carries the closed-questions block under 14 and section 17; `cq` and `s17` add them when the
+        test document has none (pass cq=False or s17=False to check the document as given)."""
         doc = self.doc27(doc, cq, s17)
-        with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"):
-            self.run_check(doc, **kw)                        # seals the register (sealed_by is printed in A.1) ...
-            return self.run_check(doc, seal=False, **kw)     # ... so fill again, as `build` does, and check
+        self.run_check(doc, **kw)                        # seals the register (sealed_by is printed in A.1) ...
+        return self.run_check(doc, seal=False, **kw)     # ... so fill again, as `build` does, and check
 
     SECOND_V1 = {"id": "E-3", "ref": "10.1/V-1", "claim": "A password is set in code (re-read)",
                  "result": "Corrected", "cites": ["app/main.py:6"], "anchor": "line 6", "limitation": "none"}
@@ -698,10 +700,10 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(self.fired(build_doc({12: "<fill me> TODO"})), {"C3"})
 
     def test_c3_missing_stamp_is_one_upgrade_problem(self):
-        code, report, _ = self.run_check(build_doc().replace(spec.STAMP, ""))
+        code, report, _ = self.run_check(build_doc().replace(OLD_STAMP, ""))
         self.assertEqual(set(re.findall(r"^## (C\d+) ", report, re.M)), {"C3"})
-        self.assertIn("not on template 2.4", report)
-        code, report, _ = self.run_check(build_doc().replace(spec.STAMP, "<!-- appdoc:template 2.1 -->"))
+        self.assertIn(f"not on template {spec.TEMPLATE_VERSION}", report)
+        code, report, _ = self.run_check(build_doc().replace(OLD_STAMP, "<!-- appdoc:template 2.1 -->"))
         self.assertIn("(stamp: 2.1)", report)
 
     def test_c4_unknown_without_gaps(self):
@@ -1120,6 +1122,40 @@ class CheckTests(unittest.TestCase):
         # an Unknown row needs none
         self.assertEqual(self.run27(self.sec17(*ok))[0], 0)
 
+    def instantiate_template(self):
+        """A freshly started 2.7 document: the template with its guidance deleted and nothing but Unknown written."""
+        path = os.path.join(os.path.dirname(check.__file__), "assets", "template.md")
+        with open(path, encoding="utf-8") as fh:
+            text = fh.read()
+        unknown = "Unknown - see Open questions."
+        text = re.sub(r"<!-- appdoc:guide.*?-->\n?", "", text, flags=re.S)
+        text = text.replace("# <Target name> Documentation", "# Demo Documentation")
+        text = re.sub(r"<fill: [^>]*>", "Unknown", text)
+        for label in spec.OWNERSHIP_ROWS:
+            text = text.replace(f"| {label} | | |", f"| {label} | not in the repository | Unknown |")
+        for step in spec.BUILD_STEPS:
+            text = text.replace(f"| {step} | | | |", f"| {step} | {unknown} | . | not in the repository |")
+        runbook = "".join(f"| {step} | Unknown | not in the repository |\n" for step in spec.RUNBOOK_STEPS)
+        text = text.replace("| Step | Procedure | Evidence |\n|---|---|---|\n", "| Step | Procedure | Evidence |\n|---|---|---|\n" + runbook)
+        text = re.sub(r"(?m)^(#{2,3} \d+(?:\.\d+)?\.? [^\n]*\n)", lambda m: m.group(1) + "\n" + unknown + "\n", text)
+        text = text.replace("|---|---|---|---|---|---|\n\n<!-- appdoc:generated closed-questions",
+                            "|---|---|---|---|---|---|\n| Q-1 | Everything is Unknown | New document | Write the sections | Unknown | High |\n\n"
+                            "<!-- appdoc:generated closed-questions")
+        return text
+
+    def test_a_fresh_2_7_template_passes_with_only_unknowns(self):
+        text = self.instantiate_template()
+        self.assertIn(spec.STAMP, text)
+        self.assertEqual(spec.stamp_version(text), (2, 7))
+        for name in spec.GENERATED.values():
+            self.assertIn(f"<!-- appdoc:generated {name} -->", text)   # all six blocks, closed-questions included
+        self.write_register(dict(AUDIT, performed=False, scope="not audited yet"), [])
+        code, report, _ = self.run_check(text)
+        self.assertEqual(code, 0, report)
+        with open(os.path.join(self.out, "application-documentation.md"), encoding="utf-8") as fh:
+            filled = fh.read()
+        self.assertIn("No questions were closed by the audit.", filled)
+
     def test_template_matches_spec(self):
         from appdoc import docmodel as dm
         path = os.path.join(os.path.dirname(check.__file__), "assets", "template.md")
@@ -1160,7 +1196,7 @@ class CheckTests(unittest.TestCase):
                 doc = fh.read()
             code, report, _ = self.run_check(doc, filled=False)
             self.assertEqual(code, 2)
-            self.assertIn("not on template 2.4 (stamp: none)", report)
+            self.assertIn(f"not on template {spec.TEMPLATE_VERSION} (stamp: none)", report)
             self.assertNotRegex(report, r"(?m)^## C(8|9|10|11) ")
 
     def test_new_rules_catch_the_2_1_defects(self):
@@ -1169,7 +1205,7 @@ class CheckTests(unittest.TestCase):
         for repo in ("flaskr-tdd", "eShop"):
             with open(os.path.join(FIXTURES_21, repo, "application-documentation.md"), encoding="utf-8") as fh:
                 doc = fh.read()
-            doc = doc.replace("\n", "\n" + spec.STAMP + "\n", 1)
+            doc = doc.replace("\n", "\n" + OLD_STAMP + "\n", 1)
             code, report, _ = self.run_check(doc, filled=False)
             rules = set(re.findall(r"^## (C\d+) ", report, re.M))
             self.assertTrue({"C7", "C9", "C11"} <= rules, (repo, rules))
@@ -1812,7 +1848,7 @@ class CheckTests(unittest.TestCase):
 
     def test_previews_are_enforced_when_the_stamp_is_2_7(self):
         from unittest import mock
-        doc = self._sev_doc().replace(spec.STAMP, "<!-- appdoc:template 2.7 -->")
+        doc = self._sev_doc().replace(OLD_STAMP, spec.STAMP)
         with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"):
             code, report, _ = self.run_check(doc)
         self.assertEqual(code, 2, report)
@@ -2037,7 +2073,7 @@ class Frozen22Tests(unittest.TestCase):
                     self.assertEqual(check.run(os.path.join(tmp, "target"), out), 2)
                 with open(os.path.join(out, "check-report.md")) as fh:
                     report = fh.read()
-            self.assertIn("not on template 2.4 (stamp: 2.2)", report)
+            self.assertIn(f"not on template {spec.TEMPLATE_VERSION} (stamp: 2.2)", report)
             self.assertNotRegex(report, r"(?m)^## C(8|9|10|11) ")
 
     def test_restamped_2_4_still_fails_on_the_missing_blocks_sections_and_line(self):
@@ -2063,7 +2099,7 @@ class Frozen22Tests(unittest.TestCase):
             with open(os.path.join(HERE, "fixtures", "docs-2.2", repo, name), encoding="utf-8", newline="") as fh:
                 text = fh.read()
             if restamp and name.endswith(".md"):
-                text = text.replace("<!-- appdoc:template 2.2 -->", spec.STAMP)
+                text = text.replace("<!-- appdoc:template 2.2 -->", OLD_STAMP)
             with open(os.path.join(out, name), "w", encoding="utf-8", newline="") as fh:
                 fh.write(text)
         return out

@@ -711,6 +711,35 @@ class VersionCompareTests(unittest.TestCase):
         self.assertEqual(version_tuple("none"), ())
         self.assertEqual(version_tuple(None), ())
 
+    def test_template_version_is_2_7(self):
+        """T27.26: the running template is 2.7; the template file carries its stamp, 17 headings and the conventions."""
+        from appdoc import template_spec as spec
+        self.assertEqual(spec.TEMPLATE_VERSION, "2.7")
+        self.assertEqual(spec.STAMP, "<!-- appdoc:template 2.7 -->")
+        self.assertEqual(spec.sections(spec.version_tuple(spec.TEMPLATE_VERSION)), spec.SECTIONS)
+        self.assertEqual(spec.generated_blocks(spec.version_tuple(spec.TEMPLATE_VERSION)), spec.GENERATED)
+        path = os.path.join(os.path.dirname(HERE), "appdoc", "assets", "template.md")
+        with open(path, encoding="utf-8") as fh:
+            text = fh.read()
+        self.assertEqual(spec.stamp_version(text), (2, 7))
+        self.assertEqual(text.splitlines()[1], spec.STAMP)
+        start = text.index("CONVENTIONS:")
+        conventions = text[start:text.index("-->", start)]
+        for phrase in ("all 17", "count marker", "notes.jsonl", "Known extractor limitation", "supersedes", "answered_in",
+                       "Section 17", "Unknown - see Open questions.", "Not applicable", "--expand-citations",
+                       "severity"):
+            self.assertIn(phrase, conventions, phrase)
+        self.assertEqual(text.count("<!-- appdoc:count"), 0)            # a comment inside a comment would end it early
+
+    def test_older_stamps_are_accepted_not_current(self):
+        """The 2.4 stamp (AppDoc 2.4 to 2.6) is accepted by a 2.7 tool; the 2.7 rules are previews for it."""
+        from appdoc import template_spec as spec
+        self.assertEqual(spec.OLDER_STAMPS, ("2.4",))
+        for stamp, want in (("2.7", True), ("2.4", True), ("2.3", False), ("2.2", False), ("2.8", False), ("", False)):
+            self.assertEqual(spec.stamp_accepted(stamp), want, stamp)
+        self.assertEqual(spec.stamp_version("# T\n<!-- appdoc:template 2.4 -->\n"), (2, 4))
+        self.assertEqual(spec.stamp_version("# T\n"), ())
+
     def test_no_string_version_compares(self):
         import re
         pkg = os.path.join(os.path.dirname(HERE), "appdoc")
@@ -780,13 +809,13 @@ class AuditPlanTests(unittest.TestCase):
 
     def write(self, n_f=1, n_r=1, stamp="2.7", extra=None, doc=None):
         from appdoc import template_spec as spec
-        from tests.test_check import SECTION_BODY
+        from tests.test_check import OLD_STAMP, SECTION_BODY
         body4 = SECTION_BODY[4].replace(
             "\n\n### 4.1", "".join(f"\n| F-{i} | Service | Run {i} | `app/main.py:2` | Does `app/main.py:2` things. | C-1 | Cited |"
                                     for i in range(2, n_f + 1)) + "\n\n### 4.1")
         body15 = SECTION_BODY[15].replace(
             "\n\n### 15.1", "".join(f"\n| R-{i} | High | S | Do thing {i} | V-1 |" for i in range(2, n_r + 1)) + "\n\n### 15.1")
-        text = (doc or self.build_doc({4: body4, 15: body15})).replace(spec.STAMP, f"<!-- appdoc:template {stamp} -->")
+        text = (doc or self.build_doc({4: body4, 15: body15})).replace(OLD_STAMP, f"<!-- appdoc:template {stamp} -->")
         with open(os.path.join(self.out, "application-documentation.md"), "w", encoding="utf-8", newline="\n") as fh:
             fh.write(text)
         if extra is not None:
@@ -894,17 +923,16 @@ class SealProvenanceTests(unittest.TestCase):
     """T27.04: `seal --audit --date` and the audit/upgrade provenance of sealed rows."""
 
     def setUp(self):
-        from tests.test_check import AUDIT, ROWS, build_doc
+        from tests.test_check import AUDIT, OLD_STAMP, ROWS, build_doc
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.target = os.path.join(self.tmp.name, "t")
         self.out = os.path.join(self.target, "docs", "appdoc")
         os.makedirs(self.out)
-        self.build_doc, self.AUDIT, self.ROWS = build_doc, AUDIT, ROWS
+        self.build_doc, self.AUDIT, self.ROWS, self.OLD_STAMP = build_doc, AUDIT, ROWS, OLD_STAMP
 
     def write(self, stamp="2.7", audit=None):
-        from appdoc import template_spec as spec
-        doc = self.build_doc().replace(spec.STAMP, f"<!-- appdoc:template {stamp} -->")
+        doc = self.build_doc().replace(self.OLD_STAMP, f"<!-- appdoc:template {stamp} -->")
         with open(os.path.join(self.out, "application-documentation.md"), "w", encoding="utf-8") as fh:
             fh.write(doc)
         lines = [json.dumps(audit or self.AUDIT)] + [json.dumps(r) for r in self.ROWS]

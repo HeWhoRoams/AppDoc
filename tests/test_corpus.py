@@ -365,13 +365,10 @@ class GateCases(CorpusCase):
 
 
 class RegisterHistory(CorpusCase):
-    """Template 2.7 documents (the running template is patched to 2.7 for the call)."""
+    """Template 2.7 documents (the running template since 2.7.0)."""
 
     def case27(self, name, **kw):
-        from unittest import mock
-        from appdoc import template_spec as spec
-        with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"):
-            return self.case(name, **kw)
+        return self.case(name, **kw)
 
     def test_superseded_row_keeps_history_and_passes(self):
         r = self.case27("superseded")
@@ -509,8 +506,22 @@ class RegisterHistory(CorpusCase):
         self.assertIn("notes.jsonl line 1: `main.py` is a bare name; the file is `app/main.py`", r.report)
 
     def test_scope_ids_is_only_a_preview_on_2_4(self):
-        r = self.case("scope-ids")        # stamped 2.7 on disk, checked against the running 2.4 template: C3 only
-        self.assertIn("C3", r.rules())
+        """The same Target stamped 2.4 (a document the running template still accepts) passes: the scope finding
+        is a preview that says it fails from template 2.7."""
+        r = self.case("scope-ids")
+        self.assertEqual(r.code, 2)                      # stamped 2.7 on disk: C17 fails
+        path = os.path.join(r.out, check.NARRATIVE)
+        with open(path, encoding="utf-8") as fh:
+            text = fh.read()
+        with open(path, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text.replace("<!-- appdoc:template 2.7 -->", "<!-- appdoc:template 2.4 -->"))
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = check.run(r.target, r.out)
+        with open(os.path.join(r.out, "check-report.md"), encoding="utf-8") as fh:
+            report = fh.read()
+        self.assertEqual(code, 0, report)
+        self.assertIn("Template 2.7 previews (advisory)", report)
+        self.assertIn("C17 line 1: evidence.jsonl line 1: the audit scope text holds an ID or a number", report)
 
 def _apply_pending():
     for cls in CorpusCase.__subclasses__():

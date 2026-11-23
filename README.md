@@ -106,7 +106,7 @@ Rules C1-C20. Each rule fails or is not reported; there is no score.
 |---|---|---|---|
 | C1 | Citations resolve | a Citation points to a missing file or a line past the end (folders and unique bare filenames resolve; extensionless non-existent spans are not Citations) | fails |
 | C2 | Security lines | a Citation in section 10 has no line | fails |
-| C3 | Sections complete | a section is missing, out of order, empty or a placeholder, or the document is not on the current template | fails |
+| C3 | Sections complete | a section is missing, out of order, empty or a placeholder, or the stamp is not the current template (or an older one still accepted) | fails |
 | C4 | Gaps declared | section 14 is empty while Unknowns exist, or Data and Integrations is empty though Facts exist | fails |
 | C5 | Claims grounded | a paragraph, list item or table row in sections 3 to 10 is neither cited, Inferred nor Unknown | fails |
 | C6 | No secrets | secret-shaped text, or a `never-mention` term, appears in a published file | fails |
