@@ -24,7 +24,7 @@ recorded that the gate could not run on a clean repository.
    - `3` AppDoc upgraded: the committed Facts schema differs from the running AppDoc's.
 2. **Order.** Read the committed `facts.json`; regenerate; compare schema (exit 3) before bytes
    (exit 2); only then run the Check. A version difference in `provenance.json` is printed and
-   never fails the gate (ADR 0013). Schema versions compare through `template_spec.version_tuple`.
+   never fails the gate (ADR 0013). The schema test is equality, not ordering: an older and a newer committed schema are both "AppDoc upgraded" (exit 3), so no version tuple is involved (`template_spec.version_tuple` is for template versions).
 3. **The workflow clones the skill to `$RUNNER_TEMP/appdoc-skill`** and runs
    `python "$RUNNER_TEMP/appdoc-skill/run_appdoc.py" gate "$GITHUB_WORKSPACE" --require-audit`. The
    skill is never inside the Target. The command is also correct when it is (a vendored copy is

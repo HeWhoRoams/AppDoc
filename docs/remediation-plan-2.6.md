@@ -100,8 +100,9 @@
 
 Add `template_spec.version_tuple(s) -> tuple[int, ...]` and use it for every version comparison:
 - the template gate (`check.py:717`: `doc_ver >= (2, 4)`, using the **document's** stamp);
-- C7 version skew;
-- the gate's schema comparison.
+- C7 version skew.
+
+The gate's schema comparison is **not** a version comparison: it tests equality, and an older and a newer committed schema are both "AppDoc upgraded" (exit 3), so it does not use `version_tuple` (review plan F9).
 
 `tests/test_core.py::test_no_string_version_compares` greps `appdoc/` for `>= "2.`/`<= "2.`; `::test_version_tuple`.
 
