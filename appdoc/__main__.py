@@ -46,6 +46,17 @@ def main(argv=None) -> int:
         sp = sub.add_parser(name)
         sp.add_argument("target", help="Target repository root")
         sp.add_argument("--out", help=f"output folder inside the target (default {DEFAULT_OUT})")
+        if name == "extract":
+            sp.add_argument("--workers", type=int, default=None,
+                            help="process-pool workers for extraction; default min(cpu,8); 0 = serial")
+            sp.add_argument("--skip-tests", action="store_true",
+                            help="prune test files (removes test-code Facts)")
+            sp.add_argument("--no-cache", action="store_true",
+                            help="disable the content-hash cache (cache is on by default)")
+            sp.add_argument("--no-ownership", action="store_true",
+                            help="skip git ownership Facts")
+            sp.add_argument("--ownership-top", type=int, default=None,
+                            help="cap ownership to the top-N top-level folders by file count")
         if name == "render":
             sp.add_argument("--css", help="CSS file replacing the default theme")
         if name == "check":
@@ -67,7 +78,10 @@ def main(argv=None) -> int:
     try:
         if args.cmd == "extract":
             from . import extract
-            for path in extract.write(args.target, out_dir):
+            for path in extract.write(args.target, out_dir, workers=args.workers,
+                                      skip_tests=args.skip_tests, use_cache=not args.no_cache,
+                                      no_ownership=args.no_ownership,
+                                      ownership_top=args.ownership_top):
                 print(f"wrote {path}")
             return 0
         if args.cmd == "fill":

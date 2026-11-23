@@ -14,6 +14,7 @@ from typing import Iterable
 from ..facts import Fact
 from ..secrets import find_secret_shapes, is_secret_key
 from .base import Stack, line_of, strip_comments
+from . import integrations
 
 STACK_ID = "java-spring"
 _BUILD = ("pom.xml", "build.gradle", "build.gradle.kts")
@@ -252,6 +253,7 @@ def _enclosing(classes: list[_Cls], pos: int):
 # ------------------------------------------------------------------ SQL helpers
 
 _SQL_OP = re.compile(r"^\s*(?:\(\s*)?(select|insert|update|delete|merge|with|from|truncate)\b", re.I)
+_AUTH_METHOD_RE = re.compile(r"\s*\.\s*(hasRole|hasAnyRole|hasAuthority|hasAnyAuthority|permitAll|authenticated|denyAll|access|hasIpAddress|anonymous|fullyAuthenticated|rememberMe)\s*\(")
 _STRONG_SQL = re.compile(
     r"(?is)^\s*(?:insert\s+(?:ignore\s+)?into\s+\w|delete\s+from\s+\w|update\s+[\w.$]+\s+set\s"
     r"|select\s.+\sfrom\s+[\w.$]+.*\b(?:where|join|order\s+by|group\s+by)\b)")
@@ -468,8 +470,7 @@ def _scan_java(path: str, text: str, clean: str | None = None) -> Iterable[Fact]
         close = _match_paren(clean, op)
         if close < 0:
             continue
-        r = re.compile(r"\s*\.\s*(hasRole|hasAnyRole|hasAuthority|hasAnyAuthority|permitAll|authenticated|denyAll|access|"
-                       r"hasIpAddress|anonymous|fullyAuthenticated|rememberMe)\s*\(").match(clean, close + 1)
+        r = _AUTH_METHOD_RE.match(clean, close + 1)
         if not r:
             continue
         rclose = _match_paren(clean, r.end() - 1)
@@ -883,11 +884,13 @@ class JavaSpring(Stack):
     def extract(self, path: str, text: str) -> Iterable[Fact]:
         low = path.lower()
         if low.endswith(".java"):
-            return list(_scan_java(path, text))
+            facts = list(_scan_java(path, text))
+            facts.extend(integrations.scan_facts("java", STACK_ID, path, _clean_java(text)))
+            return list(dict.fromkeys(facts))
         if low.endswith((".jsp", ".jspx")):
-            return list(_scan_jsp(path, text))
+            return list(dict.fromkeys(_scan_jsp(path, text)))
         if low.endswith(".xml") and low.rsplit("/", 1)[-1] != "pom.xml":
-            return list(_scan_xml(path, text))
+            return list(dict.fromkeys(_scan_xml(path, text)))
         return ()
 
 

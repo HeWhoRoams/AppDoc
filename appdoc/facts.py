@@ -109,6 +109,14 @@ class Fact:
             "detail": self.detail_dict(),
         }
 
+    @classmethod
+    def from_json(cls, d: dict) -> "Fact":
+        """Reconstruct a Fact from its ``to_json()`` dict. Exact round-trip:
+        ``from_json(f.to_json()) == f`` (detail collections come back as tuples, as in ``make``)."""
+        detail = tuple(sorted((k, (tuple(v) if isinstance(v, list) else v))
+                              for k, v in d["detail"].items()))
+        return cls(d["kind"], d["stack"], d["path"], d["line"], d["name"], detail)
+
 
 def fact_id(kind: str, pattern: str, path: str, line: int | None) -> str:
     """Stable 8-hex id for a Fact that other files refer to (smell/<id> in the register)."""

@@ -15,6 +15,7 @@ from ..secrets import is_secret_key
 from .aspnet import (STR, Ctx, _join_route, _safe, _strip_markup_comments, _unq, dotnet_common, error_messages,
                      find_classes, find_methods, first_string_arg)
 from .base import Stack, strip_comments
+from . import integrations
 
 STACK_ID = "aspnet-core"
 
@@ -522,6 +523,7 @@ class AspNetCoreStack(Stack):
             yield from _minimal_apis(path, ctx)
             yield from _data_and_calls(path, ctx)
             yield from _messages(path, ctx)
+            yield from integrations.scan_facts("dotnet", STACK_ID, path, strip_comments(text, "c"))
         elif ext in (".cshtml", ".razor"):
             clean = strip_comments(_strip_markup_comments(text), "c")
             if ext == ".cshtml":

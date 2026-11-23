@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Added — the integration picture (content Phases 6a + 6b)
+- **Widened the `connection.type` vocabulary** (an *additive convention* change — `KINDS` and `SCHEMA` in `facts.py` are unchanged). A shared catalog (`appdoc/stacks/integrations.py`) now detects the non-database system connections the per-stack extractors previously missed: `cache` (Redis/Memcached), `queue` (Kafka, RabbitMQ, SQS, pika, kombu, MassTransit, Confluent), `object_storage` (S3, Azure Blob, GCS), `grpc`, `ldap`, and `search` (Elasticsearch/OpenSearch), wired into the python, java, node and dotnet Stacks. Each yields a `connection` Fact with the correct `type`; `external_call.type` also accepts `grpc`.
+- **A `System Connections` view** (`appdoc/integration.py`): a deterministic post-pass (not the AI Narrative) that aggregates the raw `connection`/`external_call`/`dependency` Facts into a system-to-system summary — per-type distinct drivers, counts, file/line provenance, a compact integration map, and the manifest dependencies. Rendered near the top of the Facts summary, and (when a Narrative is present) of the HTML page. It is a pure function of the Facts, so it is byte-identical across runs.
+- Fixture `tests/samples/integrations/` plus `tests/test_integration_catalog.py` and `tests/test_integration_view.py`.
+
+> **Extraction changelog note:** Phases 6a/6b are **additive** and on by default (no flag). Existing Samples' `facts.json` is byte-identical to before; `facts.json` only changes for Targets that actually use the newly-detected integrations. This is a *content* change, not a silent change to the default output of existing codebases — documented here so it is not mistaken for a regression.
+
+### Changed — the cache key is now versioned (schema + extractor version)
+- The per-file content-hash cache key (`.appdoc-cache.json`) is salted with the Facts `SCHEMA` and a manually-bumped `EXTRACTOR_VERSION` constant (new in `appdoc/extract.py`). A cache written by an older AppDoc build is never served to a newer one, so a schema or extractor-logic change cleanly invalidates stale entries. Default (no-flag) `facts.json` is byte-identical to before — the version bytes are part of the *key*, not the output. Bump `EXTRACTOR_VERSION` whenever a stack/catalog regex or extraction logic changes.
+### Fixed — `smtp` is now in the integration view vocabulary
+- `smtp` (a Spring-XML mail-sender `connection`) is a canonical type in the view's `TYPE_ORDER`/`TYPE_LABEL` (rendered "Email (SMTP)"), so it groups with the canonical list instead of appearing as an orphan "Smtp" row sorted after it.
+
 ## 2.4.0
 
 Remediation release: fixes the five root causes found in the v2.3.0 comparative analysis (`docs/comparison-2.3/`). Plan: `docs/remediation-plan-rev2.md`. Decisions: ADR 0006 amendment (C2 per-claim, binary rule), ADR 0007 amendment (exact match, `claim_sha`), ADR 0010 (evidence-based classification, retired candidates).
@@ -130,6 +144,7 @@ Closes the structural gaps found by comparing four generated examples with the H
 ### Changed
 - SKILL.md: config-file citation precision, per-workflow failure lines, thin-section rules, and a resumable subsystem-by-subsystem workflow for large Targets.
 - Documents written for 2.0.0 fail C8 until the new subsections are added.
+
 ## 2.0.0
 
 AppDoc is rebuilt as a small, portable skill. See `docs/adr/0004-facts-plus-narrative.md`.

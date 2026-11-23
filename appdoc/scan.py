@@ -3,13 +3,17 @@
 from __future__ import annotations
 
 import fnmatch
+import mmap
 import os
 import re
 from dataclasses import dataclass
 
+from . import facts as F
+
 VCS_DIRS = {".git", ".svn", ".hg"}  # repository metadata: pruned and not counted as Target files
-ALWAYS_IGNORE_DIRS = VCS_DIRS | {".vs", ".idea", "__pycache__", ".venv", "venv", ".gradle", "node_modules"}
+ALWAYS_IGNORE_DIRS = VCS_DIRS | {".vs", ".idea", "__pycache__", ".venv", "venv", ".gradle", "node_modules", ".mvn"}
 MAX_BYTES = 2 * 1024 * 1024
+_MMAP_THRESHOLD = 1024 * 1024  # use mmap (and skip the in-memory read) above 1MiB
 # OS and authoring metadata (closed set, 1.4A.4): dropped in walk and counted, not scanned.
 OS_METADATA_FILES = {"desktop.ini", "thumbs.db", ".ds_store"}
 VTI_PREFIX = "_vti_"
@@ -76,7 +80,7 @@ def _count_files(path: str) -> int:
 class SourceFile:
     path: str          # Target-relative, forward slashes
     size: int
-    skipped: str | None  # None, "size" or "binary"
+    skipped: str | None  # None, "size", "binary" or "test"
     encoding: str | None
 
     @property
@@ -109,11 +113,14 @@ def _ignored(rel: str, patterns) -> bool:
     return False
 
 
-def walk(root: str, out_dir: str | None = None, stats: dict | None = None) -> list[SourceFile]:
+def walk(root: str, out_dir: str | None = None, stats: dict | None = None,
+         skip_tests: bool = False) -> list[SourceFile]:
     """Return every file under root in stable sorted order, with skip flags set.
 
-    When `stats` is given it receives `ignored` (files dropped by .appdocignore) and `pruned`
-    (one {path, rule, files} per pruned folder that held files; VCS metadata is not counted).
+    When `stats` is given it receives `ignored` (files dropped by .appdocignore), `pruned`
+    (one {path, rule, files} per pruned folder that held files; VCS metadata is not counted),
+    `metadata` and `retired_candidates`. With `skip_tests` a test file is flagged
+    ``skipped="test"`` (never read or extracted); the default (``skip_tests=False``) is unchanged.
     """
     root = os.path.abspath(root)
     out_abs = os.path.abspath(out_dir) if out_dir else None
@@ -164,6 +171,8 @@ def walk(root: str, out_dir: str | None = None, stats: dict | None = None) -> li
             encoding = None
             if size > MAX_BYTES:
                 skipped = "size"
+            elif skip_tests and F.is_test_path(rel):
+                skipped = "test"
             else:
                 try:
                     with open(full, "rb") as fh:
@@ -180,6 +189,36 @@ def walk(root: str, out_dir: str | None = None, stats: dict | None = None) -> li
         stats["metadata"] = metadata
         stats["retired_candidates"] = _retired_candidates(root, found)
     return found
+
+
+def read_bytes(root: str, rel: str) -> bytes:
+    """Read a file's raw bytes. Uses mmap for files above the 1MiB threshold."""
+    full = os.path.join(root, rel)
+    try:
+        size = os.path.getsize(full)
+    except OSError:
+        return b""  # file deleted between getsize and open (TOCTOU)
+    if size > _MMAP_THRESHOLD:
+        with open(full, "rb") as fh:
+            with mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ) as mm:
+                return mm[:]
+    with open(full, "rb") as fh:
+        return fh.read()
+
+
+def _decode(raw: bytes) -> tuple[str, str]:
+    """Decode raw bytes. Returns (text, encoding). Never raises on decoding."""
+    if raw.startswith(b"\xef\xbb\xbf"):
+        raw = raw[3:]
+    try:
+        return raw.decode("utf-8"), "utf-8"
+    except UnicodeDecodeError:
+        return raw.decode("cp1252", errors="replace"), "cp1252"
+
+
+def read_text(root: str, rel: str) -> tuple[str, str]:
+    """Read a file as text. Returns (text, encoding). Never raises on decoding."""
+    return _decode(read_bytes(root, rel))
 
 
 # Folders that look retired by name (1.4B): a whole token from this set, or "to be deleted".
@@ -247,15 +286,3 @@ def is_binary(full: str) -> bool:
             return b"\0" in fh.read(8192)
     except OSError:
         return False
-
-
-def read_text(root: str, rel: str) -> tuple[str, str]:
-    """Read a file as text. Returns (text, encoding). Never raises on decoding."""
-    with open(os.path.join(root, rel), "rb") as fh:
-        raw = fh.read()
-    if raw.startswith(b"\xef\xbb\xbf"):
-        raw = raw[3:]
-    try:
-        return raw.decode("utf-8"), "utf-8"
-    except UnicodeDecodeError:
-        return raw.decode("cp1252", errors="replace"), "cp1252"

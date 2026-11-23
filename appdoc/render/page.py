@@ -10,6 +10,7 @@ import re
 import sys
 
 from .markdown import render_markdown
+from ..integration import render_integration_view
 
 ASSETS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
 MD_NAME = "application-documentation.md"
@@ -42,6 +43,20 @@ def _toc(body: str) -> str:
 def _title(body: str, target_name: str) -> str:
     m = re.search(r'<h1 id="[^"]+">(.*?)</h1>', body, re.S)
     return html.unescape(re.sub(r"<[^>]+>", "", m.group(1))) if m else f"{target_name} documentation"
+
+
+def _integration_html(out_dir: str) -> str:
+    """Deterministic ``System Connections`` section as HTML, or ``""`` if there is nothing to show.
+
+    A pure function of ``facts.json`` (never fails): a missing/corrupt ``facts.json`` yields ``""``.
+    """
+    try:
+        with open(os.path.join(out_dir, "facts.json"), encoding="utf-8") as f:
+            doc = json.load(f)
+        view_md = render_integration_view(doc)
+    except (OSError, ValueError, TypeError, AttributeError):
+        return ""
+    return render_markdown(view_md) if view_md.strip() else ""
 
 
 def _footer(target_name: str, out_dir: str) -> str:
@@ -100,6 +115,10 @@ def run(target: str, out_dir: str, css: str | None) -> int:
         css_text = _read(css_path)
         shell = _read(os.path.join(ASSETS, "shell.html"))
         body = render_markdown(_read(md_path))
+        view_html = _integration_html(out_dir)
+        if view_html:
+            m = re.search(r"</h1>", body)
+            body = (body[:m.end()] + "\n" + view_html + body[m.end():]) if m else view_html + body
         script = ""
         if 'class="mermaid"' in body:
             lib = _read(os.path.join(ASSETS, "mermaid.min.js")).replace("</script", "<\\/script")

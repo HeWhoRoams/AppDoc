@@ -74,6 +74,8 @@ Folders are pruned on evidence, not by name alone: `bin`/`obj` only under a .NET
 
 Some code patterns are worth a second look but cannot be proved by a script. The extractor records them as `smell` Facts (a finding candidate), each with a stable id shown in `facts-summary.md` and `check-report.md`. Seven patterns exist: `logger-type-mismatch`, `flash-without-redirect`, `distinct-auth-errors`, `unescaped-template-output`, `state-change-on-get`, `actuator-exposed` and `hardcoded-credential-constant`. Credential values are never recorded. C12 requires each candidate to be cited in 10.1 or dismissed in the Evidence Register with a reason. The Check never judges whether the finding's wording is right. See `docs/adr/0008-finding-candidates.md`.
 
+`connection` Facts carry a `type` in `detail` — `database` plus the non-database integration vocabulary `cache`, `queue`, `object_storage`, `grpc`, `ldap`, `search` (detected by the shared catalog in `appdoc/stacks/integrations.py`), and `external_call` adds `grpc`. The Facts summary leads with a deterministic **System Connections** section (`appdoc/integration.py`) that groups these Facts by type into a system-to-system map — the integration picture, rendered near the top of the summary and the HTML page.
+
 ## The Check
 
 | Rule | Fails when |

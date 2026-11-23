@@ -15,3 +15,6 @@ tests/powershell/
 
 # Internal-app example — not for the public repo (Decision D5)
 examples/helpweb/
+
+# Content-hash cache written by `appdoc extract` (best-effort; never committed)
+.appdoc-cache.json

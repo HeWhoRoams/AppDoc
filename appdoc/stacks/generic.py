@@ -31,6 +31,25 @@ _APP_CONFIG_NAME = re.compile(
 # A locale suffix on a config file base: <base>_<ll> or <base>_<ll>_<CC>.
 _LOCALE_SUFFIX = re.compile(r"(?i)^(.*?)[_.-]([a-z]{2})([_.-][a-z]{2})?$")
 
+# Hoisted per-call regexes (compiled once at import) so extraction doesn't recompile them per file.
+_REQUIREMENTS_TXT_RE = re.compile(r"^requirements.*\.txt$")
+_GEM_RE = re.compile(r"(?m)^\s*gem\s+['\"]([^'\"]+)['\"](?:\s*,\s*['\"]([^'\"]+)['\"])?")
+_GOMOD_RE = re.compile(r"(?m)^\s*(?:require\s+)?([\w.\-/]+\.[\w.\-/]+)\s+(v[\w.\-+]+)\s*$")
+_JSON_COMMENT_RE = re.compile(r"(?m)^\s*//.*$")
+_PROPS_RE = re.compile(r"([^=:\s]+)\s*[=:]")
+_PROPS_URL_RE = re.compile(r"datasource\.url|jdbc[_.]url|\.url$", re.I)
+_PROPS_JDBC_RE = re.compile(r"jdbc|datasource", re.I)
+_YAML_RE = re.compile(r"^(\s*)([A-Za-z0-9_.\-]+)\s*:(.*)$")
+_DOTENV_RE = re.compile(r"^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=")
+_REQS_RE = re.compile(r"([A-Za-z0-9_.\-\[\]]+)\s*(?:(==|>=|<=|~=|>|<)\s*([\w.*+\-]+))?")
+_POM_DEP_RE = re.compile(r"<dependency>(.*?)</dependency>", re.S)
+_POM_GROUP_RE = re.compile(r"<groupId>\s*([^<\s]+)")
+_POM_ARTIFACT_RE = re.compile(r"<artifactId>\s*([^<\s]+)")
+_POM_VERSION_RE = re.compile(r"<version>\s*([^<\s]+)")
+_GRADLE_RE = re.compile(r"""(?m)^\s*(?:implementation|api|compile|runtimeOnly|testImplementation|compileOnly)\s*\(?\s*['"]([^'":]+:[^'":]+)(?::([^'"]+))?['"]""")
+_CSPROJ_RE = re.compile(r'<PackageReference\s+[^>]*Include="([^"]+)"(?:[^>]*Version="([^"]+))?', re.I)
+_PACKAGES_CONFIG_RE = re.compile(r'<package\s+[^>]*id="([^"]+)"[^>]*?(?:version="([^"]+))?', re.I)
+
 
 def _name(path: str) -> str:
     return path.rsplit("/", 1)[-1]
@@ -138,7 +157,7 @@ def extract(path: str, text: str, siblings: set[str] | None = None) -> Iterable[
         yield from _roled(path, _dotenv(path, text), siblings)
     elif low == "package.json":
         yield from _package_json(path, text)
-    elif re.match(r"^requirements.*\.txt$", low):
+    elif _REQUIREMENTS_TXT_RE.match(low):
         yield from _requirements(path, text)
     elif low == "pom.xml":
         yield from _pom(path, text)
@@ -149,10 +168,10 @@ def extract(path: str, text: str, siblings: set[str] | None = None) -> Iterable[
     elif low == "packages.config":
         yield from _packages_config(path, text)
     elif low == "gemfile":
-        for ln, m in iter_matches(re.compile(r"(?m)^\s*gem\s+['\"]([^'\"]+)['\"](?:\s*,\s*['\"]([^'\"]+)['\"])?"), text):
+        for ln, m in iter_matches(_GEM_RE, text):
             yield _dep(path, ln, m.group(1), m.group(2), "bundler")
     elif low == "go.mod":
-        for ln, m in iter_matches(re.compile(r"(?m)^\s*(?:require\s+)?([\w.\-/]+\.[\w.\-/]+)\s+(v[\w.\-+]+)\s*$"), text):
+        for ln, m in iter_matches(_GOMOD_RE, text):
             yield _dep(path, ln, m.group(1), m.group(2), "go")
     elif low == "composer.json":
         yield from _json_deps(path, text, ("require", "require-dev"), "composer")
@@ -282,7 +301,7 @@ def _json_key_lines(text: str) -> dict[str, int]:
 
 def _json_config(path, text):
     try:
-        data = json.loads(re.sub(r"(?m)^\s*//.*$", "", text))
+        data = json.loads(_JSON_COMMENT_RE.sub("", text))
     except ValueError:
         return
     located = _json_key_lines(text)
@@ -302,11 +321,11 @@ def _properties(path, text):
         s = raw.strip()
         if not s or s.startswith(("#", "!")):
             continue
-        m = re.match(r"([^=:\s]+)\s*[=:]", s)
+        m = _PROPS_RE.match(s)
         if not m:
             continue
         key = m.group(1)
-        if re.search(r"(?i)datasource\.url|jdbc[_.]url|\.url$", key) and re.search(r"(?i)jdbc|datasource", key):
+        if _PROPS_URL_RE.search(key) and _PROPS_JDBC_RE.search(key):
             yield _conn(path, i, key, "database", bool(find_secret_shapes(s)))
         yield _cfg(path, i, key, _name(path))
 
@@ -316,7 +335,7 @@ def _yaml(path, text):
     for i, raw in enumerate(text.splitlines(), 1):
         if not raw.strip() or raw.lstrip().startswith(("#", "-", "---")):
             continue
-        m = re.match(r"^(\s*)([A-Za-z0-9_.\-]+)\s*:(.*)$", raw)
+        m = _YAML_RE.match(raw)
         if not m:
             continue
         indent, key, rest = len(m.group(1)), m.group(2), m.group(3).strip()
@@ -329,7 +348,7 @@ def _yaml(path, text):
 
 def _dotenv(path, text):
     for i, raw in enumerate(text.splitlines(), 1):
-        m = re.match(r"^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=", raw)
+        m = _DOTENV_RE.match(raw)
         if m and not raw.lstrip().startswith("#"):
             yield _cfg(path, i, m.group(1), _name(path))
 
@@ -385,35 +404,34 @@ def _requirements(path, text):
         s = raw.split("#", 1)[0].strip()
         if not s or s.startswith("-"):
             continue
-        m = re.match(r"([A-Za-z0-9_.\-\[\]]+)\s*(?:(==|>=|<=|~=|>|<)\s*([\w.*+\-]+))?", s)
+        m = _REQS_RE.match(s)
         if m:
             yield _dep(path, i, m.group(1), (m.group(2) or "") + (m.group(3) or ""), "pip")
 
 
 def _pom(path, text):
     clean = strip_comments(text, "xml")
-    for m in re.finditer(r"<dependency>(.*?)</dependency>", clean, re.S):
-        g = re.search(r"<groupId>\s*([^<\s]+)", m.group(1))
-        a = re.search(r"<artifactId>\s*([^<\s]+)", m.group(1))
-        v = re.search(r"<version>\s*([^<\s]+)", m.group(1))
+    for m in _POM_DEP_RE.finditer(clean):
+        g = _POM_GROUP_RE.search(m.group(1))
+        a = _POM_ARTIFACT_RE.search(m.group(1))
+        v = _POM_VERSION_RE.search(m.group(1))
         if a:
             name = f"{g.group(1)}:{a.group(1)}" if g else a.group(1)
             yield _dep(path, line_of(clean, m.start()), name, v.group(1) if v else "", "maven")
 
 
 def _gradle(path, text):
-    rx = re.compile(r"""(?m)^\s*(?:implementation|api|compile|runtimeOnly|testImplementation|compileOnly)\s*\(?\s*['"]([^'":]+:[^'":]+)(?::([^'"]+))?['"]""")
-    for ln, m in iter_matches(rx, strip_comments(text, "c")):
+    for ln, m in iter_matches(_GRADLE_RE, strip_comments(text, "c")):
         yield _dep(path, ln, m.group(1), m.group(2), "gradle")
 
 
 def _csproj(path, text):
-    for ln, m in iter_matches(re.compile(r'<PackageReference\s+[^>]*Include="([^"]+)"(?:[^>]*Version="([^"]+)")?', re.I), text):
+    for ln, m in iter_matches(_CSPROJ_RE, text):
         yield _dep(path, ln, m.group(1), m.group(2), "nuget")
 
 
 def _packages_config(path, text):
-    for ln, m in iter_matches(re.compile(r'<package\s+[^>]*id="([^"]+)"[^>]*?(?:version="([^"]+)")?', re.I), text):
+    for ln, m in iter_matches(_PACKAGES_CONFIG_RE, text):
         yield _dep(path, ln, m.group(1), m.group(2), "nuget")
 
 
