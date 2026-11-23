@@ -81,7 +81,9 @@ RULES = (
     Rule("C16", "Universal claims cite single lines",
          "a universal claim (all, every, never) cites only single lines", ("advisory", "strict")),
     Rule("C17", "Audit scope names the method only",
-         "the audit record's scope text holds an ID or a digit (fails from template 2.7)", ("advisory",),
+         "the audit record's scope text holds an ID or a digit; with `--require-audit` the record lacks "
+         "`audited_on`, `audited_with`, `audited_bundle` or `doc_sha`, and with `--strict` a row was sealed at "
+         "upgrade (all fail from template 2.7)", ("advisory",),
          preview="the audit record's scope text holds an ID or a digit"),
     Rule("C20", "Citation precision",
          "a range over 100 lines is a claim's only lined Citation in section 4, 7 or 10, "
@@ -1082,6 +1084,22 @@ def _c17_scope(reg, add):
             "describe only the method; coverage is computed")
 
 
+def _c17_provenance(reg, require_audit, strict, add):
+    """C17, template 2.7: under --require-audit line 1 carries the audit provenance; with --strict no live row
+    was sealed at upgrade (its text was never re-audited). Callers gate this on the document's stamp."""
+    if reg is None or not reg.performed or not require_audit:
+        return
+    missing = [k for k in reg_mod.AUDIT_RECORD_KEYS if not (reg.audit or {}).get(k)]
+    if missing:
+        add("C17", 1, f"{REGISTER} line 1: the audit record lacks {', '.join(missing)}",
+            "run `appdoc seal --audit --date YYYY-MM-DD` when the audit is finished")
+    if strict:
+        for no, row in reg.live_rows():
+            if row.get("sealed_by") == "upgrade":
+                add("C17", no, f"{REGISTER} line {no}: {row['id']} was sealed at upgrade; its text was not re-audited",
+                    "audit the row, then run `appdoc seal --audit --date YYYY-MM-DD`")
+
+
 def coverage(heads, ids, reg, workflows) -> list[tuple[str, int, int]]:
     """(section, IDs with a register row, IDs) for every ID-bearing section, and workflows."""
     live = reg.live_rows()
@@ -1325,6 +1343,8 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
             add27("C1", c.doc_line, f"`{c.path}` is a bare name; the file is `{full_path}`",
                   f"cite the full path: `{full_path}" + ("" if c.start is None else f":{c.raw.rsplit(':', 1)[1]}") + "`")
         _c17_scope(reg, add27)
+        if doc_ver >= FAILS_FROM:
+            _c17_provenance(reg, require_audit, strict, add)
         reg_ids = {str(r["id"]) for _, r in reg.rows} if reg else None
         _c10_refs(lines, heads, ids, reg_ids, add)
         _c10_coverage(lines, heads, facts, add)

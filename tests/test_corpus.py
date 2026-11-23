@@ -414,6 +414,10 @@ class RegisterHistory(CorpusCase):
         self.assertNotIn("doc_sha", audit)
         self.assertEqual([x["sealed_by"] for x in rows], ["upgrade", "upgrade"])
         self.assertIn("2 rows were sealed at upgrade; their text was not re-audited.", r.narrative)
+        strict = self.case27("upgrade-seal", strict=True, require_audit=True)
+        self.assertEqual(strict.code, 2, strict.report)
+        self.assertIn("C17", strict.rules())
+        self.assertIn("E-1 was sealed at upgrade; its text was not re-audited", strict.report)
 
     def test_seal_audit_turns_the_rows_into_audited_ones(self):
         from unittest import mock

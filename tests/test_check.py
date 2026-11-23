@@ -377,6 +377,45 @@ class CheckTests(unittest.TestCase):
         self.write_register(AUDIT, [dict(ROWS[0], supersedes="E-1"), ROWS[1]])
         self.assertIn("supersedes form a cycle", self.run27()[1])
 
+    def _audited(self, **extra):
+        """A register whose line 1 carries the full audit provenance for the document under test."""
+        doc27 = build_doc().replace(spec.STAMP, "<!-- appdoc:template 2.7 -->")
+        rec = dict(AUDIT, audited_on="2026-11-23", audited_with="2.7.0", audited_bundle="0123456789ab",
+                   doc_sha=check.doc_sha(self.fill_doc(doc27)), **extra)
+        self.write_register(rec, ROWS)
+
+    def test_c17_require_audit_needs_provenance(self):
+        code, report, _ = self.run27(require_audit=True)           # line 1 has none of the four fields
+        self.assertEqual(code, 2, report)
+        self.assertIn("C17", self.rules(report))
+        self.assertIn("the audit record lacks audited_on, audited_with, audited_bundle, doc_sha", report)
+        self.assertIn("appdoc seal --audit --date YYYY-MM-DD", report)
+        self.write_register(dict(AUDIT, audited_on="2026-11-23", doc_sha="0" * 12), ROWS)
+        self.assertIn("lacks audited_with, audited_bundle.", self.run27(require_audit=True)[1])
+        self._audited()
+        code, report, _ = self.run27(require_audit=True)
+        self.assertEqual(code, 0, report)
+        # without --require-audit the fields are not demanded, and a 2.4 document is never asked for them
+        self.write_register(AUDIT, ROWS)
+        self.assertEqual(self.run27()[0], 0)
+        self.assertEqual(self.run_check(build_doc(), require_audit=True)[0], 0)
+
+    def test_c17_strict_fails_on_upgrade_seal(self):
+        self.write_register(dict(AUDIT, audited_on="2026-11-23", audited_with="2.7.0",
+                                 audited_bundle="0123456789ab", doc_sha="0" * 12), ROWS)   # a doc_sha for other text
+        code, report, _ = self.run27(require_audit=True, strict=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C17", self.rules(report))
+        self.assertIn("E-1 was sealed at upgrade; its text was not re-audited", report)
+        self.assertIn("E-2 was sealed at upgrade", report)
+        self.assertIn("appdoc seal --audit", report)
+        # not strict: the upgrade seal is reported in Appendix A, not failed
+        self.assertEqual(self.run27(require_audit=True)[0], 0)
+        # audited rows pass under strict
+        self._audited()
+        code, report, _ = self.run27(require_audit=True, strict=True)
+        self.assertEqual(code, 0, report)
+
     def test_c11_2_4_document_keeps_the_old_duplicate_message(self):
         self.write_register(AUDIT, ROWS + [self.SECOND_V1])
         code, report, _ = self.run_check(build_doc())
