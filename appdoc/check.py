@@ -73,7 +73,8 @@ RULES = (
     Rule("C10", "References resolve",
          "an ID is defined twice or referenced but not defined, or a reference between sections does not resolve"),
     Rule("C11", "Register valid",
-         "`evidence.jsonl` is missing, malformed or does not cover the document; an anchor is not in its cited lines"),
+         "`evidence.jsonl` is missing, malformed or does not cover the document; an anchor is not in its cited lines",
+         preview="an Answerable register row without `answered_in`, the section that answers the question"),
     Rule("C12", "Finding candidates addressed",
          "a finding candidate is neither cited in 10.1 nor Dismissed in the register"),
     Rule("C13", "Entry points not cited", "an entry point file is not cited anywhere in the document",
@@ -746,8 +747,7 @@ def seal_register(target, out_dir, audit: bool = False, date: str | None = None)
                         "audited_bundle": version.bundle_hash()[:version.BUNDLE_LEN], "doc_sha": fingerprint}
         sealed_by = "audit"
     else:
-        stamp = spec.STAMP_RE.search(raw)
-        if spec.version_tuple(stamp.group(1) if stamp else "") >= FAILS_FROM:
+        if spec.stamp_version(raw) >= FAILS_FROM:
             sealed_by = "audit" if (reg.audit or {}).get("doc_sha") == fingerprint else "upgrade"
     claim_shas: dict[str, str] = {}
     for _, row in reg.live_rows():   # a superseded row records history and is never sealed
@@ -937,6 +937,14 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
                 shown = ", ".join(str(c).strip("`") for c in row["cites"]) or "no citation recorded"
                 add("C11", no, f"{where}: {am.group(1)} can be closed from source ({shown}); "
                     "close it and remove the question", f"answer {am.group(1)} in the document, then delete it from section 14")
+            if live and add27:   # 2.7: the row says where the document answers the question
+                where_in = row.get("answered_in")
+                if not where_in:
+                    add27("C11", no, f"{where}: an Answerable row needs answered_in, the section that answers {am.group(1)}",
+                          'add "answered_in": "<section>" (for example 16.3)')
+                elif where_in not in heads:
+                    add27("C11", no, f"{where}: answered_in {where_in} names no section of the document",
+                          "name the section or subsection (for example 16.3) that answers the question")
         elif not m or m.group(1) not in heads:
             add("C11", no, f"{where}: ref '{row['ref']}' names no section or subsection",
                 "use a heading number such as 7.3, optionally with an ID: 10.1/V-2")
@@ -1416,7 +1424,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     # C3
     stamp = spec.STAMP_RE.search(raw)
     current = bool(stamp) and stamp.group(1) == spec.TEMPLATE_VERSION
-    doc_ver = spec.version_tuple(stamp.group(1) if stamp else "")
+    doc_ver = spec.stamp_version(raw)
     # The 2.7 rules are written once. Below the stamp gate they are printed as previews; from 2.7 they fail.
     add27 = add if doc_ver >= FAILS_FROM else (lambda rule, line, msg, fix: previews.append((rule, line, msg, fix)))
     if not current:

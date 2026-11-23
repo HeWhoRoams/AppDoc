@@ -361,6 +361,47 @@ class AppendixTests(unittest.TestCase):
         self.assertIn("A claim", out)
 
 
+class ClosedQuestionsTests(unittest.TestCase):
+    """The closed-questions block under section 14 (T27.23): which Answerable rows closed a question, and where."""
+
+    def render(self, *rows, notes=()):
+        audit = {"type": "audit", "performed": True, "auditor": "independent", "scope": "method"}
+        with tempfile.TemporaryDirectory() as tmp:
+            if rows is not None:
+                with open(os.path.join(tmp, "evidence.jsonl"), "w", encoding="utf-8") as fh:
+                    fh.write("\n".join(json.dumps(r) for r in (audit, *rows)) + "\n")
+            return fill.render_block("closed-questions", doc(), {"out_dir": tmp})
+
+    @staticmethod
+    def q(n, eid, answered_in="16.3", result="Answerable", **kw):
+        row = {"id": f"E-{eid}", "ref": f"14/Q-{n}", "claim": f"question {n}", "result": result,
+               "cites": ["a.py:1"], "anchor": "", "limitation": "", **kw}
+        if answered_in:
+            row["answered_in"] = answered_in
+        return row
+
+    def test_closed_questions_block(self):
+        none = "No questions were closed by the audit."
+        self.assertEqual(self.render(), none)                                    # a register without such rows
+        self.assertEqual(fill.render_block("closed-questions", doc()), none)     # and no register at all
+        out = self.render(self.q(11, 3), self.q(2, 4, "7.2"), self.q(5, 5, result="Supported"))
+        self.assertEqual(out, "Closed by the audit and answered in the body: Q-2 (7.2), Q-11 (16.3).")
+        # a superseded row is history; a row with no answered_in is listed without a section (C11 asks for it)
+        out = self.render(self.q(2, 3, "7.2"), self.q(2, 4, "7.3", supersedes="E-3"), self.q(9, 5, None))
+        self.assertEqual(out, "Closed by the audit and answered in the body: Q-2 (7.3), Q-9.")
+
+    def test_closed_questions_block_is_filled_and_idempotent(self):
+        text = "# T\n## 14. Open\n<!-- appdoc:generated closed-questions -->\n<!-- /appdoc:generated closed-questions -->\n"
+        audit = {"type": "audit", "performed": True, "auditor": "independent", "scope": "method"}
+        with tempfile.TemporaryDirectory() as tmp:
+            with open(os.path.join(tmp, "evidence.jsonl"), "w", encoding="utf-8") as fh:
+                fh.write(json.dumps(audit) + "\n" + json.dumps(self.q(3, 1)) + "\n")
+            once, filled = fill.fill_text(text, doc(), {"out_dir": tmp})
+            self.assertEqual(fill.fill_text(once, doc(), {"out_dir": tmp})[0], once)
+        self.assertEqual(filled, ["closed-questions"])
+        self.assertIn("Closed by the audit and answered in the body: Q-3 (16.3).", once)
+
+
 class NotesTests(unittest.TestCase):
     """docs/appdoc/notes.jsonl: limitations of a generated block live as data and `fill` renders them inside it."""
 

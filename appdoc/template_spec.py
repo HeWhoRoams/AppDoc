@@ -27,6 +27,12 @@ def version_tuple(s) -> tuple:
     return tuple(out)
 
 
+def stamp_version(text: str) -> tuple:
+    """The `version_tuple` of the `appdoc:template` stamp in a Narrative; () when there is none."""
+    m = STAMP_RE.search(text)
+    return version_tuple(m.group(1) if m else "")
+
+
 # A hand-written count the tool fills: <!-- appdoc:count V -->14<!-- /appdoc:count -->. The text between the
 # two comments is the filled number; doc_sha masks the whole marker so fill never changes the fingerprint.
 # Groups: 1 the opening comment, 2 the class, 3 the number, 4 the closing comment.

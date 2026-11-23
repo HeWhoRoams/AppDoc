@@ -286,11 +286,23 @@ def _appendix_a(doc: dict, ctx: dict | None = None) -> str:
     prov = version.provenance()
     return register.appendix_markdown(reg, doc, coverage, root=(ctx or {}).get("target"),
                                       blocks_by={"generator": prov["generator"], "bundle": prov["bundle"]}, plan=plan,
-                                      coverage_ids=detail)
+                                      coverage_ids=detail,
+                                      list_missing=spec.stamp_version(text or "") >= (2, 7))
+
+
+def _closed_questions(doc: dict, ctx: dict | None = None) -> str:
+    """The closed-questions block under section 14: the questions the audit closed (live Answerable rows) and the
+    section that answers each; a register with none, or no register, says so."""
+    reg = _register(ctx)
+    closed = reg.closed_questions() if reg is not None and reg.performed else []
+    if not closed:
+        return "No questions were closed by the audit."
+    return ("Closed by the audit and answered in the body: "
+            + ", ".join(f"Q-{n} ({where})" if where else f"Q-{n}" for n, where in closed) + ".")
 
 
 RENDERERS = {"scan-coverage": _scan_coverage, "entry-points": _entry_points, "config-reference": _config_reference,
-             "scheduled-jobs": _scheduled_jobs, "appendix-a": _appendix_a}
+             "scheduled-jobs": _scheduled_jobs, "closed-questions": _closed_questions, "appendix-a": _appendix_a}
 
 
 def generated_body(name: str, doc: dict, ctx: dict | None = None) -> str | None:

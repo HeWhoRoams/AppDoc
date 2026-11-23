@@ -186,10 +186,14 @@ an erDiagram when 8.4 has entities; a deployment diagram when config shows the t
 
 ## 14. Open Questions and Documentation Gaps
 <!-- appdoc:guide Every Unknown, one row each, IDs Q-1, Q-2, ... Owner is Unknown unless appdoc-context.md names one.
-Priority: High, Medium or Low. Must not be empty if Unknown appears anywhere else (C4). -->
+Priority: High, Medium or Low. Must not be empty if Unknown appears anywhere else (C4).
+The generated block below the table lists the questions the audit closed and where the body answers them; never edit it. An audit row that closes a question (`result` Answerable) names the section in `answered_in`. -->
 
 | ID | Question | Why it matters | How to close | Owner | Priority |
 |---|---|---|---|---|---|
+
+<!-- appdoc:generated closed-questions -->
+<!-- /appdoc:generated closed-questions -->
 
 ## 15. Recommendations
 <!-- appdoc:guide Prioritized actions. Addresses names the V-, Q- or 10.2 control it closes; every V-ID needs a row (C10).

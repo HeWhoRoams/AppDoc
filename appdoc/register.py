@@ -28,7 +28,7 @@ MAX_ANCHOR = 200
 _SINGLE_QUOTES = "'\u2018\u2019\u201a\u201b"      # PowerShell treats the curly ones as quotes too
 AUDITORS = ("independent", "same-session")
 ROW_KEYS = ("id", "ref", "claim", "result", "cites", "anchor", "limitation")
-OPTIONAL_KEYS = ("claim_sha", "supersedes", "sealed_by")
+OPTIONAL_KEYS = ("claim_sha", "supersedes", "sealed_by", "answered_in")
 SEALED_BY = ("audit", "upgrade")
 CLAIM_SHA_RE = re.compile(r"^[0-9a-f]{12}$")
 ID_RE = re.compile(r"^E-\d+$")
@@ -37,6 +37,7 @@ AUDIT_RECORD_KEYS = ("audited_on", "audited_with", "audited_bundle", "doc_sha") 
 REF_RE = re.compile(r"^(\d+(?:\.\d+)?)(?:/([A-Z]+-\d+))?$")
 SMELL_REF_RE = re.compile(r"^smell/([0-9a-f]{8})$")      # only with result Dismissed
 ANSWERABLE_REF_RE = re.compile(r"^14/(Q-\d+)$")         # only with result Answerable
+SECTION_RE = re.compile(r"^\d+(?:\.\d+)?$")                # an `answered_in` value: a section or subsection number
 
 
 class Register:
@@ -85,6 +86,20 @@ class Register:
             if ref.startswith("7."):
                 keys.add(ref.split("/")[0])
         return keys
+
+    def closed_questions(self) -> list[tuple[int, str | None]]:
+        """(Q number, answered_in or None) of every live Answerable row, in Q order: the questions the audit closed."""
+        out = {}
+        for _, row in self.live_rows():
+            m = ANSWERABLE_REF_RE.match(str(row.get("ref", "")))
+            if m and row.get("result") == "Answerable":
+                out[int(m.group(1)[2:])] = row.get("answered_in")
+        return sorted(out.items())
+
+    def missing_ids(self) -> list[str]:
+        """The E-ids below the highest one that no row carries (a row was deleted)."""
+        have = {int(str(r["id"])[2:]) for _, r in self.rows if ID_RE.match(str(r.get("id", "")))}
+        return [f"E-{n}" for n in range(1, max(have, default=0) + 1) if n not in have]
 
     def counts(self, rows=None) -> dict[str, int]:
         c = {r: 0 for r in RESULTS}
@@ -142,6 +157,9 @@ def parse(text: str) -> Register:
                     or not all(isinstance(i, str) and ID_RE.match(i) for i in ids)):
                 reg.errors.append((no, '"supersedes" must be an E-<n> id or a non-empty list of them'))
                 continue
+        if "answered_in" in obj and not (isinstance(obj["answered_in"], str) and SECTION_RE.match(obj["answered_in"])):
+            reg.errors.append((no, '"answered_in" must be a section number such as 16.3'))
+            continue
         if "sealed_by" in obj and obj["sealed_by"] not in SEALED_BY:
             reg.errors.append((no, f'"sealed_by" must be one of {", ".join(SEALED_BY)}'))
             continue
@@ -255,7 +273,7 @@ def _result_parts(c: dict) -> str:
     return ", ".join(f"{c[r]} {r}" for r in RESULTS if r in COUNTED_ALWAYS or c[r])
 
 
-def _coverage(reg: Register, coverage, plan=None) -> list[str]:
+def _coverage(reg: Register, coverage, plan=None, list_missing=False) -> list[str]:
     live = reg.live_rows()
     anchors = "Each Supported or Corrected row's anchor text was found in its cited lines by the Check."
     if len(live) == len(reg.rows):
@@ -265,6 +283,10 @@ def _coverage(reg: Register, coverage, plan=None) -> list[str]:
         out = [f"{plural(len(reg.rows), 'row')} ({len(reg.rows) - len(live)} superseded). "
                f"Current: {_result_parts(reg.counts(live))}. As first audited: {_result_parts(reg.counts(first))}. "
                f"{anchors}"]
+    gaps = reg.missing_ids() if list_missing else []
+    if gaps:
+        out += ["", f"Missing register id{'s' if len(gaps) != 1 else ''}: {', '.join(gaps)}. A row was deleted; "
+                    "restore it from git history and mark the row that replaces it with `supersedes`."]
     if coverage:
         out += ["", "| Section | IDs with a register row |", "|---|---|"]
         out += [f"| {_cell(sec)} | {hit} of {n} |" for sec, hit, n in coverage]
@@ -425,7 +447,7 @@ def _provenance_lines(reg: Register | None) -> list[str]:
 
 def appendix_markdown(reg: Register | None, facts: dict | None = None, coverage=None,
                       root: str | None = None, blocks_by: dict | None = None, plan: dict | None = None,
-                      coverage_ids=None) -> str:
+                      coverage_ids=None, list_missing: bool = False) -> str:
     """Body of Appendix A (the `appendix-a` generated block), computed from the register.
 
     reg is None when evidence.jsonl does not exist. coverage is check.coverage() output, or None to omit it.
@@ -434,11 +456,12 @@ def appendix_markdown(reg: Register | None, facts: dict | None = None, coverage=
     blocks_by is {"generator", "bundle"} of the running AppDoc; when given, A.1 says who wrote the blocks.
     coverage_ids is check.coverage_detail(...): A.1 prints the computed coverage line from it.
     plan is the audit plan (audit-plan.json); when given, A.2 shows planned / audited / extra per section.
+    list_missing (a template 2.7 document): A.2 names the E-ids no row carries.
     """
     out = ["### A.1 Audit state", "", *_audit_state(reg), *_blocks_lines(reg, blocks_by), *_provenance_lines(reg),
            *_scope_lines(reg, coverage_ids)]
     if reg is not None and reg.performed:
-        out += ["", "### A.2 Coverage", "", *_coverage(reg, coverage, plan),
+        out += ["", "### A.2 Coverage", "", *_coverage(reg, coverage, plan, list_missing),
                 "", "### A.3 Register", "", *_table(reg),
                 "", "### A.4 Verification commands", "", *_commands(reg, root)]
     return "\n".join(out)

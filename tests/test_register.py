@@ -394,12 +394,32 @@ class AppendixHistoryTests(unittest.TestCase):
         self.assertIn("**E-2**", a4)
 
 
+class MissingIdsTests(unittest.TestCase):
+    def test_a2_lists_missing_ids(self):
+        reg = reg_of(row(1), row(3, ref="7.1"), row(6, ref="7.2"))
+        a2 = block(appendix_markdown(reg, {}, list_missing=True), "A.2 Coverage")
+        self.assertIn("Missing register ids: E-2, E-4, E-5. A row was deleted; restore it from git history "
+                      "and mark the row that replaces it with `supersedes`.", a2)
+        self.assertIn("Missing register id: E-2.", block(
+            appendix_markdown(reg_of(row(1), row(3, ref="7.1")), {}, list_missing=True), "A.2 Coverage"))
+        # no gap, or the list not asked for (a template 2.4 document): nothing is added
+        self.assertNotIn("Missing", block(appendix_markdown(reg_of(row(1), row(2, ref="7.1")), {},
+                                                            list_missing=True), "A.2 Coverage"))
+        self.assertNotIn("Missing", block(appendix_markdown(reg, {}), "A.2 Coverage"))
+
+    def test_answered_in_is_a_section_ref(self):
+        ok = {**row(2, "Answerable", ref="14/Q-1"), "answered_in": "16.3"}
+        self.assertEqual(reg_of(ok).errors, [])
+        for bad in ("Q-1", "", 16, ["16.3"], "16.3.1"):
+            self.assertEqual(len(reg_of({**ok, "answered_in": bad}).errors), 1, bad)
+
+
 class SupersedesTests(unittest.TestCase):
     def test_supersedes_parsed(self):
         reg = reg_of(row(1), {**row(2), "supersedes": "E-1"}, {**row(3), "supersedes": ["E-1", "E-2"], "sealed_by": "audit"},
                      {**row(4), "sealed_by": "upgrade"})
         self.assertEqual(reg.errors, [])
-        self.assertEqual(register.OPTIONAL_KEYS, ("claim_sha", "supersedes", "sealed_by"))
+        self.assertEqual(register.OPTIONAL_KEYS, ("claim_sha", "supersedes", "sealed_by", "answered_in"))
         self.assertEqual(reg.supersedes_of(reg.rows[1][1]), ["E-1"])
         self.assertEqual(reg.supersedes_of(reg.rows[2][1]), ["E-1", "E-2"])
         self.assertEqual(reg.supersedes_of(reg.rows[0][1]), [])

@@ -1071,6 +1071,7 @@ class CheckTests(unittest.TestCase):
         self.assertRegex(text, r"(?m)^## 17\. Build, Run and Test Locally$")
         for step in spec.BUILD_STEPS:
             self.assertIn(f"| {step} | | | |", text)
+        self.assertIn("<!-- appdoc:generated closed-questions -->\n<!-- /appdoc:generated closed-questions -->", text)
 
     def test_section_17_is_not_asked_of_a_2_4_document(self):
         self.assertEqual(self.fired(build_doc()), set())     # no section 17, stamped with the running template
@@ -1348,6 +1349,42 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(self.fired(closed), set())
         counts = self.run_check(closed)[1]
         self.assertIn("3 rows: 2 Supported, 0 Corrected, 0 Downgraded, 1 Answerable.", counts)
+
+    def test_c11_answerable_needs_answered_in(self):
+        """From template 2.7 an Answerable row names the section that answers the question (`answered_in`)."""
+        closed = build_doc().replace("| Q-1 | Unknown: who deploys the service |", "| Q-2 | Unknown: who owns the service |")
+        self.write_register(AUDIT, ROWS + [self.ANSWER])
+        code, report, _ = self.run27(closed)
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C11"})
+        self.assertIn("an Answerable row needs answered_in, the section that answers Q-1. Fix: add "
+                      '"answered_in": "<section>" (for example 16.3)', report)
+        self.write_register(AUDIT, ROWS + [dict(self.ANSWER, answered_in="9.9")])
+        self.assertIn("answered_in 9.9 names no section of the document", self.run27(closed)[1])
+        self.write_register(AUDIT, ROWS + [dict(self.ANSWER, answered_in="16.3")])
+        self.assertEqual(self.run27(closed)[0], 0)
+        # the block under 14 says which question was closed and where, and C7 holds it to that
+        self.run27(closed)
+        with open(os.path.join(self.out, "application-documentation.md"), encoding="utf-8") as fh:
+            self.assertIn("Closed by the audit and answered in the body: Q-1 (16.3).", fh.read())
+        # a superseded Answerable row needs none, and on a 2.4 document the gap is only a preview
+        self.write_register(AUDIT, ROWS + [self.ANSWER, dict(self.ANSWER, id="E-4", ref="14/Q-1", supersedes="E-3",
+                                                             answered_in="16.3")])
+        self.assertEqual(self.run27(closed)[0], 0)
+        self.write_register(AUDIT, ROWS + [self.ANSWER])
+        code, report, _ = self.run_check(closed)
+        self.assertEqual(code, 0, report)
+        self.assertIn("answered_in", report.split(self.PREVIEW)[1])
+
+    def test_closed_questions_block_must_match_the_register(self):
+        closed = build_doc().replace("| Q-1 | Unknown: who deploys the service |", "| Q-2 | Unknown: who owns the service |")
+        self.write_register(AUDIT, ROWS + [dict(self.ANSWER, answered_in="16.3")])
+        doc = self.doc27(closed).replace("<!-- appdoc:generated closed-questions -->\n<!-- /appdoc:generated closed-questions -->",
+                                         "<!-- appdoc:generated closed-questions -->\nNo questions were closed by the audit.\n"
+                                         "<!-- /appdoc:generated closed-questions -->")
+        code, report, _ = self.run27(doc, filled=False)
+        self.assertEqual(code, 2, report)
+        self.assertIn("generated block 'closed-questions' differs from the Facts", report)
 
     def test_c11_result_and_ref_must_agree(self):
         self.with_facts(self.smell("aaaa0009", 9))

@@ -129,6 +129,7 @@ Previews of template 2.7 rules. On a template 2.4 document these are advisories,
 
 - C1: a bare file name (in the Narrative, a register row or a note) that resolves to a file in a folder: cite the full path
 - C9: a section 10.1 or 15 row that outranks the row before it (Critical, High, Medium, Low)
+- C11: an Answerable register row without `answered_in`, the section that answers the question
 - C15: a count marker holds a stale number or an unknown class
 - C17: the audit record's scope text holds an ID or a digit
 - C18: a note in `notes.jsonl` that does not match its block, or the reserved label written by hand
