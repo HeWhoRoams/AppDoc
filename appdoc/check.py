@@ -32,7 +32,7 @@ REPORT = "check-report.md"
 REGISTER = reg_mod.REGISTER
 
 
-SECTIONS = list(spec.SECTIONS)
+SECTIONS = list(spec.sections(spec.version_tuple(spec.TEMPLATE_VERSION)))   # the running template's sections
 REQUIRED_SUBSECTIONS = spec.REQUIRED_SUBSECTIONS
 
 
@@ -67,7 +67,8 @@ RULES = (
     Rule("C8", "Structure complete", "a required numbered subsection is missing, outside its section or empty"),
     Rule("C9", "Tables conform",
          "a table differs from the template (header, cell count, ID prefix, allowed value, required row), "
-         "the 5.3 Restriction line is missing, or a guidance comment remains",
+         "the 5.3 Restriction line is missing, a section 17 (2.7) Command cell is not a backticked command, Unknown or "
+         "Not applicable or lacks a lined Citation, or a guidance comment remains",
          preview="a section 10.1 or 15 row that outranks the row before it (Critical, High, Medium, Low)"),
     Rule("C10", "References resolve",
          "an ID is defined twice or referenced but not defined, or a reference between sections does not resolve"),
@@ -396,6 +397,37 @@ def _c9_tables(lines, raw, heads, add):
     for i, line in enumerate(raw.splitlines(), 1):
         if spec.GUIDE_RE.search(line):
             add("C9", i, "template guidance comment left in the document", "delete the appdoc:guide comment")
+
+
+# One or more backticked commands, joined by a comma, a semicolon, then, or or and (`npm ci`, then `npm start`).
+_BUILD_COMMAND_RE = re.compile(r"^`[^`\n]+`(?:\s*(?:[,;]\s*)?(?:\b(?:then|or|and)\b\s*)?`[^`\n]+`)*$")
+
+
+def _c9_build_rows(lines, heads, add):
+    """C9, section 17: the Command cell is a backticked command, `Unknown - see Open questions.` or `Not applicable`;
+    every row but an Unknown one cites its Evidence with a lined Citation (`path:line`)."""
+    h = heads.get("17")
+    t = dm.first_table(lines, h) if h else None
+    if t is None or not spec.TABLES["17"].header_ok([dm.cell_text(c) for c in t.header]):
+        return   # a missing table or a changed header is reported by the generic table rule
+    ts = spec.TABLES["17"]
+    cmd, ev = ts.columns.index("Command"), ts.columns.index("Evidence")
+    for no, cells in t.rows:
+        if not ts.row_fits(len(cells)):
+            continue
+        step = dm.cell_text(cells[0])
+        value = cells[cmd].strip()
+        if value == spec.BUILD_UNKNOWN:
+            continue
+        if value != spec.BUILD_NOT_APPLICABLE and not _BUILD_COMMAND_RE.match(value):
+            add("C9", no, f"17 {step}: the Command cell is not a backticked command, '{spec.BUILD_UNKNOWN}' "
+                f"or '{spec.BUILD_NOT_APPLICABLE}'",
+                f"write the command in backticks, or '{spec.BUILD_UNKNOWN}' when the repository does not show it, "
+                f"or '{spec.BUILD_NOT_APPLICABLE}' with the evidence cited")
+        elif not any(c.start is not None for c in find_citations(cells[ev])):
+            add("C9", no, f"17 {step}: a {'command' if value != spec.BUILD_NOT_APPLICABLE else 'Not applicable row'} "
+                "needs a Citation with a line in Evidence",
+                "cite where it is defined (`path:line`), or write the Command as Unknown")
 
 
 def defined_ids(lines, heads, add) -> dict[str, int]:
@@ -1393,7 +1425,8 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                       "structure rules C8-C13 were not run",
             f"upgrade it to the current template ({spec.UPGRADE_NOTES}) and keep `{spec.STAMP}`")
     found = [s["num"] for s in secs]
-    for n, title in enumerate(SECTIONS, 1):
+    doc_sections = spec.sections(doc_ver)
+    for n, title in enumerate(doc_sections, 1):
         s = by_num.get(n)
         if not s or not s["title"].lower().startswith(title.lower()):
             add("C3", s["start"] if s else 1, f"section {n} '{title}' is missing or renamed",
@@ -1402,7 +1435,8 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
             add("C3", s["start"], f"section {n} '{title}' has no content",
                 "fill it from the Facts file and source, or write Unknown - see Open questions")
     if found != sorted(found) or len(found) != len(set(found)):
-        add("C3", 1, "sections are out of order or duplicated", "keep sections 1-16 once each, in template order")
+        add("C3", 1, "sections are out of order or duplicated",
+            f"keep sections 1-{len(doc_sections)} once each, in template order")
 
     # C8
     for key, title in (REQUIRED_SUBSECTIONS.items() if current else ()):
@@ -1528,6 +1562,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         _c7_prose(lines, by_num, facts, add)
         _c7_blocks(raw, heads, facts, out_dir, target, add, doc_ver)
         _c9_tables(lines, raw, heads, add)
+        _c9_build_rows(lines, heads, add)
         ids = defined_ids(lines, heads, add)
         smell_fids = None if facts is None else {
             f["detail"].get("fid") for f in facts.get("facts", []) if f.get("kind") == "smell"}

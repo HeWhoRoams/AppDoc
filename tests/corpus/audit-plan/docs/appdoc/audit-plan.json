@@ -1,6 +1,6 @@
 {
  "advisories": [],
- "doc_sha": "da983ced17ef",
+ "doc_sha": "8f668ee6d31c",
  "floor": {
   "fraction": "0.25",
   "minimum": 5
@@ -56,7 +56,7 @@
    "items": [],
    "mode": "full",
    "section": "17",
-   "total": 0
+   "total": 5
   },
   {
    "ids": [

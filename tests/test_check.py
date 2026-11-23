@@ -81,6 +81,14 @@ SECTION_BODY = {
 APPENDIX = ("## Appendix A. Evidence Register and Verification\n\n"
             "<!-- appdoc:generated appendix-a -->\n<!-- /appdoc:generated appendix-a -->")
 
+SECTION_BODY[17] = (
+    "| Step | Command | Working directory | Evidence |\n|---|---|---|---|\n"
+    "| Prerequisites | Unknown - see Open questions. | . | not in the repository |\n"
+    "| Restore dependencies | Unknown - see Open questions. | . | not in the repository |\n"
+    "| Build | Unknown - see Open questions. | . | not in the repository |\n"
+    "| Run | Unknown - see Open questions. | . | not in the repository |\n"
+    "| Test | Unknown - see Open questions. | . | not in the repository |")
+
 AUDIT = {"type": "audit", "performed": True, "auditor": "independent", "scope": "an independent read of the cited source"}
 ROWS = [
     {"id": "E-1", "ref": "10.1/V-1", "claim": "A password is set in code", "result": "Supported",
@@ -317,19 +325,21 @@ class CheckTests(unittest.TestCase):
 
     # --- 2.7: superseded rows (append-only register)
 
-    def doc27(self, doc=None, cq=True):
+    def doc27(self, doc=None, cq=True, s17=True):
         doc = (doc or build_doc()).replace(spec.STAMP, "<!-- appdoc:template 2.7 -->")
+        if s17 and "\n## 17. " not in doc:
+            doc = doc.replace("\n## Appendix A.", f"\n## 17. {spec.SECTIONS[16]}\n\n{SECTION_BODY[17]}\n\n## Appendix A.", 1)
         if cq and "appdoc:generated closed-questions" not in doc:
             doc = doc.replace("\n## 15. ", "\n" + self.CQ.format("") + "\n\n## 15. ", 1)
         return doc
 
-    def run27(self, doc=None, cq=True, **kw):
+    def run27(self, doc=None, cq=True, s17=True, **kw):
         """Check a document stamped 2.7 (the running template patched to 2.7 for the call).
 
         A 2.7 document carries the closed-questions block under 14; `cq` adds empty markers when the test
         document has none (pass cq=False to check the document as given)."""
         from unittest import mock
-        doc = self.doc27(doc, cq)
+        doc = self.doc27(doc, cq, s17)
         with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"):
             self.run_check(doc, **kw)                        # seals the register (sealed_by is printed in A.1) ...
             return self.run_check(doc, seal=False, **kw)     # ... so fill again, as `build` does, and check
@@ -1034,6 +1044,81 @@ class CheckTests(unittest.TestCase):
 
     # --- template and upgrade fixtures
 
+    # --- section 17 (template 2.7)
+
+    def sec17(self, *rows, doc=None):
+        """A 2.7 document whose section 17 table holds these rows (`| Step | Command | Directory | Evidence |`)."""
+        head = "| Step | Command | Working directory | Evidence |\n|---|---|---|---|\n"
+        body = head + "\n".join(rows)
+        return re.sub(r"(?s)(\n## 17\. [^\n]*\n\n).*?(\n## Appendix A\.)",
+                      lambda m: m.group(1) + body + "\n" + m.group(2), self.doc27(doc), count=1)
+
+    def c9_messages(self, report):
+        part = report.split("## C9 ")[1].split("\n## ")[0] if "## C9 " in report else ""
+        return [l for l in part.splitlines() if l.startswith("- ")]
+
+    def test_template_2_7_sections(self):
+        self.assertEqual(len(spec.sections((2, 7))), 17)
+        self.assertEqual(spec.sections((2, 7))[16], "Build, Run and Test Locally")
+        self.assertEqual(spec.sections((2, 6)), spec.SECTIONS[:16])
+        self.assertEqual(spec.sections(()), spec.SECTIONS[:16])
+        self.assertEqual(spec.TABLES["17"].columns, ("Step", "Command", "Working directory", "Evidence"))
+        self.assertEqual(spec.TABLES["17"].required_rows,
+                         ("Prerequisites", "Restore dependencies", "Build", "Run", "Test"))
+        path = os.path.join(os.path.dirname(check.__file__), "assets", "template.md")
+        with open(path, encoding="utf-8") as fh:
+            text = fh.read()
+        self.assertRegex(text, r"(?m)^## 17\. Build, Run and Test Locally$")
+        for step in spec.BUILD_STEPS:
+            self.assertIn(f"| {step} | | | |", text)
+
+    def test_section_17_is_not_asked_of_a_2_4_document(self):
+        self.assertEqual(self.fired(build_doc()), set())     # no section 17, stamped with the running template
+
+    def test_c3_a_2_7_document_needs_section_17(self):
+        doc = re.sub(r"(?s)\n## 17\. .*?(\n## Appendix A\.)", r"\1", self.doc27())
+        code, report, _ = self.run27(doc, s17=False)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C3", self.rules(report))
+        self.assertIn("section 17 'Build, Run and Test Locally' is missing or renamed", report)
+
+    def test_c9_section_17_rows(self):
+        code, report, _ = self.run27()
+        self.assertEqual(code, 0, report)
+        steps = ("Prerequisites", "Restore dependencies", "Build", "Run", "Test")
+        ok = [f"| {s} | Unknown - see Open questions. | . | not in the repository |" for s in steps]
+        self.assertEqual(self.run27(self.sec17(*ok))[0], 0)
+        # a missing row
+        code, report, _ = self.run27(self.sec17(*ok[:3], ok[4]))
+        self.assertEqual(code, 2, report)
+        self.assertIn("17 has no 'Run' row", "\n".join(self.c9_messages(report)))
+        # a command must be backticked
+        bad = ok[:3] + ["| Run | python app/main.py | . | `app/main.py:2` |"] + ok[4:]
+        code, report, _ = self.run27(self.sec17(*bad))
+        self.assertEqual(code, 2, report)
+        self.assertIn("17 Run: the Command cell is not a backticked command, 'Unknown - see Open questions.' or "
+                      "'Not applicable'", report)
+        # a command needs a lined Citation; a Citation without a line does not do
+        for ev in ("", "`app/main.py`", "see the README"):
+            row = ok[:3] + [f"| Run | `python app/main.py` | . | {ev} |"] + ok[4:]
+            code, report, _ = self.run27(self.sec17(*row))
+            self.assertEqual(code, 2, (ev, report))
+            self.assertIn("17 Run: a command needs a Citation with a line in Evidence", report)
+        # several commands in one cell, an Unknown with a Q in 14 and a free Working directory pass
+        row = ok[:3] + ["| Run | `npm ci`, then `npm start` | `app/` | `app/main.py:2` |"] + ok[4:]
+        self.assertEqual(self.run27(self.sec17(*row))[0], 0)
+
+    def test_c9_17_not_applicable_needs_citation(self):
+        ok = [f"| {s} | Unknown - see Open questions. | . | not in the repository |" for s in spec.BUILD_STEPS]
+        na = ok[:1] + ["| Restore dependencies | Not applicable | . | no dependency file |"] + ok[2:]
+        code, report, _ = self.run27(self.sec17(*na))
+        self.assertEqual(code, 2, report)
+        self.assertIn("17 Restore dependencies: a Not applicable row needs a Citation with a line in Evidence", report)
+        na[1] = "| Restore dependencies | Not applicable | . | no dependency file in `app/main.py:1` |"
+        self.assertEqual(self.run27(self.sec17(*na))[0], 0)
+        # an Unknown row needs none
+        self.assertEqual(self.run27(self.sec17(*ok))[0], 0)
+
     def test_template_matches_spec(self):
         from appdoc import docmodel as dm
         path = os.path.join(os.path.dirname(check.__file__), "assets", "template.md")
@@ -1041,8 +1126,8 @@ class CheckTests(unittest.TestCase):
             text = fh.read()
         self.assertIn(spec.STAMP, text)
         heads = re.findall(r"^## (\d+)\. (.+)$", text, re.M)
-        self.assertEqual([int(n) for n, _ in heads], list(range(1, 17)))
-        for (_, t), want in zip(heads, check.SECTIONS):
+        self.assertEqual([int(n) for n, _ in heads], list(range(1, 18)))
+        for (_, t), want in zip(heads, spec.SECTIONS):
             self.assertTrue(t.startswith(want))
         for key, title in check.REQUIRED_SUBSECTIONS.items():
             self.assertRegex(text, rf"(?m)^### {re.escape(key)} {re.escape(title)}$")

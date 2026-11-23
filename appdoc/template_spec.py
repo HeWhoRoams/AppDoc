@@ -63,6 +63,9 @@ EFFORT = ("S", "M", "L")
 CONTROL_STATUS = ("Verified absent", "Not established", "Present")
 CONTROL_STATUS_PRESENT = "Present"
 RUNBOOK_STEPS = ("Build", "Test", "Deploy", "Upgrade", "Rollback", "Backup", "Restore", "Secret rotation")
+BUILD_STEPS = ("Prerequisites", "Restore dependencies", "Build", "Run", "Test")   # section 17, in order
+BUILD_UNKNOWN = "Unknown - see Open questions."   # the 17 Command cell values that are not a command
+BUILD_NOT_APPLICABLE = "Not applicable"
 OWNERSHIP_ROWS = ("Business owner", "Technical owner", "Process owner", "Data and integration owners",
                   "Documentation owner", "Release and change process")
 
@@ -71,8 +74,16 @@ SECTIONS = (
     "Roles and Access Model", "UI Catalog", "Workflows", "Data and Integrations",
     "Troubleshooting Matrix", "Security and Operational Risks", "Ownership and Maintenance",
     "Architecture and Data-Flow Diagrams", "Glossary", "Open Questions and Documentation Gaps",
-    "Recommendations", "Operations Runbook",
+    "Recommendations", "Operations Runbook", "Build, Run and Test Locally",
 )
+# A section a template added after 2.4: its number -> the first template version that carries it. An older
+# document is not asked for it.
+SECTIONS_SINCE = {17: (2, 7)}
+
+
+def sections(version: tuple) -> tuple:
+    """The section titles a document of this template version (a `version_tuple`) must carry, in order."""
+    return tuple(t for n, t in enumerate(SECTIONS, 1) if version >= SECTIONS_SINCE.get(n, ()))
 
 REQUIRED_SUBSECTIONS = {
     "4.1": "Subsystem inventory",
@@ -132,7 +143,9 @@ TABLES = {
     "16.4": Table(("Failure mode", "Signal", "Operator response")),
     "16.5": Table(("Step", "Procedure", "Evidence"), required_rows=RUNBOOK_STEPS),
     "16.6": Table(("Key", "Defined at", "Secret location")),
+    "17": Table(("Step", "Command", "Working directory", "Evidence"), required_rows=BUILD_STEPS),
 }
+TABLES_SINCE = {"17": (2, 7)}   # a table of a section a later template added (see SECTIONS_SINCE)
 
 # Generated blocks: `appdoc fill` writes them from facts.json; the Check fails if they differ.
 # The key is the section it sits in; "appendix" is the unnumbered Appendix A heading.

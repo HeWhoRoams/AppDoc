@@ -112,7 +112,7 @@ Rules C1-C20. Each rule fails or is not reported; there is no score.
 | C6 | No secrets | secret-shaped text, or a `never-mention` term, appears in a published file | fails |
 | C7 | Coverage honest | an unsupported Stack is not named in section 2; a count or a generated block differs from the Facts; facts.json was written by another major.minor of AppDoc | part fails only under `--strict` |
 | C8 | Structure complete | a required numbered subsection is missing, outside its section or empty | fails |
-| C9 | Tables conform | a table differs from the template (header, cell count, ID prefix, allowed value, required row), the 5.3 Restriction line is missing, or a guidance comment remains | fails |
+| C9 | Tables conform | a table differs from the template (header, cell count, ID prefix, allowed value, required row), the 5.3 Restriction line is missing, a section 17 (2.7) Command cell is not a backticked command, Unknown or Not applicable or lacks a lined Citation, or a guidance comment remains | fails |
 | C10 | References resolve | an ID is defined twice or referenced but not defined, or a reference between sections does not resolve | fails |
 | C11 | Register valid | `evidence.jsonl` is missing, malformed or does not cover the document; an anchor is not in its cited lines | fails |
 | C12 | Finding candidates addressed | a finding candidate is neither cited in 10.1 nor Dismissed in the register | fails |

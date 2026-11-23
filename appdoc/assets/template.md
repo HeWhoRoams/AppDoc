@@ -238,6 +238,18 @@ Attribute each to the job, script or command that does it, cited; Unknown if the
 <!-- appdoc:generated scheduled-jobs -->
 <!-- /appdoc:generated scheduled-jobs -->
 
+## 17. Build, Run and Test Locally
+<!-- appdoc:guide Fed by: build files, runtime pins, README, CI steps. Every command is cited where it is defined (a Citation with a line in Evidence).
+All five rows are required (C9). Command is one of: a backticked command; `Unknown - see Open questions.` (the repository does not show it; also add a row to section 14); `Not applicable` (cite the evidence, for example the file that shows there is nothing to build). Working directory is the folder the command runs in, relative to the Target (`.` for the root). -->
+
+| Step | Command | Working directory | Evidence |
+|---|---|---|---|
+| Prerequisites | | | |
+| Restore dependencies | | | |
+| Build | | | |
+| Run | | | |
+| Test | | | |
+
 ## Appendix A. Evidence Register and Verification
 <!-- appdoc:guide Generated from evidence.jsonl (the source-to-claim audit). Do not edit it: write the register, then run `appdoc fill`. -->
 

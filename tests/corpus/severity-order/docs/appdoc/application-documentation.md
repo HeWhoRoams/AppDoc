@@ -209,6 +209,16 @@ flowchart LR
 <!-- appdoc:generated scheduled-jobs -->
 <!-- /appdoc:generated scheduled-jobs -->
 
+## 17. Build, Run and Test Locally
+
+| Step | Command | Working directory | Evidence |
+|---|---|---|---|
+| Prerequisites | Unknown - see Open questions. | . | not in the repository |
+| Restore dependencies | Unknown - see Open questions. | . | not in the repository |
+| Build | Unknown - see Open questions. | . | not in the repository |
+| Run | Unknown - see Open questions. | . | not in the repository |
+| Test | Unknown - see Open questions. | . | not in the repository |
+
 ## Appendix A. Evidence Register and Verification
 
 <!-- appdoc:generated appendix-a -->
