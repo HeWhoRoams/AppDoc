@@ -80,7 +80,7 @@ SECTION_BODY = {
 APPENDIX = ("## Appendix A. Evidence Register and Verification\n\n"
             "<!-- appdoc:generated appendix-a -->\n<!-- /appdoc:generated appendix-a -->")
 
-AUDIT = {"type": "audit", "performed": True, "auditor": "independent", "scope": "sections 3-10"}
+AUDIT = {"type": "audit", "performed": True, "auditor": "independent", "scope": "an independent read of the cited source"}
 ROWS = [
     {"id": "E-1", "ref": "10.1/V-1", "claim": "A password is set in code", "result": "Supported",
      "cites": ["app/main.py:6"], "anchor": "line 6", "limitation": "value not shown"},
@@ -1019,6 +1019,172 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(code, 0, report)
         self.assertNotIn("Universal claims cite single lines", report)
         self.assertNotIn("universal claim", out)
+
+    # --- C20: citation precision (advisory; fails under --strict)
+
+    def _big(self, n=200):
+        with open(os.path.join(self.target, "app", "big.py"), "w") as fh:
+            fh.write("\n".join(f"line {i}" for i in range(1, n + 1)) + "\n")
+
+    def _wide_doc(self, cite, section=7):
+        bodies = {
+            7: "### 7.1 Start the service\n1. Operators launch the entry point in `%s` and wait.\n"
+               "2. Failure and escalation: restart once, as `app/main.py:2` exits on error." % cite,
+            3: "- The entry module wires the handlers in `%s`.\n" % cite,
+            10: SECTION_BODY[10].replace("`app/main.py:6`; value omitted.", "`%s`; value omitted." % cite),
+            4: SECTION_BODY[4].replace("| `app/main.py:2` | The `run` entry point lives in `app/main.py:2` and starts",
+                                       "| run | The `run` entry point lives in `%s` and starts" % cite),
+        }
+        return build_doc({section: bodies[section]})
+
+    def test_c20_constants(self):
+        self.assertEqual((check.WIDE_RANGE, check.CELL_CITES), (100, 5))
+        self.assertEqual(check.RULE_TITLES["C20"], "Citation precision")
+
+    def test_c20_wide_range_is_an_advisory(self):
+        self._big()
+        code, report, out = self.run_check(self._wide_doc("app/big.py:1-150"))
+        self.assertEqual(code, 0, report)
+        self.assertEqual(report.splitlines()[0], "# Check: PASS")
+        self.assertIn("## Citation precision (advisory)", report)
+        self.assertIn("app/big.py:1-150", report.split("## Citation precision (advisory)")[1])
+        self.assertNotIn("C20", self.rules(report))
+        self.assertIn("Advisory: 1 wide range", out)
+
+    def test_c20_range_threshold_is_over_100_lines(self):
+        self._big()
+        for cite, flagged in (("app/big.py:1-100", False), ("app/big.py:50-150", True),
+                              ("app/big.py:1-101", True), ("app/big.py:7", False)):
+            report = self.run_check(self._wide_doc(cite))[1]
+            self.assertEqual("## Citation precision (advisory)" in report, flagged, cite)
+
+    def test_c20_applies_to_sections_4_7_and_10_only(self):
+        self._big()
+        for section, flagged in ((3, False), (4, True), (7, True), (10, True)):
+            report = self.run_check(self._wide_doc("app/big.py:1-150", section))[1]
+            self.assertEqual("## Citation precision (advisory)" in report, flagged, section)
+
+    def test_c20_a_second_lined_citation_covers_the_claim(self):
+        self._big()
+        doc = self._wide_doc("app/big.py:1-150").replace(
+            "launch the entry point in", "launch the entry point (see `app/main.py:2`) in")
+        self.assertNotIn("Citation precision", self.run_check(doc)[1])
+
+    def test_c20_generated_blocks_are_not_flagged(self):
+        self._big()
+        self.with_facts(self.entry("app/big.py", line=1))
+        report = self.run_check(build_doc())[1]
+        self.assertNotIn("Citation precision", report)
+
+    def test_c20_fails_under_strict(self):
+        self._big()
+        code, report, _ = self.run_check(self._wide_doc("app/big.py:1-150"), strict=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C20", self.rules(report))
+        self.assertNotIn("(advisory)", report.split("## Citation register")[0].split("C20")[0])
+
+    def test_c20_cell_with_more_than_five_citations(self):
+        cites = lambda n: ", ".join(f"`app/main.py:{i}`" for i in range(1, n + 1))
+        for n, flagged in ((5, False), (6, True)):
+            doc = build_doc({4: SECTION_BODY[4].replace("| C-1 | Cited |\n\n### 4.1",
+                                                        f"| C-1, {cites(n)} | Cited |\n\n### 4.1")})
+            report = self.run_check(doc)[1]
+            self.assertEqual("## Citation precision (advisory)" in report, flagged, n)
+        self.assertIn("cites 6 sources", report)
+        doc = build_doc({10: SECTION_BODY[10].replace("`app/main.py:6`; value omitted.", cites(6))})
+        self.assertIn("## Citation precision (advisory)", self.run_check(doc)[1])
+
+    def test_c20_cell_limit_does_not_apply_to_other_sections(self):
+        cites = ", ".join(f"`app/main.py:{i}`" for i in range(1, 8))
+        doc = build_doc({9: SECTION_BODY[9].replace("Look at `app/main.py:2`", f"Look at {cites}")})
+        self.assertNotIn("Citation precision", self.run_check(doc)[1])
+
+    def test_c20_cell_fails_under_strict(self):
+        cites = ", ".join(f"`app/main.py:{i}`" for i in range(1, 7))
+        doc = build_doc({10: SECTION_BODY[10].replace("`app/main.py:6`; value omitted.", cites)})
+        code, report, _ = self.run_check(doc, strict=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C20", self.rules(report))
+
+    # --- previews of template 2.7 rules (advisory, never a failure on 2.4)
+
+    PREVIEW = "## Template 2.7 previews (advisory)"
+
+    def _sev_doc(self):
+        return build_doc({15: SECTION_BODY[15].replace(
+            "| R-1 | High | S |", "| R-0 | Low | S | Tidy the module | V-1 |\n| R-1 | High | S |")})
+
+    def test_preview_c9_severity_order(self):
+        code, report, out = self.run_check(self._sev_doc())
+        self.assertEqual(code, 0, report)
+        part = report.split(self.PREVIEW)[1]
+        self.assertIn("C9", part)
+        self.assertIn("R-1", part)
+        self.assertIn("fails from template 2.7", part)
+        self.assertIn("move the row; keep its ID", part)
+        self.assertNotIn("C9", self.rules(report))
+        self.assertIn("fail from template 2.7", out)
+
+    def test_preview_c9_10_1_severity_order(self):
+        doc = build_doc({10: SECTION_BODY[10].replace(
+            "| V-1 | High |", "| V-1 | Low |").replace(
+            "\n\n### 10.2", "\n| V-2 | High | Another | `app/main.py:6` | Exposure |\n\n### 10.2")})
+        rows = [ROWS[0], ROWS[1], dict(ROWS[0], id="E-3", ref="10.1/V-2")]
+        self.write_register(AUDIT, rows)
+        doc = doc.replace("| V-1, TLS |", "| V-1, V-2, TLS |")
+        code, report, _ = self.run_check(doc)
+        self.assertIn("V-2", report.split(self.PREVIEW)[1])
+        self.assertNotIn("C9", self.rules(report))
+
+    def test_preview_in_order_clean_document_has_no_preview_section(self):
+        self.write_register(dict(AUDIT, scope="the cited source"), ROWS)
+        self.assertNotIn(self.PREVIEW, self.run_check(build_doc())[1])
+
+    def test_preview_c1_bare_name_prints_the_full_path(self):
+        doc = build_doc().replace("`app/main.py:5` for visitors", "`main.py:5` for visitors")
+        code, report, _ = self.run_check(doc)
+        self.assertEqual(code, 0, report)
+        part = report.split(self.PREVIEW)[1]
+        self.assertIn("C1", part)
+        self.assertIn("`main.py` is a bare name", part)
+        self.assertIn("`app/main.py`", part)
+        self.assertIn("fails from template 2.7", part)
+        self.assertNotIn("C1", self.rules(report))
+
+    def test_preview_c1_root_and_known_bare_files_are_allowed(self):
+        with open(os.path.join(self.target, "app", "Procfile"), "w") as fh:
+            fh.write("web: run\n")
+        doc = build_doc().replace("`app/main.py:5` for visitors", "`Procfile` and `appdoc-context.md:1` for visitors")
+        report = self.run_check(doc)[1]
+        self.assertNotIn("bare name", report)
+
+    def test_preview_c17_scope_with_ids_or_digits(self):
+        for scope, flagged in (("sections 3-10", True), ("covers E-4 only", True),
+                               ("an independent read of the cited source", False)):
+            self.write_register(dict(AUDIT, scope=scope), ROWS)
+            report = self.run_check(build_doc())[1]
+            self.assertEqual(self.PREVIEW in report and "C17" in report.split(self.PREVIEW)[1], flagged, scope)
+            if flagged:
+                self.assertIn("describe only the method; coverage is computed", report)
+                self.assertIn("fails from template 2.7", report)
+
+    def test_previews_never_fail_a_2_4_document_even_under_strict(self):
+        doc = self._sev_doc().replace("`app/main.py:5` for visitors", "`main.py:5` for visitors")
+        self.write_register(dict(AUDIT, scope="sections 3-10"), ROWS)
+        code, report, _ = self.run_check(doc, strict=True)
+        self.assertEqual(code, 0, report)
+        part = report.split(self.PREVIEW)[1]
+        for rule in ("C1", "C9", "C17"):
+            self.assertIn(rule, part)
+
+    def test_previews_are_enforced_when_the_stamp_is_2_7(self):
+        from unittest import mock
+        doc = self._sev_doc().replace(spec.STAMP, "<!-- appdoc:template 2.7 -->")
+        with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"):
+            code, report, _ = self.run_check(doc)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C9", self.rules(report))
+        self.assertNotIn(self.PREVIEW, report)
 
     def _bad_result_report(self):
         self.write_register(AUDIT, [ROWS[0], dict(ROWS[1], result="Fine")])

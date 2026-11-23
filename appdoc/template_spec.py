@@ -43,6 +43,7 @@ CONFIG_EFFECT_COLUMNS = ("Key", "Effect", "Evidence")
 
 STATUS = ("Cited", "Inferred", "Unknown")
 SEVERITY = ("Critical", "High", "Medium", "Low")
+SEVERITY_ORDER = SEVERITY  # most severe first; a 10.1 or 15 row may not outrank the row above it
 PRIORITY = ("High", "Medium", "Low")
 EFFORT = ("S", "M", "L")
 CONTROL_STATUS = ("Verified absent", "Not established", "Present")

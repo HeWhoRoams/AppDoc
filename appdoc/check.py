@@ -1,4 +1,7 @@
-"""The Check: pass/fail verification of a finished Narrative (rules C1-C13). No score, no warnings."""
+"""The Check: pass/fail verification of a finished Narrative. No score, no warnings.
+
+The module docstring is assigned below, after RULE_TITLES, so the rule range it names is the constant.
+"""
 
 from __future__ import annotations
 
@@ -15,7 +18,7 @@ from . import fill as fill_mod
 from . import register as reg_mod
 from . import scan
 from . import template_spec as spec
-from .citations import OWNER_CONTEXT, Citation, find_citations, parse_span
+from .citations import KNOWN_BARE_FILES, OWNER_CONTEXT, Citation, find_citations, parse_span
 from .facts import fact_id
 from .secrets import find_secret_shapes
 from .textnorm import normalize_text
@@ -35,7 +38,49 @@ RULE_TITLES = {
     "C12": "Finding candidates addressed", "C13": "Entry points not cited",  # C13 fails only under --strict
     "C14": "Unknowns match the register", "C15": "Register counts in prose",
     "C16": "Universal claims cite single lines",  # C16 is advisory; fails only under --strict
+    "C20": "Citation precision",                   # C20 is advisory; fails only under --strict
 }
+RULE_RANGE = f"C1-C{max(int(k[1:]) for k in RULE_TITLES)}"
+__doc__ = (f"The Check: pass/fail verification of a finished Narrative (rules {RULE_RANGE}). "
+           "No score, no warnings.")
+
+# One sentence per rule: what makes it fail. tools/gen_docs.py writes these into the README.
+RULE_SUMMARIES = {
+    "C1": "a Citation points to a missing file or a line past the end (folders and unique bare filenames resolve; "
+          "extensionless non-existent spans are not Citations)",
+    "C2": "a Citation in section 10 has no line",
+    "C3": "a section is missing, out of order, empty or a placeholder, or the document is not on the current template",
+    "C4": "section 14 is empty while Unknowns exist, or Data and Integrations is empty though Facts exist",
+    "C5": "a paragraph, list item or table row in sections 3 to 10 is neither cited, Inferred nor Unknown",
+    "C6": "secret-shaped text, or a `never-mention` term, appears in a published file",
+    "C7": "an unsupported Stack is not named in section 2; a count or a generated block differs from the Facts; "
+          "facts.json was written by another major.minor of AppDoc",
+    "C8": "a required numbered subsection is missing, outside its section or empty",
+    "C9": "a table differs from the template (header, cell count, ID prefix, allowed value, required row), "
+          "the 5.3 Restriction line is missing, or a guidance comment remains",
+    "C10": "an ID is defined twice or referenced but not defined, or a reference between sections does not resolve",
+    "C11": "`evidence.jsonl` is missing, malformed or does not cover the document; an anchor is not in its cited lines",
+    "C12": "a finding candidate is neither cited in 10.1 nor Dismissed in the register",
+    "C13": "an entry point file is not cited anywhere in the document",
+    "C14": "section 14 lists a question the register resolved, or its unknown count disagrees with the register",
+    "C15": "a register count written in prose disagrees with the register",
+    "C16": "a universal claim (all, every, never) cites only single lines",
+    "C20": "a range over 100 lines is a claim's only lined Citation in section 4, 7 or 10, "
+           "or a section 4 or 10.1 table cell holds more than 5 Citations",
+}
+# Rules that are advisory by default ("advisory") or fail only under --strict ("strict").
+RULE_FLAGS = {"C7": ("strict",), "C13": ("advisory", "strict"), "C16": ("advisory", "strict"),
+              "C20": ("advisory", "strict")}
+# Previews of template 2.7 rules: printed as "fails from template 2.7", never failing a 2.4 document.
+PREVIEW_RULES = {
+    "C1": "a bare file name that resolves to a file in a folder: cite the full path",
+    "C9": "a section 10.1 or 15 row that outranks the row before it (Critical, High, Medium, Low)",
+    "C17": "the audit record's scope text holds an ID or a digit",
+}
+FAILS_FROM = (2, 7)
+PREVIEW_HEADING = "## Template 2.7 previews (advisory)"
+WIDE_RANGE = 100   # C20: a lined range spanning more lines than this is imprecise
+CELL_CITES = 5     # C20: more Citations than this in one table cell is imprecise
 C5_CAP = 30
 C5_MIN_LEN = 40
 RULE_CAP = 50  # C9-C13 on a large document: show the first problems, count the rest
@@ -869,6 +914,82 @@ def _c16_quantifier(lines, cites, add, strict):
     return hits
 
 
+def _c20_precision(lines, heads, cites_of=find_citations):
+    """(line, message) for imprecise Citations in sections 4, 7 and 10 (C20).
+
+    A claim (paragraph, list item or table row) whose only lined Citation is a range over WIDE_RANGE
+    lines; and a section 4 or 10.1 table cell with more than CELL_CITES Citations.
+    """
+    hits = []
+    for key in ("4", "7", "10"):
+        h = heads.get(key)
+        if not h:
+            continue
+        for no, blk in _blocks(lines, h.idx + 1, h.end):
+            lined = [c for c in cites_of(blk) if c.start is not None]
+            if len(lined) == 1 and lined[0].end - lined[0].start + 1 > WIDE_RANGE:
+                c = lined[0]
+                hits.append((no, f"`{c.path}:{c.start}-{c.end}` spans {c.end - c.start + 1} lines "
+                                 f"(more than {WIDE_RANGE}) and is this claim's only lined Citation"))
+    for key in ("4", "10.1"):
+        h = heads.get(key)
+        if not h:
+            continue
+        for t in dm.tables(lines, h.idx + 1, h.end):
+            for no, cells in t.rows:
+                for col, cell in enumerate(cells):
+                    n = len(cites_of(cell))
+                    if n > CELL_CITES:
+                        name = dm.cell_text(t.header[col]) if col < len(t.header) else str(col + 1)
+                        hits.append((no, f"the {name} cell cites {n} sources (more than {CELL_CITES})"))
+    return sorted(set(hits))
+
+
+_C20_FIX = ("cite the specific lines the claim rests on (`path:start-end`, at most "
+            f"{WIDE_RANGE} lines), and split a cell that cites many sources")
+
+
+def _c9_severity_order(lines, heads, add):
+    """C9, 2.7 rule: a 10.1 or 15 row may not outrank the row before it. Skips values C9 reports itself."""
+    rank = {v: i for i, v in enumerate(spec.SEVERITY_ORDER)}
+    for key in ("10.1", "15"):
+        h = heads.get(key)
+        t = dm.first_table(lines, h) if h else None
+        if not t or "Severity" not in t.header:
+            continue
+        col = t.header.index("Severity")
+        prev = None
+        for no, cells in t.rows:
+            if len(cells) <= col:
+                continue
+            sev = dm.cell_text(cells[col])
+            if sev not in rank:
+                continue
+            rid = dm.cell_text(cells[0])
+            if prev is not None and rank[sev] < rank[prev[1]]:
+                add("C9", no, f"{key} row {rid} ({sev}) outranks the row before it ({prev[0]}, {prev[1]})",
+                    "move the row; keep its ID")
+            prev = (rid, sev)
+
+
+def _c1_bare_name(target, cache, c):
+    """The unique full path of a bare-name Citation that resolves outside the Target root, else None (C1, 2.7 rule)."""
+    if "/" in c.path or c.path in KNOWN_BARE_FILES:
+        return None
+    if os.path.isfile(os.path.join(os.path.realpath(target), c.path)):
+        return None  # a root file
+    hits = _basenames(target, cache).get(c.path, [])
+    return hits[0] if len(hits) == 1 else None
+
+
+def _c17_scope(reg, add):
+    """C17, 2.7 rule: the audit record's scope describes the method only, with no ID token or digit."""
+    scope = str((reg.audit or {}).get("scope") or "") if reg is not None and reg.performed else ""
+    if _ID_REF_RE.search(scope) or re.search(r"\d", scope):
+        add("C17", 1, f"{REGISTER} line 1: the audit scope text holds an ID or a number",
+            "describe only the method; coverage is computed")
+
+
 def coverage(heads, ids, reg, workflows) -> list[tuple[str, int, int]]:
     """(section, IDs with a register row, IDs) for every ID-bearing section, and workflows."""
     refs = set()
@@ -912,7 +1033,10 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     dup_missing: list[dict] = []  # duplicate-folder pairs section 2 does not name (advisory unless --strict)
 
     def add(rule, line, msg, fix):
-        problems[rule].append((line, msg, fix))
+        problems.setdefault(rule, []).append((line, msg, fix))
+
+    previews: list[tuple[str, int, str, str]] = []  # 2.7 rules on a document older than 2.7: advisory only
+    bare: list = []                                  # (Citation, full path) bare names, a C1 preview
 
     # C1 + register
     cites = find_citations(text)
@@ -928,6 +1052,10 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                 ok = False
                 why = f"`{c.path}` is a binary file; cite it without a line"
         register.append((c, ok))
+        if ok:
+            full_path = _c1_bare_name(target, cache, c)
+            if full_path:
+                bare.append((c, full_path))
         if not ok:
             add("C1", c.doc_line, f"citation does not resolve: {why}",
                 "cite an existing Target-relative path and a line within the file")
@@ -941,6 +1069,9 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     # C3
     stamp = spec.STAMP_RE.search(raw)
     current = bool(stamp) and stamp.group(1) == spec.TEMPLATE_VERSION
+    doc_ver = spec.version_tuple(stamp.group(1) if stamp else "")
+    # The 2.7 rules are written once. Below the stamp gate they are printed as previews; from 2.7 they fail.
+    add27 = add if doc_ver >= FAILS_FROM else (lambda rule, line, msg, fix: previews.append((rule, line, msg, fix)))
     if not current:
         found_v = stamp.group(1) if stamp else "none"
         add("C3", 1, f"the document is not on template {spec.TEMPLATE_VERSION} (stamp: {found_v}); "
@@ -1074,7 +1205,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                     dup_missing.append(pair)
 
     # C7 (counts and generated blocks), C9, C10, C11: template-2.2 structure
-    reg, cov, uncited, quant_hits = None, [], [], []
+    reg, cov, uncited, quant_hits, wide_hits = None, [], [], [], []
     if current:
         heads = dm.headings(lines)
         _c7_counts(target, lines, heads, facts, add)
@@ -1085,11 +1216,22 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         smell_fids = None if facts is None else {
             f["detail"].get("fid") for f in facts.get("facts", []) if f.get("kind") == "smell"}
         reg, cov = _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smell_fids, add,
-                                 doc_ver=spec.version_tuple(stamp.group(1) if stamp else ""))
+                                 doc_ver=doc_ver)
         appendix = next((body for name, body, _ in fill_mod.blocks(raw) if name == "appendix-a"), "")
         _c14_unknowns(lines, heads, ids, reg, appendix, add)
         _c15_register_counts(lines, ids, reg, add)
         quant_hits = _c16_quantifier(lines, cites, add, strict)
+        generated = tuple(spec.GENERATED.values())
+        glines = _strip_comments(fill_mod.mask_blocks(raw.replace("\r\n", "\n"), generated)).splitlines()
+        wide_hits = _c20_precision(glines, dm.headings(glines))
+        for no, msg in wide_hits:
+            if strict:
+                add("C20", no, msg, _C20_FIX)
+        _c9_severity_order(lines, heads, add27)
+        for c, full_path in bare:
+            add27("C1", c.doc_line, f"`{c.path}` is a bare name; the file is `{full_path}`",
+                  f"cite the full path: `{full_path}" + ("" if c.start is None else f":{c.raw.rsplit(':', 1)[1]}") + "`")
+        _c17_scope(reg, add27)
         reg_ids = {str(r["id"]) for _, r in reg.rows} if reg else None
         _c10_refs(lines, heads, ids, reg_ids, add)
         _c10_coverage(lines, heads, facts, add)
@@ -1116,7 +1258,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     body = []
     for rule, items in problems.items():
         if items:
-            body.append(f"## {rule} {RULE_TITLES[rule]}")
+            body.append(f"## {rule} {RULE_TITLES.get(rule, '')}".rstrip())
             body += [f"- line {no}: {msg}. Fix: {fix}" for no, msg, fix in items]
             body.append("")
     advisory = []
@@ -1136,6 +1278,25 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                      f"{'cite' if len(quant_hits) != 1 else 'cites'} only single lines. "
                      "This is not a problem; `appdoc check --strict` fails on it.", ""]
         advisory += [f"- line {no}: `{text}`" for no, text in quant_hits[:RULE_CAP]]
+        advisory.append("")
+    if wide_hits and not strict:
+        advisory += ["## Citation precision (advisory)", "",
+                     f"{len(wide_hits)} citation{'s are' if len(wide_hits) != 1 else ' is'} broader than the claim "
+                     f"needs. This is not a problem; `appdoc check --strict` fails on it. Fix: {_C20_FIX}.", ""]
+        advisory += [f"- line {no}: {msg}" for no, msg in wide_hits[:RULE_CAP]]
+        if len(wide_hits) > RULE_CAP:
+            advisory.append(f"- ... {len(wide_hits) - RULE_CAP} more")
+        advisory.append("")
+    if previews:
+        previews = sorted(set(previews), key=lambda p: (p[0], p[1], p[2]))
+        advisory += [PREVIEW_HEADING, "",
+                     f"{len(previews)} finding{'s' if len(previews) != 1 else ''} would fail a template "
+                     f"{'.'.join(map(str, FAILS_FROM))} document. This document is on template {spec.TEMPLATE_VERSION}, "
+                     "so none of them fails it; they need no action yet.", ""]
+        advisory += [f"- {rule} line {no}: {msg}. Fix: {fix} (fails from template {'.'.join(map(str, FAILS_FROM))})"
+                     for rule, no, msg, fix in previews[:RULE_CAP]]
+        if len(previews) > RULE_CAP:
+            advisory.append(f"- ... {len(previews) - RULE_CAP} more")
         advisory.append("")
     if dup_missing:
         advisory += ["## Duplicate folders not named in section 2 (advisory)", "",
@@ -1196,5 +1357,11 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     if quant_hits and not strict:
         note.append(f"Advisory: {len(quant_hits)} universal claim{'s' if len(quant_hits) != 1 else ''} "
                     f"{'cite' if len(quant_hits) != 1 else 'cites'} only single lines (see {REPORT}).")
+    if wide_hits and not strict:
+        note.append(f"Advisory: {len(wide_hits)} wide range or crowded cell{'s' if len(wide_hits) != 1 else ''} "
+                    f"(citation precision, see {REPORT}).")
+    if previews:
+        note.append(f"Advisory: {len(previews)} finding{'s' if len(previews) != 1 else ''} fail from template "
+                    f"{'.'.join(map(str, FAILS_FROM))} (see {REPORT}).")
     print("\n".join([head] + [b for b in body if b] + note + [verification_status]))
     return 0 if total == 0 else 2
