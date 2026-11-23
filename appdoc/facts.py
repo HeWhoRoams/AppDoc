@@ -42,7 +42,7 @@ DETAIL_KEYS = {
     "stack": frozenset("capabilities file_count marker_files supported".split()),
     "entry_point": frozenset(
         "class codebehind component controller enabled exists framework handler inherits inputs "
-        "master method middleware page prefix_unresolved route_name schedule scheduler "
+        "listener master method middleware page prefix_unresolved route_name schedule scheduler "
         "source type usage view".split()),
     "data_access": frozenset(
         "builder class entity namespace native operation orm property statement type via".split()),
