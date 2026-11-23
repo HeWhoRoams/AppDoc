@@ -315,6 +315,74 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(code, 2)
         self.assertIn("changed after it was audited", report)
 
+    # --- 2.7: superseded rows (append-only register)
+
+    def run27(self, doc=None, **kw):
+        """Check a document stamped 2.7 (the running template patched to 2.7 for the call)."""
+        from unittest import mock
+        doc = (doc or build_doc()).replace(spec.STAMP, "<!-- appdoc:template 2.7 -->")
+        with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"):
+            return self.run_check(doc, **kw)
+
+    SECOND_V1 = {"id": "E-3", "ref": "10.1/V-1", "claim": "A password is set in code (re-read)",
+                 "result": "Corrected", "cites": ["app/main.py:6"], "anchor": "line 6", "limitation": "none"}
+
+    def test_c11_two_live_rows_fail_with_supersedes_fix(self):
+        self.write_register(AUDIT, ROWS + [self.SECOND_V1])
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("C11", self.rules(report))
+        self.assertIn("two live rows for 10.1/V-1. Fix: "
+                      'add "supersedes": "E-1" to the newer row; do not delete the older row', report)
+        # the same register passes once the newer row supersedes the older one
+        self.write_register(AUDIT, ROWS + [dict(self.SECOND_V1, supersedes="E-1")])
+        code, report, _ = self.run27()
+        self.assertEqual(code, 0, report)
+
+    def test_c11_superseded_row_is_not_sealed_anchored_or_counted_for_coverage(self):
+        old = dict(ROWS[0], anchor="text that is gone now")   # would fail the anchor rule were it live
+        self.write_register(AUDIT, [old, ROWS[1], dict(self.SECOND_V1, supersedes=["E-1"])])
+        code, report, _ = self.run27()
+        self.assertEqual(code, 0, report)
+        with open(os.path.join(self.out, check.REGISTER), encoding="utf-8") as fh:
+            rows = {json.loads(l).get("id"): json.loads(l) for l in fh if l.strip()}
+        self.assertNotIn("claim_sha", rows["E-1"])           # a superseded row is not sealed
+        self.assertIn("claim_sha", rows["E-3"])
+
+    def test_c11_superseded_rows_keep_id_ref_result_and_cites_validation(self):
+        old = dict(ROWS[0], result="Fine", cites=["app/nope.py:1"])
+        self.write_register(AUDIT, [old, ROWS[1], dict(self.SECOND_V1, supersedes="E-1")])
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("result 'Fine' is not one of", report)
+        self.assertIn("citation does not resolve", report)
+
+    def test_c11_supersedes_unknown_or_cycle_fails(self):
+        cases = {
+            "E-9": "supersedes E-9, which is not a row of this register",
+            "E-2": "supersedes E-2, which has the ref 7.1, not 10.1/V-1",
+        }
+        for target_id, msg in cases.items():
+            self.write_register(AUDIT, ROWS + [dict(self.SECOND_V1, supersedes=target_id)])
+            code, report, _ = self.run27()
+            self.assertEqual(code, 2, report)
+            self.assertIn(msg, report)
+        # a cycle: E-1 and E-3 supersede each other
+        self.write_register(AUDIT, [dict(ROWS[0], supersedes="E-3"), ROWS[1], dict(self.SECOND_V1, supersedes="E-1")])
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("supersedes form a cycle", report)
+        # a row may not supersede itself
+        self.write_register(AUDIT, [dict(ROWS[0], supersedes="E-1"), ROWS[1]])
+        self.assertIn("supersedes form a cycle", self.run27()[1])
+
+    def test_c11_2_4_document_keeps_the_old_duplicate_message(self):
+        self.write_register(AUDIT, ROWS + [self.SECOND_V1])
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(code, 2, report)
+        self.assertIn("two rows for the same ID ref 10.1/V-1", report)
+        self.assertIn("keep the row that describes the current text", report)
+
     def test_c3_missing_section(self):
         doc = build_doc().replace("## 13. Glossary", "## 13. Terms")
         self.assertEqual(self.fired(doc), {"C3"})

@@ -364,6 +364,43 @@ class GateCases(CorpusCase):
         self.assertEqual(code, 0)
 
 
+class RegisterHistory(CorpusCase):
+    """Template 2.7 documents (the running template is patched to 2.7 for the call)."""
+
+    def case27(self, name, **kw):
+        from unittest import mock
+        from appdoc import template_spec as spec
+        with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"):
+            return self.case(name, **kw)
+
+    def test_superseded_row_keeps_history_and_passes(self):
+        r = self.case27("superseded")
+        self.assertEqual(r.code, 0, r.report)
+        with open(os.path.join(r.out, "evidence.jsonl"), encoding="utf-8") as fh:
+            rows = [json.loads(l) for l in fh if l.strip()][1:]
+        self.assertEqual([x["id"] for x in rows], ["E-1", "E-2", "E-3"])   # the older row is kept, not deleted
+        self.assertNotIn("claim_sha", rows[0])
+        self.assertIn("claim_sha", rows[2])
+
+    def test_superseded_without_supersedes_fails_with_the_fix(self):
+        from unittest import mock
+        from appdoc import template_spec as spec
+        r = self.case27("superseded")
+        reg_path = os.path.join(r.out, "evidence.jsonl")
+        with open(reg_path, encoding="utf-8") as fh:
+            lines = fh.read().splitlines()
+        lines[3] = json.dumps({k: v for k, v in json.loads(lines[3]).items() if k != "supersedes"})
+        with open(reg_path, "w", encoding="utf-8") as fh:
+            fh.write("\n".join(lines) + "\n")
+        with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"), contextlib.redirect_stdout(io.StringIO()):
+            code = check.run(r.target, r.out)
+        self.assertEqual(code, 2)
+        with open(os.path.join(r.out, "check-report.md"), encoding="utf-8") as fh:
+            report = fh.read()
+        self.assertIn("two live rows for 10.1/V-1", report)
+        self.assertIn('add "supersedes": "E-1" to the newer row; do not delete the older row', report)
+
+
 def _apply_pending():
     for cls in CorpusCase.__subclasses__():
         for name in PENDING:

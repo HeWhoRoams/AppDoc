@@ -678,7 +678,7 @@ def seal_register(target, out_dir) -> int:
     ids = defined_ids(lines, heads, lambda *a: None)
     reg = reg_mod.parse(_read_text(reg_path))
     claim_shas: dict[str, str] = {}
-    for _, row in reg.rows:
+    for _, row in reg.live_rows():   # a superseded row records history and is never sealed
         if row["result"] in ("Dismissed", "Answerable"):
             continue
         m = reg_mod.REF_RE.match(str(row["ref"]))
@@ -727,6 +727,42 @@ def _c2_per_claim(lines, s10, add):
             add("C2", no, "security claim has no lined Citation", fix)
 
 
+def _c11_supersedes(reg, all_ids, add):
+    """A `supersedes` target must be a row of this register with the same ref, and the links may not cycle."""
+    for no, row in reg.rows:
+        where = f"{REGISTER} line {no}"
+        for t in reg.supersedes_of(row):
+            if t not in all_ids:
+                add("C11", no, f"{where}: {row['id']} supersedes {t}, which is not a row of this register",
+                    "name an existing E-<n> row, or remove \"supersedes\"")
+            elif str(all_ids[t]["ref"]) != str(row["ref"]):
+                add("C11", no, f"{where}: {row['id']} supersedes {t}, which has the ref {all_ids[t]['ref']}, "
+                    f"not {row['ref']}", "a row may supersede only a row of the same ref")
+    edges = {str(r["id"]): [t for t in reg.supersedes_of(r) if t in all_ids] for _, r in reg.rows}
+    state: dict[str, int] = {}   # 1 = on the current path, 2 = finished
+
+    def visit(rid, path):
+        state[rid] = 1
+        for t in edges.get(rid, ()):
+            if state.get(t) == 1:
+                cyc = path[path.index(t):] + [t] if t in path else [rid, t]
+                return cyc
+            if t not in state:
+                found = visit(t, path + [t])
+                if found:
+                    return found
+        state[rid] = 2
+        return None
+
+    line_of = {str(r["id"]): no for no, r in reg.rows}
+    for rid in list(edges):
+        if rid not in state:
+            cyc = visit(rid, [rid])
+            if cyc:
+                add("C11", line_of[cyc[0]], f"{REGISTER} line {line_of[cyc[0]]}: supersedes form a cycle "
+                    f"({' -> '.join(cyc)})", "a superseded row cannot supersede the row that replaced it")
+
+
 def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smell_fids, add,
                   doc_ver=()):
     """Validate evidence.jsonl. Returns (Register or None, coverage rows)."""
@@ -749,9 +785,13 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
         return reg, []
     seen: dict[str, int] = {}
     covered: set[str] = set()
+    all_ids = {str(r["id"]): r for _, r in reg.rows}
+    live_ids = {str(r["id"]) for _, r in reg.live_rows()}
+    _c11_supersedes(reg, all_ids, add)
     for no, row in reg.rows:
         where = f"{REGISTER} line {no}"
         rid = str(row["id"])
+        live = rid in live_ids
         if not reg_mod.ID_RE.match(rid):
             add("C11", no, f"{where}: id '{rid}' is not E-<number>", "number rows E-1, E-2, ...")
         elif rid in seen:
@@ -775,7 +815,7 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
         elif result == "Answerable" and not am:
             add("C11", no, f"{where}: an Answerable row needs ref 14/Q-<n>, not '{ref}'", "use ref 14/Q-<n>")
         elif result == "Answerable":
-            if am.group(1) in ids:   # a question that was closed and removed is no longer a problem
+            if live and am.group(1) in ids:   # a question that was closed and removed is no longer a problem
                 shown = ", ".join(str(c).strip("`") for c in row["cites"]) or "no citation recorded"
                 add("C11", no, f"{where}: {am.group(1)} can be closed from source ({shown}); "
                     "close it and remove the question", f"answer {am.group(1)} in the document, then delete it from section 14")
@@ -785,7 +825,8 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
         elif m.group(2) and m.group(2) not in ids:
             add("C11", no, f"{where}: ref '{row['ref']}' names an ID that is not defined", "use an ID from the document")
         else:
-            covered.add(m.group(2) or m.group(1))
+            if live:
+                covered.add(m.group(2) or m.group(1))
         for raw_cite in row["cites"]:
             parsed = parse_span(raw_cite.strip("`"))
             if not parsed:
@@ -808,7 +849,7 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
             if not anchor:
                 add("C11", no, f"{where}: a {row['result']} row needs an anchor",
                     "copy a short literal string from the cited lines into anchor")
-        if anchor and row["result"] in ("Supported", "Corrected"):
+        if live and anchor and row["result"] in ("Supported", "Corrected"):   # a superseded row's text is history
             loc = reg_mod.locate(target, row)
             if loc is None:
                 add("C11", no, f"{where}: anchor not found on a single cited line (exact, case-sensitive)",
@@ -817,7 +858,7 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
     # Activates when the template version reaches 2.4 (Phase 3).
     if doc_ver >= (2, 4):
         id_ref_rows: dict[str, list[tuple[int, dict]]] = {}
-        for no, row in reg.rows:
+        for no, row in reg.live_rows():
             if row["result"] in ("Dismissed", "Answerable"):
                 continue
             m = reg_mod.REF_RE.match(str(row["ref"]))
@@ -831,8 +872,12 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
         for ref_key, rows in id_ref_rows.items():
             if len(rows) > 1:
                 for no, row in rows[1:]:
-                    add("C11", no, f"{REGISTER} line {no}: two rows for the same ID ref {ref_key}",
-                        "keep the row that describes the current text")
+                    if doc_ver >= FAILS_FROM:
+                        add("C11", no, f"{REGISTER} line {no}: two live rows for {ref_key}",
+                            f'add "supersedes": "{rows[0][1]["id"]}" to the newer row; do not delete the older row')
+                    else:
+                        add("C11", no, f"{REGISTER} line {no}: two rows for the same ID ref {ref_key}",
+                            "keep the row that describes the current text")
             no, row = rows[0]
             where = f"{REGISTER} line {no}"
             expected = _claim_sha(lines, heads, ids, ref_key)
@@ -849,7 +894,7 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
             add("C11", no, f"finding {vid} has no register row", f"audit {vid} and add a row with ref 10.1/{vid}")
     workflows = sorted((k for k in heads if k.startswith("7.")), key=lambda k: int(k.split(".")[1]))
     for k in workflows:
-        if k not in covered and not any(str(r["ref"]).startswith(k + "/") for _, r in reg.rows):
+        if k not in covered and not any(str(r["ref"]).startswith(k + "/") for _, r in reg.live_rows()):
             add("C11", heads[k].idx + 1, f"workflow {k} has no register row", f"audit it and add a row with ref {k}")
     return reg, coverage(heads, ids, reg, workflows)
 
@@ -1023,8 +1068,9 @@ def _c17_scope(reg, add):
 
 def coverage(heads, ids, reg, workflows) -> list[tuple[str, int, int]]:
     """(section, IDs with a register row, IDs) for every ID-bearing section, and workflows."""
+    live = reg.live_rows()
     refs = set()
-    for _, r in reg.rows:
+    for _, r in live:
         m = reg_mod.REF_RE.match(str(r["ref"]))
         if m:
             refs.add(m.group(2) or m.group(1))
@@ -1036,7 +1082,7 @@ def coverage(heads, ids, reg, workflows) -> list[tuple[str, int, int]]:
                 out.append((key, sum(1 for i in mine if i in refs), len(mine)))
     if workflows:
         out.append(("7 (workflows)", sum(1 for k in workflows if k in refs or any(
-            str(r["ref"]).startswith(k + "/") for _, r in reg.rows)), len(workflows)))
+            str(r["ref"]).startswith(k + "/") for _, r in live)), len(workflows)))
     return out
 
 
