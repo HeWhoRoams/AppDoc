@@ -658,7 +658,8 @@ def _c2_per_claim(lines, s10, add):
             add("C2", no, "security claim has no lined Citation", fix)
 
 
-def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smell_fids, add):
+def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smell_fids, add,
+                  doc_ver=()):
     """Validate evidence.jsonl. Returns (Register or None, coverage rows)."""
     path = os.path.join(out_dir, REGISTER)
     if not os.path.isfile(path):
@@ -745,7 +746,7 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
                     "copy the anchor exactly from one line of the cited lines")
     # claim_sha checks (1.2): ID and workflow rows must be sealed; Dismissed/Answerable are exempt.
     # Activates when the template version reaches 2.4 (Phase 3).
-    if spec.TEMPLATE_VERSION >= "2.4":
+    if doc_ver >= (2, 4):
         id_ref_rows: dict[str, list[tuple[int, dict]]] = {}
         for no, row in reg.rows:
             if row["result"] in ("Dismissed", "Answerable"):
@@ -1073,7 +1074,8 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         ids = defined_ids(lines, heads, add)
         smell_fids = None if facts is None else {
             f["detail"].get("fid") for f in facts.get("facts", []) if f.get("kind") == "smell"}
-        reg, cov = _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smell_fids, add)
+        reg, cov = _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smell_fids, add,
+                                 doc_ver=spec.version_tuple(stamp.group(1) if stamp else ""))
         appendix = next((body for name, body, _ in fill_mod.blocks(raw) if name == "appendix-a"), "")
         _c14_unknowns(lines, heads, ids, reg, appendix, add)
         _c15_register_counts(lines, ids, reg, add)

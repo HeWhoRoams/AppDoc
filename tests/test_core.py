@@ -445,3 +445,28 @@ class OwnerContextTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class VersionCompareTests(unittest.TestCase):
+    def test_version_tuple(self):
+        from appdoc.template_spec import version_tuple
+        self.assertEqual(version_tuple("2.4"), (2, 4))
+        self.assertEqual(version_tuple("2.10.1"), (2, 10, 1))
+        self.assertEqual(version_tuple("2.6.0.dev0"), (2, 6, 0))
+        self.assertGreater(version_tuple("2.10"), version_tuple("2.9"))  # a string compare says otherwise
+        self.assertEqual(version_tuple(""), ())
+        self.assertEqual(version_tuple("none"), ())
+        self.assertEqual(version_tuple(None), ())
+
+    def test_no_string_version_compares(self):
+        import re
+        pkg = os.path.join(os.path.dirname(HERE), "appdoc")
+        bad = []
+        for dirpath, _, names in os.walk(pkg):
+            for n in names:
+                if n.endswith(".py"):
+                    with open(os.path.join(dirpath, n), encoding="utf-8") as fh:
+                        for i, line in enumerate(fh, 1):
+                            if re.search(r"(?:>=|<=|<|>)\s*[\"']\d+\.\d", line):
+                                bad.append(f"{n}:{i}: {line.strip()}")
+        self.assertEqual(bad, [])

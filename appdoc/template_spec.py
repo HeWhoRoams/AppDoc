@@ -11,6 +11,22 @@ from dataclasses import dataclass, field
 
 TEMPLATE_VERSION = "2.4"
 STAMP = f"<!-- appdoc:template {TEMPLATE_VERSION} -->"
+
+
+def version_tuple(s) -> tuple:
+    """The leading numeric components of a dotted version: "2.10.1" -> (2, 10, 1); "2.6.0.dev0" -> (2, 6, 0).
+
+    The only way versions are compared (a string compare puts 2.10 before 2.9). Anything that is not
+    dotted numeric, including None, gives ().
+    """
+    out = []
+    for part in str(s or "").strip().split("."):
+        if not part.isdigit():
+            break
+        out.append(int(part))
+    return tuple(out)
+
+
 STAMP_RE = re.compile(r"<!--\s*appdoc:template\s+([\w.]+)\s*-->")
 GUIDE_RE = re.compile(r"<!--\s*appdoc:guide\b")
 UPGRADE_NOTES = ("CHANGELOG.md, 2.4.0 upgrade notes. 2.3 -> 2.4: per-claim C2 (security citations need a line); "
