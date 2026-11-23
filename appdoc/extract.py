@@ -25,7 +25,7 @@ from .summary import render_summary
 
 PARALLEL_THRESHOLD = 50  # below this file count, the pool's overhead isn't worth it
 CACHE_NAME = ".appdoc-cache.json"
-EXTRACTOR_VERSION = 1  # bump whenever a stack/catalog regex or extraction logic changes
+EXTRACTOR_VERSION = 2  # bump whenever a stack/catalog regex or extraction logic changes
 _CACHE_MAX_ENTRIES = 10_000  # best-effort cap on cache entries (never prune, just bound growth)
 
 is_test_path = F.is_test_path
