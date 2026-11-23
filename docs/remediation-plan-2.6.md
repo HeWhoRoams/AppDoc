@@ -160,7 +160,7 @@ The gate's schema comparison is **not** a version comparison: it tests equality,
    - `aspnet.py:680`, `aspnet_core.py:537`, `classic_asp.py:470`, `go.py:653`, `java_spring.py:894`, `node_express.py:632`, `python_flask.py:689`.
 
    Include the kinds 2.5.0 added (Phase 2: `ui_page`, `data_access`, `external_call`, `connection`, `schema_object`). Keep a module alias for one release.
-2. Replace `entry_point` with the emitted subtypes `entry_point.route|page|command|job`, derived from each stack's code paths.
+2. Replace `entry_point` with the emitted subtypes `entry_point.route|page|command|job|handler` (`handler` is declared but not counted: `fill.UNCOUNTED_ENTRY_TYPES`), derived from each stack's code paths.
 3. `stacks.capabilities_of(stack)` is the only lookup. It is used by `extract.py:118` and by `tests/test_conformance.py:53-56` (that test read the module while production read the instance, which is why it missed the bug).
 4. **Conformance:**
    - `test_supported_stack_declares_capabilities`;

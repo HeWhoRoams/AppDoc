@@ -61,6 +61,10 @@ def _names(stacks: list[str]) -> str:
     return ", ".join(f"`{n}`" for n in stacks)
 
 
+COUNTED_ENTRY_TYPES = ("route", "page", "command", "job")
+UNCOUNTED_ENTRY_TYPES = frozenset({"handler"})
+
+
 def entry_point_counts(doc: dict) -> dict:
     """Totals the `entry-points` block states, from the non-test `entry_point` Facts of a facts.json document.
 

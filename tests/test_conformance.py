@@ -19,6 +19,7 @@ import tempfile
 import unittest
 
 from appdoc import extract
+from appdoc import fill
 from appdoc import facts as facts_mod
 from appdoc import secrets
 from appdoc import stacks
@@ -156,6 +157,14 @@ class ConformanceTests(unittest.TestCase):
             for c in caps:
                 self.assertIn(c.split(".", 1)[0], facts_mod.KINDS, f"{st.id}: {c!r}")
             self.assertTrue(any(c.startswith("entry_point.") for c in caps), st.id)
+
+    def test_every_entry_point_subtype_is_counted_or_listed_uncounted(self):
+        known = set(fill.COUNTED_ENTRY_TYPES) | set(fill.UNCOUNTED_ENTRY_TYPES)
+        self.assertFalse(set(fill.COUNTED_ENTRY_TYPES) & set(fill.UNCOUNTED_ENTRY_TYPES))
+        for st in stacks.load():
+            for cap in stacks.capabilities_of(st):
+                if cap.startswith("entry_point."):
+                    self.assertIn(cap.split(".", 1)[1], known, f"{st.id}: {cap} is neither counted nor listed uncounted")
 
     def test_no_module_level_capability_alias(self):
         for name in MODULES:
