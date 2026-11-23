@@ -1,0 +1,27 @@
+{
+  "type": "extractor",
+  "target": "tests/samples/integrations",
+  "exhaustive": true,
+  "note": "Cache, queue, object storage, gRPC, LDAP and search connections.",
+  "must_exist": [
+    {"kind": "dependency", "stack": "generic", "path": "requirements.txt", "line": 1, "name": "flask", "detail": {"manager": "pip"}},
+    {"kind": "dependency", "stack": "generic", "path": "requirements.txt", "line": 2, "name": "redis", "detail": {"manager": "pip"}},
+    {"kind": "dependency", "stack": "generic", "path": "requirements.txt", "line": 3, "name": "kafka-python", "detail": {"manager": "pip"}},
+    {"kind": "dependency", "stack": "generic", "path": "requirements.txt", "line": 4, "name": "boto3", "detail": {"manager": "pip"}},
+    {"kind": "dependency", "stack": "generic", "path": "requirements.txt", "line": 5, "name": "grpcio", "detail": {"manager": "pip"}},
+    {"kind": "dependency", "stack": "generic", "path": "requirements.txt", "line": 6, "name": "ldap3", "detail": {"manager": "pip"}},
+    {"kind": "dependency", "stack": "generic", "path": "requirements.txt", "line": 7, "name": "elasticsearch", "detail": {"manager": "pip"}},
+    {"kind": "connection", "stack": "python-flask", "path": "integrations.py", "line": 18, "name": "redis.from_url", "detail": {"type": "cache", "secret_location": false}},
+    {"kind": "connection", "stack": "python-flask", "path": "integrations.py", "line": 24, "name": "redis.from_url", "detail": {"type": "cache", "secret_location": true}},
+    {"kind": "connection", "stack": "python-flask", "path": "integrations.py", "line": 28, "name": "kafka.KafkaProducer", "detail": {"type": "queue", "secret_location": false}},
+    {"kind": "connection", "stack": "python-flask", "path": "integrations.py", "line": 32, "name": "boto3.s3", "detail": {"type": "object_storage", "secret_location": false}},
+    {"kind": "connection", "stack": "python-flask", "path": "integrations.py", "line": 36, "name": "grpc.insecure_channel", "detail": {"type": "grpc", "secret_location": false}},
+    {"kind": "connection", "stack": "python-flask", "path": "integrations.py", "line": 40, "name": "ldap3.Server", "detail": {"type": "ldap", "secret_location": false}},
+    {"kind": "connection", "stack": "python-flask", "path": "integrations.py", "line": 44, "name": "elasticsearch.Elasticsearch", "detail": {"type": "search", "secret_location": false}},
+    {"kind": "stack", "stack": "python-flask", "path": "requirements.txt", "name": "python-flask", "detail": {"supported": true, "capabilities": ["connection"]}}
+  ],
+  "must_not_exist": [
+    {"kind": "connection", "stack": "python-flask", "name": "kafka.KafkaProducer", "detail": {"secret_location": true}},
+    {"kind": "connection", "stack": "python-flask", "name": "boto3.s3", "detail": {"secret_location": true}}
+  ]
+}

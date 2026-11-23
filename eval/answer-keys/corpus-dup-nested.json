@@ -1,0 +1,11 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/dup-nested",
+  "exhaustive": true,
+  "note": "live/ and old/sub/ share five files: one pair, and old/ is also a name candidate.",
+  "must_exist": [
+    {"kind": "duplicate_folder", "stack": "scan", "path": "live/", "name": "old/"},
+    {"kind": "retired_candidate", "stack": "scan", "path": "old/", "name": "name"}
+  ],
+  "must_not_exist": []
+}

@@ -1,0 +1,21 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/ini-split",
+  "exhaustive": true,
+  "note": "MIN_PASSWORD_LENGTH is not a secret; SECRET_KEY is; file-level promotion makes ini keys app.",
+  "must_exist": [
+    {"kind": "config_key", "stack": "generic", "path": "conf/app.ini", "line": 1, "name": "SECRET_KEY", "detail": {"use": "define", "secret_location": true, "role": "app"}},
+    {"kind": "config_key", "stack": "generic", "path": "conf/app.ini", "line": 2, "name": "MIN_PASSWORD_LENGTH", "detail": {"use": "define", "secret_location": false, "role": "app"}},
+    {"kind": "config_key", "stack": "generic", "path": "conf/app.ini", "line": 4, "name": "server.HTTP_PORT", "detail": {"use": "define", "secret_location": false, "role": "app"}},
+    {"kind": "config_key", "stack": "generic", "path": "conf/app.ini", "line": 5, "name": "server.DOMAIN", "detail": {"use": "define", "secret_location": false, "role": "app"}},
+    {"kind": "dependency", "stack": "generic", "path": "requirements.txt", "line": 1, "name": "flask", "detail": {"manager": "pip"}},
+    {"kind": "config_key", "stack": "python-flask", "path": "app.py", "line": 3, "name": "HTTP_PORT", "detail": {"use": "read", "secret_location": false, "role": "app"}},
+    {"kind": "stack", "stack": "python-flask", "path": "requirements.txt", "name": "python-flask", "detail": {"supported": true, "capabilities": ["config_key"]}}
+  ],
+  "must_not_exist": [
+    {"kind": "config_key", "stack": "generic", "name": "MIN_PASSWORD_LENGTH", "detail": {"secret_location": true}},
+    {"kind": "config_key", "stack": "generic", "name": "server.HTTP_PORT", "detail": {"secret_location": true}},
+    {"kind": "config_key", "stack": "generic", "name": "server.DOMAIN", "detail": {"secret_location": true}},
+    {"kind": "config_key", "stack": "python-flask", "name": "HTTP_PORT", "detail": {"secret_location": true}}
+  ]
+}

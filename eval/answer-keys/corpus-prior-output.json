@@ -1,0 +1,12 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/prior-output",
+  "exhaustive": true,
+  "note": "previous-docs/ holds AppDoc output and is pruned, not scanned.",
+  "must_exist": [
+    {"kind": "pruned", "stack": "scan", "path": "previous-docs/", "name": "AppDoc output"}
+  ],
+  "must_not_exist": [
+    {"kind": "config_key", "stack": "generic", "path": "previous-docs/facts.json"}
+  ]
+}

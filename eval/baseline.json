@@ -1,0 +1,570 @@
+{
+  "aspnet-core/auth_check": {
+    "expected": 6,
+    "found": 6,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 6
+  },
+  "aspnet-core/config_key": {
+    "expected": 6,
+    "found": 6,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 6
+  },
+  "aspnet-core/connection": {
+    "expected": 2,
+    "found": 2,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 2
+  },
+  "aspnet-core/data_access": {
+    "expected": 18,
+    "found": 18,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 18
+  },
+  "aspnet-core/entry_point": {
+    "expected": 37,
+    "found": 37,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 37
+  },
+  "aspnet-core/external_call": {
+    "expected": 10,
+    "found": 10,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 12
+  },
+  "aspnet-core/message": {
+    "expected": 5,
+    "found": 5,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 5
+  },
+  "aspnet-core/stack": {
+    "expected": 4,
+    "found": 4,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 4
+  },
+  "aspnet-core/ui_page": {
+    "expected": 4,
+    "found": 4,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 4
+  },
+  "aspnet/auth_check": {
+    "expected": 4,
+    "found": 4,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 4
+  },
+  "aspnet/config_key": {
+    "expected": 2,
+    "found": 2,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 2
+  },
+  "aspnet/connection": {
+    "expected": 2,
+    "found": 2,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 2
+  },
+  "aspnet/data_access": {
+    "expected": 7,
+    "found": 7,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 7
+  },
+  "aspnet/entry_point": {
+    "expected": 22,
+    "found": 22,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 22
+  },
+  "aspnet/external_call": {
+    "expected": 4,
+    "found": 4,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 4
+  },
+  "aspnet/message": {
+    "expected": 7,
+    "found": 7,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 7
+  },
+  "aspnet/smell": {
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
+  },
+  "aspnet/stack": {
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
+  },
+  "classic-asp/auth_check": {
+    "expected": 2,
+    "found": 2,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 2
+  },
+  "classic-asp/connection": {
+    "expected": 9,
+    "found": 9,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 9
+  },
+  "classic-asp/data_access": {
+    "expected": 10,
+    "found": 10,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 10
+  },
+  "classic-asp/dependency": {
+    "expected": 4,
+    "found": 4,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 4
+  },
+  "classic-asp/entry_point": {
+    "expected": 7,
+    "found": 7,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 7
+  },
+  "classic-asp/external_call": {
+    "expected": 4,
+    "found": 4,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 4
+  },
+  "classic-asp/message": {
+    "expected": 6,
+    "found": 6,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 6
+  },
+  "classic-asp/stack": {
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
+  },
+  "generic/config_key": {
+    "expected": 58,
+    "found": 58,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 58
+  },
+  "generic/connection": {
+    "expected": 5,
+    "found": 5,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 5
+  },
+  "generic/dependency": {
+    "expected": 32,
+    "found": 32,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 32
+  },
+  "generic/owner_file": {
+    "expected": 12,
+    "found": 12,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 12
+  },
+  "generic/schema_object": {
+    "expected": 11,
+    "found": 11,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 11
+  },
+  "generic/smell": {
+    "expected": 36,
+    "found": 36,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 36
+  },
+  "go/auth_check": {
+    "expected": 4,
+    "found": 4,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 4
+  },
+  "go/config_key": {
+    "expected": 6,
+    "found": 6,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 6
+  },
+  "go/connection": {
+    "expected": 5,
+    "found": 5,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 5
+  },
+  "go/data_access": {
+    "expected": 5,
+    "found": 5,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 5
+  },
+  "go/entry_point": {
+    "expected": 26,
+    "found": 26,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 26
+  },
+  "go/external_call": {
+    "expected": 4,
+    "found": 4,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 4
+  },
+  "go/schema_object": {
+    "expected": 2,
+    "found": 2,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 2
+  },
+  "go/stack": {
+    "expected": 2,
+    "found": 2,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 2
+  },
+  "go/ui_page": {
+    "expected": 2,
+    "found": 2,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 2
+  },
+  "java-spring/auth_check": {
+    "expected": 7,
+    "found": 7,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 7
+  },
+  "java-spring/config_key": {
+    "expected": 4,
+    "found": 4,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 4
+  },
+  "java-spring/connection": {
+    "expected": 3,
+    "found": 3,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 3
+  },
+  "java-spring/data_access": {
+    "expected": 12,
+    "found": 12,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 12
+  },
+  "java-spring/entry_point": {
+    "expected": 19,
+    "found": 19,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 19
+  },
+  "java-spring/external_call": {
+    "expected": 6,
+    "found": 6,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 6
+  },
+  "java-spring/message": {
+    "expected": 3,
+    "found": 3,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 3
+  },
+  "java-spring/smell": {
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
+  },
+  "java-spring/stack": {
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
+  },
+  "node-express/auth_check": {
+    "expected": 4,
+    "found": 4,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 4
+  },
+  "node-express/config_key": {
+    "expected": 7,
+    "found": 7,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 7
+  },
+  "node-express/connection": {
+    "expected": 2,
+    "found": 2,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 2
+  },
+  "node-express/data_access": {
+    "expected": 10,
+    "found": 10,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 10
+  },
+  "node-express/entry_point": {
+    "expected": 14,
+    "found": 14,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 14
+  },
+  "node-express/external_call": {
+    "expected": 4,
+    "found": 4,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 4
+  },
+  "node-express/message": {
+    "expected": 6,
+    "found": 6,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 6
+  },
+  "node-express/smell": {
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
+  },
+  "node-express/stack": {
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
+  },
+  "python-flask/auth_check": {
+    "expected": 3,
+    "found": 3,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 3
+  },
+  "python-flask/config_key": {
+    "expected": 29,
+    "found": 29,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 29
+  },
+  "python-flask/connection": {
+    "expected": 13,
+    "found": 13,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 13
+  },
+  "python-flask/data_access": {
+    "expected": 16,
+    "found": 16,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 16
+  },
+  "python-flask/entry_point": {
+    "expected": 18,
+    "found": 18,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 18
+  },
+  "python-flask/external_call": {
+    "expected": 6,
+    "found": 6,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 6
+  },
+  "python-flask/message": {
+    "expected": 9,
+    "found": 9,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 9
+  },
+  "python-flask/smell": {
+    "expected": 3,
+    "found": 3,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 3
+  },
+  "python-flask/stack": {
+    "expected": 7,
+    "found": 7,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 7
+  },
+  "scan/duplicate_folder": {
+    "expected": 2,
+    "found": 2,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 2
+  },
+  "scan/pruned": {
+    "expected": 13,
+    "found": 13,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 13
+  },
+  "scan/retired_candidate": {
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
+  }
+}

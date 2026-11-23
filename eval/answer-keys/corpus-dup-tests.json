@@ -1,0 +1,11 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/dup-tests",
+  "exhaustive": true,
+  "note": "Duplicate folders under test paths are ignored.",
+  "must_exist": [],
+  "must_not_exist": [
+    {"kind": "duplicate_folder", "stack": "scan", "path": "tests/one/"},
+    {"kind": "duplicate_folder", "stack": "scan", "path": "tests/two/"}
+  ]
+}

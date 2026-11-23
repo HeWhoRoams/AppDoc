@@ -1,0 +1,12 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/razor-ui",
+  "exhaustive": true,
+  "note": "A .razor page with @page is a ui_page.",
+  "must_exist": [
+    {"kind": "entry_point", "stack": "aspnet-core", "path": "Pages/Orders.razor", "line": 1, "name": "/orders", "detail": {"type": "page"}},
+    {"kind": "stack", "stack": "aspnet-core", "path": "Program.cs", "name": "aspnet-core", "detail": {"supported": true, "capabilities": ["entry_point.page", "ui_page"]}},
+    {"kind": "ui_page", "stack": "aspnet-core", "path": "Pages/Orders.razor", "line": 1, "name": "Pages/Orders.razor"}
+  ],
+  "must_not_exist": []
+}

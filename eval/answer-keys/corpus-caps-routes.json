@@ -1,0 +1,15 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/caps-routes",
+  "exhaustive": true,
+  "note": "Routes imply the entry_point.route capability on the Stack Fact.",
+  "must_exist": [
+    {"kind": "dependency", "stack": "generic", "path": "requirements.txt", "line": 1, "name": "flask", "detail": {"manager": "pip"}},
+    {"kind": "owner_file", "stack": "generic", "path": "appdoc-context.md", "name": "appdoc-context.md", "detail": {"kind": "context"}},
+    {"kind": "entry_point", "stack": "python-flask", "path": "app/main.py", "line": 5, "name": "/", "detail": {"type": "route", "method": "GET"}},
+    {"kind": "smell", "stack": "python-flask", "path": "app/main.py", "line": 6, "detail": {"pattern": "hardcoded-credential-constant"}},
+    {"kind": "stack", "stack": "python-flask", "path": "requirements.txt", "name": "python-flask", "detail": {"supported": true, "capabilities": ["entry_point.route", "smell"]}},
+    {"kind": "pruned", "stack": "scan", "path": "docs/appdoc/", "name": "AppDoc output"}
+  ],
+  "must_not_exist": []
+}

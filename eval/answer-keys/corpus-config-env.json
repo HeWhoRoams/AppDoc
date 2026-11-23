@@ -1,0 +1,22 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/config-env",
+  "exhaustive": true,
+  "note": "Env-var reads are role env, never an app secret; DEBUG is an app key; docs/appdoc is pruned.",
+  "must_exist": [
+    {"kind": "config_key", "stack": "generic", "path": "appsettings.json", "line": 2, "name": "DEBUG", "detail": {"use": "define", "secret_location": false, "role": "app"}},
+    {"kind": "dependency", "stack": "generic", "path": "requirements.txt", "line": 1, "name": "flask", "detail": {"manager": "pip"}},
+    {"kind": "owner_file", "stack": "generic", "path": "appdoc-context.md", "name": "appdoc-context.md", "detail": {"kind": "context"}},
+    {"kind": "config_key", "stack": "python-flask", "path": "app/main.py", "line": 4, "name": "DATABASE_URL", "detail": {"use": "read", "secret_location": false, "role": "env"}},
+    {"kind": "config_key", "stack": "python-flask", "path": "app/main.py", "line": 5, "name": "API_TOKEN", "detail": {"use": "read", "secret_location": false, "role": "env"}},
+    {"kind": "config_key", "stack": "python-flask", "path": "app/main.py", "line": 6, "name": "DEBUG", "detail": {"use": "read", "secret_location": false, "role": "app"}},
+    {"kind": "stack", "stack": "python-flask", "path": "requirements.txt", "name": "python-flask", "detail": {"supported": true, "capabilities": ["config_key"]}},
+    {"kind": "pruned", "stack": "scan", "path": "docs/appdoc/", "name": "AppDoc output"}
+  ],
+  "must_not_exist": [
+    {"kind": "config_key", "stack": "python-flask", "name": "DATABASE_URL", "detail": {"secret_location": true}},
+    {"kind": "config_key", "stack": "python-flask", "name": "API_TOKEN", "detail": {"secret_location": true}},
+    {"kind": "config_key", "stack": "python-flask", "name": "DEBUG", "detail": {"secret_location": true}},
+    {"kind": "config_key", "stack": "generic", "name": "DEBUG", "detail": {"secret_location": true}}
+  ]
+}

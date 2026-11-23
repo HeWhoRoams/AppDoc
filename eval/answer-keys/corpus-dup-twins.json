@@ -1,0 +1,10 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/dup-twins",
+  "exhaustive": true,
+  "note": "alpha/ and beta/ share five files: reported once as a < b.",
+  "must_exist": [
+    {"kind": "duplicate_folder", "stack": "scan", "path": "alpha/", "name": "beta/"}
+  ],
+  "must_not_exist": []
+}
