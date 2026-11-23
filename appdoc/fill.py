@@ -11,8 +11,9 @@ import os
 import re
 import sys
 
+from . import notes as notes_mod
 from . import version
-from .textutil import plural
+from .textutil import plural, read_text
 from .stacks.generic import GENERIC_KINDS
 
 BLOCK_RE = re.compile(r"(<!--\s*appdoc:generated\s+([\w-]+)\s*-->)(.*?)(<!--\s*/appdoc:generated\s+\2\s*-->)", re.S)
@@ -265,12 +266,7 @@ def _appendix_a(doc: dict, ctx: dict | None = None) -> str:
     path = os.path.join(out_dir, register.REGISTER) if out_dir else None
     reg = None
     if path and os.path.isfile(path):
-        with open(path, "rb") as fh:
-            raw = fh.read()
-        try:
-            reg = register.parse(raw.decode("utf-8"))
-        except UnicodeDecodeError:
-            reg = register.parse(raw.decode("cp1252", errors="replace"))
+        reg = register.parse(read_text(path))
     coverage = None
     text = (ctx or {}).get("text")
     if reg is not None and reg.performed and text is not None:
@@ -289,10 +285,20 @@ RENDERERS = {"scan-coverage": _scan_coverage, "entry-points": _entry_points, "co
              "scheduled-jobs": _scheduled_jobs, "appendix-a": _appendix_a}
 
 
-def render_block(name: str, doc: dict, ctx: dict | None = None) -> str | None:
-    """The text `fill` writes for a block. `ctx` is {"out_dir": ..., "text": Narrative}; only appendix-a reads it."""
+def generated_body(name: str, doc: dict, ctx: dict | None = None) -> str | None:
+    """A block as the renderer writes it from the Facts, without notes (what a note's `block_sha` hashes)."""
     fn = RENDERERS.get(name)
     return fn(doc, ctx) if fn else None
+
+
+def render_block(name: str, doc: dict, ctx: dict | None = None) -> str | None:
+    """The text `fill` writes for a block: the generated body, then the block's notes from notes.jsonl in
+    `ctx["out_dir"]` (one paragraph each). `ctx` is {"out_dir": ..., "text": Narrative}; appendix-a reads the rest."""
+    body = generated_body(name, doc, ctx)
+    if body is None:
+        return None
+    mine = notes_mod.load((ctx or {}).get("out_dir")).for_block(name)
+    return "\n\n".join([body] + [notes_mod.render(n) for n in mine])
 
 
 def mask_blocks(text: str, names) -> str:

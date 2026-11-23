@@ -17,7 +17,7 @@ COMMAND_HELP = {
     "check": "verify the Narrative; exit 0 pass, 2 problems, 1 tool error",
     "render": "write application-documentation.html",
     "seal": "write claim_sha into the register rows that lack one; --audit --date records the audit",
-    "build": "seal, fill, check and render in one step",
+    "build": "seal (rows and notes), fill, check and render in one step",
     "gate": "CI gate: regenerate the Facts and compare with the committed facts.json, then check; "
             "exit 0 pass, 1 tool error, 2 Facts changed, 3 AppDoc upgraded",
 }
@@ -137,6 +137,9 @@ def main(argv=None) -> int:
             n = check.seal_register(args.target, out_dir)
             if n:
                 print(f"sealed {n} row(s)")
+            n = check.seal_notes(args.target, out_dir)
+            if n:
+                print(f"sealed {n} note(s)")
             rc = fill.run(args.target, out_dir)
             if rc != 0:
                 return rc

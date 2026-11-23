@@ -16,6 +16,7 @@ from . import __version__, version
 from . import context
 from . import docmodel as dm
 from . import fill as fill_mod
+from . import notes as notes_mod
 from . import register as reg_mod
 from . import scan
 from . import template_spec as spec
@@ -23,7 +24,7 @@ from .citations import KNOWN_BARE_FILES, OWNER_CONTEXT, Citation, find_citations
 from .facts import fact_id
 from .secrets import find_secret_shapes
 from .textnorm import normalize_newlines, normalize_text
-from .textutil import plural
+from .textutil import plural, read_text
 
 NARRATIVE = "application-documentation.md"
 FACTS = "facts.json"
@@ -133,13 +134,7 @@ _PROSE_TOTAL = {  # noun -> (entry_point_counts key, what the Facts count)
 }
 
 
-def _read_text(path: str) -> str:
-    with open(path, "rb") as fh:
-        raw = fh.read()
-    try:
-        return raw.decode("utf-8")
-    except UnicodeDecodeError:
-        return raw.decode("cp1252", errors="replace")
+_read_text = read_text   # the shared reader (textutil)
 
 
 def _strip_comments(text: str) -> str:
@@ -712,6 +707,24 @@ def seal_register(target, out_dir, audit: bool = False, date: str | None = None)
         if sha:
             claim_shas[str(row["id"])] = sha
     return reg_mod.seal(reg_path, claim_shas, sealed_by, audit_fields)
+
+
+def seal_notes(target, out_dir) -> int:
+    """Write block_sha into every note of notes.jsonl that lacks one (the sha of its block's generated body, notes
+    excluded). Never overwrites one. Returns notes sealed; 0 when there is no notes file or no Facts."""
+    path = os.path.join(out_dir, notes_mod.NOTES)
+    facts_path = os.path.join(out_dir, FACTS)
+    if not os.path.isfile(path) or not os.path.isfile(facts_path):
+        return 0
+    facts = json.loads(_read_text(facts_path))
+    md = os.path.join(out_dir, NARRATIVE)
+    ctx = {"out_dir": out_dir, "target": target, "text": _read_text(md) if os.path.isfile(md) else None}
+    shas = {}
+    for _, note in notes_mod.parse(_read_text(path)).notes:
+        body = fill_mod.generated_body(note["block"], facts, ctx)
+        if note["block_sha"] == "" and body is not None:
+            shas[note["block"]] = notes_mod.body_sha(body)
+    return notes_mod.seal(path, shas)
 
 
 def _c2_per_claim(lines, s10, add):

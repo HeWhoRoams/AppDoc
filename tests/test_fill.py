@@ -361,6 +361,49 @@ class AppendixTests(unittest.TestCase):
         self.assertIn("A claim", out)
 
 
+class NotesTests(unittest.TestCase):
+    """docs/appdoc/notes.jsonl: limitations of a generated block live as data and `fill` renders them inside it."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.doc = doc(route("web/a.py", 1))
+
+    def write_notes(self, *notes):
+        with open(os.path.join(self.tmp.name, "notes.jsonl"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write("".join(json.dumps(n) + "\n" for n in notes))
+
+    NOTE = {"block": "entry-points", "text": "Routes registered by decorator are not listed",
+            "cites": ["web/a.py:1"], "block_sha": ""}
+
+    def test_notes_rendered_in_block(self):
+        self.write_notes(self.NOTE, dict(self.NOTE, block="scheduled-jobs", text="elsewhere", cites=[]),
+                         dict(self.NOTE, text="A second note", cites=["web/a.py:1", "web/b.py"]))
+        ctx = {"out_dir": self.tmp.name}
+        plain = fill.render_block("entry-points", self.doc)
+        out = fill.render_block("entry-points", self.doc, ctx)
+        self.assertEqual(out, plain + "\n\nKnown extractor limitation: Routes registered by decorator are not listed "
+                                     "(`web/a.py:1`)\n\nKnown extractor limitation: A second note (`web/a.py:1`, `web/b.py`)")
+        self.assertNotIn("elsewhere", out)                   # a note belongs to its own block only
+        self.assertIn("Known extractor limitation: elsewhere", fill.render_block("scheduled-jobs", self.doc, ctx))
+        self.assertEqual(fill.render_block("config-reference", self.doc, ctx),
+                         fill.render_block("config-reference", self.doc))
+        # the generated body is what block_sha hashes: the notes are not part of it
+        self.assertEqual(fill.generated_body("entry-points", self.doc, ctx), plain)
+
+    def test_notes_survive_fill_and_fill_is_idempotent(self):
+        self.write_notes(self.NOTE)
+        text = "# T\n<!-- appdoc:generated entry-points -->\n<!-- /appdoc:generated entry-points -->\n"
+        ctx = {"out_dir": self.tmp.name}
+        once, _ = fill.fill_text(text, self.doc, ctx)
+        self.assertIn("Known extractor limitation: Routes registered", once)
+        self.assertEqual(fill.fill_text(once, self.doc, ctx)[0], once)
+
+    def test_no_notes_file_or_no_out_dir_changes_nothing(self):
+        self.assertEqual(fill.render_block("entry-points", self.doc, {"out_dir": self.tmp.name}),
+                         fill.render_block("entry-points", self.doc))
+
+
 class FillTextTests(unittest.TestCase):
     TEXT = ("# T\n\n<!-- appdoc:generated entry-points -->\nold\n<!-- /appdoc:generated entry-points -->\n\n"
             "<!-- appdoc:generated scheduled-jobs -->\n<!-- /appdoc:generated scheduled-jobs -->\n"

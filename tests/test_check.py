@@ -475,6 +475,36 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(spec.generated_blocks((2, 4)), {k: v for k, v in spec.GENERATED.items() if k != "14"})
         self.assertEqual(spec.generated_blocks((2, 7)), spec.GENERATED)
 
+    # --- notes.jsonl (T27.11, C18 in T27.12)
+
+    def write_notes(self, *notes):
+        with open(os.path.join(self.out, "notes.jsonl"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write("".join(json.dumps(n) + "\n" for n in notes))
+
+    def read_notes(self):
+        with open(os.path.join(self.out, "notes.jsonl"), encoding="utf-8") as fh:
+            return [json.loads(l) for l in fh if l.strip()]
+
+    NOTE = {"block": "entry-points", "text": "Routes registered by decorator are not listed",
+            "cites": ["app/main.py:2"], "block_sha": ""}
+
+    def test_c18_build_seals_empty_sha(self):
+        from appdoc import __main__ as cli
+        self._write_narrative(build_doc())
+        self.write_notes(self.NOTE, dict(self.NOTE, block="scheduled-jobs", text="kept", block_sha="a" * 12))
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(cli.main(["build", self.target]), 0)
+        first, second = self.read_notes()
+        body = fill.generated_body("entry-points", self.facts, {"out_dir": self.out, "target": self.target})
+        from appdoc import notes
+        self.assertEqual(first["block_sha"], notes.body_sha(body))
+        self.assertRegex(first["block_sha"], r"^[0-9a-f]{12}$")
+        self.assertEqual(second["block_sha"], "a" * 12)               # never overwrites an existing one
+        self.assertEqual(check.seal_notes(self.target, self.out), 0)  # and sealing twice is a no-op
+        with open(os.path.join(self.out, "application-documentation.md"), encoding="utf-8") as fh:
+            self.assertIn("Known extractor limitation: Routes registered by decorator are not listed (`app/main.py:2`)",
+                          fh.read())
+
     def test_c11_2_4_document_keeps_the_old_duplicate_message(self):
         self.write_register(AUDIT, ROWS + [self.SECOND_V1])
         code, report, _ = self.run_check(build_doc())
