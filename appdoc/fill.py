@@ -12,6 +12,7 @@ import re
 import sys
 
 from . import version
+from .textutil import plural
 from .stacks.generic import GENERIC_KINDS
 
 BLOCK_RE = re.compile(r"(<!--\s*appdoc:generated\s+([\w-]+)\s*-->)(.*?)(<!--\s*/appdoc:generated\s+\2\s*-->)", re.S)
@@ -20,11 +21,6 @@ PRUNED_CAP = 50
 CONFIG_CAP = 150
 ENTRY_CAP = 100
 LIST_CAP = 10  # retired-by-name and duplicate-folder lists in scan coverage
-
-
-def plural(n: int, singular: str, plural_form: str | None = None) -> str:
-    """"1 file", "0 files", "2 entries": the count and the noun in the right number (no "(s)")."""
-    return f"{n} {singular if n == 1 else (plural_form or singular + 's')}"
 
 
 def _cell(s: str) -> str:

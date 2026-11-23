@@ -16,6 +16,7 @@ import re
 
 from .citations import parse_span
 from .template_spec import version_tuple
+from .textutil import plural
 
 REGISTER = "evidence.jsonl"
 RESULTS = ("Supported", "Corrected", "Downgraded", "Dismissed", "Answerable")
@@ -197,7 +198,6 @@ def _audit_state(reg: Register | None) -> list[str]:
 def _coverage(reg: Register, coverage) -> list[str]:
     c = reg.counts()
     parts = [f"{c[r]} {r}" for r in RESULTS if r in COUNTED_ALWAYS or c[r]]
-    from .fill import plural
     out = [f"{plural(len(reg.rows), 'row')}: {', '.join(parts)}. "
            "Each Supported or Corrected row's anchor text was found in its cited lines by the Check."]
     if coverage:

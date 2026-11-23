@@ -23,6 +23,7 @@ from .citations import KNOWN_BARE_FILES, OWNER_CONTEXT, Citation, find_citations
 from .facts import fact_id
 from .secrets import find_secret_shapes
 from .textnorm import normalize_newlines, normalize_text
+from .textutil import plural
 
 NARRATIVE = "application-documentation.md"
 FACTS = "facts.json"
@@ -1314,10 +1315,10 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         advisory.append("")
     if dup_missing:
         advisory += ["## Duplicate folders not named in section 2 (advisory)", "",
-                     f"{fill_mod.plural(len(dup_missing), 'pair')} of byte-identical folders "
+                     f"{plural(len(dup_missing), 'pair')} of byte-identical folders "
                      f"{'is' if len(dup_missing) == 1 else 'are'} not named in section 2. This is not a problem; "
                      "name both in 2.1 and say which copy is live. `appdoc check --strict` fails on it.", ""]
-        advisory += [f"- `{d['a']}` and `{d['b']}` ({fill_mod.plural(d['files'], 'file')})" for d in dup_missing[:RULE_CAP]]
+        advisory += [f"- `{d['a']}` and `{d['b']}` ({plural(d['files'], 'file')})" for d in dup_missing[:RULE_CAP]]
         advisory.append("")
     if facts is not None and prov is None:
         advisory += ["## Provenance missing (advisory)", "",
@@ -1366,7 +1367,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     if uncited and not strict:
         note.append(f"Advisory: {sum(n for _, n, _ in uncited)} entry point files are not cited (see {REPORT}).")
     if dup_missing:
-        note.append(f"Advisory: {fill_mod.plural(len(dup_missing), 'duplicate folder pair')} "
+        note.append(f"Advisory: {plural(len(dup_missing), 'duplicate folder pair')} "
                     f"{'is' if len(dup_missing) == 1 else 'are'} not named in section 2 (see {REPORT}).")
     if quant_hits and not strict:
         note.append(f"Advisory: {len(quant_hits)} universal claim{'s' if len(quant_hits) != 1 else ''} "
