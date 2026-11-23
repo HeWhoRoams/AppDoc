@@ -1,4 +1,9 @@
-"""Pins the 2.4 example metrics (docs/diagnostic-2.4-comparison.md §1) as a regression baseline."""
+"""Pins the example metrics as a regression baseline.
+
+The 2.4 numbers are pinned against docs/diagnostic-2.4-comparison.md only (the 2.4 example folders are gone, they
+remain in git history). The 2.5.0 numbers pin examples/previous; the regression test compares examples/previous
+(2.5.0) with examples/current (2.6.0).
+"""
 import os
 import unittest
 
@@ -6,6 +11,8 @@ from tests import diag_metrics
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXAMPLES = os.path.join(ROOT, "examples")
+PREVIOUS = os.path.join(EXAMPLES, "previous")
+CURRENT = os.path.join(EXAMPLES, "current")
 
 ARTIFACTS = (
     "application-documentation.md", "check-report.md", "evidence.jsonl",
@@ -24,33 +31,6 @@ BASELINE = {
 
 
 class DiagMetricsBaseline(unittest.TestCase):
-    def _analyze(self, name):
-        if not os.path.isdir(os.path.join(EXAMPLES, name)):
-            self.skipTest(f"example {name} not present")
-        return diag_metrics.analyze(EXAMPLES, name)
-
-    def test_reads_all_six_artifacts(self):
-        for name in BASELINE:
-            with self.subTest(example=name):
-                d = os.path.join(EXAMPLES, name)
-                if not os.path.isdir(d):
-                    self.skipTest(f"example {name} not present")
-                for art in ARTIFACTS:
-                    self.assertTrue(os.path.isfile(os.path.join(d, art)), art)
-                m = diag_metrics.analyze(EXAMPLES, name)
-                for k in KEYS:
-                    self.assertIn(k, m)
-                self.assertGreater(m["words"], 0)
-                self.assertIsNotNone(m["scan"])
-
-    def test_pinned_baseline(self):
-        for name, want in BASELINE.items():
-            with self.subTest(example=name):
-                m = self._analyze(name)
-                got = (m["check"], m["citations"], m["pct_cites_with_line"],
-                       m["audit_rows"], m["pct_supported"], m["facts_total"])
-                self.assertEqual(got, want)
-
     def test_baseline_matches_diagnostic_doc(self):
         """BASELINE equals docs/diagnostic-2.4-comparison.md section 1 (the doc is the source of truth)."""
         import re
@@ -73,10 +53,6 @@ class DiagMetricsBaseline(unittest.TestCase):
                 self.assertEqual(got, BASELINE[ex + "-2.4"])
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 # 2.5.0 regeneration (docs/diagnostic-2.4-comparison.md "Post-remediation (2.5.0)")
 # name -> (check, citations, pct_cites_with_line, audit_rows, pct_supported, facts_total)
 POST_2_5 = {
@@ -88,10 +64,25 @@ POST_2_5 = {
 
 
 class DiagMetricsPost25(unittest.TestCase):
-    def _m(self, name):
-        if not os.path.isdir(os.path.join(EXAMPLES, name)):
-            self.skipTest(f"example {name} not present")
-        return diag_metrics.analyze(EXAMPLES, name)
+    def _m(self, name, base=PREVIOUS):
+        if not os.path.isdir(os.path.join(base, name)):
+            self.skipTest(f"example {name} not present under {base}")
+        return diag_metrics.analyze(base, name)
+
+    def test_reads_all_six_artifacts(self):
+        for base in (PREVIOUS, CURRENT):
+            for name in POST_2_5:
+                with self.subTest(base=os.path.basename(base), example=name):
+                    d = os.path.join(base, name)
+                    if not os.path.isdir(d):
+                        self.skipTest(f"example {name} not present under {base}")
+                    for art in ARTIFACTS:
+                        self.assertTrue(os.path.isfile(os.path.join(d, art)), art)
+                    m = diag_metrics.analyze(base, name)
+                    for k in KEYS:
+                        self.assertIn(k, m)
+                    self.assertGreater(m["words"], 0)
+                    self.assertIsNotNone(m["scan"])
 
     def test_pinned_post_2_5(self):
         for name, want in POST_2_5.items():
@@ -101,19 +92,20 @@ class DiagMetricsPost25(unittest.TestCase):
                        m["audit_rows"], m["pct_supported"], m["facts_total"])
                 self.assertEqual(got, want)
 
-    def test_no_regression_against_2_4(self):
+    def test_no_regression_against_previous(self):
+        """examples/current (2.6.0) does not score below examples/previous (2.5.0)."""
         for name in POST_2_5:
             with self.subTest(example=name):
-                new = self._m(name)
-                old = self._m(name + "-2.4")
+                old = self._m(name, PREVIOUS)
+                new = self._m(name, CURRENT)
+                self.assertEqual(new["check"], "PASS")
                 self.assertGreaterEqual(new["pct_supported"], old["pct_supported"])
                 self.assertGreaterEqual(new["pct_cites_with_line"], old["pct_cites_with_line"])
 
 
-
-# Facts-level baselines the 2.6.0 work must move, read from the committed 2.5.0 examples (T26.13).
+# Facts-level baselines the 2.6.0 work had to move, read from examples/previous (the committed 2.5.0 examples, T26.13).
 # The 2.4 values were retired 2/9/40/0, 569 unclassified keys, bare-name cites 504/1,013 (other layout).
-# Each T26.x task that moves one of these re-pins its row when the examples are regenerated (T26.64).
+# They pin previous/. The 2.6.0 values of examples/current are FACTS_2_6 below.
 FACTS_2_5 = {
     "flaskr-tdd": dict(retired_name=0, retired_content=0, duplicate_pairs=0, capabilities=[], stacks=1,
                        secret_locations=8, not_classified=None, bare_name_cites=67, cites_total=356),
@@ -127,10 +119,10 @@ FACTS_2_5 = {
 
 
 class DiagMetricsFactsBaseline(unittest.TestCase):
-    def _b(self, name):
-        if not os.path.isdir(os.path.join(EXAMPLES, name)):
-            self.skipTest(f"example {name} not present")
-        return diag_metrics.baselines(EXAMPLES, name)
+    def _b(self, name, base=PREVIOUS):
+        if not os.path.isdir(os.path.join(base, name)):
+            self.skipTest(f"example {name} not present under {base}")
+        return diag_metrics.baselines(base, name)
 
     def test_pinned_facts_level_baselines(self):
         for name, want in FACTS_2_5.items():
@@ -146,10 +138,10 @@ class DiagMetricsFactsBaseline(unittest.TestCase):
         tmp = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, tmp, True)
         for name in ("flaskr-tdd",):
-            if not os.path.isdir(os.path.join(EXAMPLES, name)):
+            if not os.path.isdir(os.path.join(PREVIOUS, name)):
                 self.skipTest("example not present")
             dst = os.path.join(tmp, name)
-            shutil.copytree(os.path.join(EXAMPLES, name), dst)
+            shutil.copytree(os.path.join(PREVIOUS, name), dst)
             old = diag_metrics.baselines(tmp, name)
             self.assertEqual(old["generator"], "2.5.0")
             fp = os.path.join(dst, "facts.json")
@@ -164,3 +156,7 @@ class DiagMetricsFactsBaseline(unittest.TestCase):
             self.assertEqual(new["generator"], "2.6.0")
             self.assertEqual({k: v for k, v in new.items() if k != "generator"},
                              {k: v for k, v in old.items() if k != "generator"})
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -2,7 +2,7 @@
 emits a comparable metric table. Stdlib only.
 
 Usage: python tests/diag_metrics.py <base_dir> <name1> <name2> ...
-  where each <name> is a folder under <base_dir> (e.g. examples/flaskr-tdd-2.4).
+  where each <name> is a folder under <base_dir> (e.g. examples/previous or examples/current).
 """
 from __future__ import annotations
 import json, os, re, sys, collections
@@ -146,6 +146,14 @@ def baselines(base, name):
         "cites_total": len(cites),
         "generator": doc.get("generator") or prov.get("generator"),
     }
+
+def config_reference(base, name):
+    """(application keys shown, application keys total, (keys, files) not classified or None) from section 16.6."""
+    narrative = _read(os.path.join(base, name, "application-documentation.md"))
+    m = re.search(r"Shown (\d+) of (\d+) application keys", narrative)
+    nc = re.search(r"(\d+) keys? in (\d+) file\S* were not classified", narrative)
+    return (int(m.group(1)) if m else 0, int(m.group(2)) if m else 0,
+            (int(nc.group(1)), int(nc.group(2))) if nc else None)
 
 def main():
     base = sys.argv[1]

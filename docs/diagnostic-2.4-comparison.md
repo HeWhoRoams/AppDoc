@@ -1,6 +1,6 @@
 # AppDoc v2.4.0 — Comparative Diagnostic (four public examples)
 
-**Date:** 2026-11-13 · **Scope:** `examples/{flaskr-tdd,spring-petclinic,eShop,gitea}-2.4` vs their 2.3 originals.
+**Date:** 2026-11-13 · **Scope:** `examples/{flaskr-tdd,spring-petclinic,eShop,gitea}-2.4` vs their 2.3 originals. *Since 2.6.0 those folders are deleted (see git history); `tests/test_diag_metrics.py` pins section 1 against this document only. Examples now live in `examples/current/` and `examples/previous/`.*
 **Method:** (1) objective metrics computed from the six artifacts per example (`tmp/diag_metrics.py`); (2) four parallel independent deep-dives (one per example) reading the narrative, evidence register, facts summary and check report. helpweb is excluded (internal app, Decision D5).
 
 All four 2.4 docs **Check PASS** with every citation resolved. The differences below are about *quality of the narrative and the audit*, not structural validity.

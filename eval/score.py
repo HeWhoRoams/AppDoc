@@ -4,7 +4,7 @@
     python eval/score.py --all [--root DIR] [--update-baseline]
 
 `--all` is the release gate (tools/release.py): it scores the committed example of every narrative key
-(`examples/current/<repo>/` when it exists, else `examples/<repo>/`) against `eval/narrative-baseline.json` and
+(`examples/current/<repo>/`; `examples/previous/<repo>/` when there is no current) against `eval/narrative-baseline.json` and
 exits 1 when an item scores below its baseline or a key cites a file or line the clone does not have. It needs
 local clones of the example repositories under `--root` (or `APPDOC_EVAL_ROOT`), one folder per key name; with
 no root or no clone it prints why and exits 0 without scoring. `--update-baseline` rewrites the baseline from the
@@ -127,9 +127,9 @@ def narrative_keys(keys_dir: str = KEYS_DIR) -> dict:
 
 
 def example_document(repo: str, examples_dir: str | None = None) -> str:
-    """Path of the committed example Narrative scored for `repo` (examples/current/<repo> wins over examples/<repo>)."""
+    """Path of the committed example Narrative scored for `repo` (examples/current/<repo> wins over examples/previous/<repo>)."""
     base = examples_dir or os.path.join(os.path.dirname(HERE), "examples")
-    for rel in (os.path.join("current", repo), repo):
+    for rel in (os.path.join("current", repo), os.path.join("previous", repo)):
         path = os.path.join(base, rel, "application-documentation.md")
         if os.path.isfile(path):
             return path

@@ -1,6 +1,5 @@
-"""Release guards (remediation plan 2.6, 6.3): generated docs, changelog heading, gate pin, release script.
+"""Release guards (remediation plan 2.6, 6.3, 7.2): generated docs, changelog heading, gate pin, release script, example layout.
 
-``test_examples_current_and_previous`` is added by the release stream (T26.63), not here.
 """
 import importlib.util
 import os
@@ -245,6 +244,76 @@ class ReleaseScript(unittest.TestCase):
             gen = subprocess.run([sys.executable, os.path.join(tmp, "tools", "gen_docs.py"), "--check"],
                                  capture_output=True, text=True)
             self.assertEqual(gen.returncode, 0, gen.stdout + gen.stderr)
+
+
+EXAMPLE_APPS = ("eShop", "flaskr-tdd", "gitea", "spring-petclinic")
+
+
+class ExampleLayout(unittest.TestCase):
+    """examples/current and examples/previous (remediation plan 2.6, 7.2)."""
+
+    def test_examples_current_and_previous(self):
+        cur, prev = (os.path.join(ROOT, "examples", d) for d in ("current", "previous"))
+        self.assertTrue(os.path.isdir(cur), "examples/current is missing")
+        self.assertTrue(os.path.isdir(prev), "examples/previous is missing")
+        self.assertEqual([d for d in sorted(os.listdir(os.path.join(ROOT, "examples"))) if d != "helpweb"],
+                         ["current", "previous"], "only current and previous belong under examples/")
+        cur_v, prev_v = (slurp(d, "VERSION").strip() for d in (cur, prev))
+        self.assertLess(spec.version_tuple(prev_v), spec.version_tuple(cur_v))
+        for app in EXAMPLE_APPS:
+            for d, v in ((cur, cur_v), (prev, prev_v)):
+                self.assertEqual(slurp(d, app, "VERSION").strip(), v, f"{d}/{app}/VERSION")
+                self.assertTrue(os.path.isfile(os.path.join(d, app, "application-documentation.md")))
+        self.assertEqual(cur_v, appdoc.__version__.split(".dev")[0])
+
+    def test_rotation_moves_current_to_previous_and_writes_the_new_current(self):
+        release = load_tool("appdoc_release", RELEASE)
+        with tempfile.TemporaryDirectory() as tmp:
+            ex, docs, clones = (os.path.join(tmp, d) for d in ("examples", "docs", "clones"))
+            os.makedirs(docs)
+            for d, v in (("previous", "2.4.0"), ("current", "2.5.0")):
+                os.makedirs(os.path.join(ex, d, "app"))
+                release.write_version_file(os.path.join(ex, d), v)
+                release.write_version_file(os.path.join(ex, d, "app"), v)
+                with open(os.path.join(ex, d, "app", "marker.txt"), "w") as fh:
+                    fh.write(v)
+            os.makedirs(os.path.join(clones, "app"))
+            calls = []
+
+            def fake(app, clone, previous_dir, dest):
+                calls.append(app)
+                self.assertEqual(slurp(previous_dir, "marker.txt"), "2.5.0")
+                os.makedirs(dest)
+                with open(os.path.join(dest, "marker.txt"), "w") as fh:
+                    fh.write("new")
+
+            release.write_comparison = lambda *a, **k: None
+            msg = release.rotate_examples("2.6.0", ex, clones, regenerate=fake, docs_dir=docs)
+            self.assertIn("rotated", msg)
+            self.assertEqual(calls, ["app"])
+            self.assertEqual(slurp(ex, "previous", "VERSION").strip(), "2.5.0")
+            self.assertEqual(slurp(ex, "previous", "app", "marker.txt"), "2.5.0")
+            self.assertEqual(slurp(ex, "current", "VERSION").strip(), "2.6.0")
+            self.assertEqual(slurp(ex, "current", "app", "VERSION").strip(), "2.6.0")
+            self.assertEqual(slurp(ex, "current", "app", "marker.txt"), "new")
+            self.assertEqual(release.rotate_examples("2.6.0", ex, clones, regenerate=fake, docs_dir=docs),
+                             "examples already at 2.6.0; not rotated")
+            self.assertEqual(calls, ["app"])
+            with self.assertRaises(SystemExit):
+                release.rotate_examples("2.5.5", ex, clones, regenerate=fake, docs_dir=docs)
+
+    def test_rotation_without_clones_changes_nothing(self):
+        release = load_tool("appdoc_release2", RELEASE)
+        with tempfile.TemporaryDirectory() as tmp:
+            ex = os.path.join(tmp, "examples")
+            os.makedirs(os.path.join(ex, "current", "app"))
+            release.write_version_file(os.path.join(ex, "current"), "2.5.0")
+            with mock.patch.dict(os.environ, {}, clear=False):
+                os.environ.pop(release.EVAL_ROOT_ENV, None)
+                with self.assertRaises(SystemExit):
+                    release.rotate_examples("2.6.0", ex)
+            self.assertTrue(os.path.isdir(os.path.join(ex, "current", "app")))
+            self.assertFalse(os.path.exists(os.path.join(ex, "previous")))
 
 
 if __name__ == "__main__":
