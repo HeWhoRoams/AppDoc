@@ -95,6 +95,15 @@ class StacksReportingTests(unittest.TestCase):
         self.assertEqual(fill._stacks_reporting(doc(), "entry_point.job"), [])
 
 
+class NonePhraseTests(unittest.TestCase):
+    def test_none_phrase_names_the_reader(self):
+        self.assertEqual(fill.none_phrase(("config_key",)), "read by the generic reader")
+        self.assertEqual(fill.none_phrase(("dependency", "connection")), "read by the generic reader")
+        self.assertEqual(fill.none_phrase(("entry_point.job",), "jobs"), "No supported Stack reports jobs")
+        self.assertEqual(fill.none_phrase(("entry_point", "config_key"), "entry points"),
+                         "No supported Stack reports entry points")
+
+
 class ScheduledJobTests(unittest.TestCase):
     def test_16_7_no_supported_stack_reports_jobs(self):
         d = {"stacks": [stack("python-flask", "entry_point.route")], "facts": [route("a.py")]}

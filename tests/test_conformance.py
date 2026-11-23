@@ -23,9 +23,14 @@ from appdoc import fill
 from appdoc import facts as facts_mod
 from appdoc import secrets
 from appdoc import stacks
-from appdoc.stacks import MODULES
+from appdoc.stacks import MODULES, generic
 
 SAMPLES = os.path.join(os.path.dirname(__file__), "samples")
+
+
+# Kinds that stacks.generic.extract emits (it is not a registered Stack): exempt from per-stack capability checks.
+# A literal on purpose: adding a generic kind must be a deliberate edit here and in generic.GENERIC_KINDS.
+GENERIC_KINDS = frozenset({"config_key", "connection", "dependency", "file", "owner_file", "schema_object", "smell"})
 
 
 def _extract(sample_dir: str) -> dict:
@@ -165,6 +170,16 @@ class ConformanceTests(unittest.TestCase):
             for cap in stacks.capabilities_of(st):
                 if cap.startswith("entry_point."):
                     self.assertIn(cap.split(".", 1)[1], known, f"{st.id}: {cap} is neither counted nor listed uncounted")
+
+    def test_generic_kinds_exempt(self):
+        emitted = set()
+        for d in sorted(os.listdir(SAMPLES)):
+            if os.path.isdir(os.path.join(SAMPLES, d)):
+                emitted |= {f["kind"] for f in _extract(os.path.join(SAMPLES, d))["facts"] if f["stack"] == "generic"}
+        self.assertEqual(emitted, set(GENERIC_KINDS), "generic.extract emits a kind the literal does not list (or the reverse)")
+        self.assertEqual(generic.GENERIC_KINDS, GENERIC_KINDS)
+        for name in MODULES:  # owner_file is the generic reader's alone
+            self.assertNotIn("owner_file", self._kinds_of(self._capabilities(name)), name)
 
     def test_no_module_level_capability_alias(self):
         for name in MODULES:

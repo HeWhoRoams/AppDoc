@@ -12,6 +12,7 @@ import re
 import sys
 
 from . import version
+from .stacks.generic import GENERIC_KINDS
 
 BLOCK_RE = re.compile(r"(<!--\s*appdoc:generated\s+([\w-]+)\s*-->)(.*?)(<!--\s*/appdoc:generated\s+\2\s*-->)", re.S)
 TOP_CAP = 25
@@ -55,6 +56,14 @@ def _stacks_reporting(doc: dict, cap: str) -> list[str]:
         if any(c == cap or (c.startswith(cap + ".") and "." not in cap) for c in caps):
             out.append(s["name"])
     return out
+
+
+def none_phrase(kinds, noun: str | None = None) -> str:
+    """Why a block has nothing to list: the generic reader feeds these kinds (no Stack is needed), else no Stack reports them."""
+    kinds = tuple(kinds)
+    if kinds and all(k.split(".", 1)[0] in GENERIC_KINDS for k in kinds):
+        return "read by the generic reader"
+    return f"No supported Stack reports {noun or ' and '.join(kinds)}"
 
 
 def _names(stacks: list[str]) -> str:
@@ -177,7 +186,7 @@ def _scheduled_jobs(doc: dict, ctx: dict | None = None) -> str:
             return f"No scheduled or background jobs were extracted. Stacks that report jobs: {_names(can)}."
         detected = [s["name"] for s in _supported_stacks(doc)]
         if detected:
-            return f"No supported Stack reports jobs ({_names(detected)}); read the source for job runners."
+            return f"{none_phrase(('entry_point.job',), 'jobs')} ({_names(detected)}); read the source for job runners."
         return "No scheduled or background jobs were extracted."
     jobs.sort(key=lambda f: (f["path"], f["line"] or 0, f["name"]))
     out = ["| Job | Schedule | Enabled by default | Defined at | Stack |", "|---|---|---|---|---|"]

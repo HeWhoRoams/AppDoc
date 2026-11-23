@@ -22,6 +22,9 @@ from ..secrets import is_secret_key, find_secret_shapes
 from .base import iter_matches, line_of, strip_comments
 
 STACK_ID = "generic"
+# Fact kinds this reader emits (it is not a registered Stack). tests/test_conformance.py derives the set from
+# the samples and compares it with its own literal, so an addition is deliberate.
+GENERIC_KINDS = frozenset({"config_key", "connection", "dependency", "file", "owner_file", "schema_object", "smell"})
 
 CONFIG_NAMES_JSON = re.compile(r"^(appsettings(\..+)?|config|settings|local\.settings)\.json$", re.I)
 # Framework-defined application config names (closed set, R3): positive evidence for role `app`.
