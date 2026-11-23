@@ -296,5 +296,25 @@ class SealTests(unittest.TestCase):
         self.assertTrue(any("claim_sha" in e[1] for e in reg.errors))
 
 
+class SupersedesTests(unittest.TestCase):
+    def test_supersedes_parsed(self):
+        reg = reg_of(row(1), {**row(2), "supersedes": "E-1"}, {**row(3), "supersedes": ["E-1", "E-2"], "sealed_by": "audit"},
+                     {**row(4), "sealed_by": "upgrade"})
+        self.assertEqual(reg.errors, [])
+        self.assertEqual(register.OPTIONAL_KEYS, ("claim_sha", "supersedes", "sealed_by"))
+        self.assertEqual(reg.supersedes_of(reg.rows[1][1]), ["E-1"])
+        self.assertEqual(reg.supersedes_of(reg.rows[2][1]), ["E-1", "E-2"])
+        self.assertEqual(reg.supersedes_of(reg.rows[0][1]), [])
+        self.assertEqual({r["id"] for _, r in reg.live_rows()}, {"E-3", "E-4"})
+        self.assertEqual(reg.superseded_by("E-1"), "E-2")   # the first (lowest) superseding row
+
+    def test_supersedes_rejects_bad_shapes(self):
+        for bad in ("E-x", 3, ["E-1", 2], [], ""):
+            reg = reg_of(row(1), {**row(2), "supersedes": bad})
+            self.assertTrue(any("supersedes" in e[1] for e in reg.errors), bad)
+        reg = reg_of({**row(1), "sealed_by": "me"})
+        self.assertTrue(any("sealed_by" in e[1] for e in reg.errors))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -28,7 +28,8 @@ MAX_ANCHOR = 200
 _SINGLE_QUOTES = "'\u2018\u2019\u201a\u201b"      # PowerShell treats the curly ones as quotes too
 AUDITORS = ("independent", "same-session")
 ROW_KEYS = ("id", "ref", "claim", "result", "cites", "anchor", "limitation")
-OPTIONAL_KEYS = ("claim_sha",)
+OPTIONAL_KEYS = ("claim_sha", "supersedes", "sealed_by")
+SEALED_BY = ("audit", "upgrade")
 CLAIM_SHA_RE = re.compile(r"^[0-9a-f]{12}$")
 ID_RE = re.compile(r"^E-\d+$")
 REF_RE = re.compile(r"^(\d+(?:\.\d+)?)(?:/([A-Z]+-\d+))?$")
@@ -46,9 +47,32 @@ class Register:
     def performed(self) -> bool:
         return bool(self.audit and self.audit.get("performed"))
 
-    def counts(self) -> dict[str, int]:
-        c = {r: 0 for r in RESULTS}
+    @staticmethod
+    def supersedes_of(row: dict) -> list[str]:
+        """The ids a row supersedes, as a list ([] when the key is absent)."""
+        v = row.get("supersedes")
+        if v is None:
+            return []
+        return [v] if isinstance(v, str) else list(v)
+
+    def superseded_ids(self) -> set[str]:
+        return {t for _, row in self.rows for t in self.supersedes_of(row)}
+
+    def superseded_by(self, rid: str) -> str | None:
+        """The id of the first row (in file order) that supersedes `rid`, or None."""
         for _, row in self.rows:
+            if rid in self.supersedes_of(row):
+                return str(row["id"])
+        return None
+
+    def live_rows(self) -> list[tuple[int, dict]]:
+        """The rows no other row supersedes. Everything computed from the register uses these."""
+        gone = self.superseded_ids()
+        return [(no, row) for no, row in self.rows if str(row.get("id")) not in gone]
+
+    def counts(self, rows=None) -> dict[str, int]:
+        c = {r: 0 for r in RESULTS}
+        for _, row in (self.rows if rows is None else rows):
             if row.get("result") in c:
                 c[row["result"]] += 1
         return c
@@ -88,6 +112,16 @@ def parse(text: str) -> Register:
             continue
         if "claim_sha" in obj and not CLAIM_SHA_RE.match(str(obj["claim_sha"])):
             reg.errors.append((no, '"claim_sha" must be 12 lowercase hex characters'))
+            continue
+        if "supersedes" in obj:
+            sup = obj["supersedes"]
+            ids = [sup] if isinstance(sup, str) else sup
+            if (not isinstance(ids, list) or not ids
+                    or not all(isinstance(i, str) and ID_RE.match(i) for i in ids)):
+                reg.errors.append((no, '"supersedes" must be an E-<n> id or a non-empty list of them'))
+                continue
+        if "sealed_by" in obj and obj["sealed_by"] not in SEALED_BY:
+            reg.errors.append((no, f'"sealed_by" must be one of {", ".join(SEALED_BY)}'))
             continue
         reg.rows.append((no, obj))
     return reg
