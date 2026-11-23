@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import datetime
 import html
 import json
 import os
@@ -68,7 +67,6 @@ def _footer(target_name: str, out_dir: str) -> str:
             parts.append(f"Commit: {commit}")
     except (OSError, ValueError, AttributeError):
         pass
-    parts.append(f"Generated: {datetime.date.today().isoformat()}")
     report = os.path.join(out_dir, "check-report.md")
     if os.path.isfile(report):
         first = (_read(report).split("\n", 1)[0]).strip()

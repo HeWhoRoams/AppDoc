@@ -112,7 +112,7 @@ class PageTests(unittest.TestCase):
         for needle in ("my-app", "abc1234", "Check: FAIL (3 problems)", 'href="#overview"', 'href="#detail"',
                        "--brand: #6a0032", "&lt;script&gt;alert(1)&lt;/script&gt;"):
             self.assertIn(needle, h)
-        self.assertRegex(h, r"Generated: \d{4}-\d{2}-\d{2}")
+        self.assertNotIn("Generated:", h)  # R13: the page reads no clock, so rendering twice gives the same bytes
         self.assertEqual(h.count("<script>"), 1)  # only the Mermaid one
         self.assertIn("mermaid.initialize", h)
         self.assertNotIn("{{", h.split("<script>")[0])

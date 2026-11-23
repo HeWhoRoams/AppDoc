@@ -18,6 +18,7 @@ from . import template_spec as spec
 from .citations import OWNER_CONTEXT, Citation, find_citations, parse_span
 from .facts import fact_id
 from .secrets import find_secret_shapes
+from .textnorm import normalize_text
 
 NARRATIVE = "application-documentation.md"
 FACTS = "facts.json"
@@ -585,8 +586,7 @@ def _claim_sha(lines, heads, ids, ref):
         text = fill_mod.mask_blocks("\n".join(lines[h.idx: h.end]), spec.OPAQUE_BLOCKS)
     else:
         return None
-    text = dm.strip_comments(text)
-    text = " ".join(text.split())
+    text = " ".join(normalize_text(dm.strip_comments(text)).split())
     return hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
 
 
