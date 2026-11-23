@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+AppDoc 2.6.0 (in development): tooling and Facts release. See `docs/remediation-plan-2.6.md`.
+
 ## 2.5.0 — remediation of the 2.4 diagnostic
 
 Schema `appdoc-facts/6`. Template stays 2.4. Re-run `extract`, then `fill` and `build`; the gate exits with "AppDoc upgraded" until `facts.json` is re-extracted and committed.
