@@ -10,9 +10,9 @@ nothing in the Target (the one file it may write is the Check's own report, in t
 used, so a stale ``.appdoc-cache.json`` cannot mask a code change.
 
 Compared bytes are the canonical Facts text with the fields that belong to the checkout, not the code, neutralised
-on both sides: ``target.commit``, ``target.history`` and the git ``ownership`` Facts (a CI clone is usually
-shallow, and the docs are committed after the commit they describe). A version difference in ``provenance.json``
-is informational only.
+on both sides: ``target.commit``, ``target.history`` and the git ``ownership`` Facts (``detail.source == "git"``; a
+CI clone is usually shallow, and the docs are committed after the commit they describe). The ``Ownership:`` role
+Facts of appdoc-context.md are compared. A version difference in ``provenance.json`` is informational only.
 """
 
 from __future__ import annotations
@@ -25,6 +25,7 @@ import sys
 from . import __version__, check, extract, version
 
 FACTS = "facts.json"
+GIT_SOURCE = "git"   # detail.source of the ownership Facts that come from git history (extract._ownership)
 DIFF_CAP = 200
 
 EXIT_OK, EXIT_ERROR, EXIT_CHANGED, EXIT_UPGRADED = 0, 1, 2, 3
@@ -37,7 +38,8 @@ def comparable(doc: dict) -> str:
     if isinstance(target, dict):
         target["commit"] = None
         target["history"] = "none"
-    doc["facts"] = [f for f in doc.get("facts", []) if f.get("kind") != "ownership"]
+    doc["facts"] = [f for f in doc.get("facts", [])
+                    if not (f.get("kind") == "ownership" and (f.get("detail") or {}).get("source") == GIT_SOURCE)]
     return json.dumps(doc, sort_keys=True, indent=1, ensure_ascii=False) + "\n"
 
 

@@ -484,7 +484,8 @@ class GitScopeTests(unittest.TestCase):
         sub = next(f for f in own if f["name"] == "sub")
         d = sub["detail"]
         self.assertEqual((d["commits"], d["contributors"], d["first_commit"]), (4, 3, "2024-03-01"))
-        self.assertEqual(sorted(d), ["commits", "contributors", "first_commit", "last_commit"])
+        self.assertEqual(sorted(d), ["commits", "contributors", "first_commit", "last_commit", "source"])
+        self.assertEqual(d["source"], "git")        # F8: the gate ignores exactly the Facts that say so
         self.assertRegex(d["last_commit"], r"^\d{4}-\d{2}-\d{2}$")
         self.assertNotIn("authors", facts.DETAIL_KEYS["ownership"])
         self.assertEqual(facts.DETAIL_KEYS["ownership"], frozenset("commits contributors first_commit last_commit role source".split()))

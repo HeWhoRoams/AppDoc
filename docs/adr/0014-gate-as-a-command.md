@@ -46,7 +46,7 @@ whole `facts.json`. The implementation differs in two ways, for these reasons.
    code. The gate creates, changes and deletes nothing in the Target (`.appdoc-regen` is not a name
    AppDoc uses or reserves; the Check's own report is the one file the last step may write). The
    cache is never used, so a stale `.appdoc-cache.json` cannot hide a code change.
-2. **The comparison ignores `target.commit`, `target.history` and the git `ownership` Facts.** A CI
+2. **The comparison ignores `target.commit`, `target.history` and the git `ownership` Facts (`detail.source == "git"`).** A CI
    clone is usually shallow (`actions/checkout` fetches one commit), so history and ownership are
    different there than on the machine that generated the docs; and the docs are committed after
    the commit they describe, so `target.commit` can never match. Comparing them would make the gate

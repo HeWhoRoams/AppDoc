@@ -60,7 +60,9 @@ def _ownership(root: str, files: list[scan.SourceFile], ownership_top: int | Non
     """Commit activity per top-level folder: counts and dates, never a person's name. Only with full git history.
 
     Each Fact records `commits`, `contributors` (the number of distinct authors, counted and then
-    forgotten) and the dates (`YYYY-MM-DD`) of the first and last commit. R18: no author name, no email.
+    forgotten) and the dates (`YYYY-MM-DD`) of the first and last commit, and ``source="git"`` (the gate ignores
+    exactly these Facts; the ``Ownership:`` role Facts of appdoc-context.md carry that file's name). R18: no author
+    name, no email.
     ``ownership_top``, when set, ranks folders by file count (stable: descending count then name)
     and runs ``git log`` only on the top-N, bounding the subprocess count on wide repos.
     """
@@ -80,7 +82,7 @@ def _ownership(root: str, files: list[scan.SourceFile], ownership_top: int | Non
         dates = sorted(r[1] for r in rows)
         yield F.Fact.make("ownership", "generic", folder, None, folder,
                           commits=len(rows), contributors=len({r[0] for r in rows}),
-                          first_commit=dates[0], last_commit=dates[-1])
+                          first_commit=dates[0], last_commit=dates[-1], source="git")
 
 
 def _owner_context(root: str):

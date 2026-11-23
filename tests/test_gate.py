@@ -187,6 +187,66 @@ class GateTests(unittest.TestCase):
         res = run_gate(self.target)
         self.assertEqual(res.returncode, 0, _text(res))
 
+    def _with_roles(self, *roles):
+        """Give the Target `Ownership:` lines in appdoc-context.md and commit the resulting Facts."""
+        with open(os.path.join(self.target, "appdoc-context.md"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write("# Context\n\n" + "".join(f"Ownership: {r}: someone\n" for r in roles))
+        with contextlib.redirect_stdout(io.StringIO()):
+            extract.write(self.target, self.out, workers=0, use_cache=False, no_ownership=True)
+        self.refill()
+
+    def test_ownership_role_edit_exits_2(self):
+        self._with_roles("Business owner", "Technical owner")
+        self.assertEqual(run_gate(self.target).returncode, 0)
+        path = os.path.join(self.target, "appdoc-context.md")
+        with open(path, encoding="utf-8") as fh:
+            text = fh.read()
+        with open(path, "w", encoding="utf-8", newline="\n") as fh:     # same size and line count, one role renamed
+            fh.write(text.replace("Business owner", "Budget sponsor"))
+        res = self.gate_leaves_tree()
+        self.assertEqual(res.returncode, 2, _text(res))
+        self.assertIn("Facts changed", _text(res))
+
+    def test_git_ownership_change_still_ignored(self):
+        self._with_roles("Business owner")
+        path = os.path.join(self.out, "facts.json")
+        with open(path, encoding="utf-8") as fh:
+            doc = json.load(fh)
+        for commits in (3, 9):                      # git ownership Facts come and go with the checkout
+            doc["facts"] = [f for f in doc["facts"] if f["detail"].get("source") != "git"]
+            doc["facts"].append({"kind": "ownership", "stack": "generic", "path": "app", "line": None, "name": "app",
+                                 "detail": {"commits": commits, "contributors": 2, "first_commit": "2020-01-01",
+                                            "last_commit": "2021-01-01", "source": "git"}})
+            with open(path, "w", encoding="utf-8", newline="\n") as fh:
+                json.dump(doc, fh, indent=1, sort_keys=True)
+            res = run_gate(self.target)
+            self.assertEqual(res.returncode, 0, _text(res))
+
+    def test_comparable_drops_only_git_ownership(self):
+        role = {"kind": "ownership", "path": "appdoc-context.md", "name": "Business owner",
+                "detail": {"role": "Business owner", "source": "appdoc-context.md"}}
+        git_fact = {"kind": "ownership", "path": "app", "name": "app", "detail": {"commits": 1, "source": "git"}}
+        kept = json.loads(gate.comparable({"facts": [role, git_fact]}))["facts"]
+        self.assertEqual(kept, [role])
+
+
+@unittest.skipUnless(shutil.which("git"), "git is not installed")
+class GitOwnershipSource(unittest.TestCase):
+    def test_git_ownership_facts_carry_source_git(self):
+        env = dict(os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@example.com", GIT_COMMITTER_NAME="t",
+                   GIT_COMMITTER_EMAIL="t@example.com", GIT_AUTHOR_DATE="2020-01-02T03:04:05",
+                   GIT_COMMITTER_DATE="2020-01-02T03:04:05")
+        with tempfile.TemporaryDirectory() as tmp:
+            os.makedirs(os.path.join(tmp, "app"))
+            with open(os.path.join(tmp, "app", "main.py"), "w", encoding="utf-8") as fh:
+                fh.write("print(1)\n")
+            for args in (("init", "-q"), ("add", "-A"), ("commit", "-q", "-m", "one")):
+                subprocess.run(["git", *args], cwd=tmp, env=env, capture_output=True, check=True)
+            text, _ = extract.extract(tmp, os.path.join(tmp, "docs", "appdoc"), workers=0, use_cache=False)
+        own = [f for f in json.loads(text)["facts"] if f["kind"] == "ownership"]
+        self.assertTrue(own, "the temp repo produced no git ownership Fact")
+        self.assertEqual({f["detail"].get("source") for f in own}, {"git"})
+
 
 class SelfTest(unittest.TestCase):
     def test_ci_selftest_script_passes(self):
