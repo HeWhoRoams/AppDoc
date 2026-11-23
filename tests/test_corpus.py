@@ -441,6 +441,24 @@ class RegisterHistory(CorpusCase):
         self.assertIn("Audited on 2026-11-23 with AppDoc", r.narrative)
 
 
+    def test_note_stale_fails_c18_with_the_fix(self):
+        r = self.case27("note-stale")
+        self.assertEqual(r.code, 2, r.report)
+        self.assertEqual(r.rules(), {"C18"})
+        self.assertIn("notes.jsonl line 1: the entry-points block changed after this note was written. Fix: "
+                      "re-read the block, rewrite or delete the note, and clear block_sha", r.report)
+        # the note is rendered in its block; it does not make C7 differ
+        self.assertIn("Known extractor limitation: Routes registered by decorator are not listed (`app/main.py:2`)",
+                      r.narrative)
+
+    def test_label_in_prose_fails_c18(self):
+        r = self.case27("label-in-prose")
+        self.assertEqual(r.code, 2, r.report)
+        self.assertEqual(r.rules(), {"C18"})
+        self.assertIn("the reserved label 'Known extractor limitation:' is written in the Narrative outside a "
+                      "generated block. Fix: move this note to notes.jsonl", r.report)
+
+
 def _apply_pending():
     for cls in CorpusCase.__subclasses__():
         for name in PENDING:

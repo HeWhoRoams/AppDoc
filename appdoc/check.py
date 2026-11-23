@@ -86,6 +86,11 @@ RULES = (
          "`audited_on`, `audited_with`, `audited_bundle` or `doc_sha`, and with `--strict` a row was sealed at "
          "upgrade (all fail from template 2.7)", ("advisory",),
          preview="the audit record's scope text holds an ID or a digit"),
+    Rule("C18", "Notes match their block",
+         "a note in `notes.jsonl` names an unknown block, was written about an older version of its block "
+         "(`block_sha`), or cites a file that does not resolve; the label `Known extractor limitation:` is "
+         "written in the Narrative outside a generated block (fails from template 2.7)", ("advisory",),
+         preview="a note in `notes.jsonl` that does not match its block, or the reserved label written by hand"),
     Rule("C20", "Citation precision",
          "a range over 100 lines is a claim's only lined Citation in section 4, 7 or 10, "
          "or a section 4 or 10.1 table cell holds more than 5 Citations", ("advisory", "strict")),
@@ -1116,6 +1121,48 @@ def _c17_provenance(reg, require_audit, strict, add):
                     "audit the row, then run `appdoc seal --audit --date YYYY-MM-DD`")
 
 
+def _c18_notes(target, out_dir, raw, facts, cache, add):
+    """C18, 2.7 rule: notes.jsonl notes match their block, and the reserved label is not hand-written.
+
+    A note names a generated block, carries a `block_sha` equal to the hash of that block's current generated
+    body (so a note written about an older block fails), and cites files that resolve. The label
+    `Known extractor limitation:` may appear in the Narrative only inside a generated block (where `fill` put it).
+    """
+    path = os.path.join(out_dir, notes_mod.NOTES)
+    where = f"{notes_mod.NOTES} line"
+    if os.path.isfile(path):
+        parsed = notes_mod.parse(_read_text(path))
+        for no, why in parsed.errors:
+            add("C18", no, f"{where} {no}: {why}", f"fix the note in {notes_mod.NOTES}")
+        known = tuple(spec.GENERATED.values())
+        ctx = {"out_dir": out_dir, "target": target, "text": raw}
+        for no, note in parsed.notes:
+            name = note["block"]
+            if name not in known:
+                add("C18", no, f"{where} {no}: '{name}' is not a generated block", "use one of " + ", ".join(known))
+            elif facts is not None and note["block_sha"] == "":
+                add("C18", no, f"{where} {no}: the note is not sealed", "run `appdoc build`")
+            elif facts is not None:
+                body = fill_mod.generated_body(name, facts, ctx)
+                if body is not None and note["block_sha"] != notes_mod.body_sha(body):
+                    add("C18", no, f"{where} {no}: the {name} block changed after this note was written",
+                        "re-read the block, rewrite or delete the note, and clear block_sha")
+            for raw_cite in note["cites"]:
+                p = parse_span(raw_cite.strip("`"))
+                if not p:
+                    add("C18", no, f"{where} {no}: '{raw_cite}' is not a path:line Citation",
+                        "cite `path:line` or `path:start-end`")
+                    continue
+                ok, why = _resolve(target, cache, Citation(no, p[0], p[1], p[2], raw_cite))
+                if not ok:
+                    add("C18", no, f"{where} {no}: citation does not resolve: {why}", "cite an existing file and line")
+    prose = _strip_comments(fill_mod.mask_blocks(normalize_newlines(raw), tuple(spec.GENERATED.values())))
+    for i, line in enumerate(prose.splitlines(), 1):
+        if notes_mod.LABEL.casefold() in line.casefold():
+            add("C18", i, f"the reserved label '{notes_mod.LABEL}' is written in the Narrative outside a generated block",
+                f"move this note to {notes_mod.NOTES}")
+
+
 def coverage(heads, ids, reg, workflows) -> list[tuple[str, int, int]]:
     """(section, IDs with a register row, IDs) for every ID-bearing section, and workflows."""
     live = reg.live_rows()
@@ -1359,6 +1406,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
             add27("C1", c.doc_line, f"`{c.path}` is a bare name; the file is `{full_path}`",
                   f"cite the full path: `{full_path}" + ("" if c.start is None else f":{c.raw.rsplit(':', 1)[1]}") + "`")
         _c17_scope(reg, add27)
+        _c18_notes(target, out_dir, raw, facts, cache, add27)
         if doc_ver >= FAILS_FROM:
             _c17_provenance(reg, require_audit, strict, add)
         reg_ids = {str(r["id"]) for _, r in reg.live_rows()} if reg else None   # a superseded row is history

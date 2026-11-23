@@ -145,6 +145,27 @@ class Idempotence(Tmp):
                 self.assertEqual(snapshot(r.target), before)
         self.assertGreater(seen, 0)
 
+    def test_notes_seal_idempotent(self):
+        """notes.jsonl: build seals an empty block_sha once, a second build changes no file, and fill with notes is stable."""
+        from appdoc.__main__ import main
+        r = self.case("trivial")
+        self.assertEqual(r.code, 0, r.report)
+        note = {"block": "entry-points", "text": "Routes registered by decorator are not listed",
+                "cites": ["app/main.py:1"], "block_sha": ""}
+        notes = os.path.join(r.out, "notes.jsonl")
+        with open(notes, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(json.dumps(note) + "\n")
+        self.assertEqual(quiet(main, ["build", r.target]), 0)
+        with open(notes, encoding="utf-8") as fh:
+            sealed = json.loads(fh.read())
+        self.assertRegex(sealed["block_sha"], r"^[0-9a-f]{12}$")
+        before = snapshot(r.target)
+        self.assertEqual(quiet(main, ["build", r.target]), 0)
+        self.assertEqual(snapshot(r.target), before)
+        self.assertEqual(check.seal_notes(r.target, r.out), 0)
+        md = before[os.path.join("docs", "appdoc", check.NARRATIVE)].decode("utf-8")
+        self.assertEqual(md.count("Known extractor limitation:"), 1)
+
     def test_render_twice_is_identical(self):
         from appdoc.render import page
         r = self.case("trivial")

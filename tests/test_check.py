@@ -505,6 +505,67 @@ class CheckTests(unittest.TestCase):
             self.assertIn("Known extractor limitation: Routes registered by decorator are not listed (`app/main.py:2`)",
                           fh.read())
 
+    def _good_note(self, **kw):
+        from appdoc import notes
+        body = fill.generated_body("entry-points", self.facts, {"out_dir": self.out, "target": self.target})
+        return dict(self.NOTE, block_sha=notes.body_sha(body), **kw)
+
+    def test_c18_current_note_passes_on_2_7(self):
+        self.write_notes(self._good_note())
+        code, report, _ = self.run27()
+        self.assertEqual(code, 0, report)
+        self.assertEqual(self.rules(report), set())
+
+    def test_c18_stale_note_fails(self):
+        self.write_notes(dict(self._good_note(), block_sha="b" * 12))
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("C18", self.rules(report))
+        self.assertIn("notes.jsonl line 1: the entry-points block changed after this note was written. Fix: "
+                      "re-read the block, rewrite or delete the note, and clear block_sha", report)
+        # a note whose block_sha was cleared is waiting for `appdoc build`, which seals it
+        self.write_notes(dict(self.NOTE))
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("notes.jsonl line 1: the note is not sealed. Fix: run `appdoc build`", report)
+
+    def test_c18_unknown_block_fails(self):
+        self.write_notes(self._good_note(block="no-such-block"), self._good_note(text=""))
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("notes.jsonl line 1: 'no-such-block' is not a generated block. Fix: use one of "
+                      "scan-coverage, entry-points, closed-questions, config-reference, scheduled-jobs, appendix-a", report)
+        self.assertIn('notes.jsonl line 2: "text" must be one non-empty line', report)
+
+    def test_c18_note_cites_must_resolve(self):
+        self.write_notes(self._good_note(cites=["app/main.py:2", "app/nope.py:1", "app/main.py:99", "not a cite"]))
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("notes.jsonl line 1: citation does not resolve: `app/nope.py` does not exist in the Target", report)
+        self.assertIn("line 99 is outside `app/main.py`", report)
+        self.assertIn("'not a cite' is not a path:line Citation", report)
+
+    def test_c18_label_in_prose_fails(self):
+        doc = build_doc().replace("- The entry module wires the handlers in `app/main.py:3-5`.",
+                                  "- The entry module wires the handlers in `app/main.py:3-5`.\n"
+                                  "- Known extractor limitation: decorators are missed (`app/main.py:2`).")
+        code, report, _ = self.run27(doc)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C18", self.rules(report))
+        self.assertIn("the reserved label 'Known extractor limitation:' is written in the Narrative outside a "
+                      "generated block. Fix: move this note to notes.jsonl", report)
+        # the label a block renders from notes.jsonl is not prose
+        self.write_notes(self._good_note())
+        self.assertEqual(self.run27()[0], 0)
+
+    def test_c18_is_a_preview_on_a_2_4_document(self):
+        self.write_notes(dict(self._good_note(), block_sha="b" * 12))
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(code, 0, report)
+        self.assertNotIn("C18", self.rules(report))
+        self.assertIn("C18 line 1: notes.jsonl line 1: the entry-points block changed after this note was written", report)
+        self.assertIn("(fails from template 2.7)", report)
+
     def test_c11_2_4_document_keeps_the_old_duplicate_message(self):
         self.write_register(AUDIT, ROWS + [self.SECOND_V1])
         code, report, _ = self.run_check(build_doc())
