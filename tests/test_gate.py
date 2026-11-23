@@ -171,6 +171,13 @@ class GateTests(unittest.TestCase):
         self.assertEqual(res.returncode, 0, _text(res))
 
 
+class SelfTest(unittest.TestCase):
+    def test_ci_selftest_script_passes(self):
+        res = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "gate_selftest.py")],
+                             capture_output=True, text=True)
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+
+
 class GateYamlTests(unittest.TestCase):
     def setUp(self):
         with open(YAML, encoding="utf-8") as fh:
