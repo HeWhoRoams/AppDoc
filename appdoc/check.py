@@ -565,30 +565,40 @@ def _cited_paths(target, cache, cites) -> set[str]:
     return out
 
 
-def _c12_smells(target, cache, lines, heads, facts, reg, add):
-    """Every non-test smell Fact is cited in a 10.1 row (path and a line that covers it) or dismissed."""
+def uncited_smells(target, cache, lines, heads, facts) -> list[tuple[str, dict]]:
+    """(fid, smell Fact) of every non-test smell Fact no 10.1 row cites (the path, and a line that covers it)."""
     smells = sorted((f for f in facts.get("facts", []) if f.get("kind") == "smell" and not f["detail"].get("test")),
                     key=lambda f: (f["path"], f.get("line") or 0, f["detail"].get("fid", "")))
     if not smells:
-        return
+        return []
     spans: list[tuple[str, int | None, int | None]] = []
     t = _spec_table(lines, heads, "10.1")
     for _, cells in (t.rows if t else ()):
         for c in find_citations(" ".join(cells)):
             for p in _cited_paths(target, cache, [c]):
                 spans.append((p, c.start, c.end))
+    out = []
+    for f in smells:
+        d = f["detail"]
+        fid = d.get("fid") or fact_id("smell", d.get("pattern", ""), f["path"], f.get("line"))
+        ln = f.get("line")
+        if not any(p == f["path"] and (ln is None or (s is not None and s <= ln <= e)) for p, s, e in spans):
+            out.append((fid, f))
+    return out
+
+
+def _c12_smells(target, cache, lines, heads, facts, reg, add):
+    """Every non-test smell Fact is cited in a 10.1 row (path and a line that covers it) or dismissed."""
     dismissed = set()
     for _, row in (reg.live_rows() if reg else ()):   # a superseded dismissal is history
         m = reg_mod.SMELL_REF_RE.match(str(row["ref"]))
         if m and row["result"] == "Dismissed" and str(row["limitation"]).strip():
             dismissed.add(m.group(1))
     h = heads.get("10.1")
-    for f in smells:
+    for fid, f in uncited_smells(target, cache, lines, heads, facts):
         d = f["detail"]
-        fid = d.get("fid") or fact_id("smell", d.get("pattern", ""), f["path"], f.get("line"))
         ln = f.get("line")
-        if fid in dismissed or any(p == f["path"] and (ln is None or (s is not None and s <= ln <= e))
-                                   for p, s, e in spans):
+        if fid in dismissed:
             continue
         at = f"{f['path']}:{ln}" if ln else f["path"]
         add("C12", h.idx + 1 if h else 1,
@@ -658,19 +668,21 @@ def _claim_sha(lines, heads, ids, ref):
     return hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
 
 
-def document_text(raw: str, mask_counts: bool = False) -> str:
+def document_text(raw: str, mask_counts: bool = False, pad: bool = True) -> str:
     """The Narrative text the Check reads (C11, claim_sha) and the audit fingerprint hashes: newlines
     normalized, opaque generated blocks masked, comments stripped, line numbering kept. With
-    `mask_counts` the count markers are removed too (their number is filled by `fill`, not written)."""
-    text = fill_mod.mask_blocks(normalize_newlines(raw), spec.OPAQUE_BLOCKS)
+    `mask_counts` the count markers are removed too (their number is filled by `fill`, not written). Without `pad`
+    the line numbering is not kept (a masked block and a multi-line comment each leave a fixed number of lines), so
+    what `fill` writes into a block cannot move a fingerprint."""
+    text = fill_mod.mask_blocks(normalize_newlines(raw), spec.OPAQUE_BLOCKS, pad)
     if mask_counts:
-        text = spec.COUNT_MARKER_RE.sub(lambda m: "\n" * m.group(0).count("\n"), text)
-    return _strip_comments(text)
+        text = spec.COUNT_MARKER_RE.sub(lambda m: "\n" * m.group(0).count("\n") if pad else "", text)
+    return _strip_comments(text) if pad else _COMMENT_RE.sub(lambda m: "\n" if "\n" in m.group(0) else "", text)
 
 
 def doc_sha(raw: str) -> str:
     """12-hex SHA-1 fingerprint of the Narrative as the auditor read it (line 1 `doc_sha` of the register)."""
-    text = normalize_text(document_text(raw, mask_counts=True))
+    text = normalize_text(document_text(raw, mask_counts=True, pad=False))
     return hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
 
 

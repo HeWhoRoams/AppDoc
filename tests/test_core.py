@@ -748,12 +748,146 @@ class DocShaTests(unittest.TestCase):
         self.assertEqual(check.doc_sha(self.DOC.replace("\n", "\r\n")), base)
         self.assertNotEqual(check.doc_sha(self.DOC.replace("The service", "A service")), base)
 
+    def test_doc_sha_ignores_the_length_of_a_block_in_the_middle_of_the_document(self):
+        """What `fill` writes into a block must not move the fingerprint (a plan or audit made before would go stale)."""
+        from appdoc import check
+        doc = self.DOC + "\n## 4. After\n\nMore text.\n"
+        base = check.doc_sha(doc)
+        self.assertEqual(check.doc_sha(doc.replace("old rows", "a\nb\nc\nd")), base)
+        self.assertEqual(check.doc_sha(doc.replace("a comment", "a\nmulti\nline comment")), check.doc_sha(
+            doc.replace("a comment", "x\ny")))
+        self.assertNotEqual(check.doc_sha(doc.replace("More text", "Other text")), base)
+
     def test_check_and_fill_share_the_one_text_helper(self):
         import inspect
         from appdoc import check, fill
         self.assertIn("document_text(", inspect.getsource(check.run))
         self.assertIn("document_text(", inspect.getsource(check.seal_register))
         self.assertIn("document_text(", inspect.getsource(fill._appendix_a))
+
+
+class AuditPlanTests(unittest.TestCase):
+    """T27.14: `appdoc audit-plan` writes docs/appdoc/audit-plan.json, a pure function of the Narrative."""
+
+    def setUp(self):
+        from tests.test_check import build_doc
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.target = os.path.join(self.tmp.name, "t")
+        self.out = os.path.join(self.target, "docs", "appdoc")
+        os.makedirs(self.out)
+        self.build_doc = build_doc
+
+    def write(self, n_f=1, n_r=1, stamp="2.7", extra=None, doc=None):
+        from appdoc import template_spec as spec
+        from tests.test_check import SECTION_BODY
+        body4 = SECTION_BODY[4].replace(
+            "\n\n### 4.1", "".join(f"\n| F-{i} | Service | Run {i} | `app/main.py:2` | Does `app/main.py:2` things. | C-1 | Cited |"
+                                    for i in range(2, n_f + 1)) + "\n\n### 4.1")
+        body15 = SECTION_BODY[15].replace(
+            "\n\n### 15.1", "".join(f"\n| R-{i} | High | S | Do thing {i} | V-1 |" for i in range(2, n_r + 1)) + "\n\n### 15.1")
+        text = (doc or self.build_doc({4: body4, 15: body15})).replace(spec.STAMP, f"<!-- appdoc:template {stamp} -->")
+        with open(os.path.join(self.out, "application-documentation.md"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
+        if extra is not None:
+            with open(os.path.join(self.target, "appdoc-context.md"), "w", encoding="utf-8") as fh:
+                fh.write(extra)
+        return text
+
+    def plan(self, **kw):
+        from appdoc import audit_plan
+        return audit_plan.compute(self.target, self.out, **kw)
+
+    def run_cli(self):
+        import contextlib, io
+        from appdoc.__main__ import main
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = main(["audit-plan", self.target])
+        with open(os.path.join(self.out, "audit-plan.json"), "rb") as fh:
+            return rc, fh.read(), buf.getvalue()
+
+    def section(self, plan, name):
+        return next(s for s in plan["sections"] if s["section"] == name)
+
+    def test_audit_plan_deterministic(self):
+        self.write(n_f=30, n_r=12)
+        rc, first, out = self.run_cli()
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(self.run_cli()[1], first)
+        # the same Narrative in another folder, written later, gives the same bytes
+        other = os.path.join(self.tmp.name, "elsewhere")
+        shutil.copytree(self.target, other)
+        from appdoc.__main__ import main
+        import contextlib, io
+        with contextlib.redirect_stdout(io.StringIO()):
+            main(["audit-plan", other])
+        with open(os.path.join(other, "docs", "appdoc", "audit-plan.json"), "rb") as fh:
+            self.assertEqual(fh.read(), first)
+        self.assertNotIn(b"\r", first)
+        self.assertNotIn(self.tmp.name.encode(), first)
+
+    def test_audit_plan_full_and_sampled_sections(self):
+        self.write(n_f=30, n_r=3)
+        plan = self.plan()
+        full = {s["section"]: s for s in plan["sections"] if s["mode"] == "full"}
+        self.assertEqual(full["10.1"]["ids"], ["V-1"])
+        self.assertEqual(full["7"]["ids"], ["7.1"])
+        self.assertEqual(full["14"]["ids"], ["Q-1"])
+        self.assertEqual(full["10.2"]["ids"], [])                # TLS is Not established, not Present
+        self.assertEqual(full["16.5"]["ids"], [])                # every step is Unknown
+        f = self.section(plan, "4")
+        self.assertEqual((f["mode"], f["total"], f["k"], len(f["ids"])), ("sampled", 30, 8, 8))
+        self.assertTrue(set(f["ids"]) <= {f"F-{i}" for i in range(1, 31)})
+        r = self.section(plan, "15")
+        self.assertEqual((r["total"], r["k"], sorted(r["ids"])), (3, 3, ["R-1", "R-2", "R-3"]))
+        self.assertEqual(plan["doc_sha"], __import__("appdoc.check", fromlist=["x"]).doc_sha(self.write(n_f=30, n_r=3)))
+
+    def test_audit_plan_changes_with_doc(self):
+        text = self.write(n_f=40)
+        a = self.plan()
+        with open(os.path.join(self.out, "application-documentation.md"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text.replace("- The entry module wires", "- The entry module also wires"))
+        b = self.plan()
+        self.assertNotEqual(a["doc_sha"], b["doc_sha"])
+        self.assertNotEqual(self.section(a, "4")["ids"], self.section(b, "4")["ids"])
+        self.assertEqual(self.section(a, "10.1"), self.section(b, "10.1"))     # full coverage does not depend on the text
+        # an edit inside a generated block or a count marker does not change the plan
+        with open(os.path.join(self.out, "application-documentation.md"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text.replace("<!-- appdoc:generated entry-points -->\n",
+                                  "<!-- appdoc:generated entry-points -->\nsomething else\n"))
+        self.assertEqual(self.plan(), a)
+
+    def test_audit_plan_floor_math(self):
+        from appdoc import audit_plan
+        want = {0: 0, 1: 1, 4: 4, 5: 5, 6: 5, 20: 5, 21: 6, 24: 6, 25: 7, 40: 10, 41: 11, 100: 25, 101: 26}
+        for n, k in want.items():
+            self.assertEqual(audit_plan.sample_size(n), k, n)
+        self.write(n_f=24)
+        self.assertEqual(self.section(self.plan(), "4")["k"], 6)
+        # the pick is the first k by sha1(doc_sha + id), ties broken by id
+        import hashlib
+        plan = self.plan()
+        ids = [f"F-{i}" for i in range(1, 25)]
+        ranked = sorted(ids, key=lambda i: (hashlib.sha1((plan["doc_sha"] + i).encode()).hexdigest(), i))
+        self.assertEqual(self.section(plan, "4")["ids"], sorted(ranked[:6], key=lambda i: int(i[2:])))
+
+    def test_audit_floor_override_only_raises(self):
+        self.write(n_f=20)
+        self.assertEqual(self.section(self.plan(), "4")["k"], 5)
+        self.write(n_f=20, extra="Audit floor: 0.5, 8\n")
+        plan = self.plan()
+        self.assertEqual(self.section(plan, "4")["k"], 10)            # max(8, ceil(0.5 * 20))
+        self.assertEqual(plan["advisories"], [])
+        self.write(n_f=20, extra="Audit floor: 0.1, 2\n")              # looser on both: ignored and reported
+        plan = self.plan()
+        self.assertEqual(self.section(plan, "4")["k"], 5)
+        self.assertEqual(len(plan["advisories"]), 2, plan["advisories"])
+        self.assertIn("appdoc-context.md line 1", plan["advisories"][0])
+        self.write(n_f=20, extra="Audit floor: 0.5, 2\n")              # stricter fraction applies; the looser minimum does not
+        plan = self.plan()
+        self.assertEqual((plan["floor"], self.section(plan, "4")["k"]), ({"fraction": "0.5", "minimum": 5}, 10))
+        self.assertEqual(len(plan["advisories"]), 1)
 
 
 class SealProvenanceTests(unittest.TestCase):

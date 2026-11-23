@@ -344,12 +344,14 @@ def fill_counts(text: str, doc: dict, ctx: dict | None = None) -> str:
     return spec.COUNT_MARKER_RE.sub(repl, text)
 
 
-def mask_blocks(text: str, names) -> str:
-    """Replace the content of the named blocks with one placeholder line, keeping the line count."""
+def mask_blocks(text: str, names, pad: bool = True) -> str:
+    """Replace the content of the named blocks with one placeholder line. With `pad` (the default) the line count
+    is kept; without it a block is always the same three lines however long its content, so a fingerprint does
+    not move when `fill` rewrites a block."""
     def repl(m):
         if m.group(2) not in names:
             return m.group(0)
-        k = m.group(3).count("\n")
+        k = m.group(3).count("\n") if pad else 2
         return m.group(1) + ("\n" if k else "") + f"generated block {m.group(2)}" + "\n" * max(k - 1, 0) + m.group(4)
     return BLOCK_RE.sub(repl, text)
 

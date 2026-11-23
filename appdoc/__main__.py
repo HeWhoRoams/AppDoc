@@ -10,7 +10,7 @@ from . import __version__
 from .version import bundle_hash
 
 DEFAULT_OUT = os.path.join("docs", "appdoc")
-COMMANDS = ("extract", "fill", "check", "render", "seal", "build", "gate")
+COMMANDS = ("extract", "fill", "check", "render", "seal", "build", "gate", "audit-plan")
 COMMAND_HELP = {
     "extract": "write facts.json, facts-summary.md and provenance.json",
     "fill": "write the generated blocks of the Narrative from the Facts and the register",
@@ -18,6 +18,8 @@ COMMAND_HELP = {
     "render": "write application-documentation.html",
     "seal": "write claim_sha into the register rows that lack one; --audit --date records the audit",
     "build": "seal (rows and notes), fill, check and render in one step",
+    "audit-plan": "write docs/appdoc/audit-plan.json: the ids the independent audit must cover (a sample is "
+                  "chosen by the tool)",
     "gate": "CI gate: regenerate the Facts and compare with the committed facts.json, then check; "
             "exit 0 pass, 1 tool error, 2 Facts changed, 3 AppDoc upgraded",
 }
@@ -117,6 +119,9 @@ def main(argv=None) -> int:
                                       ownership_top=args.ownership_top):
                 print(f"wrote {path}")
             return 0
+        if args.cmd == "audit-plan":
+            from . import audit_plan
+            return audit_plan.run(args.target, out_dir)
         if args.cmd == "fill":
             from . import fill
             return fill.run(args.target, out_dir)
