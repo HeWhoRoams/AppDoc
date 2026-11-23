@@ -8,6 +8,7 @@ import json
 import os
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -101,6 +102,15 @@ class Clones(unittest.TestCase):
         self.assertIn("narrative eval skipped", out)
         self.assertIn("no clone", out)
 
+    def test_require_clones_fails_instead_of_skipping(self):
+        code, out = run_quiet(lambda: score.run_all(None, require_clones=True))
+        self.assertEqual(code, 1)
+        self.assertIn(score.EVAL_ROOT_ENV, out)
+        with tempfile.TemporaryDirectory() as empty:
+            code, out = run_quiet(lambda: score.run_all(empty, require_clones=True))
+        self.assertEqual(code, 1)
+        self.assertIn("no clone of", out)
+
     @unittest.skipUnless(os.environ.get(score.EVAL_ROOT_ENV), "APPDOC_EVAL_ROOT is not set")
     def test_keys_hold_against_local_clones(self):
         code, out = run_quiet(score.run_all, os.environ[score.EVAL_ROOT_ENV])
@@ -138,6 +148,17 @@ class ReleaseHooks(unittest.TestCase):
         narrative = dict(calls)["narrative eval"]
         self.assertEqual(narrative[-2:], ["--root", "/clones"])
         self.assertIn("--all", narrative)
+
+    def test_skip_narrative_eval_omits_only_that_eval_and_release_requires_clones(self):
+        calls = []
+        with mock.patch.object(release, "_run", lambda label, argv: calls.append((label, argv)) or True):
+            self.assertTrue(release.run_checks(skip_narrative_eval=True))
+            labels = [c[0] for c in calls]
+            self.assertIn("extractor eval", labels)
+            self.assertNotIn("narrative eval", labels)
+            del calls[:]
+            release.run_checks()
+        self.assertIn("--require-clones", dict(calls)["narrative eval"])
 
 
 if __name__ == "__main__":

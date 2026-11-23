@@ -199,6 +199,30 @@ def _tree_copy(dest):
     return env
 
 
+def _run_release(tmp, env, argv, **patches):
+    """Run the temp repo's own tools/release.py in-process (its ROOT is the temp repo) with the tests/evals stubbed.
+    Returns (exit code, output); a SystemExit message is part of the output."""
+    import contextlib
+    import io
+    with mock.patch.object(sys, "dont_write_bytecode", True):     # no __pycache__ in the temp repo
+        mod = load_tool("appdoc_release_tmp", os.path.join(tmp, "tools", "release.py"))
+    patches.setdefault("run_checks", lambda *a, **kw: True)
+    buf = io.StringIO()
+    with mock.patch.dict(os.environ, env), contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+        if mod.EVAL_ROOT_ENV not in env:
+            os.environ.pop(mod.EVAL_ROOT_ENV, None)
+        with contextlib.ExitStack() as stack:
+            for name, fn in patches.items():
+                stack.enter_context(mock.patch.object(mod, name, fn))
+            try:
+                rc = mod.main(argv)
+            except SystemExit as exc:
+                rc = exc.code if isinstance(exc.code, int) else 1
+                if not isinstance(exc.code, int):
+                    buf.write(str(exc.code))
+    return rc, buf.getvalue()
+
+
 class ReleaseScript(unittest.TestCase):
     def test_release_script_dry_run(self):
         before = git(ROOT, "status", "--porcelain").stdout
@@ -223,13 +247,13 @@ class ReleaseScript(unittest.TestCase):
             env = _tree_copy(tmp)
             script = os.path.join(tmp, "tools", "release.py")
             git(tmp, "checkout", "-q", "-b", "side", env=env)
-            res = subprocess.run([sys.executable, script, "2.6.0", "--skip-checks"], capture_output=True, text=True, env=env)
+            res = subprocess.run([sys.executable, script, "2.6.0", "--skip-narrative-eval"], capture_output=True, text=True, env=env)
             self.assertEqual(res.returncode, 1, res.stdout + res.stderr)
             self.assertIn("main", res.stdout + res.stderr)
             git(tmp, "checkout", "-q", "main", env=env)
             with open(os.path.join(tmp, "README.md"), "a", encoding="utf-8") as fh:
                 fh.write("dirty\n")
-            res = subprocess.run([sys.executable, script, "2.6.0", "--skip-checks"], capture_output=True, text=True, env=env)
+            res = subprocess.run([sys.executable, script, "2.6.0", "--skip-narrative-eval"], capture_output=True, text=True, env=env)
             self.assertEqual(res.returncode, 1, res.stdout + res.stderr)
             self.assertIn("clean", res.stdout + res.stderr)
             self.assertEqual(git(tmp, "tag").stdout.strip(), "")
@@ -237,10 +261,8 @@ class ReleaseScript(unittest.TestCase):
     def test_release_end_to_end_on_a_temp_repo(self):
         with tempfile.TemporaryDirectory() as tmp:
             env = _tree_copy(tmp)
-            script = os.path.join(tmp, "tools", "release.py")
-            res = subprocess.run([sys.executable, script, "2.6.0", "--skip-checks"], capture_output=True, text=True, env=env)
-            out = res.stdout + res.stderr
-            self.assertEqual(res.returncode, 0, out)
+            rc, out = _run_release(tmp, env, ["2.6.0", "--skip-narrative-eval"])
+            self.assertEqual(rc, 0, out)
             self.assertIn("git push origin main v2.6.0", out)
             self.assertEqual(git(tmp, "tag").stdout.split(), ["v2.6.0"])
             tagged = git(tmp, "show", "v2.6.0:appdoc/__init__.py").stdout
@@ -257,6 +279,80 @@ class ReleaseScript(unittest.TestCase):
             gen = subprocess.run([sys.executable, os.path.join(tmp, "tools", "gen_docs.py"), "--check"],
                                  capture_output=True, text=True)
             self.assertEqual(gen.returncode, 0, gen.stdout + gen.stderr)
+
+    def test_missing_clones_abort_before_edit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            env = _tree_copy(tmp)
+            called = []
+            rc, out = _run_release(tmp, env, ["2.6.0"], run_checks=lambda *a, **kw: called.append(1) or True)
+            self.assertNotEqual(rc, 0, out)
+            self.assertIn("APPDOC_EVAL_ROOT", out)
+            self.assertEqual(called, [])
+            self.assertEqual(git(tmp, "status", "--porcelain").stdout, "")
+            self.assertIn('__version__ = "2.6.0.dev0"', slurp(tmp, "appdoc", "__init__.py"))
+            self.assertEqual(git(tmp, "tag").stdout.strip(), "")
+            # a root that lacks one of the four clones aborts too
+            root = os.path.join(tmp, "clones")
+            for app in ("eShop", "flaskr-tdd", "gitea"):
+                os.makedirs(os.path.join(root, app))
+            rc, out = _run_release(tmp, dict(env, APPDOC_EVAL_ROOT=root), ["2.6.0"])
+            self.assertNotEqual(rc, 0, out)
+            self.assertIn("spring-petclinic", out)
+            self.assertEqual(git(tmp, "status", "--porcelain").stdout, "")
+
+    def test_late_failure_restores_tree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            env = _tree_copy(tmp)
+            before = git(tmp, "rev-parse", "HEAD").stdout
+
+            def failing_checks(*a, **kw):
+                with open(os.path.join(tmp, "created-by-the-script.txt"), "w", encoding="utf-8") as fh:
+                    fh.write("x")
+                raise SystemExit("release: boom after the edits")
+            rc, out = _run_release(tmp, env, ["2.6.0", "--skip-narrative-eval"], run_checks=failing_checks)
+            self.assertNotEqual(rc, 0, out)
+            self.assertEqual(git(tmp, "status", "--porcelain").stdout, "", out)
+            self.assertIn('__version__ = "2.6.0.dev0"', slurp(tmp, "appdoc", "__init__.py"))
+            self.assertFalse(os.path.exists(os.path.join(tmp, "created-by-the-script.txt")))
+            self.assertEqual(git(tmp, "rev-parse", "HEAD").stdout, before)
+            self.assertEqual(git(tmp, "tag").stdout.strip(), "")
+
+    def test_skip_flag_is_recorded(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            env = _tree_copy(tmp)
+            rc, out = _run_release(tmp, env, ["2.6.0", "--skip-narrative-eval"])
+            self.assertEqual(rc, 0, out)
+            self.assertIn("NARRATIVE EVAL IS SKIPPED", out)
+            message = git(tmp, "log", "-1", "--format=%B", "v2.6.0").stdout
+            self.assertIn("narrative eval skipped", message.lower())
+
+    def test_skip_checks_needs_dry_run(self):
+        res = subprocess.run([sys.executable, RELEASE, "2.6.0", "--test-only-skip-checks"], capture_output=True, text=True)
+        self.assertEqual(res.returncode, 2, res.stdout + res.stderr)
+        self.assertIn("--dry-run", res.stdout + res.stderr)
+        res = subprocess.run([sys.executable, RELEASE, "2.6.0", "--test-only-skip-checks", "--dry-run"],
+                             capture_output=True, text=True)
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+        res = subprocess.run([sys.executable, RELEASE, "2.6.0", "--skip-checks", "--dry-run"], capture_output=True, text=True)
+        self.assertNotEqual(res.returncode, 0)       # the old spelling is gone
+
+
+class ReleaseHelpers(unittest.TestCase):
+    def test_next_dev(self):
+        release = load_tool("appdoc_release_h", RELEASE)
+        self.assertEqual(release.next_dev("2.6.0"), "2.6.1.dev0")
+        self.assertEqual(release.next_dev("2.6.9"), "2.6.10.dev0")
+
+    def test_next_dev_uses_version_tuple(self):
+        release = load_tool("appdoc_release_h2", RELEASE)
+        with mock.patch("appdoc.template_spec.version_tuple", return_value=(7, 7, 7)) as vt:
+            self.assertEqual(release.next_dev("1.2.3"), "7.7.8.dev0")
+        vt.assert_called_once_with("1.2.3")
+
+    def test_one_git_helper(self):
+        release = load_tool("appdoc_release_h3", RELEASE)
+        self.assertFalse(hasattr(release, "_git_in"))
+        self.assertEqual(release._git("rev-parse", "--show-toplevel", cwd=ROOT).returncode, 0)
 
 
 EXAMPLE_APPS = ("eShop", "flaskr-tdd", "gitea", "spring-petclinic")

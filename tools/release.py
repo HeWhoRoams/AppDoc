@@ -8,9 +8,14 @@ determinism job, the extractor eval and the narrative answer-key eval (`APPDOC_E
 clones; a regression refuses the release); rotate the examples; commit and tag `vX.Y.Z`; print the push command;
 then a follow-up commit that sets `X.Y.(Z+1).dev0` and opens a new `## Unreleased`. Nothing is pushed.
 
+Preflight, before any edit: `APPDOC_EVAL_ROOT` must hold all four clones of the example repositories, or the run
+exits non-zero; `--skip-narrative-eval` is the only bypass, it prints a loud line and the release commit message
+records it. Any failure after the first edit restores the tree (tracked files from git; untracked files the script
+created are removed; the tree was clean when it started).
+
 `--dry-run` prints those steps and the state of each precondition and changes nothing (it exits 0 even where a
-real run would refuse). `--skip-checks` leaves out the tests and evals; it exists for the script's own test and
-must not be used to release. Stdlib only.
+real run would refuse). `--test-only-skip-checks` (accepted only with `--dry-run`) exists for the script's own
+test. Stdlib only.
 """
 
 from __future__ import annotations
@@ -27,12 +32,13 @@ VERSION_RE = re.compile(r'^(__version__ = ")([^"]+)(")', re.M)
 UNRELEASED = "## Unreleased"
 EVAL_ROOT_ENV = "APPDOC_EVAL_ROOT"
 # The eval scripts that gate a release (extractor answer keys; narrative answer keys). Each exits 1 on a regression.
-# The narrative eval needs local clones (APPDOC_EVAL_ROOT); with none it prints why and skips, it does not fail.
-EVAL_HOOKS = (("extractor eval", ("extractor_checks.py",)), ("narrative eval", ("score.py", "--all")))
+# The narrative eval needs local clones (APPDOC_EVAL_ROOT); a release run requires them (--require-clones).
+EVAL_HOOKS = (("extractor eval", ("extractor_checks.py",)),
+              ("narrative eval", ("score.py", "--all", "--require-clones")))
 
 
-def _git(*args, check=False):
-    res = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True)
+def _git(*args, cwd=None, check=False):
+    res = subprocess.run(["git", *args], cwd=cwd or ROOT, capture_output=True, text=True)
     if check and res.returncode != 0:
         raise SystemExit(f"release: git {' '.join(args)} failed: {res.stderr.strip()}")
     return res
@@ -49,7 +55,10 @@ def _write(rel, text):
 
 
 def next_dev(version: str) -> str:
-    major, minor, patch = (int(p) for p in version.split("."))
+    if ROOT not in sys.path:
+        sys.path.insert(0, ROOT)
+    from appdoc.template_spec import version_tuple
+    major, minor, patch = version_tuple(version)
     return f"{major}.{minor}.{patch + 1}.dev0"
 
 
@@ -120,7 +129,7 @@ def regenerate_example(app, clone, previous_dir, dest, workers=4):
     import json
     with open(os.path.join(previous_dir, "facts.json"), encoding="utf-8") as fh:
         want = json.load(fh)["target"]["commit"]
-    have = _git_in(clone, "rev-parse", "HEAD")
+    have = _git("rev-parse", "HEAD", cwd=clone).stdout.strip()
     if have != want:
         raise SystemExit(f"release: {app}: the clone is at {have[:12]}, the example targets {want[:12]}")
     out = os.path.join(clone, "docs", "appdoc")
@@ -144,10 +153,6 @@ def regenerate_example(app, clone, previous_dir, dest, workers=4):
         if os.path.isfile(src):
             shutil.copy(src, os.path.join(dest, name))
     shutil.rmtree(out)
-
-
-def _git_in(cwd, *args):
-    return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True).stdout.strip()
 
 
 def _walk_names(clone):
@@ -261,11 +266,14 @@ def _run(label, argv):
     return subprocess.run(argv, cwd=ROOT).returncode == 0
 
 
-def run_checks() -> bool:
+def run_checks(skip_narrative_eval: bool = False) -> bool:
     ok = _run("run tests", [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-t", "."])
     ok = ok and _run("determinism", [sys.executable, "-m", "unittest", "tests.test_determinism"])
     root = os.environ.get(EVAL_ROOT_ENV)
     for label, (script, *extra) in EVAL_HOOKS:
+        if skip_narrative_eval and script == "score.py":
+            print(f"release: {label}: SKIPPED (--skip-narrative-eval)", flush=True)
+            continue
         argv = [sys.executable, os.path.join(ROOT, "eval", script), *extra]
         if root and script == "score.py":
             argv += ["--root", root]
@@ -281,8 +289,8 @@ def steps(version: str) -> list[str]:
         "run tests: python -m unittest discover -s tests -t .",
         "determinism job: python -m unittest tests.test_determinism",
         "extractor eval: python eval/extractor_checks.py (a regression refuses the release)",
-        f"narrative eval: python eval/score.py --all ({EVAL_ROOT_ENV} points at the clones; a regression refuses the "
-        "release; with no clones it prints why and skips)",
+        f"narrative eval: python eval/score.py --all --require-clones ({EVAL_ROOT_ENV} must hold the four clones, checked "
+        "before any edit; a regression or a missing clone refuses the release; --skip-narrative-eval bypasses it loudly)",
         "rotate examples: delete previous, move current to previous, regenerate current from the clones, VERSION files, "
         "docs/diagnostic-<version>-comparison.md (nothing is rotated when current is already stamped with the version)",
         f"git commit -m 'AppDoc {version}'",
@@ -307,12 +315,33 @@ def preconditions(version: str) -> list[str]:
     return problems
 
 
+def clone_problems(clones=None, apps=APPS) -> list[str]:
+    """Why the four example clones cannot be used ([] when $APPDOC_EVAL_ROOT resolves all of them)."""
+    root = clones or os.environ.get(EVAL_ROOT_ENV)
+    if not root:
+        return [f"{EVAL_ROOT_ENV} is not set; point it at the folder holding clones of {', '.join(apps)}"]
+    missing = [a for a in apps if not os.path.isdir(os.path.join(root, a))]
+    return [f"{EVAL_ROOT_ENV}={root} has no clone of: {', '.join(missing)}"] if missing else []
+
+
+def _restore() -> None:
+    """Undo every edit of a failed run. The tree was clean when it started, so what git reports as modified,
+    deleted or untracked now is the script's."""
+    _git("checkout", "--", ".")
+    _git("clean", "-fdq")
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Cut an AppDoc release.")
     ap.add_argument("version", help="the release version, X.Y.Z")
     ap.add_argument("--dry-run", action="store_true", help="print the steps and change nothing")
-    ap.add_argument("--skip-checks", action="store_true", help="skip tests and evals (for the script's own test only)")
+    ap.add_argument("--skip-narrative-eval", action="store_true",
+                    help="release without the narrative answer-key eval; prints a loud line and is recorded in the commit")
+    ap.add_argument("--test-only-skip-checks", action="store_true",
+                    help="for the script's own test; accepted only with --dry-run")
     args = ap.parse_args(argv)
+    if args.test_only_skip_checks and not args.dry_run:
+        ap.error("--test-only-skip-checks is accepted only with --dry-run")
     version = args.version
     if not re.fullmatch(r"\d+\.\d+\.\d+", version):
         print(f"release: '{version}' is not a release version (X.Y.Z, no 'v' prefix, no .dev)", file=sys.stderr)
@@ -331,19 +360,46 @@ def main(argv=None) -> int:
         for p in problems:
             print(f"release: {p}", file=sys.stderr)
         return 1
+    skip_eval = args.skip_narrative_eval
+    rotation_needed = read_version_file(os.path.join(EXAMPLES, "current")) != version
+    if not skip_eval or rotation_needed:
+        unusable = clone_problems()
+        if unusable:
+            for p in unusable:
+                print(f"release: {p}" + ("" if not skip_eval else " (the example rotation needs them too)"),
+                      file=sys.stderr)
+            if not skip_eval:
+                print("release: nothing was changed. --skip-narrative-eval is the only bypass.", file=sys.stderr)
+            return 1
+    if skip_eval:
+        print("release: WARNING: the NARRATIVE EVAL IS SKIPPED (--skip-narrative-eval); the release commit says so",
+              file=sys.stderr)
+    try:
+        return _release(version, skip_eval)
+    except BaseException as exc:
+        _restore()
+        if isinstance(exc, SystemExit):
+            print(f"{exc.code}" if not isinstance(exc.code, int) else "", end="", file=sys.stderr)
+            print("\nrelease: failed; the tree was restored, nothing was committed after the failing step.", file=sys.stderr)
+            return exc.code if isinstance(exc.code, int) and exc.code else 1
+        print(f"release: failed with {type(exc).__name__}: {exc}; the tree was restored.", file=sys.stderr)
+        raise
+
+
+def _release(version: str, skip_eval: bool) -> int:
     set_version(version)
     rename_unreleased(version)
     gen_docs()
-    if args.skip_checks:
-        print("release: WARNING: tests and evals skipped", file=sys.stderr)
-    elif not run_checks():
-        _git("checkout", "--", ".")
+    if not run_checks(skip_eval):
         print("release: the checks failed or regressed; the version change was reverted, nothing was committed",
               file=sys.stderr)
-        return 1
+        raise SystemExit(1)
     print("release: " + rotate_examples(version))
     _git("add", "-A", check=True)
-    _git("commit", "-q", "-m", f"AppDoc {version}", check=True)
+    message = f"AppDoc {version}"
+    if skip_eval:
+        message += "\n\nNarrative eval skipped (--skip-narrative-eval); the narrative answer keys were not scored."
+    _git("commit", "-q", "-m", message, check=True)
     _git("tag", "-a", f"v{version}", "-m", f"AppDoc {version}", check=True)
     print(f"release: tagged v{version}. Push with:\n  git push origin main v{version}")
     nxt = next_dev(version)

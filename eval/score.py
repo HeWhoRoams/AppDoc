@@ -1,13 +1,13 @@
 """Score an AppDoc document against a hand-verified answer key.
 
     python eval/score.py <repo-key> <application-documentation.md> [--out eval/results]
-    python eval/score.py --all [--root DIR] [--update-baseline]
+    python eval/score.py --all [--root DIR] [--require-clones] [--update-baseline]
 
 `--all` is the release gate (tools/release.py): it scores the committed example of every narrative key
 (`examples/current/<repo>/`; `examples/previous/<repo>/` when there is no current) against `eval/narrative-baseline.json` and
 exits 1 when an item scores below its baseline or a key cites a file or line the clone does not have. It needs
 local clones of the example repositories under `--root` (or `APPDOC_EVAL_ROOT`), one folder per key name; with
-no root or no clone it prints why and exits 0 without scoring. `--update-baseline` rewrites the baseline from the
+no root or no clone it prints why and exits 0 without scoring, or exits 1 with `--require-clones` (the release run). `--update-baseline` rewrites the baseline from the
 examples and needs no clones.
 
 An item is Present when a Citation covering `must_cite` and every `must_contain` term occur in the
@@ -177,7 +177,8 @@ def citation_problems(key: list[dict], clone: str) -> list[str]:
     return bad
 
 
-def run_all(root: str | None, update: bool = False, examples_dir: str | None = None) -> int:
+def run_all(root: str | None, update: bool = False, examples_dir: str | None = None,
+            require_clones: bool = False) -> int:
     keys = narrative_keys()
     current = score_examples(keys, examples_dir)
     if update:
@@ -187,6 +188,12 @@ def run_all(root: str | None, update: bool = False, examples_dir: str | None = N
         print(f"wrote {os.path.relpath(NARRATIVE_BASELINE, os.path.dirname(HERE))}: "
               f"{sum(len(v) for v in current.values())} items in {len(current)} keys")
         return 0
+    if require_clones:
+        absent = [r for r in keys if not root or not os.path.isdir(os.path.join(root, r))]
+        if absent:
+            print(f"narrative eval FAILED: --require-clones is set and {EVAL_ROOT_ENV}"
+                  f"{'=' + root if root else ' is not set'} has no clone of: {', '.join(absent)}")
+            return 1
     if not root:
         print(f"narrative eval skipped: {EVAL_ROOT_ENV} is not set. Point it at the folder holding local clones of "
               f"{', '.join(keys)} (one folder per name) to score the narrative answer keys.")
@@ -221,9 +228,11 @@ def main(argv=None) -> int:
     ap.add_argument("--all", action="store_true", help="release gate: every key against its committed example")
     ap.add_argument("--root", default=os.environ.get(EVAL_ROOT_ENV), help=f"folder holding the clones (${EVAL_ROOT_ENV})")
     ap.add_argument("--update-baseline", action="store_true", help="with --all: rewrite eval/narrative-baseline.json")
+    ap.add_argument("--require-clones", action="store_true",
+                    help="with --all: exit 1 instead of skipping when the root or a clone is missing")
     args = ap.parse_args(argv)
     if args.all:
-        return run_all(args.root, args.update_baseline)
+        return run_all(args.root, args.update_baseline, require_clones=args.require_clones)
     if not args.repo or not args.document:
         ap.error("give <repo-key> and <document>, or --all")
 
