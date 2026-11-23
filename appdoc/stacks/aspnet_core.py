@@ -402,7 +402,8 @@ def _config_reads(path, ctx: Ctx):
                 continue
             assigned = rx is _CFG_READS[0] and re.match(r"\s*=(?!=)", t[m.end():])
             yield Fact.make("config_key", STACK_ID, path, ctx.line(m.start()), key, source="code",
-                            secret_location=is_secret_key(key), use="define" if assigned else "read")
+                            secret_location=is_secret_key(key), use="define" if assigned else "read",
+                            read_kind="env" if rx is _CFG_READS[3] else "file")
 
 
 def _as_define(f: Fact) -> Fact:

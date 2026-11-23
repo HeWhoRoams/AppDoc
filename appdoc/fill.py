@@ -152,10 +152,21 @@ def _scheduled_jobs(doc: dict, ctx: dict | None = None) -> str:
     return "\n".join(out)
 
 
+def _app_config(doc: dict) -> tuple[list, list]:
+    """(application-role config_key Facts, those among them that are commented defaults)."""
+    app = [f for f in _facts(doc, "config_key") if f["detail"].get("role", "app") == "app"]
+    return app, [f for f in app if f["detail"].get("commented")]
+
+
+def config_app_count(doc: dict) -> int:
+    """Distinct application-role key names that are not commented defaults: the M in the 16.6 "N of M"."""
+    app, _ = _app_config(doc)
+    return len({f["name"] for f in app if not f["detail"].get("commented")})
+
+
 def _config_reference(doc: dict, ctx: dict | None = None) -> str:
     """Application keys that are not commented defaults: one row per key, its definition when it has one."""
-    app = [f for f in _facts(doc, "config_key") if f["detail"].get("role", "app") == "app"]
-    commented = [f for f in app if f["detail"].get("commented")]
+    app, commented = _app_config(doc)
     by_key: dict[str, list[dict]] = {}
     for f in sorted((f for f in app if not f["detail"].get("commented")),
                     key=lambda f: (f["path"], f["line"] or 0)):
@@ -170,9 +181,14 @@ def _config_reference(doc: dict, ctx: dict | None = None) -> str:
                  f"configuration: {', '.join(f'`{p}`' for p in uncl_files[:5])}"
                  + (f" (+{len(uncl_files) - 5} more)" if len(uncl_files) > 5 else "")
                  + " (see facts.json).") if unclassified else ""
+    excluded = {r: len({f["name"] for f in _facts(doc, "config_key") if f["detail"].get("role") == r})
+                for r in ("env", "ci")}
+    excl_note = (f"{excluded['env']} env-var keys and {excluded['ci']} CI keys are excluded from the "
+                 "application table (see facts.json).") if any(excluded.values()) else ""
     head = ["| Key | Defined at | Secret location |", "|---|---|---|"]
     if not keys:
-        return "\n".join(head + ["", " ".join(("No application config keys were extracted.", skipped, uncl_note)).strip()])
+        return "\n".join(head + ["", " ".join(("No application config keys were extracted.", skipped, uncl_note)).strip()]
+                         + (["", excl_note] if excl_note else []))
     out = list(head)
     for f in keys[:CONFIG_CAP]:
         out.append(f"| {_cell(f['name'])} | {_at(f)} | {'yes' if f['detail'].get('secret_location') else 'no'} |")
@@ -180,6 +196,8 @@ def _config_reference(doc: dict, ctx: dict | None = None) -> str:
                 + (f"; {skipped}" if skipped else ".")]
     if uncl_note:
         out += ["", uncl_note]
+    if excl_note:
+        out += ["", excl_note]
     return "\n".join(out)
 
 

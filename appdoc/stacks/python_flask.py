@@ -402,7 +402,8 @@ def _split_pos(args: str):
 
 def _cfg(path, t, off, key, use, via):
     return Fact.make("config_key", STACK_ID, path, line_of(t, off), key, source="code",
-                     secret_location=is_secret_key(key), use=use, via=via)
+                     secret_location=is_secret_key(key), use=use, via=via,
+                     **({"read_kind": "env" if via == "environ" else "file"} if use == "read" else {}))
 
 
 _UPPER_DEF = re.compile(r"(?m)^([A-Z][A-Z0-9_]*)[ \t]*(?::[^=\n]+)?=(?!=)")

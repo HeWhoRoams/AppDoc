@@ -123,7 +123,7 @@ class GoFacts(unittest.TestCase):
         self.has("config_key", p, 12, "server.DOMAIN", source="code", use="read", secret_location=False)
         self.has("config_key", p, 13, "server.HTTP_PORT", use="read")
         self.has("config_key", p, 14, "security.SECRET_KEY", use="read", secret_location=True)
-        self.has("config_key", p, 15, "DB_PASSWORD", use="read", via="env", secret_location=True)
+        self.has("config_key", p, 15, "DB_PASSWORD", use="read", via="env", secret_location=False, role="env")
         self.has("config_key", p, 16, "FEATURE_X", use="read", via="env", secret_location=False)
         self.has("config_key", "main.go", 28, "LISTEN_ADDR", use="read", via="env", secret_location=False)
 

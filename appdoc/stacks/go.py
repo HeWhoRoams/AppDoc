@@ -527,7 +527,8 @@ _VIPER_NEW = re.compile(r"\b(\w+)\s*:?=\s*viper\.New\s*\(")
 
 def _cfg(src, path, off, key, via):
     return Fact.make("config_key", STACK_ID, path, src.line(off), key, source="code",
-                     secret_location=is_secret_key(key), use="read", via=via)
+                     secret_location=is_secret_key(key), use="read", via=via,
+                     read_kind="env" if via == "env" else "file")
 
 
 def _config(src: _Src, path: str):

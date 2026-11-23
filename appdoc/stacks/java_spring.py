@@ -363,7 +363,8 @@ def _scan_java(path: str, text: str, clean: str | None = None) -> Iterable[Fact]
                      schedule=sched[:120], enabled=enabled)
         elif n == "Value" and a.args:
             for key in re.findall(r"\$\{\s*([\w.\-\[\]]+)", _lits(a.args)):
-                yield _f("config_key", path, line, key, source="code", secret_location=is_secret_key(key), use="read")
+                yield _f("config_key", path, line, key, source="code", secret_location=is_secret_key(key), use="read",
+                         read_kind="file")
         elif n in _LISTENERS and a.cls is None:
             dest = next((_first_lit(at.get(k)) for k in (_LISTENERS[n][0], "value") if at.get(k)), None)
             yield _f("entry_point", path, line, _safe(dest) or _handler_name(code, a, cls), type="handler",
@@ -459,10 +460,11 @@ def _scan_java(path: str, text: str, clean: str | None = None) -> Iterable[Fact]
     yield from _external_calls(path, clean, code, L)
 
     # ---- config reads in code
-    for m in re.finditer(r"\.\s*(?:getProperty|getRequiredProperty|getenv)\s*\(\s*(" + _CHAIN + ")", clean):
-        key = _lits(m.group(1))
+    for m in re.finditer(r"\.\s*(getProperty|getRequiredProperty|getenv)\s*\(\s*(" + _CHAIN + ")", clean):
+        key = _lits(m.group(2))
         if re.fullmatch(r"[\w.\-]+", key) and not re.match(r"(?:java|user|os|file|line|path|sun|jdk)\.", key):
-            yield _f("config_key", path, L(m.start()), key, source="code", secret_location=is_secret_key(key), use="read")
+            yield _f("config_key", path, L(m.start()), key, source="code", secret_location=is_secret_key(key), use="read",
+                     read_kind="env" if m.group(1) == "getenv" else "file")
 
     # ---- auth checks in code
     for m in re.finditer(r"\.\s*(antMatchers|mvcMatchers|regexMatchers|requestMatchers|anyRequest)\s*\(", clean):

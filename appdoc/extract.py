@@ -220,6 +220,40 @@ def _extract_all(root: str, files: list[scan.SourceFile], detected: dict, worker
     return out
 
 
+def _config_roles(facts: list) -> list:
+    """Post-pass over the combined Facts (1.4A, 1.5). The cache stores pre-promotion per-file Facts, so
+    warm == cold only while every role decision stays here and depends on per-file details.
+
+    A code read of a config key (a config_key Fact with use="read", source="code") gets a role from
+    how it reads: an environment variable (``read_kind`` env) is role ``env``; any read in a CI/build
+    file path is ``ci``; any other code read is ``app``. Only ``app`` keys can be secret locations
+    (an env var or CI variable is not an application secret). A config file key classified
+    ``unclassified`` is promoted to ``app`` when one of its keys is read from code.
+    """
+    def is_code(d):
+        return d.get("source") == "code"
+    read_keys = {f.name for f in facts if f.kind == "config_key"
+                 and f.detail_dict().get("use") == "read" and is_code(f.detail_dict())}
+    out = []
+    for f in facts:
+        if f.kind != "config_key":
+            out.append(f)
+            continue
+        d = f.detail_dict()
+        role = d.get("role")
+        if is_code(d) and d.get("read_kind") and not d.get("test"):
+            role = "ci" if generic.config_role(f.path) == "ci" else ("env" if d["read_kind"] == "env" else "app")
+        elif role == "unclassified" and f.name in read_keys:
+            role = "app"
+        if role in ("env", "ci") and d.get("secret_location"):
+            d["secret_location"] = False
+        if role != d.get("role") or d != f.detail_dict():
+            d["role"] = role
+            f = F.Fact.make(f.kind, f.stack, f.path, f.line, f.name, **d)
+        out.append(f)
+    return out
+
+
 def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: bool = False,
             use_cache: bool = True, no_ownership: bool = False,
             ownership_top: int | None = None) -> tuple[str, str]:
@@ -252,23 +286,7 @@ def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: boo
         workers = min(os.cpu_count() or 1, 8)
     facts = _extract_all(root, files, detected, workers, cache, siblings)
 
-    # Post-pass (1.4A): a config file classified `unclassified` is promoted to `app` when one of its
-    # keys is read from code (a config_key Fact with use="read", source="code"). Runs on the
-    # combined set after extraction; the cache stores pre-promotion per-file facts, so warm==cold.
-    code_read_keys = {f.name for f in facts
-                      if f.kind == "config_key" and f.detail_dict().get("use") == "read"
-                      and f.detail_dict().get("source") == "code"}
-    if code_read_keys:
-        promoted = []
-        for f in facts:
-            if f.kind == "config_key" and f.detail_dict().get("role") == "unclassified" \
-                    and f.name in code_read_keys:
-                d = f.detail_dict()
-                d["role"] = "app"
-                promoted.append(F.Fact.make(f.kind, f.stack, f.path, f.line, f.name, **d))
-            else:
-                promoted.append(f)
-        facts = promoted
+    facts = _config_roles(facts)
 
     for sid, (st, markers) in sorted(detected.items()):
         count = sum(1 for sf in files if sf.ext in st.extensions)

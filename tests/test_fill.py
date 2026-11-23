@@ -145,7 +145,9 @@ class ConfigReferenceTests(unittest.TestCase):
 
     def test_ci_and_test_keys_are_excluded(self):
         d = doc(cfg(".github/workflows/ci.yml", 1, "on", role="ci"), cfg("tests/app.ini", 1, "X", test=True))
-        self.assertTrue(fill.render_block("config-reference", d).endswith("No application config keys were extracted."))
+        out = fill.render_block("config-reference", d)
+        self.assertIn("No application config keys were extracted.", out)
+        self.assertTrue(out.endswith("0 env-var keys and 1 CI keys are excluded from the application table (see facts.json)."))
 
     def test_secret_locations_first_then_path_and_line(self):
         d = doc(cfg("a.ini", 1, "PLAIN", role="app"), cfg("z.ini", 9, "PASSWD", role="app", secret_location=True),

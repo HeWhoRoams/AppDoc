@@ -4,7 +4,7 @@ import re
 import tempfile
 import unittest
 
-from appdoc import register
+from appdoc import check, fill, register
 from appdoc.render import page
 from appdoc.render.markdown import render_markdown as md
 
@@ -230,3 +230,41 @@ class PageTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ConfigTrailerTests(unittest.TestCase):
+    @staticmethod
+    def _doc(*specs):
+        return {"stacks": [], "facts": [{"kind": "config_key", "stack": "s", "path": p, "line": 1, "name": n,
+                                         "detail": {"role": r}} for p, n, r in specs]}
+
+    def test_config_trailer_counts(self):
+        d = self._doc(("a.py", "K", "app"), ("a.py", "E1", "env"), ("b.py", "E1", "env"), ("b.py", "E2", "env"),
+                      (".github/workflows/ci.yml", "C1", "ci"))
+        out = fill.render_block("config-reference", d)
+        self.assertIn("Shown 1 of 1 application keys.", out)
+        self.assertEqual(out.splitlines()[-1],
+                         "2 env-var keys and 1 CI keys are excluded from the application table (see facts.json).")
+
+    def test_trailer_absent_without_env_or_ci_keys(self):
+        self.assertNotIn("excluded", fill.render_block("config-reference", self._doc(("a.py", "K", "app"))))
+
+    def test_trailer_when_no_application_keys(self):
+        out = fill.render_block("config-reference", self._doc(("a.py", "E", "env")))
+        self.assertIn("No application config keys were extracted.", out)
+        self.assertIn("1 env-var keys and 0 CI keys are excluded", out)
+
+    def test_app_key_count_is_distinct_uncommented_app_names(self):
+        d = self._doc(("a.py", "K", "app"), ("b.py", "K", "app"), ("a.py", "E", "env"))
+        self.assertEqual(fill.config_app_count(d), 1)
+
+    def test_c7_flags_a_16_6_block_count_that_is_not_the_app_role_count(self):
+        d = self._doc(("a.py", "K", "app"), ("a.py", "E", "env"))
+        add = lambda *a: found.append(a)
+        found = []
+        good = "Shown 1 of 1 application keys.\n2 env-var keys"
+        check._c7_config_count(good, 7, d, add)
+        self.assertEqual(found, [])
+        check._c7_config_count("Shown 2 of 2 application keys.", 7, d, add)
+        self.assertEqual(len(found), 1)
+        self.assertIn("1", found[0][2])

@@ -76,7 +76,7 @@ class NodeExpressFacts(unittest.TestCase):
     def test_connections_and_config(self):
         self.has("connection", "src/data/db.ts", 5, "mysql.createPool", secret_location=True)
         self.has("connection", "src/admin/users.js", 6, "knex", secret_location=True)
-        self.has("config_key", "src/data/db.ts", 9, "DB_PASSWORD", source="code", secret_location=True)
+        self.has("config_key", "src/data/db.ts", 9, "DB_PASSWORD", source="code", secret_location=False, role="env")
         self.has("config_key", "src/index.ts", 5, "PORT", source="code", secret_location=False)
         self.has("config_key", "src/services/itsm.ts", 3, "SUPPORT_API_URL", source="code")
 
@@ -101,7 +101,7 @@ class NodeExpressFacts(unittest.TestCase):
 
     def test_config_reads_are_marked_read(self):
         self.has("config_key", "src/index.ts", 5, "PORT", use="read")
-        self.has("config_key", "src/data/db.ts", 9, "DB_PASSWORD", use="read", secret_location=True)
+        self.has("config_key", "src/data/db.ts", 9, "DB_PASSWORD", use="read", secret_location=False)
 
     def test_cron_jobs(self):
         self.has("entry_point", "src/jobs.ts", 5, "syncTickets", type="job", handler="syncTickets",

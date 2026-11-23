@@ -498,7 +498,7 @@ def _config(path, t):
 
 def _cfg(path, t, off, key):
     return Fact.make("config_key", STACK_ID, path, line_of(t, off), key, source="code",
-                     secret_location=is_secret_key(key), use="read")
+                     secret_location=is_secret_key(key), use="read", read_kind="env")
 
 
 # --- scheduled jobs ----------------------------------------------------

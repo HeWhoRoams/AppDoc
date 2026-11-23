@@ -171,7 +171,7 @@ class AspNetCoreFacts(unittest.TestCase):
         self.assertTrue(self.has("config_key", W, 18, "Smtp:Host", use="read"))
         self.assertTrue(self.has("config_key", W, 19, "Smtp:ApiKey", use="read", secret_location=True))
         self.assertTrue(self.has("config_key", W, 20, "Digest", use="read"))
-        self.assertTrue(self.has("config_key", W, 21, "DIGEST_TOKEN", use="read", secret_location=True))
+        self.assertTrue(self.has("config_key", W, 21, "DIGEST_TOKEN", use="read", secret_location=False, role="env"))
 
     def test_hardcoded_secret_constant_is_a_define(self):
         self.assertTrue(self.has("config_key", "Services/NotificationService.cs", 10, "_smtpPassword", use="define"))

@@ -360,5 +360,46 @@ class ConfigRoleUnclassifiedTests(unittest.TestCase):
         self.assertEqual(roles.get("PORT"), "app")
 
 
+class ConfigRoleSplitTests(unittest.TestCase):
+    """T25.21/T25.22: code reads are split into env / ci / app in the post-pass."""
+
+    def _keys(self, files):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = os.path.join(tmp.name, "target")
+        for rel, text in files.items():
+            full = os.path.join(root, rel)
+            os.makedirs(os.path.dirname(full), exist_ok=True)
+            with open(full, "w") as fh:
+                fh.write(text)
+        out = os.path.join(tmp.name, "out")
+        doc = json.loads(extract.extract(root, out)[0])
+        # a second, warm run must give the same answer (the cache stores pre-promotion Facts)
+        self.assertEqual(doc, json.loads(extract.extract(root, out)[0]))
+        return {(f["path"], f["name"]): f["detail"] for f in doc["facts"] if f["kind"] == "config_key"}
+
+    def test_env_key_role_env(self):
+        keys = self._keys({"requirements.txt": "flask\n",
+                           "app.py": "import os\nfrom flask import Flask\napp = Flask(__name__)\n"
+                                     "a = os.getenv('GO')\nb = app.config['DEBUG']\n"})
+        self.assertEqual(keys[("app.py", "GO")]["role"], "env")
+        self.assertEqual(keys[("app.py", "DEBUG")]["role"], "app")
+
+    def test_ci_key_role_ci(self):
+        keys = self._keys({"requirements.txt": "flask\n", "app.py": "x = 1\n",
+                           ".github/workflows/ci.yml": "env:\n  BUILD_FLAG: 1\n"})
+        ci = [d for (p, n), d in keys.items() if p.startswith(".github/")]
+        self.assertTrue(ci)
+        self.assertTrue(all(d["role"] == "ci" for d in ci))
+
+    def test_env_key_not_secret(self):
+        keys = self._keys({"requirements.txt": "flask\n",
+                           "app.py": "import os\nfrom flask import Flask\napp = Flask(__name__)\n"
+                                     "a = os.getenv('SSH_ORIGINAL_COMMAND')\nb = os.getenv('API_TOKEN')\n"
+                                     "c = app.config['DB_PASSWORD']\n"})
+        self.assertFalse(keys[("app.py", "API_TOKEN")]["secret_location"])
+        self.assertTrue(keys[("app.py", "DB_PASSWORD")]["secret_location"])
+
+
 if __name__ == "__main__":
     unittest.main()
