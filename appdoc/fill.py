@@ -12,6 +12,7 @@ import sys
 
 from . import docmodel as dm
 from . import fingerprint
+from . import integration
 from . import notes as notes_mod
 from . import register
 from . import template_spec as spec
@@ -23,6 +24,9 @@ TOP_CAP = 25
 PRUNED_CAP = 50
 CONFIG_CAP = 150
 ENTRY_CAP = 100
+CONNECTION_CAP = 60    # connection names listed in 8.1
+INTEGRATION_CAP = 60   # external-call targets listed in 8.3
+SITES_CAP = 3          # call sites or definitions shown per row
 LIST_CAP = 10  # retired-by-name and duplicate-folder lists in scan coverage
 
 
@@ -286,7 +290,8 @@ def _appendix_a(doc: dict, ctx: dict | None = None) -> str:
     return register.appendix_markdown(reg, doc, coverage, root=(ctx or {}).get("target"),
                                       blocks_by={"generator": prov["generator"], "bundle": prov["bundle"]}, plan=plan,
                                       coverage_ids=detail,
-                                      list_missing=spec.stamp_version(text or "") >= (2, 7))
+                                      list_missing=spec.stamp_version(text or "") >= (2, 7),
+                                      opaque=spec.opaque_blocks(spec.stamp_version(text or "")))
 
 
 def _closed_questions(doc: dict, ctx: dict | None = None) -> str:
@@ -300,8 +305,95 @@ def _closed_questions(doc: dict, ctx: dict | None = None) -> str:
             + ", ".join(f"Q-{n} ({where})" if where else f"Q-{n}" for n, where in closed) + ".")
 
 
+def _lower_first(s: str) -> str:
+    return s[:1].lower() + s[1:]
+
+
+def _none_sentence(what: str, kinds, noun: str, doc: dict | None = None) -> str:
+    """The closed "none" sentence of a 2.8 block: what was not found and which reader would have produced it
+    ("read by the generic reader" or "no supported Stack reports ..."). Its wording does not depend on what 2.9
+    adds to the block."""
+    return f"No {what} were extracted ({_lower_first(none_phrase(kinds, noun))})."
+
+
+def _sites(at: list[str]) -> str:
+    shown = ", ".join(f"`{a.replace(' (test)', '')}`" + (" (test)" if a.endswith(" (test)") else "") for a in at[:SITES_CAP])
+    return shown + (f", ... +{len(at) - SITES_CAP} more" if len(at) > SITES_CAP else "")
+
+
+def _connections(doc: dict, ctx: dict | None = None) -> str:
+    """Every connection name defined in configuration, one row per name across base, transform and test configs."""
+    rows = integration.connection_rows(doc)
+    if not rows:
+        return _none_sentence("connections", ("connection",), "connections")
+    out = ["| Name | Kind | Defined at | Overridden in | Secret location |", "|---|---|---|---|---|"]
+    for r in rows[:CONNECTION_CAP]:
+        over = ", ".join(_cell(c) for c in r["overridden_in"]) or "none"
+        out.append(f"| `{_cell(r['name'])}` | {_cell(', '.join(r['types']))} | {_sites(r['at'])} | {over} | "
+                   f"{'yes' if r['secret_location'] else 'no'} |")
+    out += ["", f"Listed {min(len(rows), CONNECTION_CAP)} of {plural(len(rows), 'connection name')}. "
+                "Values are never recorded; a connection string is a location, not a quotation."]
+    return "\n".join(out)
+
+
+def _integrations(doc: dict, ctx: dict | None = None) -> str:
+    """External calls (not test code) grouped by type, with config key, contract and call sites, then the share keys."""
+    rows = integration.external_call_rows(doc)
+    shares = integration.share_rows(doc)
+    if not rows and not shares:
+        can = _stacks_reporting(doc, "external_call")
+        msg = _none_sentence("external calls", ("external_call",), "external calls")
+        if can:
+            msg = f"No external calls were extracted. Stacks that report them: {_names(can)}."
+        return msg
+    out = []
+    if rows:
+        out += ["| Type | Target | Config key | Contract | Call sites |", "|---|---|---|---|---|"]
+        for r in rows[:INTEGRATION_CAP]:
+            keys = ", ".join(f"`{_cell(k)}`" for k in r["config_keys"]) or "none"
+            via = ", ".join(f"`{_cell(v)}`" for v in r["via"]) or "none"
+            out.append(f"| {_cell(r['type'])} | `{_cell(r['target'])}` | {keys} | {via} | {_sites(r['at'])} |")
+        out += ["", f"Listed {min(len(rows), INTEGRATION_CAP)} of {plural(len(rows), 'external call target')}."]
+    if shares:
+        out += ["" if out else None, "| Share key | Defined at | Reads |", "|---|---|---|"]
+        out += [f"| `{_cell(r['key'])}` | {_sites(r['at'])} | {r['reads']} |" for r in shares]
+        out += ["", "A share key is a configuration key whose value is a network path; the path is never recorded."]
+    return "\n".join(l for l in out if l is not None)
+
+
+def _pipeline(doc: dict, ctx: dict | None = None) -> str:
+    """Section 16.8. Markers ship in 2.8; the rows come with the CI reader."""
+    jobs = _facts(doc, "ci_job")
+    if jobs:
+        return (f"{plural(len(jobs), 'pipeline job')} recorded in facts.json; "
+                "this AppDoc release does not list them here. Read the CI files.")
+    return _none_sentence("pipeline jobs", ("ci_job",), "CI jobs")
+
+
+def _repo_docs(doc: dict, ctx: dict | None = None) -> str:
+    """Section 2.4. Markers ship in 2.8; the rows come with the documentation reader."""
+    docs = _facts(doc, "doc_file")
+    if docs:
+        return (f"{plural(len(docs), 'repository documentation file')} recorded in facts.json; "
+                "this AppDoc release does not list them here. Read them.")
+    return _none_sentence("repository documentation files", ("doc_file",), "repository documentation")
+
+
+# T28.91 replaces the body of the access-model block; until then it states what it does not cover and that
+# nothing was evaluated (never a clean bill of health).
+ACCESS_DISCLOSURE = ("Application-layer evaluation only: ASP.NET `<authorization>`, MVC filters and the declared "
+                     "authentication mode. IIS authentication settings, server-level configuration, network exposure, "
+                     "group membership and effective permissions are not in the repository.")
+
+
+def _access_model(doc: dict, ctx: dict | None = None) -> str:
+    return f"{ACCESS_DISCLOSURE}\n\nNot evaluated: this AppDoc release does not write the access model."
+
+
 RENDERERS = {"scan-coverage": _scan_coverage, "entry-points": _entry_points, "config-reference": _config_reference,
-             "scheduled-jobs": _scheduled_jobs, "closed-questions": _closed_questions, "appendix-a": _appendix_a}
+             "scheduled-jobs": _scheduled_jobs, "closed-questions": _closed_questions, "appendix-a": _appendix_a,
+             "access-model": _access_model, "connections": _connections, "integrations": _integrations,
+             "pipeline": _pipeline, "repo-docs": _repo_docs}
 
 
 def generated_body(name: str, doc: dict, ctx: dict | None = None) -> str | None:
@@ -394,7 +486,7 @@ def fill_facts_blocks(target: str, out_dir: str) -> bool:
         doc = json.load(fh)
     with open(md, encoding="utf-8", newline="") as fh:
         text = fh.read()
-    only = tuple(n for n in RENDERERS if n not in spec.OPAQUE_BLOCKS)
+    only = tuple(n for n in RENDERERS if n not in spec.OPAQUE_BLOCKS)   # the 2.8 blocks are opaque
     new, _ = fill_text(text, doc, {"out_dir": out_dir, "target": target}, only=only)
     if new == text:
         return False

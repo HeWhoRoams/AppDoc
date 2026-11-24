@@ -402,6 +402,123 @@ class ClosedQuestionsTests(unittest.TestCase):
         self.assertIn("Closed by the audit and answered in the body: Q-3 (16.3).", once)
 
 
+class Block28Tests(unittest.TestCase):
+    """T28.92, T28.93: the connections, integrations, pipeline and repo-docs blocks (and the access-model stub)."""
+
+    def conns(self):
+        return [
+            fact("connection", "web/Web.config", 12, "PrimaryDb", type="database", secret_location=True,
+                 overridden_in=["Staging", "Release"]),
+            fact("connection", "web/Web.Release.config", 5, "PrimaryDb", type="database", secret_location=True),
+            fact("connection", "web/Web.config", 14, "ReportsDb", type="database", secret_location=False),
+            fact("connection", "tests/App.config", 3, "PrimaryDb", type="database", test=True),
+            fact("connection", "svc/App.config", 8, "SessionCache", type="cache"),
+        ]
+
+    def test_connections_all_listed_grouped_by_name(self):
+        d = doc(*self.conns())
+        out = fill.render_block("connections", d)
+        rows = [l for l in out.splitlines() if l.startswith("| `")]
+        self.assertEqual([r.split("|")[1].strip() for r in rows], ["`PrimaryDb`", "`ReportsDb`", "`SessionCache`"])
+        primary = rows[0]
+        self.assertIn("`web/Web.config:12`", primary)
+        self.assertIn("`web/Web.Release.config:5`", primary)
+        self.assertIn("`tests/App.config:3` (test)", primary)
+        self.assertIn("Release, Staging", primary)           # overridden_in, sorted
+        self.assertIn("yes", primary)                         # a secret location in any definition
+        self.assertIn("Listed 3 of 3 connection names.", out)
+        shuffled = doc(*reversed(self.conns()))
+        self.assertEqual(fill.render_block("connections", shuffled), out)    # deterministic, input order is no input
+        many = doc(*[fact("connection", "a.config", i, f"Db{i:03d}", type="database") for i in range(1, 66)])
+        capped = fill.render_block("connections", many)
+        self.assertEqual(sum(1 for l in capped.splitlines() if l.startswith("| `")), fill.CONNECTION_CAP)
+        self.assertIn(f"Listed {fill.CONNECTION_CAP} of 65 connection names.", capped)
+
+    def test_connections_none_names_the_reader(self):
+        self.assertEqual(fill.render_block("connections", doc()),
+                         "No connections were extracted (read by the generic reader).")
+
+    def calls(self):
+        return [
+            fact("external_call", "web/Web.config", 40, "https://billing.example.org:8443", type="service",
+                 via="IBillingContract", config_key="BillingEndpoint"),
+            fact("external_call", "web/Web.config", 44, "https://user:hunter2@api.example.org/v1/x?token=abc", type="http"),
+            fact("external_call", "app/Mailer.cs", 9, "smtp.example.org", type="smtp"),
+            fact("external_call", "app/Export.cs", 30, "\\\\files01\\drop", type="file_drop", config_key="DropShare"),
+            fact("external_call", "app/Log.cs", 7, "App_Data/log.txt", type="file"),
+            fact("external_call", "app/Mailer.cs", 21, "smtp.example.org", type="smtp"),
+            fact("external_call", "tests/T.cs", 2, "https://test.example.org", type="http", test=True),
+            fact("share", "web/Web.config", 50, "ExportShare", unc=True),
+            fact("config_key", "app/Export.cs", 31, "ExportShare", use="read"),
+        ]
+
+    def test_integrations_block(self):
+        d = doc(*self.calls())
+        out = fill.render_block("integrations", d)
+        rows = [l for l in out.splitlines() if l.startswith("| ") and not l.startswith("| Type") and "---" not in l]
+        types = [r.split("|")[1].strip() for r in rows if r.split("|")[1].strip() not in ("",)]
+        self.assertEqual(types[:5], ["service", "file_drop", "smtp", "http", "file"])
+        service = rows[0]
+        self.assertIn("`https://billing.example.org:8443`", service)
+        self.assertIn("`BillingEndpoint`", service)
+        self.assertIn("`IBillingContract`", service)
+        smtp = next(r for r in rows if r.startswith("| smtp"))
+        self.assertIn("`app/Mailer.cs:9`", smtp)
+        self.assertIn("`app/Mailer.cs:21`", smtp)
+        self.assertNotIn("test.example.org", out)                       # test-code calls are not listed
+        # R18/R19: no userinfo, path or query
+        self.assertIn("`https://api.example.org`", out)
+        for leak in ("hunter2", "token=abc", "/v1/x", "user:"):
+            self.assertNotIn(leak, out)
+        self.assertIn("Listed 5 of 5 external call targets.", out)
+        self.assertIn("| `ExportShare` | `web/Web.config:50` | 1 |", out)   # the share key and its read count
+        self.assertEqual(fill.render_block("integrations", doc(*reversed(self.calls()))), out)
+
+    def test_integrations_caps_state_n_of_m(self):
+        many = doc(*[fact("external_call", "a.cs", i, f"host{i:03d}.example.org", type="http") for i in range(1, 80)])
+        out = fill.render_block("integrations", many)
+        self.assertEqual(sum(1 for l in out.splitlines() if l.startswith("| http")), fill.INTEGRATION_CAP)
+        self.assertIn(f"Listed {fill.INTEGRATION_CAP} of 79 external call targets.", out)
+
+    def test_integrations_none_phrase_stable(self):
+        none = "No external calls were extracted (no supported Stack reports external calls)."
+        self.assertEqual(fill.render_block("integrations", doc()), none)
+        # a Stack that reports the kind changes the sentence only by naming it; the closed phrase stays
+        d = {"stacks": [stack("aspnet", "external_call")], "facts": []}
+        out = fill.render_block("integrations", d)
+        self.assertTrue(out.startswith("No external calls were extracted. "), out)
+        self.assertIn("Stacks that report them: `aspnet`.", out)
+        # test-only calls count as none
+        self.assertEqual(fill.render_block("integrations", doc(fact("external_call", "t.cs", 1, "h", type="http", test=True))), none)
+
+    def test_pipeline_block_none_in_2_8(self):
+        out = fill.render_block("pipeline", doc())
+        self.assertEqual(out, "No pipeline jobs were extracted (no supported Stack reports CI jobs).")
+        # the closed phrase follows the capability table: once the generic reader feeds the kind it says so
+        from unittest import mock
+        from appdoc.stacks import generic
+        with mock.patch.object(generic, "GENERIC_KINDS", generic.GENERIC_KINDS | {"ci_job"}), \
+                mock.patch.object(fill, "GENERIC_KINDS", generic.GENERIC_KINDS | {"ci_job"}):
+            self.assertEqual(fill.render_block("pipeline", doc()),
+                             "No pipeline jobs were extracted (read by the generic reader).")
+
+    def test_repo_docs_block_none_in_2_8(self):
+        self.assertEqual(fill.render_block("repo-docs", doc()),
+                         "No repository documentation files were extracted "
+                         "(no supported Stack reports repository documentation).")
+
+    def test_access_model_stub_states_the_disclosure_and_not_evaluated(self):
+        out = fill.render_block("access-model", doc())
+        self.assertTrue(out.startswith("Application-layer evaluation only:"), out)
+        self.assertIn("not in the repository.", out)
+        self.assertIn("Not evaluated:", out)
+
+    def test_every_2_8_block_has_a_renderer(self):
+        from appdoc import template_spec as spec
+        for name in spec.GENERATED_2_8.values():
+            self.assertIsNotNone(fill.render_block(name, doc()), name)
+
+
 class NotesTests(unittest.TestCase):
     """docs/appdoc/notes.jsonl: limitations of a generated block live as data and `fill` renders them inside it."""
 
