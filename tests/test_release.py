@@ -559,5 +559,37 @@ class ExampleLayout(unittest.TestCase):
             self.assertFalse(os.path.exists(os.path.join(ex, "previous")))
 
 
+class AuditMarkdownTests(unittest.TestCase):
+    """R71.A1c/A4b: the comparison reads planned / audited / extra per row key, and explains the unsealed rows."""
+
+    def test_counts_are_per_row_and_unsealed_rows_are_split_by_cause(self):
+        release = load_tool("appdoc_release_audit", RELEASE)
+        case = os.path.join(ROOT, "tests", "corpus", "audit-per-row-coverage", "docs", "appdoc")
+        with tempfile.TemporaryDirectory() as tmp:
+            app = os.path.join(tmp, "app")
+            os.makedirs(app)
+            shutil.copy(os.path.join(case, "audit-plan.json"), app)
+            import json
+            with open(os.path.join(case, "evidence.jsonl"), encoding="utf-8") as fh:
+                head, *body = [json.loads(l) for l in fh if l.strip()]
+            rows = "".join(json.dumps(x) + "\n" for x in [head, *({**r, "claim_sha": "0123456789ab", "sealed_by": "audit"}
+                                                              for r in body)])         # the audited rows, sealed
+            with open(os.path.join(app, "evidence.jsonl"), "w", encoding="utf-8", newline="\n") as fh:
+                fh.write(rows + '{"id": "E-20", "ref": "16.5", "claim": "c", "result": "Supported", "cites": [], '
+                                '"anchor": "", "limitation": "none"}\n'
+                                '{"id": "E-21", "ref": "14/Q-2", "claim": "c", "result": "Answerable", "cites": [], '
+                                '"anchor": "", "limitation": "none"}\n'
+                                '{"id": "E-22", "ref": "4/F-1", "claim": "c", "result": "Supported", "cites": [], '
+                                '"anchor": "", "limitation": "none", "claim_sha": "0123456789ab"}\n')
+            text = release.audit_markdown(tmp, apps=("app",))
+            self.assertIn("| 10.2 | full | 1/3 (0) of 3 |", text)          # three Present controls, one audited
+            self.assertIn("| 9 | sampled | 1/1 (0) of 1 |", text)
+            self.assertIn("| answerable | 1 |", text)
+            self.assertIn("| section-level | 1 |", text)
+            self.assertIn("| unexplained | 1 |", text)                       # E-22: a claim_sha without sealed_by
+            self.assertNotIn("mostly Corrected", text)
+            self.assertEqual(release.audit_markdown(tmp, apps=("missing",)), "")
+
+
 if __name__ == "__main__":
     unittest.main()

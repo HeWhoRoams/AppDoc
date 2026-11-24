@@ -59,7 +59,7 @@ Each cell is `planned/audited (extra)` from the live register rows; `extra` is t
 | Audited on | 2026-11-23 | 2026-11-23 | 2026-11-24 | 2026-11-23 |
 | Audit record doc_sha | 1e5156451378 | cc86d1ffc3e2 | 11b42f50a344 | 7e6eb805e7d5 |
 
-Live rows with no `sealed_by` are rows `seal --audit` did not stamp (they are mostly Corrected or Downgraded rows and rows appended in a later audit pass; not investigated row by row); none is `upgrade`, so the provenance is strict-clean.
+Live rows with no `sealed_by` are not an audit gap: `seal` writes `claim_sha` and `sealed_by` only on ID rows, workflow (7.x) and per-row section keys. Answerable rows, Dismissed rows and the older section-level rows (one row for a whole section) are never sealed (R71.A4b: all 28 rows of the four examples are one of these); none is `upgrade`, so the provenance is strict-clean.
 
 ### Markers, bare names, severity order, section 17
 

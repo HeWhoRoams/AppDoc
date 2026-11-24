@@ -162,6 +162,67 @@ def _walk_names(clone):
         yield from files
 
 
+UNSEALED_NOTE = ("Live rows with no `sealed_by` are not an audit gap: `seal` writes `claim_sha` and `sealed_by` only on ID "
+                 "rows, workflow (7.x) and per-row section keys (`10.2/<slug>`, `16.5/<slug>`, `17/<slug>`, `9/<slug>`). "
+                 "Answerable rows, Dismissed rows and the older section-level rows (one row for a whole section) are "
+                 "never sealed. Each count below is split by that cause; `unexplained` is a row that should have been "
+                 "sealed, and none is `upgrade`, so the provenance is strict-clean.")
+
+
+def _live_unsealed_cause(row):
+    """Why a live row has no `sealed_by`: answerable, dismissed, section-level, or unexplained (None when sealed)."""
+    if "sealed_by" in row:
+        return None
+    if row.get("result") in ("Answerable", "Dismissed"):
+        return row["result"].lower()
+    ref = str(row.get("ref", ""))
+    if "claim_sha" not in row and re.fullmatch(r"\d+(?:\.\d+)?", ref) and not ref.startswith("7."):
+        return "section-level"
+    return "unexplained"
+
+
+def audit_markdown(current_dir, apps=APPS):
+    """Planned / audited (extra) of N per plan section, and the live rows without `sealed_by` by cause, read from
+    each app's `audit-plan.json` and `evidence.jsonl` in `current_dir`. "" when no app has both files."""
+    if ROOT not in sys.path:
+        sys.path.insert(0, ROOT)
+    import json
+    from appdoc import audit_plan, register
+    loaded = {}
+    for app in apps:
+        plan_path = os.path.join(current_dir, app, audit_plan.PLAN)
+        reg_path = os.path.join(current_dir, app, "evidence.jsonl")
+        if os.path.isfile(plan_path) and os.path.isfile(reg_path):
+            with open(plan_path, encoding="utf-8") as fh:
+                plan = json.load(fh)
+            with open(reg_path, encoding="utf-8") as fh:
+                loaded[app] = (plan, register.parse(fh.read()))
+    if not loaded:
+        return ""
+    names = list(loaded)
+    lines = ["### Planned vs audited, per section", "",
+             "Each cell is `planned/audited (extra) of total`: the keys the plan asks for (one per row for 10.2, 16.5, 17 "
+             "and the sampled 9), those with a live register row, and live keys in the section the plan did not ask for "
+             "(an older section-level row counts as extra).", "",
+             "| Section | mode | " + " | ".join(names) + " |", "|---|---|" + "---|" * len(names)]
+    sections = [(s["section"], s["mode"]) for s in loaded[names[0]][0]["sections"]]
+    for section, mode in sections:
+        cells = []
+        for app in names:
+            plan, reg = loaded[app]
+            total = next((s["total"] for s in plan["sections"] if s["section"] == section), 0)
+            got = next(((p, a, x) for sec, p, a, x in audit_plan.progress(plan, reg.live_keys()) if sec == section), None)
+            cells.append(f"{got[1]}/{got[0]} ({got[2]}) of {total}" if got else "n/a")
+        lines.append(f"| {section} | {mode} | " + " | ".join(cells) + " |")
+    lines += ["", UNSEALED_NOTE, "", "| Live rows without `sealed_by` | " + " | ".join(names) + " |",
+              "|---|" + "---|" * len(names)]
+    causes = {app: [_live_unsealed_cause(r) for _, r in loaded[app][1].live_rows()] for app in names}
+    for cause in ("answerable", "dismissed", "section-level", "unexplained"):
+        lines.append(f"| {cause} | " + " | ".join(str(causes[a].count(cause)) for a in names) + " |")
+    lines.append("")
+    return "\n".join(lines)
+
+
 def comparison_markdown(version, previous_dir, current_dir, apps=APPS):
     """docs/diagnostic-<version>-comparison.md: the movement between the two example folders."""
     diag = _load_module("appdoc_diag_metrics", os.path.join("tests", "diag_metrics.py"))
@@ -204,7 +265,8 @@ def comparison_markdown(version, previous_dir, current_dir, apps=APPS):
     for label, cells in table:
         lines.append(f"| {label} | " + " | ".join(cells) + " |")
     lines.append("")
-    return "\n".join(lines)
+    audit = audit_markdown(current_dir, apps)
+    return "\n".join(lines) + ("\n" + audit if audit else "")
 
 
 def write_comparison(version, previous_dir, current_dir, docs_dir=None):
