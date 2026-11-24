@@ -7,9 +7,11 @@ Shared lexical helpers and the framework independent patterns come from ``aspnet
 
 from __future__ import annotations
 
+import os
 import re
 from urllib.parse import urlsplit
 
+from .. import scan
 from ..facts import Fact
 from ..secrets import is_secret_key
 from .aspnet import (STR, Ctx, _join_route, _safe, _strip_markup_comments, _unq, dotnet_common, error_messages,
@@ -533,6 +535,21 @@ def _jobs(path, ctx: Ctx):
 
 # --------------------------------------------------------------------------- the Stack
 
+_CORE_SDK = re.compile(r"(?i)\bSdk\s*=\s*\"[^\"]*Microsoft\.NET\.Sdk\.(?:Web|Razor)\b|<Sdk\s[^>]*\bName\s*=\s*\"Microsoft\.NET\.Sdk\.(?:Web|Razor)\b")
+_CORE_REF = re.compile(r"(?i)<(?:PackageReference|FrameworkReference)\b[^>]*\bInclude\s*=\s*\"Microsoft\.AspNetCore\.")
+_MAX_PROJECT_BYTES = 1 << 20
+
+
+def _is_core_project(root: str, rel: str) -> bool:
+    try:
+        if os.path.getsize(os.path.join(root, rel)) > _MAX_PROJECT_BYTES:
+            return False
+        text = scan.read_text(root, rel)[0]
+    except OSError:
+        return False
+    return bool(_CORE_SDK.search(text) or _CORE_REF.search(text))
+
+
 class AspNetCoreStack(Stack):
     id = STACK_ID
     capabilities = frozenset((
@@ -546,11 +563,32 @@ class AspNetCoreStack(Stack):
         self._files = None
 
     def detect(self, files):
+        """Path-only check, used when the Target root is unknown. ``detect_in`` is the real test."""
         self._files = _Files(files)
         base = lambda p: p.rsplit("/", 1)[-1]
         proj = sorted(p for p in files if p.lower().endswith(".csproj"))
         entry = sorted(p for p in files if base(p) in ("Program.cs", "Startup.cs"))
         return sorted(proj + entry) if proj and entry else []
+
+    def detect_in(self, files, root):
+        """The ``.csproj`` files that make a web project, plus the ``Program.cs``/``Startup.cs`` of those projects: ``Sdk="Microsoft.NET.Sdk.Web"`` or ``.Razor``, a
+        ``Microsoft.AspNetCore.*`` package, or an AspNetCore framework reference. A project plus
+        ``Program.cs`` is not enough; a classic ``System.Web`` project belongs to the ``aspnet`` Stack."""
+        self._files = _Files(files)
+        projects = sorted(p for p in files if p.lower().endswith(".csproj") and _is_core_project(root, p))
+        if not projects:
+            return []
+        all_dirs = {p.rsplit("/", 1)[0] if "/" in p else "" for p in files if p.lower().endswith(".csproj")}
+        web_dirs = {p.rsplit("/", 1)[0] if "/" in p else "" for p in projects}
+
+        def owner(p):
+            d = p.rsplit("/", 1)[0] if "/" in p else ""
+            while d not in all_dirs and d:
+                d = d.rsplit("/", 1)[0] if "/" in d else ""
+            return d
+
+        entry = [p for p in files if p.rsplit("/", 1)[-1] in ("Program.cs", "Startup.cs") and owner(p) in web_dirs]
+        return sorted(projects + entry)
 
     def extract(self, path, text):
         ext = "." + path.rsplit(".", 1)[-1].lower() if "." in path.rsplit("/", 1)[-1] else ""

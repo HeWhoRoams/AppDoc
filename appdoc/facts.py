@@ -18,6 +18,14 @@ def is_test_path(path: str) -> bool:
     parts = path.split("/")
     return any(p.lower() in _TEST_DIRS for p in parts[:-1]) or bool(_TEST_FILE_RE.search(parts[-1]))
 
+
+_TEST_DATA_DIRS = {"fixtures", "__fixtures__", "testdata", "e2e"}
+
+
+def is_test_data_path(path: str) -> bool:
+    """A folder of test fixtures or end-to-end data: ``fixtures``, ``__fixtures__``, ``e2e``, ``*testdata``."""
+    return any(p.lower() in _TEST_DATA_DIRS or p.lower().endswith("testdata") for p in path.split("/")[:-1])
+
 KINDS = (
     "file",
     "stack",
@@ -56,11 +64,11 @@ KINDS = (
 # Allowed detail keys per kind (conformance guard, Phase 2.3).
 DETAIL_KEYS = {
     "file": frozenset("encoding ext lines size stacks".split()),
-    "stack": frozenset("capabilities file_count marker_files supported".split()),
+    "stack": frozenset("capabilities file_count ignored_markers marker_files supported".split()),
     "entry_point": frozenset(
         "class codebehind component controller enabled exists framework handler inherits inputs "
-        "listener master method middleware page prefix_unresolved route_name schedule scheduler "
-        "source type usage view".split()),
+        "listener master method middleware mvc_area mvc_area_path page prefix_unresolved route_name "
+        "schedule scheduler source type usage view".split()),
     "data_access": frozenset(
         "builder class entity namespace native operation orm property statement type via".split()),
     "connection": frozenset("class secret_location source type".split()),
@@ -73,7 +81,7 @@ DETAIL_KEYS = {
     "smell": frozenset("constant fid pattern".split()),
     "schema_object": frozenset("columns dialect expression type unique".split()),
     "owner_file": frozenset("entries kind".split()),
-    "ui_page": frozenset("root route x_class".split()),
+    "ui_page": frozenset("root route type x_class".split()),
     "security_setting": frozenset(
         "config config_status local_only overridden_in reason secret_location value".split()),
     "access_rule": frozenset(
