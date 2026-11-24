@@ -1,5 +1,5 @@
 # <Target name> Documentation
-<!-- appdoc:template 2.7 -->
+<!-- appdoc:template 2.8 -->
 <!-- appdoc:guide Replace the title placeholder. Copy this file to docs/appdoc/application-documentation.md and fill every section.
 Keep the `appdoc:template` stamp and the `appdoc:generated` markers. Delete every `appdoc:guide` comment as you fill its section (C9 fails while any remain).
 CONVENTIONS:
@@ -22,7 +22,7 @@ CONVENTIONS:
   - Section 11 Status is Cited, Inferred or Unknown.
   - C16 universal claims cite only single lines: a sentence with all, any, each, every, always, never, whole or entire needs the covering range (`path:start-end`) or **Inferred:**. C20 citation precision: a cell may cite at most 5 sources, each range at most 100 lines, and a wide range that is the claim's only lined Citation fails. A plain `build` prints both as advisories and `check --strict` fails on them: fix them before the audit plan.
 - Section 17 (Build, Run and Test Locally): the Command cell holds exactly one backticked command and nothing else (extra commands and prose go under the table). In each Command cell write a backticked command, `Unknown - see Open questions.` (the repository does not show it; also a row in section 14), or `Not applicable` (cite the evidence). Any row but an Unknown one cites its Evidence with a lined Citation (C9).
-- Run `appdoc fill` to write the generated blocks (scan-coverage, entry-points, closed-questions, config-reference, scheduled-jobs, appendix-a); never edit them by hand (C7). Run it again after every change to evidence.jsonl or notes.jsonl. -->
+- Run `appdoc fill` to write the generated blocks (scan-coverage, repo-docs, entry-points, access-model, connections, integrations, closed-questions, config-reference, scheduled-jobs, pipeline, appendix-a); never edit them by hand (C7). Run it again after every change to evidence.jsonl or notes.jsonl. -->
 
 **Target:** <fill: folder name> | **Commit:** <fill: facts.json target.commit> | **Evidence date:** <fill: YYYY-MM-DD>
 
@@ -258,7 +258,7 @@ Severity: Critical, High, Medium, Low. Effort: S, M, L. IDs R-1, R-2, ... -->
 |---|---|---|
 
 ### 16.5 Deployment and change process
-<!-- appdoc:guide One row per step, all eight required (C9): Build, Test, Deploy, Upgrade, Rollback, Backup, Restore, Secret rotation.
+<!-- appdoc:guide One row per step, all nine required (C9): Build, Test, Deploy, Upgrade, Rollback, Backup, Restore, Secret rotation, Periodic maintenance (the yearly or recurring checklist: licences and certificates, year-bound configuration values, data refresh).
 Attribute each to the job, script or command that does it, cited; Unknown if the repository does not show it.
 The audit plans each row that is not Unknown as `16.5/<slug>` (the slug is the lower-cased first cell, non-alphanumerics to `-`): one register row per planned key, that key as its ref. -->
 

@@ -11,7 +11,7 @@ from appdoc import check, fill, fingerprint
 from appdoc import seal as seal_mod
 from appdoc import facts as facts_mod
 from appdoc import template_spec as spec
-from tests.template_pin import STAMP_2_4, run_as_2_4, run_as_stamped
+from tests.template_pin import STAMP_2_4, STAMP_2_7, run_as_2_4, run_as_2_7, run_as_stamped
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FIXTURES_21 = os.path.join(HERE, "fixtures", "docs-2.1")
@@ -338,7 +338,7 @@ class CheckTests(unittest.TestCase):
     # --- 2.7: superseded rows (append-only register)
 
     def doc27(self, doc=None, cq=True, s17=True):
-        doc = (doc or build_doc()).replace(OLD_STAMP, spec.STAMP)
+        doc = (doc or build_doc()).replace(OLD_STAMP, STAMP_2_7)
         if s17 and "\n## 17. " not in doc:
             doc = doc.replace("\n## Appendix A.", f"\n## 17. {spec.SECTIONS[16]}\n\n{SECTION_BODY[17]}\n\n## Appendix A.", 1)
         if cq and "appdoc:generated closed-questions" not in doc:
@@ -828,15 +828,48 @@ class CheckTests(unittest.TestCase):
         self.assertIn("(stamp: 2.1)", report)
 
     def test_a_2_4_document_fails_c3_with_the_upgrade_problem(self):
-        """A 2.4 document (what AppDoc 2.4 to 2.6 wrote) is not on the running template 2.7: one C3 problem that
-        names 2.7 and points to `appdoc upgrade`; no structure rule runs and no preview is printed."""
+        """A 2.4 document (what AppDoc 2.4 to 2.6 wrote) is not on the running template 2.8: one C3 problem that
+        names 2.8 and points to `appdoc upgrade`; no structure rule runs and no preview is printed."""
         code, report, _ = self._run_check(build_doc(), True, False, False, True)   # unpinned: the real Check
         self.assertEqual(code, 2)
         self.assertEqual(self.rules(report), {"C3"})
         self.assertEqual(len(re.findall(r"^- line \d+", report.split("## C3")[1].split("\n## ")[0], re.M)), 1, report)
-        self.assertIn("not on template 2.7 (stamp: 2.4)", report)
+        self.assertIn("not on template 2.8 (stamp: 2.4)", report)
         self.assertIn("appdoc upgrade", report)
         self.assertNotIn("previews (advisory)", report)
+
+    def test_a_2_7_document_fails_c3_until_upgraded(self):
+        """T28.A4, strict C3 by decision (no grace window): a document stamped 2.7 passes on its own template (the
+        pinned Check) and, on the running 2.8, fails with the one C3 upgrade problem that says so and points to
+        `appdoc upgrade`; the 2.8 structure rules (the new subsections, blocks and the maintenance row) do not run."""
+        code, report, _ = self.run27()               # its own template (pinned): passes, and `fill` wrote the blocks
+        self.assertEqual(code, 0, report)
+        with open(os.path.join(self.out, "application-documentation.md"), encoding="utf-8") as fh:
+            doc = fh.read()
+        code, report, _ = self._run_check(doc, False, False, False, False)   # the real, running 2.8 Check
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C3"})
+        self.assertEqual(len(re.findall(r"^- line \d+", report.split("## C3")[1].split("\n## ")[0], re.M)), 1, report)
+        self.assertIn("not on template 2.8 (stamp: 2.7)", report)
+        self.assertIn("appdoc upgrade", report)
+        self.assertIn("no grace window", report)
+        self.assertNotIn("previews (advisory)", report)
+
+    def test_2_8_document_needs_the_2_8_subsections_blocks_and_maintenance_row(self):
+        """T28.A4: on the running template the Check asks for 2.4, 5.4 and 16.8, their blocks and the 16.5 Periodic
+        maintenance row; stamped 2.7 it asks for none of them (spec.subsections, GENERATED_SINCE, ROWS_SINCE)."""
+        self.assertEqual(set(spec.subsections((2, 8))) - set(spec.subsections((2, 7))), {"2.4", "5.4", "16.8"})
+        self.assertEqual(set(spec.required_rows_at("16.5", (2, 8))) - set(spec.required_rows_at("16.5", (2, 7))),
+                         {"Periodic maintenance"})
+        text = self.instantiate_template()
+        self.write_register(dict(AUDIT, performed=False, scope="not audited yet"), [])
+        self.assertEqual(self.run_check(text)[0], 0)
+        for needle, rule in (("### 5.4 Application-layer access (generated)", "C8"), ("Periodic maintenance", "C9")):
+            broken = "\n".join(l for l in text.splitlines() if not l.startswith(needle)
+                               and not (needle == "Periodic maintenance" and l.startswith("| Periodic maintenance")))
+            code, report, _ = self.run_check(broken)
+            self.assertEqual(code, 2, (needle, report))
+            self.assertIn(rule, self.rules(report), needle)
 
     def test_c3_upgrade_orphan_comment_fails(self):
         """`appdoc upgrade` leaves text it could not map under an `appdoc:upgrade-orphan` comment; C3 fails on it
@@ -1279,7 +1312,7 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(self.run27(self.sec17(*ok))[0], 0)
 
     def instantiate_template(self):
-        """A freshly started 2.7 document: the template with its guidance deleted and nothing but Unknown written."""
+        """A freshly started document of the running template: the template with its guidance deleted and nothing but Unknown written."""
         path = os.path.join(os.path.dirname(check.__file__), "assets", "template.md")
         with open(path, encoding="utf-8") as fh:
             text = fh.read()
@@ -1299,12 +1332,12 @@ class CheckTests(unittest.TestCase):
                             "<!-- appdoc:generated closed-questions")
         return text
 
-    def test_a_fresh_2_7_template_passes_with_only_unknowns(self):
+    def test_a_fresh_2_8_template_passes_with_only_unknowns(self):
         text = self.instantiate_template()
         self.assertIn(spec.STAMP, text)
-        self.assertEqual(spec.stamp_version(text), (2, 7))
+        self.assertEqual(spec.stamp_version(text), (2, 8))
         for name in spec.GENERATED.values():
-            self.assertIn(f"<!-- appdoc:generated {name} -->", text)   # all six blocks, closed-questions included
+            self.assertIn(f"<!-- appdoc:generated {name} -->", text)   # all eleven blocks, the 2.8 ones included
         self.write_register(dict(AUDIT, performed=False, scope="not audited yet"), [])
         code, report, _ = self.run_check(text)
         self.assertEqual(code, 0, report)
@@ -2004,7 +2037,7 @@ class CheckTests(unittest.TestCase):
 
     def test_previews_are_enforced_when_the_stamp_is_2_7(self):
         from unittest import mock
-        doc = self._sev_doc().replace(OLD_STAMP, spec.STAMP)
+        doc = self._sev_doc().replace(OLD_STAMP, STAMP_2_7)
         with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"):
             code, report, _ = self.run_check(doc)
         self.assertEqual(code, 2, report)

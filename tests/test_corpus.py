@@ -562,7 +562,7 @@ class RegisterHistory(CorpusCase):
                 fh.write(json.dumps({"id": f"E-{n}", "ref": ref, "claim": "c", "result": "Supported",
                                      "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}) + "\n")
         with contextlib.redirect_stdout(io.StringIO()):
-            check.run(r.target, r.out)
+            run_as_stamped(r.narrative, check.run, r.target, r.out)
         with open(os.path.join(r.out, "check-report.md"), encoding="utf-8") as fh:
             report = fh.read()
         self.assertIn("ref '10.2/no-such-control' names no row of section 10.2", report)
@@ -574,7 +574,7 @@ class RegisterHistory(CorpusCase):
         with open(doc, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(text.replace("| TLS | Present | `app/main.py:7` |", "| TLS | Present | `app/main.py:6` |"))
         with contextlib.redirect_stdout(io.StringIO()):
-            check.run(r.target, r.out)
+            run_as_stamped(r.narrative, check.run, r.target, r.out)
         with open(os.path.join(r.out, "check-report.md"), encoding="utf-8") as fh:
             self.assertIn("the text of 10.2/tls changed after it was audited", fh.read())
 
@@ -691,16 +691,17 @@ class UpgradeCases(CorpusCase):
         with open(path, "w", encoding="utf-8", newline="") as fh:
             fh.write(text.replace(old, new, count))
 
-    def test_a_2_6_document_fails_c3_on_2_7_and_passes_after_exactly_the_5_1_steps(self):
+    def test_a_2_6_document_fails_c3_on_2_8_and_passes_after_exactly_the_5_1_steps(self):
         """Plan 2.7, 5.1 and Done means 2: the 2.6 document (stamp 2.4) passes on its own template, fails C3 alone on
-        2.7.0, and passes `build --require-audit` after `appdoc upgrade` and the steps its UPGRADE-TODO.md lists."""
+        the running template (2.8 since T28.A4), and passes `build --require-audit` after `appdoc upgrade` and the
+        steps its UPGRADE-TODO.md lists (the 2.8 additions take their guide comments deleted, like section 17)."""
         r = self.case("upgrade-2-6-to-2-7")
         self.assertEqual(r.code, 0, r.report)                            # on template 2.4 (run_case pins it) it passes
         self.assertIn("Template 2.7 previews (advisory)", r.report)
         for rule in ("C1", "C9", "C11", "C17", "C18"):                     # the 2.7 rules it would fail
             self.assertRegex(r.report, rf"- {rule} line \d+:")
         with contextlib.redirect_stdout(io.StringIO()):
-            self.assertEqual(check.run(r.target, r.out), 2)              # the real, strict Check on 2.7.0
+            self.assertEqual(check.run(r.target, r.out), 2)              # the real, strict Check on the running template
         with open(os.path.join(r.out, "check-report.md"), encoding="utf-8") as fh:
             self.assertEqual(set(re.findall(r"^## (C\d+) ", fh.read(), re.M)), {"C3"})
         doc = os.path.join(r.out, check.NARRATIVE)
@@ -710,6 +711,8 @@ class UpgradeCases(CorpusCase):
         self.assertEqual(rc, 0, log)
         self.assertIn("added the closed-questions block", log)
         self.assertIn("added section 17 Build, Run and Test Locally", log)
+        self.assertIn("added subsection 5.4 Application-layer access (generated)", log)    # the 2.8 steps (T28.A4)
+        self.assertIn("added the 16.5 rows Periodic maintenance", log)
         with open(os.path.join(r.out, "UPGRADE-TODO.md"), encoding="utf-8") as fh:
             todo = fh.read()
         for what in ("C1 Citations resolve", "C9 Tables conform", "C11 Register valid", "C15 Register counts in prose (advisory)",
@@ -719,6 +722,9 @@ class UpgradeCases(CorpusCase):
         with open(doc, encoding="utf-8", newline="") as fh:
             text = fh.read()
         text = re.sub(r"(## 17\. Build, Run and Test Locally\n)<!-- appdoc:guide .*?-->\n", r"\1", text, flags=re.S)
+        for heading in ("### 2.4 Repository documentation (generated)", "### 5.4 Application-layer access (generated)",
+                        "### 16.8 Pipeline (generated)"):                 # the 2.8 headings' guides are deleted as filled
+            text = re.sub(r"(" + re.escape(heading) + r"\n)<!-- appdoc:guide .*?-->\n", r"\1", text, flags=re.S)
         text = text.replace("| Run | Unknown - see Open questions. | . | Unknown - see Open questions. |",
                             "| Run | `python app/main.py` | . | `app/main.py:2` |")
         with open(doc, "w", encoding="utf-8", newline="") as fh:
@@ -798,7 +804,7 @@ class UpgradeCases(CorpusCase):
         before = self._snapshot(os.path.join(r.out, "verification.md"))
         rc, log = self.main("upgrade", r.target, "--no-ownership", "--workers", "0")
         self.assertEqual(rc, 0, log)
-        self.assertIn("template 2.1 -> 2.7", log)
+        self.assertIn("template 2.1 -> 2.8", log)
         self.assertEqual(self._snapshot(os.path.join(r.out, "verification.md")), before)   # never converted
         for name in ("evidence.jsonl", "notes.jsonl", "audit-plan.json"):
             self.assertFalse(os.path.exists(os.path.join(r.out, name)), name)

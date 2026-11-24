@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-TEMPLATE_VERSION = "2.7"
+TEMPLATE_VERSION = "2.8"
 STAMP = f"<!-- appdoc:template {TEMPLATE_VERSION} -->"
 
 
@@ -49,11 +49,14 @@ COUNT_CLASSES = {
 
 STAMP_RE = re.compile(r"<!--\s*appdoc:template\s+([\w.]+)\s*-->")
 GUIDE_RE = re.compile(r"<!--\s*appdoc:guide\b")
-UPGRADE_NOTES = ("run `appdoc upgrade <target>` for the mechanical steps (it writes docs/appdoc/UPGRADE-TODO.md for the rest), or see CHANGELOG.md, 2.7.0 upgrade notes (and the 2.4.0 notes for a document older than 2.4). 2.4 -> 2.7: change the stamp to 2.7, add the "
-                 "`closed-questions` markers under section 14 and section 17, replace hand-written counts with count "
-                 "markers, move extractor limitations to `notes.jsonl`, shorten the audit `scope` to the method, "
-                 "run `appdoc build --expand-citations`, then `appdoc audit-plan`, the audit, `appdoc seal --audit "
-                 "--date` and `appdoc build`; re-run `extract` for facts schema appdoc-facts/7")
+UPGRADE_NOTES = ("run `appdoc upgrade <target>` for the mechanical steps (it writes docs/appdoc/UPGRADE-TODO.md for the rest), or see CHANGELOG.md, 2.8.0 upgrade notes (and the 2.7.0 and 2.4.0 notes for a document older than 2.7). "
+                 "A document stamped 2.7 or older fails C3 until it is upgraded (there is no grace window). "
+                 "2.7 -> 2.8: change the stamp to 2.8, add the subsections 2.4, 5.4 and 16.8 and the generated-block "
+                 "markers `repo-docs`, `access-model`, `connections`, `integrations` and `pipeline`, add the "
+                 "`Periodic maintenance` row to 16.5, delete each `appdoc:guide` comment as you fill it, "
+                 "then re-run `extract` for the current facts schema and `appdoc fill`, cite every mandatory config "
+                 "file with a line and address the finding candidates, run `appdoc audit-plan`, the audit, "
+                 "`appdoc seal --audit --date` and `appdoc build`")
 
 # The fixed line under the 5.3 table. Template text, not guidance: C9 fails when 5.3 lacks it.
 RESTRICTION_LINE = ("**Restriction:** do not infer a permission from a visible control or a granted scope; "
@@ -69,7 +72,8 @@ PRIORITY = ("High", "Medium", "Low")
 EFFORT = ("S", "M", "L")
 CONTROL_STATUS = ("Verified absent", "Not established", "Present")
 CONTROL_STATUS_PRESENT = "Present"
-RUNBOOK_STEPS = ("Build", "Test", "Deploy", "Upgrade", "Rollback", "Backup", "Restore", "Secret rotation")
+RUNBOOK_STEPS = ("Build", "Test", "Deploy", "Upgrade", "Rollback", "Backup", "Restore", "Secret rotation",
+                 "Periodic maintenance")   # the last row is the 2.8 maintenance row (DA-G 6.4): the yearly checklist
 BUILD_STEPS = ("Prerequisites", "Restore dependencies", "Build", "Run", "Test")   # section 17, in order
 UNKNOWN_TEXT = "Unknown - see Open questions."   # what a cell says when the repository does not show it
 BUILD_UNKNOWN = UNKNOWN_TEXT   # the 17 Command cell values that are not a command
@@ -94,8 +98,10 @@ def sections(version: tuple) -> tuple:
     return tuple(t for n, t in enumerate(SECTIONS, 1) if version >= SECTIONS_SINCE.get(n, ()))
 
 REQUIRED_SUBSECTIONS = {
+    "2.4": "Repository documentation (generated)",
     "4.1": "Subsystem inventory",
     "5.1": "Observed role concepts", "5.2": "Authorization enforcement", "5.3": "Role-to-capability matrix",
+    "5.4": "Application-layer access (generated)",
     "8.1": "Connections", "8.2": "Stored procedures and SQL", "8.3": "External calls",
     "8.4": "Data entities and sensitivity", "8.5": "Failure, fallback and observability",
     "10.1": "Verified findings", "10.2": "Unknowns that must not be treated as controls",
@@ -103,7 +109,19 @@ REQUIRED_SUBSECTIONS = {
     "16.1": "Platform requirements", "16.2": "Data stores", "16.3": "Session and authentication behavior",
     "16.4": "Known failure modes and operator responses", "16.5": "Deployment and change process",
     "16.6": "Configuration reference", "16.7": "Scheduled and background jobs",
+    "16.8": "Pipeline (generated)",
 }
+
+# A subsection and a required row a template added after 2.4: its key -> the first template version that asks for
+# it. A document stamped older is not asked for it (the Check pins the document's own version, so a test or a
+# preview of an older template still reads the older contract). Keys not listed are asked for from 2.4.
+SUBSECTIONS_SINCE = {"2.4": (2, 8), "5.4": (2, 8), "16.8": (2, 8)}
+ROWS_SINCE = {"Periodic maintenance": (2, 8)}   # the 16.5 maintenance row (DA-G 6.4)
+
+
+def subsections(version: tuple) -> dict:
+    """The REQUIRED_SUBSECTIONS a document of this template version (a `version_tuple`) must carry."""
+    return {k: t for k, t in REQUIRED_SUBSECTIONS.items() if version >= SUBSECTIONS_SINCE.get(k, ())}
 
 
 @dataclass(frozen=True)
@@ -256,6 +274,12 @@ def required_rows(key: str) -> tuple:
     return t.required_rows if t else ()
 
 
+def required_rows_at(key: str, version: tuple) -> tuple:
+    """`required_rows(key)` for a document of this template version (a `version_tuple`): a row a later template
+    added (ROWS_SINCE) is not asked of an older document."""
+    return tuple(r for r in required_rows(key) if version >= ROWS_SINCE.get(r, ()))
+
+
 def unknown_row(key: str, label: str) -> str:
     """A required row for table `key` that says the repository does not show it (UNKNOWN_TEXT, or the column's own
     default: see `Table.cell_defaults`)."""
@@ -323,6 +347,15 @@ UPGRADE_STEPS = {
     "2.7": (
         ("block", "closed-questions"),
         ("section", "17"),
+        ("stamp",),
+    ),
+    "2.8": (
+        # the three subsections come with their guide comment and block markers (the template's own unit) ...
+        ("subsection", "2.4"), ("subsection", "5.4"), ("subsection", "16.8"),
+        # ... and the block op adds the markers where a heading already exists (8.1, 8.3) or a unit lacked them
+        ("block", "repo-docs"), ("block", "access-model"), ("block", "connections"), ("block", "integrations"),
+        ("block", "pipeline"),
+        ("rows", "16.5"),   # the Periodic maintenance row
         ("stamp",),
     ),
 }

@@ -697,9 +697,9 @@ class UpgradeStepTableTests(unittest.TestCase):
         from appdoc import template_spec as spec
         vt = spec.version_tuple
         versions = sorted(spec.UPGRADE_STEPS, key=vt)
-        # one entry for each template that changed what a document holds: 2.1, 2.2, 2.3, 2.4 and the running 2.7
+        # one entry for each template that changed what a document holds: 2.1, 2.2, 2.3, 2.4, 2.7 and the running 2.8
         # (AppDoc 2.5 and 2.6 kept template 2.4); the chain starts at the template with no stamp
-        self.assertEqual(versions, ["2.1", "2.2", "2.3", "2.4", "2.7"])
+        self.assertEqual(versions, ["2.1", "2.2", "2.3", "2.4", "2.7", "2.8"])
         self.assertEqual(spec.UPGRADE_FROM, "2.0")
         self.assertEqual(versions[-1], spec.TEMPLATE_VERSION)
         for v in versions:
@@ -724,19 +724,27 @@ class UpgradeStepTableTests(unittest.TestCase):
                 self.assertTrue(spec.TABLES[op[1]].required_rows, op)
         # everything the current template carries beyond a bare 2.0 document is added by some step ...
         self.assertTrue(set(spec.REQUIRED_SUBSECTIONS) <= {o[1] for o in self.ops() if o[0] == "subsection"})
-        self.assertEqual({o[1] for o in self.ops() if o[0] == "block"}, set(spec.generated_blocks((2, 7)).values()))   # the 2.8 blocks come with its step (T28.A4)
+        self.assertEqual({o[1] for o in self.ops() if o[0] == "block"},
+                         set(spec.generated_blocks(spec.version_tuple(spec.TEMPLATE_VERSION)).values()))   # incl. the 2.8 blocks
         self.assertTrue(any(o[0] == "appendix" for o in self.ops()))
         tables = {o[1] for o in self.ops() if o[0] == "reshape"} | {"17"}   # 17 comes with its section
         self.assertEqual(tables, set(spec.TABLES) - {"16.6"})              # 16.6 is the generated block's table
         self.assertEqual({o[1] for o in self.ops() if o[0] == "rows"}, {"11", "16.5"})   # 17's rows come with the section
+        self.assertIn(("rows", "16.5"), self.ops("2.8"))                    # the Periodic maintenance row (ROWS_SINCE)
         self.assertIn(("line", "5.3", spec.RESTRICTION_LINE), self.ops())
         # ... and what a later template added is added by the step of that template
         for n, since in spec.SECTIONS_SINCE.items():
             self.assertIn(("section", str(n)), self.ops(".".join(map(str, since))))
+        # (no block is skipped: a block registered ahead of the running template would have been, and a tripwire that
+        # skips what it should check is no tripwire; since T28.A4 the 2.8 blocks are checked against UPGRADE_STEPS["2.8"])
         for name, since in spec.GENERATED_SINCE.items():
-            if since > spec.version_tuple(spec.TEMPLATE_VERSION):
-                continue   # a block registered ahead of its template (the 2.8 blocks): its step comes with the bump (T28.A4)
             self.assertIn(("block", name), self.ops(".".join(map(str, since))))
+        for key, since in {**spec.SUBSECTIONS_SINCE, **{"5.4": (2, 8), "16.8": (2, 8)}}.items():
+            self.assertIn(("subsection", key), self.ops(".".join(map(str, since))))
+        self.assertEqual({k for k in spec.REQUIRED_SUBSECTIONS if k not in spec.subsections((2, 7))}, {"2.4", "5.4", "16.8"})
+        for row, since in spec.ROWS_SINCE.items():
+            self.assertIn(row, spec.RUNBOOK_STEPS)                         # the row the ("rows", "16.5") step adds
+            self.assertIn(("rows", "16.5"), self.ops(".".join(map(str, since))))
         # the 2.2 to 2.4 renames and insertions a 2.1 or 2.2 document needs
         self.assertIn(("rename", "5.3", "Area", "Capability"), self.ops("2.3"))
         self.assertIn(("rename", "6", "Route", "Route or entry"), self.ops("2.2"))
@@ -802,11 +810,12 @@ class UpgradeTests(unittest.TestCase):
         self.assertEqual(upgrade.infer_version(no_sub), "2.0")                   # no stamp, a 2.1 subsection missing
         self.assertEqual(upgrade.infer_version("# T\n<!-- appdoc:template 2.4 -->\n"), "2.4")
         self.assertEqual(upgrade.infer_version(self.doc_from_fixture("docs-2.2")), "2.2")
-        self.assertEqual(upgrade.steps_after("2.0"), ["2.1", "2.2", "2.3", "2.4", "2.7"])
-        self.assertEqual(upgrade.steps_after("2.4"), ["2.7"])
+        self.assertEqual(upgrade.steps_after("2.0"), ["2.1", "2.2", "2.3", "2.4", "2.7", "2.8"])
+        self.assertEqual(upgrade.steps_after("2.4"), ["2.7", "2.8"])
+        self.assertEqual(upgrade.steps_after("2.7"), ["2.8"])
         self.assertEqual(upgrade.steps_after(spec.TEMPLATE_VERSION), [])
 
-    # --- 2.1 -> 2.7
+    # --- 2.1 -> 2.8
 
     def test_upgrade_2_1_to_current_mechanical(self):
         import re
@@ -819,13 +828,14 @@ class UpgradeTests(unittest.TestCase):
         self.assertEqual(rc, 0, log)
         text = self.narrative()
         lines = text.split("\n")
-        self.assertEqual(spec.stamp_version(text), (2, 7))
+        self.assertEqual(spec.stamp_version(text), (2, 8))
         heads = dm.headings(lines)
         for n, title in enumerate(spec.SECTIONS, 1):                              # all 17 sections
             self.assertTrue(heads[str(n)].title.startswith(title), (n, title))
         for key, title in spec.REQUIRED_SUBSECTIONS.items():                     # every required subsection
             self.assertEqual(heads[key].title, title, key)
-        self.assertEqual(sorted(n for n, _, _ in fill.blocks(text)), sorted(spec.generated_blocks((2, 7)).values()))
+        self.assertEqual(sorted(n for n, _, _ in fill.blocks(text)),
+                         sorted(spec.generated_blocks(spec.version_tuple(spec.TEMPLATE_VERSION)).values()))
         for key in ("4", "4.1", "6", "8.1", "11"):                               # the mechanical headers and rows
             self.assertTrue(spec.TABLES[key].header_ok([dm.cell_text(c) for c in dm.first_table(lines, heads[key]).header]), key)
         self.assertIn(spec.RESTRICTION_LINE, text)
@@ -846,7 +856,7 @@ class UpgradeTests(unittest.TestCase):
             report = fh.read()
         self.assertRegex(report, r"(?m)^## C3 ")
         self.assertIn("appdoc:upgrade-orphan", report)
-        self.assertNotRegex(report, r"template 2\.7 \(stamp")                    # the stamp is no longer the problem
+        self.assertNotRegex(report, r"template 2\.8 \(stamp")                    # the stamp is no longer the problem
         self.assertTrue(re.search(r"(?m)^## C9 ", report))                       # guides left in the added sections
 
     def test_upgrade_2_0_adds_2_1_subsections(self):
@@ -1000,18 +1010,64 @@ class UpgradeTests(unittest.TestCase):
         self.assertNotRegex(dm.BLOCK_RE.sub("", new), r"(?<!\r)\n")           # every line break outside a block is CRLF
         self.assertIn("\r\n## 17. Build, Run and Test Locally\r\n", new)
 
-    def test_upgrade_2_4_adds_only_the_2_7_parts(self):
-        """A 2.4 document (what AppDoc 2.4 to 2.6 wrote) gets the stamp, the closed-questions markers and section 17."""
+    def test_upgrade_2_4_adds_the_2_7_and_2_8_parts(self):
+        """A 2.4 document (what AppDoc 2.4 to 2.6 wrote) gets the stamp, the closed-questions markers, section 17 and
+        the 2.8 headings, blocks and maintenance row."""
         from appdoc import upgrade
         from tests.test_check import build_doc
-        old = build_doc()
+        old = self.without_maintenance_row(build_doc())
         new, log = upgrade.upgrade_text(old, "2.4")
-        self.assertEqual(log, ["added the closed-questions block", "added section 17 Build, Run and Test Locally",
-                               "stamp 2.7"])
-        self.assertIn("<!-- appdoc:template 2.7 -->", new)
+        self.assertEqual(log[:2], ["added the closed-questions block", "added section 17 Build, Run and Test Locally"])
+        self.assertEqual(log[2:], self.LOG_2_8 + ["stamp 2.8"])
+        self.assertIn("<!-- appdoc:template 2.8 -->", new)
         self.assertIn("<!-- appdoc:generated closed-questions -->", new)
         self.assertIn("## 17. Build, Run and Test Locally", new)
         self.assertEqual(new.count("appdoc:upgrade-orphan"), 0)
+
+    @staticmethod
+    def without_maintenance_row(doc):
+        """The test document as an older template wrote it: no Periodic maintenance row in 16.5."""
+        return "\n".join(l for l in doc.split("\n") if not l.startswith("| Periodic maintenance |"))
+
+    LOG_2_8 = ["added subsection 2.4 Repository documentation (generated)",
+               "added subsection 5.4 Application-layer access (generated)",
+               "added subsection 16.8 Pipeline (generated)",
+               "added the connections block", "added the integrations block",
+               "added the 16.5 rows Periodic maintenance"]
+
+    def test_upgrade_2_7_adds_the_2_8_parts_and_is_idempotent(self):
+        """T28.A4: `UPGRADE_STEPS["2.8"]` on a 2.7 document adds the five block markers at their GENERATED positions,
+        the three headings with their `appdoc:guide`, the maintenance row skeleton, and the stamp; nothing is removed;
+        a second run changes nothing; the upgraded text carries every block the running template requires."""
+        from appdoc import docmodel as dm
+        from appdoc import template_spec as spec
+        from appdoc import upgrade
+        from tests.test_check import CheckTests, build_doc
+        old = self.without_maintenance_row(CheckTests("run_check").doc27(build_doc()))
+        new, log = upgrade.upgrade_text(old, "2.7")
+        self.assertEqual(log, self.LOG_2_8 + ["stamp 2.8"])
+        self.assertEqual(spec.stamp_version(new), (2, 8))
+        heads = dm.headings(new.split("\n"))
+        for key, name in spec.GENERATED_2_8.items():
+            marker = f"<!-- appdoc:generated {name} -->"
+            self.assertEqual(new.count(marker), 1, name)
+            h = heads[key]                                                       # the block sits inside its own section
+            self.assertTrue(h.idx < new[:new.index(marker)].count("\n") < h.own_end or key in ("8.1", "8.3"), name)
+        for key in ("2.4", "5.4", "16.8"):
+            self.assertIn(spec.REQUIRED_SUBSECTIONS[key], heads[key].title)
+            self.assertIn("appdoc:guide", "\n".join(new.split("\n")[heads[key].idx:heads[key].own_end]))
+        row = spec.unknown_row("16.5", "Periodic maintenance")
+        self.assertIn(row, new)
+        self.assertEqual(spec.unknown_row("16.5", "Periodic maintenance"), row)
+        kept = [l for l in new.split("\n")]
+        for l in old.split("\n"):                                                # additions only: nothing is dropped
+            if l.strip() and "appdoc:template" not in l:
+                self.assertIn(l, kept)
+                kept.remove(l)
+        again, log2 = upgrade.upgrade_text(new, "2.7")
+        self.assertEqual((again, log2), (new, []))
+        self.assertEqual(upgrade.upgrade_text(new, "2.8"), (new, []))
+        self.assertEqual(set(spec.GENERATED_2_8.values()) - {m.group(2) for m in dm.BLOCK_RE.finditer(new)}, set())
 
 
 if __name__ == "__main__":
@@ -1042,18 +1098,20 @@ class VersionCompareTests(unittest.TestCase):
         self.assertEqual(version_tuple("none"), ())
         self.assertEqual(version_tuple(None), ())
 
-    def test_template_version_is_2_7(self):
-        """T27.26: the running template is 2.7; the template file carries its stamp, 17 headings and the conventions."""
+    def test_template_version_is_2_8(self):
+        """T28.A4: the running template is 2.8; the template file carries its stamp, 17 headings and the conventions;
+        a 2.7 stamp is not current and the 2.8 blocks are required from 2.8 only."""
         from appdoc import template_spec as spec
-        self.assertEqual(spec.TEMPLATE_VERSION, "2.7")
-        self.assertEqual(spec.STAMP, "<!-- appdoc:template 2.7 -->")
+        self.assertEqual(spec.TEMPLATE_VERSION, "2.8")
+        self.assertEqual(spec.STAMP, "<!-- appdoc:template 2.8 -->")
         self.assertEqual(spec.sections(spec.version_tuple(spec.TEMPLATE_VERSION)), spec.SECTIONS)
-        self.assertEqual(spec.generated_blocks(spec.version_tuple(spec.TEMPLATE_VERSION)),
-                         {k: v for k, v in spec.GENERATED.items() if v not in spec.GENERATED_2_8.values()})   # 2.8 blocks: T28.A4
+        self.assertEqual(spec.generated_blocks(spec.version_tuple(spec.TEMPLATE_VERSION)), spec.GENERATED)
+        self.assertEqual(spec.generated_blocks((2, 7)),
+                         {k: v for k, v in spec.GENERATED.items() if v not in spec.GENERATED_2_8.values()})
         path = os.path.join(os.path.dirname(HERE), "appdoc", "assets", "template.md")
         with open(path, encoding="utf-8") as fh:
             text = fh.read()
-        self.assertEqual(spec.stamp_version(text), (2, 7))
+        self.assertEqual(spec.stamp_version(text), (2, 8))
         self.assertEqual(text.splitlines()[1], spec.STAMP)
         start = text.index("CONVENTIONS:")
         conventions = text[start:text.index("-->", start)]

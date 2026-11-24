@@ -204,7 +204,8 @@ class AppendixMarkdownTests(unittest.TestCase):
             "`seal` writes `claim_sha` and `sealed_by` only on ID rows, workflow (7.x) and per-row section keys. "
             "Other section-level rows, Answerable rows and Dismissed rows are never sealed, so they carry no "
             "`sealed_by`. C17 `--strict` fails only on `sealed_by: upgrade`, never on an absent key.", "",
-            "Not audited: generated and opaque blocks (entry-points, scheduled-jobs, closed-questions, appendix-a)", "",
+            "Not audited: generated and opaque blocks (entry-points, scheduled-jobs, closed-questions, appendix-a, "
+            "access-model, connections, integrations, pipeline, repo-docs)", "",
             "### A.2 Coverage", "",
             "2 rows: 1 Supported, 1 Corrected, 0 Downgraded. "
             "Each Supported or Corrected row's anchor text was found in its cited lines by the Check.", "",

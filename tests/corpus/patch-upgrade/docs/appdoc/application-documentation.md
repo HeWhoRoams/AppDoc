@@ -1,5 +1,5 @@
 # Demo Documentation
-<!-- appdoc:template 2.7 -->
+<!-- appdoc:template 2.8 -->
 <!-- a comment `nope/missing.py:99` -->
 
 ## 1. Application Index
@@ -16,6 +16,11 @@ The Target is a small Python service in `app/main.py:1`. Stack: python-flask, cl
 
 <!-- appdoc:generated scan-coverage -->
 <!-- /appdoc:generated scan-coverage -->
+
+### 2.4 Repository documentation (generated)
+
+<!-- appdoc:generated repo-docs -->
+<!-- /appdoc:generated repo-docs -->
 
 ## 3. Architecture
 
@@ -55,6 +60,11 @@ The Target is a small Python service in `app/main.py:1`. Stack: python-flask, cl
 
 **Restriction:** do not infer a permission from a visible control or a granted scope; enforcement is the code cited in 5.2.
 
+### 5.4 Application-layer access (generated)
+
+<!-- appdoc:generated access-model -->
+<!-- /appdoc:generated access-model -->
+
 ## 6. UI Catalog
 
 - The landing page is rendered by `app/main.py:5` for visitors.
@@ -73,6 +83,9 @@ The Target is a small Python service in `app/main.py:1`. Stack: python-flask, cl
 
 ### 8.1 Connections
 
+<!-- appdoc:generated connections -->
+<!-- /appdoc:generated connections -->
+
 | ID | Name | Kind | Configured at | Used by |
 |---|---|---|---|---|
 | C-1 | db | database | `app/main.py:6`, value omitted | F-1 |
@@ -82,6 +95,9 @@ The Target is a small Python service in `app/main.py:1`. Stack: python-flask, cl
 - No SQL is used; the ORM call is at `app/main.py:7`.
 
 ### 8.3 External calls
+
+<!-- appdoc:generated integrations -->
+<!-- /appdoc:generated integrations -->
 
 | ID | Call | Direction | Caller | Notes |
 |---|---|---|---|---|
@@ -196,6 +212,7 @@ flowchart LR
 | Backup | Unknown | not in the repository |
 | Restore | Unknown | not in the repository |
 | Secret rotation | Unknown | not in the repository |
+| Periodic maintenance | Unknown - see Open questions. | Unknown - see Open questions. |
 
 ### 16.6 Configuration reference
 
@@ -206,6 +223,11 @@ flowchart LR
 
 <!-- appdoc:generated scheduled-jobs -->
 <!-- /appdoc:generated scheduled-jobs -->
+
+### 16.8 Pipeline (generated)
+
+<!-- appdoc:generated pipeline -->
+<!-- /appdoc:generated pipeline -->
 
 ## 17. Build, Run and Test Locally
 
