@@ -61,7 +61,7 @@ Narrative content between `appdoc:generated` markers that `appdoc fill` writes f
 _Avoid_: auto section, computed table
 
 **Opaque block**:
-A Generated block the Check does not read as Narrative (`entry-points`, `scheduled-jobs`, `closed-questions`, `appendix-a`; see `OPAQUE_BLOCKS` in the Template spec). Its tables, IDs and Citations are not the writer's, so a Citation inside one does not count as the document citing that file.
+A Generated block the Check does not read as Narrative and the audit does not cover (`entry-points`, `scheduled-jobs`, `closed-questions`, `appendix-a`, and from template 2.8 `access-model`, `connections`, `integrations`, `pipeline`, `repo-docs`; see `OPAQUE_BLOCKS` in the Template spec). Its tables, IDs and Citations are not the writer's, so a Citation inside one does not count as the document citing that file, and an audit row never certifies one.
 _Avoid_: hidden block, skipped section
 
 **Configuration reference**:
@@ -147,6 +147,34 @@ _Avoid_: missing, unknown
 **Stack**:
 A family of technology a Target is built on (for example Classic ASP, ASP.NET Core, Java Spring) that needs its own way of extracting Facts.
 _Avoid_: framework class, platform
+
+**Mandatory input**:
+A file that holds security-bearing configuration: a `security_setting`, an `access_rule`, a `config_external` reference or an application-role `config_key` that is a secret location (a file the reader could not parse counts, by path). The writer reads it, redacts the values and cites it with a line outside the generated blocks; C21 fails otherwise. See ADR 0018.
+_Avoid_: required file, config to review
+
+**Configuration** (build configuration):
+A named MSBuild configuration such as `Debug` or `Release`, taken from transform file names, project `Condition` groups and the solution's configuration list. Each has its own **Effective values**. A deployment environment is not a Configuration; the two join only through a CI job's build configuration or a publish profile, never by name. The **production configuration** is `Release` unless `appdoc-context.md` says `Production config: <name>`.
+_Avoid_: environment, profile, mode
+
+**Effective value**:
+A configuration setting or access rule as one build configuration yields it after its transform. A transform never overwrites the base Fact; a value that depends on something the extractor cannot evaluate is `unknown`, never the base value. Transforms apply at publish or package time to the project-root `Web.config` only.
+_Avoid_: resolved value, final value, runtime value
+
+**Access rule**:
+An `access_rule` Fact: one `allow` or `deny` entry of `<system.web><authorization>`, with its scope path, verbs and role names as written. User accounts are counted (`users_named`), never recorded.
+_Avoid_: permission, ACL, policy
+
+**Guard candidate**:
+A `guard_candidate` Fact: an attribute that the Target does not define, used on three or more controllers or actions, which may be an authorization guard. Until the owner declares it with `Auth attributes:` in `appdoc-context.md`, a handler it guards is `unknown`, never `signed_in_any`. Not a **Finding candidate**.
+_Avoid_: custom attribute, filter
+
+**Archetype principal**:
+One of the three callers that handler reach is evaluated for: `anon` (not signed in), `auth` (signed in, in no role the Target names) and `role:<R>` (signed in, in role R only). A named user is none of them.
+_Avoid_: user type, persona, actor
+
+**Reach label**:
+The per-handler result `no_app_restriction`, `signed_in_any`, `role_restricted`, `denied` or `unknown`, derived from the Archetype principals for the production configuration. It describes the **application layer only**: IIS, server settings, network exposure and group membership are not in the repository. A handler that changes state and is labelled `no_app_restriction`, `signed_in_any` or `unknown` is a 10.1 finding or a dismissed candidate.
+_Avoid_: permission level, exposure, protection level (those claim more than the code shows)
 
 ## Relationships
 

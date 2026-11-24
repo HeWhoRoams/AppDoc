@@ -7,7 +7,7 @@ A block is the text between `<!-- appdoc-self:generated NAME -->` and `<!-- /app
 (Markdown) or the same markers after a `# ` (YAML). Blocks:
 
     README.md                 commands, rules, facts-schema
-    SKILL.md                  run-commands
+    SKILL.md                  run-commands, skill-rules
     ci/appdoc-docs-gate.yml   gate-header, gate-pin
 
 The sources are `__main__.build_parser()`, `check.RULES`,
@@ -108,6 +108,14 @@ def run_commands(_current: str) -> str:
     return "\n".join(out)
 
 
+def skill_rules(_current: str) -> str:
+    out = ["Rules for the 2.8 security and coverage Facts (generated from `appdoc/workflow.py`, `SKILL_RULES`):"]
+    for heading, items in workflow.SKILL_RULES:
+        out += ["", f"**{heading}.**", ""]
+        out += [f"- {item}" for item in items]
+    return "\n".join(out)
+
+
 # ----------------------------------------------------------------------------- gate YAML
 
 def gate_header(_current: str) -> str:
@@ -136,7 +144,7 @@ def gate_pin(current: str) -> str:
 
 GENERATORS = {
     "README.md": {"commands": commands, "rules": rules, "facts-schema": facts_schema},
-    "SKILL.md": {"run-commands": run_commands},
+    "SKILL.md": {"run-commands": run_commands, "skill-rules": skill_rules},
     os.path.join("ci", "appdoc-docs-gate.yml"): {"gate-header": gate_header, "gate-pin": gate_pin},
 }
 

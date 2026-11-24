@@ -28,7 +28,7 @@ If the source cannot be accessed or Python cannot be run, explain the blocker an
 
 ## Run
 
-If `<target>/docs/appdoc/application-documentation.md` already exists, run `check` first and continue from its problems. Do not start over, and do not restart from the template after an interrupted run. If the document's `appdoc:template` stamp is older than the template you run (the Check reports it under C3), run the Upgrade command below first: `appdoc upgrade` adds the headings, blocks, columns and rows the template now requires, keeps every line of text (what it cannot place goes under an `appdoc:upgrade-orphan` comment that the Check fails until you have moved it), extracts and fills, and writes `<target>/docs/appdoc/UPGRADE-TODO.md`. That file lists what only a person can do, each with the Check rule that fails until it is done. It never writes `evidence.jsonl` or `notes.jsonl`.
+If `<target>/docs/appdoc/application-documentation.md` already exists, step 0 comes first: if its `appdoc:template` stamp is older than the template you run (`extract` warns on stderr and the Check reports it under C3), run the Upgrade command below before `check`. Then run `check` and continue from its problems. Do not start over, and do not restart from the template after an interrupted run. About the upgrade: `appdoc upgrade` adds the headings, blocks, columns and rows the template now requires, keeps every line of text (what it cannot place goes under an `appdoc:upgrade-orphan` comment that the Check fails until you have moved it), extracts and fills, and writes `<target>/docs/appdoc/UPGRADE-TODO.md`. That file lists what only a person can do, each with the Check rule that fails until it is done. It never writes `evidence.jsonl` or `notes.jsonl`.
 
 1. **Extract.** Run the Extract command below. It writes `<target>/docs/appdoc/facts.json`, `facts-summary.md` and `provenance.json`. Re-running gives identical output.
 2. **Orient.** Read `facts-summary.md` first, including its Finding candidates, Ownership files and Scheduled jobs sections, and the two scan-coverage lists (folders that look retired by name; folders that duplicate another folder). If `<target>/appdoc-context.md` exists, read it: it is the owner's notes (purpose, owners, environments) and the only source for things the code cannot show. Then drill into `facts.json` by kind or folder, and open source files to understand behavior. Read every `owner_file` before writing section 11.
@@ -43,7 +43,7 @@ If `<target>/docs/appdoc/application-documentation.md` already exists, run `chec
 <!-- appdoc-self:generated run-commands -->
 Commands, in order (generated from `appdoc/workflow.py`):
 
-1. Upgrade: `python SKILL_DIR/run_appdoc.py upgrade <target>` (only when the existing document carries an older template stamp: adds what the template now requires, keeps every line of text, extracts and fills, and writes UPGRADE-TODO.md for the steps left to a person)
+1. Upgrade: `python SKILL_DIR/run_appdoc.py upgrade <target>` (step 0: if the document exists and its stamp is older than the running template, run this before `check`; it adds what the template now requires, keeps every line of text, extracts and fills, and writes UPGRADE-TODO.md for the steps left to a person)
 2. Extract: `python SKILL_DIR/run_appdoc.py extract <target>` (writes facts.json, facts-summary.md and provenance.json; re-running gives identical output)
 3. Build: `python SKILL_DIR/run_appdoc.py build <target>` (seal, fill, check and render; repeat until it passes, and after 3 failures report the problems verbatim)
 4. Fix advisories: `python SKILL_DIR/run_appdoc.py check <target> --strict` (fix every advisory before the audit plan: the plan's sample is seeded by doc_sha, so a later Narrative edit reshuffles it)
@@ -97,6 +97,34 @@ Optional flags: `--out DIR` (inside the target) on every command; `--css FILE` o
 - Facts marked `test` in `facts.json` come from test code; do not describe them as application behavior.
 - Put diagrams in ```` ```mermaid ```` fences, each with a one-line cited caption.
 - Never edit `facts.json`. Never weaken the Check to make it pass: fix the document.
+
+### Access, configuration and coverage
+
+<!-- appdoc-self:generated skill-rules -->
+Rules for the 2.8 security and coverage Facts (generated from `appdoc/workflow.py`, `SKILL_RULES`):
+
+**Orient.**
+
+- Before writing template sections 3, 5, 8 and 10, read the `access-model` (5.4), `connections` (8.1) and `integrations` (8.3) blocks of the filled document, or the same Facts in `facts-summary.md` if the blocks are not filled yet. They are opaque and unaudited: they tell you where to look, and the prose you write about access, connections and integrations is yours to verify against the source.
+
+**Writing rules.**
+
+- Never list a configuration file as not reviewed. Read it, redact the values and cite what it shows (R16); a file that holds a security setting, access rule, external-config reference or secret-bearing application key must be cited with a line outside the generated blocks (C21).
+- Write "Unknown" only after you have checked the Facts summary for the answer.
+- Every `state_changing` handler whose reach label is `no_app_restriction`, `signed_in_any` or `unknown` is a 10.1 finding or a dismissed finding candidate; the handler file must be cited (C22).
+- State behaviour that differs per build configuration for each configuration (the production configuration first); never describe one configuration's value as the Target's.
+- Say "application layer only" wherever you describe who can reach something: the repository does not show IIS authentication, server settings, network exposure or group membership.
+- Do not write "anonymous users can" unless the handler's `reasons` include explicit anonymity; an open application layer is `no_app_restriction`, not proof that anonymous callers get in.
+
+**Large Targets.**
+
+- On a Target with MVC areas, give each area its own subsystem (one subsystem per area): a row in 4.1 whose Subsystem cell cites the area folder (C22), and its own part of sections 4 to 8.
+
+**Audit checklist.**
+
+- Trace every Troubleshooting row and every fallback claim to its end: follow null guards and factories that never return null before accepting that a fallback or a message can happen.
+- Check each generated block that says "none" against the reader the block names (the Stacks that report protection, the detector accountability line): "none" from a Stack that does not report is not an absence.
+<!-- /appdoc-self:generated skill-rules -->
 
 ## Source-to-claim audit
 

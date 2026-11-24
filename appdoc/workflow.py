@@ -21,8 +21,9 @@ class Step:
 
 SKILL_STEPS = (
     Step("Upgrade", "upgrade <target>",
-         "only when the existing document carries an older template stamp: adds what the template now requires, "
-         "keeps every line of text, extracts and fills, and writes UPGRADE-TODO.md for the steps left to a person"),
+         "step 0: if the document exists and its stamp is older than the running template, run this before `check`; "
+         "it adds what the template now requires, keeps every line of text, extracts and fills, and writes "
+         "UPGRADE-TODO.md for the steps left to a person"),
     Step("Extract", "extract <target>",
          "writes facts.json, facts-summary.md and provenance.json; re-running gives identical output"),
     Step("Orient", None, "read facts-summary.md and appdoc-context.md, then drill into the Facts and the source"),
@@ -43,6 +44,43 @@ SKILL_STEPS = (
          "from the clock"),
     Step("Build", "build <target> --require-audit", "the same command, now that the audit exists"),
     Step("Report", None, "tell the user where the files are, whether the Check passed, and who audited"),
+)
+
+
+# The writing rules and checklists of remediation plan 2.8, 8.3, as data: ``tools/gen_docs.py`` writes them into SKILL.md
+# (block `skill-rules`), so the guidance cannot drift from the tests that pin it (`test_skill_guidance`). Each entry is
+# (heading, items); an item is one paragraph of Markdown.
+SKILL_RULES = (
+    ("Orient", (
+        "Before writing template sections 3, 5, 8 and 10, read the `access-model` (5.4), `connections` (8.1) and "
+        "`integrations` (8.3) blocks of the filled document, or the same Facts in `facts-summary.md` if the blocks are "
+        "not filled yet. They are opaque and unaudited: they tell you where to look, and the prose you write about "
+        "access, connections and integrations is yours to verify against the source.",
+    )),
+    ("Writing rules", (
+        "Never list a configuration file as not reviewed. Read it, redact the values and cite what it shows (R16); a "
+        "file that holds a security setting, access rule, external-config reference or secret-bearing application key "
+        "must be cited with a line outside the generated blocks (C21).",
+        "Write \"Unknown\" only after you have checked the Facts summary for the answer.",
+        "Every `state_changing` handler whose reach label is `no_app_restriction`, `signed_in_any` or `unknown` is a "
+        "10.1 finding or a dismissed finding candidate; the handler file must be cited (C22).",
+        "State behaviour that differs per build configuration for each configuration (the production configuration "
+        "first); never describe one configuration's value as the Target's.",
+        "Say \"application layer only\" wherever you describe who can reach something: the repository does not show IIS "
+        "authentication, server settings, network exposure or group membership.",
+        "Do not write \"anonymous users can\" unless the handler's `reasons` include explicit anonymity; an open "
+        "application layer is `no_app_restriction`, not proof that anonymous callers get in.",
+    )),
+    ("Large Targets", (
+        "On a Target with MVC areas, give each area its own subsystem (one subsystem per area): a row in 4.1 whose "
+        "Subsystem cell cites the area folder (C22), and its own part of sections 4 to 8.",
+    )),
+    ("Audit checklist", (
+        "Trace every Troubleshooting row and every fallback claim to its end: follow null guards and factories that "
+        "never return null before accepting that a fallback or a message can happen.",
+        "Check each generated block that says \"none\" against the reader the block names (the Stacks that report "
+        "protection, the detector accountability line): \"none\" from a Stack that does not report is not an absence.",
+    )),
 )
 
 
