@@ -589,7 +589,7 @@ class CheckTests(unittest.TestCase):
     # --- C19: the audit follows the plan (T27.15)
 
     PLANNED = [("14/Q-1", "Question one is open"), ("4/F-1", "F-1 runs"), ("6/UI-1", "UI-1 renders"),
-               ("8.1/C-1", "C-1 is a database"), ("8.3/X-1", "X-1 is a ping"), ("9", "Troubleshooting is accurate"),
+               ("8.1/C-1", "C-1 is a database"), ("8.3/X-1", "X-1 is a ping"), ("9/service-will-not-start", "Troubleshooting is accurate"),
                ("15/R-1", "R-1 moves the password")]
 
     def plan27(self, drop=(), exclusions=None, **audit_extra):

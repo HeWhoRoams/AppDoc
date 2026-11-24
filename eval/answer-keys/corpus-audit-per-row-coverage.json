@@ -1,0 +1,12 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/audit-per-row-coverage",
+  "exhaustive": true,
+  "note": "Narrative-only case.",
+  "must_exist": [
+    {"kind": "owner_file", "stack": "generic", "path": "appdoc-context.md", "name": "appdoc-context.md", "detail": {"kind": "context"}},
+    {"kind": "smell", "stack": "generic", "path": "app/main.py", "line": 6, "detail": {"pattern": "hardcoded-credential-constant"}},
+    {"kind": "pruned", "stack": "scan", "path": "docs/appdoc/", "name": "AppDoc output"}
+  ],
+  "must_not_exist": []
+}

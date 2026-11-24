@@ -469,6 +469,98 @@ class RegisterHistory(CorpusCase):
         self.assertIn("| Section | Planned | Audited | Extra |", r.narrative)
         self.assertIn("| 4 | 1 | 1 | 0 |", r.narrative)
 
+    def test_per_row_coverage_names_each_uncovered_control(self):
+        """R71.A1b: 10.2 lists three Present controls and the register audits one of them: C19 fails, naming the
+        two uncovered rows by their text and the ref to use."""
+        r = self.case27("audit-per-row-coverage", require_audit=True)
+        self.assertEqual(r.code, 2, r.report)
+        self.assertEqual(r.rules(), {"C19"})
+        self.assertEqual(r.report.count("the audit plan names"), 2, r.report)
+        self.assertIn('the audit plan names 10.2/audit-log (row "Audit log"), which has no live register row. '
+                      "Fix: audit it and add a row with ref 10.2/audit-log", r.report)
+        self.assertIn('the audit plan names 10.2/encrypted-backups (row "Encrypted backups"), which has no live '
+                      "register row. Fix: audit it and add a row with ref 10.2/encrypted-backups", r.report)
+        self.assertIn("| 10.2 | 3 | 1 | 0 |", r.narrative)        # A.2: planned, audited, extra per row key
+
+    def _live_rows(self, out):
+        from appdoc import register
+        with open(os.path.join(out, "evidence.jsonl"), encoding="utf-8") as fh:
+            return [row for _, row in register.parse(fh.read()).live_rows()]
+
+    def test_seal_stamps_per_row_refs_and_leaves_the_other_rows_unsealed(self):
+        """R71.A4b: `seal` writes claim_sha and sealed_by on ID rows, workflows and per-row keys; a section-level row,
+        an Answerable row and a Dismissed row stay unsealed by design."""
+        r = self.case27("audit-per-row-coverage")
+        by_ref = {row["ref"]: row for row in self._live_rows(r.out)}
+        for ref in ("10.1/V-1", "7.1", "10.2/tls", "9/service-will-not-start"):
+            self.assertRegex(by_ref[ref]["claim_sha"], "^[0-9a-f]{12}$", ref)
+            self.assertIn(by_ref[ref]["sealed_by"], ("audit", "upgrade"), ref)
+        # the claim of a per-row key is the table row alone: another row's edit does not unseal it
+        sha = by_ref["10.2/tls"]["claim_sha"]
+        doc = os.path.join(r.out, "application-documentation.md")
+        with open(doc, encoding="utf-8") as fh:
+            text = fh.read()
+        with open(doc, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text.replace("| Audit log | Present |", "| Audit log | Verified absent |"))
+        reg_path = os.path.join(r.out, "evidence.jsonl")
+        with open(reg_path, "a", encoding="utf-8", newline="\n") as fh:
+            for n, (ref, result) in enumerate((("16.5", "Supported"), ("14/Q-2", "Answerable"),
+                                               ("smell/aaaaaaaa", "Dismissed"), ("10.2", "Supported")), 20):
+                fh.write(json.dumps({"id": f"E-{n}", "ref": ref, "claim": "c", "result": result, "cites": [],
+                                     "anchor": "", "limitation": "none"}) + "\n")
+        with contextlib.redirect_stdout(io.StringIO()):
+            seal.seal_register(r.target, r.out)
+        rows = {row["ref"]: row for row in self._live_rows(r.out)}
+        self.assertEqual(rows["10.2/tls"]["claim_sha"], sha)
+        for ref in ("16.5", "14/Q-2", "smell/aaaaaaaa", "10.2"):
+            self.assertNotIn("claim_sha", rows[ref], ref)
+            self.assertNotIn("sealed_by", rows[ref], ref)
+
+    def test_c11_checks_a_row_key_against_the_table_and_seals_it_to_its_row(self):
+        r = self.case27("audit-per-row-coverage")
+        reg_path = os.path.join(r.out, "evidence.jsonl")
+        with open(reg_path, "a", encoding="utf-8", newline="\n") as fh:
+            for n, ref in enumerate(("10.2/no-such-control", "4/run"), 20):
+                fh.write(json.dumps({"id": f"E-{n}", "ref": ref, "claim": "c", "result": "Supported",
+                                     "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}) + "\n")
+        with contextlib.redirect_stdout(io.StringIO()):
+            check.run(r.target, r.out)
+        with open(os.path.join(r.out, "check-report.md"), encoding="utf-8") as fh:
+            report = fh.read()
+        self.assertIn("ref '10.2/no-such-control' names no row of section 10.2", report)
+        self.assertIn("ref '4/run' is a row key, which only sections 9, 10.2, 16.5, 17 have", report)
+        # changing the audited row re-opens its seal
+        doc = os.path.join(r.out, "application-documentation.md")
+        with open(doc, encoding="utf-8") as fh:
+            text = fh.read()
+        with open(doc, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text.replace("| TLS | Present | `app/main.py:7` |", "| TLS | Present | `app/main.py:6` |"))
+        with contextlib.redirect_stdout(io.StringIO()):
+            check.run(r.target, r.out)
+        with open(os.path.join(r.out, "check-report.md"), encoding="utf-8") as fh:
+            self.assertIn("the text of 10.2/tls changed after it was audited", fh.read())
+
+    def test_examples_unsealed_live_rows_are_answerable_dismissed_or_section_level(self):
+        """R71.A4b: every live row without sealed_by has no claim_sha and is an Answerable row, a Dismissed row or a
+        section-level ref (10.2, 16.5, 17, 9, 16.1, ...); none was sealed `upgrade`."""
+        from appdoc import register
+        base = os.path.join(os.path.dirname(HERE), "examples", "current")
+        names = sorted(n for n in os.listdir(base) if os.path.isfile(os.path.join(base, n, "evidence.jsonl")))
+        self.assertTrue(names)
+        for name in names:
+            with self.subTest(example=name):
+                with open(os.path.join(base, name, "evidence.jsonl"), encoding="utf-8") as fh:
+                    live = [row for _, row in register.parse(fh.read()).live_rows()]
+                self.assertEqual([row["id"] for row in live if row.get("sealed_by") == "upgrade"], [])
+                for row in live:
+                    if "sealed_by" in row:
+                        continue
+                    self.assertNotIn("claim_sha", row, row["id"])
+                    ref = str(row["ref"])
+                    self.assertTrue(row["result"] in ("Answerable", "Dismissed")
+                                    or (re.fullmatch(r"\d+(?:\.\d+)?", ref) and not ref.startswith("7.")),
+                                    f"{row['id']} ({row['result']}, {ref}) is unsealed and not by design")
+
     def test_audit_plan_missing_row_fails_c19(self):
         from unittest import mock
         from appdoc import template_spec as spec
@@ -625,11 +717,15 @@ class UpgradeCases(CorpusCase):
             planned = {i for sec in json.load(fh)["sections"] for i in sec["ids"]}
         self.assertTrue({"V-1", "V-2", "Q-1", "7.1"} <= planned, planned)
         rows = self._rows(reg)
-        have = {x["ref"].split("/")[-1] for x in rows[1:]}
+        have = {x["ref"].split("/")[-1] for x in rows[1:]} | {x["ref"] for x in rows[1:]}
         missing = sorted(i for i in planned if i not in have)
-        self.assertEqual(missing, ["17"], "the register already audits every planned ID except the new section 17")
-        rows.append({"id": "E-12", "ref": "17", "claim": "The Run command starts the service", "result": "Supported",
+        self.assertEqual(missing, ["17/run", "9/service-will-not-start"],
+                         "the register already audits every planned ID except the new section 17 and, per row (R71.A1a), "
+                         "the section 9 row its old section-level row 9 stood for")
+        rows.append({"id": "E-12", "ref": "17/run", "claim": "The Run command starts the service", "result": "Supported",
                      "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"})   # the audit itself
+        rows.append({"id": "E-13", "ref": "9/service-will-not-start", "claim": "The troubleshooting row is accurate",
+                     "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"})
         with open(reg, "w", encoding="utf-8", newline="\n") as fh:
             fh.write("\n".join(json.dumps(x) for x in rows) + "\n")
         rc, log = self.main("seal", r.target, "--audit", "--date", "2026-11-23")

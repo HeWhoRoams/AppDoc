@@ -5,13 +5,15 @@
 the sample.
 
 * **Full coverage:** every 10.1 finding, every 7 workflow, every 14 question, every finding candidate no 10.1 row
-  cites (it needs a Dismissed row; the cited ones are covered by their finding), the 10.2 section when a control is
-  Present, and the 16.5 and 17 sections when a step is not Unknown (or Not applicable).
+  cites (it needs a Dismissed row; the cited ones are covered by their finding), every 10.2 control with Status
+  Present, and every 16.5 and 17 row that is not Unknown (or Not applicable): one key `<section>/<slug>` each.
 * **Sampled:** sections 4, 6, 8.1, 8.3, 9 and 15, `k = min(n, max(minimum, ceil(fraction * n)))` items, those
   with the smallest `sha1(doc_sha + id)`. Defaults 25% and 5. An organization may only raise either number.
 
 Each section entry lists `ids`: the keys the Evidence Register must hold a live row for (an ID, a workflow ref,
-`smell/<fid>`, or the section ref for a section that has no IDs). `items` names what a section-level row covers.
+`smell/<fid>`, or a per-row key `<section>/<slug>` for the rows of 10.2, 16.5, 17 and 9; the slug is the row's
+first cell, lower-cased, runs of non-alphanumerics to `-`, repeats suffixed `-2`, `-3` in row order). `items` names
+the row of each per-row key (its first cell), in the same order.
 Generated and opaque blocks are not audited.
 """
 
@@ -86,7 +88,7 @@ def _floor(target: str) -> Floor:
 
 
 def _rows_all(lines, heads, key, col_name):
-    """(total rows, first-cell names) of the first table under `key`: every row whose `col_name` cell exists."""
+    """(total rows, [(key, first cell)] of the rows whose `col_name` cell exists) of the first table under `key`."""
     return _rows(lines, heads, key, col_name, lambda value: True)
 
 
@@ -101,22 +103,24 @@ def _rows_claimed(lines, heads, key, col_name):
 
 
 def _rows(lines, heads, key, col_name, keep):
-    """(total rows, first-cell names) of the first table under `key`; `keep(cell value)` picks the named rows."""
+    """(total rows, [(row key, first cell)]) of the first table under `key`; `keep(cell value)` picks the rows named.
+    The row key is `<key>/<slug>` (`fingerprint.row_keys`)."""
+    rows = fingerprint.row_keys(lines, heads, key)
     h = heads.get(key)
     t = dm.first_table(lines, h) if h else None
     if t is None:
         return 0, []
     header = [dm.cell_text(c).casefold() for c in t.header]
     if col_name.casefold() not in header:
-        return len(t.rows), []
+        return len(rows), []
     col = header.index(col_name.casefold())
-    names = []
-    for _, cells in t.rows:
+    named = []
+    for rkey, cells, _ in rows:
         if len(cells) <= col:
             continue
         if keep(dm.cell_text(cells[col])):
-            names.append(dm.cell_text(cells[0]))
-    return len(t.rows), names
+            named.append((rkey, dm.cell_text(cells[0])))
+    return len(rows), named
 
 
 def compute(target: str, out_dir: str) -> dict:
@@ -157,8 +161,8 @@ def compute(target: str, out_dir: str) -> dict:
     for key, rows in (("10.2", lambda: _rows_present(lines, heads, "10.2", "Status", spec.CONTROL_STATUS_PRESENT)),
                       ("16.5", lambda: _rows_claimed(lines, heads, "16.5", "Procedure")),
                       ("17", lambda: _rows_claimed(lines, heads, "17", "Command"))):
-        total, items = rows()
-        full(key, total, [key] if items else [], items)
+        total, named = rows()
+        full(key, total, [k for k, _ in named], [name for _, name in named])
     for key, ts in spec.TABLES.items():     # sampled sections, in template order
         prefix = ts.id_prefix if ts.sampled else None
         if not prefix and key not in spec.ROW_SAMPLED:
@@ -168,12 +172,12 @@ def compute(target: str, out_dir: str) -> dict:
             k = sample_size(len(items), floor.fraction, floor.minimum)
             chosen = pick(items, k, sha)
             sections.append({"section": key, "mode": "sampled", "total": len(items), "k": k, "ids": chosen})
-        else:   # section 9 rows have no IDs: the symptom names the row, the register row is the section's
-            total, items = _rows_all(lines, heads, key, "Symptom")
+        else:   # section 9 rows have no IDs: the row key `9/<slug>` of the symptom names the row
+            total, named = _rows_all(lines, heads, key, "Symptom")
             k = sample_size(total, floor.fraction, floor.minimum)
-            chosen = pick(items, k, sha)
-            sections.append({"section": key, "mode": "sampled", "total": total, "k": k,
-                             "ids": [key] if chosen else [], "items": chosen})
+            chosen = pick([rkey for rkey, _ in named], k, sha)
+            sections.append({"section": key, "mode": "sampled", "total": total, "k": k, "ids": chosen,
+                             "items": [name for rkey, name in named if rkey in set(chosen)]})
     return {"schema": SCHEMA, "doc_sha": sha, "floor": floor.display, "sections": sections,
             "advisories": floor.advisories}
 
@@ -183,7 +187,7 @@ def render(plan: dict) -> str:
 
 
 # The register ref of an ID class (a row's `ref` is `<section>/<id>`; the classes are template_spec.ID_CLASSES);
-# other keys are their own ref.
+# other keys (a workflow, `smell/<fid>`, a per-row key `10.2/<slug>`) are their own ref.
 
 
 def ref_for(key: str) -> str:
@@ -199,6 +203,8 @@ def _in_section(key: str, section: str) -> bool:
         return key.startswith("smell/")
     if section == "7":
         return key.startswith("7.")
+    if section in spec.ROW_KEY_SECTIONS:     # the section ref (a 2.7.0 row) or one of its per-row keys
+        return key == section or key.startswith(section + "/")
     prefix = spec.id_prefix_of(section)
     return key.startswith(prefix) if prefix else key == section
 

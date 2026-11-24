@@ -23,12 +23,13 @@ from .textutil import read_text
 
 
 def seal_register(target, out_dir, audit: bool = False, date: str | None = None) -> int:
-    """Write claim_sha into every ID/workflow register row that lacks one. Returns rows sealed.
+    """Write claim_sha into every ID, workflow and per-row (`10.2/<slug>`) register row that lacks one. Returns rows sealed.
 
     From template 2.7 the rows also get `sealed_by`: "audit" when line 1's doc_sha equals the Narrative's
     current fingerprint (the text was audited), else "upgrade". `audit` (with `date`, YYYY-MM-DD) is the
     auditor finishing the audit: line 1 gets audited_on/audited_with/audited_bundle/doc_sha and the rows
-    sealed now are "audit". Superseded rows are never sealed.
+    sealed now are "audit". Superseded rows are never sealed, nor are Answerable and Dismissed rows or the other
+    section-level rows (ADR 0015).
     """
     md_path = os.path.join(out_dir, NARRATIVE)
     reg_path = os.path.join(out_dir, REGISTER)
@@ -58,7 +59,7 @@ def seal_register(target, out_dir, audit: bool = False, date: str | None = None)
         if not m:
             continue
         sec_key, id_part = m.group(1), m.group(2)
-        if not (id_part or sec_key.startswith("7.")):
+        if not (id_part or m.group(3) or sec_key.startswith("7.")):
             continue
         sha = fingerprint.claim_sha(lines, heads, ids, str(row["ref"]))
         if sha:

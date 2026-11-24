@@ -35,10 +35,19 @@ CLAIM_SHA_RE = re.compile(r"^[0-9a-f]{12}$")
 ID_RE = re.compile(r"^E-\d+$")
 AUDIT_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 AUDIT_RECORD_KEYS = ("audited_on", "audited_with", "audited_bundle", "doc_sha")   # required on 2.7 (C17)
-REF_RE = re.compile(r"^(\d+(?:\.\d+)?)(?:/([A-Z]+-\d+))?$")
+REF_RE = re.compile(r"^(\d+(?:\.\d+)?)(?:/(?:([A-Z]+-\d+)|([a-z0-9]+(?:-[a-z0-9]+)*)))?$")   # <section>[/<ID> | /<row slug>]
 SMELL_REF_RE = re.compile(r"^smell/([0-9a-f]{8})$")      # only with result Dismissed
 ANSWERABLE_REF_RE = re.compile(r"^14/(Q-\d+)$")         # only with result Answerable
 SECTION_RE = re.compile(r"^\d+(?:\.\d+)?$")                # an `answered_in` value: a section or subsection number
+
+
+def ref_key(ref: str) -> str | None:
+    """The key a register ref covers: an ID (V-1), a per-row key (10.2/read-only-role), or a section ref (7.1, 10.2);
+    None when the ref is not a section ref at all (`smell/<fid>`, `14/Q-1` and malformed refs have their own readers)."""
+    m = REF_RE.match(ref)
+    if not m:
+        return None
+    return m.group(2) or (ref if m.group(3) else m.group(1))
 
 
 class Register:
@@ -75,13 +84,14 @@ class Register:
         return [(no, row) for no, row in self.rows if str(row.get("id")) not in gone]
 
     def live_keys(self) -> set[str]:
-        """What the live rows cover: an ID (V-1), a workflow or section ref (7.1, 10.2, 9), or `smell/<fid>`."""
+        """What the live rows cover: an ID (V-1), a workflow or section ref (7.1, 10.2, 9), a per-row key
+        (10.2/read-only-role) or `smell/<fid>`."""
         keys = set()
         for _, row in self.live_rows():
             ref = str(row.get("ref", ""))
-            m = REF_RE.match(ref)
-            if m:
-                keys.add(m.group(2) or m.group(1))
+            key = ref_key(ref)
+            if key:
+                keys.add(key)
             elif SMELL_REF_RE.match(ref):
                 keys.add(ref)
             if ref.startswith("7."):
@@ -425,8 +435,14 @@ def _scope_lines(reg: Register | None, detail) -> list[str]:
     return out
 
 
+SEAL_SCOPE = ("`seal` writes `claim_sha` and `sealed_by` only on ID rows, workflow (7.x) and per-row section keys. "
+              "Other section-level rows, Answerable rows and Dismissed rows are never sealed, so they carry no "
+              "`sealed_by`. C17 `--strict` fails only on `sealed_by: upgrade`, never on an absent key.")
+
+
 def _provenance_lines(reg: Register | None) -> list[str]:
-    """A.1 lines from the audit record: when and with what the audit was sealed, and any upgrade-sealed rows."""
+    """A.1 lines from the audit record: when and with what the audit was sealed, any upgrade-sealed rows, and what
+    `seal` does and does not stamp."""
     if reg is None or not reg.performed:
         return []
     out = []
@@ -442,6 +458,7 @@ def _provenance_lines(reg: Register | None) -> list[str]:
     if n:
         out += ["", f"{n} rows were sealed at upgrade; their text was not re-audited." if n != 1
                 else "1 row was sealed at upgrade; its text was not re-audited."]
+    out += ["", SEAL_SCOPE]
     return out
 
 
@@ -458,8 +475,8 @@ def appendix_markdown(reg: Register | None, facts: dict | None = None, coverage=
     plan is the audit plan (audit-plan.json); when given, A.2 shows planned / audited / extra per section.
     list_missing (a template 2.7 document): A.2 names the E-ids no row carries.
     """
-    out = ["### A.1 Audit state", "", *_audit_state(reg), *_blocks_lines(reg, blocks_by), *_provenance_lines(reg),
-           *_scope_lines(reg, coverage_ids)]
+    out = ["### A.1 Audit state", "", *_audit_state(reg), *_blocks_lines(reg, blocks_by),
+           *_provenance_lines(reg), *_scope_lines(reg, coverage_ids)]
     if reg is not None and reg.performed:
         out += ["", "### A.2 Coverage", "", *_coverage(reg, coverage, plan, list_missing),
                 "", "### A.3 Register", "", *_table(reg),

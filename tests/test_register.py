@@ -179,6 +179,9 @@ class AppendixMarkdownTests(unittest.TestCase):
         self.assertEqual(appendix_markdown(reg, {}, coverage=[("10.1", 1, 1)], root=target), "\n".join([
             "### A.1 Audit state", "",
             "**Auditor:** independent. **Scope:** sections 3-10", "",
+            "`seal` writes `claim_sha` and `sealed_by` only on ID rows, workflow (7.x) and per-row section keys. "
+            "Other section-level rows, Answerable rows and Dismissed rows are never sealed, so they carry no "
+            "`sealed_by`. C17 `--strict` fails only on `sealed_by: upgrade`, never on an absent key.", "",
             "### A.2 Coverage", "",
             "2 rows: 1 Supported, 1 Corrected, 0 Downgraded. "
             "Each Supported or Corrected row's anchor text was found in its cited lines by the Check.", "",

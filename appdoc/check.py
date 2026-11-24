@@ -815,9 +815,15 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
                 "use a heading number such as 7.3, optionally with an ID: 10.1/V-2")
         elif m.group(2) and m.group(2) not in ids:
             add("C11", no, f"{where}: ref '{row['ref']}' names an ID that is not defined", "use an ID from the document")
+        elif m.group(3) and m.group(1) not in spec.ROW_KEY_SECTIONS:
+            add("C11", no, f"{where}: ref '{row['ref']}' is a row key, which only sections "
+                f"{', '.join(spec.ROW_KEY_SECTIONS)} have", "use a section ref, or an ID of the section")
+        elif m.group(3) and ref not in {k for k, _, _ in fingerprint.row_keys(lines, heads, m.group(1))}:
+            add("C11", no, f"{where}: ref '{row['ref']}' names no row of section {m.group(1)}",
+                f"use {m.group(1)}/<slug of the row's first cell>, the keys `appdoc audit-plan` prints")
         else:
             if live:
-                covered.add(m.group(2) or m.group(1))
+                covered.add(reg_mod.ref_key(ref))
         for raw_cite in row["cites"]:
             parsed = parse_span(raw_cite.strip("`"))
             if not parsed:
@@ -858,7 +864,7 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
             if not m:
                 continue
             sec_key, id_part = m.group(1), m.group(2)
-            if not (id_part or sec_key.startswith("7.")):
+            if not (id_part or m.group(3) or sec_key.startswith("7.")):
                 continue
             ref_key = str(row["ref"])
             id_ref_rows.setdefault(ref_key, []).append((no, row))
@@ -943,9 +949,9 @@ def _c15_register_counts(lines, ids, reg, add):
         return
     refs = set()
     for _, row in reg.live_rows():
-        m = reg_mod.REF_RE.match(str(row.get("ref", "")))
-        if m:
-            refs.add(m.group(2) or m.group(1))
+        key = reg_mod.ref_key(str(row.get("ref", "")))
+        if key:
+            refs.add(key)
     for no, text, noun, prefix, n, total in _c15_sentences(lines, ids):
         doc_total = sum(1 for k in ids if k.startswith(prefix))
         if doc_total and total != doc_total:
@@ -1177,8 +1183,8 @@ def _c18_notes(target, out_dir, raw, facts, cache, add):
 
 
 def _c19_plan(target, out_dir, reg, add):
-    """C19, 2.7 rule under --require-audit: audit-plan.json equals a fresh computation and every planned key has a
-    live register row. A section the audit record lists under `exclusions` is not required (and is printed).
+    """C19, 2.7 rule under --require-audit: audit-plan.json equals a fresh computation and every planned key (an ID, a
+    workflow, or one row of 10.2, 16.5, 17 or 9) has a live register row. A section the audit record lists under `exclusions` is not required (and is printed).
     Returns the plan's advisories."""
     from . import audit_plan
     path = os.path.join(out_dir, audit_plan.PLAN)
@@ -1198,9 +1204,11 @@ def _c19_plan(target, out_dir, reg, add):
     for s in fresh["sections"]:
         if s["section"] in excluded:
             continue
+        names = dict(zip(s["ids"], s.get("items") or []))   # a per-row key: the row's first cell
         for key in s["ids"]:
             if key not in live:
-                add("C19", 1, f"the audit plan names {key}, which has no live register row",
+                row = f' (row "{names[key]}")' if key in names else ""
+                add("C19", 1, f"the audit plan names {key}{row}, which has no live register row",
                     f"audit it and add a row with ref {audit_plan.ref_for(key)}")
     return fresh["advisories"]
 
@@ -1210,9 +1218,9 @@ def coverage_detail(heads, ids, reg, workflows) -> list[tuple[str, list[str], li
     live = reg.live_rows()
     refs = set()
     for _, r in live:
-        m = reg_mod.REF_RE.match(str(r["ref"]))
-        if m:
-            refs.add(m.group(2) or m.group(1))
+        key = reg_mod.ref_key(str(r["ref"]))
+        if key:
+            refs.add(key)
     out = []
     for key, ts in spec.TABLES.items():
         if ts.id_prefix:

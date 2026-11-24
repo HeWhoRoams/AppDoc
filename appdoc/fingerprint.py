@@ -8,11 +8,38 @@ one register row points to. The seal (appdoc/seal.py) writes them; the Check (ap
 from __future__ import annotations
 
 import hashlib
+import re
 
 from . import docmodel as dm
 from . import register as reg_mod
 from . import template_spec as spec
 from .textnorm import normalize_newlines, normalize_text
+
+
+_NON_ALNUM = re.compile(r"[^a-z0-9]+")
+
+
+def row_slug(first_cell: str) -> str:
+    """The slug of a table row (R71.A1a): its first cell, lower-cased, runs of non-alphanumerics to `-`, trimmed
+    (`row` when nothing is left)."""
+    return _NON_ALNUM.sub("-", first_cell.lower()).strip("-") or "row"
+
+
+def row_keys(lines, heads, section: str) -> list[tuple[str, list[str], int]]:
+    """(key, cells, 1-based line) of every row of the first table under `section`: `<section>/<slug>`, a repeated
+    slug suffixed `-2`, `-3` in row order. All rows count, so a row's key does not move when another row's status
+    changes; renaming the first cell re-keys the row (a changed claim)."""
+    h = heads.get(section)
+    t = dm.first_table(lines, h) if h else None
+    if t is None:
+        return []
+    seen: dict[str, int] = {}
+    out = []
+    for no, cells in t.rows:
+        slug = row_slug(dm.cell_text(cells[0])) if cells else "row"
+        seen[slug] = seen.get(slug, 0) + 1
+        out.append((f"{section}/{slug}" + (f"-{seen[slug]}" if seen[slug] > 1 else ""), cells, no))
+    return out
 
 
 def claim_sha(lines, heads, ids, ref):
@@ -21,7 +48,15 @@ def claim_sha(lines, heads, ids, ref):
     if not m:
         return None
     sec_key, id_part = m.group(1), m.group(2)
-    if id_part and id_part in ids:
+    if m.group(3):
+        if sec_key not in spec.ROW_KEY_SECTIONS:
+            return None
+        # per-row key: the table row it names
+        row = next((no for key, _, no in row_keys(lines, heads, sec_key) if key == ref), None)
+        if row is None:
+            return None
+        text = lines[row - 1]
+    elif id_part and id_part in ids:
         # ID ref: the table row that defines the ID
         no = ids[id_part]
         text = lines[no - 1]

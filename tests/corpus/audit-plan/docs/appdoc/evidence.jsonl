@@ -6,5 +6,5 @@
 {"id": "E-5", "ref": "6/UI-1", "claim": "UI-1 renders", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}
 {"id": "E-6", "ref": "8.1/C-1", "claim": "C-1 is a database", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}
 {"id": "E-7", "ref": "8.3/X-1", "claim": "X-1 is a ping", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}
-{"id": "E-8", "ref": "9", "claim": "Troubleshooting is accurate", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}
+{"id": "E-8", "ref": "9/service-will-not-start", "claim": "Troubleshooting is accurate", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}
 {"id": "E-9", "ref": "15/R-1", "claim": "R-1 moves the password", "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"}

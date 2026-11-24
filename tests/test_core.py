@@ -1250,6 +1250,94 @@ class AuditPlanTests(unittest.TestCase):
         ranked = sorted(ids, key=lambda i: (hashlib.sha1((plan["doc_sha"] + i).encode()).hexdigest(), i))
         self.assertEqual(self.section(plan, "4")["ids"], sorted(ranked[:6], key=lambda i: int(i[2:])))
 
+    # --- R71.A1a: one planned key per row of 10.2, 16.5, 17 and 9
+
+    CONTROLS = ("| TLS | Not established | `app/main.py:7` |",
+                ["| TLS | Present | `app/main.py:7` |", "| Read-only DB role | Present | `app/main.py:7` |",
+                 "| Rate limit! | Verified absent | `app/main.py:7` |", "| Audit log | Present | `app/main.py:7` |"])
+
+    def write_rows(self, controls=None, extra_symptoms=(), run="| Run | `python app/main.py` | . | `app/main.py:2` |"):
+        from tests.test_check import SECTION_BODY, OLD_STAMP
+        text = self.write()
+        if "\n## 17. " not in text:      # the 2.4 test document has no section 17
+            text = text.replace("\n## Appendix A.", f"\n## 17. Build, Run and Test Locally\n\n{SECTION_BODY[17]}\n\n## Appendix A.", 1)
+        text = text.replace(self.CONTROLS[0], "\n".join(self.CONTROLS[1] if controls is None else controls))
+        text = text.replace("| Build | Unknown | not in the repository |",
+                            "| Build | `make` | `Makefile:1` |")
+        text = text.replace("| Run | Unknown - see Open questions. | . | not in the repository |", run)
+        text = text.replace("| Service will not start | Look at `app/main.py:2` | Restart the process | Twice in a row |",
+                            "\n".join(["| Service will not start | Look at `app/main.py:2` | Restart the process | Twice in a row |",
+                                      *extra_symptoms]))
+        with open(os.path.join(self.out, "application-documentation.md"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
+
+    def test_per_row_keys_for_controls_steps_and_symptoms(self):
+        self.write_rows()
+        plan = self.plan()
+        c = self.section(plan, "10.2")
+        self.assertEqual(c["ids"], ["10.2/tls", "10.2/read-only-db-role", "10.2/audit-log"])   # Present rows only
+        self.assertEqual((c["total"], c["items"]), (4, ["TLS", "Read-only DB role", "Audit log"]))
+        self.assertEqual(self.section(plan, "16.5")["ids"], ["16.5/build"])      # the other steps stay Unknown
+        self.assertEqual(self.section(plan, "17")["ids"], ["17/run"])
+        nine = self.section(plan, "9")
+        self.assertEqual((nine["mode"], nine["ids"], nine["items"]),
+                         ("sampled", ["9/service-will-not-start"], ["Service will not start"]))
+
+    def test_section_9_sample_is_k_rows_seeded_by_doc_sha(self):
+        import hashlib
+        self.write_rows(extra_symptoms=[f"| Symptom {i} | Check | Fix | Never |" for i in range(2, 31)])
+        plan = self.plan()
+        nine = self.section(plan, "9")
+        keys = ["9/service-will-not-start"] + [f"9/symptom-{i}" for i in range(2, 31)]
+        ranked = sorted(keys, key=lambda k: (hashlib.sha1((plan["doc_sha"] + k).encode()).hexdigest(), k))
+        self.assertEqual((nine["total"], nine["k"]), (30, 8))
+        self.assertEqual(nine["ids"], [k for k in keys if k in set(ranked[:8])])
+        self.assertEqual(len(nine["items"]), 8)
+
+    def test_row_keys_are_stable_under_unrelated_edits_and_collisions_are_suffixed(self):
+        self.write_rows(controls=["| TLS | Present | `app/main.py:7` |", "| tls | Present | `app/main.py:7` |",
+                                  "| TLS! | Not established | `app/main.py:7` |", "| TLS? | Present | `app/main.py:7` |"])
+        keys = self.section(self.plan(), "10.2")["ids"]
+        self.assertEqual(keys, ["10.2/tls", "10.2/tls-2", "10.2/tls-4"])      # the third row counts, though not planned
+        # another cell of a row, or another row's status, does not move any key
+        self.write_rows(controls=["| TLS | Present | `app/main.py:8` |", "| tls | Present | elsewhere |",
+                                  "| TLS! | Present | `app/main.py:7` |", "| TLS? | Present | `app/main.py:7` |"])
+        self.assertEqual(self.section(self.plan(), "10.2")["ids"], ["10.2/tls", "10.2/tls-2", "10.2/tls-3", "10.2/tls-4"])
+
+    def test_renaming_the_first_cell_rekeys_the_row(self):
+        self.write_rows(controls=["| Read-only DB role | Present | `app/main.py:7` |"])
+        before = self.section(self.plan(), "10.2")["ids"]
+        self.write_rows(controls=["| Read only database role | Present | `app/main.py:7` |"])
+        after = self.section(self.plan(), "10.2")["ids"]
+        self.assertEqual((before, after), (["10.2/read-only-db-role"], ["10.2/read-only-database-role"]))
+
+    def test_row_refs_are_valid_register_refs(self):
+        from appdoc import audit_plan, register
+        for ref in ("10.2/tls", "16.5/secret-rotation", "17/run", "9/service-will-not-start", "10.2/tls-2"):
+            self.assertTrue(register.REF_RE.match(ref), ref)
+            self.assertEqual(register.ref_key(ref), ref)
+            self.assertEqual(audit_plan.ref_for(ref), ref)
+        self.assertEqual(register.ref_key("10.1/V-2"), "V-2")        # an ID ref is still its ID
+        self.assertEqual(register.ref_key("10.2"), "10.2")           # a 2.7.0 section-level row is still valid
+        for bad in ("10.2/TLS", "10.2/-tls", "10.2/tls-", "10.2/a b", "10.2/"):
+            self.assertIsNone(register.REF_RE.match(bad), bad)
+        self.assertTrue(audit_plan._in_section("10.2/tls", "10.2"))
+        self.assertTrue(audit_plan._in_section("10.2", "10.2"))      # the legacy row counts as extra, not as a ref of 10.1
+        self.assertFalse(audit_plan._in_section("10.2/tls", "10.1"))
+        self.assertFalse(audit_plan._in_section("17/run", "7"))
+        reg = register.parse("\n".join(json.dumps(x) for x in [
+            {"type": "audit", "performed": True, "auditor": "independent", "scope": "x"},
+            {"id": "E-1", "ref": "10.2/tls", "claim": "c", "result": "Supported", "cites": [], "anchor": "", "limitation": "none"}]))
+        self.assertEqual(reg.live_keys(), {"10.2/tls"})
+
+    def test_progress_counts_rows_and_calls_a_legacy_section_row_extra(self):
+        from appdoc import audit_plan
+        self.write_rows()
+        plan = self.plan()
+        got = {s: (p, a, x) for s, p, a, x in audit_plan.progress(plan, {"10.2/tls", "10.2/audit-log", "10.2", "17/run"})}
+        self.assertEqual(got["10.2"], (3, 2, 1))
+        self.assertEqual(got["17"], (1, 1, 0))
+
     def test_audit_floor_override_only_raises(self):
         self.write(n_f=20)
         self.assertEqual(self.section(self.plan(), "4")["k"], 5)
