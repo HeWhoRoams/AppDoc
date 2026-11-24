@@ -173,7 +173,7 @@ Start: set `__version__ = "2.6.0.dev0"`, add `## Unreleased` to the CHANGELOG (T
 
 Schema stays `/7` unless a task changes Facts output (none planned; if one does, `/8` and 2.8 renumbers). Template becomes 2.7. Audit-question rows are named AQ5/AQ6 (amendment C-1).
 
-**Status (2026-11-23, branch `impl/2.7.0`).** Done and verified: T27.01 `852ff51`, .02 `5546c7f`, .03 `91dbdfa`, .04 `f34d4a9`, .05 `322d738`, .06 `edf6e22`, .07 `df703b1`, .10 `5c82bda`, .11 `23ef918`, .12 `2eb3db4`, .13 `44a7ea5`, .14 `81e1075`, .15 `d9a6a27`, .16 `c10d91d`, .17 `2504c85`, .18 `85cb091`, .19 `2741e7c`, .20 `6b1d385`, .21 `dc1c3e7`, .22 `aa9f4bb`, .23 `a90961d`, .24 `ab51863`, .25 `c85e0d6`, .26 `16e3d65`, .29 `1c8127d`, .30 `160bd30`, .31 `3ef1b0a`, .32 `cc169c6`; T27.40 `abe7d45`. In 3D, Q23 was accepted, so `appdoc upgrade` ships in 2.7.0. T27.41 is this docs commit; T27.42 to T27.44 are not started.
+**Status (2026-11-24).** 2.7.0 is complete (tag `v2.7.0` at `cf10eb5`, local). The two-axis review of 2.7.0 was remediated as release 2.7.1 (branch `impl/2.7.1`, `docs/` plan: `AppDoc-2.7-Code-Review-Remediation-Plan-2026-11-24`): per-row audit keys and C19 coverage, the A.1 not-audited line, one-command section 17, the seven standards refactors, ADR 0015 amendments, and an independent delta audit of the four examples. T27.42 to T27.44 are done.
 
 ### 3A. Register history and provenance (3.1)
 
