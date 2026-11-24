@@ -7,6 +7,7 @@ import os
 import sys
 
 from . import __version__
+from .textutil import read_text
 from .version import bundle_hash
 
 DEFAULT_OUT = os.path.join("docs", "appdoc")
@@ -119,7 +120,7 @@ def main(argv=None) -> int:
                 print(f"appdoc: seal --audit needs {check.NARRATIVE} and {register.REGISTER} in {out_dir}",
                       file=sys.stderr)
                 return 1
-            if register.parse(check._read_text(reg_path)).audit is None:
+            if register.parse(read_text(reg_path)).audit is None:
                 print(f"appdoc: line 1 of {register.REGISTER} must be the audit record", file=sys.stderr)
                 return 1
     try:

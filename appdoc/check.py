@@ -149,9 +149,6 @@ _PROSE_TOTAL = {  # noun -> (entry_point_counts key, what the Facts count)
 }
 
 
-_read_text = read_text   # the shared reader (textutil)
-
-
 def _strip_comments(text: str) -> str:
     """Remove HTML comments but keep line numbering intact."""
     return _COMMENT_RE.sub(lambda m: "\n" * m.group(0).count("\n"), text)
@@ -307,7 +304,7 @@ def _resolve(target: str, cache: dict, c) -> tuple[bool | None, str]:
     if c.start is None:
         return True, ""
     if full not in cache:
-        cache[full] = len(_read_text(full).splitlines())
+        cache[full] = len(read_text(full).splitlines())
     n = cache[full]
     if c.start < 1 or c.end < c.start or c.end > n:
         return False, f"line {c.raw.rsplit(':', 1)[1]} is outside `{c.path}` ({n} lines)"
@@ -316,7 +313,7 @@ def _resolve(target: str, cache: dict, c) -> tuple[bool | None, str]:
 
 def _never_mention(target: str) -> list[str]:
     path = os.path.join(target, OWNER_CONTEXT)
-    return context.parse(_read_text(path) if os.path.isfile(path) else None).never_mention
+    return context.parse(read_text(path) if os.path.isfile(path) else None).never_mention
 
 
 def _rows_all_unknown(rows) -> bool:
@@ -739,13 +736,13 @@ def seal_register(target, out_dir, audit: bool = False, date: str | None = None)
     reg_path = os.path.join(out_dir, REGISTER)
     if not os.path.isfile(md_path) or not os.path.isfile(reg_path):
         return 0
-    if spec.stamp_version(_read_text(md_path)) >= FAILS_FROM:
+    if spec.stamp_version(read_text(md_path)) >= FAILS_FROM:
         fill_mod.fill_facts_blocks(target, out_dir)   # the fingerprint is that of the filled document (S6.1)
-    raw = _read_text(md_path)
+    raw = read_text(md_path)
     lines = document_text(raw).splitlines()
     heads = dm.headings(lines)
     ids = defined_ids(lines, heads, lambda *a: None)
-    reg = reg_mod.parse(_read_text(reg_path))
+    reg = reg_mod.parse(read_text(reg_path))
     fingerprint = doc_sha(raw)
     audit_fields = sealed_by = None
     if audit:
@@ -779,7 +776,7 @@ def expand_citations(target, out_dir) -> int:
     path = os.path.join(out_dir, NARRATIVE)
     if not os.path.isfile(path):
         return 0
-    raw = normalize_newlines(_read_text(path))
+    raw = normalize_newlines(read_text(path))
     cache: dict = {"__out__": out_dir}
 
     def full_of(name):
@@ -806,11 +803,11 @@ def seal_notes(target, out_dir) -> int:
     facts_path = os.path.join(out_dir, FACTS)
     if not os.path.isfile(path) or not os.path.isfile(facts_path):
         return 0
-    facts = json.loads(_read_text(facts_path))
+    facts = json.loads(read_text(facts_path))
     md = os.path.join(out_dir, NARRATIVE)
-    ctx = {"out_dir": out_dir, "target": target, "text": _read_text(md) if os.path.isfile(md) else None}
+    ctx = {"out_dir": out_dir, "target": target, "text": read_text(md) if os.path.isfile(md) else None}
     shas = {}
-    for _, note in notes_mod.parse(_read_text(path)).notes:
+    for _, note in notes_mod.parse(read_text(path)).notes:
         body = fill_mod.generated_body(note["block"], facts, ctx)
         if note["block_sha"] == "" and body is not None:
             shas[note["block"]] = notes_mod.body_sha(body)
@@ -896,7 +893,7 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
             f'write {REGISTER}: the audit record, then one row per audited claim; or line 1 '
             '{"type": "audit", "performed": false, "scope": "<why>"}')
         return None, []
-    reg = reg_mod.parse(_read_text(path))
+    reg = reg_mod.parse(read_text(path))
     for no, msg in reg.errors:
         add("C11", no, f"{REGISTER} line {no}: {msg}", "fix the record; see SKILL.md, Evidence Register")
     if not reg.performed:
@@ -1283,7 +1280,7 @@ def _c18_notes(target, out_dir, raw, facts, cache, add):
     path = os.path.join(out_dir, notes_mod.NOTES)
     where = f"{notes_mod.NOTES} line"
     if os.path.isfile(path):
-        parsed = notes_mod.parse(_read_text(path))
+        parsed = notes_mod.parse(read_text(path))
         for no, why in parsed.errors:
             add("C18", no, f"{where} {no}: {why}", f"fix the note in {notes_mod.NOTES}")
         known = tuple(spec.GENERATED.values())
@@ -1327,7 +1324,7 @@ def _c19_plan(target, out_dir, reg, add):
         add("C19", 1, f"{audit_plan.PLAN} is missing", "run `appdoc audit-plan`")
         return []
     fresh = audit_plan.compute(target, out_dir)
-    if normalize_newlines(_read_text(path)) != audit_plan.render(fresh):
+    if normalize_newlines(read_text(path)) != audit_plan.render(fresh):
         add("C19", 1, f"{audit_plan.PLAN} is not what `appdoc audit-plan` computes now "
             "(the Narrative, the Facts or the audit floor changed)", "run `appdoc audit-plan`, then audit the ids it names")
         return fresh["advisories"]
@@ -1376,12 +1373,12 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     if not os.path.isfile(narrative_path):
         print(f"appdoc check: narrative not found: {narrative_path}", file=sys.stderr)
         return 1
-    raw = _read_text(narrative_path)
+    raw = read_text(narrative_path)
     facts_path = os.path.join(out_dir, FACTS)
     facts = None
     if os.path.isfile(facts_path):
         try:
-            facts = json.loads(_read_text(facts_path))
+            facts = json.loads(read_text(facts_path))
         except ValueError as exc:
             print(f"appdoc check: facts.json is not valid JSON: {exc}", file=sys.stderr)
             return 1
@@ -1511,7 +1508,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     published = [("", raw)]
     reg_path = os.path.join(out_dir, REGISTER)
     if os.path.isfile(reg_path):
-        published.append((f"{REGISTER} ", _read_text(reg_path)))
+        published.append((f"{REGISTER} ", read_text(reg_path)))
     terms = _never_mention(target)
     for label, body in published:
         for no, shape in find_secret_shapes(body):
