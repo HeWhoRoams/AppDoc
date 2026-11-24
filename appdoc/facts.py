@@ -67,9 +67,11 @@ DETAIL_KEYS = {
     "file": frozenset("encoding ext lines size stacks".split()),
     "stack": frozenset("capabilities file_count ignored_markers marker_files supported".split()),
     "entry_point": frozenset(
-        "base_external class codebehind component controller enabled exists framework handler inherits inputs "
-        "listener master method middleware mvc_area mvc_area_path page prefix_unresolved route_name "
-        "schedule scheduler source type usage view".split()),
+        "attr_route base_external child_action class codebehind component controller enabled end_line exists framework "
+        "guard_mechanism handler http_route inherits inputs listener master method middleware mvc_area mvc_area_path "
+        "override_authorization page prefix_unresolved reach reach_anon reach_auth reach_by_config reach_roles "
+        "reasons route_name schedule scheduler source state_changing type url_set usage verb_convention verbs "
+        "verbs_declared view writes".split()),
     "data_access": frozenset(
         "builder class entity namespace native operation orm property statement type via".split()),
     "connection": frozenset("class overridden_in secret_location source type".split()),
@@ -106,7 +108,7 @@ DETAIL_KEYS = {
     "build_define": frozenset("config inherits symbols".split()),
     "publish_profile": frozenset("build_config host method".split()),
     "context_directive": frozenset("context_unmatched directive names value".split()),
-    "controller_class": frozenset("base_external base_list".split()),
+    "controller_class": frozenset("base_external base_list filter_hooks override_authorization".split()),
     "host_auth": frozenset("iis_anonymous iis_authorization_present owin_auth source".split()),
     "method_call": frozenset("applies_to arg_refs arity".split()),
 }

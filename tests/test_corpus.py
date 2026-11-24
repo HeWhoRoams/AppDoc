@@ -44,16 +44,7 @@ PENDING: dict = {
     # --- 4B: classification and route fidelity
     # --- 4C: project and publish Facts
     # --- 4D: guards
-    # --- 4E: effective protection (after the first slice)
-    "test_core_fallback_policy_mechanism_only_no_reach": ("T28.60", "missing guard_mechanism: entry_points carry no guard_mechanism yet"),
-    "test_core_absence_claim_only_without_auth_services": ("T28.60", "missing guard_mechanism: entry_points carry no guard_mechanism yet"),
-    "test_route_aliases_all_checked_and_open_route_is_unknown": ("T28.61", "missing reach_anon: entry_points carry no reach yet"),
-    "test_url_auth_chain_merge": ("T28.62", "missing reach_anon: entry_points carry no reach yet"),
-    "test_nested_webconfig_applies_by_url_prefix_not_area_folder": ("T28.62", "missing reach_anon: entry_points carry no reach yet"),
-    "test_filter_composition": ("T28.63", "missing reach_anon: entry_points carry no reach yet"),
-    "test_owin_with_mode_none_is_unknown": ("T28.65", "missing reach: entry_points carry no reach yet"),
-    "test_verbless_actions_are_any_and_state_changing_is_tristate": ("T28.66", "missing verbs_declared: entry_points carry no verbs_declared yet"),
-    "test_verbless_web_api_verb_from_name_convention": ("T28.66", "missing verbs: entry_points carry no verbs yet"),
+    # --- 4E: effective protection (T28.60-T28.66 landed; no entries left)
     # --- 4H: Check rules
     "test_area_coverage_c22_fails_when_an_area_is_missing_from_4_1": ("T28.A1", "missing C22: the Check does not require every area in 4.1"),
 }

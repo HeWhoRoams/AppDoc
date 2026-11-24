@@ -555,7 +555,8 @@ class AspNetCoreStack(Stack):
     id = STACK_ID
     capabilities = frozenset((
         "auth_check config_key connection const_def controller_class data_access entry_point.route "
-        "entry_point.page entry_point.handler entry_point.job external_call guard_candidate guard_class guard_use "
+        "entry_point.page entry_point.handler entry_point.job entry_point.guard_mechanism external_call guard_candidate "
+        "guard_class guard_use "
         "message method_call ui_page"
     ).split())
     extensions = frozenset({".cs", ".cshtml", ".razor", ".xaml"})
@@ -604,6 +605,7 @@ class AspNetCoreStack(Stack):
             yield from _jobs(path, ctx)
             yield from _config_reads(path, ctx)
             yield from aspnet_guards.const_facts(STACK_ID, path, ctx, classes)
+            yield from aspnet_guards.service_facts(STACK_ID, path, ctx)
             if not _CORE_HINT.search(text):
                 return
             http_client = list(_httpclient(path, ctx))

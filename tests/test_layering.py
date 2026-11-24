@@ -32,7 +32,7 @@ RANK = {
     # 2: register and notes are peers; workflow is the text tables only
     "register": 2, "notes": 2, "smells": 2, "aspnet_guards": 2, "stacks.integrations": 2, "workflow": 2,
     # 3
-    "fingerprint": 3, "stacks.aspnet": 3, "stacks.classic_asp": 3, "stacks.generic": 3, "stacks.go": 3,
+    "fingerprint": 3, "guard": 3, "stacks.aspnet": 3, "stacks.classic_asp": 3, "stacks.generic": 3, "stacks.go": 3,
     "stacks.java_spring": 3, "stacks.node_express": 3, "stacks.python_flask": 3, "render.markdown": 3,
     "summary": 3,
     # 4

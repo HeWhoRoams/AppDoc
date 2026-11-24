@@ -365,8 +365,14 @@ def file_facts(stack_id: str, path: str, ctx, classes, methods, core: bool = Fal
         is_api = "ApiController" in bases or any(attr_key(u[0]) == _CTRL_ATTR_API for u in uses)
         meta[id(c)] = (ctrl, is_api, uses)
         if ctrl:
+            extra = {}
+            if any(attr_key(u[0]) == "overrideauthorization" for u in uses):
+                extra["override_authorization"] = True
+            hooks = _filter_hooks(_class_body(blank, c))
+            if hooks:
+                extra["filter_hooks"] = hooks
             yield Fact.make("controller_class", stack_id, path, ctx.line(c.pos), c.name,
-                            base_list=bases, base_external=_unresolved(bases, by_name))
+                            base_list=bases, base_external=_unresolved(bases, by_name), **extra)
             yield from _uses(stack_id, path, ctx, uses, "class", c.name, usings, is_api, core)
         elif c.name.endswith("Attribute") or any(b.endswith("Attribute") or b in _FILTER_IFACES for b in bases):
             yield Fact.make("guard_class", stack_id, path, ctx.line(c.pos), c.name, base_list=bases,
@@ -382,6 +388,9 @@ def file_facts(stack_id: str, path: str, ctx, classes, methods, core: bool = Fal
         yield from _uses(stack_id, path, ctx, uses, "method", f"{cls.name}.{m.group('name')}", usings,
                          meta[id(cls)][1], core)
     yield from _global_filters(stack_id, path, ctx, usings)
+    if any(m[0] for m in meta.values()):
+        yield from _inbody_checks(stack_id, path, ctx, blank)
+    yield from _filter_providers(stack_id, path, ctx, blank)
     yield from _calls(stack_id, path, ctx, blank, classes, methods)
 
 
@@ -395,6 +404,67 @@ def _uses(stack_id, path, ctx, uses, scope, applies_to, usings, is_api, core):
         name = name[:-9] if name.endswith("Attribute") and len(name) > 9 else name
         yield Fact.make("guard_use", stack_id, path, ctx.line(off), name, attribute=name,
                         **_use_detail(norm, qualifier, args, scope, applies_to, usings, is_api, core))
+
+
+_HOOK = re.compile(r"\boverride\s+(?:async\s+)?[\w<>\.\[\]\?]+\s+"
+                   r"(OnActionExecuting|OnAuthorization|OnAuthorizationAsync|Initialize|OnResultExecuting|Execute|BeginExecute)\s*\(")
+
+
+def _pure_redirect(body: str) -> bool:
+    """True when a hook body does nothing but (conditionally) redirect, as a base controller's login bounce does."""
+    b = re.sub(r"\bbase\s*\.\s*\w+\s*\([^;]*\)\s*;", "", body)
+    b = re.sub(r"\bif\s*\([^{};]*\)", "", b)
+    b = re.sub(r"\b\w+\s*\.\s*Result\s*=\s*[^;]*Redirect[^;]*;", "", b)
+    b = re.sub(r"\b(?:Response\s*\.\s*)?Redirect\w*\s*\([^;]*\)\s*;", "", b)
+    b = re.sub(r"\breturn\s*;", "", b)
+    return not re.sub(r"[{}\s]", "", b)
+
+
+def _filter_hooks(body: str) -> list:
+    """Names of the authorization-relevant hooks a controller class overrides with a body that is not a pure redirect."""
+    out = set()
+    for m in _HOOK.finditer(body):
+        i = body.find("{", m.end())
+        j = _match_close(body, i) if i >= 0 else -1
+        if i < 0 or j < 0 or not _pure_redirect(body[i + 1:j]):
+            out.add(m.group(1))
+    return sorted(out)
+
+
+_INBODY = re.compile(r"\b(HttpUnauthorizedResult|WindowsPrincipal)\b|\bRoles\s*\.\s*(IsUserInRole)\s*\(")
+_FILTER_PROVIDER = re.compile(r"\bFilterProviders\s*\.|\bIFilterProvider\b")
+
+
+def _inbody_checks(stack_id, path, ctx, blank):
+    """In-body authorization tokens of a controller file (``auth_check mechanism=inbody via=body``). W4 joins them to a
+    handler by the handler's line span."""
+    for m in _INBODY.finditer(blank):
+        name = m.group(1) or "Roles.IsUserInRole"
+        yield Fact.make("auth_check", stack_id, path, ctx.line(m.start()), name, mechanism="inbody", via="body")
+
+
+def _filter_providers(stack_id, path, ctx, blank):
+    """A filter provider registered anywhere (``auth_check mechanism=filter-provider``): it can add filters W4 cannot see."""
+    m = _FILTER_PROVIDER.search(blank)
+    if m:
+        yield Fact.make("auth_check", stack_id, path, ctx.line(m.start()), "FilterProviders", mechanism="filter-provider")
+
+
+# Tokens whose presence anywhere in a Target means authentication or authorization services may be registered.
+_AUTH_SERVICE = re.compile(
+    r"\b(AddAuthorization|AddAuthentication|UseAuthorization|UseAuthentication|RequireAuthorization|FallbackPolicy|"
+    r"AuthorizeFolder|AuthorizePage|AuthorizeAreaFolder|AuthorizeFilter|AddMicrosoftIdentityWebApp|AddJwtBearer|"
+    r"AddNegotiate|AddCookie)\b")
+
+
+def service_facts(stack_id, path, ctx):
+    """``auth_check mechanism=services`` per distinct token of the closed list found in a file: the evidence for the
+    ``aspnet_core`` absence claim (R20), which is made only when no file carries any of them."""
+    seen = set()
+    for m in _AUTH_SERVICE.finditer(_blanked(ctx)):
+        if m.group(1) not in seen:
+            seen.add(m.group(1))
+            yield Fact.make("auth_check", stack_id, path, ctx.line(m.start()), m.group(1), mechanism="services")
 
 
 _GF_ADD = re.compile(r"([A-Za-z_][\w\.]*)\s*\.\s*Add\s*(?:<\s*([\w\.]+)\s*>)?\s*\(\s*(?:new\s+([\w\.]+)|typeof\s*\(\s*([\w\.]+)\s*\))?")
@@ -418,6 +488,8 @@ def _global_filters(stack_id, path, ctx, usings):
         window = t[m.end():m.end() + 300]
         window = window[:window.find(";")] if ";" in window else window
         detail = {"mechanism": "global-filter", "scope": "global"}
+        if not (recv.endswith("GlobalFilters.Filters") or recv in params):
+            detail["api_pipeline"] = True            # HttpConfiguration.Filters: the Web API pipeline, not MVC
         rm = re.search(r"\bRoles\s*=\s*(" + STR + ")", window)
         if rm:
             roles = [p.strip() for p in _unq(rm.group(1)).split(",") if p.strip() and not _identity_like(p.strip())]

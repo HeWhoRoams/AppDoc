@@ -16,7 +16,7 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
 
-from . import aspnet_guards, configs, context, version
+from . import aspnet_guards, configs, context, guard, version
 from . import facts as F
 from . import scan, smells
 from .citations import OWNER_CONTEXT
@@ -359,6 +359,7 @@ def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: boo
     facts = _config_roles(facts)
     facts = configs.apply(facts)             # W1/W2: effective .config values per build configuration
     facts = aspnet_guards.promote(facts)     # W3: guard joins over the raw per-file Facts
+    facts = guard.apply(facts)               # W4: effective protection per handler (reads Facts only)
     facts = smells.apply(facts)              # W11 part A: finding candidates that follow from Facts alone
     facts = _match_directives(facts)
 

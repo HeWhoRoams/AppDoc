@@ -583,8 +583,24 @@ def _area_detail(area: str | None) -> dict:
     return {"mvc_area": area, "mvc_area_path": f"Areas/{area}"} if area else {}
 
 
+def _method_end_line(ctx: Ctx, blank: str, m) -> int:
+    """Line of the ``}`` that closes the method matched by ``m`` (the line of its ``;`` for an expression body)."""
+    i = m.end()
+    n = len(blank)
+    while i < n and blank[i] in " \t\r\n":
+        i += 1
+    if blank.startswith("where", i):
+        i = min([j for j in (blank.find("{", i), blank.find("=>", i), blank.find(";", i)) if j >= 0] or [n])
+    if i < n and blank[i] == "{":
+        j = aspnet_guards._match_close(blank, i)
+        return ctx.line(j if j > 0 else n - 1)
+    j = blank.find(";", i)
+    return ctx.line(j if j >= 0 else n - 1)
+
+
 def _controller_actions(stack, path, ctx: Ctx, classes):
     seen = set()
+    blank = None
     mvc_using = bool(_MVC_USING.search(ctx.t))
     default_area = _default_area(path, ctx.t)
     for m, cls, attrs in find_methods(ctx, classes):
@@ -596,21 +612,26 @@ def _controller_actions(stack, path, ctx: Ctx, classes):
         verbs = []
         templates = []
         has_route = False
+        attr_route = False
         action_name = None
         for a, args in attrs:
             if a in _HTTP_VERBS:
                 verbs.append(a[4:].upper())
                 has_route = True
                 tm = first_string_arg(args)
-                if tm is not None and tm not in templates:
-                    templates.append(tm)
+                if tm is not None:
+                    attr_route = True
+                    if tm not in templates:
+                        templates.append(tm)
             elif a == "Route":
                 has_route = True
+                attr_route = True
                 tm = first_string_arg(args)
                 if tm is not None and tm not in templates:
                     templates.append(tm)
             elif a == "AcceptVerbs":
                 verbs += [v.upper() for v in re.findall(r'"(\w+)"', args or "")]
+                verbs += [v.upper() for v in re.findall(r"HttpVerbs\s*\.\s*(\w+)", args or "")]
             elif a == "ActionName":
                 action_name = first_string_arg(args, names=("name",)) or action_name
         bases = _bases(cls)
@@ -652,6 +673,18 @@ def _controller_actions(stack, path, ctx: Ctx, classes):
             else:
                 routes.append(_join_route(ctrl, action))   # conventional: RoutePrefix and RouteArea do not apply
         out_verbs = ",".join(sorted(set(verbs or ([implicit] if implicit else [])))) or "ANY"
+        # raw facts for the W4 post-pass (guard.py reads Facts only): the span, route style, verb source and filter markers
+        if blank is None:
+            blank = _blank_strings(ctx)
+        raw = {"end_line": _method_end_line(ctx, blank, m)}
+        if attr_route:
+            raw["attr_route"] = True
+        if implicit and not verbs:
+            raw["verb_convention"] = True
+        if "OverrideAuthorization" in names:
+            raw["override_authorization"] = True
+        if "ChildActionOnly" in names:
+            raw["child_action"] = True
         for route in routes:
             route = route.replace("[controller]", ctrl).replace("[action]", action)
             key = (route, out_verbs, method, cls.name)
@@ -659,7 +692,7 @@ def _controller_actions(stack, path, ctx: Ctx, classes):
                 continue
             seen.add(key)
             yield Fact.make("entry_point", stack, path, ctx.line(m.start("name")), route, type="route",
-                            method=out_verbs, handler=f"{cls.name}.{method}", **_area_detail(area),
+                            method=out_verbs, handler=f"{cls.name}.{method}", **_area_detail(area), **raw,
                             **aspnet_guards.inherits_detail(cls, classes))
 
 
@@ -683,7 +716,7 @@ def _route_tables(stack, path, ctx: Ctx):
         yield Fact.make("entry_point", stack, path, ctx.line(m.start()), _join_route(_unq(m.group(2))), **detail)
     for m in re.finditer(r"\.\s*MapHttpRoute\s*\(\s*(?:name" + eq + r")?(" + STR + r")\s*,\s*(?:routeTemplate" + eq + r")?(" + STR + ")", t):
         yield Fact.make("entry_point", stack, path, ctx.line(m.start()), _join_route(_unq(m.group(2))),
-                        type="route", method="ANY", route_name=_unq(m.group(1)), **extra)
+                        type="route", method="ANY", route_name=_unq(m.group(1)), http_route=True, **extra)
     for m in re.finditer(r"\.\s*MapPageRoute\s*\(\s*(" + STR + r")\s*,\s*(" + STR + r")\s*,\s*(" + STR + ")", t):
         yield Fact.make("entry_point", stack, path, ctx.line(m.start()), _join_route(_unq(m.group(2))),
                         type="route", method="ANY", route_name=_unq(m.group(1)), handler=_unq(m.group(3)))
@@ -749,7 +782,8 @@ class AspNetStack(Stack):
     id = STACK_ID
     capabilities = frozenset((
         "auth_check config_key connection const_def controller_class data_access entry_point.route "
-        "entry_point.page entry_point.handler entry_point.desktop external_call guard_candidate guard_class guard_use "
+        "entry_point.page entry_point.handler entry_point.desktop entry_point.guard_mechanism entry_point.guard_reach "
+        "external_call guard_candidate guard_class guard_use "
         "message method_call smell ui_page host_auth security_setting access_rule config_transform"
     ).split())
     extensions = frozenset({".aspx", ".ascx", ".master", ".asax", ".cs", ".vb", ".cshtml", ".config"})
