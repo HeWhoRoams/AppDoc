@@ -34,6 +34,8 @@ GENERIC_KINDS = frozenset({"build_define", "config_external", "config_key", "con
                            "context_directive", "dependency", "file", "owner_file", "project", "publish_profile",
                            "schema_object", "smell"})
 # Generic kinds declared above that no reader emits yet; each leaves this set with the task that adds its reader.
+# Capabilities written ``entry_point.<name>`` that name derived detail keys of the route entry points, not entry_point types.
+DETAIL_CAPABILITIES = {"guard_mechanism": "guard_mechanism", "guard_reach": "reach"}   # capability -> the key that proves it
 GENERIC_KINDS_NOT_YET_EMITTED = frozenset()   # every generic kind has its reader (config_external: T28.32)
 
 
@@ -151,8 +153,14 @@ class ConformanceTests(unittest.TestCase):
             subtypes = {f["detail"].get("type") for f in doc["facts"]
                         if f["stack"] == stack_id and f["kind"] == "entry_point"}
             declared = {c.split(".", 1)[1] for c in caps if c.startswith("entry_point.") and c.count(".") == 1}
-            self.assertEqual(declared - subtypes, set(),
+            self.assertEqual(declared - set(DETAIL_CAPABILITIES) - subtypes, set(),
                              f"{name}: entry_point subtypes declared but not exercised by the sample")
+            # a declared detail capability is exercised when some entry point of the stack carries the detail key
+            for cap in sorted(declared & set(DETAIL_CAPABILITIES)):
+                key = DETAIL_CAPABILITIES[cap]
+                self.assertTrue(any(key in f["detail"] for f in doc["facts"]
+                                    if f["stack"] == stack_id and f["kind"] == "entry_point"),
+                                f"{name}: entry_point.{cap} declared but no entry point of the sample carries {key}")
 
     def test_supported_stack_declares_capabilities(self):
         for st in stacks.load():
@@ -167,12 +175,30 @@ class ConformanceTests(unittest.TestCase):
                 self.assertIn(c.split(".", 1)[0], facts_mod.KINDS, f"{st.id}: {c!r}")
             self.assertTrue(any(c.startswith("entry_point.") for c in caps), st.id)
 
+    def test_no_guard_keys_without_capability(self):
+        """W4 detail appears only on a Stack that declares it: the mechanism list on ``entry_point.guard_mechanism``, every
+        other derived key (reach, URL set, verbs, writes) on ``entry_point.guard_reach``."""
+        mech = {"guard_mechanism"}
+        reach = {"reach", "reach_anon", "reach_auth", "reach_roles", "reach_by_config", "state_changing", "verbs",
+                 "verbs_declared", "writes", "url_set"}
+        for name, (sample, doc, _) in self.results.items():
+            caps = self._capabilities(name)
+            stack_id = self._stack_name(name)
+            for f in doc["facts"]:
+                if f["stack"] != stack_id or f["kind"] != "entry_point":
+                    continue
+                keys = set(f["detail"])
+                if keys & mech:
+                    self.assertIn("entry_point.guard_mechanism", caps, f"{name}: guard_mechanism without the capability")
+                if keys & reach:
+                    self.assertIn("entry_point.guard_reach", caps, f"{name}: {sorted(keys & reach)} without guard_reach")
+
     def test_every_entry_point_subtype_is_counted_or_listed_uncounted(self):
         known = set(fill.COUNTED_ENTRY_TYPES) | set(fill.UNCOUNTED_ENTRY_TYPES)
         self.assertFalse(set(fill.COUNTED_ENTRY_TYPES) & set(fill.UNCOUNTED_ENTRY_TYPES))
         for st in stacks.load():
             for cap in stacks.capabilities_of(st):
-                if cap.startswith("entry_point."):
+                if cap.startswith("entry_point.") and cap.split(".", 1)[1] not in DETAIL_CAPABILITIES:
                     self.assertIn(cap.split(".", 1)[1], known, f"{st.id}: {cap} is neither counted nor listed uncounted")
 
     def test_generic_kinds_exempt(self):

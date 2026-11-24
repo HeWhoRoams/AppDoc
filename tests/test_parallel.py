@@ -87,6 +87,28 @@ class ParallelTests(unittest.TestCase):
         kinds = {f["kind"] for f in json.loads(serial[0])["facts"]}
         self.assertTrue({"project", "build_define", "publish_profile", "config_unparsed", "context_directive"} <= kinds)
 
+    def test_w4_guard_detail_serial_equals_pool_equals_warm_cache(self):
+        """T28.67: the guard post-pass joins Facts only, so the derived entry-point detail (mechanism, URL set, reach,
+        verbs) is byte-identical for serial, pool and warm-cache runs over the invented ``mvc5-classic`` Target."""
+        from tests.test_corpus import materialize_shared_target
+        root = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, root, True)
+        materialize_shared_target("mvc5-classic+webapi", os.path.join(root, "app"))
+        _large_target(root)
+        outs = [tempfile.mkdtemp() for _ in range(3)]
+        for o in outs:
+            self.addCleanup(shutil.rmtree, o, True)
+        serial = extract.extract(root, outs[0], workers=0, use_cache=False)
+        pool = extract.extract(root, outs[1], workers=4, use_cache=False)
+        cold = extract.extract(root, outs[2], workers=4, use_cache=True)
+        warm = extract.extract(root, outs[2], workers=0, use_cache=True)
+        self.assertEqual(serial, pool)
+        self.assertEqual(serial, cold)
+        self.assertEqual(serial, warm)
+        entries = [f for f in json.loads(serial[0])["facts"] if f["kind"] == "entry_point" and "reach" in f["detail"]]
+        self.assertTrue(entries, "no entry point carries reach")
+        self.assertTrue(all({"guard_mechanism", "reach_anon", "url_set", "verbs"} <= set(f["detail"]) for f in entries))
+
 
 if __name__ == "__main__":
     unittest.main()
