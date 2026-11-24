@@ -483,7 +483,7 @@ def _c10_refs(lines, heads, ids, register_ids, add, superseded=None):
     if t15:
         named = set(_ID_REF_RE.findall(addressed))
         for vid, no in ids.items():
-            if vid.startswith("V-") and vid not in named:
+            if vid.startswith(spec.id_prefix_of("10.1")) and vid not in named:
                 add("C10", no, f"finding {vid} is addressed by no recommendation in section 15",
                     f"add a section 15 row whose Addresses names {vid}")
     t102 = _spec_table(lines, heads, "10.2")
@@ -1024,7 +1024,7 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
                 add("C11", no, f"{where}: the text of {ref_key} changed after it was audited; re-audit it and replace the row",
                     "re-audit the claim and rewrite the row without claim_sha, then run `appdoc build`")
     for vid, no in ids.items():
-        if vid.startswith("V-") and vid not in covered:
+        if vid.startswith(spec.id_prefix_of("10.1")) and vid not in covered:
             add("C11", no, f"finding {vid} has no register row", f"audit {vid} and add a row with ref 10.1/{vid}")
     workflows = sorted((k for k in heads if k.startswith("7.")), key=lambda k: int(k.split(".")[1]))
     for k in workflows:
@@ -1063,16 +1063,17 @@ def _c14_unknowns(lines, heads, ids, reg, appendix, add):
 # M is the total rows of the doc's table for that ID class, N is how many of them have a
 # register row. A sentence that disagrees with either is stale prose (RC-A). Only ID-class
 # nouns are checked; "control" and "row" are not single ID classes, so they are skipped.
-_C15_NOUNS = {"recommendation": "R-", "finding": "V-", "v-finding": "V-", "unknown": "Q-"}
+# The nouns are `template_spec.ID_CLASSES[prefix].nouns`.
 _C15_RE = re.compile(r"\b(\d+) of (\d+)\s+([A-Za-z-]+)")
 
 
 def _c15_sentences(lines, ids):
     """(line, text, noun, ID prefix, N, M) of every hand-written 'N of M <noun>' sentence about an ID class."""
+    nouns = {n: c.prefix for c in spec.ID_CLASSES.values() for n in c.nouns}
     for i, line in enumerate(lines):
         for m in _C15_RE.finditer(line):
             noun = m.group(3).lower().rstrip("s")
-            prefix = _C15_NOUNS.get(noun)
+            prefix = nouns.get(noun)
             if prefix:
                 yield i + 1, m.group(0).strip(), noun, prefix, int(m.group(1)), int(m.group(2))
 

@@ -23,6 +23,7 @@ import os
 from fractions import Fraction
 
 from . import check, context
+from . import template_spec as spec
 from . import docmodel as dm
 from .textnorm import normalize_newlines
 from .textutil import read_text
@@ -31,7 +32,6 @@ PLAN = "audit-plan.json"
 SCHEMA = "appdoc-audit-plan/1"
 DEFAULT_FRACTION = Fraction(1, 4)
 DEFAULT_MINIMUM = 5
-SAMPLED = (("4", "F-"), ("6", "UI-"), ("8.1", "C-"), ("8.3", "X-"), ("9", None), ("15", "R-"))
 ABSENT = ("unknown", "not applicable")     # a status cell that is not a claim to audit
 
 
@@ -108,6 +108,9 @@ def compute(target: str, out_dir: str) -> dict:
     def by_prefix(prefix):
         return sorted((i for i in ids if i.startswith(prefix)), key=_num)
 
+    def by_section(section):
+        return by_prefix(spec.id_prefix_of(section))
+
     sections = []
 
     def full(section, total, keys, items=None):
@@ -116,11 +119,11 @@ def compute(target: str, out_dir: str) -> dict:
             entry["items"] = items
         sections.append(entry)
 
-    v = by_prefix("V-")
+    v = by_section("10.1")
     full("10.1", len(v), v)
     workflows = sorted((k for k in heads if k.startswith("7.")), key=lambda k: int(k.split(".")[1]))
     full("7", len(workflows), workflows)
-    q = by_prefix("Q-")
+    q = by_section("14")
     full("14", len(q), q)
     facts_path = os.path.join(out_dir, check.FACTS)
     smells = []
@@ -131,7 +134,10 @@ def compute(target: str, out_dir: str) -> dict:
     for key, col, status in (("10.2", "Status", "Present"), ("16.5", "Procedure", None), ("17", "Command", None)):
         total, items = _rows(lines, heads, key, col, skip_absent=status is None, status_value=status)
         full(key, total, [key] if items else [], items)
-    for key, prefix in SAMPLED:
+    for key, ts in spec.TABLES.items():     # sampled sections, in template order
+        prefix = ts.id_prefix if ts.sampled else None
+        if not prefix and key not in spec.ROW_SAMPLED:
+            continue
         if prefix:
             items = by_prefix(prefix)
             k = sample_size(len(items), fraction, minimum)
@@ -150,15 +156,15 @@ def render(plan: dict) -> str:
     return json.dumps(plan, indent=1, sort_keys=True, ensure_ascii=False) + "\n"
 
 
-# The register ref of an ID class (a row's `ref` is `<section>/<id>`); other keys are their own ref.
-ID_SECTION = {"V-": "10.1", "F-": "4", "UI-": "6", "C-": "8.1", "X-": "8.3", "Q-": "14", "R-": "15"}
+# The register ref of an ID class (a row's `ref` is `<section>/<id>`; the classes are template_spec.ID_CLASSES);
+# other keys are their own ref.
 
 
 def ref_for(key: str) -> str:
     """The register `ref` that covers a planned key."""
-    for prefix, section in ID_SECTION.items():
+    for prefix, cls in spec.ID_CLASSES.items():
         if key.startswith(prefix):
-            return f"{section}/{key}"
+            return f"{cls.section}/{key}"
     return key
 
 
@@ -167,7 +173,7 @@ def _in_section(key: str, section: str) -> bool:
         return key.startswith("smell/")
     if section == "7":
         return key.startswith("7.")
-    prefix = next((p for p, sec in ID_SECTION.items() if sec == section), None)
+    prefix = spec.id_prefix_of(section)
     return key.startswith(prefix) if prefix else key == section
 
 

@@ -116,6 +116,8 @@ class Table:
     required_rows: tuple[str, ...] = ()          # first-column labels that must be present
     keyed_by: tuple[str, ...] = ()               # ID column holds IDs defined elsewhere with these prefixes
     open_columns: bool = False                   # `columns` are the leading columns; more may follow (free names)
+    nouns: tuple[str, ...] = ()                  # singular words a C15 "N of M <noun>" sentence uses for this class
+    sampled: bool = False                        # the audit plan samples this table's IDs (else it covers them all)
 
     def header_ok(self, header: list[str]) -> bool:
         got = [h.casefold() for h in header]
@@ -129,25 +131,25 @@ class Table:
 TABLES = {
     "1": Table(("Support need", "Primary screen or file", "Workflow")),
     "4": Table(("ID", "Area", "Feature", "Entry point", "Inputs, outputs and rules", "Dependencies", "Status"),
-               "F-", {"Status": STATUS}),
+               "F-", {"Status": STATUS}, sampled=True),
     "4.1": Table(("Subsystem", "Files", "Features", "Primary data and dependencies", "Purpose", "Status"),
                  values={"Status": STATUS}),
     "5.3": Table(("Capability",), open_columns=True),
     "6": Table(("ID", "Page", "Route or entry", "Reached from", "Visible controls and data",
-                "States and effects", "Roles and evidence"), "UI-"),
-    "8.1": Table(("ID", "Name", "Kind", "Configured at", "Used by"), "C-"),
-    "8.3": Table(("ID", "Call", "Direction", "Caller", "Notes"), "X-"),
+                "States and effects", "Roles and evidence"), "UI-", sampled=True),
+    "8.1": Table(("ID", "Name", "Kind", "Configured at", "Used by"), "C-", sampled=True),
+    "8.3": Table(("ID", "Call", "Direction", "Caller", "Notes"), "X-", sampled=True),
     "8.4": Table(("Entity", "Key fields", "Defined at", "Sensitivity")),
     "8.5": Table(("ID", "Timeout and retry", "On failure", "Observability"), keyed_by=("C-", "X-")),
     "9": Table(("Symptom", "Checks", "Known response", "Escalate when")),
-    "10.1": Table(("ID", "Severity", "Finding", "Evidence", "Impact"), "V-", {"Severity": SEVERITY}),
+    "10.1": Table(("ID", "Severity", "Finding", "Evidence", "Impact"), "V-", {"Severity": SEVERITY}, nouns=("finding", "v-finding")),
     "10.2": Table(("Control", "Status", "Where looked"), values={"Status": CONTROL_STATUS}),
     "11": Table(("Area", "Evidence", "Status"), values={"Status": STATUS}, required_rows=OWNERSHIP_ROWS),
     "13": Table(("Term", "Meaning", "Citation")),
     "14": Table(("ID", "Question", "Why it matters", "How to close", "Owner", "Priority"), "Q-",
-                {"Priority": PRIORITY}),
+                {"Priority": PRIORITY}, nouns=("unknown",)),
     "15": Table(("ID", "Severity", "Effort", "Recommendation", "Addresses"), "R-",
-                {"Severity": SEVERITY, "Effort": EFFORT}),
+                {"Severity": SEVERITY, "Effort": EFFORT}, nouns=("recommendation",), sampled=True),
     "16.4": Table(("Failure mode", "Signal", "Operator response")),
     "16.5": Table(("Step", "Procedure", "Evidence"), required_rows=RUNBOOK_STEPS),
     "16.6": Table(("Key", "Defined at", "Secret location")),
@@ -173,7 +175,33 @@ def generated_blocks(version: tuple) -> dict:
 # writer's (a Citation inside one does not count as the document citing that file).
 OPAQUE_BLOCKS = ("entry-points", "scheduled-jobs", "closed-questions", "appendix-a")
 
-ID_PREFIXES = tuple(t.id_prefix for t in TABLES.values() if t.id_prefix)
+# The tables whose rows have no IDs but are sampled by the audit plan (the symptom names the row).
+ROW_SAMPLED = ("9",)
+
+
+@dataclass(frozen=True)
+class IdClass:
+    """One class of defined IDs: its prefix, the section whose table defines it, the nouns C15 reads in prose, and
+    whether the audit plan samples it."""
+
+    prefix: str
+    section: str
+    nouns: tuple[str, ...]
+    sampled: bool
+
+
+def id_classes(tables: dict) -> dict:
+    """prefix -> IdClass, in table order, derived from the `id_prefix` of `tables` (the one ID-class table)."""
+    return {t.id_prefix: IdClass(t.id_prefix, key, t.nouns, t.sampled) for key, t in tables.items() if t.id_prefix}
+
+
+ID_CLASSES = id_classes(TABLES)
+ID_PREFIXES = tuple(ID_CLASSES)
+
+
+def id_prefix_of(section: str):
+    """The ID prefix of the table under `section` ("10.1" -> "V-"), or None."""
+    return next((c.prefix for c in ID_CLASSES.values() if c.section == section), None)
 REGISTER_PREFIX = "E-"
 
 
