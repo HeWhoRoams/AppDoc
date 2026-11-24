@@ -101,7 +101,7 @@ Some code patterns are worth a second look but cannot be proved by a script. The
 ## The Check
 
 <!-- appdoc-self:generated rules -->
-Rules C1-C20. Each rule fails or is not reported; there is no score.
+Rules C1-C21. Each rule fails or is not reported; there is no score.
 
 | Rule | Name | Fails when | Kind |
 |---|---|---|---|
@@ -125,6 +125,7 @@ Rules C1-C20. Each rule fails or is not reported; there is no score.
 | C18 | Notes match their block | a note in `notes.jsonl` names an unknown block, was written about an older version of its block (`block_sha`), or cites a file that does not resolve; the label `Known extractor limitation:` is written in the Narrative outside a generated block (fails from template 2.7) | advisory before template 2.7; fails from 2.7 |
 | C19 | Audit follows the plan | with `--require-audit` on template 2.7, `audit-plan.json` is missing or differs from a fresh computation, or a planned id or per-row key has no live register row (a section listed under `exclusions` is not required) | fails |
 | C20 | Citation precision | a range over 100 lines is a claim's only lined Citation in section 4, 7 or 10, or a section 4 or 10.1 table cell holds more than 5 Citations | advisory; fails under `--strict` |
+| C21 | Mandatory inputs cited | a file holding a security setting, access rule, external config reference or secret-bearing application key is not cited with a line in text outside the generated blocks (a file that could not be parsed needs its path) | fails |
 
 Previews of template 2.7 rules. On a template 2.4 document these are advisories, listed in `check-report.md` as "fails from template 2.7"; they fail only on a document stamped 2.7:
 

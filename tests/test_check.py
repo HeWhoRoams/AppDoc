@@ -2154,6 +2154,63 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(self.fired(build_doc()), set())
 
 
+    # --- C21: a file holding security-bearing configuration is cited with a line outside every generated block
+    MSG = "this file is mandatory input (R16); read it and cite what it shows, redacting values"
+
+    def _web_config(self):
+        with open(os.path.join(self.target, "Web.config"), "w") as fh:
+            fh.write("\n".join(f"<!-- {i} -->" for i in range(1, 11)) + "\n")
+
+    def cfg(self, kind="security_setting", line=3, path="Web.config", **detail):
+        return {"kind": kind, "stack": "generic", "path": path, "line": line, "name": f"{kind}@{line}", "detail": detail}
+
+    def doc_with(self, sentence):
+        return build_doc({9: SECTION_BODY[9] + "\n\n" + sentence})
+
+    def c21(self, doc, **kw):
+        self._web_config()
+        code, report, _ = self.run_check(doc, **kw)
+        return code, report, "C21" in self.rules(report)
+
+    def test_c21_uncited_security_config_fails(self):
+        for f in (self.cfg(), self.cfg("access_rule"), self.cfg("config_external"),
+                  self.cfg("config_key", role="app", secret_location=True)):
+            self.with_facts(f)
+            code, report, hit = self.c21(build_doc())
+            self.assertTrue(hit, (f["kind"], report))
+            self.assertEqual(code, 2)
+            self.assertIn(self.MSG, report)
+            self.assertIn("Web.config", report)
+        self.with_facts(self.cfg())
+        self.assertFalse(self.c21(self.doc_with("Authentication is set at `Web.config:3`."))[2])
+
+    def test_c21_vacuous_without_such_facts(self):
+        self.with_facts(self.cfg("config_key", role="app", secret_location=False))
+        self.assertFalse(self.c21(build_doc())[2])
+
+    def test_c21_unlined_citation_fails(self):
+        self.with_facts(self.cfg())
+        self.assertTrue(self.c21(self.doc_with("Authentication is set in `Web.config`."))[2])
+
+    def test_c21_generated_16_6_citation_does_not_satisfy(self):
+        self.with_facts(self.cfg("config_key", role="app", secret_location=True, line=4))
+        doc = self.fill_doc(build_doc())
+        self.assertIn("Web.config:4", doc.split("appdoc:generated config-reference")[1])
+        self.assertTrue(self.c21(build_doc())[2])
+
+    def test_c21_unparsed_file_needs_path_only(self):
+        self.with_facts(self.cfg("config_unparsed", line=None, reason="malformed"))
+        self.assertTrue(self.c21(build_doc())[2])
+        self.assertFalse(self.c21(self.doc_with("`Web.config` could not be parsed."))[2])
+        # a file that also holds a security setting still needs a line
+        self.with_facts(self.cfg("config_unparsed", line=None, reason="malformed"), self.cfg())
+        self.assertTrue(self.c21(self.doc_with("`Web.config` could not be parsed."))[2])
+
+    def test_c21_ignores_wording(self):
+        self.with_facts(self.cfg())
+        self.assertFalse(self.c21(self.doc_with("Not reviewed: `Web.config:3`."))[2])
+
+
 class Frozen22Tests(unittest.TestCase):
     """The v2.2 outputs of two Targets, kept as they were written."""
 

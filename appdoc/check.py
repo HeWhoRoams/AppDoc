@@ -104,6 +104,9 @@ RULES = (
     Rule("C20", "Citation precision",
          "a range over 100 lines is a claim's only lined Citation in section 4, 7 or 10, "
          "or a section 4 or 10.1 table cell holds more than 5 Citations", ("advisory", "strict")),
+    Rule("C21", "Mandatory inputs cited",
+         "a file holding a security setting, access rule, external config reference or secret-bearing application key "
+         "is not cited with a line in text outside the generated blocks (a file that could not be parsed needs its path)"),
 )
 RULE_TITLES = {r.id: r.title for r in RULES}
 RULE_SUMMARIES = {r.id: r.summary for r in RULES}
@@ -120,7 +123,7 @@ WIDE_RANGE = 100   # C20: a lined range spanning more lines than this is impreci
 CELL_CITES = 5     # C20: more Citations than this in one table cell is imprecise
 C5_CAP = 30
 C5_MIN_LEN = 40
-RULE_CAP = 50  # C9-C13 on a large document: show the first problems, count the rest
+RULE_CAP = 50  # C9-C13, C19 and C21 on a large document: show the first problems, count the rest
 FOLDER_CAP = 30  # folders listed under "Entry points not cited"
 ENTRY_TYPES = ("route", "page", "command", "job")
 
@@ -666,6 +669,43 @@ def _block_detail(name, body, facts) -> str:
     rows = [ln for ln in body.splitlines() if ln.startswith("|")][2:]
     return (f" (the Facts expect {fill_mod.config_shown_count(facts)} of {fill_mod.config_app_count(facts)} "
             f"application keys; the block has {len(rows)} shown)")
+
+
+C21_KINDS = ("security_setting", "access_rule", "config_external")
+C21_FIX = "this file is mandatory input (R16); read it and cite what it shows, redacting values"
+
+
+def _c21_files(facts) -> tuple[dict[str, int], set[str]]:
+    """({path: first line} of files that must be cited with a line, {paths} that only need a citation)."""
+    lined: dict[str, int] = {}
+    unparsed: set[str] = set()
+    for f in facts.get("facts", []):
+        d = f.get("detail") or {}
+        k = f.get("kind")
+        if k in C21_KINDS or (k == "config_key" and d.get("role") == "app" and d.get("secret_location")):
+            lined[f["path"]] = min(lined.get(f["path"], f.get("line") or 1), f.get("line") or 1)
+        elif k == "config_unparsed":
+            unparsed.add(f["path"])
+    return lined, unparsed - set(lined)
+
+
+def _c21_mandatory(target, cache, raw, facts, add):
+    """C21: every file with security-bearing configuration is cited with a line in Narrative text, every generated
+    block masked (the 16.6 block cites each application config file); the wording of the sentence is not read."""
+    lined, path_only = _c21_files(facts)
+    if not lined and not path_only:
+        return
+    text = dm.strip_comments(dm.mask_blocks(normalize_newlines(raw), tuple(spec.GENERATED.values())))
+    cites = find_citations(text)
+    any_cite = _cited_paths(target, cache, cites)
+    with_line = _cited_paths(target, cache, [c for c in cites if c.start is not None])
+    for path, first in sorted(lined.items()):
+        if path not in with_line:
+            add("C21", 1, f"`{path}` is not cited with a line outside the generated blocks "
+                f"(it holds security-bearing configuration from line {first})", C21_FIX)
+    for path in sorted(path_only):
+        if path not in any_cite:
+            add("C21", 1, f"`{path}` could not be parsed and is not cited", C21_FIX)
 
 
 def _c7_blocks(raw, heads, facts, out_dir, target, add, doc_ver=()):
@@ -1497,6 +1537,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         _c10_coverage(lines, heads, facts, add)
         if facts is not None:
             _c12_smells(target, cache, lines, heads, facts, reg, add)
+            _c21_mandatory(target, cache, raw, facts, add)
             uncited = _uncited_entry_points(target, cache, facts, cites)
             if strict:
                 h4 = heads.get("4")
@@ -1510,7 +1551,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
 
     for k in problems:
         items = problems[k] if k == "C5" else sorted(set(problems[k]), key=lambda p: (p[0], p[1]))
-        if k in ("C9", "C10", "C11", "C12", "C13", "C19") and len(items) > RULE_CAP:
+        if k in ("C9", "C10", "C11", "C12", "C13", "C19", "C21") and len(items) > RULE_CAP:
             items = items[:RULE_CAP] + [(items[RULE_CAP][0], f"... {len(items) - RULE_CAP} more", "fix the above, then rerun")]
         problems[k] = items
     total = sum(len(v) for v in problems.values())

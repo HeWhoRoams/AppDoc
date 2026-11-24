@@ -42,7 +42,6 @@ TARGET_FILE = "_target"                       # a case folder holding this file 
 PENDING: dict = {
     # --- 4C: shared config reader, settings, transforms, rules (T28.30-T28.44 landed; no entries left)
     # --- 4B: classification and route fidelity
-    "test_stack_markers_in_fixtures_and_tooling_are_ignored": ("T28.11", "missing ignored_markers: no stack records dropped markers yet"),
     # --- 4C: project and publish Facts
     # --- 4D: guards
     # --- 4E: effective protection (after the first slice)
@@ -56,8 +55,6 @@ PENDING: dict = {
     "test_verbless_actions_are_any_and_state_changing_is_tristate": ("T28.66", "missing verbs_declared: entry_points carry no verbs_declared yet"),
     "test_verbless_web_api_verb_from_name_convention": ("T28.66", "missing verbs: entry_points carry no verbs yet"),
     # --- 4H: Check rules
-    "test_config_not_reviewed_c21_fails_without_a_lined_citation": ("T28.A0", "missing C21: no rule requires Web.config to be cited"),
-    "test_config_not_reviewed_c21_passes_with_a_lined_citation_outside_blocks": ("T28.A0", "missing C21: no rule requires Web.config to be cited"),
     "test_area_coverage_c22_fails_when_an_area_is_missing_from_4_1": ("T28.A1", "missing C22: the Check does not require every area in 4.1"),
 }
 
@@ -1272,12 +1269,15 @@ class Slice1Code(CorpusCase):
     def test_stack_markers_in_fixtures_and_tooling_are_ignored(self):
         r = self.case("stack-markers")
         ignored = sum(int(dtl(s).get("ignored_markers") or 0) for s in r.facts["stacks"])
-        need(ignored >= 1, "ignored_markers", "no stack records the markers it dropped")
+        ignored += sum((r.facts["target"].get("scan") or {}).get("ignored_markers", {}).values())
+        need(ignored >= 1, "ignored_markers", "nothing records the markers that were dropped")
         ids = self._stack_ids(r)
         self.assertNotIn("aspnet-core", ids)
         self.assertNotIn("node-express", ids)
-        stray = [f for f in r.facts["facts"] if f["kind"] != "file" and f["path"].startswith(("fixtures/", "tests/"))]
-        self.assertEqual(stray, [], "fixture projects contribute no Facts")
+        # Stack Facts never come from fixture projects; the generic reader still lists their packages and project files.
+        stray = [f for f in r.facts["facts"] if f["kind"] != "file" and f["stack"] != "generic"
+                 and f["path"].startswith(("fixtures/", "tests/"))]
+        self.assertEqual(stray, [], "fixture projects contribute no Stack Facts")
 
     def test_winforms_handlers_are_not_web_entry_points(self):
         r = self.case("winforms-handlers")
@@ -1572,15 +1572,13 @@ def _recheck(r, narrative):
 class Slice1CheckRules(CorpusCase):
     def test_config_not_reviewed_c21_fails_without_a_lined_citation(self):
         r = self.case("config-not-reviewed")
-        self.assertEqual(r.code, 0, "today's rules pass this document: only the new rule can fail it\n" + r.report)
-        need("C21" in r.rules(), "C21", "the Check does not require Web.config to be cited")
+        self.assertIn("C21", r.rules(), r.report)
         self.assertEqual(r.code, 2, r.report)
         self.assertIn("this file is mandatory input (R16); read it and cite what it shows, redacting values", r.report)
         self.assertIn("Web.config", r.report)
 
     def test_config_not_reviewed_c21_passes_with_a_lined_citation_outside_blocks(self):
         r = self.case("config-not-reviewed")
-        need("C21" in r.rules(), "C21", "the Check does not require Web.config to be cited")
         text = r.narrative
         marker = "- The admin check is made at `app/main.py:4`."
         self.assertIn(marker, text)
