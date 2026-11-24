@@ -1,5 +1,53 @@
 # Changelog
 
+## 2.7.0
+
+Template release. Template **2.7**; schema stays `appdoc-facts/7` (`audit-plan.json`, `notes.jsonl` and the new register keys are separate files). Plan: `docs/remediation-plan-2.7.md`; comparison with 2.6.0: `docs/diagnostic-2.7.0-comparison.md`.
+
+### Upgrade notes (2.6.0 to 2.7.0)
+A 2.6 document (template 2.4) fails C3 on 2.7.0 until it is upgraded once. Run these steps in order on each Target.
+1. `appdoc upgrade <target>`. It adds what is mechanical (stamp 2.7, the `closed-questions` markers under section 14, section 17, the fixed 5.3 line, missing columns and rows), keeps every line of text (text that does not fit goes under an `appdoc:upgrade-orphan` comment that C3 fails on until you move it), re-extracts the Facts and fills the generated blocks. It never writes `evidence.jsonl`, `notes.jsonl` or `audit-plan.json` and never seals. It writes `docs/appdoc/UPGRADE-TODO.md`.
+2. Work through `UPGRADE-TODO.md`; each item names the Check rule that fails until it is done. Move "Known extractor limitation" paragraphs to `notes.jsonl`. Shorten the audit `scope` to the method and move per-section caveats to `exclusions`. Fix severity order in 10.1 and 15 (C9), `answered_in` on Answerable rows, section 17 rows, and two live rows on one ref. If rows were deleted under 2.4, restore them from git history and add `supersedes` to the replacing row.
+3. `appdoc build --expand-citations <target>`. It rewrites each bare file name that has exactly one full path to the full path, in the Narrative only (outside code fences and generated blocks). Bare names in register rows and notes are fixed by hand (C1 names the full path).
+4. Replace hand-written counts with count markers (`<!-- appdoc:count V -->7<!-- /appdoc:count -->`); `fill` and `build` write the number. C15 lists what is still hand-written.
+5. `notes.jsonl` for the limitations and answers that belong to a block (C18 checks that each note matches its block).
+6. Fill section 17, Build, Run and Test Locally (one command per step, or `Not applicable` with the evidence that says why).
+7. `appdoc audit-plan <target>`, then audit the planned IDs (and the finding candidates the plan lists), then `appdoc seal --audit --date YYYY-MM-DD <target>`. `audit-plan --check` prints whether the plan on disk is stale. The sample reseeds on every Narrative edit, so audit every row of the sampled sections in the final pass, after the last edit.
+8. `appdoc build --require-audit --strict <target>`; commit `docs/appdoc/`. Update the `APPDOC_REF` pin in `.github/workflows/appdoc-docs-gate.yml` to `v2.7.0` (the shipped `ci/appdoc-docs-gate.yml` already pins it). The Facts schema is the same as in 2.6.0, so the gate does not exit 3 for this release.
+
+Examples: `examples/current/` (2.7.0) is a fresh run, not an upgrade: new Narratives, an independent audit from `audit-plan.json`, sealed with `--audit --date`; `examples/previous/` is 2.6.0. The four 2.7.0 Checks pass with `--require-audit --strict`.
+
+### Added
+- Register history: rows may carry `supersedes` (an id or a list; a replaced row stays in the file) and `sealed_by` (`audit` or `upgrade`). The audit record on line 1 carries `audited_on`, `audited_with`, `audited_bundle` and `doc_sha`. C11 counts live rows; C10, C12, C14 and the Check's Verification read live rows only. Appendix A shows audit provenance, upgrade seals and superseded rows.
+- `appdoc seal --audit --date YYYY-MM-DD` records the audit and seals unsealed rows as audited. C17 checks the provenance under `--require-audit` and `--strict`.
+- `notes.jsonl`: notes rendered inside their block, sealed by `build` (empty `block_sha`), and C18 checks each note against its block.
+- Computed audit scope: A.1 prints the scope line from the register; C17 on 2.7 fails an audit `scope` with an ID or a digit, and `exclusions` are whole sections.
+- `appdoc audit-plan <target>` writes `docs/appdoc/audit-plan.json` (every finding, workflow, open question and finding candidate, full sections, and a seeded sample of the others with a 25% / minimum 5 floor); `audit-plan --check` is read-only (exit 0 equal, 2 stale or missing). C19: the audit follows the plan; A.2 shows planned, audited and extra.
+- Count markers (`appdoc:count`, closed class list `template_spec.COUNT_CLASSES`): `fill` writes the number from the Facts or the register; C15 checks them and a hand-written "N of M" is an advisory.
+- C9 severity order in 10.1 and 15; C1 full-path Citations (bare names fail, also in register rows and notes), and `build --expand-citations`.
+- Closed-questions block (section 14) rendered by `fill`; Answerable rows need `answered_in`; A.2 lists missing E-IDs.
+- Section 17, Build, Run and Test Locally (template, spec, C3 and C9 on 2.7).
+- `appdoc upgrade <target>` (`appdoc/upgrade.py`, steps in `template_spec.UPGRADE_STEPS`) writes `UPGRADE-TODO.md`; corpus cases `upgrade-2-1` and `upgrade-2-6-to-2-7` replay the steps.
+- Go and other extractor-read extensions are Citations (`go`, `rs`, `rb`, `php`, `kt`, `kts`, `proto`, `tf`; `mod` and `sum` line-only, plus the exact names `go.mod` and `go.sum`).
+- SKILL.md and the template guide teach C16 and C20 (documented, not new), Needs-owner rows, whole-section exclusions, the final audit pass and count-free audit-state sentences. CONTEXT.md terms; ADR 0015 and 0017; ADR 0007 amended.
+
+### Changed
+- `TEMPLATE_VERSION` is 2.7. C3 is strict: a document must carry the running template's stamp (the 2.4 older-stamp window is removed), and C3 fails on an `upgrade-orphan` comment.
+- The C1, C9 and C17 rules that 2.6.0 previewed as "fails from template 2.7" now fail on a 2.7 stamp.
+- `seal` and `build` fill the non-opaque generated blocks before computing `doc_sha`, so the sealed hash matches the finished document.
+- The skill's run order (SKILL.md, `appdoc/workflow.py`): upgrade, fix advisories, `audit-plan`, audit the planned IDs, apply findings, audit the delta, `seal --audit --date`, `build`.
+- Check messages say why (section 17 Command cell; C1 on a backticked name that does not exist).
+- `tools/release.py` rotation and the example folders also carry `audit-plan.json`.
+
+### Known limitations
+- Determinism is verified on Linux only: `extract --workers 1` and `--workers 4` reproduce the committed `facts.json` of all four examples byte for byte. The CI hash job has not run on Windows, so Windows is not verified.
+- Audit exclusions are whole sections only: a generated block inside a section that has planned IDs cannot be excluded on its own.
+- The audit-plan sample reseeds on every Narrative edit, so the final audit pass must cover every row of the sampled sections.
+- Test-code finding candidates are not planned.
+- A Needs-owner question needs a Supported row.
+- The section 17 Command cell check accepts a short command chain, though the docs say exactly one command.
+- A hand-written "N of M" is an advisory only (C15); only count markers are checked against the Facts.
+
 ## 2.6.0
 
 Tooling, provenance and Facts release. Schema `appdoc-facts/7`; template stays 2.4. Plan: `docs/remediation-plan-2.6.md`.

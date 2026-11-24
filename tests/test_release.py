@@ -316,7 +316,7 @@ def _tree_copy(dest):
         fh.write(text.replace(f"APPDOC_REF: v{appdoc.__version__}", "APPDOC_REF: v2.5.0"))  # the pin of the last release
     # The tree as it is before release 2.6.0 (the scripted release these tests replay): dev version and an Unreleased
     # heading, whatever version the real tree is on.
-    for rel, a, b in (("CHANGELOG.md", "## 2.6.0\n", "## Unreleased\n"),
+    for rel, a, b in (("CHANGELOG.md", f"## {appdoc.__version__.split('.dev')[0]}\n", "## Unreleased\n"),
                       (os.path.join("appdoc", "__init__.py"), f'__version__ = "{appdoc.__version__}"',
                        '__version__ = "2.6.0.dev0"')):
         path = os.path.join(dest, rel)
