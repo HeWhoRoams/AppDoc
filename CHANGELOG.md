@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+(2.8.0 slice 1 in progress; interim version 2.7.1.dev1 until the examples rotate.)
+
 ## 2.7.1
 
 ### Changed
