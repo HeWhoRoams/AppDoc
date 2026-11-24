@@ -92,7 +92,7 @@ DETAIL_KEYS = {
     "project": frozenset("kind output_type sdk test web".split()),
     "build_define": frozenset("config inherits symbols".split()),
     "publish_profile": frozenset("build_config host method".split()),
-    "context_directive": frozenset("directive entries matched".split()),
+    "context_directive": frozenset("context_unmatched directive names value".split()),
     "controller_class": frozenset("base_external base_list".split()),
     "host_auth": frozenset("iis_anonymous iis_authorization_present owin_auth source".split()),
 }

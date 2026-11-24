@@ -101,6 +101,44 @@ def _owner_context(root: str):
     for o in ctx.ownership:
         yield F.Fact.make("ownership", "generic", OWNER_CONTEXT, o.line, o.role,
                           role=o.role, source=OWNER_CONTEXT)
+    # one context_directive per directive line, from the same single parse; a value that may name a person is not carried
+    for d in context.directives(ctx):
+        detail = {"directive": d.key}
+        if d.value is not None:
+            detail["value"] = d.value
+        if d.names:
+            detail["names"] = list(d.names)
+        yield F.Fact.make("context_directive", "generic", OWNER_CONTEXT, d.line, d.name, **detail)
+
+
+_GUARD_EVIDENCE = ("guard_use", "guard_class", "guard_candidate")
+
+
+def _attr_key(name: str) -> str:
+    low = name.strip().lower()
+    return low[:-9] if low.endswith("attribute") and len(low) > 9 else low
+
+
+def _match_directives(facts: list) -> list:
+    """Post-pass: disclose directive names that match nothing as ``context_unmatched`` (a note, never an error).
+
+    ``Auth attributes`` names are compared, case-insensitively and with or without the ``Attribute`` suffix, with the
+    names of guard_use, guard_class and guard_candidate Facts. Absence is only claimed when at least one such Fact
+    exists: with none, no detector has run and absence proves nothing. Directives are rebuilt with ``Fact.make``.
+    """
+    known = {_attr_key(f.name) for f in facts if f.kind in _GUARD_EVIDENCE}
+    if not known:
+        return facts
+    out = []
+    for f in facts:
+        if f.kind == "context_directive" and dict(f.detail).get("directive") == "auth_attributes":
+            d = f.detail_dict()
+            miss = sorted(n for n in d.get("names", []) if _attr_key(n) not in known)
+            if miss:
+                d["context_unmatched"] = miss
+                f = F.Fact.make(f.kind, f.stack, f.path, f.line, f.name, **d)
+        out.append(f)
+    return out
 
 
 # ------------------------------------------------------------------ caching
@@ -313,7 +351,9 @@ def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: boo
         workers = min(os.cpu_count() or 1, 8)
     facts = _extract_all(root, files, detected, workers, cache, siblings)
 
+    facts.extend(_owner_context(root))   # one parse of appdoc-context.md; its Facts exist before every post-pass
     facts = _config_roles(facts)
+    facts = _match_directives(facts)
 
     for sid, (st, markers) in sorted(detected.items()):
         count = sum(1 for sf in files if sf.ext in st.extensions)
@@ -324,7 +364,6 @@ def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: boo
     for eco, markers in generic.unsupported_stacks(paths, set(detected)):
         facts.append(F.Fact.make("stack", "generic", markers[0], None, eco,
                                  marker_files=markers, file_count=len(markers), supported=False))
-    facts.extend(_owner_context(root))
     if not no_ownership:
         facts.extend(_ownership(root, files, ownership_top))
 
