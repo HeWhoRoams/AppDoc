@@ -509,7 +509,7 @@ All four new block markers and headings ship in **2.8.0**, so 2.9.0 needs no tem
 | `pipeline` | 16.8 "Pipeline (generated)" | markers 2.8, content 2.9 |
 | `repo-docs` | **2.2** "Repository documentation (generated)" | not in 2.1, which already holds `scan-coverage`. **Verify 2.2 is free in `template_spec` at the start of the work.** |
 
-All five are added to `template_spec.OPAQUE_BLOCKS` and the same step updates `check._c7_blocks`, `check._claim_sha` masking, `fill.RENDERERS`, and 2.7's `doc_sha`. Without opacity, (a) block tables and IDs are parsed as Narrative by C1/C9/C10, and (b) a register row sealed against section 5.4 or 8.3 would change its seal when 2.9 fills the block, and C11 would fail "the text changed after it was audited". Tests: `test_check::test_new_blocks_are_opaque`, `::test_seal_survives_block_content_change`, `test_template_spec::test_generated_keys_unique`. C9 gains the 5.4, 2.2 and 16.8 headings.
+All five are added to `template_spec.OPAQUE_BLOCKS` and the same step updates `check._c7_blocks`, `fingerprint.claim_sha` masking, `fill.RENDERERS`, and 2.7's `doc_sha`. Without opacity, (a) block tables and IDs are parsed as Narrative by C1/C9/C10, and (b) a register row sealed against section 5.4 or 8.3 would change its seal when 2.9 fills the block, and C11 would fail "the text changed after it was audited". Tests: `test_check::test_new_blocks_are_opaque`, `::test_seal_survives_block_content_change`, `test_template_spec::test_generated_keys_unique`. C9 gains the 5.4, 2.2 and 16.8 headings.
 
 **R4 wording.** Each block states what a script read, says "N of M" for every capped list (the first 60 / 40 rows), and says which reader produced a "none": a Stack for stack-fed content, "the generic reader" for generic-fed content (CI, documents, projects). Prefer closed phrases for "none" sentences so 2.9 can change content without rewriting a pinned sentence.
 
@@ -593,7 +593,7 @@ Two advisories in the 2.6 §5.1 family (citation precision; same file list), lab
 
 ### 7.5 Spec updates
 
-`template_spec`: headings, `REQUIRED_SUBSECTIONS`, `OPAQUE_BLOCKS` (§6), the maintenance row in 16.x (DA-G 6.4), an `UPGRADE_STEPS` table (W15), `UPGRADE_NOTES` text. 2.7's audit plan samples sections 4, 6, 8.1, 8.3, 9, 15; section 5 and the new blocks are **not audited** and the plan says so: they are generated and opaque.
+`template_spec`: headings, `REQUIRED_SUBSECTIONS`, `OPAQUE_BLOCKS` (§6), the maintenance row in 16.x (DA-G 6.4), an `UPGRADE_STEPS` table (W15), `UPGRADE_NOTES` text. 2.7's audit plan samples sections 4, 6, 8.1, 8.3, 9, 15; the new blocks are opaque and unaudited (A.1 names them from `OPAQUE_BLOCKS`); the 5.3 matrix rows are planned per row (`5.3/<slug>`, task T28.A5); prose in 5.1 and 5.2 stays outside the plan and ADR 0019 records that residual risk. 2.7.1 plans 10.2, 16.5, 17 and the sampled section 9 rows per row.
 
 ---
 
