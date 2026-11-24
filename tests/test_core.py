@@ -507,7 +507,9 @@ class GitScopeTests(unittest.TestCase):
         self.assertIsNotNone(doc["target"]["commit"])
         self.assertTrue([f for f in doc["facts"] if f["kind"] == "ownership"])
 
-    def test_ownership_has_no_author_names(self):
+    def test_ownership_facts_have_no_author_names(self):
+        """R18 (T26.66, confirmed by T28.C6): an `ownership` Fact holds counts, dates and the folder, never an author
+        name or an email, in facts.json and in facts-summary.md, whatever `ownership_top` caps."""
         import subprocess
         for name, day in (("Zed Quux", "2024-03-01T10:00:00"), ("Ada Lovelace", "2024-05-02T10:00:00"),
                           ("Zed Quux", "2024-06-03T10:00:00")):
@@ -516,9 +518,11 @@ class GitScopeTests(unittest.TestCase):
             env = dict(os.environ, GIT_AUTHOR_DATE=day, GIT_COMMITTER_DATE=day)
             subprocess.run(["git", "-C", self.repo, "-c", f"user.name={name}", "-c", "user.email=q@example.com",
                             "commit", "-q", "-am", "edit"], check=True, capture_output=True, env=env)
-        text = extract.extract(self.repo, self.out)[0]
-        for forbidden in ("Zed", "Quux", "Ada", "Lovelace", "q@example.com"):
+        text, summary = extract.extract(self.repo, self.out)
+        for forbidden in ("Zed", "Quux", "Ada", "Lovelace", "q@example.com", "example.com"):
             self.assertNotIn(forbidden, text)
+            self.assertNotIn(forbidden, summary)
+        self.assertEqual(extract.extract(self.repo, self.out, ownership_top=1)[0].count("Quux"), 0)
         own = [f for f in json.loads(text)["facts"] if f["kind"] == "ownership"]
         self.assertTrue(own)
         sub = next(f for f in own if f["name"] == "sub")
