@@ -30,6 +30,8 @@ The Target is a .NET solution (`eShop.slnx`) with services, two Blazor web apps 
 
 The two MAUI projects (`src/ClientApp/` and `src/HybridApp/`) are recognised only as XAML or Razor pages; their service code was read by hand and is described in sections 4 and 6 as Cited or Inferred. This document covers the runtime topology declared in `src/eShop.AppHost/AppHost.cs`; no running environment, database contents, container image or cloud deployment was inspected.
 
+Duplicate folders named by the Facts: src/ClientApp/Platforms/MacCatalyst/ and src/ClientApp/Platforms/iOS/, and the same two folders under src/HybridApp/Platforms/, hold a byte-identical AppDelegate and Program source file. The copies in both platform folders are live: ClientApp and HybridApp list iOS and Mac Catalyst as separate target frameworks (`src/ClientApp/ClientApp.csproj:4`, `src/HybridApp/HybridApp.csproj:4`), and ClientApp points its signing entitlements at the matching platform folder (`src/ClientApp/ClientApp.csproj:97`, `src/ClientApp/ClientApp.csproj:106`). The pairs between src/HybridApp/ and src/WebApp/ are shared static assets (fonts, icons, images and the normalize stylesheet) that exist as separate copies in both projects. **Inferred:** neither copy is dead; both projects keep their own copy.
+
 Not reviewed: image, font and webp assets (for example `src/Catalog.API/Pics/` and `src/Identity.API/wwwroot/`), EF migration designer files, the agent-skill documents under `.github/skills/`, the file `src/Identity.API/tempkey.jwk` (deliberately not opened because it may hold key material) and platform-specific MAUI folders. Git history is shallow, so ownership Facts are absent (see section 11). An independent source-to-claim audit sampled this document by risk (every finding, workflow and open question, plus a sample of the other sections); its scope and results are in Appendix A.
 
 <!-- appdoc:generated scan-coverage -->
@@ -55,16 +57,11 @@ Files found: 1145 = scanned 1145 + pruned 0 + ignored by .appdocignore 0.
 
 No folders were pruned.
 
-Folders that look retired (not excluded):
-- `src/ClientApp/Platforms/MacCatalyst/` (content, 5 files)
-- `src/HybridApp/Platforms/MacCatalyst/` (content, 5 files)
-- `src/HybridApp/wwwroot/` (content, 34 files)
-- `src/HybridApp/wwwroot/fonts/` (content, 14 files)
-- `src/HybridApp/wwwroot/icons/` (content, 6 files)
-- `src/WebApp/wwwroot/` (content, 49 files)
-- `src/WebApp/wwwroot/fonts/` (content, 26 files)
-- `src/WebApp/wwwroot/icons/` (content, 6 files)
-- `src/WebApp/wwwroot/images/` (content, 5 files)
+Folders that duplicate another folder (not excluded; say in 2.1 which copy is live):
+- `src/ClientApp/Platforms/MacCatalyst/` and `src/ClientApp/Platforms/iOS/` (2 files)
+- `src/HybridApp/` and `src/WebApp/wwwroot/` (8 files)
+- `src/HybridApp/Platforms/MacCatalyst/` and `src/HybridApp/Platforms/iOS/` (2 files)
+- `src/HybridApp/wwwroot/` and `src/WebApp/` (7 files)
 <!-- /appdoc:generated scan-coverage -->
 
 ### 2.2 Purpose and users
@@ -133,7 +130,7 @@ The API scope names `orders`, `basket` and `webhooks` are defined as API scopes 
 ## 4. Functional Inventory
 
 <!-- appdoc:generated entry-points -->
-13 route handler files (0 under folders that look retired); 48 routes; 46 pages; 0 commands; 3 jobs.
+13 route handler files; 48 routes; 46 pages; 0 commands; 3 jobs.
 
 | Handler file | Kinds | Routes | Pages | Jobs | Commands |
 |---|---|---|---|---|---|
@@ -909,8 +906,6 @@ Environments are not named in source, so this runbook describes the local and Az
 <!-- appdoc:generated config-reference -->
 | Key | Defined at | Secret location |
 |---|---|---|
-| TokenLifetimeMinutes | `src/Identity.API/appsettings.json:10` | yes |
-| PermanentTokenLifetimeDays | `src/Identity.API/appsettings.json:11` | yes |
 | ClientSecret | `src/WebApp/Extensions/Extensions.cs:78` | yes |
 | ValidateToken | `src/WebhookClient/Endpoints/WebhookEndpoints.cs:13` | yes |
 | WebhookClientOptions:Token | `src/WebhookClient/appsettings.json:10` | yes |
@@ -933,6 +928,8 @@ Environments are not named in source, so this runbook describes the local and Az
 | WebhooksApiClient | `src/Identity.API/Configuration/Config.cs:181` | no |
 | MauiCallback | `src/Identity.API/appsettings.json:8` | no |
 | UseCustomizationData | `src/Identity.API/appsettings.json:9` | no |
+| TokenLifetimeMinutes | `src/Identity.API/appsettings.json:10` | no |
+| PermanentTokenLifetimeDays | `src/Identity.API/appsettings.json:11` | no |
 | Logging:LogLevel:System | `src/OrderProcessor/appsettings.Development.json:5` | no |
 | Logging:LogLevel:Microsoft | `src/OrderProcessor/appsettings.Development.json:6` | no |
 | BackgroundTaskOptions:GracePeriodTime | `src/OrderProcessor/appsettings.json:15` | no |
@@ -961,7 +958,7 @@ Environments are not named in source, so this runbook describes the local and Az
 
 Shown 49 of 49 application keys.
 
-22 keys in 2 file(s) were not classified as application configuration: `ci.yml`, `es-metadata.yml` (see facts.json).
+22 keys in 2 files were not classified as application configuration: `ci.yml`, `es-metadata.yml` (see facts.json).
 
 0 env-var keys and 48 CI keys are excluded from the application table (see facts.json).
 <!-- /appdoc:generated config-reference -->
@@ -996,6 +993,9 @@ The table shows Unknown for schedule because none of the three jobs uses a cron-
 ### A.1 Audit state
 
 **Auditor:** independent. **Scope:** Independent audit, read-only. Fully covered: all 21 findings in 10.1 (V-1 to V-21), all 11 workflows (7.1 to 7.11), all 17 questions raised in 14 (Q-1 to Q-17; Q-11, Q-12 and Q-17 were classified Answerable and are answered in the body), and both finding candidates (1a9e722a and 4f05c1b3, both cited in V-18). Sampled by risk (counts, enumerations, auth statements, status progressions): section 3 (3.1 to 3.3); section 4 rows F-1, F-4, F-8, F-9, F-11, F-12, F-13, F-18, F-19, F-21, F-22, F-26, F-27, F-28, F-29 (15 of 29); 5.1 to 5.3; section 6 rows UI-4, UI-8, UI-14, UI-23, UI-25, UI-29 (6 of 40); section 8 (C-2, 8.2, X-5, X-6, entity tables for CatalogItem, Order, PaymentMethod, ApplicationUser and WebhookSubscription, 8.5 C-2); 5 of 22 rows in section 9; section 10.2 (TLS, MFA, rate limiting, lockout); section 11 (ownership, 3 test and process rows, maintenance bullet); section 15 (R-1, R-6, coverage paragraph); section 16 (16.1, 16.2, 16.3, 16.5 build, deploy and rollback, one 16.6 effect row, 16.7). Not audited: generated blocks (2.1 coverage, 4 entry points, 16.6 key table, 16.7 jobs; only the Check covers them), 4.1 file counts, section 13 glossary, section 12 diagrams beyond 3.2, MAUI XAML layout detail, remaining UI, workflow-adjacent test rows, and the other sections 9 and 16.4 rows. Absence and count claims were verified by repository text searches (raw SQL, roles and policies, rate limiting, TwoFactor, LoadingPage, AllowedHosts, token lifetime settings, HSTS). src/Identity.API/tempkey.jwk was not opened (git metadata and size only). No secret values are copied into this register.
+
+Generated blocks written by AppDoc 2.6.0 (bundle 2b80067ff022).
+Generated blocks were regenerated after the audit and are not covered by it.
 
 ### A.2 Coverage
 
@@ -1134,763 +1134,763 @@ The table shows Unknown for schedule because none of the three jobs uses a cron-
 
 Run from the Target root. Each block names the expected line, then a PowerShell command and a POSIX command.
 
-- **E-1** (`10.1/V-1`), expect line 110
+- **E-1** (section 10), expect `src/Catalog.API/Apis/CatalogApi.cs:110`
 
 ```text
 Select-String -LiteralPath 'src/Catalog.API/Apis/CatalogApi.cs' -SimpleMatch -CaseSensitive -Pattern 'api.MapPost("/items", CreateItem)'
 grep -nF -- 'api.MapPost("/items", CreateItem)' 'src/Catalog.API/Apis/CatalogApi.cs'
 ```
 
-- **E-2** (`10.1/V-2`), expect line 37
+- **E-2** (section 10), expect `src/Identity.API/Program.cs:37`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Program.cs' -SimpleMatch -CaseSensitive -Pattern '.AddDeveloperSigningCredential();'
 grep -nF -- '.AddDeveloperSigningCredential();' 'src/Identity.API/Program.cs'
 ```
 
-- **E-3** (`10.1/V-3`), expect line 82
+- **E-3** (section 10), expect `src/Identity.API/Configuration/Config.cs:82`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Configuration/Config.cs' -SimpleMatch -CaseSensitive -Pattern '.Sha256())'
 grep -nF -- '.Sha256())' 'src/Identity.API/Configuration/Config.cs'
 ```
 
-- **E-4** (`10.1/V-4`), expect line 12
+- **E-4** (section 10), expect `src/Identity.API/Program.cs:12`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Program.cs' -SimpleMatch -CaseSensitive -Pattern 'builder.Services.AddMigration<ApplicationDbContext, UsersSeed>();'
 grep -nF -- 'builder.Services.AddMigration<ApplicationDbContext, UsersSeed>();' 'src/Identity.API/Program.cs'
 ```
 
-- **E-5** (`10.1/V-5`), expect line 21
+- **E-5** (section 10), expect `src/Ordering.API/Application/Commands/CancelOrderCommandHandler.cs:21`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.API/Application/Commands/CancelOrderCommandHandler.cs' -SimpleMatch -CaseSensitive -Pattern 'var orderToUpdate = await _orderRepository.GetAsync(command.OrderNumber);'
 grep -nF -- 'var orderToUpdate = await _orderRepository.GetAsync(command.OrderNumber);' 'src/Ordering.API/Application/Commands/CancelOrderCommandHandler.cs'
 ```
 
-- **E-6** (`10.1/V-6`), expect line 10
+- **E-6** (section 10), expect `src/Ordering.API/Application/Queries/OrderQueries.cs:10`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.API/Application/Queries/OrderQueries.cs' -SimpleMatch -CaseSensitive -Pattern '.FirstOrDefaultAsync(o => o.Id == id);'
 grep -nF -- '.FirstOrDefaultAsync(o => o.Id == id);' 'src/Ordering.API/Application/Queries/OrderQueries.cs'
 ```
 
-- **E-7** (`10.1/V-7`), expect line 140
+- **E-7** (section 10), expect `src/Ordering.API/Apis/OrdersApi.cs:140`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.API/Apis/OrdersApi.cs' -SimpleMatch -CaseSensitive -Pattern '.PadLeft(request.CardNumber.Length, ''X'');'
 grep -nF -- '.PadLeft(request.CardNumber.Length, '\''X'\'');' 'src/Ordering.API/Apis/OrdersApi.cs'
 ```
 
-- **E-8** (`10.1/V-8`), expect line 163
+- **E-8** (section 10), expect `src/Ordering.API/Apis/OrdersApi.cs:163`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.API/Apis/OrdersApi.cs' -SimpleMatch -CaseSensitive -Pattern 'CreateOrderCommand failed - RequestId'
 grep -nF -- 'CreateOrderCommand failed - RequestId' 'src/Ordering.API/Apis/OrdersApi.cs'
 ```
 
-- **E-9** (`10.1/V-9`), expect line 113
+- **E-9** (section 10), expect `src/WebApp/Components/Pages/Checkout/Checkout.razor:113`
 
 ```text
 Select-String -LiteralPath 'src/WebApp/Components/Pages/Checkout/Checkout.razor' -SimpleMatch -CaseSensitive -Pattern 'Info.CardTypeId = 1;'
 grep -nF -- 'Info.CardTypeId = 1;' 'src/WebApp/Components/Pages/Checkout/Checkout.razor'
 ```
 
-- **E-10** (`10.1/V-10`), expect line 27
+- **E-10** (section 10), expect `src/Webhooks.API/Services/GrantUrlTesterService.cs:27`
 
 ```text
 Select-String -LiteralPath 'src/Webhooks.API/Services/GrantUrlTesterService.cs' -SimpleMatch -CaseSensitive -Pattern 'return response.IsSuccessStatusCode && tokenReceived == tokenExpected;'
 grep -nF -- 'return response.IsSuccessStatusCode && tokenReceived == tokenExpected;' 'src/Webhooks.API/Services/GrantUrlTesterService.cs'
 ```
 
-- **E-11** (`10.1/V-11`), expect line 17
+- **E-11** (section 10), expect `src/Webhooks.API/Services/GrantUrlTesterService.cs:17`
 
 ```text
 Select-String -LiteralPath 'src/Webhooks.API/Services/GrantUrlTesterService.cs' -SimpleMatch -CaseSensitive -Pattern 'Sending the OPTIONS message to {Url} with token'
 grep -nF -- 'Sending the OPTIONS message to {Url} with token' 'src/Webhooks.API/Services/GrantUrlTesterService.cs'
 ```
 
-- **E-12** (`10.1/V-12`), expect line 13
+- **E-12** (section 10), expect `src/WebhookClient/Endpoints/WebhookEndpoints.cs:13`
 
 ```text
 Select-String -LiteralPath 'src/WebhookClient/Endpoints/WebhookEndpoints.cs' -SimpleMatch -CaseSensitive -Pattern 'bool.TryParse(configuration["ValidateToken"], out var validateToken);'
 grep -nF -- 'bool.TryParse(configuration["ValidateToken"], out var validateToken);' 'src/WebhookClient/Endpoints/WebhookEndpoints.cs'
 ```
 
-- **E-13** (`10.1/V-13`), expect line 49
+- **E-13** (section 10), expect `src/eShop.ServiceDefaults/AuthenticationExtensions.cs:49`
 
 ```text
 Select-String -LiteralPath 'src/eShop.ServiceDefaults/AuthenticationExtensions.cs' -SimpleMatch -CaseSensitive -Pattern 'options.TokenValidationParameters.ValidateAudience = false;'
 grep -nF -- 'options.TokenValidationParameters.ValidateAudience = false;' 'src/eShop.ServiceDefaults/AuthenticationExtensions.cs'
 ```
 
-- **E-14** (`10.1/V-14`), expect line 177
+- **E-14** (section 10), expect `src/EventBusRabbitMQ/RabbitMQEventBus.cs:177`
 
 ```text
 Select-String -LiteralPath 'src/EventBusRabbitMQ/RabbitMQEventBus.cs' -SimpleMatch -CaseSensitive -Pattern 'Even on exception we take the message off the queue.'
 grep -nF -- 'Even on exception we take the message off the queue.' 'src/EventBusRabbitMQ/RabbitMQEventBus.cs'
 ```
 
-- **E-15** (`10.1/V-15`), expect line 134
+- **E-15** (section 10), expect `src/Ordering.API/Apis/OrdersApi.cs:134`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.API/Apis/OrdersApi.cs' -SimpleMatch -CaseSensitive -Pattern '{@IntegrationEvent}'
 grep -nF -- '{@IntegrationEvent}' 'src/Ordering.API/Apis/OrdersApi.cs'
 ```
 
-- **E-16** (`10.1/V-16`), expect line 90
+- **E-16** (section 10), expect `src/Identity.API/Configuration/Config.cs:90`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Configuration/Config.cs' -SimpleMatch -CaseSensitive -Pattern 'RequirePkce = false,'
 grep -nF -- 'RequirePkce = false,' 'src/Identity.API/Configuration/Config.cs'
 ```
 
-- **E-17** (`10.1/V-17`), expect line 7
+- **E-17** (section 10), expect `src/Webhooks.API/IntegrationEvents/ProductPriceChangedIntegrationEventHandler.cs:7`
 
 ```text
 Select-String -LiteralPath 'src/Webhooks.API/IntegrationEvents/ProductPriceChangedIntegrationEventHandler.cs' -SimpleMatch -CaseSensitive -Pattern 'return Task.CompletedTask;'
 grep -nF -- 'return Task.CompletedTask;' 'src/Webhooks.API/IntegrationEvents/ProductPriceChangedIntegrationEventHandler.cs'
 ```
 
-- **E-18** (`10.1/V-18`), expect line 6
+- **E-18** (section 10), expect `src/Webhooks.API/IntegrationEvents/OrderStatusChangedToPaidIntegrationEventHandler.cs:6`
 
 ```text
 Select-String -LiteralPath 'src/Webhooks.API/IntegrationEvents/OrderStatusChangedToPaidIntegrationEventHandler.cs' -SimpleMatch -CaseSensitive -Pattern 'ILogger<OrderStatusChangedToShippedIntegrationEventHandler> logger'
 grep -nF -- 'ILogger<OrderStatusChangedToShippedIntegrationEventHandler> logger' 'src/Webhooks.API/IntegrationEvents/OrderStatusChangedToPaidIntegrationEventHandler.cs'
 ```
 
-- **E-19** (`10.1/V-19`), expect line 23
+- **E-19** (section 10), expect `src/Catalog.API/Extensions/Extensions.cs:23`
 
 ```text
 Select-String -LiteralPath 'src/Catalog.API/Extensions/Extensions.cs' -SimpleMatch -CaseSensitive -Pattern 'REVIEW: This is done for development ease but shouldn''t be here in production'
 grep -nF -- 'REVIEW: This is done for development ease but shouldn'\''t be here in production' 'src/Catalog.API/Extensions/Extensions.cs'
 ```
 
-- **E-20** (`10.1/V-20`), expect line 3
+- **E-20** (section 10), expect `src/Catalog.API/appsettings.Development.json:3`
 
 ```text
 Select-String -LiteralPath 'src/Catalog.API/appsettings.Development.json' -SimpleMatch -CaseSensitive -Pattern 'Host=localhost;Database=CatalogDB;Username=postgres'
 grep -nF -- 'Host=localhost;Database=CatalogDB;Username=postgres' 'src/Catalog.API/appsettings.Development.json'
 ```
 
-- **E-21** (`10.1/V-21`), expect line 8
+- **E-21** (section 10), expect `src/WebhookClient/appsettings.json:8`
 
 ```text
 Select-String -LiteralPath 'src/WebhookClient/appsettings.json' -SimpleMatch -CaseSensitive -Pattern '"AllowedHosts": "*",'
 grep -nF -- '"AllowedHosts": "*",' 'src/WebhookClient/appsettings.json'
 ```
 
-- **E-22** (`7.1`), expect line 107
+- **E-22** (section 7), expect `src/Identity.API/Quickstart/Account/AccountController.cs:107`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Quickstart/Account/AccountController.cs' -SimpleMatch -CaseSensitive -Pattern 'return this.LoadingPage("Redirect", model.ReturnUrl);'
 grep -nF -- 'return this.LoadingPage("Redirect", model.ReturnUrl);' 'src/Identity.API/Quickstart/Account/AccountController.cs'
 ```
 
-- **E-23** (`7.2`), expect line 54
+- **E-23** (section 7), expect `src/WebApp/Services/BasketState.cs:54`
 
 ```text
 Select-String -LiteralPath 'src/WebApp/Services/BasketState.cs' -SimpleMatch -CaseSensitive -Pattern 'await basketService.UpdateBasketAsync(items);'
 grep -nF -- 'await basketService.UpdateBasketAsync(items);' 'src/WebApp/Services/BasketState.cs'
 ```
 
-- **E-24** (`7.3`), expect line 48
+- **E-24** (section 7), expect `src/Ordering.API/Application/Commands/IdentifiedCommandHandler.cs:48`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.API/Application/Commands/IdentifiedCommandHandler.cs' -SimpleMatch -CaseSensitive -Pattern 'await _requestManager.CreateRequestForCommandAsync<T>(message.Id);'
 grep -nF -- 'await _requestManager.CreateRequestForCommandAsync<T>(message.Id);' 'src/Ordering.API/Application/Commands/IdentifiedCommandHandler.cs'
 ```
 
-- **E-25** (`7.4`), expect line 51
+- **E-25** (section 7), expect `src/OrderProcessor/Services/GracePeriodManagerService.cs:51`
 
 ```text
 Select-String -LiteralPath 'src/OrderProcessor/Services/GracePeriodManagerService.cs' -SimpleMatch -CaseSensitive -Pattern 'TimeSpan.FromMinutes(_options.GracePeriodTime),'
 grep -nF -- 'TimeSpan.FromMinutes(_options.GracePeriodTime),' 'src/OrderProcessor/Services/GracePeriodManagerService.cs'
 ```
 
-- **E-26** (`7.5`), expect line 46
+- **E-26** (section 7), expect `src/Ordering.API/Application/Commands/CancelOrderCommandHandler.cs:46`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.API/Application/Commands/CancelOrderCommandHandler.cs' -SimpleMatch -CaseSensitive -Pattern 'Ignore duplicate requests for processing order'
 grep -nF -- 'Ignore duplicate requests for processing order' 'src/Ordering.API/Application/Commands/CancelOrderCommandHandler.cs'
 ```
 
-- **E-27** (`7.6`), expect line 74
+- **E-27** (section 7), expect `src/Ordering.API/Apis/OrdersApi.cs:74`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.API/Apis/OrdersApi.cs' -SimpleMatch -CaseSensitive -Pattern 'Ship order failed to process.'
 grep -nF -- 'Ship order failed to process.' 'src/Ordering.API/Apis/OrdersApi.cs'
 ```
 
-- **E-28** (`7.7`), expect line 452
+- **E-28** (section 7), expect `src/Catalog.API/Apis/CatalogApi.cs:452`
 
 ```text
 Select-String -LiteralPath 'src/Catalog.API/Apis/CatalogApi.cs' -SimpleMatch -CaseSensitive -Pattern 'return TypedResults.NoContent();'
 grep -nF -- 'return TypedResults.NoContent();' 'src/Catalog.API/Apis/CatalogApi.cs'
 ```
 
-- **E-29** (`7.8`), expect line 27
+- **E-29** (section 7), expect `src/Webhooks.API/Services/GrantUrlTesterService.cs:27`
 
 ```text
 Select-String -LiteralPath 'src/Webhooks.API/Services/GrantUrlTesterService.cs' -SimpleMatch -CaseSensitive -Pattern 'return response.IsSuccessStatusCode && tokenReceived == tokenExpected;'
 grep -nF -- 'return response.IsSuccessStatusCode && tokenReceived == tokenExpected;' 'src/Webhooks.API/Services/GrantUrlTesterService.cs'
 ```
 
-- **E-30** (`7.9`), expect line 78
+- **E-30** (section 7), expect `src/Webhooks.API/Apis/WebHooksApi.cs:78`
 
 ```text
 Select-String -LiteralPath 'src/Webhooks.API/Apis/WebHooksApi.cs' -SimpleMatch -CaseSensitive -Pattern 'return TypedResults.Accepted($"/api/webhooks/{subscription.Id}");'
 grep -nF -- 'return TypedResults.Accepted($"/api/webhooks/{subscription.Id}");' 'src/Webhooks.API/Apis/WebHooksApi.cs'
 ```
 
-- **E-31** (`7.10`), expect line 10
+- **E-31** (section 7), expect `src/Webhooks.API/Services/WebhooksSender.cs:10`
 
 ```text
 Select-String -LiteralPath 'src/Webhooks.API/Services/WebhooksSender.cs' -SimpleMatch -CaseSensitive -Pattern 'await Task.WhenAll(tasks);'
 grep -nF -- 'await Task.WhenAll(tasks);' 'src/Webhooks.API/Services/WebhooksSender.cs'
 ```
 
-- **E-32** (`7.11`), expect line 50
+- **E-32** (section 7), expect `src/Shared/MigrateDbContextExtensions.cs:50`
 
 ```text
 Select-String -LiteralPath 'src/Shared/MigrateDbContextExtensions.cs' -SimpleMatch -CaseSensitive -Pattern 'An error occurred while migrating the database'
 grep -nF -- 'An error occurred while migrating the database' 'src/Shared/MigrateDbContextExtensions.cs'
 ```
 
-- **E-33** (`3.1`), expect line 25
+- **E-33** (section 3), expect `src/eShop.ServiceDefaults/Extensions.cs:25`
 
 ```text
 Select-String -LiteralPath 'src/eShop.ServiceDefaults/Extensions.cs' -SimpleMatch -CaseSensitive -Pattern 'http.AddStandardResilienceHandler();'
 grep -nF -- 'http.AddStandardResilienceHandler();' 'src/eShop.ServiceDefaults/Extensions.cs'
 ```
 
-- **E-34** (`3.2`), expect line 151
+- **E-34** (section 3), expect `src/eShop.AppHost/Extensions.cs:151`
 
 ```text
 Select-String -LiteralPath 'src/eShop.AppHost/Extensions.cs' -SimpleMatch -CaseSensitive -Pattern '.WithTransformPathRemovePrefix("/identity");'
 grep -nF -- '.WithTransformPathRemovePrefix("/identity");' 'src/eShop.AppHost/Extensions.cs'
 ```
 
-- **E-35** (`3.3`), expect line 26
+- **E-35** (section 3), expect `src/eShop.ServiceDefaults/AuthenticationExtensions.cs:26`
 
 ```text
 Select-String -LiteralPath 'src/eShop.ServiceDefaults/AuthenticationExtensions.cs' -SimpleMatch -CaseSensitive -Pattern '// No identity section, so no authentication'
 grep -nF -- '// No identity section, so no authentication' 'src/eShop.ServiceDefaults/AuthenticationExtensions.cs'
 ```
 
-- **E-36** (`4/F-1`), expect line 161
+- **E-36** (section 4), expect `src/Catalog.API/Apis/CatalogApi.cs:161`
 
 ```text
 Select-String -LiteralPath 'src/Catalog.API/Apis/CatalogApi.cs' -SimpleMatch -CaseSensitive -Pattern '.OrderBy(c => c.Name)'
 grep -nF -- '.OrderBy(c => c.Name)' 'src/Catalog.API/Apis/CatalogApi.cs'
 ```
 
-- **E-37** (`4/F-4`), expect line 294
+- **E-37** (section 4), expect `src/Catalog.API/Apis/CatalogApi.cs:294`
 
 ```text
 Select-String -LiteralPath 'src/Catalog.API/Apis/CatalogApi.cs' -SimpleMatch -CaseSensitive -Pattern 'if (!services.CatalogAI.IsEnabled)'
 grep -nF -- 'if (!services.CatalogAI.IsEnabled)' 'src/Catalog.API/Apis/CatalogApi.cs'
 ```
 
-- **E-38** (`4/F-8`), expect line 41
+- **E-38** (section 4), expect `src/Basket.API/Grpc/BasketService.cs:41`
 
 ```text
 Select-String -LiteralPath 'src/Basket.API/Grpc/BasketService.cs' -SimpleMatch -CaseSensitive -Pattern 'ThrowNotAuthenticated();'
 grep -nF -- 'ThrowNotAuthenticated();' 'src/Basket.API/Grpc/BasketService.cs'
 ```
 
-- **E-39** (`4/F-9`), expect line 132
+- **E-39** (section 4), expect `src/Ordering.API/Apis/OrdersApi.cs:132`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.API/Apis/OrdersApi.cs' -SimpleMatch -CaseSensitive -Pattern 'if (requestId == Guid.Empty)'
 grep -nF -- 'if (requestId == Guid.Empty)' 'src/Ordering.API/Apis/OrdersApi.cs'
 ```
 
-- **E-40** (`4/F-11`), expect line 40
+- **E-40** (section 4), expect `src/Ordering.API/Application/Queries/OrderQueries.cs:40`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.API/Application/Queries/OrderQueries.cs' -SimpleMatch -CaseSensitive -Pattern '.Where(o => o.Buyer.IdentityGuid == userId)'
 grep -nF -- '.Where(o => o.Buyer.IdentityGuid == userId)' 'src/Ordering.API/Application/Queries/OrderQueries.cs'
 ```
 
-- **E-41** (`4/F-12`), expect line 145
+- **E-41** (section 4), expect `src/Ordering.Domain/AggregatesModel/OrderAggregate/Order.cs:145`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.Domain/AggregatesModel/OrderAggregate/Order.cs' -SimpleMatch -CaseSensitive -Pattern 'OrderStatus == OrderStatus.Shipped)'
 grep -nF -- 'OrderStatus == OrderStatus.Shipped)' 'src/Ordering.Domain/AggregatesModel/OrderAggregate/Order.cs'
 ```
 
-- **E-42** (`4/F-13`), expect line 132
+- **E-42** (section 4), expect `src/Ordering.Domain/AggregatesModel/OrderAggregate/Order.cs:132`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.Domain/AggregatesModel/OrderAggregate/Order.cs' -SimpleMatch -CaseSensitive -Pattern 'if (OrderStatus != OrderStatus.Paid)'
 grep -nF -- 'if (OrderStatus != OrderStatus.Paid)' 'src/Ordering.Domain/AggregatesModel/OrderAggregate/Order.cs'
 ```
 
-- **E-43** (`4/F-18`), expect line 24
+- **E-43** (section 4), expect `src/Webhooks.API/Services/WebhooksSender.cs:24`
 
 ```text
 Select-String -LiteralPath 'src/Webhooks.API/Services/WebhooksSender.cs' -SimpleMatch -CaseSensitive -Pattern 'request.Headers.Add("X-eshop-whtoken", subs.Token);'
 grep -nF -- 'request.Headers.Add("X-eshop-whtoken", subs.Token);' 'src/Webhooks.API/Services/WebhooksSender.cs'
 ```
 
-- **E-44** (`4/F-19`), expect line 31
+- **E-44** (section 4), expect `src/WebhookClient/Endpoints/WebhookEndpoints.cs:31`
 
 ```text
 Select-String -LiteralPath 'src/WebhookClient/Endpoints/WebhookEndpoints.cs' -SimpleMatch -CaseSensitive -Pattern 'app.MapPost("/webhook-received"'
 grep -nF -- 'app.MapPost("/webhook-received"' 'src/WebhookClient/Endpoints/WebhookEndpoints.cs'
 ```
 
-- **E-45** (`4/F-21`), expect line 35
+- **E-45** (section 4), expect `src/Identity.API/Program.cs:35`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Program.cs' -SimpleMatch -CaseSensitive -Pattern '.AddAspNetIdentity<ApplicationUser>()'
 grep -nF -- '.AddAspNetIdentity<ApplicationUser>()' 'src/Identity.API/Program.cs'
 ```
 
-- **E-46** (`4/F-22`), expect line 16
+- **E-46** (section 4), expect `src/Identity.API/Quickstart/Diagnostics/DiagnosticsController.cs:16`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Quickstart/Diagnostics/DiagnosticsController.cs' -SimpleMatch -CaseSensitive -Pattern 'return NotFound();'
 grep -nF -- 'return NotFound();' 'src/Identity.API/Quickstart/Diagnostics/DiagnosticsController.cs'
 ```
 
-- **E-47** (`4/F-26`), expect line 108
+- **E-47** (section 4), expect `src/WebApp/Extensions/Extensions.cs:108`
 
 ```text
 Select-String -LiteralPath 'src/WebApp/Extensions/Extensions.cs' -SimpleMatch -CaseSensitive -Pattern 'chatClientBuilder?.UseFunctionInvocation();'
 grep -nF -- 'chatClientBuilder?.UseFunctionInvocation();' 'src/WebApp/Extensions/Extensions.cs'
 ```
 
-- **E-48** (`4/F-27`), expect line 25
+- **E-48** (section 4), expect `src/ClientApp/Services/Settings/SettingsService.cs:25`
 
 ```text
 Select-String -LiteralPath 'src/ClientApp/Services/Settings/SettingsService.cs' -SimpleMatch -CaseSensitive -Pattern 'private readonly bool UseMocksDefault = true;'
 grep -nF -- 'private readonly bool UseMocksDefault = true;' 'src/ClientApp/Services/Settings/SettingsService.cs'
 ```
 
-- **E-49** (`4/F-28`), expect line 151
+- **E-49** (section 4), expect `src/eShop.AppHost/Extensions.cs:151`
 
 ```text
 Select-String -LiteralPath 'src/eShop.AppHost/Extensions.cs' -SimpleMatch -CaseSensitive -Pattern '.WithTransformPathRemovePrefix("/identity");'
 grep -nF -- '.WithTransformPathRemovePrefix("/identity");' 'src/eShop.AppHost/Extensions.cs'
 ```
 
-- **E-50** (`4/F-29`), expect line 115
+- **E-50** (section 4), expect `src/eShop.ServiceDefaults/Extensions.cs:115`
 
 ```text
 Select-String -LiteralPath 'src/eShop.ServiceDefaults/Extensions.cs' -SimpleMatch -CaseSensitive -Pattern 'if (app.Environment.IsDevelopment())'
 grep -nF -- 'if (app.Environment.IsDevelopment())' 'src/eShop.ServiceDefaults/Extensions.cs'
 ```
 
-- **E-51** (`5.1`), expect line 14
+- **E-51** (section 5), expect `src/Identity.API/Program.cs:14`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Program.cs' -SimpleMatch -CaseSensitive -Pattern 'builder.Services.AddIdentity<ApplicationUser, IdentityRole>()'
 grep -nF -- 'builder.Services.AddIdentity<ApplicationUser, IdentityRole>()' 'src/Identity.API/Program.cs'
 ```
 
-- **E-52** (`5.2`), expect line 22
+- **E-52** (section 5), expect `src/Ordering.API/Program.cs:22`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.API/Program.cs' -SimpleMatch -CaseSensitive -Pattern '.RequireAuthorization();'
 grep -nF -- '.RequireAuthorization();' 'src/Ordering.API/Program.cs'
 ```
 
-- **E-53** (`5.2`), expect line 7
+- **E-53** (section 5), expect `src/Identity.API/Quickstart/Account/AccountController.cs:7`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Quickstart/Account/AccountController.cs' -SimpleMatch -CaseSensitive -Pattern '[AllowAnonymous]'
 grep -nF -- '[AllowAnonymous]' 'src/Identity.API/Quickstart/Account/AccountController.cs'
 ```
 
-- **E-54** (`5.3`), expect line 146
+- **E-54** (section 5), expect `src/eShop.AppHost/Extensions.cs:146`
 
 ```text
 Select-String -LiteralPath 'src/eShop.AppHost/Extensions.cs' -SimpleMatch -CaseSensitive -Pattern 'yarp.AddRoute("/api/orders/{*any}", orderingApi.GetEndpoint("http"))'
 grep -nF -- 'yarp.AddRoute("/api/orders/{*any}", orderingApi.GetEndpoint("http"))' 'src/eShop.AppHost/Extensions.cs'
 ```
 
-- **E-55** (`5.3`), expect line 52
+- **E-55** (section 5), expect `src/eShop.ServiceDefaults/AuthenticationExtensions.cs:52`
 
 ```text
 Select-String -LiteralPath 'src/eShop.ServiceDefaults/AuthenticationExtensions.cs' -SimpleMatch -CaseSensitive -Pattern 'services.AddAuthorization();'
 grep -nF -- 'services.AddAuthorization();' 'src/eShop.ServiceDefaults/AuthenticationExtensions.cs'
 ```
 
-- **E-56** (`6/UI-4`), expect line 113
+- **E-56** (section 6), expect `src/WebApp/Components/Pages/Checkout/Checkout.razor:113`
 
 ```text
 Select-String -LiteralPath 'src/WebApp/Components/Pages/Checkout/Checkout.razor' -SimpleMatch -CaseSensitive -Pattern 'Info.CardTypeId = 1;'
 grep -nF -- 'Info.CardTypeId = 1;' 'src/WebApp/Components/Pages/Checkout/Checkout.razor'
 ```
 
-- **E-57** (`6/UI-8`), expect line 90
+- **E-57** (section 6), expect `src/WebApp/Components/Chatbot/ChatState.cs:90`
 
 ```text
 Select-String -LiteralPath 'src/WebApp/Components/Chatbot/ChatState.cs' -SimpleMatch -CaseSensitive -Pattern 'My apologies, but I encountered an unexpected error.'
 grep -nF -- 'My apologies, but I encountered an unexpected error.' 'src/WebApp/Components/Chatbot/ChatState.cs'
 ```
 
-- **E-58** (`6/UI-14`), expect line 12
+- **E-58** (section 6), expect `src/Identity.API/Quickstart/Account/AccountOptions.cs:12`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Quickstart/Account/AccountOptions.cs' -SimpleMatch -CaseSensitive -Pattern 'public static bool ShowLogoutPrompt = false;'
 grep -nF -- 'public static bool ShowLogoutPrompt = false;' 'src/Identity.API/Quickstart/Account/AccountOptions.cs'
 ```
 
-- **E-59** (`6/UI-23`), expect line 32
+- **E-59** (section 6), expect `src/Identity.API/Quickstart/Home/HomeController.cs:32`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Quickstart/Home/HomeController.cs' -SimpleMatch -CaseSensitive -Pattern 'Homepage is disabled in production. Returning 404.'
 grep -nF -- 'Homepage is disabled in production. Returning 404.' 'src/Identity.API/Quickstart/Home/HomeController.cs'
 ```
 
-- **E-60** (`6/UI-25`), expect line 107
+- **E-60** (section 6), expect `src/Identity.API/Quickstart/Account/AccountController.cs:107`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Quickstart/Account/AccountController.cs' -SimpleMatch -CaseSensitive -Pattern 'return this.LoadingPage("Redirect", model.ReturnUrl);'
 grep -nF -- 'return this.LoadingPage("Redirect", model.ReturnUrl);' 'src/Identity.API/Quickstart/Account/AccountController.cs'
 ```
 
-- **E-61** (`6/UI-29`), expect line 58
+- **E-61** (section 6), expect `src/ClientApp/AppShell.xaml:58`
 
 ```text
 Select-String -LiteralPath 'src/ClientApp/AppShell.xaml' -SimpleMatch -CaseSensitive -Pattern 'Route="Profile" />'
 grep -nF -- 'Route="Profile" />' 'src/ClientApp/AppShell.xaml'
 ```
 
-- **E-62** (`8.1/C-2`), expect line 15
+- **E-62** (section 8), expect `src/Basket.API/appsettings.json:15`
 
 ```text
 Select-String -LiteralPath 'src/Basket.API/appsettings.json' -SimpleMatch -CaseSensitive -Pattern '"EventBus": "amqp://localhost"'
 grep -nF -- '"EventBus": "amqp://localhost"' 'src/Basket.API/appsettings.json'
 ```
 
-- **E-63** (`8.2`), expect line 27
+- **E-63** (section 8), expect `src/OrderProcessor/Services/GracePeriodOrdersRepository.cs:27`
 
 ```text
 Select-String -LiteralPath 'src/OrderProcessor/Services/GracePeriodOrdersRepository.cs' -SimpleMatch -CaseSensitive -Pattern 'WHERE CURRENT_TIMESTAMP - "OrderDate" >= @GracePeriodTime AND "OrderStatus" = ''Submitted'''
 grep -nF -- 'WHERE CURRENT_TIMESTAMP - "OrderDate" >= @GracePeriodTime AND "OrderStatus" = '\''Submitted'\''' 'src/OrderProcessor/Services/GracePeriodOrdersRepository.cs'
 ```
 
-- **E-64** (`8.3/X-5`), expect line 15
+- **E-64** (section 8), expect `src/Webhooks.API/Services/GrantUrlTesterService.cs:15`
 
 ```text
 Select-String -LiteralPath 'src/Webhooks.API/Services/GrantUrlTesterService.cs' -SimpleMatch -CaseSensitive -Pattern 'msg.Headers.Add("X-eshop-whtoken", token);'
 grep -nF -- 'msg.Headers.Add("X-eshop-whtoken", token);' 'src/Webhooks.API/Services/GrantUrlTesterService.cs'
 ```
 
-- **E-65** (`8.3/X-6`), expect line 10
+- **E-65** (section 8), expect `src/Webhooks.API/Services/WebhooksSender.cs:10`
 
 ```text
 Select-String -LiteralPath 'src/Webhooks.API/Services/WebhooksSender.cs' -SimpleMatch -CaseSensitive -Pattern 'await Task.WhenAll(tasks);'
 grep -nF -- 'await Task.WhenAll(tasks);' 'src/Webhooks.API/Services/WebhooksSender.cs'
 ```
 
-- **E-66** (`8.4`), expect line 101
+- **E-66** (section 8), expect `src/Ordering.Infrastructure/Migrations/20230925222426_Initial.cs:101`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.Infrastructure/Migrations/20230925222426_Initial.cs' -SimpleMatch -CaseSensitive -Pattern 'Expiration = table.Column<DateTime>(type: "timestamp with time zone"'
 grep -nF -- 'Expiration = table.Column<DateTime>(type: "timestamp with time zone"' 'src/Ordering.Infrastructure/Migrations/20230925222426_Initial.cs'
 ```
 
-- **E-67** (`8.4`), expect line 14
+- **E-67** (section 8), expect `src/Catalog.API/Infrastructure/EntityConfigurations/CatalogItemEntityTypeConfiguration.cs:14`
 
 ```text
 Select-String -LiteralPath 'src/Catalog.API/Infrastructure/EntityConfigurations/CatalogItemEntityTypeConfiguration.cs' -SimpleMatch -CaseSensitive -Pattern '.HasColumnType("vector(384)");'
 grep -nF -- '.HasColumnType("vector(384)");' 'src/Catalog.API/Infrastructure/EntityConfigurations/CatalogItemEntityTypeConfiguration.cs'
 ```
 
-- **E-68** (`8.4`), expect line 21
+- **E-68** (section 8), expect `src/Ordering.Infrastructure/EntityConfigurations/OrderEntityTypeConfiguration.cs:21`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.Infrastructure/EntityConfigurations/OrderEntityTypeConfiguration.cs' -SimpleMatch -CaseSensitive -Pattern '.HasMaxLength(30);'
 grep -nF -- '.HasMaxLength(30);' 'src/Ordering.Infrastructure/EntityConfigurations/OrderEntityTypeConfiguration.cs'
 ```
 
-- **E-69** (`8.4`), expect line 9
+- **E-69** (section 8), expect `src/Identity.API/Models/ApplicationUser.cs:9`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Models/ApplicationUser.cs' -SimpleMatch -CaseSensitive -Pattern 'public string SecurityNumber { get; set; }'
 grep -nF -- 'public string SecurityNumber { get; set; }' 'src/Identity.API/Models/ApplicationUser.cs'
 ```
 
-- **E-70** (`8.4`), expect line 16
+- **E-70** (section 8), expect `src/Webhooks.API/Infrastructure/WebhooksContext.cs:16`
 
 ```text
 Select-String -LiteralPath 'src/Webhooks.API/Infrastructure/WebhooksContext.cs' -SimpleMatch -CaseSensitive -Pattern 'eb.HasIndex(s => s.UserId);'
 grep -nF -- 'eb.HasIndex(s => s.UserId);' 'src/Webhooks.API/Infrastructure/WebhooksContext.cs'
 ```
 
-- **E-71** (`8.5/C-2`), expect line 6
+- **E-71** (section 8), expect `src/EventBusRabbitMQ/EventBusOptions.cs:6`
 
 ```text
 Select-String -LiteralPath 'src/EventBusRabbitMQ/EventBusOptions.cs' -SimpleMatch -CaseSensitive -Pattern 'public int RetryCount { get; set; } = 10;'
 grep -nF -- 'public int RetryCount { get; set; } = 10;' 'src/EventBusRabbitMQ/EventBusOptions.cs'
 ```
 
-- **E-72** (`9`), expect line 135
+- **E-72** (section 9), expect `src/Ordering.API/Apis/OrdersApi.cs:135`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.API/Apis/OrdersApi.cs' -SimpleMatch -CaseSensitive -Pattern 'return TypedResults.BadRequest("RequestId is missing.");'
 grep -nF -- 'return TypedResults.BadRequest("RequestId is missing.");' 'src/Ordering.API/Apis/OrdersApi.cs'
 ```
 
-- **E-73** (`9`), expect line 32
+- **E-73** (section 9), expect `src/Ordering.API/Application/Behaviors/ValidatorBehavior.cs:32`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.API/Application/Behaviors/ValidatorBehavior.cs' -SimpleMatch -CaseSensitive -Pattern 'throw new OrderingDomainException('
 grep -nF -- 'throw new OrderingDomainException(' 'src/Ordering.API/Application/Behaviors/ValidatorBehavior.cs'
 ```
 
-- **E-74** (`9`), expect line 22
+- **E-74** (section 9), expect `src/Ordering.API/Application/Commands/SetStockConfirmedOrderStatusCommandHandler.cs:22`
 
 ```text
 Select-String -LiteralPath 'src/Ordering.API/Application/Commands/SetStockConfirmedOrderStatusCommandHandler.cs' -SimpleMatch -CaseSensitive -Pattern 'await Task.Delay(10000, cancellationToken);'
 grep -nF -- 'await Task.Delay(10000, cancellationToken);' 'src/Ordering.API/Application/Commands/SetStockConfirmedOrderStatusCommandHandler.cs'
 ```
 
-- **E-75** (`9`), expect line 131
+- **E-75** (section 9), expect `src/Identity.API/Quickstart/Account/AccountController.cs:131`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Quickstart/Account/AccountController.cs' -SimpleMatch -CaseSensitive -Pattern 'ModelState.AddModelError(string.Empty, AccountOptions.InvalidCredentialsErrorMessage);'
 grep -nF -- 'ModelState.AddModelError(string.Empty, AccountOptions.InvalidCredentialsErrorMessage);' 'src/Identity.API/Quickstart/Account/AccountController.cs'
 ```
 
-- **E-76** (`9`), expect line 28
+- **E-76** (section 9), expect `src/WebhookClient/Endpoints/WebhookEndpoints.cs:28`
 
 ```text
 Select-String -LiteralPath 'src/WebhookClient/Endpoints/WebhookEndpoints.cs' -SimpleMatch -CaseSensitive -Pattern 'return TypedResults.BadRequest("Invalid token");'
 grep -nF -- 'return TypedResults.BadRequest("Invalid token");' 'src/WebhookClient/Endpoints/WebhookEndpoints.cs'
 ```
 
-- **E-77** (`10.2`), expect line 18
+- **E-77** (section 10), expect `src/WebhookClient/Program.cs:18`
 
 ```text
 Select-String -LiteralPath 'src/WebhookClient/Program.cs' -SimpleMatch -CaseSensitive -Pattern 'app.UseHsts();'
 grep -nF -- 'app.UseHsts();' 'src/WebhookClient/Program.cs'
 ```
 
-- **E-78** (`10.2`), expect line 95
+- **E-78** (section 10), expect `src/Identity.API/Quickstart/Account/AccountController.cs:95`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Quickstart/Account/AccountController.cs' -SimpleMatch -CaseSensitive -Pattern 'lockoutOnFailure: true'
 grep -nF -- 'lockoutOnFailure: true' 'src/Identity.API/Quickstart/Account/AccountController.cs'
 ```
 
-- **E-79** (`10.2`), expect line 24
+- **E-79** (section 10), expect `src/Catalog.API/Program.cs:24`
 
 ```text
 Select-String -LiteralPath 'src/Catalog.API/Program.cs' -SimpleMatch -CaseSensitive -Pattern 'app.UseStatusCodePages();'
 grep -nF -- 'app.UseStatusCodePages();' 'src/Catalog.API/Program.cs'
 ```
 
-- **E-80** (`10.2`), expect line 95
+- **E-80** (section 10), expect `src/Identity.API/Quickstart/Account/AccountController.cs:95`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Quickstart/Account/AccountController.cs' -SimpleMatch -CaseSensitive -Pattern 'lockoutOnFailure: true'
 grep -nF -- 'lockoutOnFailure: true' 'src/Identity.API/Quickstart/Account/AccountController.cs'
 ```
 
-- **E-81** (`11`), expect line 3
+- **E-81** (section 11), expect `es-metadata.yml:3`
 
 ```text
 Select-String -LiteralPath 'es-metadata.yml' -SimpleMatch -CaseSensitive -Pattern 'accountableOwners:'
 grep -nF -- 'accountableOwners:' 'es-metadata.yml'
 ```
 
-- **E-82** (`11`), expect line 18
+- **E-82** (section 11), expect `tests/Ordering.FunctionalTests/AutoAuthorizeMiddleware.cs:18`
 
 ```text
 Select-String -LiteralPath 'tests/Ordering.FunctionalTests/AutoAuthorizeMiddleware.cs' -SimpleMatch -CaseSensitive -Pattern 'identity.AddClaim(new Claim("sub", IDENTITY_ID));'
 grep -nF -- 'identity.AddClaim(new Claim("sub", IDENTITY_ID));' 'tests/Ordering.FunctionalTests/AutoAuthorizeMiddleware.cs'
 ```
 
-- **E-83** (`11`), expect line 248
+- **E-83** (section 11), expect `tests/Catalog.FunctionalTests/CatalogApiTests.cs:248`
 
 ```text
 Select-String -LiteralPath 'tests/Catalog.FunctionalTests/CatalogApiTests.cs' -SimpleMatch -CaseSensitive -Pattern 'PictureFileName = "../appsettings.json",'
 grep -nF -- 'PictureFileName = "../appsettings.json",' 'tests/Catalog.FunctionalTests/CatalogApiTests.cs'
 ```
 
-- **E-84** (`11`), expect line 27
+- **E-84** (section 11), expect `.github/workflows/pr-validation.yml:27`
 
 ```text
 Select-String -LiteralPath '.github/workflows/pr-validation.yml' -SimpleMatch -CaseSensitive -Pattern 'run: dotnet build eShop.Web.slnf'
 grep -nF -- 'run: dotnet build eShop.Web.slnf' '.github/workflows/pr-validation.yml'
 ```
 
-- **E-86** (`15/R-1`), expect line 114
+- **E-86** (section 15), expect `src/Catalog.API/Apis/CatalogApi.cs:114`
 
 ```text
 Select-String -LiteralPath 'src/Catalog.API/Apis/CatalogApi.cs' -SimpleMatch -CaseSensitive -Pattern 'api.MapDelete("/items/{id:int}", DeleteItemById)'
 grep -nF -- 'api.MapDelete("/items/{id:int}", DeleteItemById)' 'src/Catalog.API/Apis/CatalogApi.cs'
 ```
 
-- **E-87** (`15/R-6`), expect line 77
+- **E-87** (section 15), expect `src/Identity.API/Services/ProfileService.cs:77`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Services/ProfileService.cs' -SimpleMatch -CaseSensitive -Pattern 'claims.Add(new Claim("card_security_number", user.SecurityNumber));'
 grep -nF -- 'claims.Add(new Claim("card_security_number", user.SecurityNumber));' 'src/Identity.API/Services/ProfileService.cs'
 ```
 
-- **E-89** (`16.1`), expect line 11
+- **E-89** (section 16), expect `global.json:11`
 
 ```text
 Select-String -LiteralPath 'global.json' -SimpleMatch -CaseSensitive -Pattern '"MSTest.Sdk": "4.0.2"'
 grep -nF -- '"MSTest.Sdk": "4.0.2"' 'global.json'
 ```
 
-- **E-90** (`16.2`), expect line 11
+- **E-90** (section 16), expect `src/eShop.AppHost/AppHost.cs:11`
 
 ```text
 Select-String -LiteralPath 'src/eShop.AppHost/AppHost.cs' -SimpleMatch -CaseSensitive -Pattern '.WithLifetime(ContainerLifetime.Persistent);'
 grep -nF -- '.WithLifetime(ContainerLifetime.Persistent);' 'src/eShop.AppHost/AppHost.cs'
 ```
 
-- **E-91** (`16.3`), expect line 10
+- **E-91** (section 16), expect `src/Identity.API/Quickstart/Account/AccountOptions.cs:10`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Quickstart/Account/AccountOptions.cs' -SimpleMatch -CaseSensitive -Pattern 'public static TimeSpan RememberMeLoginDuration = TimeSpan.FromDays(30);'
 grep -nF -- 'public static TimeSpan RememberMeLoginDuration = TimeSpan.FromDays(30);' 'src/Identity.API/Quickstart/Account/AccountOptions.cs'
 ```
 
-- **E-92** (`16.3`), expect line 10
+- **E-92** (section 16), expect `src/Identity.API/appsettings.json:10`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/appsettings.json' -SimpleMatch -CaseSensitive -Pattern '"TokenLifetimeMinutes": 120,'
 grep -nF -- '"TokenLifetimeMinutes": 120,' 'src/Identity.API/appsettings.json'
 ```
 
-- **E-93** (`16.5`), expect line 4
+- **E-93** (section 16), expect `build/acr-build/queue-all.ps1:4`
 
 ```text
 Select-String -LiteralPath 'build/acr-build/queue-all.ps1' -SimpleMatch -CaseSensitive -Pattern '$repoName="eShopOnContainers"'
 grep -nF -- '$repoName="eShopOnContainers"' 'build/acr-build/queue-all.ps1'
 ```
 
-- **E-94** (`16.5`), expect line 129
+- **E-94** (section 16), expect `README.md:129`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'aspire deploy --list-steps'
 grep -nF -- 'aspire deploy --list-steps' 'README.md'
 ```
 
-- **E-95** (`16.5`), expect line 144
+- **E-95** (section 16), expect `README.md:144`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'aspire destroy'
 grep -nF -- 'aspire destroy' 'README.md'
 ```
 
-- **E-96** (`16.6`), expect line 15
+- **E-96** (section 16), expect `src/PaymentProcessor/appsettings.json:15`
 
 ```text
 Select-String -LiteralPath 'src/PaymentProcessor/appsettings.json' -SimpleMatch -CaseSensitive -Pattern '"PaymentSucceeded": true'
 grep -nF -- '"PaymentSucceeded": true' 'src/PaymentProcessor/appsettings.json'
 ```
 
-- **E-97** (`16.7`), expect line 17
+- **E-97** (section 16), expect `src/OrderProcessor/Services/GracePeriodManagerService.cs:17`
 
 ```text
 Select-String -LiteralPath 'src/OrderProcessor/Services/GracePeriodManagerService.cs' -SimpleMatch -CaseSensitive -Pattern 'var delayTime = TimeSpan.FromSeconds(_options.CheckUpdateTime);'
 grep -nF -- 'var delayTime = TimeSpan.FromSeconds(_options.CheckUpdateTime);' 'src/OrderProcessor/Services/GracePeriodManagerService.cs'
 ```
 
-- **E-98** (`14/Q-1`), expect line 3
+- **E-98** (section 14), expect `es-metadata.yml:3`
 
 ```text
 Select-String -LiteralPath 'es-metadata.yml' -SimpleMatch -CaseSensitive -Pattern 'accountableOwners:'
 grep -nF -- 'accountableOwners:' 'es-metadata.yml'
 ```
 
-- **E-99** (`14/Q-2`), expect line 1
+- **E-99** (section 14), expect `CONTRIBUTING.md:1`
 
 ```text
 Select-String -LiteralPath 'CONTRIBUTING.md' -SimpleMatch -CaseSensitive -Pattern '# Contributing to eShop'
 grep -nF -- '# Contributing to eShop' 'CONTRIBUTING.md'
 ```
 
-- **E-100** (`14/Q-3`), expect line 9
+- **E-100** (section 14), expect `src/eShop.AppHost/AppHost.cs:9`
 
 ```text
 Select-String -LiteralPath 'src/eShop.AppHost/AppHost.cs' -SimpleMatch -CaseSensitive -Pattern 'var redis = builder.AddRedis("redis");'
 grep -nF -- 'var redis = builder.AddRedis("redis");' 'src/eShop.AppHost/AppHost.cs'
 ```
 
-- **E-101** (`14/Q-4`), expect line 37
+- **E-101** (section 14), expect `src/Identity.API/Program.cs:37`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Program.cs' -SimpleMatch -CaseSensitive -Pattern '.AddDeveloperSigningCredential();'
 grep -nF -- '.AddDeveloperSigningCredential();' 'src/Identity.API/Program.cs'
 ```
 
-- **E-102** (`14/Q-5`), expect line 39
+- **E-102** (section 14), expect `src/eShop.ServiceDefaults/AuthenticationExtensions.cs:39`
 
 ```text
 Select-String -LiteralPath 'src/eShop.ServiceDefaults/AuthenticationExtensions.cs' -SimpleMatch -CaseSensitive -Pattern 'options.RequireHttpsMetadata = false;'
 grep -nF -- 'options.RequireHttpsMetadata = false;' 'src/eShop.ServiceDefaults/AuthenticationExtensions.cs'
 ```
 
-- **E-103** (`14/Q-6`), expect line 82
+- **E-103** (section 14), expect `src/Identity.API/Configuration/Config.cs:82`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Configuration/Config.cs' -SimpleMatch -CaseSensitive -Pattern '.Sha256())'
 grep -nF -- '.Sha256())' 'src/Identity.API/Configuration/Config.cs'
 ```
 
-- **E-104** (`14/Q-7`), expect line 118
+- **E-104** (section 14), expect `README.md:118`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'not production data'
 grep -nF -- 'not production data' 'README.md'
 ```
 
-- **E-105** (`14/Q-8`), expect line 87
+- **E-105** (section 14), expect `src/eShop.ServiceDefaults/Extensions.cs:87`
 
 ```text
 Select-String -LiteralPath 'src/eShop.ServiceDefaults/Extensions.cs' -SimpleMatch -CaseSensitive -Pattern 'var useOtlpExporter'
 grep -nF -- 'var useOtlpExporter' 'src/eShop.ServiceDefaults/Extensions.cs'
 ```
 
-- **E-106** (`14/Q-9`), expect line 50
+- **E-106** (section 14), expect `src/Identity.API/Program.cs:50`
 
 ```text
 Select-String -LiteralPath 'src/Identity.API/Program.cs' -SimpleMatch -CaseSensitive -Pattern 'MinimumSameSitePolicy = SameSiteMode.Lax'
 grep -nF -- 'MinimumSameSitePolicy = SameSiteMode.Lax' 'src/Identity.API/Program.cs'
 ```
 
-- **E-107** (`14/Q-10`), expect line 25
+- **E-107** (section 14), expect `src/eShop.ServiceDefaults/Extensions.cs:25`
 
 ```text
 Select-String -LiteralPath 'src/eShop.ServiceDefaults/Extensions.cs' -SimpleMatch -CaseSensitive -Pattern 'http.AddStandardResilienceHandler();'
 grep -nF -- 'http.AddStandardResilienceHandler();' 'src/eShop.ServiceDefaults/Extensions.cs'
 ```
 
-- **E-110** (`14/Q-13`), expect line 148
+- **E-110** (section 14), expect `README.md:148`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'contribution documentation'
 grep -nF -- 'contribution documentation' 'README.md'
 ```
 
-- **E-111** (`14/Q-14`), expect line 7
+- **E-111** (section 14), expect `src/eShop.AppHost/AppHost.cs:7`
 
 ```text
 Select-String -LiteralPath 'src/eShop.AppHost/AppHost.cs' -SimpleMatch -CaseSensitive -Pattern 'builder.AddAzureContainerAppEnvironment("aca");'
 grep -nF -- 'builder.AddAzureContainerAppEnvironment("aca");' 'src/eShop.AppHost/AppHost.cs'
 ```
 
-- **E-112** (`14/Q-15`), expect line 142
+- **E-112** (section 14), expect `src/eShop.AppHost/Extensions.cs:142`
 
 ```text
 Select-String -LiteralPath 'src/eShop.AppHost/Extensions.cs' -SimpleMatch -CaseSensitive -Pattern 'yarp.AddRoute("/api/catalog/{*any}", catalogCluster)'
 grep -nF -- 'yarp.AddRoute("/api/catalog/{*any}", catalogCluster)' 'src/eShop.AppHost/Extensions.cs'
 ```
 
-- **E-113** (`14/Q-16`), expect line 87
+- **E-113** (section 14), expect `src/eShop.ServiceDefaults/Extensions.cs:87`
 
 ```text
 Select-String -LiteralPath 'src/eShop.ServiceDefaults/Extensions.cs' -SimpleMatch -CaseSensitive -Pattern 'var useOtlpExporter'

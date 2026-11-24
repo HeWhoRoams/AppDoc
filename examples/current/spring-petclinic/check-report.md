@@ -1,78 +1,17 @@
 # Check: PASS
 
-**Scope.** Run by AppDoc 2.6.0 (bundle 2b80067ff022). This Check verifies **resolution and structure**: every Citation points to a real file and line inside the Target (see the Citation register), and every Evidence Register row's anchor text appears in the lines it cites. It does **not** judge whether a claim's wording follows from those lines; that is the source-to-claim audit, recorded in `evidence.jsonl`. A PASS is not an accuracy certification.
+**Scope.** Run by AppDoc 2.7.0 (bundle 25b4b70e8137). This Check verifies **resolution and structure**: every Citation points to a real file and line inside the Target (see the Citation register), and every Evidence Register row's anchor text appears in the lines it cites. It does **not** judge whether a claim's wording follows from those lines; that is the source-to-claim audit, recorded in `evidence.jsonl`. A PASS is not an accuracy certification.
 
-## Universal claims cite single lines (advisory)
+## Audit exclusions
 
-1 universal claim cites only single lines. This is not a problem; `appdoc check --strict` fails on it.
+The audit record declares sections the audit did not cover:
 
-- line 256: `No external call exists in application code; the `external_call` Facts are all test-only (RestTemplate calls to the application itself and reads of properties files) (`PetClinicIntegrationTests.java:55`, `PetClinicConcurrencyTests.java:80`, `I18nPropertiesSyncTest.java:44`).`
-
-## Citation precision (advisory)
-
-5 citations are broader than the claim needs. This is not a problem; `appdoc check --strict` fails on it. Fix: cite the specific lines the claim rests on (`path:start-end`, at most 100 lines), and split a cell that cites many sources.
-
-- line 108: the Inputs, outputs and rules cell cites 6 sources (more than 5)
-- line 355: the Evidence cell cites 6 sources (more than 5)
-- line 358: the Evidence cell cites 14 sources (more than 5)
-- line 358: the Impact cell cites 6 sources (more than 5)
-- line 361: the Evidence cell cites 6 sources (more than 5)
-
-## Template 2.7 previews (advisory)
-
-411 findings would fail a template 2.7 document. This document is on template 2.4, so none of them fails it; they need no action yet.
-
-- C1 line 12: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:94-130` (fails from template 2.7)
-- C1 line 12: `findOwners.html` is a bare name; the file is `src/main/resources/templates/owners/findOwners.html`. Fix: cite the full path: `src/main/resources/templates/owners/findOwners.html:9-31` (fails from template 2.7)
-- C1 line 13: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:77-87` (fails from template 2.7)
-- C1 line 13: `createOrUpdateOwnerForm.html` is a bare name; the file is `src/main/resources/templates/owners/createOrUpdateOwnerForm.html`. Fix: cite the full path: `src/main/resources/templates/owners/createOrUpdateOwnerForm.html:8-22` (fails from template 2.7)
-- C1 line 14: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:153-171` (fails from template 2.7)
-- C1 line 15: `PetController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/PetController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:107-179` (fails from template 2.7)
-- C1 line 15: `createOrUpdatePetForm.html` is a bare name; the file is `src/main/resources/templates/pets/createOrUpdatePetForm.html`. Fix: cite the full path: `src/main/resources/templates/pets/createOrUpdatePetForm.html:11-30` (fails from template 2.7)
-- C1 line 16: `VisitController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:97-112` (fails from template 2.7)
-- C1 line 16: `createOrUpdateVisitForm.html` is a bare name; the file is `src/main/resources/templates/pets/createOrUpdateVisitForm.html`. Fix: cite the full path: `src/main/resources/templates/pets/createOrUpdateVisitForm.html:30-42` (fails from template 2.7)
-- C1 line 17: `VetController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/vet/VetController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/vet/VetController.java:45-54` (fails from template 2.7)
-- C1 line 17: `vetList.html` is a bare name; the file is `src/main/resources/templates/vets/vetList.html`. Fix: cite the full path: `src/main/resources/templates/vets/vetList.html:9-25` (fails from template 2.7)
-- C1 line 18: `WebConfiguration.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java:44-58` (fails from template 2.7)
-- C1 line 20: `error.html` is a bare name; the file is `src/main/resources/templates/error.html`. Fix: cite the full path: `src/main/resources/templates/error.html:11-18` (fails from template 2.7)
-- C1 line 20: `messages.properties` is a bare name; the file is `src/main/resources/messages/messages.properties`. Fix: cite the full path: `src/main/resources/messages/messages.properties:50-52` (fails from template 2.7)
-- C1 line 26: `messages.properties` is a bare name; the file is `src/main/resources/messages/messages.properties`. Fix: cite the full path: `src/main/resources/messages/messages.properties` (fails from template 2.7)
-- C1 line 49: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:72-186` (fails from template 2.7)
-- C1 line 49: `VetController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/vet/VetController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/vet/VetController.java:45-79` (fails from template 2.7)
-- C1 line 52: `CacheConfiguration.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java:31-38` (fails from template 2.7)
-- C1 line 52: `I18nPropertiesSyncTest.java` is a bare name; the file is `src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java`. Fix: cite the full path: `src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java:44` (fails from template 2.7)
-- C1 line 52: `PetClinicApplication.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java:28-34` (fails from template 2.7)
-- C1 line 52: `PetClinicIntegrationTests.java` is a bare name; the file is `src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java`. Fix: cite the full path: `src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java:55` (fails from template 2.7)
-- C1 line 57: `PetTypeFormatter.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java:36-60` (fails from template 2.7)
-- C1 line 57: `PetValidator.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java:32-67` (fails from template 2.7)
-- C1 line 58: `VetRepository.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java:38-58` (fails from template 2.7)
-- C1 line 58: `Vets.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/vet/Vets.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/vet/Vets.java:30-43` (fails from template 2.7)
-- C1 line 59: `CrashController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/system/CrashController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/system/CrashController.java:28-37` (fails from template 2.7)
-- C1 line 59: `WelcomeController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java:22-28` (fails from template 2.7)
-- C1 line 60: `BaseEntity.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/model/BaseEntity.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/model/BaseEntity.java:32-51` (fails from template 2.7)
-- C1 line 60: `NamedEntity.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/model/NamedEntity.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/model/NamedEntity.java:30-51` (fails from template 2.7)
-- C1 line 60: `Person.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/model/Person.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/model/Person.java:28-57` (fails from template 2.7)
-- C1 line 62: `PetClinicRuntimeHints.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/PetClinicRuntimeHints.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/PetClinicRuntimeHints.java:25-36` (fails from template 2.7)
-- C1 line 81: `CacheConfiguration.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java:36-37` (fails from template 2.7)
-- C1 line 81: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:53-57` (fails from template 2.7)
-- C1 line 81: `PetController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/PetController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:53-60` (fails from template 2.7)
-- C1 line 81: `VetController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/vet/VetController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/vet/VetController.java:39-43` (fails from template 2.7)
-- C1 line 81: `VisitController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:45-49` (fails from template 2.7)
-- C1 line 84: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:77` (fails from template 2.7)
-- C1 line 84: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:48-188` (fails from template 2.7)
-- C1 line 84: `PetController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/PetController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:107` (fails from template 2.7)
-- C1 line 84: `VisitController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:97` (fails from template 2.7)
-- C1 line 84: `WebConfiguration.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java:23-60` (fails from template 2.7)
-- C1 line 103: `WelcomeController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java:25-28` (fails from template 2.7)
-- C1 line 103: `layout.html` is a bare name; the file is `src/main/resources/templates/fragments/layout.html`. Fix: cite the full path: `src/main/resources/templates/fragments/layout.html:3-88` (fails from template 2.7)
-- C1 line 103: `welcome.html` is a bare name; the file is `src/main/resources/templates/welcome.html`. Fix: cite the full path: `src/main/resources/templates/welcome.html:7-12` (fails from template 2.7)
-- C1 line 104: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:89-92` (fails from template 2.7)
-- C1 line 104: `findOwners.html` is a bare name; the file is `src/main/resources/templates/owners/findOwners.html`. Fix: cite the full path: `src/main/resources/templates/owners/findOwners.html:9-31` (fails from template 2.7)
-- C1 line 105: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:98-126` (fails from template 2.7)
-- C1 line 105: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:141-146` (fails from template 2.7)
-- C1 line 105: `OwnerController.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:94-130` (fails from template 2.7)
-- C1 line 105: `OwnerRepository.java` is a bare name; the file is `src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java`. Fix: cite the full path: `src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java:45` (fails from template 2.7)
-- ... 361 more
+- 12: diagrams not audited
+- 16.6: generated configuration reference block
+- 16.7: generated scheduled jobs block
+- 2.1: generated scan coverage block
+- 3.2: diagram not audited
+- 4: generated entry point list block only; the sampled feature rows were audited
 
 ## Gaps declared: Unknown by absence
 Advisory only; this is not a problem.
@@ -83,667 +22,481 @@ Advisory only; this is not a problem.
 
 | Doc line | Cited path | Line/range | Resolved |
 |---|---|---|---|
-| 12 | `OwnerController.java` | 94-130 | yes |
-| 12 | `findOwners.html` | 9-31 | yes |
-| 13 | `OwnerController.java` | 77-87 | yes |
-| 13 | `createOrUpdateOwnerForm.html` | 8-22 | yes |
-| 14 | `OwnerController.java` | 153-171 | yes |
-| 15 | `PetController.java` | 107-179 | yes |
-| 15 | `createOrUpdatePetForm.html` | 11-30 | yes |
-| 16 | `VisitController.java` | 97-112 | yes |
-| 16 | `createOrUpdateVisitForm.html` | 30-42 | yes |
-| 17 | `VetController.java` | 45-54 | yes |
-| 17 | `vetList.html` | 9-25 | yes |
-| 18 | `WebConfiguration.java` | 44-58 | yes |
-| 19 | `src/main/resources/application-mysql.properties` | 2-7 | yes |
-| 19 | `src/main/resources/application.properties` | 2-4 | yes |
-| 20 | `error.html` | 11-18 | yes |
-| 20 | `messages.properties` | 50-52 | yes |
-| 21 | `src/main/resources/application.properties` | 21 | yes |
-| 26 | `build.gradle` | 1-10 | yes |
-| 26 | `messages.properties` |  | yes |
-| 26 | `pom.xml` | 1-12 | yes |
-| 26 | `src/main/resources/static/` |  | yes |
-| 26 | `src/main/resources/templates/` |  | yes |
-| 26 | `src/main/scss/` |  | yes |
-| 37 | `src/` |  | yes |
-| 38 | `.github/` |  | yes |
-| 39 | `.devcontainer/` |  | yes |
-| 40 | `gradle/` |  | yes |
-| 41 | `k8s/` |  | yes |
-| 45 | `.mvn/` |  | yes |
-| 49 | `OwnerController.java` | 72-186 | yes |
-| 49 | `README.md` | 1 | yes |
-| 49 | `VetController.java` | 45-79 | yes |
-| 49 | `k8s/db.yml` | 14 | yes |
-| 49 | `pom.xml` | 44-64 | yes |
-| 49 | `src/main/resources/application.properties` | 21 | yes |
-| 52 | `CacheConfiguration.java` | 31-38 | yes |
-| 52 | `I18nPropertiesSyncTest.java` | 44 | yes |
-| 52 | `PetClinicApplication.java` | 28-34 | yes |
-| 52 | `PetClinicIntegrationTests.java` | 55 | yes |
-| 52 | `pom.xml` | 44-64 | yes |
-| 52 | `src/main/resources/application-mysql.properties` | 2-3 | yes |
-| 52 | `src/main/resources/application-postgres.properties` | 2-3 | yes |
-| 52 | `src/main/resources/application.properties` | 2-4 | yes |
-| 57 | `PetTypeFormatter.java` | 36-60 | yes |
-| 57 | `PetValidator.java` | 32-67 | yes |
-| 57 | `src/main/java/org/springframework/samples/petclinic/owner/` |  | yes |
-| 58 | `VetRepository.java` | 38-58 | yes |
-| 58 | `Vets.java` | 30-43 | yes |
-| 58 | `src/main/java/org/springframework/samples/petclinic/vet/` |  | yes |
-| 59 | `CrashController.java` | 28-37 | yes |
-| 59 | `WelcomeController.java` | 22-28 | yes |
-| 59 | `src/main/java/org/springframework/samples/petclinic/system/` |  | yes |
-| 60 | `BaseEntity.java` | 32-51 | yes |
-| 60 | `NamedEntity.java` | 30-51 | yes |
-| 60 | `Person.java` | 28-57 | yes |
-| 61 | `src/main/resources/application.properties` | 1-29 | yes |
-| 61 | `src/main/resources/db/` |  | yes |
-| 61 | `src/main/resources/messages/` |  | yes |
-| 61 | `src/main/resources/templates/` |  | yes |
-| 62 | `PetClinicRuntimeHints.java` | 25-36 | yes |
-| 81 | `CacheConfiguration.java` | 36-37 | yes |
-| 81 | `OwnerController.java` | 53-57 | yes |
-| 81 | `PetController.java` | 53-60 | yes |
-| 81 | `VetController.java` | 39-43 | yes |
-| 81 | `VisitController.java` | 45-49 | yes |
-| 84 | `OwnerController.java` | 48-188 | yes |
-| 84 | `OwnerController.java` | 77 | yes |
-| 84 | `PetController.java` | 107 | yes |
-| 84 | `VisitController.java` | 97 | yes |
-| 84 | `WebConfiguration.java` | 23-60 | yes |
-| 84 | `build.gradle` | 34-48 | yes |
-| 84 | `pom.xml` | 44-64 | yes |
-| 103 | `WelcomeController.java` | 25-28 | yes |
-| 103 | `layout.html` | 3-88 | yes |
-| 103 | `welcome.html` | 7-12 | yes |
-| 104 | `OwnerController.java` | 89-92 | yes |
-| 104 | `findOwners.html` | 9-31 | yes |
-| 105 | `OwnerController.java` | 141-146 | yes |
-| 105 | `OwnerController.java` | 94-130 | yes |
-| 105 | `OwnerController.java` | 98-126 | yes |
-| 105 | `OwnerRepository.java` | 45 | yes |
-| 105 | `messages.properties` | 3 | yes |
-| 106 | `Owner.java` | 52-65 | yes |
-| 106 | `OwnerController.java` | 72-87 | yes |
-| 106 | `OwnerRepository.java` | 36 | yes |
-| 106 | `Person.java` | 31-39 | yes |
-| 107 | `OwnerController.java` | 178-186 | yes |
-| 107 | `OwnerController.java` | 182-183 | yes |
-| 107 | `OwnerRepository.java` | 60 | yes |
-| 107 | `ownerDetails.html` | 17-79 | yes |
-| 108 | `OwnerController.java` | 148-171 | yes |
-| 108 | `OwnerController.java` | 161-165 | yes |
-| 108 | `OwnerController.java` | 59-62 | yes |
-| 108 | `OwnerController.java` | 64-70 | yes |
-| 108 | `OwnerControllerTests.java` | 303 | yes |
-| 108 | `OwnerControllerTests.java` | 310 | yes |
-| 108 | `OwnerControllerTests.java` | 312 | yes |
-| 108 | `OwnerRepository.java` | 36 | yes |
-| 109 | `Owner.java` | 147-157 | yes |
-| 109 | `OwnerRepository.java` | 36 | yes |
-| 109 | `PetController.java` | 100-137 | yes |
-| 109 | `PetController.java` | 111-118 | yes |
-| 109 | `PetTypeRepository.java` | 36 | yes |
-| 109 | `PetValidator.java` | 43-58 | yes |
-| 110 | `OwnerRepository.java` | 36 | yes |
-| 110 | `PetController.java` | 139-179 | yes |
-| 110 | `PetController.java` | 151-156 | yes |
-| 111 | `OwnerRepository.java` | 36 | yes |
-| 111 | `Visit.java` | 43-52 | yes |
-| 111 | `VisitController.java` | 100-102 | yes |
-| 111 | `VisitController.java` | 90-112 | yes |
-| 112 | `VetController.java` | 45-54 | yes |
-| 112 | `VetController.java` | 49-52 | yes |
-| 112 | `VetController.java` | 65-70 | yes |
-| 112 | `VetRepository.java` | 54-56 | yes |
-| 113 | `VetController.java` | 72-79 | yes |
-| 113 | `VetControllerTests.java` | 103-109 | yes |
-| 113 | `VetRepository.java` | 44-46 | yes |
-| 113 | `Vets.java` | 30-43 | yes |
-| 113 | `pom.xml` |  | yes |
-| 113 | `pom.xml` | 72-73 | yes |
-| 114 | `CrashController.java` | 31-35 | yes |
-| 114 | `CrashController.java` | 33-34 | yes |
-| 114 | `error.html` | 11-18 | yes |
-| 115 | `WebConfiguration.java` | 33-36 | yes |
-| 115 | `WebConfiguration.java` | 44-58 | yes |
-| 115 | `WebConfiguration.java` | 46-47 | yes |
-| 115 | `messages.properties` | 1-52 | yes |
-| 116 | `pom.xml` | 44-45 | yes |
-| 116 | `src/main/resources/application.properties` | 21 | yes |
-| 122 | `src/` |  | yes |
-| 122 | `src/main/resources/db/h2/schema.sql` | 10-65 | yes |
-| 123 | `build.gradle` | 1-10 | yes |
-| 123 | `docker-compose.yml` | 1-21 | yes |
-| 123 | `pom.xml` | 1-12 | yes |
-| 124 | `.github/` |  | yes |
-| 124 | `deploy-and-test-cluster.yml` | 3-30 | yes |
-| 124 | `gradle-build.yml` | 6-31 | yes |
-| 124 | `maven-build.yml` | 6-29 | yes |
-| 125 | `.devcontainer/` |  | yes |
-| 125 | `devcontainer.json` | 1-25 | yes |
-| 126 | `gradle-wrapper.properties` | 1 | yes |
-| 126 | `gradle/` |  | yes |
-| 127 | `k8s/` |  | yes |
-| 127 | `k8s/db.yml` | 28-73 | yes |
-| 127 | `k8s/petclinic.yml` | 15-64 | yes |
-| 128 | `.mvn/` |  | yes |
-| 133 | `OwnerController.java` | 48-188 | yes |
-| 133 | `VetController.java` | 36-81 | yes |
-| 133 | `build.gradle` | 34-48 | yes |
-| 133 | `pom.xml` | 44-64 | yes |
-| 136 | `OwnerController.java` | 153 | yes |
-| 136 | `OwnerController.java` | 59-62 | yes |
-| 136 | `OwnerController.java` | 77 | yes |
-| 136 | `PetController.java` | 107 | yes |
-| 136 | `PetController.java` | 144 | yes |
-| 136 | `PetController.java` | 89-98 | yes |
-| 136 | `VisitController.java` | 51-54 | yes |
-| 136 | `VisitController.java` | 97 | yes |
-| 136 | `WebConfiguration.java` | 55-58 | yes |
-| 142 | `WelcomeController.java` | 25 | yes |
-| 143 | `OwnerController.java` | 153 | yes |
-| 143 | `OwnerController.java` | 94 | yes |
-| 144 | `PetController.java` | 107 | yes |
-| 144 | `PetController.java` | 144 | yes |
-| 145 | `VisitController.java` | 97 | yes |
-| 146 | `VetController.java` | 45 | yes |
-| 146 | `VetController.java` | 72 | yes |
-| 147 | `CrashController.java` | 31 | yes |
-| 148 | `WebConfiguration.java` | 46-47 | yes |
-| 149 | `src/main/resources/application.properties` | 21 | yes |
-| 150 | `OwnerController.java` | 48-188 | yes |
-| 150 | `PetController.java` | 47-207 | yes |
-| 150 | `VisitController.java` | 42-114 | yes |
-| 151 | `WebConfiguration.java` | 55-58 | yes |
-| 156 | `layout.html` | 3-88 | yes |
-| 156 | `src/main/resources/templates/` |  | yes |
-| 160 | `WelcomeController.java` | 25-28 | yes |
-| 160 | `layout.html` | 22 | yes |
-| 160 | `layout.html` | 41 | yes |
-| 160 | `welcome.html` | 7-12 | yes |
-| 161 | `OwnerController.java` | 116-119 | yes |
-| 161 | `OwnerController.java` | 89-92 | yes |
-| 161 | `findOwners.html` | 15-19 | yes |
-| 161 | `findOwners.html` | 9-29 | yes |
-| 161 | `layout.html` | 46 | yes |
-| 161 | `messages.properties` | 3 | yes |
-| 162 | `OwnerController.java` | 122-126 | yes |
-| 162 | `OwnerController.java` | 94-130 | yes |
-| 162 | `ownersList.html` | 9-58 | yes |
-| 163 | `OwnerController.java` | 178-186 | yes |
-| 163 | `ownerDetails.html` | 17-77 | yes |
-| 163 | `ownerDetails.html` | 80-91 | yes |
-| 163 | `ownerDetails.html` | 9-15 | yes |
-| 164 | `OwnerController.java` | 148-171 | yes |
-| 164 | `OwnerController.java` | 72-87 | yes |
-| 164 | `createOrUpdateOwnerForm.html` | 8-22 | yes |
-| 164 | `inputField.html` | 1-27 | yes |
-| 165 | `PetController.java` | 100-179 | yes |
-| 165 | `PetTypeRepository.java` | 36-37 | yes |
-| 165 | `createOrUpdatePetForm.html` | 11-30 | yes |
-| 166 | `Visit.java` | 50-52 | yes |
-| 166 | `VisitController.java` | 90-112 | yes |
-| 166 | `createOrUpdateVisitForm.html` | 12-55 | yes |
-| 167 | `VetController.java` | 45-54 | yes |
-| 167 | `layout.html` | 51 | yes |
-| 167 | `vetList.html` | 20-22 | yes |
-| 167 | `vetList.html` | 9-54 | yes |
-| 168 | `CrashController.java` | 31-35 | yes |
-| 168 | `error.html` | 18 | yes |
-| 168 | `error.html` | 8-18 | yes |
-| 168 | `layout.html` | 56-57 | yes |
-| 173 | `OwnerController.java` | 89-92 | yes |
-| 173 | `findOwners.html` | 9-25 | yes |
-| 174 | `OwnerController.java` | 141-146 | yes |
-| 174 | `OwnerController.java` | 98-107 | yes |
-| 174 | `OwnerRepository.java` | 45 | yes |
-| 175 | `OwnerController.java` | 108-114 | yes |
-| 176 | `OwnerController.java` | 116-129 | yes |
-| 176 | `messages.properties` | 3 | yes |
-| 176 | `ownersList.html` | 20-30 | yes |
-| 177 | `src/main/resources/db/h2/schema.sql` | 39 | yes |
-| 177 | `src/main/resources/db/postgres/schema.sql` | 29 | yes |
-| 179 | `OwnerController.java` | 116-119 | yes |
-| 179 | `src/main/resources/application.properties` | 2-4 | yes |
-| 182 | `OwnerController.java` | 72-75 | yes |
-| 182 | `createOrUpdateOwnerForm.html` | 8-22 | yes |
-| 183 | `Owner.java` | 52-65 | yes |
-| 183 | `OwnerController.java` | 77-82 | yes |
-| 184 | `Owner.java` | 67-70 | yes |
-| 184 | `OwnerController.java` | 84-86 | yes |
-| 185 | `OwnerController.java` | 59-62 | yes |
-| 187 | `error.html` | 11-18 | yes |
-| 187 | `messages.properties` | 34 | yes |
-| 190 | `OwnerController.java` | 148-151 | yes |
-| 190 | `OwnerController.java` | 64-70 | yes |
-| 191 | `OwnerController.java` | 153-159 | yes |
-| 192 | `OwnerController.java` | 161-165 | yes |
-| 192 | `OwnerController.java` | 59-62 | yes |
-| 192 | `OwnerController.java` | 64-70 | yes |
-| 192 | `OwnerControllerTests.java` | 303 | yes |
-| 192 | `OwnerControllerTests.java` | 310 | yes |
-| 192 | `OwnerControllerTests.java` | 312 | yes |
-| 193 | `OwnerController.java` | 167-170 | yes |
-| 194 | `Owner.java` | 67-70 | yes |
-| 194 | `OwnerController.java` | 59-62 | yes |
-| 196 | `OwnerController.java` | 65-69 | yes |
-| 196 | `messages.properties` | 51 | yes |
-| 199 | `PetController.java` | 100-105 | yes |
-| 199 | `PetController.java` | 62-65 | yes |
-| 200 | `Owner.java` | 147-157 | yes |
-| 200 | `PetController.java` | 111-118 | yes |
-| 201 | `PetValidator.java` | 43-58 | yes |
-| 202 | `PetClinicConcurrencyTests.java` | 124 | yes |
-| 202 | `PetClinicConcurrencyTests.java` | 86-92 | yes |
-| 202 | `PetController.java` | 124-134 | yes |
-| 202 | `PetController.java` | 202-205 | yes |
-| 202 | `messages.properties` | 4 | yes |
-| 203 | `PetController.java` | 135-136 | yes |
-| 204 | `PetTypeFormatter.java` | 51-60 | yes |
-| 206 | `PetClinicConcurrencyTests.java` | 123-131 | yes |
-| 206 | `src/main/resources/db/postgres/schema.sql` | 45 | yes |
-| 209 | `PetController.java` | 139-142 | yes |
-| 209 | `PetController.java` | 75-87 | yes |
-| 210 | `PetController.java` | 148-161 | yes |
-| 211 | `PetController.java` | 186-200 | yes |
-| 212 | `PetController.java` | 177-178 | yes |
-| 214 | `Owner.java` | 129-139 | yes |
-| 214 | `PetController.java` | 86 | yes |
-| 217 | `VisitController.java` | 63-81 | yes |
-| 218 | `VisitController.java` | 83-93 | yes |
-| 219 | `Visit.java` | 43-45 | yes |
-| 219 | `VisitController.java` | 100-106 | yes |
-| 220 | `Owner.java` | 176-186 | yes |
-| 220 | `VisitController.java` | 108-111 | yes |
-| 222 | `VisitController.java` | 67-74 | yes |
-| 225 | `VetController.java` | 45-70 | yes |
-| 225 | `VetRepository.java` | 54-56 | yes |
-| 226 | `VetController.java` | 72-79 | yes |
-| 226 | `VetControllerTests.java` | 103-109 | yes |
-| 226 | `Vets.java` | 30-43 | yes |
-| 227 | `Vet.java` | 59-64 | yes |
-| 228 | `CacheConfiguration.java` | 36-37 | yes |
-| 228 | `CacheConfiguration.java` | 49-51 | yes |
-| 228 | `pom.xml` | 82-83 | yes |
-| 230 | `CacheConfiguration.java` | 35-38 | yes |
-| 230 | `VetRepository.java` | 44-46 | yes |
-| 233 | `WebConfiguration.java` | 44-49 | yes |
-| 233 | `WebConfiguration.java` | 55-58 | yes |
-| 234 | `WebConfiguration.java` | 33-36 | yes |
-| 235 | `src/main/resources/application.properties` | 16 | yes |
-| 237 | `I18nPropertiesSyncTest.java` | 87-90 | yes |
-| 237 | `messages.properties` |  | yes |
-| 237 | `src/main/resources/application.properties` | 16 | yes |
-| 245 | `OwnerRepository.java` | 36 | yes |
-| 245 | `VetRepository.java` | 38 | yes |
-| 245 | `src/main/resources/application.properties` | 2-4 | yes |
-| 246 | `src/main/resources/application-mysql.properties` | 3 | yes |
-| 247 | `src/main/resources/application-postgres.properties` | 3 | yes |
-| 248 | `CacheConfiguration.java` | 36-37 | yes |
-| 248 | `VetRepository.java` | 45 | yes |
-| 248 | `VetRepository.java` | 55 | yes |
-| 250 | `README.md` | 64-66 | yes |
-| 250 | `k8s/petclinic.yml` | 35-38 | yes |
-| 250 | `k8s/petclinic.yml` | 55-64 | yes |
-| 250 | `src/main/resources/application.properties` | 2-4 | yes |
-| 253 | `OwnerRepository.java` | 45 | yes |
-| 253 | `OwnerRepository.java` | 60 | yes |
-| 253 | `PetTypeRepository.java` | 36-37 | yes |
-| 253 | `VetRepository.java` | 44-56 | yes |
-| 253 | `src/main/resources/application.properties` | 10 | yes |
-| 253 | `src/main/resources/application.properties` | 3-4 | yes |
-| 253 | `src/main/resources/db/h2/data.sql` | 1-53 | yes |
-| 253 | `src/main/resources/db/h2/schema.sql` | 1-65 | yes |
-| 253 | `src/main/resources/db/mysql/data.sql` | 1-53 | yes |
-| 253 | `src/main/resources/db/mysql/schema.sql` | 1-56 | yes |
-| 253 | `src/main/resources/db/postgres/data.sql` | 1-53 | yes |
-| 253 | `src/main/resources/db/postgres/schema.sql` | 1-53 | yes |
-| 256 | `I18nPropertiesSyncTest.java` | 44 | yes |
-| 256 | `PetClinicConcurrencyTests.java` | 80 | yes |
-| 256 | `PetClinicIntegrationTests.java` | 55 | yes |
-| 265 | `Owner.java` | 48-70 | yes |
-| 265 | `src/main/resources/db/h2/schema.sql` | 36-43 | yes |
-| 266 | `Pet.java` | 44-59 | yes |
-| 266 | `src/main/resources/db/h2/schema.sql` | 46-52 | yes |
-| 267 | `Visit.java` | 35-45 | yes |
-| 267 | `src/main/resources/db/h2/schema.sql` | 58-63 | yes |
-| 268 | `Vet.java` | 43-50 | yes |
-| 268 | `src/main/resources/db/h2/schema.sql` | 10-14 | yes |
-| 269 | `Specialty.java` | 28-30 | yes |
-| 269 | `src/main/resources/db/h2/schema.sql` | 17-20 | yes |
-| 270 | `PetType.java` | 26-28 | yes |
-| 270 | `src/main/resources/db/h2/schema.sql` | 30-33 | yes |
-| 271 | `Vet.java` | 47-50 | yes |
-| 271 | `src/main/resources/db/h2/schema.sql` | 23-28 | yes |
-| 277 | `src/main/resources/db/h2/schema.sql` | 37 | yes |
-| 278 | `Person.java` | 31-34 | yes |
-| 278 | `src/main/resources/db/h2/schema.sql` | 38 | yes |
-| 279 | `Person.java` | 36-39 | yes |
-| 279 | `src/main/resources/db/h2/schema.sql` | 39 | yes |
-| 279 | `src/main/resources/db/h2/schema.sql` | 44 | yes |
-| 280 | `Owner.java` | 52-55 | yes |
-| 280 | `src/main/resources/db/h2/schema.sql` | 40 | yes |
-| 281 | `Owner.java` | 57-60 | yes |
-| 281 | `src/main/resources/db/h2/schema.sql` | 41 | yes |
-| 282 | `Owner.java` | 62-65 | yes |
-| 282 | `src/main/resources/db/h2/schema.sql` | 42 | yes |
-| 288 | `src/main/resources/db/h2/schema.sql` | 47 | yes |
-| 289 | `NamedEntity.java` | 33-35 | yes |
-| 289 | `src/main/resources/db/h2/schema.sql` | 48 | yes |
-| 289 | `src/main/resources/db/h2/schema.sql` | 55 | yes |
-| 290 | `PetValidator.java` | 56-58 | yes |
-| 290 | `src/main/resources/db/h2/schema.sql` | 49 | yes |
-| 291 | `src/main/resources/db/h2/schema.sql` | 50 | yes |
-| 291 | `src/main/resources/db/h2/schema.sql` | 54 | yes |
-| 292 | `src/main/resources/db/h2/schema.sql` | 51 | yes |
-| 292 | `src/main/resources/db/h2/schema.sql` | 53 | yes |
-| 298 | `src/main/resources/db/h2/schema.sql` | 59 | yes |
-| 299 | `src/main/resources/db/h2/schema.sql` | 60 | yes |
-| 299 | `src/main/resources/db/h2/schema.sql` | 64-65 | yes |
-| 300 | `Visit.java` | 39-41 | yes |
-| 300 | `src/main/resources/db/h2/schema.sql` | 61 | yes |
-| 301 | `Visit.java` | 43-45 | yes |
-| 301 | `src/main/resources/db/h2/schema.sql` | 62 | yes |
-| 307 | `src/main/resources/db/h2/schema.sql` | 11 | yes |
-| 308 | `src/main/resources/db/h2/schema.sql` | 12 | yes |
-| 309 | `src/main/resources/db/h2/schema.sql` | 13 | yes |
-| 309 | `src/main/resources/db/h2/schema.sql` | 15 | yes |
-| 315 | `src/main/resources/db/h2/schema.sql` | 18 | yes |
-| 316 | `src/main/resources/db/h2/schema.sql` | 19 | yes |
-| 316 | `src/main/resources/db/h2/schema.sql` | 21 | yes |
-| 317 | `src/main/resources/db/h2/schema.sql` | 31 | yes |
-| 318 | `src/main/resources/db/h2/schema.sql` | 32 | yes |
-| 318 | `src/main/resources/db/h2/schema.sql` | 34 | yes |
-| 324 | `PetController.java` | 128-134 | yes |
-| 324 | `error.html` | 11-18 | yes |
-| 324 | `src/main/resources/application.properties` | 1-29 | yes |
-| 324 | `src/main/resources/application.properties` | 21 | yes |
-| 324 | `src/main/resources/application.properties` | 24 | yes |
-| 325 | `src/main/resources/application-mysql.properties` | 1-7 | yes |
-| 326 | `k8s/db.yml` | 65-73 | yes |
-| 326 | `k8s/petclinic.yml` | 47-54 | yes |
-| 326 | `src/main/resources/application-postgres.properties` | 1-7 | yes |
-| 327 | `CacheConfiguration.java` | 49-51 | yes |
-| 327 | `CacheConfiguration.java` | 50 | yes |
-| 327 | `VetRepository.java` | 44-56 | yes |
-| 333 | `OwnerController.java` | 68-69 | yes |
-| 333 | `PetController.java` | 70-71 | yes |
-| 333 | `error.html` | 18 | yes |
-| 333 | `src/main/resources/application.properties` | 2-4 | yes |
-| 334 | `VisitController.java` | 70-74 | yes |
-| 334 | `ownerDetails.html` | 73 | yes |
-| 335 | `OwnerController.java` | 116-119 | yes |
-| 335 | `OwnerController.java` | 99-101 | yes |
-| 335 | `OwnerRepository.java` | 45 | yes |
-| 335 | `messages.properties` | 3 | yes |
-| 336 | `Owner.java` | 62-65 | yes |
-| 336 | `messages.properties` | 34 | yes |
-| 337 | `PetController.java` | 111-113 | yes |
-| 337 | `PetController.java` | 129-133 | yes |
-| 337 | `messages.properties` | 4 | yes |
-| 337 | `src/main/resources/db/h2/schema.sql` | 55 | yes |
-| 338 | `PetController.java` | 115-118 | yes |
-| 338 | `messages.properties` | 8 | yes |
-| 339 | `PetController.java` | 62-65 | yes |
-| 339 | `PetTypeFormatter.java` | 51-60 | yes |
-| 339 | `messages.properties` |  | yes |
-| 339 | `messages.properties` | 7-9 | yes |
-| 339 | `src/main/resources/db/h2/data.sql` | 18-23 | yes |
-| 340 | `VisitController.java` | 100-102 | yes |
-| 340 | `messages.properties` | 9 | yes |
-| 341 | `Visit.java` | 43-45 | yes |
-| 342 | `OwnerController.java` | 161-165 | yes |
-| 342 | `OwnerController.java` | 59-70 | yes |
-| 342 | `OwnerControllerTests.java` | 303 | yes |
-| 342 | `OwnerControllerTests.java` | 310 | yes |
-| 343 | `OwnerController.java` | 108-114 | yes |
-| 343 | `VetController.java` | 49-52 | yes |
-| 344 | `CrashController.java` | 31-35 | yes |
-| 344 | `layout.html` | 56-57 | yes |
-| 345 | `PetController.java` | 128-131 | yes |
-| 345 | `PetController.java` | 202-205 | yes |
-| 353 | `Owner.java` | 52-65 | yes |
-| 353 | `OwnerController.java` | 153-171 | yes |
-| 353 | `OwnerController.java` | 94-130 | yes |
-| 353 | `PetController.java` | 107-137 | yes |
-| 353 | `VisitController.java` | 97-112 | yes |
-| 353 | `pom.xml` | 44-64 | yes |
-| 354 | `k8s/petclinic.yml` | 34-43 | yes |
-| 354 | `pom.xml` | 44-45 | yes |
-| 354 | `pom.xml` | 8 | yes |
-| 354 | `src/main/resources/application.properties` | 19-21 | yes |
-| 354 | `src/main/resources/application.properties` | 21 | yes |
-| 355 | `docker-compose.yml` | 10 | yes |
-| 355 | `docker-compose.yml` | 19 | yes |
-| 355 | `k8s/db.yml` | 14 | yes |
-| 355 | `src/main/resources/application-mysql.properties` | 5 | yes |
-| 355 | `src/main/resources/application-postgres.properties` | 5 | yes |
-| 355 | `src/main/resources/db/mysql/user.sql` | 7 | yes |
-| 355 | `src/main/resources/db/mysql/user.sql` | 9 | yes |
-| 356 | `docker-compose.yml` | 4-8 | yes |
-| 357 | `k8s/db.yml` | 28-73 | yes |
-| 358 | `Owner.java` | 67-70 | yes |
-| 358 | `Owner.java` | 67-70 | yes |
-| 358 | `Owner.java` | 96 | yes |
-| 358 | `OwnerController.java` | 153-171 | yes |
-| 358 | `OwnerController.java` | 59-62 | yes |
-| 358 | `OwnerController.java` | 64-70 | yes |
-| 358 | `PetController.java` | 108 | yes |
-| 358 | `PetController.java` | 108 | yes |
-| 358 | `PetController.java` | 126 | yes |
-| 358 | `PetController.java` | 145 | yes |
-| 358 | `PetController.java` | 145 | yes |
-| 358 | `PetController.java` | 199 | yes |
-| 358 | `PetController.java` | 89-92 | yes |
-| 358 | `PetController.java` | 94-98 | yes |
-| 358 | `PetController.java` | 94-98 | yes |
-| 358 | `VisitController.java` | 109 | yes |
-| 358 | `VisitController.java` | 51-54 | yes |
-| 358 | `VisitController.java` | 98 | yes |
-| 358 | `VisitController.java` | 98 | yes |
-| 358 | `src/main/resources/db/h2/schema.sql` | 55 | yes |
-| 359 | `OwnerController.java` | 157 | yes |
-| 359 | `OwnerController.java` | 80 | yes |
-| 359 | `createOrUpdateOwnerForm.html` | 8-22 | yes |
-| 360 | `CrashController.java` | 31-35 | yes |
-| 360 | `layout.html` | 56-57 | yes |
-| 361 | `CrashControllerIntegrationTests.java` | 51 | yes |
-| 361 | `Owner.java` | 129-139 | yes |
-| 361 | `OwnerController.java` | 68 | yes |
-| 361 | `PetController.java` | 70 | yes |
-| 361 | `PetController.java` | 86 | yes |
-| 361 | `PetController.java` | 86 | yes |
-| 361 | `VisitController.java` | 67 | yes |
-| 361 | `VisitController.java` | 71-74 | yes |
-| 361 | `VisitController.java` | 71-74 | yes |
-| 361 | `error.html` | 18 | yes |
-| 361 | `src/main/resources/application.properties` | 1-29 | yes |
-| 367 | `k8s/petclinic.yml` | 7-10 | yes |
-| 367 | `src/main/resources/application.properties` | 1-29 | yes |
-| 368 | `createOrUpdateOwnerForm.html` | 8-22 | yes |
-| 368 | `createOrUpdatePetForm.html` | 11-30 | yes |
-| 368 | `pom.xml` | 44-64 | yes |
-| 369 | `OwnerController.java` | 48-188 | yes |
-| 369 | `WebConfiguration.java` | 55-58 | yes |
-| 369 | `pom.xml` | 44-64 | yes |
-| 370 | `WebConfiguration.java` | 33-36 | yes |
-| 370 | `src/main/resources/application.properties` | 1-29 | yes |
-| 371 | `WebConfiguration.java` | 44-58 | yes |
-| 371 | `pom.xml` | 44-178 | yes |
-| 372 | `OwnerController.java` | 48-188 | yes |
-| 372 | `PetController.java` | 47-207 | yes |
-| 372 | `src/main/resources/application.properties` | 24 | yes |
-| 373 | `docker-compose.yml` | 1-21 | yes |
-| 373 | `k8s/db.yml` | 28-73 | yes |
-| 374 | `k8s/db.yml` | 14 | yes |
-| 374 | `k8s/petclinic.yml` | 55-64 | yes |
-| 375 | `Owner.java` | 52-65 | yes |
-| 375 | `PetValidator.java` | 43-58 | yes |
-| 375 | `Visit.java` | 43-45 | yes |
-| 381 | `README.md` | 1 | yes |
-| 382 | `OwnerController.java` | 44-46 | yes |
-| 382 | `README.md` | 58-60 | yes |
-| 382 | `README.md` | 60 | yes |
-| 383 | `.editorconfig` |  | yes |
-| 383 | `README.md` | 172-177 | yes |
-| 383 | `README.md` | 58-60 | yes |
-| 384 | `src/main/resources/db/mysql/petclinic_db_setup_mysql.txt` | 1-9 | yes |
-| 385 | `README.md` | 1-181 | yes |
-| 386 | `dco.yml` | 1-2 | yes |
-| 386 | `gradle-build.yml` | 6-10 | yes |
-| 386 | `maven-build.yml` | 6-10 | yes |
-| 386 | `pom.xml` | 13 | yes |
-| 387 | `CrashControllerTests.java` | 31 | yes |
-| 387 | `OwnerControllerTests.java` | 60-63 | yes |
-| 387 | `PetControllerTests.java` | 51-55 | yes |
-| 387 | `VetControllerTests.java` | 45-48 | yes |
-| 387 | `VisitControllerTests.java` | 44-47 | yes |
-| 387 | `WelcomeControllerTests.java` | 30-33 | yes |
-| 388 | `OwnerTests.java` | 23 | yes |
-| 388 | `PetTypeFormatterTests.java` | 42-43 | yes |
-| 388 | `PetValidatorTests.java` | 41 | yes |
-| 388 | `ValidatorTests.java` | 35 | yes |
-| 388 | `VetTests.java` | 26 | yes |
-| 389 | `ClinicServiceTests.java` | 72-76 | yes |
-| 390 | `MySqlIntegrationTests.java` | 41-44 | yes |
-| 390 | `MySqlIntegrationTests.java` | 63-64 | yes |
-| 390 | `MySqlIntegrationTests.java` | 70 | yes |
-| 390 | `PetClinicIntegrationTests.java` | 34 | yes |
-| 390 | `PetClinicIntegrationTests.java` | 48-49 | yes |
-| 390 | `PetClinicIntegrationTests.java` | 55 | yes |
-| 390 | `PetClinicIntegrationTests.java` | 62 | yes |
-| 390 | `PostgresIntegrationTests.java` | 51-54 | yes |
-| 390 | `PostgresIntegrationTests.java` | 83-84 | yes |
-| 390 | `PostgresIntegrationTests.java` | 90 | yes |
-| 391 | `PetClinicConcurrencyTests.java` | 41-131 | yes |
-| 392 | `CrashControllerIntegrationTests.java` | 61-93 | yes |
-| 392 | `I18nPropertiesSyncTest.java` | 40 | yes |
-| 392 | `I18nPropertiesSyncTest.java` | 87 | yes |
-| 395 | `src/main/resources/db/h2/schema.sql` | 55 | yes |
-| 395 | `src/main/resources/db/mysql/schema.sql` | 47 | yes |
-| 395 | `src/main/resources/db/postgres/schema.sql` | 45 | yes |
-| 396 | `I18nPropertiesSyncTest.java` | 87-90 | yes |
-| 397 | `build.gradle` | 19 | yes |
-| 397 | `build.gradle` | 4 | yes |
-| 397 | `pom.xml` | 19 | yes |
-| 397 | `pom.xml` | 8 | yes |
-| 430 | `src/main/resources/db/h2/schema.sql` | 10-65 | yes |
-| 443 | `VisitController.java` | 63-112 | yes |
-| 451 | `docker-compose.yml` | 1-21 | yes |
-| 451 | `k8s/db.yml` | 28-73 | yes |
-| 451 | `k8s/petclinic.yml` | 15-64 | yes |
-| 457 | `Owner.java` | 48-70 | yes |
-| 458 | `Pet.java` | 44-59 | yes |
-| 459 | `PetType.java` | 26-28 | yes |
-| 460 | `Visit.java` | 35-45 | yes |
-| 461 | `Vet.java` | 43-50 | yes |
-| 462 | `Specialty.java` | 28-30 | yes |
-| 463 | `Vets.java` | 30-43 | yes |
-| 464 | `PetValidator.java` | 32-67 | yes |
-| 465 | `PetTypeFormatter.java` | 36-60 | yes |
-| 466 | `VisitController.java` | 83-86 | yes |
-| 467 | `OwnerController.java` | 85 | yes |
-| 468 | `src/main/resources/application-mysql.properties` | 2-7 | yes |
-| 469 | `src/main/resources/application.properties` | 2-4 | yes |
-| 470 | `src/main/resources/application.properties` | 19-21 | yes |
-| 471 | `CacheConfiguration.java` | 36-37 | yes |
-| 472 | `k8s/petclinic.yml` | 35-38 | yes |
-| 472 | `k8s/petclinic.yml` | 55-64 | yes |
-| 473 | `src/main/resources/db/postgres/schema.sql` | 45 | yes |
-| 474 | `WebConfiguration.java` | 46-47 | yes |
-| 475 | `pom.xml` | 56-57 | yes |
-| 482 | `k8s/petclinic.yml` | 33 | yes |
-| 484 | `README.md` | 65 | yes |
-| 484 | `pom.xml` | 117-118 | yes |
-| 484 | `src/main/resources/application.properties` | 1-29 | yes |
-| 485 | `Owner.java` | 129-139 | yes |
-| 485 | `PetController.java` | 86 | yes |
-| 486 | `src/main/resources/application.properties` | 1-29 | yes |
-| 488 | `README.md` | 1 | yes |
-| 514 | `build.gradle` | 17-21 | yes |
-| 514 | `build.gradle` | 4 | yes |
-| 514 | `devcontainer.json` | 5-8 | yes |
-| 514 | `docker-compose.yml` | 15 | yes |
-| 514 | `docker-compose.yml` | 3 | yes |
-| 514 | `gradle-build.yml` | 17-18 | yes |
-| 514 | `k8s/db.yml` | 44 | yes |
-| 514 | `maven-build.yml` | 17-18 | yes |
-| 514 | `pom.xml` | 187-199 | yes |
-| 514 | `pom.xml` | 19 | yes |
-| 514 | `pom.xml` | 8 | yes |
-| 517 | `README.md` | 68 | yes |
-| 517 | `src/main/resources/application-mysql.properties` | 2-7 | yes |
-| 517 | `src/main/resources/application-postgres.properties` | 2-7 | yes |
-| 517 | `src/main/resources/application.properties` | 2-4 | yes |
-| 517 | `src/main/resources/db/h2/schema.sql` | 1-7 | yes |
-| 517 | `src/main/resources/db/mysql/data.sql` | 1-3 | yes |
-| 517 | `src/main/resources/db/mysql/petclinic_db_setup_mysql.txt` | 21-24 | yes |
-| 517 | `src/main/resources/db/mysql/schema.sql` | 1 | yes |
-| 517 | `src/main/resources/db/mysql/user.sql` | 1-11 | yes |
-| 517 | `src/main/resources/db/postgres/data.sql` | 1-3 | yes |
-| 517 | `src/main/resources/db/postgres/schema.sql` | 1 | yes |
-| 517 | `user.sql` |  | yes |
-| 520 | `WebConfiguration.java` | 33-36 | yes |
-| 520 | `src/main/resources/application.properties` | 1-29 | yes |
-| 526 | `docker-compose.yml` | 1-21 | yes |
-| 526 | `src/main/resources/application-mysql.properties` | 3 | yes |
-| 526 | `src/main/resources/application-postgres.properties` | 3 | yes |
-| 527 | `src/main/resources/db/mysql/petclinic_db_setup_mysql.txt` | 33-36 | yes |
-| 527 | `user.sql` |  | yes |
-| 528 | `k8s/db.yml` | 28-73 | yes |
-| 528 | `src/main/resources/application-postgres.properties` | 6-7 | yes |
-| 529 | `k8s/petclinic.yml` | 47-54 | yes |
-| 530 | `PetClinicConcurrencyTests.java` | 87 | yes |
-| 530 | `PetController.java` | 128-134 | yes |
-| 530 | `messages.properties` | 4 | yes |
-| 531 | `VetRepository.java` | 44-56 | yes |
-| 537 | `gradle-build.yml` | 30-31 | yes |
-| 537 | `maven-build.yml` | 28-29 | yes |
-| 538 | `MySqlIntegrationTests.java` | 43 | yes |
-| 538 | `PostgresIntegrationTests.java` | 51 | yes |
-| 538 | `maven-build.yml` | 29 | yes |
-| 539 | `deploy-and-test-cluster.yml` | 23-30 | yes |
-| 539 | `k8s/petclinic.yml` | 15-64 | yes |
-| 540 | `pom.xml` | 13 | yes |
-| 541 | `k8s/petclinic.yml` | 22 | yes |
-| 542 | `k8s/db.yml` | 28-73 | yes |
-| 543 | `k8s/db.yml` | 28-73 | yes |
-| 544 | `k8s/db.yml` | 14 | yes |
-| 551 | `src/main/resources/application-mysql.properties` | 5 | yes |
-| 552 | `src/main/resources/application-mysql.properties` | 2 | yes |
-| 553 | `src/main/resources/application-mysql.properties` | 3 | yes |
-| 554 | `src/main/resources/application-mysql.properties` | 4 | yes |
-| 555 | `src/main/resources/application-mysql.properties` | 7 | yes |
-| 556 | `src/main/resources/application.properties` | 3 | yes |
-| 557 | `src/main/resources/application.properties` | 4 | yes |
-| 558 | `src/main/resources/application.properties` | 7 | yes |
-| 559 | `src/main/resources/application.properties` | 10 | yes |
-| 560 | `src/main/resources/application.properties` | 11 | yes |
-| 561 | `src/main/resources/application.properties` | 12 | yes |
-| 562 | `src/main/resources/application.properties` | 13 | yes |
-| 563 | `src/main/resources/application.properties` | 16 | yes |
-| 564 | `src/main/resources/application.properties` | 21 | yes |
-| 565 | `src/main/resources/application.properties` | 24 | yes |
-| 566 | `src/main/resources/application.properties` | 29 | yes |
-| 575 | `src/main/resources/application.properties` | 21 | yes |
-| 576 | `src/main/resources/application.properties` | 11 | yes |
-| 577 | `src/main/resources/application.properties` | 10 | yes |
-| 578 | `src/main/resources/application-mysql.properties` | 7 | yes |
-| 579 | `src/main/resources/application-mysql.properties` | 3 | yes |
+| 12 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 94 | yes |
+| 13 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 77 | yes |
+| 14 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 153 | yes |
+| 15 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 107 | yes |
+| 16 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 144 | yes |
+| 17 | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java` | 97 | yes |
+| 18 | `src/main/java/org/springframework/samples/petclinic/vet/VetController.java` | 45 | yes |
+| 19 | `src/main/java/org/springframework/samples/petclinic/system/CrashController.java` | 31 | yes |
+| 20 | `src/main/resources/application.properties` | 2 | yes |
+| 21 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 68 | yes |
+| 27 | `README.md` |  | yes |
+| 27 | `docker-compose.yml` |  | yes |
+| 27 | `pom.xml` | 1-10 | yes |
+| 27 | `src/main/java/org/springframework/samples/petclinic/` |  | yes |
+| 27 | `src/main/resources/messages/messages.properties` |  | yes |
+| 27 | `src/main/resources/static/` |  | yes |
+| 27 | `src/main/resources/templates/` |  | yes |
+| 27 | `src/main/scss/petclinic.scss` |  | yes |
+| 27 | `src/test/jmeter/petclinic_test_plan.jmx` |  | yes |
+| 29 | `.mvn/` |  | yes |
+| 29 | `.mvn/wrapper/maven-wrapper.properties` | 1-3 | yes |
+| 29 | `mvnw.cmd` |  | yes |
+| 29 | `src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java` | 28-34 | yes |
+| 40 | `src/` |  | yes |
+| 41 | `.github/` |  | yes |
+| 42 | `.devcontainer/` |  | yes |
+| 43 | `gradle/` |  | yes |
+| 44 | `k8s/` |  | yes |
+| 48 | `.mvn/` |  | yes |
+| 53 | `README.md` | 1-16 | yes |
+| 53 | `README.md` | 5-12 | yes |
+| 53 | `pom.xml` | 41-66 | yes |
+| 53 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 48-49 | yes |
+| 57 | `src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java` | 28-34 | yes |
+| 57 | `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java` | 35-38 | yes |
+| 57 | `src/main/resources/application-mysql.properties` | 2-3 | yes |
+| 57 | `src/main/resources/application-postgres.properties` | 2-3 | yes |
+| 57 | `src/main/resources/application.properties` | 2-4 | yes |
+| 57 | `src/main/resources/db/h2/schema.sql` | 1-10 | yes |
+| 57 | `src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java` | 55 | yes |
+| 63 | `src/main/java/org/springframework/samples/petclinic/owner/` |  | yes |
+| 63 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 48-49 | yes |
+| 63 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java` | 36 | yes |
+| 63 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 47-49 | yes |
+| 63 | `src/main/java/org/springframework/samples/petclinic/owner/PetTypeRepository.java` | 30 | yes |
+| 63 | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java` | 42-43 | yes |
+| 64 | `src/main/java/org/springframework/samples/petclinic/vet/` |  | yes |
+| 64 | `src/main/java/org/springframework/samples/petclinic/vet/VetController.java` | 36-37 | yes |
+| 64 | `src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java` | 38-56 | yes |
+| 64 | `src/main/java/org/springframework/samples/petclinic/vet/Vets.java` | 30-31 | yes |
+| 65 | `src/main/java/org/springframework/samples/petclinic/model/` |  | yes |
+| 65 | `src/main/java/org/springframework/samples/petclinic/model/BaseEntity.java` | 32-37 | yes |
+| 65 | `src/main/java/org/springframework/samples/petclinic/model/Person.java` | 28-39 | yes |
+| 66 | `src/main/java/org/springframework/samples/petclinic/system/` |  | yes |
+| 66 | `src/main/java/org/springframework/samples/petclinic/system/CrashController.java` | 28-29 | yes |
+| 66 | `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java` | 44-49 | yes |
+| 66 | `src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java` | 22-23 | yes |
+| 67 | `src/main/resources/templates/` |  | yes |
+| 67 | `src/main/resources/templates/fragments/layout.html` | 1-20 | yes |
+| 68 | `src/main/resources/application.properties` | 2-4 | yes |
+| 68 | `src/main/resources/db/` |  | yes |
+| 69 | `build.gradle` |  | yes |
+| 69 | `build.gradle` | 1-10 | yes |
+| 69 | `docker-compose.yml` |  | yes |
+| 69 | `docker-compose.yml` | 1-3 | yes |
+| 69 | `k8s/db.yml` |  | yes |
+| 69 | `k8s/petclinic.yml` |  | yes |
+| 69 | `k8s/petclinic.yml` | 15-33 | yes |
+| 69 | `pom.xml` |  | yes |
+| 69 | `pom.xml` | 1-10 | yes |
+| 90 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java` | 36-45 | yes |
+| 90 | `src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java` | 44-56 | yes |
+| 94 | `build.gradle` | 33-40 | yes |
+| 94 | `pom.xml` | 41-66 | yes |
+| 94 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 48-188 | yes |
+| 111 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 72-130 | yes |
+| 115 | `src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java` | 25-28 | yes |
+| 115 | `src/main/resources/templates/welcome.html` | 1-12 | yes |
+| 116 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 89-130 | yes |
+| 116 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java` | 45 | yes |
+| 117 | `src/main/java/org/springframework/samples/petclinic/model/Person.java` | 31-39 | yes |
+| 117 | `src/main/java/org/springframework/samples/petclinic/owner/Owner.java` | 52-65 | yes |
+| 117 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 59-62 | yes |
+| 117 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 72-87 | yes |
+| 118 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 148-171 | yes |
+| 118 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 161-165 | yes |
+| 118 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 59-62 | yes |
+| 118 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 64-70 | yes |
+| 119 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 178-186 | yes |
+| 119 | `src/main/resources/templates/owners/ownerDetails.html` | 9-14 | yes |
+| 120 | `src/main/java/org/springframework/samples/petclinic/owner/Owner.java` | 150 | yes |
+| 120 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 100-135 | yes |
+| 120 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 111-118 | yes |
+| 120 | `src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java` | 38-59 | yes |
+| 121 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 139-177 | yes |
+| 121 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 148-156 | yes |
+| 121 | `src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java` | 51-53 | yes |
+| 122 | `src/main/java/org/springframework/samples/petclinic/owner/Visit.java` | 43-45 | yes |
+| 122 | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java` | 100-102 | yes |
+| 122 | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java` | 90-111 | yes |
+| 123 | `src/main/java/org/springframework/samples/petclinic/vet/VetController.java` | 45-54 | yes |
+| 123 | `src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java` | 54-56 | yes |
+| 124 | `pom.xml` | 71-74 | yes |
+| 124 | `src/main/java/org/springframework/samples/petclinic/vet/VetController.java` | 72-79 | yes |
+| 124 | `src/main/java/org/springframework/samples/petclinic/vet/Vets.java` | 30-41 | yes |
+| 124 | `src/test/java/org/springframework/samples/petclinic/vet/VetControllerTests.java` | 105-108 | yes |
+| 125 | `src/main/java/org/springframework/samples/petclinic/system/CrashController.java` | 31-35 | yes |
+| 125 | `src/main/resources/templates/error.html` | 5-18 | yes |
+| 126 | `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java` | 44-58 | yes |
+| 126 | `src/main/resources/application.properties` | 16 | yes |
+| 127 | `pom.xml` | 43-46 | yes |
+| 127 | `pom.xml` | 5-9 | yes |
+| 127 | `src/main/resources/application.properties` | 21 | yes |
+| 133 | `src/` |  | yes |
+| 134 | `pom.xml` |  | yes |
+| 135 | `.github/` |  | yes |
+| 136 | `.devcontainer/` |  | yes |
+| 137 | `gradle/` |  | yes |
+| 138 | `k8s/` |  | yes |
+| 144 | `pom.xml` | 41-66 | yes |
+| 144 | `src/main/java/org/springframework/samples/petclinic/owner/Owner.java` | 48-50 | yes |
+| 144 | `src/main/java/org/springframework/samples/petclinic/vet/Vet.java` | 43-45 | yes |
+| 148 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 59-62 | yes |
+| 148 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 59-62 | yes |
+| 148 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 89-98 | yes |
+| 148 | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java` | 51-54 | yes |
+| 148 | `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java` | 55-58 | yes |
+| 152 | `pom.xml` | 41-66 | yes |
+| 156 | `src/main/java/org/springframework/samples/petclinic/system/WelcomeController.java` | 25 | yes |
+| 157 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 72-130 | yes |
+| 158 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 100-177 | yes |
+| 159 | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java` | 90-111 | yes |
+| 160 | `src/main/java/org/springframework/samples/petclinic/vet/VetController.java` | 45-79 | yes |
+| 161 | `src/main/java/org/springframework/samples/petclinic/system/CrashController.java` | 31 | yes |
+| 162 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 72-130 | yes |
+| 163 | `src/main/java/org/springframework/samples/petclinic/vet/VetController.java` | 45-79 | yes |
+| 169 | `src/main/resources/templates/` |  | yes |
+| 169 | `src/main/resources/templates/fragments/layout.html` | 1-20 | yes |
+| 173 | `src/main/resources/templates/fragments/layout.html` | 22 | yes |
+| 173 | `src/main/resources/templates/welcome.html` | 7-12 | yes |
+| 174 | `src/main/resources/templates/owners/findOwners.html` | 9-29 | yes |
+| 175 | `src/main/resources/templates/owners/ownersList.html` | 20-54 | yes |
+| 176 | `src/main/resources/templates/owners/ownerDetails.html` | 9-73 | yes |
+| 177 | `src/main/resources/templates/owners/createOrUpdateOwnerForm.html` | 8-20 | yes |
+| 178 | `src/main/resources/templates/pets/createOrUpdatePetForm.html` | 11-31 | yes |
+| 179 | `src/main/resources/templates/pets/createOrUpdateVisitForm.html` | 30-54 | yes |
+| 180 | `src/main/resources/templates/vets/vetList.html` | 17-50 | yes |
+| 181 | `src/main/resources/application.properties` | 1-29 | yes |
+| 181 | `src/main/resources/templates/error.html` | 11-18 | yes |
+| 181 | `src/main/resources/templates/error.html` | 18 | yes |
+| 181 | `src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java` | 51 | yes |
+| 187 | `src/main/resources/templates/owners/findOwners.html` | 9 | yes |
+| 188 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 141-146 | yes |
+| 188 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 94-107 | yes |
+| 189 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 108-114 | yes |
+| 189 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 116-120 | yes |
+| 189 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 122-126 | yes |
+| 189 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 129 | yes |
+| 191 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java` | 45 | yes |
+| 191 | `src/main/resources/templates/error.html` | 11-14 | yes |
+| 195 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 72-75 | yes |
+| 196 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 78-82 | yes |
+| 197 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 84-86 | yes |
+| 199 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 80-84 | yes |
+| 203 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 64-70 | yes |
+| 204 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 153-159 | yes |
+| 205 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 161-165 | yes |
+| 205 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 59-62 | yes |
+| 205 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 64-70 | yes |
+| 206 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 167-170 | yes |
+| 208 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 68-69 | yes |
+| 208 | `src/main/resources/application.properties` | 1-29 | yes |
+| 208 | `src/main/resources/templates/error.html` | 18 | yes |
+| 208 | `src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java` | 51 | yes |
+| 212 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 100-105 | yes |
+| 213 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 111-118 | yes |
+| 214 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 124-127 | yes |
+| 215 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 128-134 | yes |
+| 215 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 202-205 | yes |
+| 216 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 135-136 | yes |
+| 218 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 204 | yes |
+| 218 | `src/main/resources/db/mysql/schema.sql` | 47 | yes |
+| 222 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 139-142 | yes |
+| 222 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 75-87 | yes |
+| 223 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 148-156 | yes |
+| 223 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 158-161 | yes |
+| 224 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 186-200 | yes |
+| 225 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 177-178 | yes |
+| 227 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 167-176 | yes |
+| 227 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 70 | yes |
+| 231 | `src/main/java/org/springframework/samples/petclinic/owner/Visit.java` | 50-52 | yes |
+| 231 | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java` | 63-81 | yes |
+| 232 | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java` | 100-106 | yes |
+| 233 | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java` | 108-111 | yes |
+| 235 | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java` | 67-72 | yes |
+| 235 | `src/main/resources/application.properties` | 1-29 | yes |
+| 235 | `src/main/resources/templates/error.html` | 18 | yes |
+| 239 | `src/main/java/org/springframework/samples/petclinic/vet/VetController.java` | 45-69 | yes |
+| 240 | `pom.xml` | 71-74 | yes |
+| 240 | `src/main/java/org/springframework/samples/petclinic/vet/VetController.java` | 72-79 | yes |
+| 240 | `src/main/java/org/springframework/samples/petclinic/vet/Vets.java` | 30-41 | yes |
+| 240 | `src/test/java/org/springframework/samples/petclinic/vet/VetControllerTests.java` | 105-108 | yes |
+| 241 | `src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java` | 44-56 | yes |
+| 243 | `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java` | 35-51 | yes |
+| 243 | `src/main/java/org/springframework/samples/petclinic/vet/VetController.java` | 49-52 | yes |
+| 247 | `src/main/resources/templates/fragments/layout.html` | 56-57 | yes |
+| 248 | `src/main/java/org/springframework/samples/petclinic/system/CrashController.java` | 31-35 | yes |
+| 248 | `src/main/resources/templates/error.html` | 5-18 | yes |
+| 250 | `src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java` | 51 | yes |
+| 250 | `src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java` | 62-93 | yes |
+| 254 | `src/main/resources/application.properties` |  | yes |
+| 254 | `src/main/resources/application.properties` | 2-4 | yes |
+| 254 | `src/main/resources/db/h2/data.sql` |  | yes |
+| 254 | `src/main/resources/db/h2/schema.sql` |  | yes |
+| 255 | `src/main/resources/application-mysql.properties` | 2-7 | yes |
+| 255 | `src/main/resources/application-postgres.properties` | 2-7 | yes |
+| 256 | `src/main/resources/application.properties` | 10 | yes |
+| 258 | `docker-compose.yml` | 1-20 | yes |
+| 266 | `README.md` | 64 | yes |
+| 266 | `src/main/resources/application.properties` | 2-4 | yes |
+| 267 | `src/main/resources/application-mysql.properties` | 3 | yes |
+| 268 | `src/main/resources/application-postgres.properties` | 3 | yes |
+| 269 | `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java` | 35-38 | yes |
+| 269 | `src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java` | 44-56 | yes |
+| 271 | `pom.xml` | 76-80 | yes |
+| 271 | `src/main/resources/application.properties` | 1-29 | yes |
+| 275 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerRepository.java` | 45 | yes |
+| 275 | `src/main/java/org/springframework/samples/petclinic/owner/PetTypeRepository.java` | 36-37 | yes |
+| 275 | `src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java` | 46 | yes |
+| 275 | `src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java` | 56 | yes |
+| 275 | `src/main/resources/db/h2/schema.sql` | 1-65 | yes |
+| 281 | `src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java` | 55-62 | yes |
+| 287 | `src/main/java/org/springframework/samples/petclinic/owner/Owner.java` | 48-65 | yes |
+| 287 | `src/main/resources/db/h2/schema.sql` | 36-43 | yes |
+| 288 | `src/main/java/org/springframework/samples/petclinic/owner/Pet.java` | 44-54 | yes |
+| 288 | `src/main/resources/db/h2/schema.sql` | 46-52 | yes |
+| 289 | `src/main/java/org/springframework/samples/petclinic/owner/PetType.java` | 26 | yes |
+| 289 | `src/main/resources/db/h2/schema.sql` | 30-33 | yes |
+| 290 | `src/main/java/org/springframework/samples/petclinic/owner/Visit.java` | 35-45 | yes |
+| 290 | `src/main/resources/db/h2/schema.sql` | 58-63 | yes |
+| 291 | `src/main/java/org/springframework/samples/petclinic/vet/Vet.java` | 43-45 | yes |
+| 291 | `src/main/resources/db/h2/schema.sql` | 10-14 | yes |
+| 292 | `src/main/java/org/springframework/samples/petclinic/vet/Specialty.java` | 28 | yes |
+| 292 | `src/main/resources/db/h2/schema.sql` | 17-28 | yes |
+| 298 | `src/main/resources/db/h2/schema.sql` | 37 | yes |
+| 299 | `src/main/java/org/springframework/samples/petclinic/model/Person.java` | 31-34 | yes |
+| 299 | `src/main/resources/db/h2/schema.sql` | 38 | yes |
+| 300 | `src/main/resources/db/h2/schema.sql` | 39 | yes |
+| 301 | `src/main/java/org/springframework/samples/petclinic/owner/Owner.java` | 52-55 | yes |
+| 301 | `src/main/resources/db/h2/schema.sql` | 40 | yes |
+| 302 | `src/main/java/org/springframework/samples/petclinic/owner/Owner.java` | 57-60 | yes |
+| 302 | `src/main/resources/db/h2/schema.sql` | 41 | yes |
+| 303 | `src/main/java/org/springframework/samples/petclinic/owner/Owner.java` | 62-65 | yes |
+| 303 | `src/main/resources/db/h2/schema.sql` | 42 | yes |
+| 309 | `src/main/resources/db/h2/schema.sql` | 47 | yes |
+| 310 | `src/main/resources/db/h2/schema.sql` | 48 | yes |
+| 310 | `src/main/resources/db/h2/schema.sql` | 55 | yes |
+| 311 | `src/main/resources/db/h2/schema.sql` | 49 | yes |
+| 312 | `src/main/resources/db/h2/schema.sql` | 50 | yes |
+| 312 | `src/main/resources/db/h2/schema.sql` | 54 | yes |
+| 313 | `src/main/resources/db/h2/schema.sql` | 51 | yes |
+| 313 | `src/main/resources/db/h2/schema.sql` | 53 | yes |
+| 319 | `src/main/resources/db/h2/schema.sql` | 59 | yes |
+| 320 | `src/main/resources/db/h2/schema.sql` | 60 | yes |
+| 320 | `src/main/resources/db/h2/schema.sql` | 64 | yes |
+| 321 | `src/main/resources/db/h2/schema.sql` | 61 | yes |
+| 322 | `src/main/java/org/springframework/samples/petclinic/owner/Visit.java` | 43-45 | yes |
+| 322 | `src/main/resources/db/h2/schema.sql` | 62 | yes |
+| 328 | `src/main/resources/application.properties` | 1-29 | yes |
+| 328 | `src/main/resources/application.properties` | 24 | yes |
+| 329 | `src/main/resources/application-mysql.properties` | 2-7 | yes |
+| 329 | `src/main/resources/application.properties` | 21 | yes |
+| 330 | `k8s/petclinic.yml` | 47-54 | yes |
+| 330 | `src/main/resources/application-postgres.properties` | 2-7 | yes |
+| 331 | `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java` | 49-51 | yes |
+| 331 | `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java` | 50 | yes |
+| 332 | `src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java` | 55 | yes |
+| 338 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 182-183 | yes |
+| 338 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 68-69 | yes |
+| 338 | `src/main/resources/application.properties` | 1-29 | yes |
+| 338 | `src/main/resources/templates/error.html` | 18 | yes |
+| 338 | `src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java` | 51 | yes |
+| 339 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 70 | yes |
+| 339 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 84 | yes |
+| 339 | `src/main/resources/application.properties` | 1-29 | yes |
+| 339 | `src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java` | 51 | yes |
+| 340 | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java` | 72 | yes |
+| 340 | `src/main/resources/application.properties` | 1-29 | yes |
+| 340 | `src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java` | 51 | yes |
+| 341 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 111-113 | yes |
+| 341 | `src/main/resources/db/h2/schema.sql` | 55 | yes |
+| 341 | `src/main/resources/messages/messages.properties` | 4 | yes |
+| 341 | `src/main/resources/messages/messages.properties` | 4 | yes |
+| 342 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 115-118 | yes |
+| 342 | `src/main/resources/messages/messages.properties` | 8 | yes |
+| 343 | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java` | 100-102 | yes |
+| 343 | `src/main/resources/messages/messages.properties` | 9 | yes |
+| 344 | `src/main/java/org/springframework/samples/petclinic/owner/Owner.java` | 62-64 | yes |
+| 345 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 80-81 | yes |
+| 346 | `src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java` | 59 | yes |
+| 347 | `src/main/java/org/springframework/samples/petclinic/system/CrashController.java` | 33-34 | yes |
+| 347 | `src/main/resources/application.properties` | 1-29 | yes |
+| 347 | `src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java` | 51 | yes |
+| 348 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 202-205 | yes |
+| 348 | `src/main/resources/db/mysql/schema.sql` | 47 | yes |
+| 356 | `pom.xml` | 41-66 | yes |
+| 356 | `pom.xml` | 43-46 | yes |
+| 356 | `src/main/resources/application.properties` | 19-21 | yes |
+| 357 | `README.md` | 1 | yes |
+| 357 | `README.md` | 5-12 | yes |
+| 357 | `pom.xml` | 41-66 | yes |
+| 357 | `src/main/java/org/springframework/samples/petclinic/model/Person.java` | 31-39 | yes |
+| 357 | `src/main/java/org/springframework/samples/petclinic/owner/Owner.java` | 52-65 | yes |
+| 357 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 72-130 | yes |
+| 358 | `docker-compose.yml` | 4-5 | yes |
+| 358 | `docker-compose.yml` | 7-8 | yes |
+| 358 | `k8s/db.yml` | 5-14 | yes |
+| 358 | `src/main/resources/application-mysql.properties` | 4-5 | yes |
+| 358 | `src/main/resources/application-postgres.properties` | 4-5 | yes |
+| 359 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 202-205 | yes |
+| 359 | `src/main/resources/db/mysql/schema.sql` | 47 | yes |
+| 359 | `src/main/resources/db/postgres/schema.sql` | 45 | yes |
+| 360 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 157-158 | yes |
+| 360 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 80-81 | yes |
+| 360 | `src/main/resources/templates/fragments/inputField.html` | 19 | yes |
+| 360 | `src/main/resources/templates/owners/createOrUpdateOwnerForm.html` | 10-14 | yes |
+| 361 | `src/main/java/org/springframework/samples/petclinic/system/CrashController.java` | 31-35 | yes |
+| 361 | `src/main/resources/templates/fragments/layout.html` | 56-57 | yes |
+| 367 | `build.gradle` | 33-40 | yes |
+| 367 | `pom.xml` | 41-66 | yes |
+| 368 | `k8s/petclinic.yml` | 7-10 | yes |
+| 368 | `src/main/resources/application.properties` | 1-29 | yes |
+| 369 | `pom.xml` | 41-66 | yes |
+| 369 | `src/main/resources/templates/owners/createOrUpdateOwnerForm.html` | 8-20 | yes |
+| 370 | `pom.xml` | 41-66 | yes |
+| 371 | `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java` | 32-37 | yes |
+| 371 | `src/main/resources/application.properties` | 1-29 | yes |
+| 372 | `pom.xml` | 41-66 | yes |
+| 373 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 48-188 | yes |
+| 373 | `src/main/resources/application.properties` | 24 | yes |
+| 374 | `docker-compose.yml` | 1-20 | yes |
+| 374 | `docker-compose.yml` | 12-13 | yes |
+| 374 | `k8s/db.yml` | 15-70 | yes |
+| 375 | `k8s/db.yml` | 5-14 | yes |
+| 375 | `src/main/resources/application-postgres.properties` | 3-5 | yes |
+| 376 | `src/main/java/org/springframework/samples/petclinic/owner/Owner.java` | 52-65 | yes |
+| 376 | `src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java` | 38-59 | yes |
+| 376 | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java` | 100-102 | yes |
+| 377 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 59-62 | yes |
+| 377 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 89-98 | yes |
+| 377 | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java` | 51-54 | yes |
+| 383 | `LICENSE.txt` | 1-5 | yes |
+| 384 | `pom.xml` | 5-14 | yes |
+| 385 | `README.md` | 58-60 | yes |
+| 386 | `src/main/resources/db/mysql/petclinic_db_setup_mysql.txt` | 1-10 | yes |
+| 387 | `README.md` | 1-16 | yes |
+| 388 | `.github/workflows/gradle-build.yml` | 6-11 | yes |
+| 388 | `.github/workflows/maven-build.yml` | 6-11 | yes |
+| 388 | `pom.xml` |  | yes |
+| 388 | `pom.xml` | 23 | yes |
+| 389 | `src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java` | 60-63 | yes |
+| 390 | `src/test/java/org/springframework/samples/petclinic/service/ClinicServiceTests.java` | 72-76 | yes |
+| 391 | `src/test/java/org/springframework/samples/petclinic/MySqlIntegrationTests.java` | 41-46 | yes |
+| 391 | `src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java` | 34-35 | yes |
+| 391 | `src/test/java/org/springframework/samples/petclinic/PostgresIntegrationTests.java` | 51-55 | yes |
+| 392 | `src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java` | 28-41 | yes |
+| 393 | `src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java` | 25-44 | yes |
+| 398 | `.github/workflows/gradle-build.yml` | 30-31 | yes |
+| 398 | `.github/workflows/maven-build.yml` | 28-29 | yes |
+| 399 | `src/main/resources/db/h2/schema.sql` | 1-65 | yes |
+| 399 | `src/main/resources/db/mysql/schema.sql` | 1-50 | yes |
+| 399 | `src/main/resources/db/postgres/schema.sql` | 1-47 | yes |
+| 417 | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java` | 107-136 | yes |
+| 427 | `src/main/resources/db/h2/schema.sql` | 28-64 | yes |
+| 439 | `README.md` | 25-34 | yes |
+| 439 | `docker-compose.yml` | 1-20 | yes |
+| 439 | `k8s/petclinic.yml` | 15-64 | yes |
+| 445 | `src/main/java/org/springframework/samples/petclinic/owner/Owner.java` | 48-50 | yes |
+| 446 | `src/main/java/org/springframework/samples/petclinic/owner/Pet.java` | 44-46 | yes |
+| 447 | `src/main/java/org/springframework/samples/petclinic/owner/PetTypeRepository.java` | 36-37 | yes |
+| 448 | `src/main/java/org/springframework/samples/petclinic/owner/Visit.java` | 35-37 | yes |
+| 449 | `src/main/java/org/springframework/samples/petclinic/vet/Vet.java` | 43-50 | yes |
+| 450 | `src/main/java/org/springframework/samples/petclinic/vet/Vets.java` | 30-41 | yes |
+| 451 | `src/main/java/org/springframework/samples/petclinic/model/BaseEntity.java` | 32-49 | yes |
+| 452 | `src/main/resources/templates/owners/ownerDetails.html` | 9-14 | yes |
+| 453 | `src/main/resources/application-mysql.properties` | 1-3 | yes |
+| 454 | `src/main/resources/db/h2/schema.sql` | 55 | yes |
+| 455 | `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java` | 37 | yes |
+| 456 | `src/main/resources/application.properties` | 21 | yes |
+| 463 | `src/main/resources/application.properties` | 21 | yes |
+| 464 | `k8s/petclinic.yml` | 33 | yes |
+| 465 | `README.md` | 14-56 | yes |
+| 466 | `README.md` | 65 | yes |
+| 466 | `README.md` | 99 | yes |
+| 466 | `build.gradle` | 49 | yes |
+| 466 | `pom.xml` | 117 | yes |
+| 466 | `pom.xml` | 76-80 | yes |
+| 466 | `src/main/resources/application.properties` | 1-29 | yes |
+| 489 | `docs/appdoc/evidence.jsonl` | 1 | yes |
+| 489 | `pom.xml` | 1-10 | yes |
+| 495 | `.github/workflows/maven-build.yml` | 22-25 | yes |
+| 495 | `.mvn/wrapper/maven-wrapper.properties` | 3 | yes |
+| 495 | `README.md` | 17 | yes |
+| 495 | `build.gradle` | 17-21 | yes |
+| 495 | `pom.xml` | 19 | yes |
+| 495 | `pom.xml` | 5-9 | yes |
+| 499 | `docker-compose.yml` | 1-20 | yes |
+| 499 | `src/main/resources/application-mysql.properties` | 6-7 | yes |
+| 499 | `src/main/resources/application.properties` | 2-4 | yes |
+| 499 | `src/main/resources/db/h2/data.sql` |  | yes |
+| 499 | `src/main/resources/db/h2/schema.sql` |  | yes |
+| 499 | `src/main/resources/db/mysql/petclinic_db_setup_mysql.txt` | 1-20 | yes |
+| 499 | `src/main/resources/db/postgres/schema.sql` | 1-6 | yes |
+| 503 | `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java` | 32-49 | yes |
+| 503 | `src/main/resources/application.properties` | 1-29 | yes |
+| 509 | `README.md` | 85-95 | yes |
+| 510 | `src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java` | 35-51 | yes |
+| 511 | `.github/workflows/deploy-and-test-cluster.yml` | 29-31 | yes |
+| 512 | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java` | 68-69 | yes |
+| 512 | `src/main/resources/templates/error.html` | 18 | yes |
+| 518 | `.github/workflows/gradle-build.yml` | 30-31 | yes |
+| 518 | `.github/workflows/maven-build.yml` | 28-29 | yes |
+| 519 | `.github/workflows/gradle-build.yml` | 31 | yes |
+| 519 | `.github/workflows/maven-build.yml` | 29 | yes |
+| 520 | `.github/workflows/deploy-and-test-cluster.yml` | 20-26 | yes |
+| 520 | `k8s/` |  | yes |
+| 521 | `README.md` | 14-56 | yes |
+| 522 | `README.md` | 14-56 | yes |
+| 523 | `docker-compose.yml` | 1-20 | yes |
+| 524 | `docker-compose.yml` | 1-20 | yes |
+| 525 | `k8s/db.yml` | 5-14 | yes |
+| 532 | `src/main/resources/application-mysql.properties` | 5 | yes |
+| 533 | `src/main/resources/application-mysql.properties` | 2 | yes |
+| 534 | `src/main/resources/application-mysql.properties` | 3 | yes |
+| 535 | `src/main/resources/application-mysql.properties` | 4 | yes |
+| 536 | `src/main/resources/application-mysql.properties` | 7 | yes |
+| 537 | `src/main/resources/application.properties` | 3 | yes |
+| 538 | `src/main/resources/application.properties` | 4 | yes |
+| 539 | `src/main/resources/application.properties` | 7 | yes |
+| 540 | `src/main/resources/application.properties` | 10 | yes |
+| 541 | `src/main/resources/application.properties` | 11 | yes |
+| 542 | `src/main/resources/application.properties` | 12 | yes |
+| 543 | `src/main/resources/application.properties` | 13 | yes |
+| 544 | `src/main/resources/application.properties` | 16 | yes |
+| 545 | `src/main/resources/application.properties` | 21 | yes |
+| 546 | `src/main/resources/application.properties` | 24 | yes |
+| 547 | `src/main/resources/application.properties` | 29 | yes |
+| 556 | `src/main/resources/application.properties` | 21 | yes |
+| 557 | `src/main/resources/application-mysql.properties` | 7 | yes |
+| 558 | `src/main/resources/application.properties` | 10 | yes |
+| 566 | `src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java` | 28-34 | yes |
+| 572 | `README.md` | 17 | yes |
+| 572 | `pom.xml` | 19 | yes |
+| 573 | `.github/workflows/maven-build.yml` | 28-29 | yes |
+| 574 | `.github/workflows/maven-build.yml` | 29 | yes |
+| 575 | `README.md` | 28 | yes |
+| 576 | `.github/workflows/gradle-build.yml` | 31 | yes |
+| 578 | `README.md` | 33 | yes |
+| 578 | `README.md` | 36 | yes |
+| 578 | `build.gradle` | 61-62 | yes |
+| 578 | `build.gradle` | 70-73 | yes |
+| 578 | `pom.xml` | 205-247 | yes |
+| 578 | `src/test/java/org/springframework/samples/petclinic/MySqlIntegrationTests.java` | 43 | yes |
 
 ## Verification
 
-**Source-to-claim audit:** performed (auditor: independent). 123 rows: 103 Supported, 18 Corrected, 1 Downgraded, 1 Answerable.
+**Source-to-claim audit:** performed (auditor: independent). 61 rows (26 superseded): 61 Supported, 0 Corrected, 0 Downgraded.
 
 | Section | IDs with a register row |
 |---|---|
-| 4 | 11 of 14 |
+| 4 | 13 of 13 |
 | 6 | 9 of 9 |
-| 8.1 | 0 of 4 |
-| 10.1 | 9 of 9 |
-| 14 | 8 of 8 |
-| 15 | 7 of 13 |
-| 7 (workflows) | 8 of 8 |
+| 8.1 | 4 of 4 |
+| 8.3 | 1 of 1 |
+| 10.1 | 6 of 6 |
+| 14 | 6 of 6 |
+| 15 | 9 of 9 |
+| 7 (workflows) | 9 of 9 |

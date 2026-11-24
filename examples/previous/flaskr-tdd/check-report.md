@@ -1,12 +1,27 @@
 # Check: PASS
 
-**Scope.** Run by AppDoc 2.5.0. This Check verifies **resolution and structure**: every Citation points to a real file and line inside the Target (see the Citation register), and every Evidence Register row's anchor text appears in the lines it cites. It does **not** judge whether a claim's wording follows from those lines; that is the source-to-claim audit, recorded in `evidence.jsonl`. A PASS is not an accuracy certification.
+**Scope.** Run by AppDoc 2.6.0 (bundle 2b80067ff022). This Check verifies **resolution and structure**: every Citation points to a real file and line inside the Target (see the Citation register), and every Evidence Register row's anchor text appears in the lines it cites. It does **not** judge whether a claim's wording follows from those lines; that is the source-to-claim audit, recorded in `evidence.jsonl`. A PASS is not an accuracy certification.
 
 ## Universal claims cite single lines (advisory)
 
 1 universal claim cites only single lines. This is not a problem; `appdoc check --strict` fails on it.
 
 - line 152: `All three pages of the Target are catalogued (`project/templates/index.html:1`, `project/templates/login.html:1`, `project/templates/search.html:1`).`
+
+## Citation precision (advisory)
+
+1 citation is broader than the claim needs. This is not a problem; `appdoc check --strict` fails on it. Fix: cite the specific lines the claim rests on (`path:start-end`, at most 100 lines), and split a cell that cites many sources.
+
+- line 288: `project/app.py:1-125` spans 125 lines (more than 100) and is this claim's only lined Citation
+
+## Template 2.7 previews (advisory)
+
+4 findings would fail a template 2.7 document. This document is on template 2.4, so none of them fails it; they need no action yet.
+
+- C17 line 1: evidence.jsonl line 1: the audit scope text holds an ID or a number. Fix: describe only the method; coverage is computed (fails from template 2.7)
+- C9 line 276: 10.1 row V-9 (High) outranks the row before it (V-8, Low). Fix: move the row; keep its ID (fails from template 2.7)
+- C9 line 375: 15 row R-6 (Medium) outranks the row before it (R-5, Low). Fix: move the row; keep its ID (fails from template 2.7)
+- C9 line 378: 15 row R-9 (High) outranks the row before it (R-8, Medium). Fix: move the row; keep its ID (fails from template 2.7)
 
 ## Gaps declared: Unknown by absence
 Advisory only; this is not a problem.

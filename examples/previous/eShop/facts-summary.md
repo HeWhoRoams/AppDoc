@@ -3,7 +3,7 @@
 - Target: `eShop`
 - Commit: `913acea66708a59595351174cee9b29f37179d29`
 - Git history: shallow
-- Schema: `appdoc-facts/6`
+- Schema: `appdoc-facts/7`
 
 > Facts show what the extractors found. An empty list is not proof that something is absent: the extractors only recognise the patterns of the Stacks below, so read the source before writing "none". Facts from test code are marked `test` in `facts.json` and left out of the lists.
 
@@ -269,8 +269,6 @@ No folders were pruned.
 
 ## Config keys flagged as secret locations
 
-- `TokenLifetimeMinutes` — `src/Identity.API/appsettings.json:10`
-- `PermanentTokenLifetimeDays` — `src/Identity.API/appsettings.json:11`
 - `ClientSecret` — `src/WebApp/Extensions/Extensions.cs:78`
 - `ValidateToken` — `src/WebhookClient/Endpoints/WebhookEndpoints.cs:13`
 - `WebhookClientOptions:Token` — `src/WebhookClient/Endpoints/WebhookEndpoints.cs:14`

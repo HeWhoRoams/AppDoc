@@ -3,7 +3,7 @@
 - Target: `spring-petclinic`
 - Commit: `500158f732419217507c7656904b8e6aa1bcc0d6`
 - Git history: shallow
-- Schema: `appdoc-facts/6`
+- Schema: `appdoc-facts/7`
 
 > Facts show what the extractors found. An empty list is not proof that something is absent: the extractors only recognise the patterns of the Stacks below, so read the source before writing "none". Facts from test code are marked `test` in `facts.json` and left out of the lists.
 
@@ -163,11 +163,8 @@ Add `!name` to `.appdocignore` to scan a pruned folder.
 ## Config keys flagged as secret locations
 
 - `stringData.password` — `k8s/db.yml:14`
-- `spec.template.spec.containers.env.valueFrom.secretKeyRef.name` — `k8s/db.yml:50`
 - `spec.template.spec.containers.env.valueFrom.secretKeyRef.key` — `k8s/db.yml:51`
-- `spec.template.spec.containers.env.valueFrom.secretKeyRef.name` — `k8s/db.yml:55`
 - `spec.template.spec.containers.env.valueFrom.secretKeyRef.key` — `k8s/db.yml:56`
-- `spec.template.spec.containers.env.valueFrom.secretKeyRef.name` — `k8s/db.yml:60`
 - `spec.template.spec.containers.env.valueFrom.secretKeyRef.key` — `k8s/db.yml:61`
 - `spring.datasource.password` — `src/main/resources/application-mysql.properties:5`
 - `spring.datasource.password` — `src/main/resources/application-postgres.properties:5`

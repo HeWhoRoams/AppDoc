@@ -13475,7 +13475,7 @@
   {
    "detail": {
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "appsettings.json",
     "use": "define"
    },
@@ -13488,7 +13488,7 @@
   {
    "detail": {
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "appsettings.json",
     "use": "define"
    },
@@ -24480,8 +24480,7 @@
    "stack": "generic"
   }
  ],
- "generator": "2.5.0",
- "schema": "appdoc-facts/6",
+ "schema": "appdoc-facts/7",
  "stacks": [
   {
    "detail": {
@@ -24499,7 +24498,19 @@
   },
   {
    "detail": {
-    "capabilities": [],
+    "capabilities": [
+     "auth_check",
+     "config_key",
+     "connection",
+     "data_access",
+     "entry_point.handler",
+     "entry_point.job",
+     "entry_point.page",
+     "entry_point.route",
+     "external_call",
+     "message",
+     "ui_page"
+    ],
     "file_count": 630,
     "marker_files": [
      "src/Basket.API/Basket.API.csproj",
@@ -24558,58 +24569,34 @@
   "history": "shallow",
   "name": "eShop",
   "scan": {
+   "duplicate_folders": [
+    {
+     "a": "src/ClientApp/Platforms/MacCatalyst/",
+     "b": "src/ClientApp/Platforms/iOS/",
+     "files": 2
+    },
+    {
+     "a": "src/HybridApp/",
+     "b": "src/WebApp/wwwroot/",
+     "files": 8
+    },
+    {
+     "a": "src/HybridApp/Platforms/MacCatalyst/",
+     "b": "src/HybridApp/Platforms/iOS/",
+     "files": 2
+    },
+    {
+     "a": "src/HybridApp/wwwroot/",
+     "b": "src/WebApp/",
+     "files": 7
+    }
+   ],
    "found": 1145,
    "ignored": 0,
    "metadata": 0,
    "pruned": [],
    "pruned_files": 0,
-   "retired_candidates": [
-    {
-     "files": 5,
-     "path": "src/ClientApp/Platforms/MacCatalyst/",
-     "signal": "content"
-    },
-    {
-     "files": 5,
-     "path": "src/HybridApp/Platforms/MacCatalyst/",
-     "signal": "content"
-    },
-    {
-     "files": 34,
-     "path": "src/HybridApp/wwwroot/",
-     "signal": "content"
-    },
-    {
-     "files": 14,
-     "path": "src/HybridApp/wwwroot/fonts/",
-     "signal": "content"
-    },
-    {
-     "files": 6,
-     "path": "src/HybridApp/wwwroot/icons/",
-     "signal": "content"
-    },
-    {
-     "files": 49,
-     "path": "src/WebApp/wwwroot/",
-     "signal": "content"
-    },
-    {
-     "files": 26,
-     "path": "src/WebApp/wwwroot/fonts/",
-     "signal": "content"
-    },
-    {
-     "files": 6,
-     "path": "src/WebApp/wwwroot/icons/",
-     "signal": "content"
-    },
-    {
-     "files": 5,
-     "path": "src/WebApp/wwwroot/images/",
-     "signal": "content"
-    }
-   ],
+   "retired_candidates": [],
    "scanned": 1145
   }
  }

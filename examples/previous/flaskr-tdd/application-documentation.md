@@ -84,7 +84,7 @@ Authentication is a single username and password compared to module-level consta
 ## 4. Functional Inventory
 
 <!-- appdoc:generated entry-points -->
-1 route handler files; 7 routes; 0 pages; 0 commands; 0 jobs.
+1 route handler file; 7 routes; 0 pages; 0 commands; 0 jobs.
 
 | Handler file | Kinds | Routes | Pages | Jobs | Commands |
 |---|---|---|---|---|---|
@@ -435,7 +435,7 @@ The session is Flask's default signed cookie holding `logged_in` (`project/app.p
 
 Shown 6 of 6 application keys.
 
-1 env-var keys and 8 CI keys are excluded from the application table (see facts.json).
+1 env-var key and 8 CI keys are excluded from the application table (see facts.json).
 <!-- /appdoc:generated config-reference -->
 
 | Key | Effect | Evidence |
@@ -449,7 +449,7 @@ Shown 6 of 6 application keys.
 ### 16.7 Scheduled and background jobs
 
 <!-- appdoc:generated scheduled-jobs -->
-No scheduled or background jobs were extracted. Not covered: `python-flask` (no entry-point capability).
+No scheduled or background jobs were extracted. Stacks that report jobs: `python-flask`.
 <!-- /appdoc:generated scheduled-jobs -->
 
 ## Appendix A. Evidence Register and Verification
@@ -458,6 +458,9 @@ No scheduled or background jobs were extracted. Not covered: `python-flask` (no 
 ### A.1 Audit state
 
 **Auditor:** independent. **Scope:** Claims in sections 1, 2.1-2.3, 3.1-3.3, 4 (F-1..F-8, 4.1 sampled), 5.1-5.3, 6 (UI-1..UI-3), 7.1-7.6, 8.1-8.5, 9 (all 8 rows), 10.1 (V-1..V-8), 10.2 (one row for all 8 controls), 11, 12, 13 (5 of 10 glossary terms sampled), 14 (Q-1..Q-7), 15 (R-1, R-2, R-5 sampled; 15.1), 16.1-16.7, plus all 7 smells. Every cited span was opened in source. Q-7 was checked by running the suite on a scratch copy in TEMP (Flask 3.0.0, Flask-SQLAlchemy 3.1.1); Q-4 by reading the two db files read-only. Static reading otherwise; nothing observed on a deployed instance.
+
+Generated blocks written by AppDoc 2.6.0 (bundle 2b80067ff022).
+Generated blocks were regenerated after the audit and are not covered by it.
 
 ### A.2 Coverage
 
@@ -574,609 +577,609 @@ No scheduled or background jobs were extracted. Not covered: `python-flask` (no 
 
 Run from the Target root. Each block names the expected line, then a PowerShell command and a POSIX command.
 
-- **E-1** (`1`), expect line 71
+- **E-1** (section 1), expect `project/templates/index.html:71`
 
 ```text
 Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern '{% for entry in entries %}'
 grep -nF -- '{% for entry in entries %}' 'project/templates/index.html'
 ```
 
-- **E-2** (`2.1`), expect line 1083
+- **E-2** (section 2), expect `README.md:1083`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'git push heroku main'
 grep -nF -- 'git push heroku main' 'README.md'
 ```
 
-- **E-3** (`2.2`), expect line 3
+- **E-3** (section 2), expect `README.md:3`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'a bit of JavaScript, and deployment'
 grep -nF -- 'a bit of JavaScript, and deployment' 'README.md'
 ```
 
-- **E-4** (`2.3`), expect line 26
+- **E-4** (section 2), expect `project/app.py:26`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'os.getenv("DATABASE_URL"'
 grep -nF -- 'os.getenv("DATABASE_URL"' 'project/app.py'
 ```
 
-- **E-5** (`3.1`), expect line 38
+- **E-5** (section 3), expect `project/app.py:38`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'app.config.from_object(__name__)'
 grep -nF -- 'app.config.from_object(__name__)' 'project/app.py'
 ```
 
-- **E-6** (`3.2`), expect line 11
+- **E-6** (section 3), expect `project/static/main.js:11`
 
 ```text
 Select-String -LiteralPath 'project/static/main.js' -SimpleMatch -CaseSensitive -Pattern 'fetch(`/delete/${postId}`)'
 grep -nF -- 'fetch(`/delete/${postId}`)' 'project/static/main.js'
 ```
 
-- **E-7** (`3.3`), expect line 48
+- **E-7** (section 3), expect `project/app.py:48`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'if not session.get("logged_in"):'
 grep -nF -- 'if not session.get("logged_in"):' 'project/app.py'
 ```
 
-- **E-8** (`4/F-1`), expect line 77
+- **E-8** (section 4), expect `project/templates/index.html:77`
 
 ```text
 Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern '<li><em>No entries yet. Add some!</em></li>'
 grep -nF -- '<li><em>No entries yet. Add some!</em></li>' 'project/templates/index.html'
 ```
 
-- **E-9** (`4/F-2`), expect line 63
+- **E-9** (section 4), expect `project/app.py:63`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern '@app.route("/add", methods=["POST"])'
 grep -nF -- '@app.route("/add", methods=["POST"])' 'project/app.py'
 ```
 
-- **E-10** (`4/F-3`), expect line 83
+- **E-10** (section 4), expect `project/app.py:83`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'error = "Invalid password"'
 grep -nF -- 'error = "Invalid password"' 'project/app.py'
 ```
 
-- **E-11** (`4/F-4`), expect line 94
+- **E-11** (section 4), expect `project/app.py:94`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'session.pop("logged_in", None)'
 grep -nF -- 'session.pop("logged_in", None)' 'project/app.py'
 ```
 
-- **E-12** (`4/F-5`), expect line 108
+- **E-12** (section 4), expect `project/app.py:108`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'result = {"status": 1, "message": "Post Deleted"}'
 grep -nF -- 'result = {"status": 1, "message": "Post Deleted"}' 'project/app.py'
 ```
 
-- **E-13** (`4/F-6`), expect line 52
+- **E-13** (section 4), expect `project/templates/search.html:52`
 
 ```text
 Select-String -LiteralPath 'project/templates/search.html' -SimpleMatch -CaseSensitive -Pattern 'query.lower() in entry.text.lower()'
 grep -nF -- 'query.lower() in entry.text.lower()' 'project/templates/search.html'
 ```
 
-- **E-14** (`4/F-7`), expect line 20
+- **E-14** (section 4), expect `project/static/main.js:20`
 
 ```text
 Select-String -LiteralPath 'project/static/main.js' -SimpleMatch -CaseSensitive -Pattern 'location.reload();'
 grep -nF -- 'location.reload();' 'project/static/main.js'
 ```
 
-- **E-15** (`4/F-8`), expect line 9
+- **E-15** (section 4), expect `create_db.py:9`
 
 ```text
 Select-String -LiteralPath 'create_db.py' -SimpleMatch -CaseSensitive -Pattern 'db.create_all()'
 grep -nF -- 'db.create_all()' 'create_db.py'
 ```
 
-- **E-16** (`4.1`), expect line 2
+- **E-16** (section 4), expect `requirements.txt:2`
 
 ```text
 Select-String -LiteralPath 'requirements.txt' -SimpleMatch -CaseSensitive -Pattern 'Flask-SQLAlchemy==3.1.1'
 grep -nF -- 'Flask-SQLAlchemy==3.1.1' 'requirements.txt'
 ```
 
-- **E-17** (`5.1`), expect line 85
+- **E-17** (section 5), expect `project/app.py:85`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'session["logged_in"] = True'
 grep -nF -- 'session["logged_in"] = True' 'project/app.py'
 ```
 
-- **E-18** (`5.2`), expect line 67
+- **E-18** (section 5), expect `project/app.py:67`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'abort(401)'
 grep -nF -- 'abort(401)' 'project/app.py'
 ```
 
-- **E-19** (`5.3`), expect line 67
+- **E-19** (section 5), expect `project/app.py:67`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'abort(401)'
 grep -nF -- 'abort(401)' 'project/app.py'
 ```
 
-- **E-20** (`6/UI-1`), expect line 77
+- **E-20** (section 6), expect `project/templates/index.html:77`
 
 ```text
 Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern '<li><em>No entries yet. Add some!</em></li>'
 grep -nF -- '<li><em>No entries yet. Add some!</em></li>' 'project/templates/index.html'
 ```
 
-- **E-22** (`6/UI-3`), expect line 121
+- **E-22** (section 6), expect `project/app.py:121`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'return render_template("search.html")'
 grep -nF -- 'return render_template("search.html")' 'project/app.py'
 ```
 
-- **E-23** (`7.1`), expect line 59
+- **E-23** (section 7), expect `project/app.py:59`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'entries = db.session.query(models.Post)'
 grep -nF -- 'entries = db.session.query(models.Post)' 'project/app.py'
 ```
 
-- **E-24** (`7.2`), expect line 81
+- **E-24** (section 7), expect `project/app.py:81`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'error = "Invalid username"'
 grep -nF -- 'error = "Invalid username"' 'project/app.py'
 ```
 
-- **E-25** (`7.3`), expect line 68
+- **E-25** (section 7), expect `project/app.py:68`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'new_entry = models.Post(request.form["title"], request.form["text"])'
 grep -nF -- 'new_entry = models.Post(request.form["title"], request.form["text"])' 'project/app.py'
 ```
 
-- **E-27** (`7.5`), expect line 119
+- **E-27** (section 7), expect `project/app.py:119`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'if query:'
 grep -nF -- 'if query:' 'project/app.py'
 ```
 
-- **E-28** (`7.6`), expect line 1717
+- **E-28** (section 7), expect `README.md:1717`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'heroku run python create_db.py'
 grep -nF -- 'heroku run python create_db.py' 'README.md'
 ```
 
-- **E-29** (`8.1`), expect line 69
+- **E-29** (section 8), expect `project/app.py:69`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'db.session.add(new_entry)'
 grep -nF -- 'db.session.add(new_entry)' 'project/app.py'
 ```
 
-- **E-30** (`8.2`), expect line 106
+- **E-30** (section 8), expect `project/app.py:106`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern '.filter_by(id=new_id).delete()'
 grep -nF -- '.filter_by(id=new_id).delete()' 'project/app.py'
 ```
 
-- **E-31** (`8.3`), expect line 8
+- **E-31** (section 8), expect `project/templates/index.html:8`
 
 ```text
 Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern 'bootstrap@5.3.2'
 grep -nF -- 'bootstrap@5.3.2' 'project/templates/index.html'
 ```
 
-- **E-32** (`8.4`), expect line 5
+- **E-32** (section 8), expect `project/models.py:5`
 
 ```text
 Select-String -LiteralPath 'project/models.py' -SimpleMatch -CaseSensitive -Pattern 'id = db.Column(db.Integer, primary_key=True)'
 grep -nF -- 'id = db.Column(db.Integer, primary_key=True)' 'project/models.py'
 ```
 
-- **E-33** (`8.5`), expect line 110
+- **E-33** (section 8), expect `project/app.py:110`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'except Exception as e:'
 grep -nF -- 'except Exception as e:' 'project/app.py'
 ```
 
-- **E-35** (`9`), expect line 67
+- **E-35** (section 9), expect `project/app.py:67`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'abort(401)'
 grep -nF -- 'abort(401)' 'project/app.py'
 ```
 
-- **E-36** (`9`), expect line 81
+- **E-36** (section 9), expect `project/app.py:81`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'error = "Invalid username"'
 grep -nF -- 'error = "Invalid username"' 'project/app.py'
 ```
 
-- **E-37** (`9`), expect line 71
+- **E-37** (section 9), expect `project/app.py:71`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'flash("New entry was successfully posted")'
 grep -nF -- 'flash("New entry was successfully posted")' 'project/app.py'
 ```
 
-- **E-38** (`9`), expect line 111
+- **E-38** (section 9), expect `project/app.py:111`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'result = {"status": 0, "message": repr(e)}'
 grep -nF -- 'result = {"status": 0, "message": repr(e)}' 'project/app.py'
 ```
 
-- **E-39** (`9`), expect line 54
+- **E-39** (section 9), expect `project/templates/search.html:54`
 
 ```text
 Select-String -LiteralPath 'project/templates/search.html' -SimpleMatch -CaseSensitive -Pattern 'entry.post_id'
 grep -nF -- 'entry.post_id' 'project/templates/search.html'
 ```
 
-- **E-40** (`9`), expect line 77
+- **E-40** (section 9), expect `project/templates/index.html:77`
 
 ```text
 Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern 'No entries yet. Add some!'
 grep -nF -- 'No entries yet. Add some!' 'project/templates/index.html'
 ```
 
-- **E-41** (`9`), expect line 109
+- **E-41** (section 9), expect `project/app.py:109`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'flash("The entry was deleted.")'
 grep -nF -- 'flash("The entry was deleted.")' 'project/app.py'
 ```
 
-- **E-42** (`10.1/V-1`), expect line 53
+- **E-42** (section 10), expect `project/templates/login.html:53`
 
 ```text
 Select-String -LiteralPath 'project/templates/login.html' -SimpleMatch -CaseSensitive -Pattern 'for username and password</span>'
 grep -nF -- 'for username and password</span>' 'project/templates/login.html'
 ```
 
-- **E-43** (`10.1/V-2`), expect line 25
+- **E-43** (section 10), expect `project/app.py:25`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'SECRET_KEY ='
 grep -nF -- 'SECRET_KEY =' 'project/app.py'
 ```
 
-- **E-44** (`10.1/V-3`), expect line 74
+- **E-44** (section 10), expect `project/templates/index.html:74`
 
 ```text
 Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern '{{ entry.text|safe }}'
 grep -nF -- '{{ entry.text|safe }}' 'project/templates/index.html'
 ```
 
-- **E-46** (`10.1/V-5`), expect line 83
+- **E-46** (section 10), expect `project/app.py:83`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'error = "Invalid password"'
 grep -nF -- 'error = "Invalid password"' 'project/app.py'
 ```
 
-- **E-47** (`10.1/V-6`), expect line 111
+- **E-47** (section 10), expect `project/app.py:111`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'repr(e)'
 grep -nF -- 'repr(e)' 'project/app.py'
 ```
 
-- **E-48** (`10.1/V-7`), expect line 54
+- **E-48** (section 10), expect `project/templates/search.html:54`
 
 ```text
 Select-String -LiteralPath 'project/templates/search.html' -SimpleMatch -CaseSensitive -Pattern 'entry.post_id'
 grep -nF -- 'entry.post_id' 'project/templates/search.html'
 ```
 
-- **E-50** (`10.2`), expect line 32
+- **E-50** (section 10), expect `project/app.py:32`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'SQLALCHEMY_TRACK_MODIFICATIONS = False'
 grep -nF -- 'SQLALCHEMY_TRACK_MODIFICATIONS = False' 'project/app.py'
 ```
 
-- **E-51** (`11`), expect line 1
+- **E-51** (section 11), expect `.github/FUNDING.yml:1`
 
 ```text
 Select-String -LiteralPath '.github/FUNDING.yml' -SimpleMatch -CaseSensitive -Pattern 'github:'
 grep -nF -- 'github:' '.github/FUNDING.yml'
 ```
 
-- **E-52** (`11`), expect line 3
+- **E-52** (section 11), expect `.github/workflows/main.yml:3`
 
 ```text
 Select-String -LiteralPath '.github/workflows/main.yml' -SimpleMatch -CaseSensitive -Pattern 'on: [push]'
 grep -nF -- 'on: [push]' '.github/workflows/main.yml'
 ```
 
-- **E-53** (`11`), expect line 16
+- **E-53** (section 11), expect `tests/app_test.py:16`
 
 ```text
 Select-String -LiteralPath 'tests/app_test.py' -SimpleMatch -CaseSensitive -Pattern 'app.config["SQLALCHEMY_DATABASE_URI"]'
 grep -nF -- 'app.config["SQLALCHEMY_DATABASE_URI"]' 'tests/app_test.py'
 ```
 
-- **E-54** (`12`), expect line 20
+- **E-54** (section 12), expect `project/static/main.js:20`
 
 ```text
 Select-String -LiteralPath 'project/static/main.js' -SimpleMatch -CaseSensitive -Pattern 'location.reload();'
 grep -nF -- 'location.reload();' 'project/static/main.js'
 ```
 
-- **E-55** (`13`), expect line 38
+- **E-55** (section 13), expect `project/app.py:38`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'app.config.from_object(__name__)'
 grep -nF -- 'app.config.from_object(__name__)' 'project/app.py'
 ```
 
-- **E-56** (`14/Q-1`), expect line 1
+- **E-56** (section 14), expect `Procfile:1`
 
 ```text
 Select-String -LiteralPath 'Procfile' -SimpleMatch -CaseSensitive -Pattern 'web: gunicorn project.app:app'
 grep -nF -- 'web: gunicorn project.app:app' 'Procfile'
 ```
 
-- **E-57** (`14/Q-2`), expect line 1083
+- **E-57** (section 14), expect `README.md:1083`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'git push heroku main'
 grep -nF -- 'git push heroku main' 'README.md'
 ```
 
-- **E-58** (`14/Q-3`), expect line 25
+- **E-58** (section 14), expect `project/app.py:25`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'SECRET_KEY ='
 grep -nF -- 'SECRET_KEY =' 'project/app.py'
 ```
 
-- **E-60** (`14/Q-5`), expect line 32
+- **E-60** (section 14), expect `project/app.py:32`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'SQLALCHEMY_TRACK_MODIFICATIONS = False'
 grep -nF -- 'SQLALCHEMY_TRACK_MODIFICATIONS = False' 'project/app.py'
 ```
 
-- **E-61** (`14/Q-6`), expect line 106
+- **E-61** (section 14), expect `project/app.py:106`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern '.delete()'
 grep -nF -- '.delete()' 'project/app.py'
 ```
 
-- **E-63** (`15/R-1`), expect line 26
+- **E-63** (section 15), expect `project/app.py:26`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'os.getenv("DATABASE_URL"'
 grep -nF -- 'os.getenv("DATABASE_URL"' 'project/app.py'
 ```
 
-- **E-64** (`15/R-2`), expect line 74
+- **E-64** (section 15), expect `project/templates/index.html:74`
 
 ```text
 Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern '{{ entry.text|safe }}'
 grep -nF -- '{{ entry.text|safe }}' 'project/templates/index.html'
 ```
 
-- **E-65** (`15/R-5`), expect line 54
+- **E-65** (section 15), expect `project/templates/search.html:54`
 
 ```text
 Select-String -LiteralPath 'project/templates/search.html' -SimpleMatch -CaseSensitive -Pattern 'entry.post_id'
 grep -nF -- 'entry.post_id' 'project/templates/search.html'
 ```
 
-- **E-66** (`15.1`), expect line 29
+- **E-66** (section 15), expect `.github/workflows/main.yml:29`
 
 ```text
 Select-String -LiteralPath '.github/workflows/main.yml' -SimpleMatch -CaseSensitive -Pattern 'python -m pytest'
 grep -nF -- 'python -m pytest' '.github/workflows/main.yml'
 ```
 
-- **E-67** (`16.1`), expect line 1
+- **E-67** (section 16), expect `runtime.txt:1`
 
 ```text
 Select-String -LiteralPath 'runtime.txt' -SimpleMatch -CaseSensitive -Pattern 'python-3.12.0'
 grep -nF -- 'python-3.12.0' 'runtime.txt'
 ```
 
-- **E-68** (`16.2`), expect line 9
+- **E-68** (section 16), expect `create_db.py:9`
 
 ```text
 Select-String -LiteralPath 'create_db.py' -SimpleMatch -CaseSensitive -Pattern 'db.create_all()'
 grep -nF -- 'db.create_all()' 'create_db.py'
 ```
 
-- **E-69** (`16.3`), expect line 94
+- **E-69** (section 16), expect `project/app.py:94`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'session.pop("logged_in", None)'
 grep -nF -- 'session.pop("logged_in", None)' 'project/app.py'
 ```
 
-- **E-70** (`16.4`), expect line 59
+- **E-70** (section 16), expect `project/app.py:59`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'entries = db.session.query(models.Post)'
 grep -nF -- 'entries = db.session.query(models.Post)' 'project/app.py'
 ```
 
-- **E-71** (`16.4`), expect line 29
+- **E-71** (section 16), expect `project/app.py:29`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'url = url.replace("postgres://", "postgresql://", 1)'
 grep -nF -- 'url = url.replace("postgres://", "postgresql://", 1)' 'project/app.py'
 ```
 
-- **E-72** (`16.5`), expect line 22
+- **E-72** (section 16), expect `.github/workflows/main.yml:22`
 
 ```text
 Select-String -LiteralPath '.github/workflows/main.yml' -SimpleMatch -CaseSensitive -Pattern 'pip install -r requirements.txt'
 grep -nF -- 'pip install -r requirements.txt' '.github/workflows/main.yml'
 ```
 
-- **E-73** (`16.5`), expect line 1083
+- **E-73** (section 16), expect `README.md:1083`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'git push heroku main'
 grep -nF -- 'git push heroku main' 'README.md'
 ```
 
-- **E-74** (`16.6`), expect line 26
+- **E-74** (section 16), expect `project/app.py:26`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'os.getenv("DATABASE_URL"'
 grep -nF -- 'os.getenv("DATABASE_URL"' 'project/app.py'
 ```
 
-- **E-75** (`16.7`), expect line 1
+- **E-75** (section 16), expect `Procfile:1`
 
 ```text
 Select-String -LiteralPath 'Procfile' -SimpleMatch -CaseSensitive -Pattern 'web: gunicorn project.app:app'
 grep -nF -- 'web: gunicorn project.app:app' 'Procfile'
 ```
 
-- **E-77** (`10.1/V-4`), expect line 99
+- **E-77** (section 10), expect `project/app.py:99`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'methods=["GET"]'
 grep -nF -- 'methods=["GET"]' 'project/app.py'
 ```
 
-- **E-78** (`10.1/V-8`), expect line 59
+- **E-78** (section 10), expect `project/app.py:59`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'entries = db.session.query(models.Post)'
 grep -nF -- 'entries = db.session.query(models.Post)' 'project/app.py'
 ```
 
-- **E-79** (`10.1/V-9`), expect line 40
+- **E-79** (section 10), expect `project/app.py:40`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'db = SQLAlchemy(app)'
 grep -nF -- 'db = SQLAlchemy(app)' 'project/app.py'
 ```
 
-- **E-80** (`10.1/V-10`), expect line 4
+- **E-80** (section 10), expect `project/models.py:4`
 
 ```text
 Select-String -LiteralPath 'project/models.py' -SimpleMatch -CaseSensitive -Pattern 'class Post(db.Model):'
 grep -nF -- 'class Post(db.Model):' 'project/models.py'
 ```
 
-- **E-81** (`15/R-9`), expect line 26
+- **E-81** (section 15), expect `project/app.py:26`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'os.getenv("DATABASE_URL"'
 grep -nF -- 'os.getenv("DATABASE_URL"' 'project/app.py'
 ```
 
-- **E-82** (`15/R-10`), expect line 45
+- **E-82** (section 15), expect `tests/app_test.py:45`
 
 ```text
 Select-String -LiteralPath 'tests/app_test.py' -SimpleMatch -CaseSensitive -Pattern 'Path("test.db").is_file()'
 grep -nF -- 'Path("test.db").is_file()' 'tests/app_test.py'
 ```
 
-- **E-83** (`6/UI-2`), expect line 27
+- **E-83** (section 6), expect `project/templates/login.html:27`
 
 ```text
 Select-String -LiteralPath 'project/templates/login.html' -SimpleMatch -CaseSensitive -Pattern '<strong>Error:</strong> {{ error }}'
 grep -nF -- '<strong>Error:</strong> {{ error }}' 'project/templates/login.html'
 ```
 
-- **E-84** (`8.1/C-1`), expect line 69
+- **E-84** (section 8), expect `project/app.py:69`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'db.session.add(new_entry)'
 grep -nF -- 'db.session.add(new_entry)' 'project/app.py'
 ```
 
-- **E-85** (`8.3/X-1`), expect line 8
+- **E-85** (section 8), expect `project/templates/index.html:8`
 
 ```text
 Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern 'bootstrap@5.3.2'
 grep -nF -- 'bootstrap@5.3.2' 'project/templates/index.html'
 ```
 
-- **E-86** (`8.5/X-1`), expect line 18
+- **E-86** (section 8), expect `project/static/main.js:18`
 
 ```text
 Select-String -LiteralPath 'project/static/main.js' -SimpleMatch -CaseSensitive -Pattern 'console.log(result);'
 grep -nF -- 'console.log(result);' 'project/static/main.js'
 ```
 
-- **E-87** (`9`), expect line 50
+- **E-87** (section 9), expect `project/app.py:50`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'return jsonify({"status": 0, "message": "Please log in."}), 401'
 grep -nF -- 'return jsonify({"status": 0, "message": "Please log in."}), 401' 'project/app.py'
 ```
 
-- **E-88** (`9`), expect line 67
+- **E-88** (section 9), expect `project/app.py:67`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'abort(401)'
 grep -nF -- 'abort(401)' 'project/app.py'
 ```
 
-- **E-89** (`7.4`), expect line 20
+- **E-89** (section 7), expect `project/static/main.js:20`
 
 ```text
 Select-String -LiteralPath 'project/static/main.js' -SimpleMatch -CaseSensitive -Pattern 'location.reload();'
 grep -nF -- 'location.reload();' 'project/static/main.js'
 ```
 
-- **E-90** (`11`), expect line 40
+- **E-90** (section 11), expect `project/app.py:40`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'db = SQLAlchemy(app)'
 grep -nF -- 'db = SQLAlchemy(app)' 'project/app.py'
 ```
 
-- **E-91** (`8.4`), expect line 4
+- **E-91** (section 8), expect `project/models.py:4`
 
 ```text
 Select-String -LiteralPath 'project/models.py' -SimpleMatch -CaseSensitive -Pattern 'class Post(db.Model):'
 grep -nF -- 'class Post(db.Model):' 'project/models.py'
 ```
 
-- **E-92** (`2.1`), expect line 2
+- **E-92** (section 2), expect `project/static/style.css:2`
 
 ```text
 Select-String -LiteralPath 'project/static/style.css' -SimpleMatch -CaseSensitive -Pattern 'font-family: sans-serif;'
 grep -nF -- 'font-family: sans-serif;' 'project/static/style.css'
 ```
 
-- **E-93** (`15.1`), expect line 29
+- **E-93** (section 15), expect `.github/workflows/main.yml:29`
 
 ```text
 Select-String -LiteralPath '.github/workflows/main.yml' -SimpleMatch -CaseSensitive -Pattern 'python -m pytest'
 grep -nF -- 'python -m pytest' '.github/workflows/main.yml'
 ```
 
-- **E-94** (`16.4`), expect line 59
+- **E-94** (section 16), expect `project/app.py:59`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'entries = db.session.query(models.Post)'
 grep -nF -- 'entries = db.session.query(models.Post)' 'project/app.py'
 ```
 
-- **E-95** (`16.6`), expect line 80
+- **E-95** (section 16), expect `project/app.py:80`
 
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'app.config["USERNAME"]'

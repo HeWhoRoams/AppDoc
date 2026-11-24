@@ -3,7 +3,7 @@
 - Target: `gitea`
 - Commit: `a61ad4876a6c8e6b3803c74d4423615e2571613b`
 - Git history: shallow
-- Schema: `appdoc-facts/6`
+- Schema: `appdoc-facts/7`
 
 > Facts show what the extractors found. An empty list is not proof that something is absent: the extractors only recognise the patterns of the Stacks below, so read the source before writing "none". Facts from test code are marked `test` in `facts.json` and left out of the lists.
 
@@ -79,12 +79,12 @@ No folders were pruned.
 
 | Application config file | Keys |
 |---|---|
-| `custom/conf/app.example.ini` | 290 |
+| `custom/conf/app.example.ini` | 785 |
 | `modules/setting/service.go` | 58 |
 | `modules/setting/server.go` | 44 |
 | `routers/install/install.go` | 42 |
-| `docker/root/etc/templates/app.ini` | 28 |
-| `docker/rootless/etc/templates/app.ini` | 26 |
+| `docker/root/etc/templates/app.ini` | 34 |
+| `docker/rootless/etc/templates/app.ini` | 32 |
 | `modules/setting/security.go` | 24 |
 | `modules/setting/storage.go` | 24 |
 | `modules/setting/log.go` | 23 |
@@ -289,34 +289,19 @@ No folders were pruned.
 
 - `api_token_env` — `crowdin.yml:2`
 - `server.LFS_JWT_SECRET` — `custom/conf/app.example.ini:318`
-- `server.LFS_JWT_SECRET_URI` — `custom/conf/app.example.ini:321`
 - `database.PASSWD` — `custom/conf/app.example.ini:367`
 - `database.PASSWD` — `custom/conf/app.example.ini:379`
 - `database.PASSWD` — `custom/conf/app.example.ini:400`
 - `security.SECRET_KEY` — `custom/conf/app.example.ini:446`
-- `security.SECRET_KEY_URI` — `custom/conf/app.example.ini:450`
 - `security.INTERNAL_TOKEN` — `custom/conf/app.example.ini:453`
-- `security.INTERNAL_TOKEN_URI` — `custom/conf/app.example.ini:456`
-- `security.MIN_PASSWORD_LENGTH` — `custom/conf/app.example.ini:482`
-- `security.PASSWORD_COMPLEXITY` — `custom/conf/app.example.ini:505`
-- `security.PASSWORD_HASH_ALGO` — `custom/conf/app.example.ini:508`
-- `security.PASSWORD_CHECK_PWN` — `custom/conf/app.example.ini:511`
-- `security.SUCCESSFUL_TOKENS_CACHE_SIZE` — `custom/conf/app.example.ini:515`
-- `security.DISABLE_QUERY_AUTH_TOKEN` — `custom/conf/app.example.ini:520`
-- `oauth2.JWT_SIGNING_PRIVATE_KEY_FILE` — `custom/conf/app.example.ini:611`
 - `oauth2.JWT_SECRET` — `custom/conf/app.example.ini:615`
-- `oauth2.JWT_SECRET_URI` — `custom/conf/app.example.ini:618`
 - `oauth2.ACCESS_TOKEN_EXPIRATION_TIME` — `custom/conf/app.example.ini:626`
 - `oauth2.REFRESH_TOKEN_EXPIRATION_TIME` — `custom/conf/app.example.ini:629`
 - `oauth2.INVALIDATE_REFRESH_TOKENS` — `custom/conf/app.example.ini:632`
-- `oauth2.MAX_TOKEN_LENGTH` — `custom/conf/app.example.ini:635`
-- `service.RESET_PASSWD_CODE_LIVE_MINUTES` — `custom/conf/app.example.ini:825`
-- `service.ENABLE_PASSWORD_SIGNIN_FORM` — `custom/conf/app.example.ini:865`
 - `service.RECAPTCHA_SECRET` — `custom/conf/app.example.ini:892`
 - `service.HCAPTCHA_SECRET` — `custom/conf/app.example.ini:896`
 - `service.MCAPTCHA_SECRET` — `custom/conf/app.example.ini:904`
 - `service.CF_TURNSTILE_SECRET` — `custom/conf/app.example.ini:909`
-- `cors.ALLOW_CREDENTIALS` — `custom/conf/app.example.ini:1381`
 - `mailer.PASSWD` — `custom/conf/app.example.ini:1866`
 - `email.incoming.PASSWORD` — `custom/conf/app.example.ini:1921`
 - `attachment.MINIO_SECRET_ACCESS_KEY` — `custom/conf/app.example.ini:2086`
@@ -335,9 +320,18 @@ No folders were pruned.
 - `oauth2.JWT_SECRET` — `modules/setting/oauth2.go:148`
 - `security.INTERNAL_TOKEN` — `modules/setting/security.go:137`
 - `security.INTERNAL_TOKEN` — `modules/setting/security.go:138`
-- `security.MIN_PASSWORD_LENGTH` — `modules/setting/security.go:167`
-- `security.PASSWORD_HASH_ALGO` — `modules/setting/security.go:175`
-- … 20 more in `facts.json`
+- `service.RECAPTCHA_SECRET` — `modules/setting/service.go:185`
+- `service.CF_TURNSTILE_SECRET` — `modules/setting/service.go:188`
+- `service.HCAPTCHA_SECRET` — `modules/setting/service.go:190`
+- `service.MCAPTCHA_SECRET` — `modules/setting/service.go:193`
+- `MINIO_SECRET_ACCESS_KEY` — `modules/setting/storage.go:109`
+- `AZURE_BLOB_ACCOUNT_KEY` — `modules/setting/storage.go:118`
+- `database.PASSWD` — `routers/install/install.go:324`
+- `server.LFS_JWT_SECRET` — `routers/install/install.go:335`
+- `mailer.PASSWD` — `routers/install/install.go:356`
+- `security.INTERNAL_TOKEN` — `routers/install/install.go:382`
+- `oauth2.JWT_SECRET` — `routers/install/install.go:389`
+- `security.SECRET_KEY` — `routers/install/install.go:399`
 - (8441 more in test code, not listed)
 
 ## External calls

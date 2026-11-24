@@ -581,7 +581,7 @@ Shown 16 of 16 application keys.
 ### 16.7 Scheduled and background jobs
 
 <!-- appdoc:generated scheduled-jobs -->
-No scheduled or background jobs were extracted. Not covered: `java-spring` (no entry-point capability).
+No scheduled or background jobs were extracted. Stacks that report jobs: `java-spring`.
 <!-- /appdoc:generated scheduled-jobs -->
 
 ## Appendix A. Evidence Register and Verification
@@ -590,6 +590,9 @@ No scheduled or background jobs were extracted. Not covered: `java-spring` (no e
 ### A.1 Audit state
 
 **Auditor:** independent. **Scope:** All sections that make claims were covered: 2, 3, 4 (11 of 14 features sampled), 4.1 (sampled), 5.2-5.3, 6 (all 9 screens), 7.1-7.8 (all), 8.1-8.5 (entity tables checked in full, rows grouped), 9 (6 of 12 rows), 10.1 (all 8), 10.2 (3 of 9 controls), 11 (all owner rows, test-suite rows), 12-13 (sampled), 14 (all 9), 15 (5 of 12 plus 15.1), 16.1-16.7 (sampled). 16.6 generated table not compared line by line. Smell candidates 4b908b79, 3d09653b and 1562fac5 are covered by V-6 and V-2, so no Dismissed rows. Not run: no application was executed.
+
+Generated blocks written by AppDoc 2.6.0 (bundle 2b80067ff022).
+Generated blocks were regenerated after the audit and are not covered by it.
 
 ### A.2 Coverage
 
@@ -737,847 +740,847 @@ No scheduled or background jobs were extracted. Not covered: `java-spring` (no e
 
 Run from the Target root. Each block names the expected line, then a PowerShell command and a POSIX command.
 
-- **E-1** (`2.1`), expect line 7
+- **E-1** (section 2), expect `pom.xml:7`
 
 ```text
 Select-String -LiteralPath 'pom.xml' -SimpleMatch -CaseSensitive -Pattern 'spring-boot-starter-parent'
 grep -nF -- 'spring-boot-starter-parent' 'pom.xml'
 ```
 
-- **E-2** (`2.2`), expect line 1
+- **E-2** (section 2), expect `README.md:1`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern '# Spring PetClinic Sample Application'
 grep -nF -- '# Spring PetClinic Sample Application' 'README.md'
 ```
 
-- **E-3** (`2.3`), expect line 80
+- **E-3** (section 2), expect `src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java:80`
 
 ```text
 Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java' -SimpleMatch -CaseSensitive -Pattern 'template.postForEntity("/owners/" + ownerId + "/pets/new",'
 grep -nF -- 'template.postForEntity("/owners/" + ownerId + "/pets/new",' 'src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java'
 ```
 
-- **E-4** (`3.1`), expect line 45
+- **E-4** (section 3), expect `src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java:45`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java' -SimpleMatch -CaseSensitive -Pattern '@Cacheable("vets")'
 grep -nF -- '@Cacheable("vets")' 'src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java'
 ```
 
-- **E-5** (`3.2`), expect line 55
+- **E-5** (section 3), expect `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:55`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -CaseSensitive -Pattern 'private final PetTypeRepository types;'
 grep -nF -- 'private final PetTypeRepository types;' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
 ```
 
-- **E-6** (`3.3`), expect line 64
+- **E-6** (section 3), expect `pom.xml:64`
 
 ```text
 Select-String -LiteralPath 'pom.xml' -SimpleMatch -CaseSensitive -Pattern 'spring-boot-starter-webmvc'
 grep -nF -- 'spring-boot-starter-webmvc' 'pom.xml'
 ```
 
-- **E-8** (`4/F-4`), expect line 54
+- **E-8** (section 4), expect `src/main/java/org/springframework/samples/petclinic/owner/Owner.java:54`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/Owner.java' -SimpleMatch -CaseSensitive -Pattern '@Size(max = 255)'
 grep -nF -- '@Size(max = 255)' 'src/main/java/org/springframework/samples/petclinic/owner/Owner.java'
 ```
 
-- **E-9** (`4/F-5`), expect line 182
+- **E-9** (section 4), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:182`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'orElseThrow(() -> new IllegalArgumentException('
 grep -nF -- 'orElseThrow(() -> new IllegalArgumentException(' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-12** (`4/F-9`), expect line 51
+- **E-12** (section 4), expect `src/main/java/org/springframework/samples/petclinic/owner/Visit.java:51`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/Visit.java' -SimpleMatch -CaseSensitive -Pattern 'this.date = LocalDate.now().plusDays(1);'
 grep -nF -- 'this.date = LocalDate.now().plusDays(1);' 'src/main/java/org/springframework/samples/petclinic/owner/Visit.java'
 ```
 
-- **E-13** (`4/F-10`), expect line 50
+- **E-13** (section 4), expect `src/main/java/org/springframework/samples/petclinic/vet/VetController.java:50`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java' -SimpleMatch -CaseSensitive -Pattern 'redirectAttributes.addAttribute("page", 1);'
 grep -nF -- 'redirectAttributes.addAttribute("page", 1);' 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java'
 ```
 
-- **E-15** (`4/F-12`), expect line 31
+- **E-15** (section 4), expect `src/main/java/org/springframework/samples/petclinic/system/CrashController.java:31`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/system/CrashController.java' -SimpleMatch -CaseSensitive -Pattern '@GetMapping("/oups")'
 grep -nF -- '@GetMapping("/oups")' 'src/main/java/org/springframework/samples/petclinic/system/CrashController.java'
 ```
 
-- **E-16** (`4/F-13`), expect line 47
+- **E-16** (section 4), expect `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java:47`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java' -SimpleMatch -CaseSensitive -Pattern 'interceptor.setParamName("lang");'
 grep -nF -- 'interceptor.setParamName("lang");' 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java'
 ```
 
-- **E-17** (`4/F-14`), expect line 21
+- **E-17** (section 4), expect `src/main/resources/application.properties:21`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/application.properties' -SimpleMatch -CaseSensitive -Pattern 'management.endpoints.web.exposure.include=*'
 grep -nF -- 'management.endpoints.web.exposure.include=*' 'src/main/resources/application.properties'
 ```
 
-- **E-18** (`4.1`), expect line 29
+- **E-18** (section 4), expect `.github/workflows/maven-build.yml:29`
 
 ```text
 Select-String -LiteralPath '.github/workflows/maven-build.yml' -SimpleMatch -CaseSensitive -Pattern 'run: ./mvnw -B verify'
 grep -nF -- 'run: ./mvnw -B verify' '.github/workflows/maven-build.yml'
 ```
 
-- **E-19** (`5.2`), expect line 61
+- **E-19** (section 5), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:61`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'dataBinder.setDisallowedFields("id", "*.id");'
 grep -nF -- 'dataBinder.setDisallowedFields("id", "*.id");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-20** (`5.3`), expect line 49
+- **E-20** (section 5), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:49`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'class OwnerController {'
 grep -nF -- 'class OwnerController {' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-21** (`6/UI-1`), expect line 10
+- **E-21** (section 6), expect `src/main/resources/templates/welcome.html:10`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/templates/welcome.html' -SimpleMatch -CaseSensitive -Pattern 'th:src="@{/resources/images/pets.png}"'
 grep -nF -- 'th:src="@{/resources/images/pets.png}"' 'src/main/resources/templates/welcome.html'
 ```
 
-- **E-23** (`6/UI-3`), expect line 31
+- **E-23** (section 6), expect `src/main/resources/templates/owners/ownersList.html:31`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/templates/owners/ownersList.html' -SimpleMatch -CaseSensitive -Pattern 'th:if="${totalPages > 1}"'
 grep -nF -- 'th:if="${totalPages > 1}"' 'src/main/resources/templates/owners/ownersList.html'
 ```
 
-- **E-24** (`6/UI-4`), expect line 86
+- **E-24** (section 6), expect `src/main/resources/templates/owners/ownerDetails.html:86`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/templates/owners/ownerDetails.html' -SimpleMatch -CaseSensitive -Pattern '// 3000 milliseconds (3 seconds)'
 grep -nF -- '// 3000 milliseconds (3 seconds)' 'src/main/resources/templates/owners/ownerDetails.html'
 ```
 
-- **E-25** (`6/UI-5`), expect line 14
+- **E-25** (section 6), expect `src/main/resources/templates/owners/createOrUpdateOwnerForm.html:14`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/templates/owners/createOrUpdateOwnerForm.html' -SimpleMatch -CaseSensitive -Pattern '''telephone'', ''text'''
 grep -nF -- ''\''telephone'\'', '\''text'\''' 'src/main/resources/templates/owners/createOrUpdateOwnerForm.html'
 ```
 
-- **E-26** (`6/UI-6`), expect line 26
+- **E-26** (section 6), expect `src/main/resources/templates/pets/createOrUpdatePetForm.html:26`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/templates/pets/createOrUpdatePetForm.html' -SimpleMatch -CaseSensitive -Pattern '''Update Pet'''
 grep -nF -- ''\''Update Pet'\''' 'src/main/resources/templates/pets/createOrUpdatePetForm.html'
 ```
 
-- **E-27** (`6/UI-7`), expect line 45
+- **E-27** (section 6), expect `src/main/resources/templates/pets/createOrUpdateVisitForm.html:45`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/templates/pets/createOrUpdateVisitForm.html' -SimpleMatch -CaseSensitive -Pattern '<b th:text="#{previousVisits}">Previous Visits</b>'
 grep -nF -- '<b th:text="#{previousVisits}">Previous Visits</b>' 'src/main/resources/templates/pets/createOrUpdateVisitForm.html'
 ```
 
-- **E-28** (`6/UI-8`), expect line 21
+- **E-28** (section 6), expect `src/main/resources/templates/vets/vetList.html:21`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/templates/vets/vetList.html' -SimpleMatch -CaseSensitive -Pattern 'th:text="#{none}">none</span>'
 grep -nF -- 'th:text="#{none}">none</span>' 'src/main/resources/templates/vets/vetList.html'
 ```
 
-- **E-29** (`6/UI-9`), expect line 13
+- **E-29** (section 6), expect `src/main/resources/templates/error.html:13`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/templates/error.html' -SimpleMatch -CaseSensitive -Pattern '<span th:case="500" th:text="#{error.500}">An internal server error occurred.</span>'
 grep -nF -- '<span th:case="500" th:text="#{error.500}">An internal server error occurred.</span>' 'src/main/resources/templates/error.html'
 ```
 
-- **E-31** (`7.2`), expect line 85
+- **E-31** (section 7), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:85`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'redirectAttributes.addFlashAttribute("message", "New Owner Created");'
 grep -nF -- 'redirectAttributes.addFlashAttribute("message", "New Owner Created");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-34** (`7.5`), expect line 194
+- **E-34** (section 7), expect `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:194`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -CaseSensitive -Pattern 'existingPet.setType(pet.getType());'
 grep -nF -- 'existingPet.setType(pet.getType());' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
 ```
 
-- **E-35** (`7.6`), expect line 110
+- **E-35** (section 7), expect `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:110`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java' -SimpleMatch -CaseSensitive -Pattern 'redirectAttributes.addFlashAttribute("message", "Your visit has been booked");'
 grep -nF -- 'redirectAttributes.addFlashAttribute("message", "Your visit has been booked");' 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java'
 ```
 
-- **E-38** (`8.1`), expect line 64
+- **E-38** (section 8), expect `README.md:64`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'uses an in-memory database (H2)'
 grep -nF -- 'uses an in-memory database (H2)' 'README.md'
 ```
 
-- **E-39** (`8.1`), expect line 3
+- **E-39** (section 8), expect `src/main/resources/application-mysql.properties:3`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/application-mysql.properties' -SimpleMatch -CaseSensitive -Pattern 'spring.datasource.url=${MYSQL_URL:'
 grep -nF -- 'spring.datasource.url=${MYSQL_URL:' 'src/main/resources/application-mysql.properties'
 ```
 
-- **E-40** (`8.2`), expect line 1
+- **E-40** (section 8), expect `src/main/resources/db/h2/data.sql:1`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/db/h2/data.sql' -SimpleMatch -CaseSensitive -Pattern 'INSERT INTO vets VALUES (default, ''James'', ''Carter'');'
 grep -nF -- 'INSERT INTO vets VALUES (default, '\''James'\'', '\''Carter'\'');' 'src/main/resources/db/h2/data.sql'
 ```
 
-- **E-41** (`8.2`), expect line 36
+- **E-41** (section 8), expect `src/main/java/org/springframework/samples/petclinic/owner/PetTypeRepository.java:36`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeRepository.java' -SimpleMatch -CaseSensitive -Pattern '@Query("SELECT ptype FROM PetType ptype ORDER BY ptype.name")'
 grep -nF -- '@Query("SELECT ptype FROM PetType ptype ORDER BY ptype.name")' 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeRepository.java'
 ```
 
-- **E-42** (`8.3`), expect line 80
+- **E-42** (section 8), expect `src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java:80`
 
 ```text
 Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java' -SimpleMatch -CaseSensitive -Pattern 'template.postForEntity("/owners/" + ownerId + "/pets/new",'
 grep -nF -- 'template.postForEntity("/owners/" + ownerId + "/pets/new",' 'src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java'
 ```
 
-- **E-43** (`8.4`), expect line 39
+- **E-43** (section 8), expect `src/main/resources/db/h2/schema.sql:39`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/db/h2/schema.sql' -SimpleMatch -CaseSensitive -Pattern 'VARCHAR_IGNORECASE(30)'
 grep -nF -- 'VARCHAR_IGNORECASE(30)' 'src/main/resources/db/h2/schema.sql'
 ```
 
-- **E-44** (`8.4`), expect line 55
+- **E-44** (section 8), expect `src/main/resources/db/h2/schema.sql:55`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/db/h2/schema.sql' -SimpleMatch -CaseSensitive -Pattern 'UNIQUE (owner_id, name)'
 grep -nF -- 'UNIQUE (owner_id, name)' 'src/main/resources/db/h2/schema.sql'
 ```
 
-- **E-45** (`8.4`), expect line 62
+- **E-45** (section 8), expect `src/main/resources/db/h2/schema.sql:62`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/db/h2/schema.sql' -SimpleMatch -CaseSensitive -Pattern 'description VARCHAR(255)'
 grep -nF -- 'description VARCHAR(255)' 'src/main/resources/db/h2/schema.sql'
 ```
 
-- **E-46** (`8.4`), expect line 21
+- **E-46** (section 8), expect `src/main/resources/db/h2/schema.sql:21`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/db/h2/schema.sql' -SimpleMatch -CaseSensitive -Pattern 'CREATE INDEX specialties_name ON specialties (name);'
 grep -nF -- 'CREATE INDEX specialties_name ON specialties (name);' 'src/main/resources/db/h2/schema.sql'
 ```
 
-- **E-47** (`8.5`), expect line 24
+- **E-47** (section 8), expect `src/main/resources/application.properties:24`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/application.properties' -SimpleMatch -CaseSensitive -Pattern 'logging.level.org.springframework=INFO'
 grep -nF -- 'logging.level.org.springframework=INFO' 'src/main/resources/application.properties'
 ```
 
-- **E-48** (`8.5`), expect line 71
+- **E-48** (section 8), expect `k8s/db.yml:71`
 
 ```text
 Select-String -LiteralPath 'k8s/db.yml' -SimpleMatch -CaseSensitive -Pattern 'startupProbe:'
 grep -nF -- 'startupProbe:' 'k8s/db.yml'
 ```
 
-- **E-49** (`9`), expect line 118
+- **E-49** (section 9), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:118`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'result.rejectValue("lastName", "notFound", "not found");'
 grep -nF -- 'result.rejectValue("lastName", "notFound", "not found");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-50** (`9`), expect line 34
+- **E-50** (section 9), expect `src/main/resources/messages/messages.properties:34`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'telephone.invalid=Telephone must be a 10-digit number'
 grep -nF -- 'telephone.invalid=Telephone must be a 10-digit number' 'src/main/resources/messages/messages.properties'
 ```
 
-- **E-51** (`9`), expect line 4
+- **E-51** (section 9), expect `src/main/resources/messages/messages.properties:4`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'duplicate=is already in use'
 grep -nF -- 'duplicate=is already in use' 'src/main/resources/messages/messages.properties'
 ```
 
-- **E-52** (`9`), expect line 9
+- **E-52** (section 9), expect `src/main/resources/messages/messages.properties:9`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'typeMismatch.visitDate=Visit date must be in the future'
 grep -nF -- 'typeMismatch.visitDate=Visit date must be in the future' 'src/main/resources/messages/messages.properties'
 ```
 
-- **E-53** (`9`), expect line 59
+- **E-53** (section 9), expect `src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java:59`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java' -SimpleMatch -CaseSensitive -Pattern 'throw new ParseException("type not found: " + text, 0);'
 grep -nF -- 'throw new ParseException("type not found: " + text, 0);' 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java'
 ```
 
-- **E-54** (`9`), expect line 163
+- **E-54** (section 9), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:163`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'Owner ID mismatch. Please try again.'
 grep -nF -- 'Owner ID mismatch. Please try again.' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-55** (`10.1/V-1`), expect line 153
+- **E-55** (section 10), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:153`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern '@PostMapping("/owners/{ownerId}/edit")'
 grep -nF -- '@PostMapping("/owners/{ownerId}/edit")' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-56** (`10.1/V-2`), expect line 20
+- **E-56** (section 10), expect `src/main/resources/application.properties:20`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/application.properties' -SimpleMatch -CaseSensitive -Pattern '# Don''t do this in production, only for development and testing'
 grep -nF -- '# Don'\''t do this in production, only for development and testing' 'src/main/resources/application.properties'
 ```
 
-- **E-57** (`10.1/V-3`), expect line 9
+- **E-57** (section 10), expect `src/main/resources/db/mysql/user.sql:9`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/db/mysql/user.sql' -SimpleMatch -CaseSensitive -Pattern 'GRANT ALL PRIVILEGES ON petclinic.*'
 grep -nF -- 'GRANT ALL PRIVILEGES ON petclinic.*' 'src/main/resources/db/mysql/user.sql'
 ```
 
-- **E-58** (`10.1/V-4`), expect line 5
+- **E-58** (section 10), expect `docker-compose.yml:5`
 
 ```text
 Select-String -LiteralPath 'docker-compose.yml' -SimpleMatch -CaseSensitive -Pattern '"3306:3306"'
 grep -nF -- '"3306:3306"' 'docker-compose.yml'
 ```
 
-- **E-59** (`10.1/V-5`), expect line 44
+- **E-59** (section 10), expect `k8s/db.yml:44`
 
 ```text
 Select-String -LiteralPath 'k8s/db.yml' -SimpleMatch -CaseSensitive -Pattern 'image: postgres:18.4'
 grep -nF -- 'image: postgres:18.4' 'k8s/db.yml'
 ```
 
-- **E-60** (`10.1/V-6`), expect line 80
+- **E-60** (section 10), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:80`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'redirectAttributes.addFlashAttribute("error", "There was an error in creating the owner.");'
 grep -nF -- 'redirectAttributes.addFlashAttribute("error", "There was an error in creating the owner.");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-61** (`10.1/V-7`), expect line 31
+- **E-61** (section 10), expect `src/main/java/org/springframework/samples/petclinic/system/CrashController.java:31`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/system/CrashController.java' -SimpleMatch -CaseSensitive -Pattern '@GetMapping("/oups")'
 grep -nF -- '@GetMapping("/oups")' 'src/main/java/org/springframework/samples/petclinic/system/CrashController.java'
 ```
 
-- **E-63** (`10.2`), expect line 64
+- **E-63** (section 10), expect `pom.xml:64`
 
 ```text
 Select-String -LiteralPath 'pom.xml' -SimpleMatch -CaseSensitive -Pattern 'spring-boot-starter-webmvc'
 grep -nF -- 'spring-boot-starter-webmvc' 'pom.xml'
 ```
 
-- **E-64** (`10.2`), expect line 10
+- **E-64** (section 10), expect `k8s/petclinic.yml:10`
 
 ```text
 Select-String -LiteralPath 'k8s/petclinic.yml' -SimpleMatch -CaseSensitive -Pattern 'targetPort: 8080'
 grep -nF -- 'targetPort: 8080' 'k8s/petclinic.yml'
 ```
 
-- **E-65** (`10.2`), expect line 44
+- **E-65** (section 10), expect `k8s/db.yml:44`
 
 ```text
 Select-String -LiteralPath 'k8s/db.yml' -SimpleMatch -CaseSensitive -Pattern 'image: postgres:18.4'
 grep -nF -- 'image: postgres:18.4' 'k8s/db.yml'
 ```
 
-- **E-66** (`11`), expect line 1
+- **E-66** (section 11), expect `README.md:1`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern '# Spring PetClinic Sample Application'
 grep -nF -- '# Spring PetClinic Sample Application' 'README.md'
 ```
 
-- **E-67** (`11`), expect line 60
+- **E-67** (section 11), expect `README.md:60`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'Our issue tracker is available'
 grep -nF -- 'Our issue tracker is available' 'README.md'
 ```
 
-- **E-68** (`11`), expect line 58
+- **E-68** (section 11), expect `README.md:58`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern '## In case you find a bug/suggested improvement for Spring Petclinic'
 grep -nF -- '## In case you find a bug/suggested improvement for Spring Petclinic' 'README.md'
 ```
 
-- **E-69** (`11`), expect line 5
+- **E-69** (section 11), expect `src/main/resources/db/mysql/petclinic_db_setup_mysql.txt:5`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/db/mysql/petclinic_db_setup_mysql.txt' -SimpleMatch -CaseSensitive -Pattern '@author Sam Brannen'
 grep -nF -- '@author Sam Brannen' 'src/main/resources/db/mysql/petclinic_db_setup_mysql.txt'
 ```
 
-- **E-70** (`11`), expect line 8
+- **E-70** (section 11), expect `.github/workflows/maven-build.yml:8`
 
 ```text
 Select-String -LiteralPath '.github/workflows/maven-build.yml' -SimpleMatch -CaseSensitive -Pattern 'branches: [ main ]'
 grep -nF -- 'branches: [ main ]' '.github/workflows/maven-build.yml'
 ```
 
-- **E-71** (`11`), expect line 60
+- **E-71** (section 11), expect `src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java:60`
 
 ```text
 Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java' -SimpleMatch -CaseSensitive -Pattern '@WebMvcTest(OwnerController.class)'
 grep -nF -- '@WebMvcTest(OwnerController.class)' 'src/test/java/org/springframework/samples/petclinic/owner/OwnerControllerTests.java'
 ```
 
-- **E-72** (`11`), expect line 29
+- **E-72** (section 11), expect `src/test/java/org/springframework/samples/petclinic/vet/VetTests.java:29`
 
 ```text
 Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/vet/VetTests.java' -SimpleMatch -CaseSensitive -Pattern 'void serialization() {'
 grep -nF -- 'void serialization() {' 'src/test/java/org/springframework/samples/petclinic/vet/VetTests.java'
 ```
 
-- **E-73** (`11`), expect line 274
+- **E-73** (section 11), expect `src/test/java/org/springframework/samples/petclinic/service/ClinicServiceTests.java:274`
 
 ```text
 Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/service/ClinicServiceTests.java' -SimpleMatch -CaseSensitive -Pattern 'assertThrows(DataIntegrityViolationException.class, () -> {'
 grep -nF -- 'assertThrows(DataIntegrityViolationException.class, () -> {' 'src/test/java/org/springframework/samples/petclinic/service/ClinicServiceTests.java'
 ```
 
-- **E-74** (`11`), expect line 49
+- **E-74** (section 11), expect `src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java:49`
 
 ```text
 Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java' -SimpleMatch -CaseSensitive -Pattern 'vets.findAll(); // served from cache'
 grep -nF -- 'vets.findAll(); // served from cache' 'src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java'
 ```
 
-- **E-75** (`11`), expect line 124
+- **E-75** (section 11), expect `src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java:124`
 
 ```text
 Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java' -SimpleMatch -CaseSensitive -Pattern 'assertThat(successCount.get()).isEqualTo(1);'
 grep -nF -- 'assertThat(successCount.get()).isEqualTo(1);' 'src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java'
 ```
 
-- **E-76** (`11`), expect line 40
+- **E-76** (section 11), expect `src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java:40`
 
 ```text
 Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java' -SimpleMatch -CaseSensitive -Pattern 'void checkNonInternationalizedStrings() throws Exception {'
 grep -nF -- 'void checkNonInternationalizedStrings() throws Exception {' 'src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java'
 ```
 
-- **E-77** (`12`), expect line 100
+- **E-77** (section 12), expect `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:100`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java' -SimpleMatch -CaseSensitive -Pattern 'if (visit.getDate() != null && !visit.getDate().isAfter(LocalDate.now())) {'
 grep -nF -- 'if (visit.getDate() != null && !visit.getDate().isAfter(LocalDate.now())) {' 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java'
 ```
 
-- **E-78** (`13`), expect line 85
+- **E-78** (section 13), expect `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:85`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java' -SimpleMatch -CaseSensitive -Pattern 'return LocalDate.now().plusDays(1);'
 grep -nF -- 'return LocalDate.now().plusDays(1);' 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java'
 ```
 
-- **E-79** (`14/Q-1`), expect line 1
+- **E-79** (section 14), expect `README.md:1`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern '# Spring PetClinic Sample Application'
 grep -nF -- '# Spring PetClinic Sample Application' 'README.md'
 ```
 
-- **E-80** (`14/Q-2`), expect line 33
+- **E-80** (section 14), expect `k8s/petclinic.yml:33`
 
 ```text
 Select-String -LiteralPath 'k8s/petclinic.yml' -SimpleMatch -CaseSensitive -Pattern 'image: dsyer/petclinic'
 grep -nF -- 'image: dsyer/petclinic' 'k8s/petclinic.yml'
 ```
 
-- **E-81** (`14/Q-3`), expect line 25
+- **E-81** (section 14), expect `.github/workflows/deploy-and-test-cluster.yml:25`
 
 ```text
 Select-String -LiteralPath '.github/workflows/deploy-and-test-cluster.yml' -SimpleMatch -CaseSensitive -Pattern 'kubectl apply -f k8s/'
 grep -nF -- 'kubectl apply -f k8s/' '.github/workflows/deploy-and-test-cluster.yml'
 ```
 
-- **E-82** (`14/Q-4`), expect line 65
+- **E-82** (section 14), expect `README.md:65`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'The h2 console is exposed at'
 grep -nF -- 'The h2 console is exposed at' 'README.md'
 ```
 
-- **E-84** (`14/Q-6`), expect line 86
+- **E-84** (section 14), expect `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:86`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -CaseSensitive -Pattern 'return owner.getPet(petId);'
 grep -nF -- 'return owner.getPet(petId);' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
 ```
 
-- **E-85** (`14/Q-7`), expect line 29
+- **E-85** (section 14), expect `src/main/resources/application.properties:29`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/application.properties' -SimpleMatch -CaseSensitive -Pattern 'spring.web.resources.cache.cachecontrol.max-age=12h'
 grep -nF -- 'spring.web.resources.cache.cachecontrol.max-age=12h' 'src/main/resources/application.properties'
 ```
 
-- **E-86** (`14/Q-8`), expect line 21
+- **E-86** (section 14), expect `src/main/resources/application.properties:21`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/application.properties' -SimpleMatch -CaseSensitive -Pattern 'management.endpoints.web.exposure.include=*'
 grep -nF -- 'management.endpoints.web.exposure.include=*' 'src/main/resources/application.properties'
 ```
 
-- **E-87** (`14/Q-9`), expect line 1
+- **E-87** (section 14), expect `README.md:1`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern '# Spring PetClinic Sample Application'
 grep -nF -- '# Spring PetClinic Sample Application' 'README.md'
 ```
 
-- **E-88** (`15/R-2`), expect line 21
+- **E-88** (section 15), expect `src/main/resources/application.properties:21`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/application.properties' -SimpleMatch -CaseSensitive -Pattern 'management.endpoints.web.exposure.include=*'
 grep -nF -- 'management.endpoints.web.exposure.include=*' 'src/main/resources/application.properties'
 ```
 
-- **E-89** (`15/R-4`), expect line 5
+- **E-89** (section 15), expect `docker-compose.yml:5`
 
 ```text
 Select-String -LiteralPath 'docker-compose.yml' -SimpleMatch -CaseSensitive -Pattern '"3306:3306"'
 grep -nF -- '"3306:3306"' 'docker-compose.yml'
 ```
 
-- **E-90** (`15/R-5`), expect line 44
+- **E-90** (section 15), expect `k8s/db.yml:44`
 
 ```text
 Select-String -LiteralPath 'k8s/db.yml' -SimpleMatch -CaseSensitive -Pattern 'image: postgres:18.4'
 grep -nF -- 'image: postgres:18.4' 'k8s/db.yml'
 ```
 
-- **E-91** (`15/R-6`), expect line 80
+- **E-91** (section 15), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:80`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'redirectAttributes.addFlashAttribute("error", "There was an error in creating the owner.");'
 grep -nF -- 'redirectAttributes.addFlashAttribute("error", "There was an error in creating the owner.");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-93** (`15.1`), expect line 1
+- **E-93** (section 15), expect `docs/appdoc/evidence.jsonl:1`
 
 ```text
 Select-String -LiteralPath 'docs/appdoc/evidence.jsonl' -SimpleMatch -CaseSensitive -Pattern '"performed": true'
 grep -nF -- '"performed": true' 'docs/appdoc/evidence.jsonl'
 ```
 
-- **E-94** (`16.1`), expect line 19
+- **E-94** (section 16), expect `pom.xml:19`
 
 ```text
 Select-String -LiteralPath 'pom.xml' -SimpleMatch -CaseSensitive -Pattern '<java.version>17</java.version>'
 grep -nF -- '<java.version>17</java.version>' 'pom.xml'
 ```
 
-- **E-95** (`16.2`), expect line 21
+- **E-95** (section 16), expect `src/main/resources/db/mysql/petclinic_db_setup_mysql.txt:21`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/db/mysql/petclinic_db_setup_mysql.txt' -SimpleMatch -CaseSensitive -Pattern '(Once only) create the PetClinic database and user'
 grep -nF -- '(Once only) create the PetClinic database and user' 'src/main/resources/db/mysql/petclinic_db_setup_mysql.txt'
 ```
 
-- **E-96** (`16.3`), expect line 35
+- **E-96** (section 16), expect `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java:35`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java' -SimpleMatch -CaseSensitive -Pattern 'resolver.setDefaultLocale(Locale.ENGLISH);'
 grep -nF -- 'resolver.setDefaultLocale(Locale.ENGLISH);' 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java'
 ```
 
-- **E-97** (`16.4`), expect line 7
+- **E-97** (section 16), expect `src/main/resources/application-postgres.properties:7`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/application-postgres.properties' -SimpleMatch -CaseSensitive -Pattern 'spring.sql.init.mode=always'
 grep -nF -- 'spring.sql.init.mode=always' 'src/main/resources/application-postgres.properties'
 ```
 
-- **E-98** (`16.4`), expect line 4
+- **E-98** (section 16), expect `src/main/resources/messages/messages.properties:4`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'duplicate=is already in use'
 grep -nF -- 'duplicate=is already in use' 'src/main/resources/messages/messages.properties'
 ```
 
-- **E-99** (`16.4`), expect line 53
+- **E-99** (section 16), expect `k8s/petclinic.yml:53`
 
 ```text
 Select-String -LiteralPath 'k8s/petclinic.yml' -SimpleMatch -CaseSensitive -Pattern 'path: /readyz'
 grep -nF -- 'path: /readyz' 'k8s/petclinic.yml'
 ```
 
-- **E-100** (`16.5`), expect line 29
+- **E-100** (section 16), expect `.github/workflows/maven-build.yml:29`
 
 ```text
 Select-String -LiteralPath '.github/workflows/maven-build.yml' -SimpleMatch -CaseSensitive -Pattern 'run: ./mvnw -B verify'
 grep -nF -- 'run: ./mvnw -B verify' '.github/workflows/maven-build.yml'
 ```
 
-- **E-101** (`16.5`), expect line 25
+- **E-101** (section 16), expect `.github/workflows/deploy-and-test-cluster.yml:25`
 
 ```text
 Select-String -LiteralPath '.github/workflows/deploy-and-test-cluster.yml' -SimpleMatch -CaseSensitive -Pattern 'kubectl apply -f k8s/'
 grep -nF -- 'kubectl apply -f k8s/' '.github/workflows/deploy-and-test-cluster.yml'
 ```
 
-- **E-102** (`16.6`), expect line 11
+- **E-102** (section 16), expect `src/main/resources/application.properties:11`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/application.properties' -SimpleMatch -CaseSensitive -Pattern 'spring.jpa.open-in-view=false'
 grep -nF -- 'spring.jpa.open-in-view=false' 'src/main/resources/application.properties'
 ```
 
-- **E-103** (`16.7`), expect line 28
+- **E-103** (section 16), expect `src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java:28`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java' -SimpleMatch -CaseSensitive -Pattern '@SpringBootApplication'
 grep -nF -- '@SpringBootApplication' 'src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java'
 ```
 
-- **E-104** (`10.1/V-9`), expect line 61
+- **E-104** (section 10), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:61`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'dataBinder.setDisallowedFields("id", "*.id");'
 grep -nF -- 'dataBinder.setDisallowedFields("id", "*.id");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-105** (`5.2`), expect line 61
+- **E-105** (section 5), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:61`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'dataBinder.setDisallowedFields("id", "*.id");'
 grep -nF -- 'dataBinder.setDisallowedFields("id", "*.id");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-106** (`15/R-13`), expect line 89
+- **E-106** (section 15), expect `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:89`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -CaseSensitive -Pattern '@InitBinder("owner")'
 grep -nF -- '@InitBinder("owner")' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
 ```
 
-- **E-107** (`15/R-8`), expect line 68
+- **E-107** (section 15), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:68`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'Owner not found with id: " + ownerId'
 grep -nF -- 'Owner not found with id: " + ownerId' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-108** (`15/R-12`), expect line 86
+- **E-108** (section 15), expect `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:86`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -CaseSensitive -Pattern 'return owner.getPet(petId);'
 grep -nF -- 'return owner.getPet(petId);' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
 ```
 
-- **E-109** (`10.1/V-8`), expect line 73
+- **E-109** (section 10), expect `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:73`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java' -SimpleMatch -CaseSensitive -Pattern '"Pet with id " + petId'
 grep -nF -- '"Pet with id " + petId' 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java'
 ```
 
-- **E-110** (`10.2`), expect line 44
+- **E-110** (section 10), expect `src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java:44`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java' -SimpleMatch -CaseSensitive -Pattern 'errors.rejectValue("name", REQUIRED, REQUIRED);'
 grep -nF -- 'errors.rejectValue("name", REQUIRED, REQUIRED);' 'src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java'
 ```
 
-- **E-111** (`4/F-3`), expect line 3
+- **E-111** (section 4), expect `src/main/resources/messages/messages.properties:3`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'notFound=has not been found'
 grep -nF -- 'notFound=has not been found' 'src/main/resources/messages/messages.properties'
 ```
 
-- **E-112** (`4/F-6`), expect line 163
+- **E-112** (section 4), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:163`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'Owner ID mismatch. Please try again.'
 grep -nF -- 'Owner ID mismatch. Please try again.' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-113** (`4/F-7`), expect line 150
+- **E-113** (section 4), expect `src/main/java/org/springframework/samples/petclinic/owner/Owner.java:150`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/Owner.java' -SimpleMatch -CaseSensitive -Pattern 'compName.equalsIgnoreCase(name)'
 grep -nF -- 'compName.equalsIgnoreCase(name)' 'src/main/java/org/springframework/samples/petclinic/owner/Owner.java'
 ```
 
-- **E-114** (`4/F-11`), expect line 73
+- **E-114** (section 4), expect `src/main/java/org/springframework/samples/petclinic/vet/VetController.java:73`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java' -SimpleMatch -CaseSensitive -Pattern 'public @ResponseBody Vets showResourcesVetList() {'
 grep -nF -- 'public @ResponseBody Vets showResourcesVetList() {' 'src/main/java/org/springframework/samples/petclinic/vet/VetController.java'
 ```
 
-- **E-115** (`6/UI-2`), expect line 3
+- **E-115** (section 6), expect `src/main/resources/messages/messages.properties:3`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'notFound=has not been found'
 grep -nF -- 'notFound=has not been found' 'src/main/resources/messages/messages.properties'
 ```
 
-- **E-116** (`8.1`), expect line 45
+- **E-116** (section 8), expect `src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java:45`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java' -SimpleMatch -CaseSensitive -Pattern '@Cacheable("vets")'
 grep -nF -- '@Cacheable("vets")' 'src/main/java/org/springframework/samples/petclinic/vet/VetRepository.java'
 ```
 
-- **E-117** (`11`), expect line 60
+- **E-117** (section 11), expect `README.md:60`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'Our issue tracker is available'
 grep -nF -- 'Our issue tracker is available' 'README.md'
 ```
 
-- **E-118** (`11`), expect line 176
+- **E-118** (section 11), expect `README.md:176`
 
 ```text
 Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'All commits must include a __Signed-off-by__ trailer'
 grep -nF -- 'All commits must include a __Signed-off-by__ trailer' 'README.md'
 ```
 
-- **E-119** (`11`), expect line 29
+- **E-119** (section 11), expect `src/test/java/org/springframework/samples/petclinic/vet/VetTests.java:29`
 
 ```text
 Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/vet/VetTests.java' -SimpleMatch -CaseSensitive -Pattern 'void serialization() {'
 grep -nF -- 'void serialization() {' 'src/test/java/org/springframework/samples/petclinic/vet/VetTests.java'
 ```
 
-- **E-120** (`11`), expect line 49
+- **E-120** (section 11), expect `src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java:49`
 
 ```text
 Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java' -SimpleMatch -CaseSensitive -Pattern 'vets.findAll(); // served from cache'
 grep -nF -- 'vets.findAll(); // served from cache' 'src/test/java/org/springframework/samples/petclinic/PetClinicIntegrationTests.java'
 ```
 
-- **E-121** (`11`), expect line 40
+- **E-121** (section 11), expect `src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java:40`
 
 ```text
 Select-String -LiteralPath 'src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java' -SimpleMatch -CaseSensitive -Pattern 'void checkNonInternationalizedStrings() throws Exception {'
 grep -nF -- 'void checkNonInternationalizedStrings() throws Exception {' 'src/test/java/org/springframework/samples/petclinic/system/I18nPropertiesSyncTest.java'
 ```
 
-- **E-122** (`9`), expect line 3
+- **E-122** (section 9), expect `src/main/resources/messages/messages.properties:3`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'notFound=has not been found'
 grep -nF -- 'notFound=has not been found' 'src/main/resources/messages/messages.properties'
 ```
 
-- **E-123** (`9`), expect line 4
+- **E-123** (section 9), expect `src/main/resources/messages/messages.properties:4`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'duplicate=is already in use'
 grep -nF -- 'duplicate=is already in use' 'src/main/resources/messages/messages.properties'
 ```
 
-- **E-125** (`9`), expect line 18
+- **E-125** (section 9), expect `src/main/resources/db/h2/data.sql:18`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/db/h2/data.sql' -SimpleMatch -CaseSensitive -Pattern 'INSERT INTO types VALUES (default, ''cat'');'
 grep -nF -- 'INSERT INTO types VALUES (default, '\''cat'\'');' 'src/main/resources/db/h2/data.sql'
 ```
 
-- **E-126** (`9`), expect line 163
+- **E-126** (section 9), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:163`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'Owner ID mismatch. Please try again.'
 grep -nF -- 'Owner ID mismatch. Please try again.' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-127** (`16.4`), expect line 7
+- **E-127** (section 16), expect `src/main/resources/application-postgres.properties:7`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/application-postgres.properties' -SimpleMatch -CaseSensitive -Pattern 'spring.sql.init.mode=always'
 grep -nF -- 'spring.sql.init.mode=always' 'src/main/resources/application-postgres.properties'
 ```
 
-- **E-128** (`16.4`), expect line 4
+- **E-128** (section 16), expect `src/main/resources/messages/messages.properties:4`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'duplicate=is already in use'
 grep -nF -- 'duplicate=is already in use' 'src/main/resources/messages/messages.properties'
 ```
 
-- **E-129** (`7.1`), expect line 39
+- **E-129** (section 7), expect `src/main/resources/db/h2/schema.sql:39`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/db/h2/schema.sql' -SimpleMatch -CaseSensitive -Pattern 'VARCHAR_IGNORECASE(30)'
 grep -nF -- 'VARCHAR_IGNORECASE(30)' 'src/main/resources/db/h2/schema.sql'
 ```
 
-- **E-131** (`7.3`), expect line 61
+- **E-131** (section 7), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:61`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'dataBinder.setDisallowedFields("id", "*.id");'
 grep -nF -- 'dataBinder.setDisallowedFields("id", "*.id");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
 ```
 
-- **E-132** (`7.4`), expect line 112
+- **E-132** (section 7), expect `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:112`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -CaseSensitive -Pattern 'result.rejectValue("name", "duplicate", "already exists");'
 grep -nF -- 'result.rejectValue("name", "duplicate", "already exists");' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
 ```
 
-- **E-133** (`7.7`), expect line 62
+- **E-133** (section 7), expect `src/main/java/org/springframework/samples/petclinic/vet/Vet.java:62`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/vet/Vet.java' -SimpleMatch -CaseSensitive -Pattern '.sorted(Comparator.comparing(NamedEntity::getName))'
 grep -nF -- '.sorted(Comparator.comparing(NamedEntity::getName))' 'src/main/java/org/springframework/samples/petclinic/vet/Vet.java'
 ```
 
-- **E-134** (`7.8`), expect line 47
+- **E-134** (section 7), expect `src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java:47`
 
 ```text
 Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java' -SimpleMatch -CaseSensitive -Pattern 'interceptor.setParamName("lang");'
 grep -nF -- 'interceptor.setParamName("lang");' 'src/main/java/org/springframework/samples/petclinic/system/WebConfiguration.java'
 ```
 
-- **E-135** (`8.2`), expect line 1
+- **E-135** (section 8), expect `src/main/resources/db/h2/data.sql:1`
 
 ```text
 Select-String -LiteralPath 'src/main/resources/db/h2/data.sql' -SimpleMatch -CaseSensitive -Pattern 'INSERT INTO vets VALUES (default, ''James'', ''Carter'');'
 grep -nF -- 'INSERT INTO vets VALUES (default, '\''James'\'', '\''Carter'\'');' 'src/main/resources/db/h2/data.sql'
 ```
 
-- **E-136** (`15.1`), expect line 1
+- **E-136** (section 15), expect `docs/appdoc/evidence.jsonl:1`
 
 ```text
 Select-String -LiteralPath 'docs/appdoc/evidence.jsonl' -SimpleMatch -CaseSensitive -Pattern '"performed": true'

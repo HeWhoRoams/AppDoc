@@ -1107,12 +1107,21 @@
    "stack": "python-flask"
   }
  ],
- "generator": "2.5.0",
- "schema": "appdoc-facts/6",
+ "schema": "appdoc-facts/7",
  "stacks": [
   {
    "detail": {
-    "capabilities": [],
+    "capabilities": [
+     "auth_check",
+     "config_key",
+     "connection",
+     "data_access",
+     "entry_point.job",
+     "entry_point.route",
+     "external_call",
+     "message",
+     "smell"
+    ],
     "file_count": 6,
     "marker_files": [
      "requirements.txt"
@@ -1131,6 +1140,7 @@
   "history": "shallow",
   "name": "flaskr-tdd",
   "scan": {
+   "duplicate_folders": [],
    "found": 23,
    "ignored": 0,
    "metadata": 0,

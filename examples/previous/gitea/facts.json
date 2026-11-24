@@ -13665,7 +13665,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -13679,7 +13679,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -13693,7 +13693,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -13973,7 +13973,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -14015,7 +14015,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -14043,7 +14043,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -14085,7 +14085,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -14169,7 +14169,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -14225,7 +14225,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -14575,8 +14575,9 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
-    "secret_location": true,
+    "role": "app",
+    "secret_location": false,
+    "secret_ref": true,
     "source": "app.example.ini",
     "use": "define"
    },
@@ -14603,7 +14604,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -14617,7 +14618,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -14631,7 +14632,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15185,8 +15186,9 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
-    "secret_location": true,
+    "role": "app",
+    "secret_location": false,
+    "secret_ref": true,
     "source": "app.example.ini",
     "use": "define"
    },
@@ -15212,8 +15214,9 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
-    "secret_location": true,
+    "role": "app",
+    "secret_location": false,
+    "secret_ref": true,
     "source": "app.example.ini",
     "use": "define"
    },
@@ -15339,7 +15342,7 @@
    "detail": {
     "commented": true,
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
    },
@@ -15409,7 +15412,7 @@
    "detail": {
     "commented": true,
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
    },
@@ -15423,7 +15426,7 @@
    "detail": {
     "commented": true,
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
    },
@@ -15437,7 +15440,7 @@
    "detail": {
     "commented": true,
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
    },
@@ -15451,7 +15454,7 @@
    "detail": {
     "commented": true,
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
    },
@@ -15465,7 +15468,7 @@
    "detail": {
     "commented": true,
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
    },
@@ -15492,7 +15495,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15506,7 +15509,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15520,7 +15523,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15548,7 +15551,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15562,7 +15565,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15576,7 +15579,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15590,7 +15593,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15604,7 +15607,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15618,7 +15621,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15632,7 +15635,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15645,7 +15648,7 @@
   },
   {
    "detail": {
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15659,7 +15662,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15673,8 +15676,9 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
-    "secret_location": true,
+    "role": "app",
+    "secret_location": false,
+    "secret_ref": true,
     "source": "app.example.ini",
     "use": "define"
    },
@@ -15702,7 +15706,8 @@
    "detail": {
     "commented": true,
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
+    "secret_ref": true,
     "source": "app.example.ini",
     "use": "define"
    },
@@ -15715,7 +15720,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15729,7 +15734,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": true,
     "source": "app.example.ini",
     "use": "define"
@@ -15743,7 +15748,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": true,
     "source": "app.example.ini",
     "use": "define"
@@ -15757,7 +15762,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": true,
     "source": "app.example.ini",
     "use": "define"
@@ -15771,8 +15776,8 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
-    "secret_location": true,
+    "role": "app",
+    "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
    },
@@ -15799,7 +15804,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15951,7 +15956,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15965,7 +15970,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15979,7 +15984,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -15993,7 +15998,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16007,7 +16012,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16021,7 +16026,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16035,7 +16040,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16049,7 +16054,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16063,7 +16068,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16077,7 +16082,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16091,7 +16096,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16105,7 +16110,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16119,7 +16124,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16133,7 +16138,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16147,7 +16152,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16161,7 +16166,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16175,7 +16180,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16203,7 +16208,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16217,7 +16222,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16231,7 +16236,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16245,7 +16250,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16259,7 +16264,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16273,7 +16278,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16287,7 +16292,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16301,7 +16306,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16315,7 +16320,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16329,7 +16334,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16343,7 +16348,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16357,7 +16362,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16371,7 +16376,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16385,7 +16390,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16399,7 +16404,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16428,7 +16433,7 @@
    "detail": {
     "commented": true,
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
    },
@@ -16469,7 +16474,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16483,7 +16488,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -16582,7 +16587,7 @@
    "detail": {
     "commented": true,
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
    },
@@ -17155,7 +17160,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17169,7 +17174,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17183,7 +17188,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17197,7 +17202,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17295,7 +17300,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17309,7 +17314,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17323,7 +17328,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17337,7 +17342,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17351,7 +17356,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17407,7 +17412,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17435,7 +17440,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17477,7 +17482,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17491,7 +17496,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17505,7 +17510,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17519,7 +17524,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17533,7 +17538,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17547,7 +17552,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17561,7 +17566,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17575,7 +17580,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17589,7 +17594,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17603,7 +17608,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17617,7 +17622,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17645,7 +17650,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17659,7 +17664,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17673,7 +17678,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17687,7 +17692,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17701,7 +17706,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17715,7 +17720,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17729,7 +17734,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17743,7 +17748,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17757,7 +17762,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17771,7 +17776,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17785,7 +17790,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17799,7 +17804,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17813,7 +17818,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17827,7 +17832,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17841,7 +17846,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17855,7 +17860,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17869,7 +17874,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17883,7 +17888,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17897,7 +17902,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17911,7 +17916,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17925,7 +17930,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17939,7 +17944,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17953,7 +17958,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17967,7 +17972,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17981,7 +17986,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -17995,7 +18000,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18009,7 +18014,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18023,7 +18028,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18037,7 +18042,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18051,7 +18056,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18065,7 +18070,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18079,7 +18084,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18093,7 +18098,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18107,7 +18112,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18135,7 +18140,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18149,7 +18154,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18163,7 +18168,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18177,7 +18182,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18191,7 +18196,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18205,7 +18210,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18219,7 +18224,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18261,7 +18266,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18275,7 +18280,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18289,7 +18294,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18303,7 +18308,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18317,8 +18322,8 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
-    "secret_location": true,
+    "role": "app",
+    "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
    },
@@ -18331,7 +18336,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18345,7 +18350,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18359,7 +18364,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18373,7 +18378,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18387,7 +18392,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18401,7 +18406,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18415,7 +18420,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18429,7 +18434,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18443,7 +18448,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18457,7 +18462,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18485,7 +18490,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18499,7 +18504,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18513,7 +18518,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18527,7 +18532,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18541,7 +18546,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18555,7 +18560,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18569,7 +18574,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18583,7 +18588,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18639,7 +18644,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18653,7 +18658,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18667,7 +18672,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18681,7 +18686,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18695,7 +18700,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18709,7 +18714,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18723,7 +18728,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18737,7 +18742,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18751,7 +18756,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18765,7 +18770,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18779,7 +18784,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18793,7 +18798,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18807,7 +18812,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18821,7 +18826,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18835,7 +18840,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18849,7 +18854,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18863,7 +18868,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18877,7 +18882,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18891,7 +18896,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18905,7 +18910,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18919,7 +18924,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18947,7 +18952,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18961,7 +18966,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18975,7 +18980,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -18989,7 +18994,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19003,7 +19008,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19017,7 +19022,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19255,7 +19260,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19269,7 +19274,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19283,7 +19288,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19297,7 +19302,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19311,7 +19316,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19325,7 +19330,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19339,7 +19344,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19353,7 +19358,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19423,7 +19428,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19591,7 +19596,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19605,7 +19610,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19675,7 +19680,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19717,7 +19722,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19731,7 +19736,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19759,7 +19764,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19773,7 +19778,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19815,7 +19820,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19885,7 +19890,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19899,7 +19904,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19913,7 +19918,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19927,7 +19932,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19941,7 +19946,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19955,7 +19960,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19969,7 +19974,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": true,
     "source": "app.example.ini",
     "use": "define"
@@ -19983,7 +19988,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -19997,7 +20002,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20011,7 +20016,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20025,7 +20030,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20039,7 +20044,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20067,7 +20072,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20095,7 +20100,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20109,7 +20114,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20361,7 +20366,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20375,7 +20380,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20389,7 +20394,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20403,7 +20408,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20417,7 +20422,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20431,7 +20436,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20445,7 +20450,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20459,7 +20464,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20473,7 +20478,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20487,7 +20492,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20501,7 +20506,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20515,7 +20520,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": true,
     "source": "app.example.ini",
     "use": "define"
@@ -20529,7 +20534,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20543,7 +20548,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20557,7 +20562,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20571,7 +20576,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20585,7 +20590,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20599,7 +20604,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20613,7 +20618,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20627,7 +20632,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20641,7 +20646,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20655,7 +20660,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20669,7 +20674,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": true,
     "source": "app.example.ini",
     "use": "define"
@@ -20683,7 +20688,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20697,7 +20702,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20725,7 +20730,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20739,7 +20744,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20753,7 +20758,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20767,7 +20772,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20781,7 +20786,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20795,7 +20800,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20809,7 +20814,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20823,7 +20828,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20837,7 +20842,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20851,7 +20856,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20865,7 +20870,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20879,7 +20884,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20893,7 +20898,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20907,7 +20912,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20921,7 +20926,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20935,7 +20940,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20949,7 +20954,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20963,7 +20968,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20977,7 +20982,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -20991,7 +20996,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21005,7 +21010,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21019,7 +21024,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21033,7 +21038,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21047,7 +21052,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21061,7 +21066,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21075,7 +21080,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21089,7 +21094,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21103,7 +21108,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21117,7 +21122,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21131,7 +21136,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21145,7 +21150,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21159,7 +21164,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21173,7 +21178,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21187,7 +21192,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21201,7 +21206,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21215,7 +21220,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21229,7 +21234,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21243,7 +21248,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21257,7 +21262,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21271,7 +21276,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21285,7 +21290,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21299,7 +21304,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21313,7 +21318,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21327,7 +21332,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21341,7 +21346,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21355,7 +21360,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21369,7 +21374,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21383,7 +21388,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21397,7 +21402,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21411,7 +21416,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21425,7 +21430,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21439,7 +21444,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21453,7 +21458,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21467,7 +21472,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21481,7 +21486,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21495,7 +21500,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21509,7 +21514,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21523,7 +21528,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21537,7 +21542,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21551,7 +21556,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21565,7 +21570,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21579,7 +21584,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21593,7 +21598,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21607,7 +21612,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21621,7 +21626,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21635,7 +21640,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21649,7 +21654,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21663,7 +21668,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21677,7 +21682,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21691,7 +21696,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21705,7 +21710,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21719,7 +21724,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21733,7 +21738,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21747,7 +21752,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21761,7 +21766,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21775,7 +21780,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21789,7 +21794,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21803,7 +21808,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21817,7 +21822,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21831,7 +21836,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21845,7 +21850,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21859,7 +21864,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21873,7 +21878,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21887,7 +21892,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21901,7 +21906,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21915,7 +21920,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21929,7 +21934,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21943,7 +21948,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21957,7 +21962,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21971,7 +21976,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21985,7 +21990,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -21999,7 +22004,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22013,7 +22018,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22027,7 +22032,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22041,7 +22046,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22055,7 +22060,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22069,7 +22074,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22083,7 +22088,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22097,7 +22102,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22111,7 +22116,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22125,7 +22130,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22139,7 +22144,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22153,7 +22158,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22167,7 +22172,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22181,7 +22186,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22195,7 +22200,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22209,7 +22214,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22223,7 +22228,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22237,7 +22242,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22251,7 +22256,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22279,7 +22284,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22293,7 +22298,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22307,7 +22312,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22321,7 +22326,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22335,7 +22340,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22349,7 +22354,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22363,7 +22368,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22377,7 +22382,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22391,7 +22396,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22405,7 +22410,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22419,7 +22424,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22433,7 +22438,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22447,7 +22452,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22461,7 +22466,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22475,7 +22480,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22489,7 +22494,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22503,7 +22508,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22517,7 +22522,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22531,7 +22536,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22545,7 +22550,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22559,7 +22564,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22573,7 +22578,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22587,7 +22592,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22601,7 +22606,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22615,7 +22620,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22629,7 +22634,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22643,7 +22648,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22657,7 +22662,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22671,7 +22676,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22685,7 +22690,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22699,7 +22704,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22713,7 +22718,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22727,7 +22732,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22741,7 +22746,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22755,7 +22760,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22769,7 +22774,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22783,7 +22788,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22797,7 +22802,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22811,7 +22816,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22825,7 +22830,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22839,7 +22844,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22853,7 +22858,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22867,7 +22872,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22881,7 +22886,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22895,7 +22900,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22909,7 +22914,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22923,7 +22928,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22937,7 +22942,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22979,7 +22984,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -22993,7 +22998,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23007,7 +23012,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23021,7 +23026,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23035,7 +23040,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23063,7 +23068,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23077,7 +23082,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23091,7 +23096,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23105,7 +23110,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23119,7 +23124,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23133,7 +23138,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23147,7 +23152,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23161,7 +23166,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23175,7 +23180,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23189,7 +23194,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23203,7 +23208,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23217,7 +23222,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": true,
     "source": "app.example.ini",
     "use": "define"
@@ -23231,7 +23236,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23245,7 +23250,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23301,7 +23306,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23315,7 +23320,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23329,7 +23334,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23343,7 +23348,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23357,7 +23362,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23371,7 +23376,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23385,7 +23390,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23399,7 +23404,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23413,7 +23418,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23441,7 +23446,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23455,7 +23460,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23469,7 +23474,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23483,7 +23488,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23497,7 +23502,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23511,7 +23516,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23525,7 +23530,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23539,7 +23544,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23553,7 +23558,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23567,7 +23572,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23581,7 +23586,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23595,7 +23600,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23609,7 +23614,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23623,7 +23628,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23637,7 +23642,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23651,7 +23656,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23665,7 +23670,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23679,7 +23684,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23693,7 +23698,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23707,7 +23712,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23721,7 +23726,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23735,7 +23740,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23749,7 +23754,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23763,7 +23768,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23777,7 +23782,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23791,7 +23796,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23805,7 +23810,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23819,7 +23824,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23833,7 +23838,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23847,7 +23852,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23861,7 +23866,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23875,7 +23880,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23889,7 +23894,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23903,7 +23908,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23917,7 +23922,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23931,7 +23936,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23945,7 +23950,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23959,7 +23964,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23973,7 +23978,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -23987,7 +23992,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24001,7 +24006,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24015,7 +24020,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24029,7 +24034,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24043,7 +24048,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24057,7 +24062,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24071,7 +24076,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24085,7 +24090,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24099,7 +24104,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": true,
     "source": "app.example.ini",
     "use": "define"
@@ -24113,7 +24118,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24127,7 +24132,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24141,7 +24146,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24155,7 +24160,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24169,7 +24174,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24183,7 +24188,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24197,7 +24202,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24211,7 +24216,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24225,7 +24230,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24239,7 +24244,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": true,
     "source": "app.example.ini",
     "use": "define"
@@ -24253,7 +24258,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24323,7 +24328,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24337,7 +24342,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24351,7 +24356,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24365,7 +24370,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24379,7 +24384,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24393,7 +24398,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24449,7 +24454,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24463,7 +24468,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24477,7 +24482,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24491,7 +24496,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24505,7 +24510,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24519,7 +24524,7 @@
   {
    "detail": {
     "commented": true,
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.example.ini",
     "use": "define"
@@ -24767,7 +24772,7 @@
   },
   {
    "detail": {
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.ini",
     "use": "define"
@@ -24780,7 +24785,7 @@
   },
   {
    "detail": {
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.ini",
     "use": "define"
@@ -24806,7 +24811,7 @@
   },
   {
    "detail": {
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.ini",
     "use": "define"
@@ -24819,7 +24824,7 @@
   },
   {
    "detail": {
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.ini",
     "use": "define"
@@ -25053,7 +25058,7 @@
   },
   {
    "detail": {
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.ini",
     "use": "define"
@@ -25157,7 +25162,7 @@
   },
   {
    "detail": {
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.ini",
     "use": "define"
@@ -25292,7 +25297,7 @@
   },
   {
    "detail": {
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.ini",
     "use": "define"
@@ -25305,7 +25310,7 @@
   },
   {
    "detail": {
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.ini",
     "use": "define"
@@ -25331,7 +25336,7 @@
   },
   {
    "detail": {
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.ini",
     "use": "define"
@@ -25383,7 +25388,7 @@
   },
   {
    "detail": {
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.ini",
     "use": "define"
@@ -25565,7 +25570,7 @@
   },
   {
    "detail": {
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.ini",
     "use": "define"
@@ -25643,7 +25648,7 @@
   },
   {
    "detail": {
-    "role": "unclassified",
+    "role": "app",
     "secret_location": false,
     "source": "app.ini",
     "use": "define"
@@ -45662,7 +45667,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "access_token.yml",
     "test": true,
     "use": "define"
@@ -45774,7 +45779,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "access_token.yml",
     "test": true,
     "use": "define"
@@ -45886,7 +45891,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "access_token.yml",
     "test": true,
     "use": "define"
@@ -52662,7 +52667,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "action_runner.yml",
     "test": true,
     "use": "define"
@@ -52788,7 +52793,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "action_runner.yml",
     "test": true,
     "use": "define"
@@ -52914,7 +52919,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "action_runner.yml",
     "test": true,
     "use": "define"
@@ -53040,7 +53045,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "action_runner.yml",
     "test": true,
     "use": "define"
@@ -53166,7 +53171,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "action_runner.yml",
     "test": true,
     "use": "define"
@@ -53824,7 +53829,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "action_task.yml",
     "test": true,
     "use": "define"
@@ -54090,7 +54095,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "action_task.yml",
     "test": true,
     "use": "define"
@@ -54356,7 +54361,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "action_task.yml",
     "test": true,
     "use": "define"
@@ -54622,7 +54627,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "action_task.yml",
     "test": true,
     "use": "define"
@@ -54888,7 +54893,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "action_task.yml",
     "test": true,
     "use": "define"
@@ -55154,7 +55159,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "action_task.yml",
     "test": true,
     "use": "define"
@@ -55420,7 +55425,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "action_task.yml",
     "test": true,
     "use": "define"
@@ -55686,7 +55691,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "action_task.yml",
     "test": true,
     "use": "define"
@@ -55952,7 +55957,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "action_task.yml",
     "test": true,
     "use": "define"
@@ -130208,7 +130213,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -130698,7 +130703,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -131188,7 +131193,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -131678,7 +131683,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -132168,7 +132173,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -132658,7 +132663,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -133148,7 +133153,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -133638,7 +133643,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -134128,7 +134133,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -134632,7 +134637,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -135122,7 +135127,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -135612,7 +135617,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -136102,7 +136107,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -136592,7 +136597,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -137082,7 +137087,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -137572,7 +137577,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -138062,7 +138067,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -138552,7 +138557,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -139042,7 +139047,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -139532,7 +139537,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -140022,7 +140027,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -140512,7 +140517,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -141002,7 +141007,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -141492,7 +141497,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -141982,7 +141987,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -142472,7 +142477,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -142962,7 +142967,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -143452,7 +143457,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -143942,7 +143947,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -144432,7 +144437,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -144922,7 +144927,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -145412,7 +145417,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -145902,7 +145907,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -146406,7 +146411,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -146896,7 +146901,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -147386,7 +147391,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -147876,7 +147881,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -148366,7 +148371,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -148856,7 +148861,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -149346,7 +149351,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -149836,7 +149841,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -150326,7 +150331,7 @@
   {
    "detail": {
     "role": "test",
-    "secret_location": true,
+    "secret_location": false,
     "source": "user.yml",
     "test": true,
     "use": "define"
@@ -178860,7 +178865,7 @@
    "detail": {
     "read_kind": "file",
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "code",
     "use": "read",
     "via": "ini"
@@ -178935,7 +178940,7 @@
    "detail": {
     "read_kind": "file",
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "code",
     "use": "read",
     "via": "ini"
@@ -178950,7 +178955,7 @@
    "detail": {
     "read_kind": "file",
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "code",
     "use": "read",
     "via": "ini"
@@ -178965,7 +178970,7 @@
    "detail": {
     "read_kind": "file",
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "code",
     "use": "read",
     "via": "ini"
@@ -178980,7 +178985,7 @@
    "detail": {
     "read_kind": "file",
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "code",
     "use": "read",
     "via": "ini"
@@ -179025,7 +179030,7 @@
    "detail": {
     "read_kind": "file",
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "code",
     "use": "read",
     "via": "ini"
@@ -179040,7 +179045,7 @@
    "detail": {
     "read_kind": "file",
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "code",
     "use": "read",
     "via": "ini"
@@ -179793,7 +179798,7 @@
    "detail": {
     "read_kind": "file",
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "code",
     "use": "read",
     "via": "ini"
@@ -179958,7 +179963,7 @@
    "detail": {
     "read_kind": "file",
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "code",
     "use": "read",
     "via": "ini"
@@ -180108,7 +180113,7 @@
    "detail": {
     "read_kind": "file",
     "role": "app",
-    "secret_location": true,
+    "secret_location": false,
     "source": "code",
     "use": "read",
     "via": "ini"
@@ -221190,7 +221195,8 @@
   {
    "detail": {
     "read_kind": "file",
-    "secret_location": true,
+    "secret_location": false,
+    "secret_ref": true,
     "source": "code",
     "test": true,
     "use": "read",
@@ -221235,7 +221241,8 @@
   {
    "detail": {
     "read_kind": "file",
-    "secret_location": true,
+    "secret_location": false,
+    "secret_ref": true,
     "source": "code",
     "test": true,
     "use": "read",
@@ -239581,6 +239588,7 @@
     "read_kind": "env",
     "role": "env",
     "secret_location": false,
+    "secret_ref": true,
     "source": "code",
     "use": "read",
     "via": "env"
@@ -281016,12 +281024,22 @@
    "stack": "generic"
   }
  ],
- "generator": "2.5.0",
- "schema": "appdoc-facts/6",
+ "schema": "appdoc-facts/7",
  "stacks": [
   {
    "detail": {
-    "capabilities": [],
+    "capabilities": [
+     "auth_check",
+     "config_key",
+     "connection",
+     "data_access",
+     "entry_point.command",
+     "entry_point.job",
+     "entry_point.route",
+     "external_call",
+     "schema_object",
+     "ui_page"
+    ],
     "file_count": 3184,
     "marker_files": [
      "go.mod"
@@ -281068,213 +281086,13 @@
   "history": "shallow",
   "name": "gitea",
   "scan": {
+   "duplicate_folders": [],
    "found": 6415,
    "ignored": 0,
    "metadata": 0,
    "pruned": [],
    "pruned_files": 0,
-   "retired_candidates": [
-    {
-     "files": 6,
-     "path": "modules/git/tests/repos/repo2_empty/",
-     "signal": "content"
-    },
-    {
-     "files": 10,
-     "path": "routers/private/tests/repos/repo1_hook_verification/objects/tmp_objdir-incoming-a21648/",
-     "signal": "content"
-    },
-    {
-     "files": 10,
-     "path": "templates/custom/",
-     "signal": "content"
-    },
-    {
-     "files": 8,
-     "path": "tests/gitea-repositories-meta/org26/repo_external_tracker.git/",
-     "signal": "content"
-    },
-    {
-     "files": 8,
-     "path": "tests/gitea-repositories-meta/org26/repo_external_tracker_alpha.git/",
-     "signal": "content"
-    },
-    {
-     "files": 8,
-     "path": "tests/gitea-repositories-meta/org26/repo_external_tracker_numeric.git/",
-     "signal": "content"
-    },
-    {
-     "files": 18,
-     "path": "tests/gitea-repositories-meta/org3/repo3.git/",
-     "signal": "content"
-    },
-    {
-     "files": 6,
-     "path": "tests/gitea-repositories-meta/org3/repo3.git/hooks/",
-     "signal": "content"
-    },
-    {
-     "files": 8,
-     "path": "tests/gitea-repositories-meta/org3/repo3.git/objects/",
-     "signal": "content"
-    },
-    {
-     "files": 18,
-     "path": "tests/gitea-repositories-meta/org3/repo5.git/",
-     "signal": "content"
-    },
-    {
-     "files": 6,
-     "path": "tests/gitea-repositories-meta/org3/repo5.git/hooks/",
-     "signal": "content"
-    },
-    {
-     "files": 8,
-     "path": "tests/gitea-repositories-meta/org3/repo5.git/objects/",
-     "signal": "content"
-    },
-    {
-     "files": 18,
-     "path": "tests/gitea-repositories-meta/user12/",
-     "signal": "content"
-    },
-    {
-     "files": 18,
-     "path": "tests/gitea-repositories-meta/user12/repo10.git/",
-     "signal": "content"
-    },
-    {
-     "files": 6,
-     "path": "tests/gitea-repositories-meta/user12/repo10.git/hooks/",
-     "signal": "content"
-    },
-    {
-     "files": 5,
-     "path": "tests/gitea-repositories-meta/user12/repo10.git/refs/",
-     "signal": "content"
-    },
-    {
-     "files": 22,
-     "path": "tests/gitea-repositories-meta/user13/",
-     "signal": "content"
-    },
-    {
-     "files": 22,
-     "path": "tests/gitea-repositories-meta/user13/repo11.git/",
-     "signal": "content"
-    },
-    {
-     "files": 6,
-     "path": "tests/gitea-repositories-meta/user13/repo11.git/hooks/",
-     "signal": "content"
-    },
-    {
-     "files": 7,
-     "path": "tests/gitea-repositories-meta/user13/repo11.git/objects/",
-     "signal": "content"
-    },
-    {
-     "files": 6,
-     "path": "tests/gitea-repositories-meta/user13/repo11.git/refs/",
-     "signal": "content"
-    },
-    {
-     "files": 5,
-     "path": "tests/gitea-repositories-meta/user13/repo11.git/refs/heads/",
-     "signal": "content"
-    },
-    {
-     "files": 19,
-     "path": "tests/gitea-repositories-meta/user2/git_hooks_test.git/",
-     "signal": "content"
-    },
-    {
-     "files": 7,
-     "path": "tests/gitea-repositories-meta/user2/git_hooks_test.git/hooks/",
-     "signal": "content"
-    },
-    {
-     "files": 5,
-     "path": "tests/gitea-repositories-meta/user2/git_hooks_test.git/refs/",
-     "signal": "content"
-    },
-    {
-     "files": 8,
-     "path": "tests/gitea-repositories-meta/user2/repo1.git/hooks/",
-     "signal": "content"
-    },
-    {
-     "files": 8,
-     "path": "tests/gitea-repositories-meta/user2/repo1.git/refs/heads/",
-     "signal": "content"
-    },
-    {
-     "files": 23,
-     "path": "tests/gitea-repositories-meta/user2/repo1.wiki.git/",
-     "signal": "content"
-    },
-    {
-     "files": 20,
-     "path": "tests/gitea-repositories-meta/user2/repo1.wiki.git/objects/",
-     "signal": "content"
-    },
-    {
-     "files": 8,
-     "path": "tests/gitea-repositories-meta/user2/repo15.git/",
-     "signal": "content"
-    },
-    {
-     "files": 6,
-     "path": "tests/gitea-repositories-meta/user2/repo15.git/hooks/",
-     "signal": "content"
-    },
-    {
-     "files": 6,
-     "path": "tests/gitea-repositories-meta/user2/repo20.git/hooks/",
-     "signal": "content"
-    },
-    {
-     "files": 6,
-     "path": "tests/gitea-repositories-meta/user2/utf8.git/hooks/",
-     "signal": "content"
-    },
-    {
-     "files": 6,
-     "path": "tests/gitea-repositories-meta/user2/utf8.git/refs/heads/",
-     "signal": "content"
-    },
-    {
-     "files": 19,
-     "path": "tests/gitea-repositories-meta/user27/repo49.git/",
-     "signal": "content"
-    },
-    {
-     "files": 6,
-     "path": "tests/gitea-repositories-meta/user27/repo49.git/hooks/",
-     "signal": "content"
-    },
-    {
-     "files": 8,
-     "path": "tests/gitea-repositories-meta/user27/repo49.git/objects/",
-     "signal": "content"
-    },
-    {
-     "files": 26,
-     "path": "tests/gitea-repositories-meta/user27/template1.git/",
-     "signal": "content"
-    },
-    {
-     "files": 6,
-     "path": "tests/gitea-repositories-meta/user27/template1.git/hooks/",
-     "signal": "content"
-    },
-    {
-     "files": 16,
-     "path": "tests/gitea-repositories-meta/user27/template1.git/objects/",
-     "signal": "content"
-    }
-   ],
+   "retired_candidates": [],
    "scanned": 6415
   }
  }

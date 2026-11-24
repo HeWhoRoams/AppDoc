@@ -63,19 +63,6 @@ Files found: 6415 = scanned 6415 + pruned 0 + ignored by .appdocignore 0.
 | `custom/` | 1 |
 
 No folders were pruned.
-
-Folders that look retired (not excluded):
-- `modules/git/tests/repos/repo2_empty/` (content, 6 files)
-- `routers/private/tests/repos/repo1_hook_verification/objects/tmp_objdir-incoming-a21648/` (content, 10 files)
-- `templates/custom/` (content, 10 files)
-- `tests/gitea-repositories-meta/org26/repo_external_tracker.git/` (content, 8 files)
-- `tests/gitea-repositories-meta/org26/repo_external_tracker_alpha.git/` (content, 8 files)
-- `tests/gitea-repositories-meta/org26/repo_external_tracker_numeric.git/` (content, 8 files)
-- `tests/gitea-repositories-meta/org3/repo3.git/` (content, 18 files)
-- `tests/gitea-repositories-meta/org3/repo3.git/hooks/` (content, 6 files)
-- `tests/gitea-repositories-meta/org3/repo3.git/objects/` (content, 8 files)
-- `tests/gitea-repositories-meta/org3/repo5.git/` (content, 18 files)
-- 30 more folders; see facts.json
 <!-- /appdoc:generated scan-coverage -->
 
 The Go Stack is supported, so route, command and scheduled-job Facts exist for it (`go.mod`). The `node` Stack (`package.json`) and the `python` Stack (`pyproject.toml`) are unsupported: only generic Facts (files, dependencies, config keys) exist for them, and the TypeScript and Vue frontend in `web_src/` was not extracted by any Stack.
@@ -146,7 +133,7 @@ Caption: component view of how requests reach services; mounts at `routers/init.
 ## 4. Functional Inventory
 
 <!-- appdoc:generated entry-points -->
-12 route handler files (0 under folders that look retired); 1431 routes; 0 pages; 72 commands; 31 jobs.
+12 route handler files; 1431 routes; 0 pages; 72 commands; 31 jobs.
 
 | Handler file | Kinds | Routes | Pages | Jobs | Commands |
 |---|---|---|---|---|---|
@@ -965,15 +952,6 @@ Other operator commands, all defined in the command layer: `gitea doctor check` 
 | database.PASSWD | `docker/root/etc/templates/app.ini:30` | yes |
 | server.LFS_JWT_SECRET | `modules/setting/lfs.go:79` | yes |
 | oauth2.JWT_SECRET | `modules/setting/oauth2.go:147` | yes |
-| security.MIN_PASSWORD_LENGTH | `modules/setting/security.go:167` | yes |
-| security.PASSWORD_HASH_ALGO | `modules/setting/security.go:175` | yes |
-| security.PASSWORD_CHECK_PWN | `modules/setting/security.go:180` | yes |
-| security.SUCCESSFUL_TOKENS_CACHE_SIZE | `modules/setting/security.go:181` | yes |
-| security.PASSWORD_COMPLEXITY | `modules/setting/security.go:209` | yes |
-| security.DISABLE_QUERY_AUTH_TOKEN | `modules/setting/security.go:224` | yes |
-| service.RESET_PASSWD_CODE_LIVE_MINUTES | `modules/setting/service.go:140` | yes |
-| service.ENABLE_PASSWORD_SIGNIN_FORM | `modules/setting/service.go:173` | yes |
-| service.REQUIRE_EXTERNAL_REGISTRATION_PASSWORD | `modules/setting/service.go:183` | yes |
 | service.RECAPTCHA_SECRET | `modules/setting/service.go:185` | yes |
 | service.CF_TURNSTILE_SECRET | `modules/setting/service.go:188` | yes |
 | service.HCAPTCHA_SECRET | `modules/setting/service.go:190` | yes |
@@ -988,12 +966,17 @@ Other operator commands, all defined in the command layer: `gitea doctor check` 
 | database.NAME | `custom/conf/app.example.ini:365` | no |
 | database.USER | `custom/conf/app.example.ini:366` | no |
 | security.INSTALL_LOCK | `custom/conf/app.example.ini:442` | no |
+| oauth2.ENABLED | `custom/conf/app.example.ini:603` | no |
 | log.MODE | `custom/conf/app.example.ini:663` | no |
 | log.LEVEL | `custom/conf/app.example.ini:666` | no |
 | APP_NAME | `docker/root/etc/templates/app.ini:1` | no |
 | RUN_MODE | `docker/root/etc/templates/app.ini:2` | no |
 | repository.ROOT | `docker/root/etc/templates/app.ini:5` | no |
+| repository.local.LOCAL_COPY_PATH | `docker/root/etc/templates/app.ini:8` | no |
+| repository.upload.TEMP_PATH | `docker/root/etc/templates/app.ini:11` | no |
 | server.APP_DATA_PATH | `docker/root/etc/templates/app.ini:14` | no |
+| server.DOMAIN | `docker/root/etc/templates/app.ini:15` | no |
+| server.SSH_DOMAIN | `docker/root/etc/templates/app.ini:16` | no |
 | server.HTTP_PORT | `docker/root/etc/templates/app.ini:17` | no |
 | server.ROOT_URL | `docker/root/etc/templates/app.ini:18` | no |
 | server.DISABLE_SSH | `docker/root/etc/templates/app.ini:19` | no |
@@ -1006,10 +989,13 @@ Other operator commands, all defined in the command layer: `gitea doctor check` 
 | session.PROVIDER_CONFIG | `docker/root/etc/templates/app.ini:37` | no |
 | picture.AVATAR_UPLOAD_PATH | `docker/root/etc/templates/app.ini:40` | no |
 | picture.REPOSITORY_AVATAR_UPLOAD_PATH | `docker/root/etc/templates/app.ini:41` | no |
+| attachment.PATH | `docker/root/etc/templates/app.ini:44` | no |
 | log.ROOT_PATH | `docker/root/etc/templates/app.ini:49` | no |
 | service.DISABLE_REGISTRATION | `docker/root/etc/templates/app.ini:56` | no |
 | service.REQUIRE_SIGNIN_VIEW | `docker/root/etc/templates/app.ini:57` | no |
+| lfs.PATH | `docker/root/etc/templates/app.ini:60` | no |
 | RUN_USER | `docker/rootless/etc/templates/app.ini:2` | no |
+| server.START_SSH_SERVER | `docker/rootless/etc/templates/app.ini:21` | no |
 | server.BUILTIN_SSH_SERVER_USER | `docker/rootless/etc/templates/app.ini:24` | no |
 | actions.ZOMBIE_TASK_TIMEOUT | `modules/setting/actions.go:133` | no |
 | actions.ENDLESS_TASK_TIMEOUT | `modules/setting/actions.go:134` | no |
@@ -1110,15 +1096,16 @@ Other operator commands, all defined in the command layer: `gitea doctor check` 
 | migrations.SKIP_TLS_VERIFY | `modules/setting/migrations.go:53` | no |
 | oauth2_client.REGISTER_EMAIL_CONFIRM | `modules/setting/oauth2.go:65` | no |
 | oauth2_client.ENABLE_AUTO_REGISTRATION | `modules/setting/oauth2.go:67` | no |
+| oauth2_client.USERNAME | `modules/setting/oauth2.go:68` | no |
 
-Shown 150 of 341 application keys; 281 commented defaults in 1 file(s) are not listed (see facts.json).
+Shown 150 of 349 application keys; 775 commented defaults in 1 file are not listed (see facts.json).
 
-569 keys in 4 file(s) were not classified as application configuration: `custom/conf/app.example.ini`, `docker/root/etc/templates/app.ini`, `docker/rootless/etc/templates/app.ini`, `options/label/Advanced.yaml` (see facts.json).
+62 keys in 1 file were not classified as application configuration: `options/label/Advanced.yaml` (see facts.json).
 
 30 env-var keys and 423 CI keys are excluded from the application table (see facts.json).
 <!-- /appdoc:generated config-reference -->
 
-The generated table above lists only keys the extractor classified as application configuration; environment-variable reads and CI-file keys are excluded and counted in the trailer. The "Secret location" column is a name-based heuristic and still flags some ordinary settings, for example `security.MIN_PASSWORD_LENGTH` (`modules/setting/security.go:167`) and `security.PASSWORD_HASH_ALGO` (`modules/setting/security.go:175`); read it together with the curated table below, not as a list of credentials.
+The generated table above lists only keys the extractor classified as application configuration; environment-variable reads and CI-file keys are excluded and counted in the trailer. The "Secret location" column is a name-based heuristic that matches key names, not values; read it together with the curated table below, not as a list of credentials.
 
 Defaults in the settings code were sampled against the example file and match (`modules/setting/service.go:141` and `custom/conf/app.example.ini:841`, `modules/setting/service.go:172` and `custom/conf/app.example.ini:861`, `modules/setting/security.go:224` and `custom/conf/app.example.ini:520`); the exception is the commented `email.incoming.SKIP_TLS_VERIFY = true` example, whose code default is off (`custom/conf/app.example.ini:1927`, `modules/setting/incoming_email.go:23`, V-10). A full key-by-key comparison was not done.
 
@@ -1185,6 +1172,9 @@ Jobs that matter to findings or workflows: `delete_old_audit_events` prunes reco
 ### A.1 Audit state
 
 **Auditor:** independent. **Scope:** Independent audit, read-only against the Target. Covered every 10.1 finding (V-1 to V-10), every workflow 7.1 to 7.10 (key steps traced in source), and all 14 section 14 questions. Sections 3, 4, 5, 6, 8, 9, 10.2, 11, 15 and 16 were sampled, prioritising auth and authorization statements, defaults and settings, counts and enumerations: all 31 scheduled jobs in 16.7 were compared with services/cron/tasks_actions.go, tasks_basic.go and tasks_extended.go, and the entry-point totals were reconciled with facts.json. Not audited: section 12 diagrams, section 13 glossary, most UI-n rows (only UI-3, UI-26, UI-27 and the count of 27), 4.1 file counts (generated, covered by the Check), the 16.6 key table beyond sampling, templates and web_src. 8.4 field tables were spot-checked for User, Repository, access token, two-factor, secret and auth source. The Facts contain no smell Facts for this target.
+
+Generated blocks written by AppDoc 2.6.0 (bundle 2b80067ff022).
+Generated blocks were regenerated after the audit and are not covered by it.
 
 ### A.2 Coverage
 
@@ -1322,7 +1312,7 @@ Jobs that matter to findings or workflows: `delete_old_audit_events` prunes reco
 | E-115 | 16.5 | gitea generate secret creates new SECRET_KEY, INTERNAL_TOKEN and JWT_SECRET values. | Supported | `cmd/generate.go:74` |  |
 | E-116 | 16.5 | gitea doctor check runs diagnostics with --list, --run, --all and --default. | Supported | `cmd/doctor.go:41-66` | The command also has a --fix flag, which makes doctor repair data and is not mentioned. |
 | E-117 | 16.6 | security.EGRESS_MODE controls the strictness of outgoing request checks. | Supported | `custom/conf/app.example.ini:542` |  |
-| E-118 | 16.6 | Corrected (2.5 regeneration): the generated 16.6 table lists only keys classified as application configuration; env-var and CI keys are excluded and counted in the trailer. The Secret location column still flags ordinary settings such as security.MIN_PASSWORD_LENGTH and PASSWORD_HASH_ALGO. | Corrected | `modules/setting/security.go:167` `modules/setting/security.go:175` | Heuristic name-based flag in the extractor; the table is generated. Re-audited by the regenerating session, not independently. |
+| E-118 | 16.6 | Corrected (2.5 regeneration): the generated 16.6 table lists only keys classified as application configuration; env-var and CI keys are excluded and counted in the trailer. The Secret location column is a name-based heuristic. The 2.5.0 table flagged ordinary settings such as security.MIN_PASSWORD_LENGTH and PASSWORD_HASH_ALGO; the 2.6.0 table does not flag them. | Corrected | `modules/setting/security.go:167` `modules/setting/security.go:175` | Heuristic name-based flag in the extractor; the table is generated. Re-audited by the regenerating session, not independently. The generated 16.6 block was regenerated by AppDoc 2.6.0 after the audit; the two keys no longer carry secret_location in facts.json, and the row was not re-audited. |
 | E-119 | 16.7 | The scheduled-jobs enumeration lists all 31 registered jobs with matching schedules and defaults. | Supported | `services/cron/tasks_extended.go:231` | All 31 Schedule and Enabled values were compared with the three source files; every row matches the registration call. |
 | E-120 | 16.7 | Corrected: delete_old_audit_events is not enabled by default in practice. It is registered only when audit recording is on and retention is above zero, so with the default (audit disabled) the job does not exist; the table's 'Enabled by default: yes' applies only once audit is on. gc_lfs is likewise registered only when the LFS server is started. | Corrected | `services/cron/tasks_extended.go:142-146` `services/cron/tasks_extended.go:197-199` |  |
 | E-121 | 16.7 | update_mirrors refreshes mirrors every ten minutes. | Supported | `services/cron/tasks_basic.go:31-37` |  |
@@ -1351,945 +1341,945 @@ Jobs that matter to findings or workflows: `delete_old_audit_events` prunes reco
 
 Run from the Target root. Each block names the expected line, then a PowerShell command and a POSIX command.
 
-- **E-1** (`3.1`), expect line 172
+- **E-1** (section 3), expect `routers/init.go:172`
 
 ```text
 Select-String -LiteralPath 'routers/init.go' -SimpleMatch -CaseSensitive -Pattern 'cron.Init(ctx)'
 grep -nF -- 'cron.Init(ctx)' 'routers/init.go'
 ```
 
-- **E-2** (`3.1`), expect line 184
+- **E-2** (section 3), expect `routers/init.go:184`
 
 ```text
 Select-String -LiteralPath 'routers/init.go' -SimpleMatch -CaseSensitive -Pattern 'r.Mount("/api/internal", private.Routes())'
 grep -nF -- 'r.Mount("/api/internal", private.Routes())' 'routers/init.go'
 ```
 
-- **E-3** (`3.3`), expect line 163
+- **E-3** (section 3), expect `routers/web/web.go:163`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'ctx.HTTPError(http.StatusUnauthorized, "Failed to authenticate user")'
 grep -nF -- 'ctx.HTTPError(http.StatusUnauthorized, "Failed to authenticate user")' 'routers/web/web.go'
 ```
 
-- **E-4** (`3.3`), expect line 854
+- **E-4** (section 3), expect `routers/api/v1/api.go:854`
 
 ```text
 Select-String -LiteralPath 'routers/api/v1/api.go' -SimpleMatch -CaseSensitive -Pattern '&auth.HTTPSign{},'
 grep -nF -- '&auth.HTTPSign{},' 'routers/api/v1/api.go'
 ```
 
-- **E-5** (`3.3`), expect line 135
+- **E-5** (section 3), expect `services/auth/basic.go:135`
 
 ```text
 Select-String -LiteralPath 'services/auth/basic.go' -SimpleMatch -CaseSensitive -Pattern 'if !setting.Service.EnableBasicAuth {'
 grep -nF -- 'if !setting.Service.EnableBasicAuth {' 'services/auth/basic.go'
 ```
 
-- **E-6** (`3.3`), expect line 35
+- **E-6** (section 3), expect `routers/private/internal.go:35`
 
 ```text
 Select-String -LiteralPath 'routers/private/internal.go' -SimpleMatch -CaseSensitive -Pattern 'subtle.ConstantTimeCompare([]byte(after), []byte(setting.InternalToken)) == 1'
 grep -nF -- 'subtle.ConstantTimeCompare([]byte(after), []byte(setting.InternalToken)) == 1' 'routers/private/internal.go'
 ```
 
-- **E-7** (`3.3`), expect line 102
+- **E-7** (section 3), expect `routers/api/actions/runner/interceptor.go:102`
 
 ```text
 Select-String -LiteralPath 'routers/api/actions/runner/interceptor.go' -SimpleMatch -CaseSensitive -Pattern 'auth_model.HashToken(token, runner.TokenSalt)'
 grep -nF -- 'auth_model.HashToken(token, runner.TokenSalt)' 'routers/api/actions/runner/interceptor.go'
 ```
 
-- **E-8** (`3.3`), expect line 238
+- **E-8** (section 3), expect `routers/web/web.go:238`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'if options.AdminRequired {'
 grep -nF -- 'if options.AdminRequired {' 'routers/web/web.go'
 ```
 
-- **E-9** (`3.3`), expect line 345
+- **E-9** (section 3), expect `routers/web/auth/auth.go:345`
 
 ```text
 Select-String -LiteralPath 'routers/web/auth/auth.go' -SimpleMatch -CaseSensitive -Pattern 'handleTwoFactorRequired(ctx, u, form.Remember, nil)'
 grep -nF -- 'handleTwoFactorRequired(ctx, u, form.Remember, nil)' 'routers/web/auth/auth.go'
 ```
 
-- **E-10** (`4`), expect line 231
+- **E-10** (section 4), expect `services/cron/tasks_extended.go:231`
 
 ```text
 Select-String -LiteralPath 'services/cron/tasks_extended.go' -SimpleMatch -CaseSensitive -Pattern 'RegisterTaskFatal("rebuild_issue_indexer"'
 grep -nF -- 'RegisterTaskFatal("rebuild_issue_indexer"' 'services/cron/tasks_extended.go'
 ```
 
-- **E-11** (`4/F-12`), expect line 108
+- **E-11** (section 4), expect `routers/api/packages/api.go:108`
 
 ```text
 Select-String -LiteralPath 'routers/api/packages/api.go' -SimpleMatch -CaseSensitive -Pattern 'if !tfmodule.HasValidArchiveSignature(ctx) {'
 grep -nF -- 'if !tfmodule.HasValidArchiveSignature(ctx) {' 'routers/api/packages/api.go'
 ```
 
-- **E-12** (`4/F-19`), expect line 255
+- **E-12** (section 4), expect `cmd/web.go:255`
 
 ```text
 Select-String -LiteralPath 'cmd/web.go' -SimpleMatch -CaseSensitive -Pattern 'Starting pprof server on localhost:6060'
 grep -nF -- 'Starting pprof server on localhost:6060' 'cmd/web.go'
 ```
 
-- **E-13** (`4/F-15`), expect line 74
+- **E-13** (section 4), expect `routers/private/internal.go:74`
 
 ```text
 Select-String -LiteralPath 'routers/private/internal.go' -SimpleMatch -CaseSensitive -Pattern 'r.AfterRouting(authInternal)'
 grep -nF -- 'r.AfterRouting(authInternal)' 'routers/private/internal.go'
 ```
 
-- **E-14** (`4/F-16`), expect line 461
+- **E-14** (section 4), expect `routers/web/web.go:461`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'm.Post("/packagist/new"'
 grep -nF -- 'm.Post("/packagist/new"' 'routers/web/web.go'
 ```
 
-- **E-15** (`4/F-6`), expect line 1365
+- **E-15** (section 4), expect `routers/web/web.go:1365`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'reqRepoAdmin, repo.DeleteIssue'
 grep -nF -- 'reqRepoAdmin, repo.DeleteIssue' 'routers/web/web.go'
 ```
 
-- **E-16** (`4/F-3`), expect line 605
+- **E-16** (section 4), expect `routers/web/web.go:605`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'optionsCorsHandler(), webAuth.AllowOAuth2, optSignInFromAnyOrigin'
 grep -nF -- 'optionsCorsHandler(), webAuth.AllowOAuth2, optSignInFromAnyOrigin' 'routers/web/web.go'
 ```
 
-- **E-17** (`4/F-14`), expect line 746
+- **E-17** (section 4), expect `routers/web/web.go:746`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'adminReq := verifyAuthWithOptionsWeb(&common.VerifyOptions{SignInRequired: true, AdminRequired: true})'
 grep -nF -- 'adminReq := verifyAuthWithOptionsWeb(&common.VerifyOptions{SignInRequired: true, AdminRequired: true})' 'routers/web/web.go'
 ```
 
-- **E-18** (`4/F-20`), expect line 36
+- **E-18** (section 4), expect `cmd/admin.go:36`
 
 ```text
 Select-String -LiteralPath 'cmd/admin.go' -SimpleMatch -CaseSensitive -Pattern '"repo-sync-releases"'
 grep -nF -- '"repo-sync-releases"' 'cmd/admin.go'
 ```
 
-- **E-19** (`4/F-17`), expect line 885
+- **E-19** (section 4), expect `routers/web/web.go:885`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'tokens only authenticate feeds, the other variants render data outside any token scope'
 grep -nF -- 'tokens only authenticate feeds, the other variants render data outside any token scope' 'routers/web/web.go'
 ```
 
-- **E-20** (`4/F-1`), expect line 285
+- **E-20** (section 4), expect `cmd/web.go:285`
 
 ```text
 Select-String -LiteralPath 'cmd/web.go' -SimpleMatch -CaseSensitive -Pattern 'if !setting.InstallLock {'
 grep -nF -- 'if !setting.InstallLock {' 'cmd/web.go'
 ```
 
-- **E-21** (`5.1`), expect line 60
+- **E-21** (section 5), expect `models/auth/access_token_scope.go:60`
 
 ```text
 Select-String -LiteralPath 'models/auth/access_token_scope.go' -SimpleMatch -CaseSensitive -Pattern '"public-only"'
 grep -nF -- '"public-only"' 'models/auth/access_token_scope.go'
 ```
 
-- **E-22** (`5.1`), expect line 119
+- **E-22** (section 5), expect `routers/api/v1/api.go:119`
 
 ```text
 Select-String -LiteralPath 'routers/api/v1/api.go' -SimpleMatch -CaseSensitive -Pattern 'if ctx.IsSigned && ctx.Doer.IsAdmin {'
 grep -nF -- 'if ctx.IsSigned && ctx.Doer.IsAdmin {' 'routers/api/v1/api.go'
 ```
 
-- **E-23** (`5.1`), expect line 137
+- **E-23** (section 5), expect `routers/web/web.go:137`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'group.Add(&auth_service.DeployToken{})'
 grep -nF -- 'group.Add(&auth_service.DeployToken{})' 'routers/web/web.go'
 ```
 
-- **E-24** (`5.1`), expect line 115
+- **E-24** (section 5), expect `services/auth/basic.go:115`
 
 ```text
 Select-String -LiteralPath 'services/auth/basic.go' -SimpleMatch -CaseSensitive -Pattern 'return user_model.NewActionsUserWithTaskID(task.ID), nil'
 grep -nF -- 'return user_model.NewActionsUserWithTaskID(task.ID), nil' 'services/auth/basic.go'
 ```
 
-- **E-25** (`5.2`), expect line 221
+- **E-25** (section 5), expect `routers/web/web.go:221`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'crossOriginProtection.Check(ctx.Req)'
 grep -nF -- 'crossOriginProtection.Check(ctx.Req)' 'routers/web/web.go'
 ```
 
-- **E-26** (`5.2`), expect line 730
+- **E-26** (section 5), expect `routers/web/web.go:730`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'm.Get("/recover_account", auth.ResetPasswd)'
 grep -nF -- 'm.Get("/recover_account", auth.ResetPasswd)' 'routers/web/web.go'
 ```
 
-- **E-27** (`5.2`), expect line 44
+- **E-27** (section 5), expect `routers/api/packages/api.go:44`
 
 ```text
 Select-String -LiteralPath 'routers/api/packages/api.go' -SimpleMatch -CaseSensitive -Pattern 'func reqPackageAccess(accessMode perm.AccessMode) func(ctx *context.Context) {'
 grep -nF -- 'func reqPackageAccess(accessMode perm.AccessMode) func(ctx *context.Context) {' 'routers/api/packages/api.go'
 ```
 
-- **E-28** (`5.2`), expect line 255
+- **E-28** (section 5), expect `routers/api/v1/api.go:255`
 
 ```text
 Select-String -LiteralPath 'routers/api/v1/api.go' -SimpleMatch -CaseSensitive -Pattern 'this endpoint is not available for public-only tokens'
 grep -nF -- 'this endpoint is not available for public-only tokens' 'routers/api/v1/api.go'
 ```
 
-- **E-29** (`5.3`), expect line 1118
+- **E-29** (section 5), expect `routers/web/repo/pull.go:1118`
 
 ```text
 Select-String -LiteralPath 'routers/web/repo/pull.go' -SimpleMatch -CaseSensitive -Pattern 'case errors.Is(err, pull_service.ErrNoPermissionToMerge):'
 grep -nF -- 'case errors.Is(err, pull_service.ErrNoPermissionToMerge):' 'routers/web/repo/pull.go'
 ```
 
-- **E-30** (`5.3`), expect line 141
+- **E-30** (section 5), expect `modules/setting/service.go:141`
 
 ```text
 Select-String -LiteralPath 'modules/setting/service.go' -SimpleMatch -CaseSensitive -Pattern 'Service.DisableRegistration = sec.Key("DISABLE_REGISTRATION").MustBool(true)'
 grep -nF -- 'Service.DisableRegistration = sec.Key("DISABLE_REGISTRATION").MustBool(true)' 'modules/setting/service.go'
 ```
 
-- **E-31** (`5.3`), expect line 1463
+- **E-31** (section 5), expect `routers/web/web.go:1463`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'reqRepoCodeWriter, repo.MustBeNotEmpty)'
 grep -nF -- 'reqRepoCodeWriter, repo.MustBeNotEmpty)' 'routers/web/web.go'
 ```
 
-- **E-32** (`5.3`), expect line 853
+- **E-32** (section 5), expect `custom/conf/app.example.ini:853`
 
 ```text
 Select-String -LiteralPath 'custom/conf/app.example.ini' -SimpleMatch -CaseSensitive -Pattern ';REQUIRE_SIGNIN_VIEW = false'
 grep -nF -- ';REQUIRE_SIGNIN_VIEW = false' 'custom/conf/app.example.ini'
 ```
 
-- **E-33** (`5.3`), expect line 1204
+- **E-33** (section 5), expect `routers/web/web.go:1204`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'm.Group("/hooks", func() {'
 grep -nF -- 'm.Group("/hooks", func() {' 'routers/web/web.go'
 ```
 
-- **E-34** (`6`), expect line 257
+- **E-34** (section 6), expect `routers/web/web.go:257`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'func Routes() *web.Router {'
 grep -nF -- 'func Routes() *web.Router {' 'routers/web/web.go'
 ```
 
-- **E-35** (`6/UI-27`), expect line 1774
+- **E-35** (section 6), expect `routers/web/web.go:1774`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'if !setting.IsProd || setting.IsInE2eTesting() {'
 grep -nF -- 'if !setting.IsProd || setting.IsInE2eTesting() {' 'routers/web/web.go'
 ```
 
-- **E-36** (`6/UI-26`), expect line 308
+- **E-36** (section 6), expect `routers/web/web.go:308`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'routes.Get("/api/swagger", append(mid, misc.Swagger)...)'
 grep -nF -- 'routes.Get("/api/swagger", append(mid, misc.Swagger)...)' 'routers/web/web.go'
 ```
 
-- **E-37** (`6/UI-3`), expect line 567
+- **E-37** (section 6), expect `routers/web/web.go:567`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'm.Get("/user/login", auth.SignIn)'
 grep -nF -- 'm.Get("/user/login", auth.SignIn)' 'routers/web/web.go'
 ```
 
-- **E-38** (`7.1`), expect line 285
+- **E-38** (section 7), expect `cmd/web.go:285`
 
 ```text
 Select-String -LiteralPath 'cmd/web.go' -SimpleMatch -CaseSensitive -Pattern 'if !setting.InstallLock {'
 grep -nF -- 'if !setting.InstallLock {' 'cmd/web.go'
 ```
 
-- **E-39** (`7.2`), expect line 308
+- **E-39** (section 7), expect `routers/web/auth/auth.go:308`
 
 ```text
 Select-String -LiteralPath 'routers/web/auth/auth.go' -SimpleMatch -CaseSensitive -Pattern 'u, source, err := auth_service.UserSignIn(ctx, form.UserName, form.Password)'
 grep -nF -- 'u, source, err := auth_service.UserSignIn(ctx, form.UserName, form.Password)' 'routers/web/auth/auth.go'
 ```
 
-- **E-40** (`7.3`), expect line 247
+- **E-40** (section 7), expect `routers/web/repo/repo.go:247`
 
 ```text
 Select-String -LiteralPath 'routers/web/repo/repo.go' -SimpleMatch -CaseSensitive -Pattern 'repo, err = repo_service.GenerateRepository(ctx, ctx.Doer, ctxUser, templateRepo, opts)'
 grep -nF -- 'repo, err = repo_service.GenerateRepository(ctx, ctx.Doer, ctxUser, templateRepo, opts)' 'routers/web/repo/repo.go'
 ```
 
-- **E-41** (`7.4`), expect line 379
+- **E-41** (section 7), expect `routers/web/repo/issue_new.go:379`
 
 ```text
 Select-String -LiteralPath 'routers/web/repo/issue_new.go' -SimpleMatch -CaseSensitive -Pattern 'issue_service.NewIssue(ctx, repo, ctx.Repo.Permission, issue, labelIDs, attachments, assigneeIDs, projectIDs)'
 grep -nF -- 'issue_service.NewIssue(ctx, repo, ctx.Repo.Permission, issue, labelIDs, attachments, assigneeIDs, projectIDs)' 'routers/web/repo/issue_new.go'
 ```
 
-- **E-42** (`7.5`), expect line 1118
+- **E-42** (section 7), expect `routers/web/repo/pull.go:1118`
 
 ```text
 Select-String -LiteralPath 'routers/web/repo/pull.go' -SimpleMatch -CaseSensitive -Pattern 'case errors.Is(err, pull_service.ErrNoPermissionToMerge):'
 grep -nF -- 'case errors.Is(err, pull_service.ErrNoPermissionToMerge):' 'routers/web/repo/pull.go'
 ```
 
-- **E-43** (`7.6`), expect line 129
+- **E-43** (section 7), expect `routers/private/hook_pre_receive.go:129`
 
 ```text
 Select-String -LiteralPath 'routers/private/hook_pre_receive.go' -SimpleMatch -CaseSensitive -Pattern 'is the default branch and cannot be deleted'
 grep -nF -- 'is the default branch and cannot be deleted' 'routers/private/hook_pre_receive.go'
 ```
 
-- **E-44** (`7.7`), expect line 262
+- **E-44** (section 7), expect `services/webhook/deliver.go:262`
 
 ```text
 Select-String -LiteralPath 'services/webhook/deliver.go' -SimpleMatch -CaseSensitive -Pattern 'util.ReadWithLimit(resp.Body, 1024*1024)'
 grep -nF -- 'util.ReadWithLimit(resp.Body, 1024*1024)' 'services/webhook/deliver.go'
 ```
 
-- **E-45** (`7.8`), expect line 59
+- **E-45** (section 7), expect `services/cron/tasks_actions.go:59`
 
 ```text
 Select-String -LiteralPath 'services/cron/tasks_actions.go' -SimpleMatch -CaseSensitive -Pattern 'RegisterTaskFatal("start_schedule_tasks"'
 grep -nF -- 'RegisterTaskFatal("start_schedule_tasks"' 'services/cron/tasks_actions.go'
 ```
 
-- **E-46** (`7.9`), expect line 784
+- **E-46** (section 7), expect `routers/web/web.go:784`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'admin.NewUserPost'
 grep -nF -- 'admin.NewUserPost' 'routers/web/web.go'
 ```
 
-- **E-47** (`7.10`), expect line 109
+- **E-47** (section 7), expect `contrib/upgrade.sh:109`
 
 ```text
 Select-String -LiteralPath 'contrib/upgrade.sh' -SimpleMatch -CaseSensitive -Pattern 'if [[ -z "${ignore_gpg:-}" ]]; then'
 grep -nF -- 'if [[ -z "${ignore_gpg:-}" ]]; then' 'contrib/upgrade.sh'
 ```
 
-- **E-48** (`8.1/C-1`), expect line 363
+- **E-48** (section 8), expect `custom/conf/app.example.ini:363`
 
 ```text
 Select-String -LiteralPath 'custom/conf/app.example.ini' -SimpleMatch -CaseSensitive -Pattern 'DB_TYPE = mysql'
 grep -nF -- 'DB_TYPE = mysql' 'custom/conf/app.example.ini'
 ```
 
-- **E-49** (`8.2`), expect line 112
+- **E-49** (section 8), expect `models/db/engine.go:112`
 
 ```text
 Select-String -LiteralPath 'models/db/engine.go' -SimpleMatch -CaseSensitive -Pattern 'func RegisterModel(bean any, initFunc ...func() error) {'
 grep -nF -- 'func RegisterModel(bean any, initFunc ...func() error) {' 'models/db/engine.go'
 ```
 
-- **E-50** (`8.3/X-1`), expect line 96
+- **E-50** (section 8), expect `modules/hcaptcha/hcaptcha.go:96`
 
 ```text
 Select-String -LiteralPath 'modules/hcaptcha/hcaptcha.go' -SimpleMatch -CaseSensitive -Pattern 'http.NewRequestWithContext(c.ctx, http.MethodPost, verifyURL'
 grep -nF -- 'http.NewRequestWithContext(c.ctx, http.MethodPost, verifyURL' 'modules/hcaptcha/hcaptcha.go'
 ```
 
-- **E-51** (`8.3/X-5`), expect line 37
+- **E-51** (section 8), expect `modules/updatechecker/update_checker.go:37`
 
 ```text
 Select-String -LiteralPath 'modules/updatechecker/update_checker.go' -SimpleMatch -CaseSensitive -Pattern 'http.NewRequest(http.MethodGet, httpEndpoint, nil)'
 grep -nF -- 'http.NewRequest(http.MethodGet, httpEndpoint, nil)' 'modules/updatechecker/update_checker.go'
 ```
 
-- **E-52** (`8.3/X-8`), expect line 277
+- **E-52** (section 8), expect `services/webhook/deliver.go:277`
 
 ```text
 Select-String -LiteralPath 'services/webhook/deliver.go' -SimpleMatch -CaseSensitive -Pattern 'egress.NewWebhookPolicy().NewHTTPTransport()'
 grep -nF -- 'egress.NewWebhookPolicy().NewHTTPTransport()' 'services/webhook/deliver.go'
 ```
 
-- **E-53** (`8.3/X-11`), expect line 109
+- **E-53** (section 8), expect `contrib/upgrade.sh:109`
 
 ```text
 Select-String -LiteralPath 'contrib/upgrade.sh' -SimpleMatch -CaseSensitive -Pattern 'if [[ -z "${ignore_gpg:-}" ]]; then'
 grep -nF -- 'if [[ -z "${ignore_gpg:-}" ]]; then' 'contrib/upgrade.sh'
 ```
 
-- **E-54** (`8.4`), expect line 111
+- **E-54** (section 8), expect `models/user/user.go:111`
 
 ```text
 Select-String -LiteralPath 'models/user/user.go' -SimpleMatch -CaseSensitive -Pattern 'NOT NULL DEFAULT ''argon2'''
 grep -nF -- 'NOT NULL DEFAULT '\''argon2'\''' 'models/user/user.go'
 ```
 
-- **E-55** (`8.4`), expect line 25
+- **E-55** (section 8), expect `models/auth/access_token.go:25`
 
 ```text
 Select-String -LiteralPath 'models/auth/access_token.go' -SimpleMatch -CaseSensitive -Pattern '// sha256 of token'
 grep -nF -- '// sha256 of token' 'models/auth/access_token.go'
 ```
 
-- **E-56** (`8.4`), expect line 70
+- **E-56** (section 8), expect `services/auth/source/ldap/source.go:70`
 
 ```text
 Select-String -LiteralPath 'services/auth/source/ldap/source.go' -SimpleMatch -CaseSensitive -Pattern 'secret.EncryptSecret(setting.SecretKey, source.BindPassword)'
 grep -nF -- 'secret.EncryptSecret(setting.SecretKey, source.BindPassword)' 'services/auth/source/ldap/source.go'
 ```
 
-- **E-57** (`8.4`), expect line 44
+- **E-57** (section 8), expect `models/secret/secret.go:44`
 
 ```text
 Select-String -LiteralPath 'models/secret/secret.go' -SimpleMatch -CaseSensitive -Pattern '// encrypted data'
 grep -nF -- '// encrypted data' 'models/secret/secret.go'
 ```
 
-- **E-58** (`8.5/C-13`), expect line 33
+- **E-58** (section 8), expect `routers/api/actions/runner/interceptor.go:33`
 
 ```text
 Select-String -LiteralPath 'routers/api/actions/runner/interceptor.go' -SimpleMatch -CaseSensitive -Pattern 'lru.New[runnerTokenHash, [sha256.Size]byte](10000)'
 grep -nF -- 'lru.New[runnerTokenHash, [sha256.Size]byte](10000)' 'routers/api/actions/runner/interceptor.go'
 ```
 
-- **E-59** (`8.5/C-1`), expect line 73
+- **E-59** (section 8), expect `routers/init.go:73`
 
 ```text
 Select-String -LiteralPath 'routers/init.go' -SimpleMatch -CaseSensitive -Pattern 'log.Fatal("%s(ctx) failed: %v", fi.Name(), err)'
 grep -nF -- 'log.Fatal("%s(ctx) failed: %v", fi.Name(), err)' 'routers/init.go'
 ```
 
-- **E-61** (`9`), expect line 90
+- **E-61** (section 9), expect `modules/private/internal.go:90`
 
 ```text
 Select-String -LiteralPath 'modules/private/internal.go' -SimpleMatch -CaseSensitive -Pattern 'if setting.InternalToken == "" {'
 grep -nF -- 'if setting.InternalToken == "" {' 'modules/private/internal.go'
 ```
 
-- **E-62** (`9`), expect line 38
+- **E-62** (section 9), expect `services/auth/signin.go:38`
 
 ```text
 Select-String -LiteralPath 'services/auth/signin.go' -SimpleMatch -CaseSensitive -Pattern 'if !emailAddress.IsActivated {'
 grep -nF -- 'if !emailAddress.IsActivated {' 'services/auth/signin.go'
 ```
 
-- **E-63** (`9`), expect line 200
+- **E-63** (section 9), expect `routers/web/web.go:200`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'strings.HasPrefix(ctx.Req.UserAgent(), "git")'
 grep -nF -- 'strings.HasPrefix(ctx.Req.UserAgent(), "git")' 'routers/web/web.go'
 ```
 
-- **E-64** (`9`), expect line 305
+- **E-64** (section 9), expect `routers/api/v1/api.go:305`
 
 ```text
 Select-String -LiteralPath 'routers/api/v1/api.go' -SimpleMatch -CaseSensitive -Pattern 'token does not have at least one of required scope(s)'
 grep -nF -- 'token does not have at least one of required scope(s)' 'routers/api/v1/api.go'
 ```
 
-- **E-65** (`9`), expect line 140
+- **E-65** (section 9), expect `routers/api/v1/api.go:140`
 
 ```text
 Select-String -LiteralPath 'routers/api/v1/api.go' -SimpleMatch -CaseSensitive -Pattern 'Only administrators allowed to sudo.'
 grep -nF -- 'Only administrators allowed to sudo.' 'routers/api/v1/api.go'
 ```
 
-- **E-66** (`9`), expect line 133
+- **E-66** (section 9), expect `routers/private/hook_pre_receive.go:133`
 
 ```text
 Select-String -LiteralPath 'routers/private/hook_pre_receive.go' -SimpleMatch -CaseSensitive -Pattern 'is protected from deletion'
 grep -nF -- 'is protected from deletion' 'routers/private/hook_pre_receive.go'
 ```
 
-- **E-67** (`9`), expect line 1232
+- **E-67** (section 9), expect `routers/web/repo/pull.go:1232`
 
 ```text
 Select-String -LiteralPath 'routers/web/repo/pull.go' -SimpleMatch -CaseSensitive -Pattern 'repo.pulls.head_out_of_date'
 grep -nF -- 'repo.pulls.head_out_of_date' 'routers/web/repo/pull.go'
 ```
 
-- **E-68** (`9`), expect line 27
+- **E-68** (section 9), expect `routers/web/metrics.go:27`
 
 ```text
 Select-String -LiteralPath 'routers/web/metrics.go' -SimpleMatch -CaseSensitive -Pattern 'want := []byte("Bearer " + setting.Metrics.Token)'
 grep -nF -- 'want := []byte("Bearer " + setting.Metrics.Token)' 'routers/web/metrics.go'
 ```
 
-- **E-69** (`9`), expect line 27
+- **E-69** (section 9), expect `cmd/actions.go:27`
 
 ```text
 Select-String -LiteralPath 'cmd/actions.go' -SimpleMatch -CaseSensitive -Pattern '"generate-runner-token"'
 grep -nF -- '"generate-runner-token"' 'cmd/actions.go'
 ```
 
-- **E-70** (`9`), expect line 213
+- **E-70** (section 9), expect `cmd/web.go:213`
 
 ```text
 Select-String -LiteralPath 'cmd/web.go' -SimpleMatch -CaseSensitive -Pattern 'log.Fatal("Can not find APP_DATA_PATH %q", setting.AppDataPath)'
 grep -nF -- 'log.Fatal("Can not find APP_DATA_PATH %q", setting.AppDataPath)' 'cmd/web.go'
 ```
 
-- **E-71** (`9`), expect line 1780
+- **E-71** (section 9), expect `custom/conf/app.example.ini:1780`
 
 ```text
 Select-String -LiteralPath 'custom/conf/app.example.ini' -SimpleMatch -CaseSensitive -Pattern ';DELIVER_TIMEOUT = 5'
 grep -nF -- ';DELIVER_TIMEOUT = 5' 'custom/conf/app.example.ini'
 ```
 
-- **E-72** (`10.1/V-1`), expect line 86
+- **E-72** (section 10), expect `services/auth/oauth2.go:86`
 
 ```text
 Select-String -LiteralPath 'services/auth/oauth2.go' -SimpleMatch -CaseSensitive -Pattern 'if !setting.DisableQueryAuthToken {'
 grep -nF -- 'if !setting.DisableQueryAuthToken {' 'services/auth/oauth2.go'
 ```
 
-- **E-73** (`10.1/V-2`), expect line 312
+- **E-73** (section 10), expect `routers/web/auth/auth.go:312`
 
 ```text
 Select-String -LiteralPath 'routers/web/auth/auth.go' -SimpleMatch -CaseSensitive -Pattern 'Failed authentication attempt for %s from %s: %v'
 grep -nF -- 'Failed authentication attempt for %s from %s: %v' 'routers/web/auth/auth.go'
 ```
 
-- **E-74** (`10.1/V-3`), expect line 131
+- **E-74** (section 10), expect `routers/api/v1/api.go:131`
 
 ```text
 Select-String -LiteralPath 'routers/api/v1/api.go' -SimpleMatch -CaseSensitive -Pattern 'audit.Record(ctx, audit_model.UserImpersonation, user)'
 grep -nF -- 'audit.Record(ctx, audit_model.UserImpersonation, user)' 'routers/api/v1/api.go'
 ```
 
-- **E-75** (`10.1/V-4`), expect line 17
+- **E-75** (section 10), expect `routers/web/metrics.go:17`
 
 ```text
 Select-String -LiteralPath 'routers/web/metrics.go' -SimpleMatch -CaseSensitive -Pattern 'if setting.Metrics.Token == "" {'
 grep -nF -- 'if setting.Metrics.Token == "" {' 'routers/web/metrics.go'
 ```
 
-- **E-76** (`10.1/V-5`), expect line 37
+- **E-76** (section 10), expect `routers/private/internal.go:37`
 
 ```text
 Select-String -LiteralPath 'routers/private/internal.go' -SimpleMatch -CaseSensitive -Pattern 'Forbidden attempt to access internal url: Authorization header: %s'
 grep -nF -- 'Forbidden attempt to access internal url: Authorization header: %s' 'routers/private/internal.go'
 ```
 
-- **E-77** (`10.1/V-6`), expect line 102
+- **E-77** (section 10), expect `models/auth/twofactor.go:102`
 
 ```text
 Select-String -LiteralPath 'models/auth/twofactor.go' -SimpleMatch -CaseSensitive -Pattern 'k := md5.Sum([]byte(setting.SecretKey))'
 grep -nF -- 'k := md5.Sum([]byte(setting.SecretKey))' 'models/auth/twofactor.go'
 ```
 
-- **E-78** (`10.1/V-7`), expect line 91
+- **E-78** (section 10), expect `services/webhook/deliver.go:91`
 
 ```text
 Select-String -LiteralPath 'services/webhook/deliver.go' -SimpleMatch -CaseSensitive -Pattern 'addDefaultHeaders(req, []byte(w.Secret), w, t, body)'
 grep -nF -- 'addDefaultHeaders(req, []byte(w.Secret), w, t, body)' 'services/webhook/deliver.go'
 ```
 
-- **E-79** (`10.1/V-8`), expect line 734
+- **E-79** (section 10), expect `routers/web/web.go:734`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'm.Get("/logout", auth.SignOut)'
 grep -nF -- 'm.Get("/logout", auth.SignOut)' 'routers/web/web.go'
 ```
 
-- **E-80** (`10.1/V-9`), expect line 77
+- **E-80** (section 10), expect `modules/private/internal.go:77`
 
 ```text
 Select-String -LiteralPath 'modules/private/internal.go' -SimpleMatch -CaseSensitive -Pattern 'return &tls.Config{InsecureSkipVerify: true, ServerName: domain}'
 grep -nF -- 'return &tls.Config{InsecureSkipVerify: true, ServerName: domain}' 'modules/private/internal.go'
 ```
 
-- **E-81** (`10.1/V-10`), expect line 1927
+- **E-81** (section 10), expect `custom/conf/app.example.ini:1927`
 
 ```text
 Select-String -LiteralPath 'custom/conf/app.example.ini' -SimpleMatch -CaseSensitive -Pattern ';SKIP_TLS_VERIFY = true'
 grep -nF -- ';SKIP_TLS_VERIFY = true' 'custom/conf/app.example.ini'
 ```
 
-- **E-82** (`10.2`), expect line 196
+- **E-82** (section 10), expect `modules/setting/security.go:196`
 
 ```text
 Select-String -LiteralPath 'modules/setting/security.go' -SimpleMatch -CaseSensitive -Pattern 'case "enforced":'
 grep -nF -- 'case "enforced":' 'modules/setting/security.go'
 ```
 
-- **E-83** (`10.2`), expect line 308
+- **E-83** (section 10), expect `routers/web/auth/auth.go:308`
 
 ```text
 Select-String -LiteralPath 'routers/web/auth/auth.go' -SimpleMatch -CaseSensitive -Pattern 'auth_service.UserSignIn(ctx, form.UserName, form.Password)'
 grep -nF -- 'auth_service.UserSignIn(ctx, form.UserName, form.Password)' 'routers/web/auth/auth.go'
 ```
 
-- **E-84** (`10.2`), expect line 499
+- **E-84** (section 10), expect `Makefile:499`
 
 ```text
 Select-String -LiteralPath 'Makefile' -SimpleMatch -CaseSensitive -Pattern '-show color ./... || true'
 grep -nF -- '-show color ./... || true' 'Makefile'
 ```
 
-- **E-85** (`10.2`), expect line 544
+- **E-85** (section 10), expect `custom/conf/app.example.ini:544`
 
 ```text
 Select-String -LiteralPath 'custom/conf/app.example.ini' -SimpleMatch -CaseSensitive -Pattern 'Webhook and oauth2 clients can only call allowed hosts for security reasons'
 grep -nF -- 'Webhook and oauth2 clients can only call allowed hosts for security reasons' 'custom/conf/app.example.ini'
 ```
 
-- **E-86** (`10.2`), expect line 221
+- **E-86** (section 10), expect `routers/web/web.go:221`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'crossOriginProtection.Check(ctx.Req)'
 grep -nF -- 'crossOriginProtection.Check(ctx.Req)' 'routers/web/web.go'
 ```
 
-- **E-87** (`10.2`), expect line 72
+- **E-87** (section 10), expect `modules/web/middleware/cookie.go:72`
 
 ```text
 Select-String -LiteralPath 'modules/web/middleware/cookie.go' -SimpleMatch -CaseSensitive -Pattern 'HttpOnly: true,'
 grep -nF -- 'HttpOnly: true,' 'modules/web/middleware/cookie.go'
 ```
 
-- **E-88** (`10.2`), expect line 357
+- **E-88** (section 10), expect `cmd/web.go:357`
 
 ```text
 Select-String -LiteralPath 'cmd/web.go' -SimpleMatch -CaseSensitive -Pattern 'if setting.EnableAcme {'
 grep -nF -- 'if setting.EnableAcme {' 'cmd/web.go'
 ```
 
-- **E-89** (`10.2`), expect line 50
+- **E-89** (section 10), expect `routers/common/qos.go:50`
 
 ```text
 Select-String -LiteralPath 'routers/common/qos.go' -SimpleMatch -CaseSensitive -Pattern 'if !setting.Service.QoS.Enabled {'
 grep -nF -- 'if !setting.Service.QoS.Enabled {' 'routers/common/qos.go'
 ```
 
-- **E-90** (`11`), expect line 132
+- **E-90** (section 11), expect `docs/community-governance.md:132`
 
 ```text
 Select-String -LiteralPath 'docs/community-governance.md' -SimpleMatch -CaseSensitive -Pattern '### Maintainers'
 grep -nF -- '### Maintainers' 'docs/community-governance.md'
 ```
 
-- **E-91** (`11`), expect line 248
+- **E-91** (section 11), expect `.github/workflows/pull-db-tests.yml:248`
 
 ```text
 Select-String -LiteralPath '.github/workflows/pull-db-tests.yml' -SimpleMatch -CaseSensitive -Pattern 'GITEA_TEST_DATABASE=mssql make test-integration'
 grep -nF -- 'GITEA_TEST_DATABASE=mssql make test-integration' '.github/workflows/pull-db-tests.yml'
 ```
 
-- **E-93** (`11`), expect line 17
+- **E-93** (section 11), expect `.github/workflows/release-create-tag.yml:17`
 
 ```text
 Select-String -LiteralPath '.github/workflows/release-create-tag.yml' -SimpleMatch -CaseSensitive -Pattern 'name: release-signing'
 grep -nF -- 'name: release-signing' '.github/workflows/release-create-tag.yml'
 ```
 
-- **E-94** (`15/R-1`), expect line 520
+- **E-94** (section 15), expect `custom/conf/app.example.ini:520`
 
 ```text
 Select-String -LiteralPath 'custom/conf/app.example.ini' -SimpleMatch -CaseSensitive -Pattern ';DISABLE_QUERY_AUTH_TOKEN = false'
 grep -nF -- ';DISABLE_QUERY_AUTH_TOKEN = false' 'custom/conf/app.example.ini'
 ```
 
-- **E-95** (`15/R-2`), expect line 527
+- **E-95** (section 15), expect `custom/conf/app.example.ini:527`
 
 ```text
 Select-String -LiteralPath 'custom/conf/app.example.ini' -SimpleMatch -CaseSensitive -Pattern ';TWO_FACTOR_AUTH ='
 grep -nF -- ';TWO_FACTOR_AUTH =' 'custom/conf/app.example.ini'
 ```
 
-- **E-96** (`15/R-3`), expect line 17
+- **E-96** (section 15), expect `modules/setting/audit.go:17`
 
 ```text
 Select-String -LiteralPath 'modules/setting/audit.go' -SimpleMatch -CaseSensitive -Pattern 'AuditRecordOutputDatabase AuditRecordOutput = "database"'
 grep -nF -- 'AuditRecordOutputDatabase AuditRecordOutput = "database"' 'modules/setting/audit.go'
 ```
 
-- **E-97** (`15/R-13`), expect line 450
+- **E-97** (section 15), expect `custom/conf/app.example.ini:450`
 
 ```text
 Select-String -LiteralPath 'custom/conf/app.example.ini' -SimpleMatch -CaseSensitive -Pattern ';SECRET_KEY_URI = file:/etc/gitea/secret_key'
 grep -nF -- ';SECRET_KEY_URI = file:/etc/gitea/secret_key' 'custom/conf/app.example.ini'
 ```
 
-- **E-98** (`16.1`), expect line 5
+- **E-98** (section 16), expect `package.json:5`
 
 ```text
 Select-String -LiteralPath 'package.json' -SimpleMatch -CaseSensitive -Pattern '"node": ">= 22.18.0"'
 grep -nF -- '"node": ">= 22.18.0"' 'package.json'
 ```
 
-- **E-99** (`16.1`), expect line 220
+- **E-99** (section 16), expect `.github/workflows/pull-db-tests.yml:220`
 
 ```text
 Select-String -LiteralPath '.github/workflows/pull-db-tests.yml' -SimpleMatch -CaseSensitive -Pattern 'test-mssql:'
 grep -nF -- 'test-mssql:' '.github/workflows/pull-db-tests.yml'
 ```
 
-- **E-100** (`16.2`), expect line 218
+- **E-100** (section 16), expect `cmd/web.go:218`
 
 ```text
 Select-String -LiteralPath 'cmd/web.go' -SimpleMatch -CaseSensitive -Pattern 'RemoveOutdated(3 * 24 * time.Hour)'
 grep -nF -- 'RemoveOutdated(3 * 24 * time.Hour)' 'cmd/web.go'
 ```
 
-- **E-101** (`16.2`), expect line 39
+- **E-101** (section 16), expect `cmd/migrate_storage.go:39`
 
 ```text
 Select-String -LiteralPath 'cmd/migrate_storage.go' -SimpleMatch -CaseSensitive -Pattern '''actions-artifacts'''
 grep -nF -- ''\''actions-artifacts'\''' 'cmd/migrate_storage.go'
 ```
 
-- **E-102** (`16.3`), expect line 1997
+- **E-102** (section 16), expect `custom/conf/app.example.ini:1997`
 
 ```text
 Select-String -LiteralPath 'custom/conf/app.example.ini' -SimpleMatch -CaseSensitive -Pattern ';SESSION_LIFE_TIME = 86400'
 grep -nF -- ';SESSION_LIFE_TIME = 86400' 'custom/conf/app.example.ini'
 ```
 
-- **E-103** (`16.3`), expect line 459
+- **E-103** (section 16), expect `custom/conf/app.example.ini:459`
 
 ```text
 Select-String -LiteralPath 'custom/conf/app.example.ini' -SimpleMatch -CaseSensitive -Pattern ';LOGIN_REMEMBER_DAYS = 31'
 grep -nF -- ';LOGIN_REMEMBER_DAYS = 31' 'custom/conf/app.example.ini'
 ```
 
-- **E-104** (`16.3`), expect line 64
+- **E-104** (section 16), expect `modules/setting/session.go:64`
 
 ```text
 Select-String -LiteralPath 'modules/setting/session.go' -SimpleMatch -CaseSensitive -Pattern 'strings.HasPrefix(strings.ToLower(AppURL), "https://")'
 grep -nF -- 'strings.HasPrefix(strings.ToLower(AppURL), "https://")' 'modules/setting/session.go'
 ```
 
-- **E-105** (`16.3`), expect line 25
+- **E-105** (section 16), expect `models/auth/access_token.go:25`
 
 ```text
 Select-String -LiteralPath 'models/auth/access_token.go' -SimpleMatch -CaseSensitive -Pattern '// sha256 of token'
 grep -nF -- '// sha256 of token' 'models/auth/access_token.go'
 ```
 
-- **E-106** (`16.3`), expect line 626
+- **E-106** (section 16), expect `custom/conf/app.example.ini:626`
 
 ```text
 Select-String -LiteralPath 'custom/conf/app.example.ini' -SimpleMatch -CaseSensitive -Pattern ';ACCESS_TOKEN_EXPIRATION_TIME = 3600'
 grep -nF -- ';ACCESS_TOKEN_EXPIRATION_TIME = 3600' 'custom/conf/app.example.ini'
 ```
 
-- **E-107** (`16.4`), expect line 302
+- **E-107** (section 16), expect `custom/conf/app.example.ini:302`
 
 ```text
 Select-String -LiteralPath 'custom/conf/app.example.ini' -SimpleMatch -CaseSensitive -Pattern ';ENABLE_PPROF = false'
 grep -nF -- ';ENABLE_PPROF = false' 'custom/conf/app.example.ini'
 ```
 
-- **E-108** (`16.4`), expect line 61
+- **E-108** (section 16), expect `contrib/upgrade.sh:61`
 
 ```text
 Select-String -LiteralPath 'contrib/upgrade.sh' -SimpleMatch -CaseSensitive -Pattern 'set -euo pipefail'
 grep -nF -- 'set -euo pipefail' 'contrib/upgrade.sh'
 ```
 
-- **E-109** (`16.5`), expect line 477
+- **E-109** (section 16), expect `Makefile:477`
 
 ```text
 Select-String -LiteralPath 'Makefile' -SimpleMatch -CaseSensitive -Pattern 'build: frontend backend ## build everything'
 grep -nF -- 'build: frontend backend ## build everything' 'Makefile'
 ```
 
-- **E-110** (`16.5`), expect line 436
+- **E-110** (section 16), expect `Makefile:436`
 
 ```text
 Select-String -LiteralPath 'Makefile' -SimpleMatch -CaseSensitive -Pattern 'test-integration: $(EXECUTABLE)'
 grep -nF -- 'test-integration: $(EXECUTABLE)' 'Makefile'
 ```
 
-- **E-111** (`16.5`), expect line 89
+- **E-111** (section 16), expect `Dockerfile:89`
 
 ```text
 Select-String -LiteralPath 'Dockerfile' -SimpleMatch -CaseSensitive -Pattern 'ENTRYPOINT ["/usr/bin/entrypoint"]'
 grep -nF -- 'ENTRYPOINT ["/usr/bin/entrypoint"]' 'Dockerfile'
 ```
 
-- **E-112** (`16.5`), expect line 132
+- **E-112** (section 16), expect `contrib/upgrade.sh:132`
 
 ```text
 Select-String -LiteralPath 'contrib/upgrade.sh' -SimpleMatch -CaseSensitive -Pattern 'cp -f "$giteabin" "$giteabin.bak" && mv -f "$binname" "$giteabin"'
 grep -nF -- 'cp -f "$giteabin" "$giteabin.bak" && mv -f "$binname" "$giteabin"' 'contrib/upgrade.sh'
 ```
 
-- **E-113** (`16.5`), expect line 27
+- **E-113** (section 16), expect `cmd/dump.go:27`
 
 ```text
 Select-String -LiteralPath 'cmd/dump.go' -SimpleMatch -CaseSensitive -Pattern 'Dump Gitea files and database'
 grep -nF -- 'Dump Gitea files and database' 'cmd/dump.go'
 ```
 
-- **E-114** (`16.5`), expect line 19
+- **E-114** (section 16), expect `cmd/restore_repo.go:19`
 
 ```text
 Select-String -LiteralPath 'cmd/restore_repo.go' -SimpleMatch -CaseSensitive -Pattern 'Restore the repository from disk'
 grep -nF -- 'Restore the repository from disk' 'cmd/restore_repo.go'
 ```
 
-- **E-115** (`16.5`), expect line 74
+- **E-115** (section 16), expect `cmd/generate.go:74`
 
 ```text
 Select-String -LiteralPath 'cmd/generate.go' -SimpleMatch -CaseSensitive -Pattern 'Generate a new SECRET_KEY'
 grep -nF -- 'Generate a new SECRET_KEY' 'cmd/generate.go'
 ```
 
-- **E-116** (`16.5`), expect line 63
+- **E-116** (section 16), expect `cmd/doctor.go:63`
 
 ```text
 Select-String -LiteralPath 'cmd/doctor.go' -SimpleMatch -CaseSensitive -Pattern '"fix",'
 grep -nF -- '"fix",' 'cmd/doctor.go'
 ```
 
-- **E-117** (`16.6`), expect line 542
+- **E-117** (section 16), expect `custom/conf/app.example.ini:542`
 
 ```text
 Select-String -LiteralPath 'custom/conf/app.example.ini' -SimpleMatch -CaseSensitive -Pattern 'EGRESS_MODE = lax'
 grep -nF -- 'EGRESS_MODE = lax' 'custom/conf/app.example.ini'
 ```
 
-- **E-118** (`16.6`), expect line 167
+- **E-118** (section 16), expect `modules/setting/security.go:167`
 
 ```text
 Select-String -LiteralPath 'modules/setting/security.go' -SimpleMatch -CaseSensitive -Pattern 'MIN_PASSWORD_LENGTH'
 grep -nF -- 'MIN_PASSWORD_LENGTH' 'modules/setting/security.go'
 ```
 
-- **E-119** (`16.7`), expect line 231
+- **E-119** (section 16), expect `services/cron/tasks_extended.go:231`
 
 ```text
 Select-String -LiteralPath 'services/cron/tasks_extended.go' -SimpleMatch -CaseSensitive -Pattern 'RegisterTaskFatal("rebuild_issue_indexer"'
 grep -nF -- 'RegisterTaskFatal("rebuild_issue_indexer"' 'services/cron/tasks_extended.go'
 ```
 
-- **E-120** (`16.7`), expect line 142
+- **E-120** (section 16), expect `services/cron/tasks_extended.go:142`
 
 ```text
 Select-String -LiteralPath 'services/cron/tasks_extended.go' -SimpleMatch -CaseSensitive -Pattern 'if !setting.AuditRecordEnabled() || setting.AuditRetentionPeriod() <= 0 {'
 grep -nF -- 'if !setting.AuditRecordEnabled() || setting.AuditRetentionPeriod() <= 0 {' 'services/cron/tasks_extended.go'
 ```
 
-- **E-121** (`16.7`), expect line 35
+- **E-121** (section 16), expect `services/cron/tasks_basic.go:35`
 
 ```text
 Select-String -LiteralPath 'services/cron/tasks_basic.go' -SimpleMatch -CaseSensitive -Pattern '@every 10m'
 grep -nF -- '@every 10m' 'services/cron/tasks_basic.go'
 ```
 
-- **E-122** (`16.7`), expect line 92
+- **E-122** (section 16), expect `services/cron/tasks_basic.go:92`
 
 ```text
 Select-String -LiteralPath 'services/cron/tasks_basic.go' -SimpleMatch -CaseSensitive -Pattern '@midnight'
 grep -nF -- '@midnight' 'services/cron/tasks_basic.go'
 ```
 
-- **E-123** (`14/Q-1`), expect line 257
+- **E-123** (section 14), expect `routers/web/web.go:257`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'func Routes() *web.Router {'
 grep -nF -- 'func Routes() *web.Router {' 'routers/web/web.go'
 ```
 
-- **E-124** (`14/Q-2`), expect line 35
+- **E-124** (section 14), expect `cmd/migrate.go:35`
 
 ```text
 Select-String -LiteralPath 'cmd/migrate.go' -SimpleMatch -CaseSensitive -Pattern 'Configuration file: %s'
 grep -nF -- 'Configuration file: %s' 'cmd/migrate.go'
 ```
 
-- **E-125** (`14/Q-3`), expect line 134
+- **E-125** (section 14), expect `docs/community-governance.md:134`
 
 ```text
 Select-String -LiteralPath 'docs/community-governance.md' -SimpleMatch -CaseSensitive -Pattern 'We list [maintainers](../MAINTAINERS)'
 grep -nF -- 'We list [maintainers](../MAINTAINERS)' 'docs/community-governance.md'
 ```
 
-- **E-126** (`14/Q-4`), expect line 19
+- **E-126** (section 14), expect `cmd/restore_repo.go:19`
 
 ```text
 Select-String -LiteralPath 'cmd/restore_repo.go' -SimpleMatch -CaseSensitive -Pattern 'Restore the repository from disk'
 grep -nF -- 'Restore the repository from disk' 'cmd/restore_repo.go'
 ```
 
-- **E-127** (`14/Q-5`), expect line 132
+- **E-127** (section 14), expect `contrib/upgrade.sh:132`
 
 ```text
 Select-String -LiteralPath 'contrib/upgrade.sh' -SimpleMatch -CaseSensitive -Pattern 'cp -f "$giteabin" "$giteabin.bak" && mv -f "$binname" "$giteabin"'
 grep -nF -- 'cp -f "$giteabin" "$giteabin.bak" && mv -f "$binname" "$giteabin"' 'contrib/upgrade.sh'
 ```
 
-- **E-129** (`14/Q-7`), expect line 193
+- **E-129** (section 14), expect `routers/web/web.go:193`
 
 ```text
 Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'It was designed for "fail2ban".'
 grep -nF -- 'It was designed for "fail2ban".' 'routers/web/web.go'
 ```
 
-- **E-130** (`14/Q-8`), expect line 340
+- **E-130** (section 14), expect `cmd/web.go:340`
 
 ```text
 Select-String -LiteralPath 'cmd/web.go' -SimpleMatch -CaseSensitive -Pattern 'strange behaviors behind a reverse-proxy'
 grep -nF -- 'strange behaviors behind a reverse-proxy' 'cmd/web.go'
 ```
 
-- **E-131** (`14/Q-9`), expect line 196
+- **E-131** (section 14), expect `modules/setting/security.go:196`
 
 ```text
 Select-String -LiteralPath 'modules/setting/security.go' -SimpleMatch -CaseSensitive -Pattern 'case "enforced":'
 grep -nF -- 'case "enforced":' 'modules/setting/security.go'
 ```
 
-- **E-134** (`14/Q-12`), expect line 537
+- **E-134** (section 14), expect `custom/conf/app.example.ini:537`
 
 ```text
 Select-String -LiteralPath 'custom/conf/app.example.ini' -SimpleMatch -CaseSensitive -Pattern ';CONTENT_SECURITY_POLICY_GENERAL ='
 grep -nF -- ';CONTENT_SECURITY_POLICY_GENERAL =' 'custom/conf/app.example.ini'
 ```
 
-- **E-135** (`14/Q-13`), expect line 5
+- **E-135** (section 14), expect `docs/appdoc/facts-summary.md:5`
 
 ```text
 Select-String -LiteralPath 'docs/appdoc/facts-summary.md' -SimpleMatch -CaseSensitive -Pattern 'Git history: shallow'
 grep -nF -- 'Git history: shallow' 'docs/appdoc/facts-summary.md'
 ```
 
-- **E-137** (`10.1/V-11`), expect line 278
+- **E-137** (section 10), expect `services/webhook/deliver.go:278`
 
 ```text
 Select-String -LiteralPath 'services/webhook/deliver.go' -SimpleMatch -CaseSensitive -Pattern 'InsecureSkipVerify'
 grep -nF -- 'InsecureSkipVerify' 'services/webhook/deliver.go'
 ```
 
-- **E-138** (`10.1/V-12`), expect line 33
+- **E-138** (section 10), expect `modules/updatechecker/update_checker.go:33`
 
 ```text
 Select-String -LiteralPath 'modules/updatechecker/update_checker.go' -SimpleMatch -CaseSensitive -Pattern 'proxy.Proxy()'
 grep -nF -- 'proxy.Proxy()' 'modules/updatechecker/update_checker.go'
 ```
 
-- **E-139** (`10.1/V-13`), expect line 147
+- **E-139** (section 10), expect `modules/setting/security.go:147`
 
 ```text
 Select-String -LiteralPath 'modules/setting/security.go' -SimpleMatch -CaseSensitive -Pattern 'SecretKey'
 grep -nF -- 'SecretKey' 'modules/setting/security.go'
 ```
 
-- **E-140** (`10.1/V-14`), expect line 22
+- **E-140** (section 10), expect `models/audit/audit_event.go:22`
 
 ```text
 Select-String -LiteralPath 'models/audit/audit_event.go' -SimpleMatch -CaseSensitive -Pattern 'Event struct'
 grep -nF -- 'Event struct' 'models/audit/audit_event.go'
 ```
 
-- **E-141** (`8.2`), expect line 34
+- **E-141** (section 8), expect `models/db/engine_init.go:34`
 
 ```text
 Select-String -LiteralPath 'models/db/engine_init.go' -SimpleMatch -CaseSensitive -Pattern 'xorm.NewEngine(driver, connStr)'
