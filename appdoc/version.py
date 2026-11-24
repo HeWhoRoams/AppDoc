@@ -11,6 +11,7 @@ import hashlib
 import json
 import os
 
+from . import facts
 from .textnorm import normalize_newlines
 from . import __version__  # the literal lives in appdoc/__init__.py (the release script edits it there)
 
@@ -57,7 +58,6 @@ def bundle_hash() -> str:
 
 def provenance() -> dict:
     """{"generator", "bundle" (12 hex), "schema"} for the running AppDoc."""
-    from . import facts
     return {"generator": __version__, "bundle": bundle_hash()[:BUNDLE_LEN], "schema": facts.SCHEMA}
 
 

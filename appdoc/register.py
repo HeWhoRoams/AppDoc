@@ -14,6 +14,7 @@ import json
 import os
 import re
 
+from . import scan
 from .citations import parse_span
 from .template_spec import version_tuple
 from .textutil import plural
@@ -189,7 +190,6 @@ def _first_path(row: dict) -> str | None:
 
 def _build_basenames(root: str) -> dict[str, list[str]]:
     """Build a basename -> [Target-relative paths] index for the target."""
-    from . import scan
     idx: dict[str, list[str]] = {}
     for sf in scan.walk(root):
         idx.setdefault(sf.path.rsplit("/", 1)[-1], []).append(sf.path)

@@ -8,6 +8,9 @@ import os
 import re
 import sys
 
+from .. import docmodel as dm
+from .. import fill as fill_mod
+from .. import template_spec as spec
 from .markdown import render_markdown
 from ..textnorm import normalize_newlines
 from ..integration import render_integration_view
@@ -79,9 +82,6 @@ def _footer(target_name: str, out_dir: str) -> str:
 
 def _stale_block(target: str, md_path: str, out_dir: str) -> str | None:
     """The name of a generated block that differs from what fill would write, or None."""
-    from .. import fill as fill_mod
-    from .. import template_spec as spec
-    from .. import docmodel as dm
     with open(os.path.join(out_dir, "facts.json"), encoding="utf-8") as fh:
         facts = json.load(fh)
     raw = _read(md_path)

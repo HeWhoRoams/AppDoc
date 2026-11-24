@@ -14,6 +14,7 @@ is the audit's, not the tool's). What cannot be mechanical is for the person to 
 from __future__ import annotations
 
 import contextlib
+import functools
 import io
 import os
 import re
@@ -192,14 +193,10 @@ class _Template:
         return lines
 
 
-_TEMPLATE: _Template | None = None
-
-
+@functools.lru_cache(maxsize=None)
 def _template() -> _Template:
-    global _TEMPLATE
-    if _TEMPLATE is None:
-        _TEMPLATE = _Template()
-    return _TEMPLATE
+    """The running template, read once per process."""
+    return _Template()
 
 
 # --- the operations ---------------------------------------------------------------------------------------------

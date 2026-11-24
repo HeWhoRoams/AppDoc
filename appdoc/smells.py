@@ -12,7 +12,7 @@ import re
 from bisect import bisect_right
 from typing import Iterable
 
-from .facts import Fact, fact_id
+from .facts import Fact, fact_id, is_test_path
 from .stacks.base import strip_comments
 
 MAX_CHARS = 1_000_000  # larger files are skipped (the walk already drops files over 2 MB)
@@ -664,7 +664,6 @@ def _value_ok(name: str, value: str) -> bool:
 def _credentials(ctx: _Ctx, kind: str):
     if not _CRED_ANY.search(ctx.text):
         return
-    from .facts import is_test_path
     if is_test_path(ctx.path):
         return
     text = ctx.text
