@@ -2302,6 +2302,152 @@ class CheckTests(unittest.TestCase):
         self.assertFalse(self.c21(self.doc_with("Not reviewed: `Web.config:3`."))[2])
 
 
+    # --- C22: areas are 4.1 folders; state-changing and unprotected handler files are cited
+    C22_AREA = "Areas/Billing"
+    C22_HANDLER = f"{C22_AREA}/Controllers/InvoicesController.cs"
+
+    def _area_target(self):
+        os.makedirs(os.path.join(self.target, "Areas", "Billing", "Controllers"), exist_ok=True)
+        with open(os.path.join(self.target, self.C22_HANDLER), "w") as fh:
+            fh.write("// handler\n")
+
+    def _area_doc(self, with_4_1_row):
+        row = ("\n| `Areas/Billing/` | 1 | F-1 | C-1 | Billing screens in `Areas/Billing/Controllers/InvoicesController.cs:1` | Cited |"
+               if with_4_1_row else "")
+        return build_doc({3: SECTION_BODY[3] + f"\n- Invoices: `{self.C22_HANDLER}:1`.",
+                          4: SECTION_BODY[4] + row})
+
+    def _area_entry(self, **detail):
+        d = {"mvc_area_path": self.C22_AREA, "reach": "role_restricted", "state_changing": "false"}
+        d.update(detail)
+        return self.entry(self.C22_HANDLER, **d)
+
+    def test_c22_area_missing_from_4_1_fails(self):
+        self._area_target()
+        self.with_facts(self._area_entry(), {"kind": "file", "path": self.C22_HANDLER, "line": None,
+                                             "name": self.C22_HANDLER, "detail": {}})
+        code, report, _ = self.run_check(self._area_doc(False))
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C22"})
+        self.assertIn("Areas/Billing/", report)
+        self.assertIn("4.1", report)
+        self.assertEqual(self.fired(self._area_doc(True)), set())
+
+    def test_c22_root_area_not_demanded(self):
+        self._area_target()
+        self.with_facts(self._area_entry(mvc_area_path=""), self.entry("app/main.py", mvc_area_path="."),
+                        self.entry(self.C22_HANDLER + "x", reach="role_restricted"))
+        self.assertEqual(self.fired(self._area_doc(False)), set())
+
+    def _open(self, path="svc/open.py", **detail):
+        os.makedirs(os.path.join(self.target, "svc"), exist_ok=True)
+        with open(os.path.join(self.target, path), "w") as fh:
+            fh.write("pass\n")
+        return self.entry(path, **detail)
+
+    def test_c22_unguarded_file_uncited_fails(self):
+        cites = build_doc({3: SECTION_BODY[3] + "\n- Open handlers: `svc/open.py:1`."})
+        for detail in ({"reach": "no_app_restriction"}, {"reach": "signed_in_any"}, {"reach": "unknown"},
+                       {"reach": "role_restricted", "state_changing": "true"}):
+            self.with_facts(self._open(**detail))
+            code, report, _ = self.run_check(build_doc())
+            self.assertEqual(code, 2, (detail, report))
+            self.assertEqual(self.rules(report), {"C22"}, (detail, report))
+            self.assertIn("`svc/open.py`", report)
+            self.assertIn("Auth attributes:", report)
+            self.assertEqual(self.fired(cites), set(), detail)
+        self.with_facts(self._open(reach="no_app_restriction", test=True))
+        self.assertEqual(self.fired(build_doc()), set())
+        self.with_facts(self._open(reach="unknown", type="desktop"))
+        self.assertEqual(self.fired(build_doc()), set())
+
+    def test_c22_readonly_guarded_stays_advisory(self):
+        self.with_facts(self._open(reach="role_restricted", state_changing="false"))
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(code, 0, report)
+        self.assertIn("## Entry points not cited (advisory)", report)
+        self.assertNotIn("C22", report)
+        code, report, _ = self.run_check(build_doc(), strict=True)
+        self.assertEqual(self.rules(report), {"C13"})
+
+    def test_c22_shares_c13_map(self):
+        self.with_facts(self._open(reach="no_app_restriction"))
+        code, report, _ = self.run_check(build_doc(), strict=True)
+        self.assertEqual(self.rules(report), {"C13", "C22"}, report)
+        # a bare file name that resolves to the one file cites it for both rules
+        bare = build_doc({3: SECTION_BODY[3] + "\n- Open handlers: `open.py:1`."})
+        self.assertEqual(self.run_check(bare, strict=True)[0], 0)
+        # C13 still groups by folder: one folder, one file
+        got = check._uncited_entry_points(self.target, {"__out__": self.out}, self.facts, [])
+        self.assertEqual(got, [("app/", 1, ["app/main.py"]), ("svc/", 1, ["svc/open.py"])])
+
+    def test_c22_undeclared_candidates_strict_only(self):
+        cand = {"kind": "guard_candidate", "stack": "aspnet", "path": "app/main.py", "line": 3, "name": "Gate",
+                "detail": {"attribute": "Gate", "uses": 4, "arity_set": [0]}}
+        self.with_facts(cand, dict(cand, name="Test", path="tests/t.py", detail=dict(cand["detail"], test=True)))
+        code, report, out = self.run_check(build_doc())
+        self.assertEqual(code, 0, report)
+        self.assertIn("1 undeclared guard candidate; declare with \"Auth attributes:\" in appdoc-context.md", report)
+        self.assertNotRegex(report, r"(?m)^## C22")
+        code, report, _ = self.run_check(build_doc(), strict=True)
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C22"})
+        self.assertIn("1 undeclared guard candidate; declare with \"Auth attributes:\" in appdoc-context.md", report)
+
+    # --- C23: Unknown that the repository may answer (auth topics)
+    def test_c23_auth_topic_advisory(self):
+        cited = SECTION_BODY[9] + "\n\nAuthentication is set at `Web.config:3`."
+        row14 = ("| Q-1 | Unknown: which identity provider signs users in | Access | Ask the team | Unknown | High |\n"
+                 "| Q-2 | Unknown: who deploys the service | Releases | Ask the team | Unknown | Medium |")
+        header14 = SECTION_BODY[14].split("\n")[0] + "\n" + SECTION_BODY[14].split("\n")[1] + "\n"
+        doc = build_doc({9: cited, 14: header14 + row14})
+        para = build_doc({9: cited, 5: SECTION_BODY[5] + "\n\nThe authentication mechanism: Unknown - see Open questions."})
+        self._web_config()
+        for text in (doc, para):
+            self.with_facts(self.cfg())
+            code, report, _ = self.run_check(text)
+            self.assertEqual(code, 0, report)
+            self.assertIn("## Unknown that the repository may answer (advisory)", report)
+            self.assertIn("the repository may answer this: Web.config:3 (security_setting)", report)
+            code, report, _ = self.run_check(text, strict=True)
+            self.assertEqual(code, 2, report)
+            self.assertEqual(self.rules(report), {"C23"})
+        self.with_facts(self.cfg())
+        code, report, _ = self.run_check(build_doc({9: cited}))
+        self.assertNotIn("may answer", report)   # the base Q-1 asks who deploys: no auth topic
+        self.with_facts()
+        self.assertNotIn("may answer", self.run_check(doc)[1])   # no security_setting or access_rule Fact: nothing to name
+
+    # --- the C20 family: sentence and range advisories
+    def test_c20_cite_in_not_reviewed_sentence_advisory(self):
+        for phrase in ("was not reviewed", "was not inspected", "is excluded", "was not read"):
+            doc = build_doc({3: SECTION_BODY[3] + f"\n- `app/main.py:9` {phrase}."})
+            code, report, _ = self.run_check(doc)
+            self.assertEqual(code, 0, (phrase, report))
+            self.assertIn("this sentence cites a file it says was not reviewed", report)
+            self.assertNotIn("C21 requires", report)
+            code, report, _ = self.run_check(doc, strict=True)
+            self.assertEqual(self.rules(report), {"C20"}, report)
+        # a sentence without the phrase, or a phrase in another sentence, is quiet
+        doc = build_doc({3: SECTION_BODY[3] + "\n- `app/main.py:9` is read. Nothing was excluded."})
+        self.assertNotIn("not reviewed", self.run_check(doc)[1])
+
+    def test_c20_mandatory_input_hint(self):
+        self._web_config()
+        self.with_facts(self.cfg())
+        doc = build_doc({9: SECTION_BODY[9] + "\n\n`Web.config:3` was not reviewed."})
+        report = self.run_check(doc)[1]
+        self.assertIn("this sentence cites a file it says was not reviewed; C21 requires a lined citation", report)
+
+    def test_c20_single_line_range_advisory(self):
+        doc = build_doc({3: SECTION_BODY[3] + "\n- Handler at `app/main.py:5-5`."})
+        code, report, _ = self.run_check(doc)
+        self.assertEqual(code, 0, report)
+        self.assertIn("write `:5`", report)
+        self.assertEqual(self.rules(self.run_check(doc, strict=True)[1]), {"C20"})
+        self.assertNotIn("write `:", self.run_check(build_doc({3: SECTION_BODY[3] + "\n- Handler at `app/main.py:5-6`."}))[1])
+
+
 class Frozen22Tests(unittest.TestCase):
     """The v2.2 outputs of two Targets, kept as they were written."""
 

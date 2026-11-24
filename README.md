@@ -101,7 +101,7 @@ Some code patterns are worth a second look but cannot be proved by a script. The
 ## The Check
 
 <!-- appdoc-self:generated rules -->
-Rules C1-C21. Each rule fails or is not reported; there is no score.
+Rules C1-C23. Each rule fails or is not reported; there is no score.
 
 | Rule | Name | Fails when | Kind |
 |---|---|---|---|
@@ -126,6 +126,8 @@ Rules C1-C21. Each rule fails or is not reported; there is no score.
 | C19 | Audit follows the plan | with `--require-audit` on template 2.7, `audit-plan.json` is missing or differs from a fresh computation, or a planned id or per-row key has no live register row (a section listed under `exclusions` is not required) | fails |
 | C20 | Citation precision | a range over 100 lines is a claim's only lined Citation in section 4, 7 or 10, or a section 4 or 10.1 table cell holds more than 5 Citations | advisory; fails under `--strict` |
 | C21 | Mandatory inputs cited | a file holding a security setting, access rule, external config reference or secret-bearing application key is not cited with a line in text outside the generated blocks (a file that could not be parsed needs its path) | fails |
+| C22 | Area and protection coverage | an MVC area is not the folder of a 4.1 row, or a handler file that changes state or has no application-layer restriction (or an unknown one) is not cited; with `--strict`, a guard candidate is not declared | part fails only under `--strict` |
+| C23 | Unknown the repository may answer | an Unknown about identity, authentication, authorization or roles while the repository holds a security setting or access rule that may answer it | advisory; fails under `--strict` |
 
 Previews of template 2.7 rules. On a template 2.4 document these are advisories, listed in `check-report.md` as "fails from template 2.7"; they fail only on a document stamped 2.7:
 

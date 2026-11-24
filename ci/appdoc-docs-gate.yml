@@ -12,7 +12,7 @@
 #
 # What this gate does (all deterministic; AppDoc holds no LLM key here)
 # appdoc-self:generated gate-header
-#   Pinned release writes Facts schema appdoc-facts/7; the Check runs rules C1-C21.
+#   Pinned release writes Facts schema appdoc-facts/7; the Check runs rules C1-C23.
 #   `appdoc gate` regenerates the Facts in memory (no cache) and compares them with the committed
 #   docs/appdoc/facts.json, then runs the Check. Exit codes:
 #     0  the Facts match and the Check passes

@@ -108,6 +108,13 @@ RULES = (
     Rule("C21", "Mandatory inputs cited",
          "a file holding a security setting, access rule, external config reference or secret-bearing application key "
          "is not cited with a line in text outside the generated blocks (a file that could not be parsed needs its path)"),
+    Rule("C22", "Area and protection coverage",
+         "an MVC area is not the folder of a 4.1 row, or a handler file that changes state or has no application-layer "
+         "restriction (or an unknown one) is not cited; with `--strict`, a guard candidate is not declared",
+         ("strict",)),
+    Rule("C23", "Unknown the repository may answer",
+         "an Unknown about identity, authentication, authorization or roles while the repository holds a security "
+         "setting or access rule that may answer it", ("advisory", "strict")),
 )
 RULE_TITLES = {r.id: r.title for r in RULES}
 RULE_SUMMARIES = {r.id: r.summary for r in RULES}
@@ -124,7 +131,7 @@ WIDE_RANGE = 100   # C20: a lined range spanning more lines than this is impreci
 CELL_CITES = 5     # C20: more Citations than this in one table cell is imprecise
 C5_CAP = 30
 C5_MIN_LEN = 40
-RULE_CAP = 50  # C9-C13, C19 and C21 on a large document: show the first problems, count the rest
+RULE_CAP = 50  # C9-C13, C19 and C21-C23 on a large document: show the first problems, count the rest
 FOLDER_CAP = 30  # folders listed under "Entry points not cited"
 ENTRY_TYPES = ("route", "page", "command", "job")
 
@@ -384,7 +391,7 @@ def _c9_tables(lines, raw, heads, add):
                 if v not in allowed:
                     add("C9", no, f"{key} {name} '{v}' is not one of: {', '.join(allowed)}", f"use one of: {', '.join(allowed)}")
         labels = {dm.cell_text(c[0]).casefold() for _, c in t.rows if c}
-        for label in ts.required_rows:
+        for label in spec.required_rows_at(key, spec.stamp_version(raw)):
             if label.casefold() not in labels:
                 add("C9", t.line, f"{key} has no '{label}' row",
                     "add the row; write Unknown if the repository does not show it")
@@ -506,19 +513,24 @@ def _c10_refs(lines, heads, ids, register_ids, add, superseded=None):
                 add("C10", no, f"{idv} has no row in 8.5", f"add an 8.5 row for {idv} (none is a valid answer)")
 
 
-def _c7_counts(target, lines, heads, facts, add):
+def _inventory_rows(target, lines, heads):
+    """(line, cells, folder) of each well-formed 4.1 row whose first cell cites a folder of the Target (C7, C22)."""
     t = _spec_table(lines, heads, "4.1")
-    if not t or not facts:
-        return
-    files = [f["path"] for f in facts.get("facts", []) if f.get("kind") == "file"]
     root = os.path.realpath(target)
-    for no, cells in t.rows:
+    for no, cells in (t.rows if t else ()):
         if len(cells) != len(spec.TABLES["4.1"].columns):
             continue
         cites = [c for c in find_citations(cells[0]) if c.start is None]
         folder = next((c.path.rstrip("/") for c in cites if os.path.isdir(os.path.join(root, c.path))), None)
-        if folder is None:
-            continue
+        if folder is not None:
+            yield no, cells, folder
+
+
+def _c7_counts(target, lines, heads, facts, add):
+    if not facts:
+        return
+    files = [f["path"] for f in facts.get("facts", []) if f.get("kind") == "file"]
+    for no, cells, folder in _inventory_rows(target, lines, heads):
         stated = dm.cell_text(cells[1])
         n = sum(1 for p in files if p.startswith(folder + "/"))
         if stated.isdigit():
@@ -653,11 +665,35 @@ def _c12_smells(target, cache, lines, heads, facts, reg, add):
             f'"cites": [], "anchor": "", "limitation": "<why>"}} to {REGISTER}')
 
 
+C22_REACH = ("no_app_restriction", "signed_in_any", "unknown")   # labels that make a handler file mandatory (C22)
+
+
+def _entry_point_map(target, cache, facts, cites) -> dict[str, dict]:
+    """One entry per non-test entry point file, the citation map C13 and C22 share (R5): ``cited`` (some Citation names
+    the file), ``c13`` (it holds a route, page, command or job), ``why`` (what makes C22 demand it: "state-changing" or
+    a reach label; empty for a read-only or role-restricted file and for a ``desktop`` entry), ``area`` (the
+    ``mvc_area_path`` values of its entry points)."""
+    cited = _cited_paths(target, cache, cites)
+    out: dict[str, dict] = {}
+    for f in facts.get("facts", []):
+        d = f.get("detail") or {}
+        if f.get("kind") != "entry_point" or d.get("test"):
+            continue
+        e = out.setdefault(f["path"], {"cited": f["path"] in cited, "c13": False, "why": set(), "area": set()})
+        e["c13"] |= d.get("type") in ENTRY_TYPES
+        if d.get("type") != "desktop":
+            if d.get("state_changing") in ("true", True):
+                e["why"].add("state-changing")
+            if d.get("reach") in C22_REACH:
+                e["why"].add(d["reach"])
+        if d.get("mvc_area_path"):
+            e["area"].add(str(d["mvc_area_path"]).strip("/"))
+    return out
+
+
 def _uncited_entry_points(target, cache, facts, cites) -> list[tuple[str, int, list[str]]]:
     """(top-level folder, files, first 5 paths) of entry point files no Citation names, largest folder first."""
-    cited = _cited_paths(target, cache, cites)
-    paths = sorted({f["path"] for f in facts.get("facts", []) if f.get("kind") == "entry_point"
-                    and not f["detail"].get("test") and f["detail"].get("type") in ENTRY_TYPES} - cited)
+    paths = sorted(p for p, e in _entry_point_map(target, cache, facts, cites).items() if e["c13"] and not e["cited"])
     groups: dict[str, list[str]] = {}
     for p in paths:
         groups.setdefault(p.split("/", 1)[0] + "/" if "/" in p else "(root)", []).append(p)
@@ -708,6 +744,98 @@ def _c21_mandatory(target, cache, raw, facts, add):
     for path in sorted(path_only):
         if path not in any_cite:
             add("C21", 1, f"`{path}` could not be parsed and is not cited", C21_FIX)
+
+
+C22_FIX = ("cite the handler file with `path:line` where the document describes it; while guard attributes are "
+           "undeclared most handlers are `unknown` and so mandatory (declare guards with `Auth attributes:` in "
+           "appdoc-context.md)")
+_ROOT_AREAS = ("", ".")
+
+
+def _c22_coverage(target, cache, lines, heads, facts, cites, add) -> int:
+    """C22: every non-root MVC area is the folder of a 4.1 row; every handler file that changes state or has no
+    application-layer restriction (or an unknown one) is cited, on the citation map C13 uses. Returns the number of
+    undeclared guard candidates (the caller reports them: an advisory, a failure under --strict)."""
+    emap = _entry_point_map(target, cache, facts, cites)
+    h4, h41 = heads.get("4"), heads.get("4.1")
+    at = (h41 or h4).idx + 1 if (h41 or h4) else 1
+    inventory = {folder.lower() for _, _, folder in _inventory_rows(target, lines, heads)}
+    areas: dict[str, int] = {}
+    for p, e in emap.items():
+        for a in e["area"] - set(_ROOT_AREAS):
+            areas[a] = areas.get(a, 0) + 1
+    for a, n in sorted(areas.items()):
+        if a.lower() not in inventory:
+            add("C22", at, f"MVC area `{a}/` ({plural(n, 'entry point file')}) is not the folder of any 4.1 row",
+                f"add a 4.1 row whose Subsystem cell cites `{a}/`")
+    h = h4.idx + 1 if h4 else 1
+    for p, e in sorted(emap.items()):
+        if e["why"] and not e["cited"]:
+            add("C22", h, f"handler file `{p}` is not cited but holds handlers that are {', '.join(sorted(e['why']))}",
+                C22_FIX)
+    return sum(1 for f in facts.get("facts", [])
+               if f.get("kind") == "guard_candidate" and not (f.get("detail") or {}).get("test"))
+
+
+def _undeclared_text(n: int) -> str:
+    return f'{plural(n, "undeclared guard candidate")}; declare with "Auth attributes:" in appdoc-context.md'
+
+
+# C23 (2.8): the closed vocabulary of authentication and authorization topics. The other topics are 2.9 (W9).
+_C23_TOPIC_RE = re.compile(r"\b(?:identity providers?|idp|single sign-on|sso|authenticat\w*|authori[sz]\w*|"
+                           r"log-?in|sign-?in|roles?|access control|permissions?)\b", re.I)
+C23_KINDS = ("security_setting", "access_rule")
+
+
+def _c23_unknowns(glines, heads, facts) -> list[tuple[int, str]]:
+    """(line, text) of each section 14 row and each `Unknown - see Open questions.` paragraph that names an
+    authentication or authorization topic while a security_setting or access_rule Fact exists; the text names where."""
+    where = sorted({(f["path"], f.get("line") or 0, f["kind"]) for f in facts.get("facts", [])
+                    if f.get("kind") in C23_KINDS and not (f.get("detail") or {}).get("test")})
+    if not where:
+        return []
+    named = ", ".join(f"{p}:{n} ({k})" if n else f"{p} ({k})" for p, n, k in where[:3])
+    named += f" and {len(where) - 3} more" if len(where) > 3 else ""
+    cands: dict[int, str] = {}
+    t14 = _spec_table(glines, heads, "14")
+    for no, cells in (t14.rows if t14 else ()):
+        cands[no] = " ".join(dm.cell_text(c) for c in cells[1:4])
+    for no, blk in _blocks(glines, 0, len(glines)):
+        if spec.UNKNOWN_TEXT in blk:
+            cands.setdefault(no, blk)
+    return [(no, f"`{text.strip()[:80]}` names an authentication or authorization topic; the repository may answer "
+                 f"this: {named}")
+            for no, text in sorted(cands.items()) if _C23_TOPIC_RE.search(text)]
+
+
+_EXCLUSION_RE = re.compile(r"\b(?:not reviewed|not inspected|excluded|was not read)\b", re.I)
+_SENTENCE_RE = re.compile(r"(?<=[.!?])\s+")
+_ONE_LINE_RANGE_RE = re.compile(r":(\d+)-(\d+)$")
+C20_EXCLUDED_MSG = "this sentence cites a file it says was not reviewed"
+C20_EXCLUDED_FIX = "read the file and cite what it shows, or remove the citation from the sentence"
+
+
+def _c20_wording(target, cache, glines, facts) -> list[tuple[int, str, str]]:
+    """(line, message, fix) of the C20-family advisories (2.8): a Citation inside a sentence that says the file was
+    not reviewed (with the C21 hint when the file is mandatory input), and a one-line range `a-a`."""
+    lined = _c21_files(facts)[0]
+    hits = []
+    for no, blk in _blocks(glines, 0, len(glines)):
+        for sentence in _SENTENCE_RE.split(blk):
+            if not _EXCLUSION_RE.search(sentence):
+                continue
+            cs = find_citations(sentence)
+            if not cs:
+                continue
+            msg = C20_EXCLUDED_MSG
+            if any(p in lined for p in _cited_paths(target, cache, cs)):
+                msg += "; C21 requires a lined citation"
+            hits.append((no, msg, C20_EXCLUDED_FIX))
+    for c in find_citations("\n".join(glines)):
+        m = _ONE_LINE_RANGE_RE.search(c.raw)
+        if c.start is not None and m and m.group(1) == m.group(2):
+            hits.append((c.doc_line, f"`{c.raw}` is a one-line range; write `:{c.start}`", f"write `:{c.start}`"))
+    return sorted(set(hits))
 
 
 def _c7_blocks(raw, heads, facts, out_dir, target, add, doc_ver=()):
@@ -1376,7 +1504,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
             f"keep sections 1-{len(doc_sections)} once each, in template order")
 
     # C8
-    for key, title in (REQUIRED_SUBSECTIONS.items() if current else ()):
+    for key, title in (spec.subsections(doc_ver).items() if current else ()):
         parent = by_num.get(int(key.split(".")[0]))
         if not parent:
             continue  # C3 already reports the missing section
@@ -1493,6 +1621,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     # C7 (counts and generated blocks), C9, C10, C11: template-2.2 structure
     reg, cov, uncited, quant_hits, wide_hits, count_advice = None, [], [], [], [], []
     floor_advice, exclusions = [], {}
+    cand_n, unknown_hits, wording_hits = 0, [], []   # C22 candidates, C23 and the C20 wording advisories
     if current:
         heads = dm.headings(lines)
         _c7_counts(target, lines, heads, facts, add)
@@ -1540,6 +1669,17 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         if facts is not None:
             _c12_smells(target, cache, lines, heads, facts, reg, add)
             _c21_mandatory(target, cache, raw, facts, add)
+            cand_n = _c22_coverage(target, cache, lines, heads, facts, cites, add)
+            if cand_n and strict:
+                add("C22", 1, _undeclared_text(cand_n), "declare each guard attribute with `Auth attributes:` in "
+                    "appdoc-context.md, or leave it undeclared and run without --strict")
+            unknown_hits = _c23_unknowns(glines, dm.headings(glines), facts)
+            wording_hits = _c20_wording(target, cache, glines, facts)
+            if strict:
+                for no, msg in unknown_hits:
+                    add("C23", no, msg, "read the location and answer the question, or say why it does not answer it")
+                for no, msg, fix in wording_hits:
+                    add("C20", no, msg, fix)
             uncited = _uncited_entry_points(target, cache, facts, cites)
             if strict:
                 h4 = heads.get("4")
@@ -1553,7 +1693,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
 
     for k in problems:
         items = problems[k] if k == "C5" else sorted(set(problems[k]), key=lambda p: (p[0], p[1]))
-        if k in ("C9", "C10", "C11", "C12", "C13", "C19", "C21") and len(items) > RULE_CAP:
+        if k in ("C9", "C10", "C11", "C12", "C13", "C19", "C21", "C22", "C23") and len(items) > RULE_CAP:
             items = items[:RULE_CAP] + [(items[RULE_CAP][0], f"... {len(items) - RULE_CAP} more", "fix the above, then rerun")]
         problems[k] = items
     total = sum(len(v) for v in problems.values())
@@ -1589,6 +1729,23 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         advisory += [f"- line {no}: {msg}" for no, msg in wide_hits[:RULE_CAP]]
         if len(wide_hits) > RULE_CAP:
             advisory.append(f"- ... {len(wide_hits) - RULE_CAP} more")
+        advisory.append("")
+    if cand_n and not strict:
+        advisory += ["## Undeclared guard candidates (advisory)", "",
+                     f"{_undeclared_text(cand_n)}. This is not a problem; `appdoc check --strict` fails on it.", ""]
+    if unknown_hits and not strict:
+        advisory += ["## Unknown that the repository may answer (advisory)", "",
+                     f"{plural(len(unknown_hits), 'Unknown')} may be answered by the repository. This is not a problem; "
+                     "`appdoc check --strict` fails on it.", ""]
+        advisory += [f"- line {no}: {msg}" for no, msg in unknown_hits[:RULE_CAP]]
+        advisory.append("")
+    if wording_hits and not strict:
+        advisory += ["## Citation wording (advisory)", "",
+                     f"{plural(len(wording_hits), 'citation')} in a sentence or range that needs rewording (a "
+                     "C20-family advisory). This is not a problem; `appdoc check --strict` fails on it.", ""]
+        advisory += [f"- line {no}: {msg}. Fix: {fix}" for no, msg, fix in wording_hits[:RULE_CAP]]
+        if len(wording_hits) > RULE_CAP:
+            advisory.append(f"- ... {len(wording_hits) - RULE_CAP} more")
         advisory.append("")
     if exclusions:
         advisory += ["## Audit exclusions", "", "The audit record declares sections the audit did not cover:", ""]
@@ -1677,6 +1834,12 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     if wide_hits and not strict:
         note.append(f"Advisory: {len(wide_hits)} wide range or crowded cell{'s' if len(wide_hits) != 1 else ''} "
                     f"(citation precision, see {REPORT}).")
+    if cand_n and not strict:
+        note.append(f"Advisory: {_undeclared_text(cand_n)} (see {REPORT}).")
+    if unknown_hits and not strict:
+        note.append(f"Advisory: {plural(len(unknown_hits), 'Unknown')} may be answered by the repository (see {REPORT}).")
+    if wording_hits and not strict:
+        note.append(f"Advisory: {plural(len(wording_hits), 'citation')} to reword (see {REPORT}).")
     if count_advice:
         note.append(f"Advisory: {plural(len(count_advice), 'hand-written count')}; use a count marker (see {REPORT}).")
     if previews:
