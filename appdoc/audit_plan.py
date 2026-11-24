@@ -22,6 +22,7 @@ import json
 import os
 import sys
 from fractions import Fraction
+from typing import NamedTuple
 
 from . import check, context
 from . import template_spec as spec
@@ -52,7 +53,17 @@ def pick(items: list[str], k: int, doc_sha: str) -> list[str]:
     return [i for i in items if i in set(ranked)]
 
 
-def _floor(target: str):
+class Floor(NamedTuple):
+    """The sampling floor in force: the fraction and minimum used, what the plan records (`display`), and the
+    advisories for a context line that tried to lower it."""
+
+    fraction: Fraction
+    minimum: int
+    display: dict
+    advisories: list
+
+
+def _floor(target: str) -> Floor:
     path = os.path.join(target, check.OWNER_CONTEXT)
     ctx = context.parse(read_text(path) if os.path.isfile(path) else None)
     fraction, minimum, advisories = DEFAULT_FRACTION, DEFAULT_MINIMUM, []
@@ -71,11 +82,26 @@ def _floor(target: str):
             advisories.append(f"{check.OWNER_CONTEXT} line {f.line}: the audit floor minimum {f.minimum} is below "
                               f"the default {DEFAULT_MINIMUM}; the default applies "
                               "(an organization may only raise the floor)")
-    return fraction, minimum, {"fraction": shown, "minimum": minimum}, advisories
+    return Floor(fraction, minimum, {"fraction": shown, "minimum": minimum}, advisories)
 
 
-def _rows(lines, heads, key, col_name, skip_absent=False, status_value=None):
-    """(total rows, first-cell names) of the first table under `key`: rows whose `col_name` cell is a claim."""
+def _rows_all(lines, heads, key, col_name):
+    """(total rows, first-cell names) of the first table under `key`: every row whose `col_name` cell exists."""
+    return _rows(lines, heads, key, col_name, lambda value: True)
+
+
+def _rows_present(lines, heads, key, col_name, status):
+    """Like `_rows_all`, only the rows whose `col_name` cell is exactly `status` (10.2 controls with Status Present)."""
+    return _rows(lines, heads, key, col_name, lambda value: value == status)
+
+
+def _rows_claimed(lines, heads, key, col_name):
+    """Like `_rows_all`, without the rows whose `col_name` cell says Unknown or Not applicable (no claim to audit)."""
+    return _rows(lines, heads, key, col_name, lambda value: not value.casefold().startswith(ABSENT))
+
+
+def _rows(lines, heads, key, col_name, keep):
+    """(total rows, first-cell names) of the first table under `key`; `keep(cell value)` picks the named rows."""
     h = heads.get(key)
     t = dm.first_table(lines, h) if h else None
     if t is None:
@@ -88,12 +114,8 @@ def _rows(lines, heads, key, col_name, skip_absent=False, status_value=None):
     for _, cells in t.rows:
         if len(cells) <= col:
             continue
-        value = dm.cell_text(cells[col])
-        if status_value is not None and value != status_value:
-            continue
-        if skip_absent and value.casefold().startswith(ABSENT):
-            continue
-        names.append(dm.cell_text(cells[0]))
+        if keep(dm.cell_text(cells[col])):
+            names.append(dm.cell_text(cells[0]))
     return len(t.rows), names
 
 
@@ -104,7 +126,7 @@ def compute(target: str, out_dir: str) -> dict:
     heads = dm.headings(lines)
     ids = check.defined_ids(lines, heads, lambda *a: None)
     sha = check.doc_sha(raw)
-    fraction, minimum, floor, advisories = _floor(target)
+    floor = _floor(target)
 
     def by_prefix(prefix):
         return sorted((i for i in ids if i.startswith(prefix)), key=_num)
@@ -132,8 +154,10 @@ def compute(target: str, out_dir: str) -> dict:
         smells = [f"smell/{fid}" for fid, _ in check.uncited_smells(
             target, {"__out__": out_dir}, lines, heads, json.loads(read_text(facts_path)))]
     full("candidates", len(smells), smells)
-    for key, col, status in (("10.2", "Status", "Present"), ("16.5", "Procedure", None), ("17", "Command", None)):
-        total, items = _rows(lines, heads, key, col, skip_absent=status is None, status_value=status)
+    for key, rows in (("10.2", lambda: _rows_present(lines, heads, "10.2", "Status", spec.CONTROL_STATUS_PRESENT)),
+                      ("16.5", lambda: _rows_claimed(lines, heads, "16.5", "Procedure")),
+                      ("17", lambda: _rows_claimed(lines, heads, "17", "Command"))):
+        total, items = rows()
         full(key, total, [key] if items else [], items)
     for key, ts in spec.TABLES.items():     # sampled sections, in template order
         prefix = ts.id_prefix if ts.sampled else None
@@ -141,16 +165,17 @@ def compute(target: str, out_dir: str) -> dict:
             continue
         if prefix:
             items = by_prefix(prefix)
-            k = sample_size(len(items), fraction, minimum)
+            k = sample_size(len(items), floor.fraction, floor.minimum)
             chosen = pick(items, k, sha)
             sections.append({"section": key, "mode": "sampled", "total": len(items), "k": k, "ids": chosen})
         else:   # section 9 rows have no IDs: the symptom names the row, the register row is the section's
-            total, items = _rows(lines, heads, key, "Symptom")
-            k = sample_size(total, fraction, minimum)
+            total, items = _rows_all(lines, heads, key, "Symptom")
+            k = sample_size(total, floor.fraction, floor.minimum)
             chosen = pick(items, k, sha)
             sections.append({"section": key, "mode": "sampled", "total": total, "k": k,
                              "ids": [key] if chosen else [], "items": chosen})
-    return {"schema": SCHEMA, "doc_sha": sha, "floor": floor, "sections": sections, "advisories": advisories}
+    return {"schema": SCHEMA, "doc_sha": sha, "floor": floor.display, "sections": sections,
+            "advisories": floor.advisories}
 
 
 def render(plan: dict) -> str:

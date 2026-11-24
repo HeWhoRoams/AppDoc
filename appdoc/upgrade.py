@@ -42,10 +42,14 @@ def infer_version(text: str) -> str:
     return "2.1" if all(k in heads for k in spec.SUBSECTIONS_2_1) else spec.UPGRADE_FROM
 
 
+def _steps_between(after: tuple, upto: tuple) -> list[str]:
+    """The UPGRADE_STEPS keys whose version tuple lies in (after, upto], oldest first (tuples inside, strings out)."""
+    return sorted((v for v in spec.UPGRADE_STEPS if after < spec.version_tuple(v) <= upto), key=spec.version_tuple)
+
+
 def steps_after(version: str, to: str = spec.TEMPLATE_VERSION) -> list[str]:
     """The versions in UPGRADE_STEPS that lie after `version` and up to `to`, oldest first."""
-    vt = spec.version_tuple
-    return sorted((v for v in spec.UPGRADE_STEPS if vt(version) < vt(v) <= vt(to)), key=vt)
+    return _steps_between(spec.version_tuple(version), spec.version_tuple(to))
 
 
 # --- reading the text -------------------------------------------------------------------------------------------
@@ -418,12 +422,12 @@ def run(target: str, out_dir: str, workers: int | None = None, no_ownership: boo
         return 1
     text = read_text(path)
     found = infer_version(text)
-    vt = spec.version_tuple
-    if vt(found) > vt(spec.TEMPLATE_VERSION):
+    found_t, current_t = spec.version_tuple(found), spec.version_tuple(spec.TEMPLATE_VERSION)
+    if found_t > current_t:
         print(f"appdoc upgrade: the document is on template {found}, newer than this AppDoc's "
               f"{spec.TEMPLATE_VERSION}; nothing was changed", file=sys.stderr)
         return 1
-    if vt(found) == vt(spec.TEMPLATE_VERSION):
+    if found_t == current_t:
         print(f"appdoc upgrade: the document is already on template {spec.TEMPLATE_VERSION}; nothing to do")
         return 0
     new, log = upgrade_text(text, found)
