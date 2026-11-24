@@ -779,6 +779,72 @@ class AccessModelTests(unittest.TestCase):
             self.assertNotIn(svc, new)
 
 
+class AccessCountMarkerTests(unittest.TestCase):
+    """T28.94: the access-model count classes are filled from `access_model.count`, the same helpers the block uses."""
+
+    CLASSES = tuple(c for c in __import__("appdoc.template_spec", fromlist=["x"]).COUNT_CLASSES
+                    if c in ("areas", "access-rules", "role-constants", "guard-shapes", "secret-location-files",
+                             "configurations") or c.startswith("state-changing-"))
+
+    def facts(self):
+        return amdoc(
+            handler("/a", "no_app_restriction", state="true", area="Admin", verbs=("POST",)),
+            handler("/b", "no_app_restriction", state="true", line=11, verbs=("POST",)),
+            handler("/c", "signed_in_any", state="true", line=12, area="Admin", verbs=("POST",)),
+            handler("/d", "unknown", state="false", line=13, area="Billing"),
+            handler("/e", "role_restricted", state="true", line=14, area="Billing", verbs=("POST",)),
+            rule("", "allow", 1, all=True), rule("admin", "deny", 2, anon=True),
+            rule("", "deny", 1, config="Release", anon=True),
+            setting("system.web/authentication@mode", "windows", config="Debug"),
+            fact("guard_use", "web/C.cs", 3, "SiteGuard", arg_kinds=["const"], arity=1, applies_to="C", role=["Admin"],
+                 role_ref=["Roles.Admin"]),
+            fact("guard_use", "web/C.cs", 9, "SiteGuard", arg_kinds=["literal", "literal"], arity=2, applies_to="C.Save"),
+            fact("const_def", "web/K.cs", 1, "K.Pw", secret=True), fact("const_def", "web/K2.cs", 1, "K.Pw2", secret=True))
+
+    def test_count_markers_2_8_values(self):
+        d = self.facts()
+        want = {"areas": 2, "state-changing-no_app_restriction": 2, "state-changing-signed_in_any": 1,
+                "state-changing-role_restricted": 1, "state-changing-unknown": 0, "state-changing-denied": 0,
+                "access-rules": 2, "role-constants": 1, "guard-shapes": 2, "secret-location-files": 2,
+                "configurations": 2}
+        self.assertEqual({c: fill.count_marker_value(c, d, {}, None) for c in self.CLASSES}, want)
+        self.assertEqual(set(self.CLASSES), set(want))
+
+    def test_markers_are_filled_idempotently(self):
+        d = self.facts()
+        text = " ".join(f"<!-- appdoc:count {c} -->0<!-- /appdoc:count -->" for c in self.CLASSES)
+        with tempfile.TemporaryDirectory() as t:
+            once = fill.fill_counts(text, d, {"out_dir": t})
+            self.assertIn("<!-- appdoc:count areas -->2<!-- /appdoc:count -->", once)
+            self.assertEqual(fill.fill_counts(once, d, {"out_dir": t}), once)
+
+    def test_markers_agree_with_the_access_model_block(self):
+        import re
+        d = self.facts()
+        block = fill.render_block("access-model", d)
+        n = lambda c: fill.count_marker_value(c, d, {}, None)
+        self.assertEqual(n("access-rules"), int(re.search(r"Listed (\d+) of \d+ access rule", block).group(1)))
+        self.assertEqual(n("guard-shapes"), int(re.search(r"Listed \d+ of (\d+) argument shape", block).group(1)))
+        self.assertEqual(n("secret-location-files"), int(re.search(r"Listed \d+ of (\d+) file", block).group(1)))
+        self.assertEqual(n("role-constants"), int(re.search(r"Listed (\d+) of \d+ role names", block).group(1)))
+        self.assertIn(f"of {n('configurations')} configurations could not be evaluated", block)
+        area_rows = re.findall(r"^\| (\w[^|]*?) \| \d+ \| \d+ \|", block, re.M)
+        self.assertEqual(n("areas"), len([a for a in set(area_rows) if a in ("Admin", "Billing")]))
+        row = re.search(r"^\| all areas \| \d+ \| (\d+) \| (\d+) \| (\d+) \| (\d+) \| (\d+) \|", block, re.M).groups()
+        self.assertEqual(row[0], str(sum(1 for f in d["facts"] if f["kind"] == "entry_point"
+                                         and f["detail"]["reach"] == "no_app_restriction")))
+
+    def test_accountability_line_agrees_with_the_access_model_block(self):
+        import re
+        from appdoc import summary
+        d = self.facts()
+        seen = summary.accountability_counts(d["facts"])["guard_attributes"]["seen"]
+        block = fill.render_block("access-model", d)
+        uses = sum(int(m) for m in re.findall(r"^\| `SiteGuard` \| [^|]+ \| (\d+) \|$", block, re.M))
+        self.assertEqual(seen, uses)
+        self.assertEqual(seen, len([f for f in d["facts"] if f["kind"] == "guard_use"]))
+
+
 class NotesTests(unittest.TestCase):
     """docs/appdoc/notes.jsonl: limitations of a generated block live as data and `fill` renders them inside it."""
 

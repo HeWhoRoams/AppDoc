@@ -251,6 +251,11 @@ def _area(f: dict) -> str:
     return str(f["detail"].get("mvc_area") or "(no area)")
 
 
+def _areas(hs: list[dict]) -> list[str]:
+    """The area rows of the handler table, `(no area)` last."""
+    return sorted({_area(f) for f in hs}, key=lambda a: (a == "(no area)", a.lower(), a))
+
+
 def _handler_row(f: dict) -> str:
     d = f["detail"]
     verbs = ", ".join(d.get("verbs") or []) or "none declared"
@@ -278,7 +283,7 @@ def _handler_section(doc: dict, prod: str, reporting: list[str], mechanism: list
             out += ["", "No handler protection was evaluated (No supported Stack reports effective protection, "
                         "`entry_point.guard_reach`)."]
         return out
-    areas = sorted({_area(f) for f in hs}, key=lambda a: (a == "(no area)", a.lower(), a))
+    areas = _areas(hs)
     out += ["", "| Area | Handlers | " + " | ".join(f"`{l}`" for l in LABELS) + " |", "|---|---:|" + "---:|" * len(LABELS)]
     for a in areas + ["all areas"]:
         of = hs if a == "all areas" else [f for f in hs if _area(f) == a]
@@ -395,7 +400,7 @@ def _pairs(roles: list, refs: list) -> list[tuple]:
     return [(r, set(refs)) for r in roles]
 
 
-def _roles_section(doc: dict) -> list[str]:
+def _role_rows(doc: dict) -> dict[str, dict]:
     rows: dict[str, dict] = {}
 
     def add(role, consts, col):
@@ -411,6 +416,11 @@ def _roles_section(doc: dict) -> list[str]:
         if d.get("via") == "call":
             for r, cs in _pairs(_as_list(d.get("roles")), _as_list(d.get("role_refs"))):
                 add(r, cs, "calls")
+    return rows
+
+
+def _roles_section(doc: dict) -> list[str]:
+    rows = _role_rows(doc)
     if not rows:
         return ["**Role names referenced by guards or `auth_method` calls.** None were extracted."]
     out = ["**Role names referenced by guards or `auth_method` calls** (names as written; every one is listed; "
@@ -425,7 +435,7 @@ def _roles_section(doc: dict) -> list[str]:
 
 # ------------------------------------------------------------------------------------------------- secrets
 
-def _secret_table(doc: dict) -> list[str]:
+def _secret_places(doc: dict) -> dict[str, dict]:
     """Per file, counts of places where a secret lives, by kind. A place is counted once (by file and line), under
     the first kind it matches. Values are never read here: only the `secret_location` and `secret` flags."""
     seen: set = set()
@@ -451,6 +461,12 @@ def _secret_table(doc: dict) -> list[str]:
     for f in sorted(_live(doc, "config_key"), key=_of):
         if f["detail"].get("secret_location"):
             add(f, "keys")
+    return per
+
+
+def _secret_table(doc: dict) -> list[str]:
+    """The secret-location table (see `_secret_places`)."""
+    per = _secret_places(doc)
     if not per:
         return ["**Secret locations.** No secret-location config keys, connection strings with literal credentials, "
                 "literal `machineKey`s or secret-named constants were extracted. Values are never recorded."]
@@ -523,3 +539,30 @@ def render(doc: dict, unmatched: list[dict] | None = None) -> str:
              _handler_section(doc, prod, reporting, mechanism), _guard_section(doc), _roles_section(doc),
              _secret_table(doc), [DEFAULTS], _stacks_section(reporting, mechanism, none), _unevaluated_handlers(doc)]
     return "\n\n".join("\n".join(p) for p in parts if p)
+
+
+
+# ------------------------------------------------------------------------------------------------- count markers
+
+def _state_changing(doc: dict, label: str) -> int:
+    return sum(1 for f in _handlers(doc) if f["detail"]["reach"] == label and _truthy(f["detail"].get("state_changing")))
+
+
+def count(cls: str, doc: dict) -> int | None:
+    """The number a count marker of an access-model class holds (`template_spec.ACCESS_COUNT_CLASSES`), taken from the
+    same helpers `render` uses, so a marker and the block never disagree (R5); None for another class."""
+    if cls == "areas":
+        return sum(1 for a in _areas(_handlers(doc)) if a != "(no area)")
+    if cls.startswith("state-changing-") and cls[len("state-changing-"):] in LABELS:
+        return _state_changing(doc, cls[len("state-changing-"):])
+    if cls == "access-rules":
+        return len(_rules_for(doc, _production(doc, _configurations(doc))[0]))
+    if cls == "role-constants":
+        return len(_role_rows(doc))
+    if cls == "guard-shapes":
+        return len(aspnet_guards.guard_shapes(doc.get("facts") or []))
+    if cls == "secret-location-files":
+        return len(_secret_places(doc))
+    if cls == "configurations":
+        return len(_configurations(doc) or ["base"])
+    return None

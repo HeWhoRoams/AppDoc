@@ -1159,7 +1159,8 @@ def _c15_markers(raw, facts, ids, reg, add):
         want = fill_mod.count_marker_value(cls, facts or {}, ids, reg)
         if want is not None and shown != str(want):
             source = {"id": "document has", "register": "register has", "facts": "Facts have"}[kind]
-            add("C15", no, f"count marker {cls} says {shown} but the {source} {want}",
+            noun = spec.COUNT_NOUNS.get(cls)
+            add("C15", no, f"count marker {cls} says {shown} but the {source} {want}" + (f" {noun}" if noun else ""),
                 "run `appdoc fill`, which writes the number")
 
 

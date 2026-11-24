@@ -1762,7 +1762,17 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(code, 2, report)
         self.assertIn("C15", self.rules(report))
         self.assertIn("count marker class 'widgets' is not one of V, F, UI, C, X, Q, R, rows, superseded, routes, "
-                      "jobs, pages, commands, config-keys. Fix: use one of those classes", report)
+                      "jobs, pages, commands, config-keys, areas, ", report)
+        self.assertIn("Fix: use one of those classes", report)
+
+    def test_c15_access_model_classes(self):
+        doc = self._marked_doc(self._marker("areas", 0), self._marker("access-rules", 0),
+                               self._marker("state-changing-unknown", 0))
+        code, report, _ = self.run27(doc)
+        self.assertEqual(code, 0, report)            # fill wrote 0 for each: the Facts have none
+        code, report, _ = self._tamper27(doc, self._marker("areas", 0), self._marker("areas", 4))
+        self.assertEqual(code, 2, report)
+        self.assertIn("count marker areas says 4 but the Facts have 0 MVC areas", report)
 
     def test_c15_handwritten_count_advisory(self):
         self.write_register(AUDIT, ROWS + [self._r_row(n) for n in range(1, 8)])

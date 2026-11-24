@@ -65,6 +65,21 @@ class IdClassTable(unittest.TestCase):
         for cls in spec.ID_CLASSES.values():
             self.assertTrue(all(n == n.lower() and not n.endswith("s") for n in cls.nouns), cls.nouns)
 
+    def test_count_marker_classes_2_8(self):
+        from appdoc import access_model
+        new = ["areas", "access-rules", "role-constants", "guard-shapes", "secret-location-files", "configurations"]
+        new += [f"state-changing-{l}" for l in access_model.LABELS]
+        self.assertEqual(spec.ACCESS_LABELS, access_model.LABELS)
+        for cls in new:
+            with self.subTest(cls=cls):
+                self.assertEqual(spec.COUNT_CLASSES[cls], "facts")
+                self.assertTrue(spec.COUNT_NOUNS[cls])
+                zero = 1 if cls == "configurations" else 0     # no configuration named reads as `base`
+                self.assertEqual(access_model.count(cls, {}), zero)
+                self.assertEqual(fill.count_marker_value(cls, {}, {}, None), zero)
+        self.assertIsNone(access_model.count("routes", {}))
+        self.assertIsNone(access_model.count("state-changing-bogus", {}))
+
     def test_a_new_table_prefix_is_picked_up_with_no_other_edit(self):
         with _with_widget_table():
             self.assertEqual(audit_plan.ref_for("ZZ-3"), "99/ZZ-3")

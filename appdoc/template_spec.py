@@ -56,10 +56,22 @@ COUNT_MARKER_RE = re.compile(r"(<!--\s*appdoc:count\s+([^>]*?)\s*-->)([^<]*)(<!-
 # The closed list of count-marker classes, each with where the number comes from: "id" (the defined IDs of that
 # prefix), "register" (rows of the Evidence Register) or "facts" (Facts, through fill.entry_point_counts and the
 # config reference). The one place to extend it (template 2.8 adds more classes without changing the syntax).
+ACCESS_LABELS = ("no_app_restriction", "signed_in_any", "role_restricted", "unknown", "denied")   # = access_model.LABELS
 COUNT_CLASSES = {
     **{c: "id" for c in ("V", "F", "UI", "C", "X", "Q", "R")},
     "rows": "register", "superseded": "register",
     **{c: "facts" for c in ("routes", "jobs", "pages", "commands", "config-keys")},
+    # 2.8 (T28.94): the counts of the `access-model` block; the number comes from `access_model.count`
+    **{c: "facts" for c in ("areas", *(f"state-changing-{l}" for l in ACCESS_LABELS), "access-rules", "role-constants",
+                            "guard-shapes", "secret-location-files", "configurations")},
+}
+
+# What each 2.8 class counts, in the words C15 uses.
+COUNT_NOUNS = {
+    "areas": "MVC areas", "access-rules": "access rules", "role-constants": "role names",
+    "guard-shapes": "guard argument shapes", "secret-location-files": "files with secret locations",
+    "configurations": "configurations",
+    **{f"state-changing-{l}": f"state-changing handlers labelled {l}" for l in ACCESS_LABELS},
 }
 
 STAMP_RE = re.compile(r"<!--\s*appdoc:template\s+([\w.]+)\s*-->")

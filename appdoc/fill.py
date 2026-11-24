@@ -430,7 +430,9 @@ def count_marker_value(cls: str, doc: dict, ids: dict | None, reg) -> int | None
             return None
         return len(reg.live_rows()) if cls == "rows" else len(reg.rows) - len(reg.live_rows())
     if kind == "facts":
-        return config_app_count(doc) if cls == "config-keys" else entry_point_counts(doc)[_ENTRY_COUNT[cls]]
+        if cls in _ENTRY_COUNT:
+            return entry_point_counts(doc)[_ENTRY_COUNT[cls]]
+        return config_app_count(doc) if cls == "config-keys" else access_model.count(cls, doc)
     return None
 
 
