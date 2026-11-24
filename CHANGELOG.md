@@ -11,8 +11,10 @@
 - `seal` also stamps per-row keys with `claim_sha` and `sealed_by`; Answerable, Dismissed and other section-level rows stay unsealed by design, and Appendix A and the comparison diagnostic say so (they no longer call them "mostly Corrected or Downgraded rows").
 - Appendix A.1 prints one line, `Not audited: generated and opaque blocks (entry-points, scheduled-jobs, closed-questions, appendix-a)`, from `OPAQUE_BLOCKS`. Only the opaque blocks are unaudited; `scan-coverage` and `config-reference` are audited. Appendix A is opaque, so `doc_sha` is unchanged.
 
+- C9 section 17: the Command cell holds exactly one backticked command. A chain (several backtick spans, or `a`, then `b`) fails with a message to use one command or one wrapper script. Corpus case `build-command-chain`.
+
 ### Notes
-- **Upgrade note:** a document audited under 2.7.0 fails C19 under `--require-audit` until its register has a row for each planned key in 10.2 (Present controls), 16.5, 17 and the sampled section 9 rows. Run `appdoc audit-plan`, audit the rows it names and add them with the refs it prints, then `appdoc seal --audit --date YYYY-MM-DD`. The old one-row-per-section refs (`10.2`, `16.5`, `17`, `9`) stay valid but cover nothing. Section 17 Command cells must hold exactly one command (planned, not yet in the code).
+- **Upgrade note:** a document audited under 2.7.0 fails C19 under `--require-audit` until its register has a row for each planned key in 10.2 (Present controls), 16.5, 17 and the sampled section 9 rows. Run `appdoc audit-plan`, audit the rows it names and add them with the refs it prints, then `appdoc seal --audit --date YYYY-MM-DD`. The old one-row-per-section refs (`10.2`, `16.5`, `17`, `9`) stay valid but cover nothing. A section 17 Command cell with more than one command (a chain such as `npm ci`, then `npm start`) fails C9 and must become one command or one wrapper script.
 
 ## 2.7.0
 

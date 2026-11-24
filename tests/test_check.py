@@ -1176,9 +1176,15 @@ class CheckTests(unittest.TestCase):
             code, report, _ = self.run27(self.sec17(*row))
             self.assertEqual(code, 2, (ev, report))
             self.assertIn("17 Run: a command needs a Citation with a line in Evidence", report)
-        # several commands in one cell, an Unknown with a Q in 14 and a free Working directory pass
-        row = ok[:3] + ["| Run | `npm ci`, then `npm start` | `app/` | `app/main.py:2` |"] + ok[4:]
+        # a free Working directory passes; a chain of commands does not (R71.C1a)
+        row = ok[:3] + ["| Run | `npm start` | `app/` | `app/main.py:2` |"] + ok[4:]
         self.assertEqual(self.run27(self.sec17(*row))[0], 0)
+        for cell in ("`npm ci`, then `npm start`", "`npm ci` `npm start`", "`a` and `b`"):
+            row = ok[:3] + [f"| Run | {cell} | `app/` | `app/main.py:2` |"] + ok[4:]
+            code, report, _ = self.run27(self.sec17(*row))
+            self.assertEqual(code, 2, (cell, report))
+            self.assertIn("17 Run: the Command cell holds more than one command", report)
+            self.assertIn("use one command or one wrapper script", report)
 
     def test_c9_17_not_applicable_needs_citation(self):
         ok = [f"| {s} | Unknown - see Open questions. | . | not in the repository |" for s in spec.BUILD_STEPS]

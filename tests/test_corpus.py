@@ -604,6 +604,14 @@ class RegisterHistory(CorpusCase):
         self.assertIn("evidence.jsonl line 2: `main.py` is a bare name; the file is `app/main.py`", r.report)
         self.assertIn("notes.jsonl line 1: `main.py` is a bare name; the file is `app/main.py`", r.report)
 
+    def test_build_command_chain_fails_c9_with_one_command_or_wrapper_script(self):
+        r = self.case27("build-command-chain")
+        self.assertEqual(r.code, 2, r.report)
+        self.assertEqual(r.rules(), {"C9"})
+        self.assertIn("17 Run: the Command cell holds more than one command; it must hold exactly one backticked "
+                      "command and nothing else", r.report)
+        self.assertIn("use one command or one wrapper script", r.report)
+
     def test_scope_ids_is_only_a_preview_on_2_4(self):
         """The same Target stamped 2.4, checked as the 2.4-era Check, passes: the scope finding is a preview that
         says it fails from template 2.7. On the running template (2.7.0) that 2.4 stamp is the one C3 upgrade

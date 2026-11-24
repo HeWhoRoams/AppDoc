@@ -100,7 +100,7 @@ RULES = (
          preview="a note in `notes.jsonl` that does not match its block, or the reserved label written by hand"),
     Rule("C19", "Audit follows the plan",
          "with `--require-audit` on template 2.7, `audit-plan.json` is missing or differs from a fresh computation, "
-         "or a planned id has no live register row (a section listed under `exclusions` is not required)"),
+         "or a planned id or per-row key has no live register row (a section listed under `exclusions` is not required)"),
     Rule("C20", "Citation precision",
          "a range over 100 lines is a claim's only lined Citation in section 4, 7 or 10, "
          "or a section 4 or 10.1 table cell holds more than 5 Citations", ("advisory", "strict")),
@@ -392,8 +392,9 @@ def _c9_tables(lines, raw, heads, add):
             add("C9", i, "template guidance comment left in the document", "delete the appdoc:guide comment")
 
 
-# One or more backticked commands, joined by a comma, a semicolon, then, or or and (`npm ci`, then `npm start`).
-_BUILD_COMMAND_RE = re.compile(r"^`[^`\n]+`(?:\s*(?:[,;]\s*)?(?:\b(?:then|or|and)\b\s*)?`[^`\n]+`)*$")
+# Exactly one backticked command and nothing else (a chain such as `npm ci`, then `npm start` is two).
+_BUILD_COMMAND_RE = re.compile(r"^`[^`\n]+`$")
+_BACKTICK_SPAN_RE = re.compile(r"`[^`\n]+`")
 
 
 def _c9_build_rows(lines, heads, add):
@@ -412,7 +413,13 @@ def _c9_build_rows(lines, heads, add):
         value = cells[cmd].strip()
         if value == spec.BUILD_UNKNOWN:
             continue
-        if value != spec.BUILD_NOT_APPLICABLE and not _BUILD_COMMAND_RE.match(value) and "`" in value:
+        if (value != spec.BUILD_NOT_APPLICABLE and not _BUILD_COMMAND_RE.match(value)
+                and len(_BACKTICK_SPAN_RE.findall(value)) > 1):
+            add("C9", no, f"17 {step}: the Command cell holds more than one command; it must hold exactly one "
+                "backticked command and nothing else",
+                "use one command or one wrapper script (a Makefile target or script that runs the chain) and cite "
+                "where it is defined; put the steps it runs under the table")
+        elif value != spec.BUILD_NOT_APPLICABLE and not _BUILD_COMMAND_RE.match(value) and "`" in value:
             add("C9", no, f"17 {step}: the Command cell must hold exactly one backticked command and nothing else",
                 "put the command alone in backticks in the Command cell; extra commands and prose go under the table")
         elif value != spec.BUILD_NOT_APPLICABLE and not _BUILD_COMMAND_RE.match(value):
