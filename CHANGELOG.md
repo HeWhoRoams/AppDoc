@@ -7,8 +7,11 @@
 - `doc_sha` masks the opaque generated blocks only. `scan-coverage` and `config-reference` stay in the fingerprint, so a Facts change that alters them reseeds the audit sample. Documented in ADR 0015 and plan 3.1; behaviour unchanged.
 - The C17 scope rule is documented as implemented: any single digit in the scope line fails, not only a digit sequence.
 
+- Per-row audit coverage. `audit-plan` plans one key `<section>/<slug>` per row: every 10.2 control with Status Present, every 16.5 and 17 row that is not Unknown or Not applicable, and the sampled section 9 rows (same floor, seeded by `doc_sha`). The slug is the first cell, lower-cased, non-alphanumerics to `-`, repeats suffixed `-2`, `-3`. The register `ref` of such a row is its key (`10.2/read-only-db-role`); C11 checks the key against the table, and C19 under `--require-audit` names each uncovered row and the ref to use. The plan file keeps the schema `appdoc-audit-plan/1` (the `ids` hold row keys and `items` the first cells). A.2 counts planned, audited and extra per row.
+- `seal` also stamps per-row keys with `claim_sha` and `sealed_by`; Answerable, Dismissed and other section-level rows stay unsealed by design, and Appendix A and the comparison diagnostic say so (they no longer call them "mostly Corrected or Downgraded rows").
+
 ### Notes
-- A document audited under 2.7.0 will need a per-row delta audit once 2.7.1's per-row audit keys land, and its section 17 Command cells must hold exactly one command. Planned behaviour, not yet in the code.
+- **Upgrade note:** a document audited under 2.7.0 fails C19 under `--require-audit` until its register has a row for each planned key in 10.2 (Present controls), 16.5, 17 and the sampled section 9 rows. Run `appdoc audit-plan`, audit the rows it names and add them with the refs it prints, then `appdoc seal --audit --date YYYY-MM-DD`. The old one-row-per-section refs (`10.2`, `16.5`, `17`, `9`) stay valid but cover nothing. Section 17 Command cells must hold exactly one command (planned, not yet in the code).
 
 ## 2.7.0
 

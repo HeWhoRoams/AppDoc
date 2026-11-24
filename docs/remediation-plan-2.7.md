@@ -161,6 +161,7 @@ Corpus `superseded`, `upgrade-seal`.
    - exclusions are printed.
 3. A.2 shows `planned / audited / extra` per section.
 4. **SKILL.md audit step:** run `audit-plan`, audit every planned ID (more if useful), then `seal --audit --date …`.
+5. **Per-row coverage (implemented in 2.7.1, R71.A1a-d).** The 2.7.0 plan listed one key per section for 10.2, 16.5, 17 and 9, so "every control" and "every row" were planned but not enforced: one register row per section satisfied C19. From 2.7.1 the plan holds one key `<section>/<slug>` per row (10.2 controls with Status Present, 16.5 and 17 rows that are not Unknown / Not applicable, and the sampled 9 rows, `k` from the same floor, seeded by `doc_sha`), the register `ref` is that key, and C19 names the row text and the ref to use for each key without a live row. `seal` stamps these rows. The slug is the first cell, lower-cased, runs of non-alphanumerics to `-`, repeats suffixed `-2`, `-3` in row order. A document audited under 2.7.0 fails C19 under `--require-audit` until the rows exist (CHANGELOG, Unreleased). Tests: `test_core::AuditPlanTests::test_per_row_*`, corpus `audit-per-row-coverage`.
 
 **Tests:** `test_core::test_audit_plan_deterministic`, `::test_audit_plan_changes_with_doc`, `::test_audit_plan_floor_math`, `::test_audit_floor_override_only_raises`; `test_check::test_c19_missing_planned_row_fails`, `::test_c19_stale_plan_fails`, `::test_c19_exclusion_printed`. Corpus `audit-plan`.
 
