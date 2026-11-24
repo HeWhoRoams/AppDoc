@@ -27,8 +27,8 @@ python "$RUNNER_TEMP/appdoc-skill/run_appdoc.py" gate "$GITHUB_WORKSPACE" --requ
 excluded from the scan, and then:
 
 1. **Upgrade detection (exit 3).** If the committed `facts.json` was written with a
-   different Facts schema than the pinned AppDoc writes (for example `appdoc-facts/6`
-   committed, `appdoc-facts/7` written by the pinned release), AppDoc was upgraded. The
+   different Facts schema than the pinned AppDoc writes (for example `appdoc-facts/7`
+   committed, `appdoc-facts/8` written by the pinned release), AppDoc was upgraded. The
    gate says so, instead of reporting a code change. Re-extract and refresh the docs.
 2. **Change detection (exit 2).** Compares the regenerated Facts with the committed ones.
    If they differ, the code changed since the docs were last generated, so the gate

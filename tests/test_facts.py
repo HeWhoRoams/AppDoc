@@ -32,8 +32,8 @@ class FactRulesTests(unittest.TestCase):
     def test_every_kind_has_detail_keys(self):
         self.assertEqual(set(F.KINDS) - {"entry_point"} - set(F.DETAIL_KEYS), set())
 
-    def test_schema_not_bumped_yet(self):
-        self.assertEqual(F.SCHEMA, "appdoc-facts/7")  # T28.C0 bumps it, not the foundation tasks
+    def test_schema_is_the_one_after_2_7(self):
+        self.assertEqual(F.SCHEMA, "appdoc-facts/8")  # 2.7 wrote /7 (T28.C0)
 
 
 if __name__ == "__main__":

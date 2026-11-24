@@ -15,6 +15,8 @@ For every stack in stacks.MODULES, run the extractor on its sample and assert:
 import importlib
 import json
 import os
+import re
+import shutil
 import tempfile
 import unittest
 
@@ -24,6 +26,8 @@ from appdoc import facts as facts_mod
 from appdoc import secrets
 from appdoc import stacks
 from appdoc.stacks import MODULES, generic
+from appdoc import summary
+from tests.test_corpus import materialize_shared_target
 
 SAMPLES = os.path.join(os.path.dirname(__file__), "samples")
 
@@ -37,6 +41,20 @@ GENERIC_KINDS = frozenset({"build_define", "config_external", "config_key", "con
 # Capabilities written ``entry_point.<name>`` that name derived detail keys of the route entry points, not entry_point types.
 DETAIL_CAPABILITIES = {"guard_mechanism": "guard_mechanism", "guard_reach": "reach"}   # capability -> the key that proves it
 GENERIC_KINDS_NOT_YET_EMITTED = frozenset()   # every generic kind has its reader (config_external: T28.32)
+
+# The Fact kinds 2.8.0 added to the 2.7 set (T28.C0); each is in KINDS and DETAIL_KEYS and falls under R18/R19.
+NEW_2_8_KINDS = frozenset({
+    "access_rule", "access_rule_unmatched", "antiforgery_check", "build_define", "conditional_const", "config_external",
+    "config_transform", "config_unparsed", "const_def", "context_directive", "controller_class", "guard_candidate",
+    "guard_class", "guard_use", "host_auth", "method_call", "mode_branch", "project", "publish_profile",
+    "security_setting"})
+
+_EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+_SID = re.compile(r"\bS-1-\d+(?:-\d+)+")
+_SCOPED_NPM = re.compile(r"@[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*")   # allow-listed: dependency names such as @types/node
+_URL = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://[^\s\"'<>)\]`|]*")
+_BARE_URL = re.compile(r"^[a-z][a-z0-9+.-]*://[^/@?#:\s]+(?::\d+)?$")   # scheme://host[:port], the only recorded URL shape (R19)
+MVC5_ALL = "mvc5-classic+owin+core+webapi"
 
 
 def _extract(sample_dir: str) -> dict:
@@ -242,6 +260,151 @@ class ConformanceTests(unittest.TestCase):
                     t = f["detail"].get("type")
                     self.assertIn(f"entry_point.{t}", caps,
                                   f"{name}: emits entry_point type {t!r} ({f['path']}:{f['line']}) without the capability")
+
+
+def _mvc5(spec=MVC5_ALL, name="t", workers=0, use_cache=False, pad=0):
+    """(doc, facts_text, summary_text) of the invented mvc5-classic Target with the given overlays, extracted in a temp folder."""
+    with tempfile.TemporaryDirectory() as tmp:
+        root = os.path.join(tmp, name)
+        os.makedirs(root)
+        materialize_shared_target(spec, root)
+        for i in range(pad):   # cross PARALLEL_THRESHOLD so workers > 1 uses the pool
+            with open(os.path.join(root, f"Pad{i}.txt"), "w") as fh:
+                fh.write("x\n")
+        text, summ = extract.extract(root, os.path.join(tmp, "out"), workers=workers, use_cache=use_cache,
+                                     no_ownership=True)
+        values = _secret_location_values(json.loads(text), root)
+    return json.loads(text), text, summ, values
+
+
+def _secret_location_values(doc: dict, root: str) -> set:
+    """Quoted values on the source line of every secret_location Fact, plus ``Password=``/``Pwd=`` values (R19)."""
+    values = set()
+    for f in doc["facts"]:
+        if f["kind"] in ("config_key", "connection") and f["detail"].get("secret_location"):
+            p = os.path.join(root, *f["path"].split("/"))
+            if not os.path.isfile(p):
+                continue
+            with open(p, encoding="utf-8-sig") as fh:
+                line = fh.read().split("\n")[f["line"] - 1]
+            attrs = re.findall(r'(?i)\b(value|connectionstring|password|pwd)="([^"]*)"', line)
+            if attrs:   # an XML line: only the value-bearing attributes (not xdt:Transform, Locator, name)
+                values |= {v for _, v in attrs}
+            else:       # a source or JSON line: every quoted literal
+                values |= {m for m in re.findall(r'"((?:[^"\\]|\\.)+)"', line)} - {f["name"]}
+            values |= set(re.findall(r"(?i)\b(?:password|pwd)=([^;\"]+)", line))
+    return {v for v in values if len(v) >= 8}
+
+
+def _flat(f: dict) -> list:
+    out = [f["name"]]
+    for v in f.get("detail", {}).values():
+        out += [str(x) for x in (v if isinstance(v, list) else [v])]
+    return out
+
+
+class NewKindHygieneTests(unittest.TestCase):
+    """R18 and R19 over the 2.8 kinds and the generated blocks, on the invented mvc5-classic Target with every overlay."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.doc, cls.text, cls.summary, cls.values = _mvc5()
+        cls.blocks = {n: fill.generated_body(n, cls.doc, {"out_dir": None, "text": ""}) or ""
+                      for n in fill.RENDERERS}
+        cls.new_facts = [f for f in cls.doc["facts"] if f["kind"] in NEW_2_8_KINDS]
+
+    def test_every_new_kind_is_in_kinds_and_detail_keys(self):
+        for k in sorted(NEW_2_8_KINDS):
+            self.assertIn(k, facts_mod.KINDS, k)
+            self.assertTrue(facts_mod.DETAIL_KEYS.get(k), f"{k} has no DETAIL_KEYS")
+
+    def test_generic_kinds_cover_the_generic_2_8_kinds(self):
+        self.assertLessEqual({"project", "build_define", "publish_profile", "config_external", "config_unparsed",
+                              "context_directive"}, GENERIC_KINDS)
+
+    def test_aspnet_stacks_declare_capabilities(self):
+        for name in ("aspnet", "aspnet_core"):
+            self.assertTrue(os.path.isdir(os.path.join(SAMPLES, name.replace("_", "-"))), name)
+            caps = stacks.capabilities_of(importlib.import_module(f"appdoc.stacks.{name}").STACK)
+            self.assertTrue(caps, f"{name}: declares no capabilities")
+
+    def test_the_target_exercises_the_new_kinds(self):
+        emitted = {f["kind"] for f in self.new_facts}
+        self.assertTrue({"guard_use", "const_def", "access_rule", "project", "publish_profile"} <= emitted, sorted(emitted))
+        self.assertTrue(self.values, "the Target holds secret literals at secret locations")
+        self.assertIn("not-a-real-credential-0001", self.values)
+        self.assertIn("not-a-real-password-0004", self.values)
+
+    def _assert_clean(self, text, where):
+        text = _SCOPED_NPM.sub("", text)
+        self.assertEqual(_EMAIL.findall(text), [], f"email-shaped text in {where}")
+        self.assertEqual(_SID.findall(text), [], f"SID-shaped text in {where}")
+        for v in self.values:
+            self.assertNotIn(v, text, f"a secret_location value in {where}")
+
+    def test_no_personal_identifiers_in_new_kinds(self):
+        # the Target carries a role string shaped like an email and one shaped like a SID: both are counted, never recorded
+        with open(os.path.join(materialize_shared_target_path(), "Contoso.Portal", "Controllers", "AdminController.cs"),
+                  encoding="utf-8-sig") as fh:
+            src = fh.read()
+        self.assertRegex(src, _EMAIL)
+        self.assertRegex(src, _SID)
+        for f in self.new_facts:
+            self._assert_clean(json.dumps(f, sort_keys=True), f"{f['kind']} {f['name']}")
+
+    def test_no_personal_identifiers_in_blocks_and_summary(self):
+        for name, body in self.blocks.items():
+            self._assert_clean(body, f"block {name}")
+        self._assert_clean(self.summary, "facts-summary.md")
+
+    def test_no_auth_value_equals_secret_location(self):
+        """R19: no Fact detail (or name) equals a value held at a secret_location, in the Target with every overlay."""
+        self.assertTrue(self.values)
+        for f in self.doc["facts"]:
+            if f["kind"] in ("stack",):
+                continue
+            self.assertEqual(set(_flat(f)) & self.values, set(), f"{f['kind']} {f['name']}")
+
+    def test_no_url_with_userinfo_path_or_query_in_new_kinds_or_blocks(self):
+        def urls(text):
+            return [u.rstrip(".,;") for u in _URL.findall(text)]
+        for f in self.new_facts:
+            for s in _flat(f):
+                for u in urls(s):
+                    self.assertRegex(u, _BARE_URL, f"{f['kind']} {f['name']}: {u!r}")
+        for name, body in self.blocks.items():
+            for u in urls(body):
+                self.assertRegex(u, _BARE_URL, f"block {name}: {u!r}")
+
+    def test_ownership_holds_counts_and_dates_only(self):
+        for f in self.doc["facts"]:
+            if f["kind"] == "ownership":
+                self.assertLessEqual(set(f["detail"]), {"commits", "contributors", "first_commit", "last_commit"})
+
+
+def materialize_shared_target_path():
+    from tests.test_corpus import SHARED
+    return os.path.join(SHARED, "mvc5-classic")
+
+
+class MvcDeterminismTests(unittest.TestCase):
+    """The mvc5-classic extract is byte-identical for --workers 0, --workers 4 and --no-cache (the Target name normalised)."""
+
+    def _run(self, **kw):
+        doc, text, summ, _ = _mvc5(MVC5_ALL, name="appdoc-target", pad=60, **kw)
+        return text, summ
+
+    def test_workers_0_4_and_no_cache_are_byte_identical(self):
+        serial = self._run(workers=0, use_cache=True)
+        pool = self._run(workers=4, use_cache=True)
+        nocache = self._run(workers=0, use_cache=False)
+        self.assertEqual(serial, pool)
+        self.assertEqual(serial, nocache)
+
+    def test_the_target_name_is_the_only_difference_between_two_folder_names(self):
+        a = _mvc5(MVC5_ALL, name="alpha")[1]
+        b = _mvc5(MVC5_ALL, name="beta")[1]
+        self.assertEqual(a.replace("alpha", "@@"), b.replace("beta", "@@"))
 
 
 if __name__ == "__main__":
