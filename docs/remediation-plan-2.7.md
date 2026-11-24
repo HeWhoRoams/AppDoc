@@ -99,7 +99,7 @@ Users upgrade each document once, and the examples get a fresh run and a fresh a
    - `audited_on` (`YYYY-MM-DD`, supplied explicitly);
    - `audited_with` (version);
    - `audited_bundle` (12-hex);
-   - `doc_sha`: 12-hex SHA-1 of `normalize_text(Narrative with generated blocks and count markers masked, comments stripped)`, the same text C11 uses.
+   - `doc_sha`: 12-hex SHA-1 of `normalize_text(Narrative with the opaque generated blocks and count markers masked, comments stripped)`, the same text C11 uses. **Only the opaque blocks** (`template_spec.OPAQUE_BLOCKS`: `entry-points`, `scheduled-jobs`, `closed-questions`, `appendix-a`) are masked. `scan-coverage` and `config-reference` are not opaque: they are text the auditor reads and register rows cite, so a change to them changes `doc_sha` (decision D3 of the 2.7.1 plan). A Facts change therefore reseeds the audit sample by design (`test_core::test_audit_plan_changes_with_doc`). Fill-before-seal (S6.1, see "Changes made during implementation") is what keeps the fingerprint reproducible.
 3. **C11 superseding:**
    - The duplicate-ref rule (`check.py:731-735`) counts **live** rows only. Two live rows on one ref fail with `add "supersedes": "<older id>" to the newer row; do not delete the older row`.
    - A `supersedes` target must exist, share the `ref`, and not form a cycle.
@@ -144,7 +144,7 @@ Corpus `superseded`, `upgrade-seal`.
 ### 3.3 Audit scope is computed (P1/P2 → MAJ-05)
 
 1. **A.1 prints a computed coverage line** from `coverage(...)` and the audit plan (3.4): `Register rows cover: 10.1 V-1–V-14 (14 of 14) · workflows 7.1–7.10 (10 of 10) · …`.
-2. **C17 (scope):** the line-1 `scope` may not contain an ID token (`_ID_REF_RE`) or a digit sequence. Fix: `describe only the method; coverage is computed`. This was previewed in 2.6.0.
+2. **C17 (scope):** the line-1 `scope` may not contain an ID token (`_ID_REF_RE`) or any digit. The check is `re.search(r"\d", scope)`, so a single digit (for example `2.7` or `10`) fails, not only a digit sequence; the same rule applies to each `exclusions` reason. Accepted as implemented (2.7.1 decision, review finding S-c3): a scope that names a number is a coverage claim, and coverage is computed. Fix: `describe only the method; coverage is computed`. This was previewed in 2.6.0.
 3. **`exclusions`:** `{"<section>": "<reason>"}`. Keys are section refs; values follow the same token rule; each is printed verbatim in A.1.
 
 **Tests:** `test_check::test_c17_scope_ids_fail`, `::test_c17_scope_digits_fail`, `::test_c17_method_only_passes`, `::test_c17_exclusions_keys_are_sections`; `test_register::test_a1_computed_scope_line`. Corpus `scope-ids`.
@@ -154,7 +154,7 @@ Corpus `superseded`, `upgrade-seal`.
 1. **`appdoc audit-plan <target>`** writes `docs/appdoc/audit-plan.json`, a pure function of the Narrative:
    - **Full coverage:** every 10.1 V-ID, every §7 workflow, every §14 Q-ID, every finding candidate, every 10.2 control marked Present, every 16.5 and §17 row that is not Unknown/Not applicable.
    - **Sampled sections** (4, 6, 8.1, 8.3, 9, 15): `k = min(n, max(5, ceil(0.25 * n)))`, chosen by sorting IDs on `sha1(doc_sha + id)`.
-   - **Organization override:** `appdoc-context.md` line `Audit floor: <fraction>, <minimum>` is applied only when stricter than both defaults. A looser value is ignored and reported as an advisory.
+   - **Organization override:** `appdoc-context.md` line `Audit floor: <fraction>, <minimum>` is applied only when stricter than both defaults. The fraction is a decimal or a percent (`0.4, 8` and `40%, 8` are the same floor; see "Changes made during implementation"). A looser value is ignored and reported as an advisory.
 2. **C19 "Audit follows the plan"** (stamp 2.7, `--require-audit`):
    - `audit-plan.json` must equal a fresh computation;
    - every planned ID has a live row;
@@ -232,6 +232,23 @@ All five rows required (C9). Status values: a cited command; Unknown (the reposi
 C14 already fails from 2.5.0 (shipped before Q19). It needs no change here beyond using the live-row definition from 3.1 when it reads the register.
 
 **Tests:** `test_check::test_c14_uses_live_rows`.
+
+---
+
+## Changes made during implementation (2.7.0, recorded in 2.7.1)
+
+The 2.7.0 code review (2026-11-24, review findings S-b1 to S-b6) found six additions that this plan did not list. Each came from a failure met while running the 2.7 audits, and each is accepted (decision D5 of the 2.7.1 plan). ADR 0015 carries the amendment for the three that touch audit semantics.
+
+| # | Addition | Why it was added |
+|---|---|---|
+| 1 | **Section 3.7 C1 extensions** (`citations.py`): `go rs rb php kt kts proto tf tfvars` are Citation extensions, `mod` and `sum` are line-only, `go.mod go.sum go.work go.work.sum` are Citations by exact name, and a bare `.ext` (such as `.proto`) without a line is prose naming a file type, not a file. `expand_bare` leaves fenced code and HTML comments alone. | The Go and protobuf examples cited files the C1 extension list did not know, and prose such as `.go` and `math.mod` was read as a Citation. |
+| 2 | **`audit-plan --check`**: read-only; prints the planned IDs on disk and from a fresh computation; exit 0 when equal, 2 when the plan is stale or missing. | An auditor under a read-only mandate could not tell whether the plan was current without rewriting it. |
+| 3 | **"Fix advisories" run step** (SKILL.md, before `audit-plan`): run `check --strict` and fix every advisory first. | The sample is seeded by `doc_sha`, so an advisory fix made after the plan reshuffled the sample and forced another audit pass. |
+| 4 | **Auditors cover every row of a sampled section after any edit.** The sample is a floor, not a ceiling: an auditor may cover more, and after any Narrative edit must cover every row of sections 4, 6, 8.1, 8.3, 9 and 15, because the edit reseeds the sample. | A late edit changed which rows were planned, and a planned row had never been read. |
+| 5 | **`Audit floor:` percent syntax**: `Audit floor: 40%, 8` is accepted as well as `0.4, 8`; the percent is divided by 100 and the result must be above 0 and at most 1. Only a stricter value than 25% / 5 applies; a looser one is an advisory (section 3.4). | Organizations write a floor as a percent; the decimal-only form was rejected silently. |
+| 6 | **Section 6.1, fill before seal**: `seal` (plain and `--audit`) first fills the non-opaque generated blocks (`scan-coverage`, `config-reference`) from the Facts, so the fingerprint is that of the filled document. | A stale block was filled after the seal, so `doc_sha` changed and rows sealed `upgrade` against text the auditor had read (`test_core::test_seal_audit_fingerprints_the_filled_document`). |
+
+Related decision recorded here (2.7.1, review finding S-c3): the C17 scope rule rejects any single digit, not only a digit sequence (section 3.3).
 
 ---
 

@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.7.1 (unreleased)
+
+### Changed
+- Six 2.7.0 additions that the 2.7 plan did not list are now recorded in `docs/remediation-plan-2.7.md` ("Changes made during implementation"): the C1 extensions for Go, protobuf, Ruby, PHP, Kotlin and Terraform files; `audit-plan --check`; the "Fix advisories" run step; auditors covering every row of a sampled section after any edit; `Audit floor:` percent syntax; and fill-before-seal (S6.1). ADR 0015 has an amendment for the last three audit rules.
+- `doc_sha` masks the opaque generated blocks only. `scan-coverage` and `config-reference` stay in the fingerprint, so a Facts change that alters them reseeds the audit sample. Documented in ADR 0015 and plan 3.1; behaviour unchanged.
+- The C17 scope rule is documented as implemented: any single digit in the scope line fails, not only a digit sequence.
+
+### Notes
+- A document audited under 2.7.0 will need a per-row delta audit once 2.7.1's per-row audit keys land, and its section 17 Command cells must hold exactly one command. Planned behaviour, not yet in the code.
+
 ## 2.7.0
 
 Template release. Template **2.7**; schema stays `appdoc-facts/7` (`audit-plan.json`, `notes.jsonl` and the new register keys are separate files). Plan: `docs/remediation-plan-2.7.md`; comparison with 2.6.0: `docs/diagnostic-2.7.0-comparison.md`.
