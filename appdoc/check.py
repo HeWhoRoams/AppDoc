@@ -5,7 +5,6 @@ The module docstring is assigned below, after RULES, so the rule range it names 
 
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import re
@@ -16,14 +15,15 @@ from . import __version__, version
 from . import context
 from . import docmodel as dm
 from . import fill as fill_mod
+from . import fingerprint
 from . import notes as notes_mod
 from . import register as reg_mod
 from . import scan
 from . import template_spec as spec
-from .citations import KNOWN_BARE_FILES, OWNER_CONTEXT, Citation, expand_bare, find_citations, parse_span
+from .citations import KNOWN_BARE_FILES, OWNER_CONTEXT, Citation, find_citations, parse_span
 from .facts import fact_id
 from .secrets import find_secret_shapes
-from .textnorm import normalize_newlines, normalize_text
+from .textnorm import normalize_newlines
 from .textutil import plural, read_text
 
 NARRATIVE = "application-documentation.md"
@@ -124,7 +124,6 @@ RULE_CAP = 50  # C9-C13 on a large document: show the first problems, count the 
 FOLDER_CAP = 30  # folders listed under "Entry points not cited"
 ENTRY_TYPES = ("route", "page", "command", "job")
 
-_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
 _H2_RE = re.compile(r"^##\s+(\d+)\.\s*(.*?)\s*$")
 _LIST_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
 _SEP_RE = re.compile(r"^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$")
@@ -147,11 +146,6 @@ _PROSE_TOTAL = {  # noun -> (entry_point_counts key, what the Facts count)
     "routes": ("routes", "routes"), "endpoints": ("routes", "routes"),
     "scheduled jobs": ("jobs", "jobs"), "cron tasks": ("jobs", "jobs"), "background jobs": ("jobs", "jobs"),
 }
-
-
-def _strip_comments(text: str) -> str:
-    """Remove HTML comments but keep line numbering intact."""
-    return _COMMENT_RE.sub(lambda m: "\n" * m.group(0).count("\n"), text)
 
 
 def _sections(lines: list[str]) -> list[dict]:
@@ -682,138 +676,6 @@ def _c7_blocks(raw, heads, facts, out_dir, target, add, doc_ver=()):
                 "run `appdoc fill <target>`; never edit a generated block by hand")
 
 
-def _claim_sha(lines, heads, ids, ref):
-    """12-hex-char SHA-1 over the normalised text a ref points to. None if the ref is unresolvable."""
-    m = reg_mod.REF_RE.match(ref)
-    if not m:
-        return None
-    sec_key, id_part = m.group(1), m.group(2)
-    if id_part and id_part in ids:
-        # ID ref: the table row that defines the ID
-        no = ids[id_part]
-        text = lines[no - 1]
-    elif sec_key.startswith("7.") and sec_key in heads:
-        # workflow: the subsection
-        h = heads[sec_key]
-        text = "\n".join(lines[h.idx + 1: h.own_end])
-    elif sec_key in heads:
-        # section-level: the section with generated blocks masked
-        h = heads[sec_key]
-        text = fill_mod.mask_blocks("\n".join(lines[h.idx: h.end]), spec.OPAQUE_BLOCKS)
-    else:
-        return None
-    text = " ".join(normalize_text(dm.strip_comments(text)).split())
-    return hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
-
-
-def document_text(raw: str, mask_counts: bool = False, pad: bool = True) -> str:
-    """The Narrative text the Check reads (C11, claim_sha) and the audit fingerprint hashes: newlines
-    normalized, opaque generated blocks masked, comments stripped, line numbering kept. With
-    `mask_counts` the count markers are removed too (their number is filled by `fill`, not written). Without `pad`
-    the line numbering is not kept (a masked block and a multi-line comment each leave a fixed number of lines), so
-    what `fill` writes into a block cannot move a fingerprint."""
-    text = fill_mod.mask_blocks(normalize_newlines(raw), spec.OPAQUE_BLOCKS, pad)
-    if mask_counts:
-        text = spec.COUNT_MARKER_RE.sub(lambda m: "\n" * m.group(0).count("\n") if pad else "", text)
-    return _strip_comments(text) if pad else _COMMENT_RE.sub(lambda m: "\n" if "\n" in m.group(0) else "", text)
-
-
-def doc_sha(raw: str) -> str:
-    """12-hex SHA-1 fingerprint of the Narrative as the auditor read it (line 1 `doc_sha` of the register)."""
-    text = normalize_text(document_text(raw, mask_counts=True, pad=False))
-    return hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
-
-
-def seal_register(target, out_dir, audit: bool = False, date: str | None = None) -> int:
-    """Write claim_sha into every ID/workflow register row that lacks one. Returns rows sealed.
-
-    From template 2.7 the rows also get `sealed_by`: "audit" when line 1's doc_sha equals the Narrative's
-    current fingerprint (the text was audited), else "upgrade". `audit` (with `date`, YYYY-MM-DD) is the
-    auditor finishing the audit: line 1 gets audited_on/audited_with/audited_bundle/doc_sha and the rows
-    sealed now are "audit". Superseded rows are never sealed.
-    """
-    md_path = os.path.join(out_dir, NARRATIVE)
-    reg_path = os.path.join(out_dir, REGISTER)
-    if not os.path.isfile(md_path) or not os.path.isfile(reg_path):
-        return 0
-    if spec.stamp_version(read_text(md_path)) >= FAILS_FROM:
-        fill_mod.fill_facts_blocks(target, out_dir)   # the fingerprint is that of the filled document (S6.1)
-    raw = read_text(md_path)
-    lines = document_text(raw).splitlines()
-    heads = dm.headings(lines)
-    ids = defined_ids(lines, heads, lambda *a: None)
-    reg = reg_mod.parse(read_text(reg_path))
-    fingerprint = doc_sha(raw)
-    audit_fields = sealed_by = None
-    if audit:
-        audit_fields = {"audited_on": date, "audited_with": __version__,
-                        "audited_bundle": version.bundle_hash()[:version.BUNDLE_LEN], "doc_sha": fingerprint}
-        sealed_by = "audit"
-    else:
-        if spec.stamp_version(raw) >= FAILS_FROM:
-            sealed_by = "audit" if (reg.audit or {}).get("doc_sha") == fingerprint else "upgrade"
-    claim_shas: dict[str, str] = {}
-    for _, row in reg.live_rows():   # a superseded row records history and is never sealed
-        if row["result"] in ("Dismissed", "Answerable"):
-            continue
-        m = reg_mod.REF_RE.match(str(row["ref"]))
-        if not m:
-            continue
-        sec_key, id_part = m.group(1), m.group(2)
-        if not (id_part or sec_key.startswith("7.")):
-            continue
-        sha = _claim_sha(lines, heads, ids, str(row["ref"]))
-        if sha:
-            claim_shas[str(row["id"])] = sha
-    return reg_mod.seal(reg_path, claim_shas, sealed_by, audit_fields)
-
-
-def expand_citations(target, out_dir) -> int:
-    """Rewrite the unique bare-name Citations of the Narrative to their full path (opt-in, `build --expand-citations`).
-
-    Same rule as the C1 2.7 check (_c1_bare_name): a name with one file outside the Target root, not a known bare
-    file. Fenced code, comments and generated blocks are left alone. Returns the number of spans rewritten."""
-    path = os.path.join(out_dir, NARRATIVE)
-    if not os.path.isfile(path):
-        return 0
-    raw = normalize_newlines(read_text(path))
-    cache: dict = {"__out__": out_dir}
-
-    def full_of(name):
-        return _c1_bare_name(target, cache, Citation(0, name, None, None, name))
-
-    parts, last, total = [], 0, 0
-    for m in fill_mod.BLOCK_RE.finditer(raw):
-        new, n = expand_bare(raw[last:m.start()], full_of)
-        parts += [new, m.group(0)]
-        total += n
-        last = m.end()
-    new, n = expand_bare(raw[last:], full_of)
-    total += n
-    if total:
-        with open(path, "w", encoding="utf-8", newline="\n") as fh:
-            fh.write("".join(parts) + new)
-    return total
-
-
-def seal_notes(target, out_dir) -> int:
-    """Write block_sha into every note of notes.jsonl that lacks one (the sha of its block's generated body, notes
-    excluded). Never overwrites one. Returns notes sealed; 0 when there is no notes file or no Facts."""
-    path = os.path.join(out_dir, notes_mod.NOTES)
-    facts_path = os.path.join(out_dir, FACTS)
-    if not os.path.isfile(path) or not os.path.isfile(facts_path):
-        return 0
-    facts = json.loads(read_text(facts_path))
-    md = os.path.join(out_dir, NARRATIVE)
-    ctx = {"out_dir": out_dir, "target": target, "text": read_text(md) if os.path.isfile(md) else None}
-    shas = {}
-    for _, note in notes_mod.parse(read_text(path)).notes:
-        body = fill_mod.generated_body(note["block"], facts, ctx)
-        if note["block_sha"] == "" and body is not None:
-            shas[note["block"]] = notes_mod.body_sha(body)
-    return notes_mod.seal(path, shas)
-
-
 def _c2_per_claim(lines, s10, add):
     """C2: each security claim in section 10 must carry at least one lined Citation.
 
@@ -1011,7 +873,7 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
                             "keep the row that describes the current text")
             no, row = rows[0]
             where = f"{REGISTER} line {no}"
-            expected = _claim_sha(lines, heads, ids, ref_key)
+            expected = fingerprint.claim_sha(lines, heads, ids, ref_key)
             if expected is None:
                 continue
             if "claim_sha" not in row:
@@ -1100,7 +962,7 @@ def _c15_markers(raw, facts, ids, reg, add):
     """C15, 2.7 rule: a count marker holds the number `fill` would write, and its class is a known one.
 
     Reads the raw Narrative (the marker is an HTML comment) with the generated blocks masked."""
-    text = fill_mod.mask_blocks(normalize_newlines(raw), tuple(spec.GENERATED.values()))
+    text = dm.mask_blocks(normalize_newlines(raw), tuple(spec.GENERATED.values()))
     for m in spec.COUNT_MARKER_RE.finditer(text):
         cls, shown = m.group(2).strip(), m.group(3).strip()
         no = text.count("\n", 0, m.start()) + 1
@@ -1206,7 +1068,7 @@ def _c9_severity_order(lines, heads, add):
             prev = (rid, sev)
 
 
-def _c1_bare_name(target, cache, c):
+def c1_bare_name(target, cache, c):
     """The unique full path of a bare-name Citation that resolves outside the Target root, else None (C1, 2.7 rule)."""
     if "/" in c.path or c.path in KNOWN_BARE_FILES:
         return None
@@ -1219,7 +1081,7 @@ def _c1_bare_name(target, cache, c):
 def _c1_bare_finding(target, cache, c):
     """(message, fix) for a bare-name Citation that has one full path, else None. One wording for the Narrative,
     the register's cites and a note's cites."""
-    full = _c1_bare_name(target, cache, c)
+    full = c1_bare_name(target, cache, c)
     if not full:
         return None
     span = "" if c.start is None else f":{c.start}" + ("" if c.end in (None, c.start) else f"-{c.end}")
@@ -1307,7 +1169,7 @@ def _c18_notes(target, out_dir, raw, facts, cache, add):
                     add("C18", no, f"{where} {no}: citation does not resolve: {why}", "cite an existing file and line")
                 elif finding := _c1_bare_finding(target, cache, Citation(no, p[0], p[1], p[2], raw_cite)):
                     add("C1", no, f"{where} {no}: {finding[0]}", finding[1])
-    prose = _strip_comments(fill_mod.mask_blocks(normalize_newlines(raw), tuple(spec.GENERATED.values())))
+    prose = dm.strip_comments(dm.mask_blocks(normalize_newlines(raw), tuple(spec.GENERATED.values())))
     for i, line in enumerate(prose.splitlines(), 1):
         if notes_mod.LABEL.casefold() in line.casefold():
             add("C18", i, f"the reserved label '{notes_mod.LABEL}' is written in the Narrative outside a generated block",
@@ -1384,7 +1246,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
             return 1
 
     prov = version.read_provenance(out_dir) if facts is not None else None
-    text = document_text(raw)
+    text = fingerprint.document_text(raw)
     lines = text.splitlines()
     secs = _sections(lines)
     by_num = {s["num"]: s for s in secs}
@@ -1544,7 +1406,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         # in section 2 prose. Content-signal candidates are advisory only (rendered in scan-coverage).
         # Generated blocks are masked so the scan-coverage list of candidates does not count as naming.
         if s2:
-            masked = _strip_comments(fill_mod.mask_blocks(normalize_newlines(raw),
+            masked = dm.strip_comments(dm.mask_blocks(normalize_newlines(raw),
                                                           tuple(spec.GENERATED.values()))).splitlines()
             msecs = _sections(masked)
             ms2 = next((s for s in msecs if s["num"] == 2), None)
@@ -1591,13 +1453,13 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         count_advice: list = []
         if doc_ver >= FAILS_FROM:   # a stronger structural rule replaces the English one (P2, Q2)
             count_advice = [(no, text) for no, text, *_ in _c15_sentences(
-                document_text(raw, mask_counts=True).splitlines(), ids)]
+                fingerprint.document_text(raw, mask_counts=True).splitlines(), ids)]
         else:
             _c15_register_counts(lines, ids, reg, add)
         _c15_markers(raw, facts, ids, reg, add27)
         quant_hits = _c16_quantifier(lines, cites, add, strict)
         generated = tuple(spec.GENERATED.values())
-        glines = _strip_comments(fill_mod.mask_blocks(normalize_newlines(raw), generated)).splitlines()
+        glines = dm.strip_comments(dm.mask_blocks(normalize_newlines(raw), generated)).splitlines()
         wide_hits = _c20_precision(glines, dm.headings(glines))
         for no, msg in wide_hits:
             if strict:

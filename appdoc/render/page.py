@@ -82,11 +82,10 @@ def _stale_block(target: str, md_path: str, out_dir: str) -> str | None:
     from .. import fill as fill_mod
     from .. import template_spec as spec
     from .. import docmodel as dm
-    from .. import check
     with open(os.path.join(out_dir, "facts.json"), encoding="utf-8") as fh:
         facts = json.load(fh)
     raw = _read(md_path)
-    lines = check._strip_comments(fill_mod.mask_blocks(normalize_newlines(raw), spec.OPAQUE_BLOCKS)).splitlines()
+    lines = dm.strip_comments(dm.mask_blocks(normalize_newlines(raw), spec.OPAQUE_BLOCKS)).splitlines()
     heads = dm.headings(lines)
     ctx = {"out_dir": out_dir, "text": raw, "target": os.path.abspath(target)}
     found = {name: body for name, body, _ in fill_mod.blocks(normalize_newlines(raw))}

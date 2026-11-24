@@ -1,6 +1,6 @@
 """The audit plan: which parts of the Narrative the independent audit must cover (`appdoc audit-plan`).
 
-`docs/appdoc/audit-plan.json` is a pure function of the Narrative (its fingerprint, `check.doc_sha`), the Facts
+`docs/appdoc/audit-plan.json` is a pure function of the Narrative (its fingerprint, `fingerprint.doc_sha`), the Facts
 (finding candidates) and the optional `Audit floor:` line of appdoc-context.md. The tool, not the auditor, picks
 the sample.
 
@@ -24,7 +24,7 @@ import sys
 from fractions import Fraction
 from typing import NamedTuple
 
-from . import check, context
+from . import check, context, fingerprint
 from . import template_spec as spec
 from . import docmodel as dm
 from .textnorm import normalize_newlines
@@ -122,10 +122,10 @@ def _rows(lines, heads, key, col_name, keep):
 def compute(target: str, out_dir: str) -> dict:
     """The audit plan of the Narrative in `out_dir` (a dict; `render` writes it)."""
     raw = read_text(os.path.join(out_dir, check.NARRATIVE))
-    lines = check.document_text(raw).splitlines()
+    lines = fingerprint.document_text(raw).splitlines()
     heads = dm.headings(lines)
     ids = check.defined_ids(lines, heads, lambda *a: None)
-    sha = check.doc_sha(raw)
+    sha = fingerprint.doc_sha(raw)
     floor = _floor(target)
 
     def by_prefix(prefix):

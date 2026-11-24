@@ -7,7 +7,8 @@ import shutil
 import tempfile
 import unittest
 
-from appdoc import check, fill
+from appdoc import check, fill, fingerprint
+from appdoc import seal as seal_mod
 from appdoc import facts as facts_mod
 from appdoc import template_spec as spec
 from tests.template_pin import STAMP_2_4, run_as_2_4, run_as_stamped
@@ -194,7 +195,7 @@ class CheckTests(unittest.TestCase):
                         except (ValueError, TypeError):
                             pass
                         fh.write(line)
-            check.seal_register(self.target, self.out)
+            seal_mod.seal_register(self.target, self.out)
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
             code = check.run(self.target, self.out, require_audit, strict)
@@ -322,12 +323,12 @@ class CheckTests(unittest.TestCase):
 
     def test_c11_claim_sha_sealed_passes(self):
         self._write_narrative(build_doc())
-        self.assertEqual(check.seal_register(self.target, self.out), 2)
+        self.assertEqual(seal_mod.seal_register(self.target, self.out), 2)
         self.assertEqual(self.fired(build_doc()), set())
 
     def test_c11_claim_sha_stale_fails(self):
         self._write_narrative(build_doc())
-        self.assertEqual(check.seal_register(self.target, self.out), 2)
+        self.assertEqual(seal_mod.seal_register(self.target, self.out), 2)
         # change the text of the V-1 finding row so the sealed sha no longer matches
         doc = build_doc().replace("A password is set in code", "A secret is set in code")
         code, report, _ = self.run_check(doc, seal=False)
@@ -409,7 +410,7 @@ class CheckTests(unittest.TestCase):
         """A register whose line 1 carries the full audit provenance for the document under test."""
         doc27 = self.doc27()
         rec = dict(AUDIT, audited_on="2026-11-23", audited_with="2.7.0", audited_bundle="0123456789ab",
-                   doc_sha=check.doc_sha(self.fill_doc(doc27)), **extra)
+                   doc_sha=fingerprint.doc_sha(self.fill_doc(doc27)), **extra)
         self.write_register(rec, ROWS)
 
     def test_c17_require_audit_needs_provenance(self):
@@ -481,9 +482,9 @@ class CheckTests(unittest.TestCase):
         self.assertIn("closed-questions", spec.OPAQUE_BLOCKS)
         # opaque: what the block says changes neither the audit fingerprint nor the text the Check reads
         a, b = self.with_cq("No questions were closed by the audit."), self.with_cq("Closed by the audit: Q-11 (16.3).")
-        self.assertEqual(check.doc_sha(a), check.doc_sha(b))
-        self.assertEqual(check.document_text(a), check.document_text(b))
-        self.assertNotIn("Q-11", check.document_text(b))
+        self.assertEqual(fingerprint.doc_sha(a), fingerprint.doc_sha(b))
+        self.assertEqual(fingerprint.document_text(a), fingerprint.document_text(b))
+        self.assertNotIn("Q-11", fingerprint.document_text(b))
         # it is required on 2.7 and later, never on 2.4
         self.assertEqual(self.fired(build_doc()), set())
         code, report, _ = self.run27(build_doc(), cq=False)
@@ -519,7 +520,7 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(first["block_sha"], notes.body_sha(body))
         self.assertRegex(first["block_sha"], r"^[0-9a-f]{12}$")
         self.assertEqual(second["block_sha"], "a" * 12)               # never overwrites an existing one
-        self.assertEqual(check.seal_notes(self.target, self.out), 0)  # and sealing twice is a no-op
+        self.assertEqual(seal_mod.seal_notes(self.target, self.out), 0)  # and sealing twice is a no-op
         with open(os.path.join(self.out, "application-documentation.md"), encoding="utf-8") as fh:
             self.assertIn("Known extractor limitation: Routes registered by decorator are not listed (`app/main.py:2`)",
                           fh.read())
@@ -600,7 +601,7 @@ class CheckTests(unittest.TestCase):
                 rows.append({"id": f"E-{n}", "ref": ref, "claim": claim, "result": "Supported",
                              "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"})
         audit = dict(AUDIT, audited_on="2026-11-23", audited_with="2.7.0", audited_bundle="0123456789ab",
-                     doc_sha=check.doc_sha(self.doc27()), **audit_extra)
+                     doc_sha=fingerprint.doc_sha(self.doc27()), **audit_extra)
         if exclusions:
             audit["exclusions"] = exclusions
         self.write_register(audit, rows)
@@ -1369,7 +1370,7 @@ class CheckTests(unittest.TestCase):
         self.assertIn("| nightly | `0 2 * * *` | yes | `app/main.py:8` | python-flask |", once)
         self.assertIn("### A.1 Audit state", once)
         with contextlib.redirect_stdout(io.StringIO()):
-            check.seal_register(self.target, self.out)
+            seal_mod.seal_register(self.target, self.out)
             self.assertEqual(run_as_2_4(check.run, self.target, self.out), 0)  # what `fill` wrote is what the Check expects
 
     # --- C7 prose counts
@@ -2099,7 +2100,7 @@ class CheckTests(unittest.TestCase):
             self.assertEqual(fill.run(self.target, self.out), 0)
             with open(path) as fh:
                 self.assertEqual(fh.read(), once)
-            check.seal_register(self.target, self.out)
+            seal_mod.seal_register(self.target, self.out)
             self.assertEqual(run_as_2_4(check.run, self.target, self.out), 0)
         appendix = once.split("### A.2 Coverage")[1].split("### A.3")[0]
         for row in ("| 10.1 | 1 of 1 |", "| 7 (workflows) | 1 of 1 |", "| 4 | 0 of 1 |"):
@@ -2111,7 +2112,7 @@ class CheckTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(run_as_2_4(check.run, self.target, self.out), 2)
             self.assertEqual(fill.run(self.target, self.out), 0)
-            check.seal_register(self.target, self.out)
+            seal_mod.seal_register(self.target, self.out)
             self.assertEqual(run_as_2_4(check.run, self.target, self.out), 0)
         with open(path) as fh:
             self.assertIn("| 4 | 1 of 1 |", fh.read())

@@ -150,20 +150,20 @@ def main(argv=None) -> int:
             from . import gate
             return gate.run(args.target, out_dir, args.require_audit, args.strict, args.workers)
         if args.cmd == "seal":
-            from . import check
-            n = check.seal_register(args.target, out_dir, args.audit, args.date)
+            from . import seal
+            n = seal.seal_register(args.target, out_dir, args.audit, args.date)
             print(f"sealed {n} row(s)")
             return 0
         if args.cmd == "build":
-            from . import check, fill
+            from . import check, fill, seal
             from .render import page
             if args.expand_citations:
-                n = check.expand_citations(args.target, out_dir)
+                n = seal.expand_citations(args.target, out_dir)
                 print(f"expanded {n} citation(s)")
-            n = check.seal_register(args.target, out_dir)
+            n = seal.seal_register(args.target, out_dir)
             if n:
                 print(f"sealed {n} row(s)")
-            n = check.seal_notes(args.target, out_dir)
+            n = seal.seal_notes(args.target, out_dir)
             if n:
                 print(f"sealed {n} note(s)")
             rc = fill.run(args.target, out_dir)

@@ -1,6 +1,6 @@
 """The two normalizations (R14): *newlines* for every hash of file content, *text* for claims and seals.
 
-Used by ``check._claim_sha`` and therefore by the seal, so a Narrative checked out with LF on Linux
+Used by ``fingerprint.claim_sha`` and therefore by the seal, so a Narrative checked out with LF on Linux
 and CRLF on Windows (or saved with a combining accent) keeps the same ``claim_sha``.
 """
 

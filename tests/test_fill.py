@@ -5,7 +5,7 @@ import os
 import tempfile
 import unittest
 
-from appdoc import extract, fill
+from appdoc import docmodel as dm, extract, fill, fingerprint
 
 
 def fact(kind, path, line, name, stack="s", **detail):
@@ -505,7 +505,7 @@ class CountMarkerTests(unittest.TestCase):
         out, _ = fill.fill_text(self.text, self.facts, self.ctx)
         other = out.replace("<!-- appdoc:count routes -->2", "<!-- appdoc:count routes -->7")
         self.assertNotEqual(other, out)
-        self.assertEqual(check.doc_sha(out), check.doc_sha(other))
+        self.assertEqual(fingerprint.doc_sha(out), fingerprint.doc_sha(other))
 
 
 class FillTextTests(unittest.TestCase):
@@ -522,13 +522,13 @@ class FillTextTests(unittest.TestCase):
         self.assertEqual(fill.fill_text(once, doc())[0], once)
 
     def test_mask_keeps_the_line_count_and_hides_content(self):
-        masked = fill.mask_blocks(self.TEXT, ("entry-points", "scheduled-jobs"))
+        masked = dm.mask_blocks(self.TEXT, ("entry-points", "scheduled-jobs"))
         self.assertEqual(masked.count("\n"), self.TEXT.count("\n"))
         self.assertNotIn("old", masked)
         self.assertIn("keep", masked)  # unnamed blocks are left alone
         filled = fill.fill_text(self.TEXT, doc(route("a.py")))[0]
-        self.assertEqual(fill.mask_blocks(filled, ("entry-points",)).count("\n"), filled.count("\n"))
-        self.assertNotIn("a.py", fill.mask_blocks(filled, ("entry-points",)))
+        self.assertEqual(dm.mask_blocks(filled, ("entry-points",)).count("\n"), filled.count("\n"))
+        self.assertNotIn("a.py", dm.mask_blocks(filled, ("entry-points",)))
 
     def test_run_writes_all_five_blocks_with_the_register_context(self):
         names = ("scan-coverage", "entry-points", "config-reference", "scheduled-jobs", "appendix-a")

@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-from appdoc import extract, facts, scan, secrets
+from appdoc import docmodel as dm, extract, facts, fingerprint, scan, seal, secrets
 from appdoc.stacks import load, generic
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -902,7 +902,7 @@ class UpgradeTests(unittest.TestCase):
                 new_rows = [dm.split_row(l) for l in new.split("\n") if l.lstrip().startswith("|")]
                 stamp = "<!-- appdoc:template"
                 generated = set()          # lines of a generated block are the tool's, `fill` rewrites them
-                for m in fill.BLOCK_RE.finditer(old):
+                for m in dm.BLOCK_RE.finditer(old):
                     generated.update(m.group(0).split("\n"))
                 for line in old.split("\n"):
                     if not line.strip() or line.startswith(stamp) or line in generated:
@@ -995,7 +995,7 @@ class UpgradeTests(unittest.TestCase):
         self.assertEqual(self.upgrade()[0], 0)
         new = self.narrative()
         from appdoc import fill
-        self.assertNotRegex(fill.BLOCK_RE.sub("", new), r"(?<!\r)\n")           # every line break outside a block is CRLF
+        self.assertNotRegex(dm.BLOCK_RE.sub("", new), r"(?<!\r)\n")           # every line break outside a block is CRLF
         self.assertIn("\r\n## 17. Build, Run and Test Locally\r\n", new)
 
     def test_upgrade_2_4_adds_only_the_2_7_parts(self):
@@ -1092,34 +1092,34 @@ class DocShaTests(unittest.TestCase):
         from appdoc import check
         from appdoc.textnorm import normalize_text
         raw = self.DOC.replace("<!-- appdoc:count V -->3<!-- /appdoc:count -->", "many")
-        want = hashlib.sha1(normalize_text(check.document_text(raw)).encode("utf-8")).hexdigest()[:12]
-        self.assertEqual(check.doc_sha(raw), want)
-        self.assertRegex(check.doc_sha(raw), r"^[0-9a-f]{12}$")
+        want = hashlib.sha1(normalize_text(fingerprint.document_text(raw)).encode("utf-8")).hexdigest()[:12]
+        self.assertEqual(fingerprint.doc_sha(raw), want)
+        self.assertRegex(fingerprint.doc_sha(raw), r"^[0-9a-f]{12}$")
 
     def test_doc_sha_ignores_generated_blocks_counts_comments_and_newline_style(self):
         from appdoc import check
-        base = check.doc_sha(self.DOC)
-        self.assertEqual(check.doc_sha(self.DOC.replace("old rows", "new rows\nmore")), base)
-        self.assertEqual(check.doc_sha(self.DOC.replace(">3<", ">14<")), base)
-        self.assertEqual(check.doc_sha(self.DOC.replace("a comment", "another comment")), base)
-        self.assertEqual(check.doc_sha(self.DOC.replace("\n", "\r\n")), base)
-        self.assertNotEqual(check.doc_sha(self.DOC.replace("The service", "A service")), base)
+        base = fingerprint.doc_sha(self.DOC)
+        self.assertEqual(fingerprint.doc_sha(self.DOC.replace("old rows", "new rows\nmore")), base)
+        self.assertEqual(fingerprint.doc_sha(self.DOC.replace(">3<", ">14<")), base)
+        self.assertEqual(fingerprint.doc_sha(self.DOC.replace("a comment", "another comment")), base)
+        self.assertEqual(fingerprint.doc_sha(self.DOC.replace("\n", "\r\n")), base)
+        self.assertNotEqual(fingerprint.doc_sha(self.DOC.replace("The service", "A service")), base)
 
     def test_doc_sha_ignores_the_length_of_a_block_in_the_middle_of_the_document(self):
         """What `fill` writes into a block must not move the fingerprint (a plan or audit made before would go stale)."""
         from appdoc import check
         doc = self.DOC + "\n## 4. After\n\nMore text.\n"
-        base = check.doc_sha(doc)
-        self.assertEqual(check.doc_sha(doc.replace("old rows", "a\nb\nc\nd")), base)
-        self.assertEqual(check.doc_sha(doc.replace("a comment", "a\nmulti\nline comment")), check.doc_sha(
+        base = fingerprint.doc_sha(doc)
+        self.assertEqual(fingerprint.doc_sha(doc.replace("old rows", "a\nb\nc\nd")), base)
+        self.assertEqual(fingerprint.doc_sha(doc.replace("a comment", "a\nmulti\nline comment")), fingerprint.doc_sha(
             doc.replace("a comment", "x\ny")))
-        self.assertNotEqual(check.doc_sha(doc.replace("More text", "Other text")), base)
+        self.assertNotEqual(fingerprint.doc_sha(doc.replace("More text", "Other text")), base)
 
     def test_check_and_fill_share_the_one_text_helper(self):
         import inspect
         from appdoc import check, fill
         self.assertIn("document_text(", inspect.getsource(check.run))
-        self.assertIn("document_text(", inspect.getsource(check.seal_register))
+        self.assertIn("document_text(", inspect.getsource(seal.seal_register))
         self.assertIn("document_text(", inspect.getsource(fill._appendix_a))
 
 
@@ -1219,7 +1219,7 @@ class AuditPlanTests(unittest.TestCase):
         self.assertTrue(set(f["ids"]) <= {f"F-{i}" for i in range(1, 31)})
         r = self.section(plan, "15")
         self.assertEqual((r["total"], r["k"], sorted(r["ids"])), (3, 3, ["R-1", "R-2", "R-3"]))
-        self.assertEqual(plan["doc_sha"], __import__("appdoc.check", fromlist=["x"]).doc_sha(self.write(n_f=30, n_r=3)))
+        self.assertEqual(plan["doc_sha"], __import__("appdoc.fingerprint", fromlist=["x"]).doc_sha(self.write(n_f=30, n_r=3)))
 
     def test_audit_plan_changes_with_doc(self):
         text = self.write(n_f=40)
@@ -1324,7 +1324,7 @@ class SealProvenanceTests(unittest.TestCase):
         self.assertEqual(audit["audited_on"], "2026-11-23")
         self.assertEqual(audit["audited_with"], __version__)
         self.assertEqual(audit["audited_bundle"], version.bundle_hash()[:version.BUNDLE_LEN])
-        self.assertEqual(audit["doc_sha"], check.doc_sha(doc))
+        self.assertEqual(audit["doc_sha"], fingerprint.doc_sha(doc))
         self.assertEqual([r["sealed_by"] for r in rows], ["audit", "audit"])
         self.assertTrue(all("claim_sha" in r for r in rows))
         self.assertEqual(self.AUDIT["scope"], audit["scope"])      # the writer's fields are kept
@@ -1340,7 +1340,7 @@ class SealProvenanceTests(unittest.TestCase):
         self.assertEqual(rc, 0, out)
         self.assertEqual([r["sealed_by"] for r in self.read()[1:]], ["upgrade", "upgrade"])
         # a doc_sha that matches the current text seals as audit; one that does not, as upgrade
-        for sha, want in ((check.doc_sha(doc), "audit"), ("0" * 12, "upgrade")):
+        for sha, want in ((fingerprint.doc_sha(doc), "audit"), ("0" * 12, "upgrade")):
             self.write(audit=dict(self.AUDIT, doc_sha=sha))
             self.main()
             self.assertEqual({r["sealed_by"] for r in self.read()[1:]}, {want}, sha)
@@ -1360,10 +1360,10 @@ class SealProvenanceTests(unittest.TestCase):
         with open(md, encoding="utf-8") as fh:
             sealed_text = fh.read()
         self.assertIn("Stack", dict((n, c) for n, c, _ in fill.blocks(sealed_text))["scan-coverage"])
-        self.assertEqual(audit["doc_sha"], check.doc_sha(sealed_text))
+        self.assertEqual(audit["doc_sha"], fingerprint.doc_sha(sealed_text))
         self.assertEqual(fill.run(self.target, self.out), 0)
         with open(md, encoding="utf-8") as fh:
-            self.assertEqual(check.doc_sha(fh.read()), audit["doc_sha"])
+            self.assertEqual(fingerprint.doc_sha(fh.read()), audit["doc_sha"])
         check.run(self.target, self.out, True, True)      # the fixture has other problems; C17 is not one of them
         with open(os.path.join(self.out, check.REPORT), encoding="utf-8") as fh:
             self.assertNotIn("## C17", fh.read())
@@ -1377,8 +1377,8 @@ class SealProvenanceTests(unittest.TestCase):
         self.facts()
         self.assertEqual(fill.run(self.target, self.out), 0)
         with open(os.path.join(self.out, "application-documentation.md"), encoding="utf-8") as fh:
-            sha = check.doc_sha(fh.read())
-        self.assertNotEqual(sha, check.doc_sha(stale))
+            sha = fingerprint.doc_sha(fh.read())
+        self.assertNotEqual(sha, fingerprint.doc_sha(stale))
         self.write(audit=dict(self.AUDIT, doc_sha=sha))          # the stale text again, rows unsealed
         import contextlib, io
         with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
@@ -1436,7 +1436,7 @@ class ExpandCitationsTests(unittest.TestCase):
 
     def test_expand_citations_unique_only(self):
         from appdoc import check
-        self.assertEqual(check.expand_citations(self.target, self.out), 3)
+        self.assertEqual(seal.expand_citations(self.target, self.out), 3)
         got = self.read().splitlines()
         self.assertEqual(got[2], "<!-- a comment `main.py:5` -->")                       # comments stay
         self.assertEqual(got[3], "See `app/main.py:5`, `app/main.py:3-5` and `app/main.py` for the entry; "
@@ -1447,9 +1447,9 @@ class ExpandCitationsTests(unittest.TestCase):
 
     def test_expand_citations_idempotent(self):
         from appdoc import check
-        check.expand_citations(self.target, self.out)
+        seal.expand_citations(self.target, self.out)
         once = self.read()
-        self.assertEqual(check.expand_citations(self.target, self.out), 0)
+        self.assertEqual(seal.expand_citations(self.target, self.out), 0)
         self.assertEqual(self.read(), once)
         self.assertNotIn("\r", once)
 

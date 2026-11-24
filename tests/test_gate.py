@@ -11,7 +11,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-from appdoc import check, extract, fill, gate
+from appdoc import check, extract, fill, gate, seal
 from tests.test_corpus import run_case
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -74,7 +74,7 @@ class GateTests(unittest.TestCase):
 
     def refill(self):
         with contextlib.redirect_stdout(io.StringIO()):
-            check.seal_register(self.target, self.out)
+            seal.seal_register(self.target, self.out)
             self.assertEqual(fill.run(self.target, self.out), 0)
 
     def test_unchanged_target_passes_and_leaves_the_target_alone(self):

@@ -20,6 +20,7 @@ import re
 import sys
 
 from . import __version__
+from . import check, extract, fill
 from . import docmodel as dm
 from . import template_spec as spec
 from .textnorm import normalize_newlines
@@ -57,8 +58,7 @@ def steps_after(version: str, to: str = spec.TEMPLATE_VERSION) -> list[str]:
 def _view(lines: list[str]):
     """The lines with every generated block's content masked (so a table inside a block is not the section's table),
     and their headings. Line numbers are the same as `lines`."""
-    from . import fill
-    masked = fill.mask_blocks("\n".join(lines), _BLOCK_NAMES, pad=True).split("\n")
+    masked = dm.mask_blocks("\n".join(lines), _BLOCK_NAMES, pad=True).split("\n")
     return masked, dm.headings(masked)
 
 
@@ -217,6 +217,12 @@ def _op_stamp(lines, version, log):
     log.append(f"stamp {version}")
 
 
+def heading_title(unit: list[str]) -> str:
+    """The title of a template unit: its first line `## 17. Build, Run` or `### 4.1 Subsystem inventory` without the
+    hashes and the number."""
+    return unit[0].lstrip("#").strip().split(" ", 1)[-1]
+
+
 def _op_heading(lines, key, log, level):
     """Add `## n. Title` (level 2) or `### ref Title` (level 3) from the template unless it is there."""
     masked, heads = _view(lines)
@@ -240,7 +246,7 @@ def _op_heading(lines, key, log, level):
         else:
             at = appendix if appendix is not None else _end_of_body(lines, len(lines), 0)
     _insert(lines, at, unit)
-    log.append(f"added {'section' if level == 2 else 'subsection'} {key} {unit[0].lstrip('#').strip().split(' ', 1)[-1]}")
+    log.append(f"added {'section' if level == 2 else 'subsection'} {key} {heading_title(unit)}")
 
 
 def _op_appendix(lines, log):
@@ -251,8 +257,7 @@ def _op_appendix(lines, log):
 
 
 def _op_block(lines, name, log):
-    from . import fill
-    if any(m.group(2) == name for m in fill.BLOCK_RE.finditer("\n".join(lines))):
+    if any(m.group(2) == name for m in dm.BLOCK_RE.finditer("\n".join(lines))):
         return
     masked, heads = _view(lines)
     key = _BLOCK_KEY[name]
@@ -334,7 +339,6 @@ def _op_line(lines, key, text, log):
 
 
 def _op_reshape(lines, key, log):
-    from . import fill
     masked, heads, t = _unit_table(lines, key)
     h = heads.get(key)
     if h is None:
@@ -342,7 +346,7 @@ def _op_reshape(lines, key, log):
     if t is not None and spec.table_header_ok(key, [dm.cell_text(c) for c in t.header]):
         return
     at = _skip_blocks(lines, _after_guide(lines, h))
-    body = dm.strip_comments(fill.BLOCK_RE.sub("", "\n".join(lines[at:h.own_end])))
+    body = dm.strip_comments(dm.BLOCK_RE.sub("", "\n".join(lines[at:h.own_end])))
     new = _template().table(key)
     if body.strip():
         new += ["", f"<!-- {spec.ORPHAN_MARK} {key}: the text below did not fit the template {spec.TEMPLATE_VERSION} "
@@ -397,7 +401,6 @@ def run(target: str, out_dir: str, workers: int | None = None, no_ownership: boo
     """`appdoc upgrade`: mechanical steps on the Narrative, then `extract` and `fill`. Exit 0 done (or nothing to do),
     1 tool error. Writes the Narrative, facts.json, facts-summary.md, provenance.json and UPGRADE-TODO.md, and nothing
     of the register."""
-    from . import check, extract, fill
     path = os.path.join(out_dir, NARRATIVE)
     if not os.path.isfile(path):
         print(f"appdoc upgrade: {path} not found; there is no document to upgrade", file=sys.stderr)
@@ -459,7 +462,6 @@ def write_todo(out_dir: str, from_version: str, log: list[str]) -> str:
     """Write docs/appdoc/UPGRADE-TODO.md: what the upgrade did, and every step left for a person, each with the
     Check rule that fails (or advises) until it is done. The steps come from the Check's own report of the upgraded
     document, plus the ones no rule can see (convert `verification.md`, the audit). Deterministic: no date."""
-    from . import check
     report_path = os.path.join(out_dir, check.REPORT)
     report = read_text(report_path) if os.path.isfile(report_path) else ""
     problems, counts = _report_problems(report)

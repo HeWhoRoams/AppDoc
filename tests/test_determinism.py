@@ -24,7 +24,7 @@ import tempfile
 import unittest
 
 from appdoc import __main__ as cli
-from appdoc import check, extract, fill
+from appdoc import check, extract, fill, seal
 from appdoc import textnorm
 from tests.template_pin import run_as_stamped
 from tests.test_corpus import CORPUS, run_case
@@ -129,7 +129,7 @@ class Idempotence(Tmp):
                     continue   # upgrade-2-1 has no register yet (a 2.1 document has verification.md): nothing to seal
                 with open(reg, "rb") as fh:
                     once = fh.read()
-                self.assertEqual(check.seal_register(r.target, r.out), 0)
+                self.assertEqual(seal.seal_register(r.target, r.out), 0)
                 with open(reg, "rb") as fh:
                     self.assertEqual(fh.read(), once)
 
@@ -166,7 +166,7 @@ class Idempotence(Tmp):
         before = snapshot(r.target)
         self.assertEqual(quiet(main, ["build", r.target]), 0)
         self.assertEqual(snapshot(r.target), before)
-        self.assertEqual(check.seal_notes(r.target, r.out), 0)
+        self.assertEqual(seal.seal_notes(r.target, r.out), 0)
         md = before[os.path.join("docs", "appdoc", check.NARRATIVE)].decode("utf-8")
         self.assertEqual(md.count("Known extractor limitation:"), 1)
 
@@ -358,7 +358,7 @@ class OneNormalization(unittest.TestCase):
                 row.pop("claim_sha", None)
             with open(reg, "w", encoding="utf-8", newline="\n") as fh:
                 fh.write("".join(json.dumps(o) + "\n" for o in rows))
-            quiet(check.seal_register, r.target, r.out)
+            quiet(seal.seal_register, r.target, r.out)
             with open(reg, encoding="utf-8") as fh:
                 return [json.loads(l).get("claim_sha") for l in fh if l.strip()][1:]
         lf, crlf = seals("\n"), seals("\r\n")

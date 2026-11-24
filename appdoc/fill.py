@@ -8,16 +8,17 @@ from __future__ import annotations
 
 import json
 import os
-import re
 import sys
 
+from . import docmodel as dm
+from . import fingerprint
 from . import notes as notes_mod
+from . import register
 from . import template_spec as spec
 from . import version
 from .textutil import plural, read_text
 from .stacks.generic import GENERIC_KINDS
 
-BLOCK_RE = re.compile(r"(<!--\s*appdoc:generated\s+([\w-]+)\s*-->)(.*?)(<!--\s*/appdoc:generated\s+\2\s*-->)", re.S)
 TOP_CAP = 25
 PRUNED_CAP = 50
 CONFIG_CAP = 150
@@ -260,7 +261,6 @@ def _config_reference(doc: dict, ctx: dict | None = None) -> str:
 
 def _register(ctx: dict | None):
     """The Evidence Register beside facts.json (`ctx["out_dir"]`), or None when there is none."""
-    from . import register
     out_dir = (ctx or {}).get("out_dir")
     path = os.path.join(out_dir, register.REGISTER) if out_dir else None
     return register.parse(read_text(path)) if path and os.path.isfile(path) else None
@@ -268,14 +268,13 @@ def _register(ctx: dict | None):
 
 def _appendix_a(doc: dict, ctx: dict | None = None) -> str:
     """Appendix A from the Evidence Register beside facts.json (None when the file is missing)."""
-    from . import check, register
-    from . import docmodel as dm
+    from . import check   # cycle: the Check imports fill; the layering test lists this exception
     reg = _register(ctx)
     coverage = detail = None
     text = (ctx or {}).get("text")
     if reg is not None and reg.performed and text is not None:
         # the same masking the Check applies, so the appendix never reads itself
-        lines = check.document_text(text).splitlines()
+        lines = fingerprint.document_text(text).splitlines()
         heads = dm.headings(lines)
         ids = check.defined_ids(lines, heads, lambda *a: None)
         workflows = sorted((k for k in heads if k.startswith("7.")), key=lambda k: int(k.split(".")[1]))
@@ -346,11 +345,10 @@ def count_marker_value(cls: str, doc: dict, ids: dict | None, reg) -> int | None
 def fill_counts(text: str, doc: dict, ctx: dict | None = None) -> str:
     """Write the current number between every count marker's comments (the marker stays). Idempotent; a marker
     whose number cannot be computed is left as written, and C15 reports an unknown class."""
-    from . import check
-    from . import docmodel as dm
+    from . import check   # cycle, as in _appendix_a
     if not spec.COUNT_MARKER_RE.search(text):
         return text
-    lines = check.document_text(text).splitlines()
+    lines = fingerprint.document_text(text).splitlines()
     ids = check.defined_ids(lines, dm.headings(lines), lambda *a: None)
     reg = _register(ctx)
 
@@ -360,21 +358,9 @@ def fill_counts(text: str, doc: dict, ctx: dict | None = None) -> str:
     return spec.COUNT_MARKER_RE.sub(repl, text)
 
 
-def mask_blocks(text: str, names, pad: bool = True) -> str:
-    """Replace the content of the named blocks with one placeholder line. With `pad` (the default) the line count
-    is kept; without it a block is always the same three lines however long its content, so a fingerprint does
-    not move when `fill` rewrites a block."""
-    def repl(m):
-        if m.group(2) not in names:
-            return m.group(0)
-        k = m.group(3).count("\n") if pad else 2
-        return m.group(1) + ("\n" if k else "") + f"generated block {m.group(2)}" + "\n" * max(k - 1, 0) + m.group(4)
-    return BLOCK_RE.sub(repl, text)
-
-
 def blocks(text: str) -> list[tuple[str, str, int]]:
     """(name, current content stripped, 1-based line of the opening marker) for every block."""
-    return [(m.group(2), m.group(3).strip(), text.count("\n", 0, m.start()) + 1) for m in BLOCK_RE.finditer(text)]
+    return [(m.group(2), m.group(3).strip(), text.count("\n", 0, m.start()) + 1) for m in dm.BLOCK_RE.finditer(text)]
 
 
 def fill_text(text: str, doc: dict, ctx: dict | None = None, only=None) -> tuple[str, list[str]]:
@@ -391,7 +377,7 @@ def fill_text(text: str, doc: dict, ctx: dict | None = None, only=None) -> tuple
             return m.group(0)
         filled.append(m.group(2))
         return f"{m.group(1)}\n{body}\n{m.group(4)}"
-    new = BLOCK_RE.sub(repl, text)
+    new = dm.BLOCK_RE.sub(repl, text)
     return (new if only is not None else fill_counts(new, doc, ctx)), filled
 
 

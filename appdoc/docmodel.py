@@ -1,11 +1,12 @@
-"""Read the structure of a Narrative: headings, tables, IDs and anchors. Shared by check, fill and render."""
+"""Read the structure of a Narrative: headings, tables, IDs and anchors. Shared by fingerprint, check, fill and render (the lowest layer, with textutil)."""
 
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
 
-_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+BLOCK_RE = re.compile(r"(<!--\s*appdoc:generated\s+([\w-]+)\s*-->)(.*?)(<!--\s*/appdoc:generated\s+\2\s*-->)", re.S)
 _H2_RE = re.compile(r"^##\s+(\d+)\.\s*(.*?)\s*$")
 _H3_RE = re.compile(r"^###\s+(\d+\.\d+)(?![\d])\s*(.*?)\s*$")
 _HEADING_RE = re.compile(r"^\s{0,3}(#{1,6})\s+(.*?)\s*#*\s*$")
@@ -15,7 +16,19 @@ _CODE_SPAN_RE = re.compile(r"`[^`\n]*`")
 
 def strip_comments(text: str) -> str:
     """Remove HTML comments but keep line numbering intact."""
-    return _COMMENT_RE.sub(lambda m: "\n" * m.group(0).count("\n"), text)
+    return COMMENT_RE.sub(lambda m: "\n" * m.group(0).count("\n"), text)
+
+
+def mask_blocks(text: str, names, pad: bool = True) -> str:
+    """Replace the content of the named generated blocks with one placeholder line. With `pad` (the default) the
+    line count is kept; without it a block is always the same three lines however long its content, so a
+    fingerprint does not move when `fill` rewrites a block."""
+    def repl(m):
+        if m.group(2) not in names:
+            return m.group(0)
+        k = m.group(3).count("\n") if pad else 2
+        return m.group(1) + ("\n" if k else "") + f"generated block {m.group(2)}" + "\n" * max(k - 1, 0) + m.group(4)
+    return BLOCK_RE.sub(repl, text)
 
 
 def split_row(line: str) -> list[str]:

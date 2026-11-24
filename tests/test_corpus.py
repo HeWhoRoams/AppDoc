@@ -30,7 +30,7 @@ import tempfile
 import unittest
 from dataclasses import dataclass, field
 
-from appdoc import check, extract, fill
+from appdoc import check, extract, fill, seal
 from tests.template_pin import run_as_2_4, run_as_stamped
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -90,7 +90,7 @@ def run_case(name, strict=False, require_audit=False, tmp=None):
     with contextlib.redirect_stdout(log):
         extract.write(target, out, workers=0, use_cache=False, no_ownership=True)
         if os.path.isfile(os.path.join(out, check.NARRATIVE)):  # extract-only cases carry no Narrative
-            check.seal_register(target, out)
+            seal.seal_register(target, out)
             fill_code = fill.run(target, out)
             with open(os.path.join(out, check.NARRATIVE), encoding="utf-8") as fh:
                 narrative = fh.read()   # a 2.4 case tests a rule as the 2.4-era Check (tests/template_pin.py)
@@ -436,7 +436,7 @@ class RegisterHistory(CorpusCase):
         with open(reg_path, "w", encoding="utf-8") as fh:
             fh.write("\n".join(stripped) + "\n")
         with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"), contextlib.redirect_stdout(io.StringIO()):
-            check.seal_register(r.target, r.out, audit=True, date="2026-11-23")
+            seal.seal_register(r.target, r.out, audit=True, date="2026-11-23")
             self.assertEqual(fill.run(r.target, r.out), 0)     # Appendix A.1 now prints the audit date
             self.assertEqual(check.run(r.target, r.out), 0)
         audit, *rows = self._rows(r)
