@@ -1070,6 +1070,85 @@ class UpgradeTests(unittest.TestCase):
         self.assertEqual(set(spec.GENERATED_2_8.values()) - {m.group(2) for m in dm.BLOCK_RE.finditer(new)}, set())
 
 
+    # --- T28.B1 / plan 2.8, 8.2: the version drift warning
+
+    DRIFT = "The existing document is on template {}; this AppDoc writes {}. Run appdoc upgrade before editing."
+
+    def extract(self):
+        import contextlib, io
+        from appdoc.__main__ import main
+        so, se = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(so), contextlib.redirect_stderr(se):
+            rc = main(["extract", self.target, "--no-ownership", "--workers", "0"])
+        return rc, so.getvalue(), se.getvalue()
+
+    def stamped(self, version):
+        from tests.test_check import build_doc
+        return build_doc().replace("<!-- appdoc:template 2.4 -->", f"<!-- appdoc:template {version} -->")
+
+    def summary(self):
+        with open(os.path.join(self.out, "facts-summary.md"), encoding="utf-8", newline="") as fh:
+            return fh.read()
+
+    def test_extract_warns_old_stamp_on_stderr(self):
+        from appdoc import template_spec as spec
+        want = self.DRIFT.format("2.7", spec.TEMPLATE_VERSION)
+        self.put("application-documentation.md", self.stamped("2.7"))
+        rc, out, err = self.extract()
+        self.assertEqual(rc, 0, err)                                  # a warning, never a failure
+        self.assertIn(want, err)
+        self.assertNotIn(want, out)
+        self.assertIn("wrote ", out)                                  # extract still wrote its files
+        # no warning for a document on the running template, for no document, or for a newer stamp
+        for text in (self.stamped(spec.TEMPLATE_VERSION), None, self.stamped("2.99")):
+            if text is None:
+                os.remove(os.path.join(self.out, "application-documentation.md"))
+            else:
+                self.put("application-documentation.md", text)
+            rc, out, err = self.extract()
+            self.assertEqual((rc, "Run appdoc upgrade" in err), (0, False), err)
+        # an unstamped document (2.0 or 2.1) is older too
+        self.put("application-documentation.md", self.doc_from_fixture())
+        self.assertIn("Run appdoc upgrade before editing.", self.extract()[2])
+
+    def test_facts_summary_independent_of_narrative(self):
+        """P3: facts-summary.md is a pure function of facts.json, so the drift warning is not in it and no Narrative
+        (absent, old, current or edited) changes a byte of it."""
+        from appdoc import template_spec as spec
+        self.extract()
+        base = self.summary()
+        self.assertNotIn("appdoc upgrade", base)
+        for text in (self.stamped("2.7"), self.stamped(spec.TEMPLATE_VERSION), self.stamped("2.7") + "\nmore prose\n"):
+            self.put("application-documentation.md", text)
+            self.extract()
+            self.assertEqual(self.summary(), base)
+
+    def test_drift_warning_stderr_and_report_only(self):
+        """The warning is on stderr of `extract` and in check-report.md; facts-summary.md, facts.json and
+        provenance.json do not carry it."""
+        import contextlib, io
+        from appdoc import check, template_spec as spec
+        want = self.DRIFT.format("2.7", spec.TEMPLATE_VERSION)
+        self.put("application-documentation.md", self.stamped("2.7"))
+        rc, out, err = self.extract()
+        self.assertIn(want, err)
+        for name in ("facts-summary.md", "facts.json", "provenance.json"):
+            with open(os.path.join(self.out, name), encoding="utf-8") as fh:
+                self.assertNotIn("appdoc upgrade", fh.read(), name)
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(check.run(self.target, self.out), 2)    # strict C3 fails it as well
+        with open(os.path.join(self.out, check.REPORT), encoding="utf-8") as fh:
+            report = fh.read()
+        self.assertEqual(report.count(want), 1, report)
+        self.assertLess(report.index(want), report.index("## C3"))     # up front, before the problems
+        # a document on the running template carries no such line
+        self.put("application-documentation.md", self.stamped(spec.TEMPLATE_VERSION))
+        with contextlib.redirect_stdout(io.StringIO()):
+            check.run(self.target, self.out)
+        with open(os.path.join(self.out, check.REPORT), encoding="utf-8") as fh:
+            self.assertNotIn("Run appdoc upgrade before editing", fh.read())
+
+
 if __name__ == "__main__":
     unittest.main()
 

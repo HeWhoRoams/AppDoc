@@ -33,6 +33,21 @@ def stamp_version(text: str) -> tuple:
     return version_tuple(m.group(1) if m else "")
 
 
+def drift_note(text: str | None) -> str:
+    """The version drift warning for a Narrative (plan 2.8, 8.2), or "" when there is nothing to say: the document's
+    stamp is older than the running template (no stamp: a 2.0 or 2.1 document, older too). A pure function of the
+    Narrative and the running template; it goes to stderr (`extract`) and to check-report.md, never into
+    facts-summary.md, which is a function of facts.json alone."""
+    if text is None:
+        return ""
+    m = STAMP_RE.search(text)
+    if m and version_tuple(m.group(1)) >= version_tuple(TEMPLATE_VERSION):
+        return ""
+    found = m.group(1) if m else "2.0 or 2.1 (no stamp)"
+    return (f"The existing document is on template {found}; this AppDoc writes {TEMPLATE_VERSION}. "
+            "Run appdoc upgrade before editing.")
+
+
 # A hand-written count the tool fills: <!-- appdoc:count V -->14<!-- /appdoc:count -->. The text between the
 # two comments is the filled number; doc_sha masks the whole marker so fill never changes the fingerprint.
 # Groups: 1 the opening comment, 2 the class, 3 the number, 4 the closing comment.

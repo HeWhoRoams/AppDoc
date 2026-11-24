@@ -1796,7 +1796,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         "judge whether a claim's wording follows from those lines; that is the source-to-claim audit, "
         f"recorded in `{REGISTER}`. A PASS is not an accuracy certification.",
         "",
-    ]
+    ] + ([spec.drift_note(raw), ""] if spec.drift_note(raw) else [])   # plan 2.8, 8.2 (not in facts-summary.md)
 
     verification = ["## Verification", ""]
     if reg is None:

@@ -91,6 +91,17 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+def _warn_version_drift(out_dir: str) -> None:
+    """Plan 2.8, 8.2: an existing Narrative on an older template is named on stderr before `extract` writes (the
+    check report carries the same sentence; facts-summary.md does not)."""
+    from . import template_spec
+    path = os.path.join(out_dir, "application-documentation.md")
+    if os.path.isfile(path):
+        note = template_spec.drift_note(read_text(path))
+        if note:
+            print(f"appdoc: {note}", file=sys.stderr)
+
+
 def main(argv=None) -> int:
     p = build_parser()
     args = p.parse_args(argv)
@@ -126,6 +137,7 @@ def main(argv=None) -> int:
     try:
         if args.cmd == "extract":
             from . import extract
+            _warn_version_drift(out_dir)
             for path in extract.write(args.target, out_dir, workers=args.workers,
                                       skip_tests=args.skip_tests, use_cache=not args.no_cache,
                                       no_ownership=args.no_ownership,
