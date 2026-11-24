@@ -1,3 +1,3 @@
 """AppDoc 2.0: deterministic Facts, AI-written Narrative, pass/fail Check."""
 
-__version__ = "2.7.0.dev1"
+__version__ = "2.7.1"

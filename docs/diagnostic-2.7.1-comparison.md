@@ -77,4 +77,4 @@ Of the 157/63/159/80 live rows, 7/7/10/4 have no `sealed_by`. These are the answ
 
 ### Determinism
 
-The Facts are byte-identical to 2.7.0 apart from the generator field and the bundle hash. **Windows is NOT verified**: the cross-OS Windows hash job has not run yet for this release, so cross-OS equality of the 2.7.1 Facts is untested. The worker-count equality checks recorded in `docs/diagnostic-2.7.0-comparison.md` were not repeated for this file.
+The Facts are byte-identical to 2.7.0 apart from the generator field and the bundle hash. **Windows is NOT verified**: the cross-OS Windows hash job has not run yet for this release, so cross-OS equality of the 2.7.1 Facts is untested. On Linux, `extract` for all four examples was run serial (`--workers 0`), with 4 workers, and with `--no-cache`; the four `facts.json` hashes per example are identical and equal the committed `examples/current` file.

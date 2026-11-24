@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.7.1
 
 ### Changed
 - Six 2.7.0 additions that the 2.7 plan did not list are now recorded in `docs/remediation-plan-2.7.md` ("Changes made during implementation"): the C1 extensions for Go, protobuf, Ruby, PHP, Kotlin and Terraform files; `audit-plan --check`; the "Fix advisories" run step; auditors covering every row of a sampled section after any edit; `Audit floor:` percent syntax; and fill-before-seal (S6.1). ADR 0015 has an amendment for the last three audit rules.
@@ -13,7 +13,12 @@
 
 - C9 section 17: the Command cell holds exactly one backticked command. A chain (several backtick spans, or `a`, then `b`) fails with a message to use one command or one wrapper script. Corpus case `build-command-chain`.
 
+- Internal refactors, no behaviour change (Facts and rendered output identical): one ID-class table (`template_spec.ID_CLASSES`) replaces the prefix-to-section maps in `audit_plan.py` and `check.py`; a typed `audit_plan.Floor`; upgrade steps as data (`upgrade.py` dispatch table and `template_spec` table helpers); `check.py` split into `fingerprint.py` (`document_text`, `doc_sha`, `claim_sha`) and `seal.py` (`seal_register`, `seal_notes`, `expand_citations`); `mask_blocks` moved to `docmodel`; the `check._read_text` alias removed; `tests/test_layering.py` pins the module import edges.
+- Finding candidates that a 10.1 row cites are audited through that row: the auditor checks that the cited candidate id and lines support the claim (SKILL.md audit step).
+- Examples re-audited independently for per-row keys (flaskr-tdd 63 live rows, spring-petclinic 80, eShop 157, gitea 159), sealed with `--audit --date 2026-11-24`; `examples/previous` is the 2.7.0 set. Facts are byte-identical to 2.7.0 apart from the generator field and the bundle hash. The audit corrected cells in the Narratives (wrong cited lines, an overclaiming symptom check, a mis-ordered upgrade procedure), which moved some citation counts.
+
 ### Notes
+- **Known limitation:** the cross-OS Windows hash job has not run for 2.7.1 (the CI matrix already includes `windows-latest`; `tests/test_windows_shims.py` covers newline and path normalisation on Linux).
 - **Upgrade note:** a document audited under 2.7.0 fails C19 under `--require-audit` until its register has a row for each planned key in 10.2 (Present controls), 16.5, 17 and the sampled section 9 rows. Run `appdoc audit-plan`, audit the rows it names and add them with the refs it prints, then `appdoc seal --audit --date YYYY-MM-DD`. The old one-row-per-section refs (`10.2`, `16.5`, `17`, `9`) stay valid but cover nothing. A section 17 Command cell with more than one command (a chain such as `npm ci`, then `npm start`) fails C9 and must become one command or one wrapper script.
 
 ## 2.7.0
