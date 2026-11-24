@@ -638,6 +638,38 @@ class CheckTests(unittest.TestCase):
         self.assertIn("audit-plan.json is not what `appdoc audit-plan` computes now", report)
         self.assertIn("Fix: run `appdoc audit-plan`, then audit the ids it names", report)
 
+    def audit_plan_check(self):
+        """(exit code, output) of `appdoc audit-plan <target> --check`."""
+        from appdoc import __main__ as cli
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+            code = cli.main(["audit-plan", self.target, "--check"])
+        return code, buf.getvalue()
+
+    def test_audit_plan_check_is_read_only_and_reports_staleness(self):
+        """S7.4: an auditor under a read-only mandate can ask whether the plan on disk is current."""
+        import os
+        path = os.path.join(self.out, "audit-plan.json")
+        self.plan27()
+        before = open(path, "rb").read()
+        code, out = self.audit_plan_check()
+        self.assertEqual(code, 0, out)
+        self.assertIn("current", out)
+        self.assertEqual(open(path, "rb").read(), before)
+        self.run27(build_doc().replace("- The entry module wires", "- The entry module also wires"))
+        code, out = self.audit_plan_check()
+        self.assertEqual(code, 2, out)
+        self.assertIn("on disk:", out)
+        self.assertIn("fresh:", out)
+        self.assertIn("F-1", out)
+        self.assertIn("doc_sha", out)          # the ids may be equal while the fingerprint (the seed) moved
+        self.assertEqual(open(path, "rb").read(), before, "--check must not write the plan")
+        os.remove(path)
+        code, out = self.audit_plan_check()
+        self.assertEqual(code, 2, out)
+        self.assertIn("missing", out)
+        self.assertFalse(os.path.exists(path), "--check must not create the plan")
+
     def test_c19_exclusion_printed(self):
         self.plan27(drop=("9",), exclusions={"9": "troubleshooting rows are owner knowledge, not read from source"})
         code, report, out = self.run27(require_audit=True)

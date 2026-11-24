@@ -24,6 +24,7 @@ from fractions import Fraction
 
 from . import check, context
 from . import docmodel as dm
+from .textnorm import normalize_newlines
 from .textutil import read_text
 
 PLAN = "audit-plan.json"
@@ -183,6 +184,47 @@ def progress(plan: dict, live_keys: set) -> list[tuple[str, int, int, int]]:
 
 def planned_ids(plan: dict) -> list[str]:
     return [i for s in plan["sections"] for i in s["ids"]]
+
+
+def _disk_plan(out_dir: str):
+    """(text, plan dict or None) of the plan on disk; (None, None) when the file is missing."""
+    path = os.path.join(out_dir, PLAN)
+    if not os.path.isfile(path):
+        return None, None
+    text = normalize_newlines(read_text(path))
+    try:
+        plan = json.loads(text)
+    except ValueError:
+        return text, None
+    return text, plan if isinstance(plan, dict) else None
+
+
+def check_plan(target: str, out_dir: str) -> int:
+    """`audit-plan --check`: compare the plan on disk with a fresh computation, writing nothing.
+    Exit 0 when equal (the text C19 compares), 2 when stale or missing, 1 when there is no Narrative."""
+    import sys
+    if not os.path.isfile(os.path.join(out_dir, check.NARRATIVE)):
+        print(f"appdoc audit-plan: {os.path.join(out_dir, check.NARRATIVE)} not found; write the Narrative first",
+              file=sys.stderr)
+        return 1
+    fresh = compute(target, out_dir)
+    text, disk = _disk_plan(out_dir)
+    if text == render(fresh):
+        print(f"{PLAN} is current: {len(planned_ids(fresh))} register keys to audit")
+        return 0
+    try:
+        disk_ids = planned_ids(disk) if disk else []
+    except (KeyError, TypeError):
+        disk, disk_ids = None, []
+    state = "missing" if text is None else ("unreadable" if disk is None else "stale")
+    print(f"{PLAN} is {state}: it is not what `appdoc audit-plan` computes now (nothing was written)")
+    print(f"on disk: {', '.join(disk_ids) if disk_ids else '(none)'}")
+    print(f"fresh:   {', '.join(planned_ids(fresh)) if planned_ids(fresh) else '(none)'}")
+    if disk and disk.get("doc_sha") != fresh["doc_sha"]:
+        print(f"doc_sha: on disk {disk.get('doc_sha')}, fresh {fresh['doc_sha']} (the sample is seeded by it)")
+    if disk_ids == planned_ids(fresh):
+        print("the planned ids are the same; the fingerprint, the sample's seed or a count differs")
+    return 2
 
 
 def run(target: str, out_dir: str) -> int:

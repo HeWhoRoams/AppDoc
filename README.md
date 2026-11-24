@@ -46,7 +46,7 @@ All commands:
 | `appdoc seal <target>` | `--out OUT`, `--audit`, `--date DATE` | write claim_sha into the register rows that lack one; --audit --date records the audit |
 | `appdoc build <target>` | `--out OUT`, `--expand-citations`, `--require-audit`, `--strict` | seal (rows and notes), fill, check and render in one step |
 | `appdoc gate <target>` | `--out OUT`, `--workers WORKERS`, `--require-audit`, `--strict` | CI gate: regenerate the Facts and compare with the committed facts.json, then check; exit 0 pass, 1 tool error, 2 Facts changed, 3 AppDoc upgraded |
-| `appdoc audit-plan <target>` | `--out OUT` | write docs/appdoc/audit-plan.json: the ids the independent audit must cover (a sample is chosen by the tool) |
+| `appdoc audit-plan <target>` | `--out OUT`, `--check` | write docs/appdoc/audit-plan.json: the ids the independent audit must cover (a sample is chosen by the tool) |
 | `appdoc upgrade <target>` | `--out OUT`, `--workers WORKERS`, `--no-ownership` | bring a document of an older template to the running one: add the missing headings, blocks, columns and rows, keep every line of text, then extract and fill; the rest is for a person |
 <!-- /appdoc-self:generated commands -->
 

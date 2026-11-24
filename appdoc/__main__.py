@@ -72,6 +72,10 @@ def build_parser() -> argparse.ArgumentParser:
         if name in ("gate", "upgrade"):
             sp.add_argument("--workers", type=int, default=None,
                             help="process-pool workers for the regeneration; default min(cpu,8); 0 = serial")
+        if name == "audit-plan":
+            sp.add_argument("--check", action="store_true",
+                            help="write nothing: print the planned ids on disk and a fresh computation; "
+                                 "exit 0 when equal, 2 when the plan is stale or missing")
         if name == "upgrade":
             sp.add_argument("--no-ownership", action="store_true", help="skip git ownership Facts")
         if name == "build":
@@ -132,6 +136,8 @@ def main(argv=None) -> int:
             return upgrade.run(args.target, out_dir, args.workers, args.no_ownership)
         if args.cmd == "audit-plan":
             from . import audit_plan
+            if args.check:
+                return audit_plan.check_plan(args.target, out_dir)
             return audit_plan.run(args.target, out_dir)
         if args.cmd == "fill":
             from . import fill

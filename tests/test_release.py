@@ -202,6 +202,10 @@ class SkillDoc(unittest.TestCase):
         "must not state counts by result",
         "`rows` count marker",
         "refer to appendix a",
+        # S7.4
+        "`audit-plan <target> --check`",
+        "writes nothing",
+        "exits 0 when they are equal and 2 when the plan is stale or missing",
     )
 
     def test_s7_audit_rules_in_skill(self):
