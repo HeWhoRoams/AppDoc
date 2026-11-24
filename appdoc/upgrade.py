@@ -139,25 +139,17 @@ def _first_table(masked, heads, key):
     return dm.first_table(masked, h) if h else None
 
 
+def _unit_table(lines, key):
+    """The preamble of an operation on a table: (masked lines, headings, the first table under `key` or None)."""
+    masked, heads = _view(lines)
+    return masked, heads, _first_table(masked, heads, key)
+
+
 def _header(t) -> list[str]:
     return [dm.cell_text(c).casefold() for c in t.header]
 
 
 # --- the template's own text (skeletons) ------------------------------------------------------------------------
-
-def unknown_row(key: str, label: str) -> str:
-    """A required row for table `key` that says the repository does not show it (spec.UNKNOWN_TEXT)."""
-    ts = spec.TABLES[key]
-    cells = [label]
-    for col in ts.columns[1:]:
-        if col == "Working directory":
-            cells.append(".")
-        elif "Unknown" in ts.values.get(col, ()):
-            cells.append("Unknown")
-        else:
-            cells.append(spec.UNKNOWN_TEXT)
-    return "| " + " | ".join(cells) + " |"
-
 
 class _Template:
     """The units of the running template (assets/template.md): a heading, its guide comment and skeleton."""
@@ -186,8 +178,8 @@ class _Template:
 
     @staticmethod
     def _with_required_rows(key: str, lines: list[str], first: int | None = None) -> list[str]:
-        ts = spec.TABLES.get(key)
-        if not ts or not ts.required_rows:
+        required = spec.required_rows(key)
+        if not required:
             return lines
         t = dm.first_table(lines, dm.Heading(key, "", -1, len(lines), len(lines)))
         if t is None:
@@ -195,8 +187,8 @@ class _Template:
         lines = list(lines)
         for no, cells in t.rows:
             label = dm.cell_text(cells[0]) if cells else ""
-            if label in ts.required_rows and not any(c.strip() for c in cells[1:]):
-                lines[no - 1] = unknown_row(key, label)
+            if label in required and not any(c.strip() for c in cells[1:]):
+                lines[no - 1] = spec.unknown_row(key, label)
         return lines
 
 
@@ -278,8 +270,7 @@ def _op_block(lines, name, log):
 
 
 def _op_rename(lines, key, old, new, log):
-    masked, heads = _view(lines)
-    t = _first_table(masked, heads, key)
+    _, _, t = _unit_table(lines, key)
     if t is None:
         return
     head = _header(t)
@@ -295,8 +286,7 @@ def _op_rename(lines, key, old, new, log):
 
 
 def _op_column(lines, key, name, after, fill_kind, log):
-    masked, heads = _view(lines)
-    t = _first_table(masked, heads, key)
+    _, _, t = _unit_table(lines, key)
     if t is None:
         return
     head = _header(t)
@@ -306,7 +296,7 @@ def _op_column(lines, key, name, after, fill_kind, log):
     rows = [t.line - 1, t.line] + [no - 1 for no, _ in t.rows]
     if any(len(_bars(lines[i])) != len(head) + 1 or not lines[i].rstrip().endswith("|") for i in rows):
         return   # a ragged table is left as it is; reshape reports it
-    prefix = spec.TABLES[key].id_prefix or ""
+    prefix = spec.table_id_prefix(key)
     for n, i in enumerate(rows):
         if n == 0:
             cell = name
@@ -320,17 +310,15 @@ def _op_column(lines, key, name, after, fill_kind, log):
 
 
 def _op_rows(lines, key, log):
-    masked, heads = _view(lines)
-    t = _first_table(masked, heads, key)
-    ts = spec.TABLES[key]
-    if t is None or not ts.header_ok([dm.cell_text(c) for c in t.header]):
+    _, _, t = _unit_table(lines, key)
+    if t is None or not spec.table_header_ok(key, [dm.cell_text(c) for c in t.header]):
         return
     have = {dm.cell_text(cells[0]) for _, cells in t.rows if cells}
-    missing = [label for label in ts.required_rows if label not in have]
+    missing = [label for label in spec.required_rows(key) if label not in have]
     if not missing:
         return
     at = t.rows[-1][0] if t.rows else t.line + 1
-    lines[at:at] = [unknown_row(key, label) for label in missing]
+    lines[at:at] = [spec.unknown_row(key, label) for label in missing]
     log.append(f"added the {key} rows {', '.join(missing)}")
 
 
@@ -347,49 +335,43 @@ def _op_line(lines, key, text, log):
 
 def _op_reshape(lines, key, log):
     from . import fill
-    masked, heads = _view(lines)
+    masked, heads, t = _unit_table(lines, key)
     h = heads.get(key)
     if h is None:
         return
-    ts = spec.TABLES[key]
-    t = dm.first_table(masked, h)
-    if t is not None and ts.header_ok([dm.cell_text(c) for c in t.header]):
+    if t is not None and spec.table_header_ok(key, [dm.cell_text(c) for c in t.header]):
         return
     at = _skip_blocks(lines, _after_guide(lines, h))
     body = dm.strip_comments(fill.BLOCK_RE.sub("", "\n".join(lines[at:h.own_end])))
     new = _template().table(key)
     if body.strip():
         new += ["", f"<!-- {spec.ORPHAN_MARK} {key}: the text below did not fit the template {spec.TEMPLATE_VERSION} "
-                    f"table ({', '.join(ts.columns)}); move what still applies into the table above, then delete the "
+                    f"table ({', '.join(spec.table_columns(key))}); move what still applies into the table above, then delete the "
                     "text and this comment -->"]
     _insert(lines, at, new)
     log.append(f"added the {key} table skeleton" + (" (the old text is kept under an orphan comment)" if body.strip() else ""))
 
 
+# The operation vocabulary (template_spec.UPGRADE_STEPS) -> the function that applies it: (lines, args, version, log).
+_OPS = {
+    "stamp": lambda lines, a, version, log: _op_stamp(lines, version, log),
+    "section": lambda lines, a, version, log: _op_heading(lines, a[0], log, 2),
+    "subsection": lambda lines, a, version, log: _op_heading(lines, a[0], log, 3),
+    "appendix": lambda lines, a, version, log: _op_appendix(lines, log),
+    "block": lambda lines, a, version, log: _op_block(lines, a[0], log),
+    "reshape": lambda lines, a, version, log: _op_reshape(lines, a[0], log),
+    "rows": lambda lines, a, version, log: _op_rows(lines, a[0], log),
+    "rename": lambda lines, a, version, log: _op_rename(lines, *a, log),
+    "column": lambda lines, a, version, log: _op_column(lines, *a, log),
+    "line": lambda lines, a, version, log: _op_line(lines, *a, log),
+}
+
+
 def _apply(lines: list[str], op: tuple, version: str, log: list[str]) -> None:
-    name, args = op[0], op[1:]
-    if name == "stamp":
-        _op_stamp(lines, version, log)
-    elif name == "section":
-        _op_heading(lines, args[0], log, 2)
-    elif name == "subsection":
-        _op_heading(lines, args[0], log, 3)
-    elif name == "appendix":
-        _op_appendix(lines, log)
-    elif name == "block":
-        _op_block(lines, args[0], log)
-    elif name == "reshape":
-        _op_reshape(lines, args[0], log)
-    elif name == "rows":
-        _op_rows(lines, args[0], log)
-    elif name == "rename":
-        _op_rename(lines, *args, log)
-    elif name == "column":
-        _op_column(lines, *args, log)
-    elif name == "line":
-        _op_line(lines, *args, log)
-    else:
-        raise ValueError(f"unknown upgrade operation {name!r}")
+    fn = _OPS.get(op[0])
+    if fn is None:
+        raise ValueError(f"unknown upgrade operation {op[0]!r}")
+    fn(lines, op[1:], version, log)
 
 
 def upgrade_text(text: str, from_version: str, to_version: str = spec.TEMPLATE_VERSION) -> tuple[str, list[str]]:

@@ -118,6 +118,14 @@ class Table:
     open_columns: bool = False                   # `columns` are the leading columns; more may follow (free names)
     nouns: tuple[str, ...] = ()                  # singular words a C15 "N of M <noun>" sentence uses for this class
     sampled: bool = False                        # the audit plan samples this table's IDs (else it covers them all)
+    cell_defaults: dict = field(default_factory=dict)   # column -> the cell an upgrade writes in a required row
+
+    def unknown_cell(self, column: str) -> str:
+        """What a required row says in `column` when the repository does not show it: the column's own default
+        (e.g. "." for a working directory), "Unknown" where that is an allowed value, else UNKNOWN_TEXT."""
+        if column in self.cell_defaults:
+            return self.cell_defaults[column]
+        return "Unknown" if "Unknown" in self.values.get(column, ()) else UNKNOWN_TEXT
 
     def header_ok(self, header: list[str]) -> bool:
         got = [h.casefold() for h in header]
@@ -153,7 +161,8 @@ TABLES = {
     "16.4": Table(("Failure mode", "Signal", "Operator response")),
     "16.5": Table(("Step", "Procedure", "Evidence"), required_rows=RUNBOOK_STEPS),
     "16.6": Table(("Key", "Defined at", "Secret location")),
-    "17": Table(("Step", "Command", "Working directory", "Evidence"), required_rows=BUILD_STEPS),
+    "17": Table(("Step", "Command", "Working directory", "Evidence"), required_rows=BUILD_STEPS,
+                cell_defaults={"Working directory": "."}),
 }
 TABLES_SINCE = {"17": (2, 7)}   # a table of a section a later template added (see SECTIONS_SINCE)
 
@@ -203,6 +212,36 @@ def id_prefix_of(section: str):
     """The ID prefix of the table under `section` ("10.1" -> "V-"), or None."""
     return next((c.prefix for c in ID_CLASSES.values() if c.section == section), None)
 REGISTER_PREFIX = "E-"
+
+
+# --- helpers over TABLES for `appdoc upgrade` (it reads the tables only through these) ---------------------------
+
+def table_columns(key: str) -> tuple:
+    """The column names of the table under `key`."""
+    return TABLES[key].columns
+
+
+def table_header_ok(key: str, header: list[str]) -> bool:
+    """Whether `header` (cell texts) is the header of the table under `key`."""
+    return TABLES[key].header_ok(header)
+
+
+def table_id_prefix(key: str) -> str:
+    """The ID prefix of the table under `key`; "" when it has no ID column."""
+    return TABLES[key].id_prefix or ""
+
+
+def required_rows(key: str) -> tuple:
+    """The first-column labels the table under `key` must carry; () when none."""
+    t = TABLES.get(key)
+    return t.required_rows if t else ()
+
+
+def unknown_row(key: str, label: str) -> str:
+    """A required row for table `key` that says the repository does not show it (UNKNOWN_TEXT, or the column's own
+    default: see `Table.cell_defaults`)."""
+    t = TABLES[key]
+    return "| " + " | ".join([label] + [t.unknown_cell(c) for c in t.columns[1:]]) + " |"
 
 
 # --- `appdoc upgrade`: the steps that bring a document of an older template to the running one -------------------
