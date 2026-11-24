@@ -591,5 +591,119 @@ class AuditMarkdownTests(unittest.TestCase):
             self.assertEqual(release.audit_markdown(tmp, apps=("missing",)), "")
 
 
+class SmellGate(unittest.TestCase):
+    """The C12 obligation rule (plan 2.8 W11 part C, V31, T28.75): a deterministic read obliges from the release that ships
+    it; a heuristic obliges only at precision >= 0.8 on its hand-labelled set, which a second person has re-labelled."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.sp = load_tool("appdoc_smell_precision_t", os.path.join(ROOT, "eval", "smell_precision.py"))
+        cls.rows = cls.sp.measure_all()
+        cls.labels = cls.sp.load_labels()
+
+    @staticmethod
+    def row(precision, positives=5, negatives=3, second="a reviewer"):
+        return {"hits": positives, "tp": positives, "fp": 0, "missed": 0, "unlabelled": 0, "positives": positives,
+                "negatives": negatives, "precision": precision, "second_labeller": second}
+
+    def test_deterministic_patterns_oblige_without_labels(self):
+        from appdoc import smells
+        for p in smells.DETERMINISTIC:
+            self.assertNotIn(p, self.labels, "a deterministic read needs no labelled set")
+            self.assertEqual(smells.pattern_class(p), "deterministic")
+            self.assertEqual(self.sp.status(p, None), "obliges (deterministic)")
+            self.assertIn(p, smells.OBLIGING)
+        self.assertEqual(self.sp.problems({}, smells.DETERMINISTIC), [])
+        self.assertEqual(self.sp.problems(self.rows), [], "every obliging pattern is deterministic, grandfathered or measured")
+
+    def test_obligation_needs_precision_on_labelled_set(self):
+        from appdoc import smells
+        heuristic = smells.HEURISTIC - smells.GRANDFATHERED
+        self.assertEqual(set(self.labels), heuristic, "every 2.8 heuristic has a label set and no other pattern has one")
+        for p in sorted(heuristic):
+            self.assertNotIn(p, smells.OBLIGING, f"{p}: the author's labels alone cannot make a heuristic oblige")
+            self.assertTrue(self.sp.label_problems(self.labels[p]) == [], self.sp.label_problems(self.labels[p]))
+            row = self.rows[p]
+            self.assertIsNone(self.labels[p]["second_labeller"], p)
+            self.assertIn("by the author", self.labels[p]["note"], p)
+            self.assertGreaterEqual(row["positives"], 5)
+            self.assertGreaterEqual(row["negatives"], 3)
+            self.assertEqual((row["fp"], row["missed"], row["unlabelled"]), (0, 0, 0), f"{p}: the labels pin the detector")
+            self.assertGreaterEqual(row["precision"], 0.8, p)
+            self.assertTrue(self.sp.status(p, row).startswith("summary-only (labels not yet re-labelled"), p)
+        # the rule itself, on made-up rows: all three conditions are needed
+        ok = {"handler-without-guard": self.row(0.9)}
+        self.assertEqual(self.sp.problems(ok, smells.OBLIGING | {"handler-without-guard"}), [])
+        for bad in (self.row(0.79), self.row(None), self.row(0.9, second=None), self.row(0.9, positives=4),
+                    self.row(0.9, negatives=2)):
+            got = self.sp.problems({"handler-without-guard": bad}, smells.OBLIGING | {"handler-without-guard"})
+            self.assertEqual(len(got), 1, bad)
+            self.assertIn("handler-without-guard obliges but", got[0])
+        self.assertEqual(len(self.sp.problems({}, smells.OBLIGING | {"post-without-antiforgery"})), 1)
+        self.assertEqual(self.sp.PRECISION_BAR, 0.8)
+
+    def test_unlabelled_heuristic_stays_summary_only(self):
+        from appdoc import smells
+        self.assertEqual(self.sp.status("handler-without-guard", None), "summary-only (no labelled set)")
+        self.assertNotIn("handler-without-guard", smells.OBLIGING)
+
+    def test_a_low_precision_heuristic_is_summary_only_even_when_labelled(self):
+        row = self.row(0.5)
+        self.assertEqual(self.sp.status("handler-without-guard", row),
+                         "summary-only (precision 0.50, below 0.8)")
+        self.assertTrue(self.sp.status("handler-without-guard", self.row(0.9)).startswith("summary-only (meets the bar"))
+
+    def test_precision_counts_hits_on_labelled_sites_only(self):
+        doc = {"pattern": "p", "labels": [{"path": "a", "line": 1, "label": "tp"}, {"path": "b", "line": 2, "label": "tp"},
+                                          {"path": "c", "line": 3, "label": "fp"}, {"path": "d", "line": 4, "label": "fp"}]}
+        facts = [{"detail": {"pattern": "p"}, "path": "a", "line": 1}, {"detail": {"pattern": "p"}, "path": "c", "line": 3},
+                 {"detail": {"pattern": "p"}, "path": "z", "line": 9}, {"detail": {"pattern": "other"}, "path": "b", "line": 2}]
+        m = self.sp.measure(doc, facts)
+        self.assertEqual((m["tp"], m["fp"], m["missed"], m["unlabelled"], m["precision"]), (1, 1, 1, 1, 0.5))
+
+    def test_controller_table_rows_count_once_per_controller(self):
+        fact = {"path": "a", "line": 1, "detail": {"pattern": "p", "controllers": ["x/A.cs:5 1 of 2", "x/B.cs:7 2 of 2"]}}
+        self.assertEqual(self.sp.sites(fact), [("x/A.cs", 5), ("x/B.cs", 7)])
+        self.assertEqual(self.sp.sites({"path": "a", "line": 1, "detail": {}}), [("a", 1)])
+
+    def test_label_files_carry_the_spike_false_positive_shapes(self):
+        reasons = " ".join(x["reason"] for d in self.labels.values() for x in d["labels"] if x["label"] == "fp").lower()
+        for shape in ("read-only post", "redirect-only stub", "allow * data api", "extension-method",
+                      "inner block"):
+            self.assertIn(shape, reasons)
+
+    def test_release_prints_class_hits_precision_and_status(self):
+        import contextlib
+        import io
+        release = load_tool("appdoc_release_smell", RELEASE)
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            ok = release.smell_gate()
+        out = buf.getvalue()
+        self.assertTrue(ok, out)
+        self.assertIn("a heuristic obliges only at precision >= 0.8 on its labelled set", out)
+        for needle in ("| post-without-antiforgery | heuristic | from_facts | 9 | 1.00 |",
+                       "| machinekey-in-config | deterministic |", "obliges (deterministic)",
+                       "| dead-null-fallback | heuristic | extract | 5 | 1.00 |",
+                       "| config-year-horizon | summary-only |"):
+            self.assertIn(needle, out)
+
+    def test_dry_run_names_the_smell_gate(self):
+        res = subprocess.run([sys.executable, RELEASE, "2.6.0", "--dry-run"], capture_output=True, text=True)
+        self.assertIn("smell gate", res.stdout)
+
+    def test_a_violation_refuses_the_release(self):
+        release = load_tool("appdoc_release_smell2", RELEASE)
+        import contextlib
+        import io
+        from appdoc import smells
+        with mock.patch.object(smells, "OBLIGING", smells.OBLIGING | {"handler-without-guard"}):
+            err, out = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                ok = release.smell_gate()
+        self.assertFalse(ok)
+        self.assertIn("handler-without-guard obliges but", err.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()

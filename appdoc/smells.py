@@ -42,6 +42,15 @@ HEURISTIC = frozenset({"handler-without-guard", "state-change-authenticated-only
 SUMMARY_ONLY = frozenset({"config-year-horizon", "debug-setting-in-debug-config", "debug-block-assigns-local"})
 
 
+# Patterns the Facts-level pass (``from_facts``) emits; every other pattern comes from the per-file pass (``extract``).
+# ``hardcoded-production-mode`` is found in text and confirmed against the project Facts, so it is listed here: its
+# final hit exists only after ``from_facts`` ran.
+FACTS_PATTERNS = frozenset({"machinekey-in-config", "named-user-access-rule", "debug-setting-in-nondebug-config",
+                            "debug-setting-in-debug-config", "identifier-list-in-config", "config-year-horizon",
+                            "handler-without-guard", "state-change-authenticated-only", "post-without-antiforgery",
+                            "hardcoded-production-mode"})
+
+
 def pattern_class(pattern: str) -> str:
     """``deterministic`` (a read of a declared value), ``summary-only`` or ``heuristic``."""
     if pattern in DETERMINISTIC:

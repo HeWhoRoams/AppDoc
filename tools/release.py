@@ -328,6 +328,17 @@ def _run(label, argv):
     return subprocess.run(argv, cwd=ROOT).returncode == 0
 
 
+def smell_gate() -> bool:
+    """Print every smell pattern with its class, hits and precision on the labelled set and its obligation status, and the
+    rule; False (a refused release) when an obliging heuristic does not meet it (plan 2.8 W11 part C, T28.75)."""
+    module = _load_module("appdoc_smell_precision", os.path.join("eval", "smell_precision.py"))
+    lines, problems = module.report()
+    print("release: " + "\nrelease: ".join(lines), flush=True)
+    for p in problems:
+        print(f"release: smell gate: {p}", file=sys.stderr, flush=True)
+    return not problems
+
+
 def run_checks(skip_narrative_eval: bool = False) -> bool:
     ok = _run("run tests", [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-t", "."])
     ok = ok and _run("determinism", [sys.executable, "-m", "unittest", "tests.test_determinism"])
@@ -340,7 +351,7 @@ def run_checks(skip_narrative_eval: bool = False) -> bool:
         if root and script == "score.py":
             argv += ["--root", root]
         ok = _run(label, argv) and ok
-    return ok
+    return smell_gate() and ok
 
 
 def steps(version: str) -> list[str]:
@@ -351,6 +362,8 @@ def steps(version: str) -> list[str]:
         "run tests: python -m unittest discover -s tests -t .",
         "determinism job: python -m unittest tests.test_determinism",
         "extractor eval: python eval/extractor_checks.py (a regression refuses the release)",
+        "smell gate: python eval/smell_precision.py --gate (prints class, hits, precision and obligation status per "
+        "pattern; a heuristic obliges only at precision >= 0.8 on its labelled set; a violation refuses the release)",
         f"narrative eval: python eval/score.py --all --require-clones ({EVAL_ROOT_ENV} must hold the four clones, checked "
         "before any edit; a regression or a missing clone refuses the release; --skip-narrative-eval bypasses it loudly)",
         "rotate examples: delete previous, move current to previous, regenerate current from the clones, VERSION files, "

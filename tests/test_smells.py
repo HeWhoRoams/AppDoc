@@ -832,6 +832,15 @@ class ObligationTests(unittest.TestCase):
                   "hardcoded-production-mode", "config-year-horizon", "debug-setting-in-debug-config"):
             self.assertNotIn(p, smells.OBLIGING)
 
+    def test_new_heuristics_are_not_obliging_until_measured(self):
+        for p in ("handler-without-guard", "state-change-authenticated-only", "post-without-antiforgery"):
+            self.assertNotIn(p, smells.OBLIGING)
+            self.assertIn(p, smells.HEURISTIC)
+            self.assertEqual(smells.pattern_class(p), "heuristic")
+        self.assertEqual(smells.HEURISTIC & smells.SUMMARY_ONLY, frozenset())
+        self.assertEqual(smells.HEURISTIC & smells.DETERMINISTIC, frozenset())
+        self.assertTrue(smells.OBLIGING <= smells.DETERMINISTIC | smells.HEURISTIC)
+
     def test_every_emitted_pattern_is_classified(self):
         emitted = {"machinekey-in-config", "named-user-access-rule", "duplicate-config-key",
                    "debug-setting-in-nondebug-config", "identifier-list-in-config"}

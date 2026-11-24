@@ -1,0 +1,72 @@
+{
+  "pattern": "dead-null-fallback",
+  "target": "targets/contoso-labels",
+  "labelled_by": "author",
+  "second_labeller": null,
+  "note": "Labels are by the author of the detector, on invented code (Contoso, Fabrikam; no real application). A second person must re-label this set independently and record the name in second_labeller before this heuristic may oblige C12; until then it stays a candidate in the summary (plan 2.8 W11 part C, T28.75). label tp: a hit at this site is correct; fp: a hit at this site would be a false positive.",
+  "labels": [
+    {
+      "path": "Code/Logging.cs",
+      "line": 10,
+      "text": "if (log == null)",
+      "label": "tp",
+      "reason": "typed local assigned from the unqualified LogManager factory, then tested for null"
+    },
+    {
+      "path": "Code/Logging.cs",
+      "line": 19,
+      "text": "if (log == null)",
+      "label": "tp",
+      "reason": "typed local assigned from the factory, then tested for null"
+    },
+    {
+      "path": "Code/Logging.cs",
+      "line": 28,
+      "text": "if (null == log)",
+      "label": "tp",
+      "reason": "reversed comparison on a factory-assigned typed local"
+    },
+    {
+      "path": "Code/Logging.cs",
+      "line": 37,
+      "text": "if (log is null)",
+      "label": "tp",
+      "reason": "is-null test on a factory-assigned typed local"
+    },
+    {
+      "path": "Code/Logging.cs",
+      "line": 46,
+      "text": "if (log == null)",
+      "label": "tp",
+      "reason": "typed local assigned from the factory, then tested for null"
+    },
+    {
+      "path": "Code/Logging.cs",
+      "line": 55,
+      "text": "if (log == null)",
+      "label": "fp",
+      "reason": "var is not an explicit type: outside the shape the rule proves"
+    },
+    {
+      "path": "Code/Logging.cs",
+      "line": 65,
+      "text": "if (log == null)",
+      "label": "fp",
+      "reason": "the local is assigned a second time"
+    },
+    {
+      "path": "Code/Logging.cs",
+      "line": 74,
+      "text": "if (other == null)",
+      "label": "fp",
+      "reason": "tests a different variable"
+    },
+    {
+      "path": "Code/OwnLogging.cs",
+      "line": 15,
+      "text": "if (log == null)",
+      "label": "fp",
+      "reason": "the Target declares its own LogManager: the factory may return null"
+    }
+  ]
+}

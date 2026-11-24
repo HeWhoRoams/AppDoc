@@ -1,0 +1,72 @@
+{
+  "pattern": "deref-in-null-branch",
+  "target": "targets/contoso-labels",
+  "labelled_by": "author",
+  "second_labeller": null,
+  "note": "Labels are by the author of the detector, on invented code (Contoso, Fabrikam; no real application). A second person must re-label this set independently and record the name in second_labeller before this heuristic may oblige C12; until then it stays a candidate in the summary (plan 2.8 W11 part C, T28.75). label tp: a hit at this site is correct; fp: a hit at this site would be a false positive.",
+  "labels": [
+    {
+      "path": "Code/NullChecksBranch.cs",
+      "line": 11,
+      "text": "Console.WriteLine(c.Id);",
+      "label": "tp",
+      "reason": "member access inside the branch that runs when the variable is null"
+    },
+    {
+      "path": "Code/NullChecksBranch.cs",
+      "line": 19,
+      "text": "var n = c.Name;",
+      "label": "tp",
+      "reason": "member access inside the null branch"
+    },
+    {
+      "path": "Code/NullChecksBranch.cs",
+      "line": 27,
+      "text": "var s = c.Scores[0];",
+      "label": "tp",
+      "reason": "index access inside a reversed null branch"
+    },
+    {
+      "path": "Code/NullChecksBranch.cs",
+      "line": 35,
+      "text": "Console.WriteLine(c.ToString());",
+      "label": "tp",
+      "reason": "object method inside an is-null branch"
+    },
+    {
+      "path": "Code/NullChecksBranch.cs",
+      "line": 42,
+      "text": "Console.WriteLine(c.GetType());",
+      "label": "tp",
+      "reason": "object method in a braceless null branch"
+    },
+    {
+      "path": "Code/NullChecksBranch.cs",
+      "line": 49,
+      "text": "var blank = c.IsBlank();",
+      "label": "fp",
+      "reason": "extension-method call: legal on null"
+    },
+    {
+      "path": "Code/NullChecksBranch.cs",
+      "line": 58,
+      "text": "Console.WriteLine(c.Id);",
+      "label": "fp",
+      "reason": "the variable is assigned first inside the branch"
+    },
+    {
+      "path": "Code/NullChecksBranch.cs",
+      "line": 68,
+      "text": "Console.WriteLine(c.Id);",
+      "label": "fp",
+      "reason": "deref in an inner block of the branch"
+    },
+    {
+      "path": "Code/NullChecksBranch.cs",
+      "line": 77,
+      "text": "Console.WriteLine(c?.Id);",
+      "label": "fp",
+      "reason": "conditional access is null-safe"
+    }
+  ]
+}
