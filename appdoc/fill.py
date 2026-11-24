@@ -10,11 +10,13 @@ import json
 import os
 import sys
 
+from . import access_model
 from . import docmodel as dm
 from . import fingerprint
 from . import integration
 from . import notes as notes_mod
 from . import register
+from . import summary
 from . import template_spec as spec
 from . import version
 from .textutil import plural, read_text
@@ -379,15 +381,13 @@ def _repo_docs(doc: dict, ctx: dict | None = None) -> str:
     return _none_sentence("repository documentation files", ("doc_file",), "repository documentation")
 
 
-# T28.91 replaces the body of the access-model block; until then it states what it does not cover and that
-# nothing was evaluated (never a clean bill of health).
-ACCESS_DISCLOSURE = ("Application-layer evaluation only: ASP.NET `<authorization>`, MVC filters and the declared "
-                     "authentication mode. IIS authentication settings, server-level configuration, network exposure, "
-                     "group membership and effective permissions are not in the repository.")
+ACCESS_DISCLOSURE = access_model.DISCLOSURE
 
 
 def _access_model(doc: dict, ctx: dict | None = None) -> str:
-    return f"{ACCESS_DISCLOSURE}\n\nNot evaluated: this AppDoc release does not write the access model."
+    """Section 5.4: the application-layer access summary, written by `access_model.render` from the Facts alone.
+    The stale-rule rows come from `summary.unmatched_rules`, so the block and the Facts summary agree."""
+    return access_model.render(doc, summary.unmatched_rules(doc.get("facts") or []))
 
 
 RENDERERS = {"scan-coverage": _scan_coverage, "entry-points": _entry_points, "config-reference": _config_reference,

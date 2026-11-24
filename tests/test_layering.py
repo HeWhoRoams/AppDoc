@@ -34,7 +34,7 @@ RANK = {
     # 3
     "fingerprint": 3, "guard": 3, "stacks.aspnet": 3, "stacks.classic_asp": 3, "stacks.generic": 3, "stacks.go": 3,
     "stacks.java_spring": 3, "stacks.node_express": 3, "stacks.python_flask": 3, "render.markdown": 3,
-    "summary": 3,
+    "summary": 3, "access_model": 3,
     # 4
     "fill": 4, "stacks.aspnet_core": 4,
     # 5

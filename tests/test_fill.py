@@ -507,16 +507,276 @@ class Block28Tests(unittest.TestCase):
                          "No repository documentation files were extracted "
                          "(no supported Stack reports repository documentation).")
 
-    def test_access_model_stub_states_the_disclosure_and_not_evaluated(self):
-        out = fill.render_block("access-model", doc())
-        self.assertTrue(out.startswith("Application-layer evaluation only:"), out)
-        self.assertIn("not in the repository.", out)
-        self.assertIn("Not evaluated:", out)
-
     def test_every_2_8_block_has_a_renderer(self):
         from appdoc import template_spec as spec
         for name in spec.GENERATED_2_8.values():
             self.assertIsNotNone(fill.render_block(name, doc()), name)
+
+
+# ----------------------------------------------------------------------------------------------- access-model (T28.91)
+
+STACKS = [{"name": "aspnet", "detail": {"supported": True, "capabilities": [
+    "entry_point.route", "entry_point.guard_mechanism", "entry_point.guard_reach", "access_rule"]}}]
+
+
+def handler(url, label="unknown", path="web/C.cs", line=10, anon="deny", auth="deny", area=None, state="false",
+            verbs=("GET",), declared=True, **kw):
+    d = dict(type="route", handler=f"C.{url.strip('/').replace('/', '_') or 'Index'}", reach=label, reach_anon=anon,
+             reach_auth=auth, state_changing=state, verbs=list(verbs), verbs_declared=declared)
+    if area:
+        d["mvc_area"] = area
+    d.update(kw)
+    return fact("entry_point", path, line, url, stack="aspnet", **d)
+
+
+def rule(scope, effect, order, config="base", path="web/Web.config", line=5, status="base", **kw):
+    return fact("access_rule", path, line, f"{effect} /{scope}", stack="aspnet", scope_path=scope, effect=effect, order=order,
+                config=config, config_status=status, file=path, **kw)
+
+
+def setting(name, value, config="base", path="web/Web.config", line=3, status="base", secret=False):
+    return fact("security_setting", path, line, name, stack="aspnet", value=value, config=config, config_status=status,
+                secret_location=secret)
+
+
+def amdoc(*facts, stacks=None):
+    return {"stacks": STACKS if stacks is None else stacks, "facts": list(facts)}
+
+
+def am(*facts, **kw):
+    return fill.render_block("access-model", amdoc(*facts, **kw))
+
+
+class AccessModelTests(unittest.TestCase):
+    def test_access_model_block(self):
+        out = am(handler("/open", "no_app_restriction", anon="allow", auth="allow", state="true", verbs=("POST",)),
+                 setting("system.web/authentication@mode", "windows"), rule("", "allow", 1, all=True))
+        for part in ("**Configurations.**", "**Access rules**", "**Handlers by area**", "**Guard attributes.**",
+                     "**Role names referenced", "**Secret locations.**", "**Defaults**", "**Stacks.**"):
+            self.assertIn(part, out)
+        self.assertEqual(out, am(handler("/open", "no_app_restriction", anon="allow", auth="allow", state="true",
+                                         verbs=("POST",)), setting("system.web/authentication@mode", "windows"),
+                                 rule("", "allow", 1, all=True)))
+
+    def test_access_model_disclosure_line(self):
+        out = am()
+        self.assertEqual(out.split("\n")[0], fill.ACCESS_DISCLOSURE)
+        self.assertEqual(out.split("\n")[0],
+                         "Application-layer evaluation only: ASP.NET `<authorization>`, MVC filters and the declared "
+                         "authentication mode. IIS authentication settings, server-level configuration, network exposure, "
+                         "group membership and effective permissions are not in the repository.")
+
+    def test_access_model_archetype_triple(self):
+        out = am(handler("/a", "no_app_restriction", anon="allow", auth="allow", area="Billing"),
+                 handler("/b", "signed_in_any", anon="deny", auth="allow", area="Billing"),
+                 handler("/c", "role_restricted", anon="deny", auth="deny", area="Billing", reach_roles=["Admins"]),
+                 handler("/d", "unknown", anon="unknown", auth="unknown", area="Billing"),
+                 handler("/e", "denied", anon="deny", auth="deny", area="Billing"))
+        self.assertIn("| Billing | 5 | 1 | 1 | 1 | 1 | 1 |", out)
+        # anon allow/deny/unknown, auth, role (allow = a named role, or any signed-in user, is allowed)
+        self.assertIn("| Billing | 5 | 1/3/1 | 2/2/1 | 3/1/1 |", out)
+        self.assertIn("| all areas | 5 |", out)
+
+    def test_access_model_config_columns(self):
+        out = am(setting("system.web/authentication@mode", "windows"),
+                 setting("system.web/authentication@mode", "forms", config="Release", status="transformed"),
+                 setting("system.web/authentication@mode", "windows", config="Debug"),
+                 fact("host_auth", "web/Web.config", 1, "host", stack="aspnet", iis_anonymous="unknown",
+                      iis_authorization_present=False, owin_auth=False, source="csproj_dev_only"),
+                 rule("", "allow", 1, config="Release", status="transformed", all=True),
+                 rule("", "allow", 1, config="Debug", all=True),
+                 {"kind": "project", "stack": "aspnet", "path": "web/web.csproj", "line": 1, "name": "web",
+                  "detail": {"kind": "web", "configs": ["Debug", "Release", "Test"]}})
+        self.assertIn("Production configuration: `Release` (default).", out)
+        self.assertIn("| `Release` (production) | forms | false | unknown | false | 1 | yes |", out)
+        self.assertIn("| `Debug` | windows | false | unknown | false | 1 | no |", out)
+        self.assertIn("Effective on publish or package only", out)
+        self.assertIn("`owin_auth`", out)
+        self.assertIn("`iis_authorization_present`", out)
+
+    def test_production_config_can_be_declared(self):
+        out = am(setting("system.web/authentication@mode", "windows", config="Live"),
+                 fact("context_directive", "appdoc-context.md", 2, "Production config", directive="production_config", value="live"),
+                 rule("", "deny", 1, config="Live", anon=True))
+        self.assertIn("Production configuration: `Live` (declared in appdoc-context.md).", out)
+
+    def test_unevaluable_configs_counted(self):
+        out = am(rule("", "allow", 1, config="Release", all=True),
+                 rule("", "allow", 1, config="Odd", status="unknown_transform", all=True, reason_codes=["xpath"]),
+                 setting("system.web/authentication@mode", "unknown", config="Odd", status="unknown_transform"),
+                 rule("", "allow", 1, config="Debug", all=True))
+        self.assertIn("1 of 3 configurations could not be evaluated: `Odd`.", out)
+        self.assertIn("`Odd` (not evaluated)", out)
+        self.assertNotIn("could not be evaluated: `Release`", out)
+        self.assertIn("0 of 1 configurations could not be evaluated.", am(rule("", "allow", 1, all=True)))
+
+    def test_access_rule_matrix_unmatched_and_caps(self):
+        rules = [rule("Area", "allow", 1, roles=["Staff", "CONTOSO\\Ops"]), rule("Area", "deny", 2, all=True),
+                 rule("Hr", "allow", 3, users_named=3), fact("file", "web/Area/x.txt", None, "web/Area/x.txt")]
+        out = am(*rules, fact("file", "web/Web.config", None, "web/Web.config"))
+        self.assertIn("| `Area` | 1 | allow | roles: `Staff`, `CONTOSO\\Ops` | all |", out)
+        self.assertIn("users: 3 named", out)
+        self.assertIn("Listed 3 of 3 access rules.", out)
+        self.assertIn("| allow | `Hr` | `web/Web.config:5` |", out)       # no route, no folder: unmatched
+        self.assertNotIn("| allow | `Area` |", out.split("Rules whose path")[1])
+        many = [rule(f"S{i:03}", "allow", i, line=i + 1, all=True) for i in range(fill.access_model.RULE_CAP + 7)]
+        out = am(*many)
+        self.assertIn(f"Listed {fill.access_model.RULE_CAP} of {fill.access_model.RULE_CAP + 7} access rules.", out)
+        self.assertEqual(sum(1 for l in out.splitlines() if l.startswith("| `S0")), fill.access_model.RULE_CAP)
+        self.assertIn(f"Listed {fill.access_model.RULE_CAP} of {fill.access_model.RULE_CAP + 7} unmatched rules.", out)
+
+    def test_unguarded_handlers_listed(self):
+        hs = [handler("/post-any", "signed_in_any", state="true", verbs=("POST",), line=1, anon="deny", auth="allow"),
+              handler("/post-unk", "unknown", state="true", verbs=("POST",), line=2, anon="unknown", auth="unknown"),
+              handler("/post-role", "role_restricted", state="true", verbs=("POST",), line=3, reach_roles=["Admins"]),
+              handler("/get-any", "signed_in_any", state="false", line=4, anon="deny", auth="allow"),
+              handler("/verbless", "unknown", state="unknown", declared=False, verbs=("any",), line=5, anon="deny", auth="unknown")]
+        out = am(*hs)
+        tail = out.split("**State-changing handlers that are not role-restricted**")[1].split("**Guard attributes")[0]
+        self.assertIn("`/post-any`", tail)
+        self.assertIn("`/post-unk`", tail)
+        for gone in ("/post-role", "/get-any", "/verbless"):
+            self.assertNotIn(f"`{gone}`", tail.split("verb-less")[0].split("Listed")[0])
+        self.assertIn("Listed 2 of 2 handlers.", out)
+        self.assertIn("1 verb-less action (they accept every verb); 1 of them have no write hit", out)
+        self.assertLess(tail.index("/post-unk"), tail.index("/post-any"))      # unknown before signed_in_any
+
+    def test_all_no_app_restriction_listed(self):
+        n = fill.access_model.HANDLER_CAP + 15
+        hs = [handler(f"/open{i:03}", "no_app_restriction", anon="allow", auth="allow", line=i + 1,
+                      state="true" if i % 2 else "false") for i in range(n)]
+        out = am(*hs)
+        head = out.split("**Handlers with no application restriction**")[1].split("**State-changing handlers")[0]
+        self.assertEqual(sum(1 for l in head.splitlines() if l.startswith("| `/open")), n)
+        self.assertIn(f"{n} handlers", head.splitlines()[0])
+        self.assertIn("None.", am(handler("/x", "denied")).split("**Handlers with no application restriction**")[1])
+
+    def test_access_model_caps_n_of_m(self):
+        n = fill.access_model.HANDLER_CAP + 9
+        hs = [handler(f"/w{i:03}", "signed_in_any", anon="deny", auth="allow", line=i + 1, state="true", verbs=("POST",))
+              for i in range(n)]
+        out = am(*hs)
+        self.assertIn(f"Listed {fill.access_model.HANDLER_CAP} of {n} handlers.", out)
+        self.assertEqual(sum(1 for l in out.splitlines() if l.startswith("| `/w")), fill.access_model.HANDLER_CAP)
+        files = [fact("const_def", f"c/F{i:03}.cs", 1, f"K.P{i}", secret=True) for i in range(fill.access_model.FILE_CAP + 5)]
+        out = am(*files)
+        self.assertIn(f"Listed {fill.access_model.FILE_CAP} of {fill.access_model.FILE_CAP + 5} files.", out)
+        shapes = [fact("guard_use", "c/A.cs", i + 1, f"G{i:03}", arg_kinds=["literal"], arity=1, applies_to="A")
+                  for i in range(fill.access_model.SHAPE_CAP + 3)]
+        self.assertIn(f"Listed {fill.access_model.SHAPE_CAP} of {fill.access_model.SHAPE_CAP + 3} argument shapes.", am(*shapes))
+
+    def test_access_model_capability_none(self):
+        out = am(stacks=[{"name": "node", "detail": {"supported": True, "capabilities": ["entry_point.route"]}}])
+        self.assertIn("No supported Stack reports effective protection (`entry_point.guard_reach`) or a guard mechanism", out)
+        self.assertIn("supported Stacks without it: `node`.", out)
+        self.assertIn("No handler protection was evaluated (No supported Stack reports effective protection", out)
+        core = am(stacks=[{"name": "aspnet-core", "detail": {"supported": True,
+                                                              "capabilities": ["entry_point.guard_mechanism"]}}])
+        self.assertIn("Mechanism only (no reach, and no claim that a handler is unguarded): `aspnet-core`", core)
+        self.assertIn("reported by no Stack", core)
+        both = am(stacks=STACKS + [{"name": "aspnet-core", "detail": {"supported": True,
+                                                                       "capabilities": ["entry_point.guard_mechanism"]}},
+                                    {"name": "go", "detail": {"supported": True, "capabilities": ["entry_point.route"]}}])
+        self.assertIn("reported by `aspnet`. Mechanism only", both)
+        self.assertIn("Supported Stacks that do not report protection: `go`.", both)
+
+    def test_mechanism_only_handlers_are_counted_not_labelled(self):
+        out = am(fact("entry_point", "c/A.cs", 3, "/a", stack="aspnet-core", type="route", guard_mechanism=["attribute"]),
+                 stacks=[{"name": "aspnet-core", "detail": {"supported": True, "capabilities": ["entry_point.guard_mechanism"]}}])
+        self.assertIn("(1 handler with a guard mechanism)", out)
+        self.assertNotIn("| Area |", out)                              # no label or archetype table: no reach was computed
+
+    def test_secret_table_no_values(self):
+        out = am(fact("config_key", "web/Web.config", 9, "ApiToken", secret_location=True),
+                 fact("config_key", "web/Web.config", 10, "Title", secret_location=False),
+                 setting("connectionStrings/add@connectionString", "literal", line=21, secret=True),
+                 fact("connection", "web/Web.config", 21, "Db", secret_location=True, type="database"),
+                 fact("connection", "web/Web.Release.config", 8, "Db", secret_location=True, type="database"),
+                 setting("system.web/machineKey", "literal_hex", line=31, secret=True),
+                 setting("system.web/machineKey", "literal_hex", config="Release", line=31, secret=True),
+                 fact("const_def", "web/K.cs", 22, "Accounts.Password", secret=True),
+                 fact("config_key", "web/K.cs", 22, "Password", secret_location=True),
+                 fact("const_def", "web/K.cs", 23, "Accounts.Name", value="svc-account"))
+        self.assertIn("| `web/K.cs` | 0 | 0 | 0 | 1 | 0 |", out)               # a constant counted once
+        self.assertIn("| `web/Web.Release.config` | 0 | 1 | 0 | 0 | 0 |", out)
+        self.assertIn("| `web/Web.config` | 1 | 1 | 1 | 0 | 0 |", out)          # configs of one key counted once
+        self.assertIn("Listed 3 of 3 files.", out)
+        self.assertNotIn("svc-account", out)
+        self.assertIn("a value is never recorded", out)
+
+    def test_argument_shapes_table(self):
+        out = am(fact("guard_use", "c/A.cs", 3, "Guard", arg_kinds=["const", "const"], arity=2, applies_to="A"),
+                 fact("guard_use", "c/B.cs", 3, "Guard", arg_kinds=["const", "const"], arity=2, applies_to="B"),
+                 fact("guard_use", "c/B.cs", 9, "Guard", arg_kinds=["literal"], arity=1, applies_to="B.M", arity_override=True),
+                 fact("guard_candidate", "c/A.cs", 3, "Guard", uses=3, arity_set=[1, 2]),
+                 fact("guard_use", "c/A.cs", 5, "Authorize", arg_kinds=[], arity=0, applies_to="A", namespace="System.Web.Mvc"),
+                 fact("guard_use", "c/T.cs", 5, "Guard", arg_kinds=["literal"], arity=1, applies_to="T", test=True))
+        self.assertIn("| `Guard` | const, const | 2 | 2 | 0 |", out)
+        self.assertIn("| `Guard` | literal | 1 | 1 | 1 |", out)
+        self.assertIn("| `Authorize` | none | 0 | 1 | 0 |", out)
+        self.assertIn("| `Guard` | candidate, undeclared | 3 |", out)
+        self.assertIn("| `Authorize` | framework | 1 |", out)
+        self.assertIn("1 undeclared guard candidate: `Guard`.", out)
+
+    def test_role_constants_all_listed(self):
+        facts = [fact("guard_use", "c/A.cs", i + 1, "Guard", arg_kinds=["const"], arity=1, applies_to="A", role=r, role_ref=c)
+                 for i, (r, c) in enumerate([("Admins", "Roles.Admin"), ("Staff", "Roles.Staff"), ("Admins", "Roles.Admin")])]
+        facts.append(fact("guard_use", "c/B.cs", 1, "Guard", arg_kinds=["literal"], arity=1, applies_to="B", role=["Ops", "Dev"]))
+        facts.append(fact("auth_check", "c/B.cs", 7, "HasRole()", via="call", roles=["CONTOSO\\Ops", "Staff"],
+                          role_refs=["Groups.Ops", "Roles.Staff"], applies_to="B.M", mechanism="inbody"))
+        facts.append(fact("auth_check", "c/B.cs", 8, "IsInRole()", via="body", mechanism="inbody"))
+        facts.append(fact("guard_use", "c/B.cs", 2, "Guard", arg_kinds=["literal"], arity=1, applies_to="B", role="pat@contoso.test"))
+        out = am(*facts)
+        self.assertIn("| `Admins` | `Roles.Admin` | 2 | 0 |", out)
+        self.assertIn("| `Staff` | `Roles.Staff` | 1 | 1 |", out)
+        self.assertIn("| `CONTOSO\\Ops` | `Groups.Ops` | 0 | 1 |", out)
+        self.assertIn("| `Dev` | none | 1 | 0 |", out)
+        self.assertIn("| `Ops` | none | 1 | 0 |", out)
+        self.assertIn("Listed 6 of 6 role names.", out)
+        self.assertNotIn("pat@contoso.test", out)                   # an e-mail address is withheld, never printed
+        self.assertIn("(e-mail address withheld)", out)
+
+    def test_ashx_asmx_svc_not_evaluated_line(self):
+        out = am(fact("file", "web/a.ashx", None, "web/a.ashx"), fact("file", "web/b.svc", None, "web/b.svc"),
+                 fact("file", "web/c.ashx", None, "web/c.ashx"), fact("file", "t/x.asmx", None, "t/x.asmx", test=True))
+        self.assertIn("Not evaluated: `.ashx`, `.asmx` and `.svc` handler files exist in the Target (2 `.ashx`, 1 `.svc`)", out)
+        self.assertNotIn("Not evaluated:", am(fact("file", "web/a.cs", None, "web/a.cs")))
+
+    def test_defaults_note_is_labelled_documentation(self):
+        self.assertIn("**Defaults** (documentation of ASP.NET behaviour, not a Fact about this Target)", am())
+
+    def test_no_url_userinfo_or_pipes_in_names(self):
+        out = am(handler("/a|b", "unknown", state="true", verbs=("POST",)),
+                 fact("guard_use", "c/A.cs", 1, "Guard", arg_kinds=["literal"], arity=1, applies_to="A",
+                      role="https://user:pw@host.test/x"))
+        self.assertNotIn("user:pw", out)
+        self.assertNotIn("a|b", out.replace("\\|", ""))
+
+    def test_end_to_end_mvc5_classic(self):
+        import re
+        target = os.path.join(os.path.dirname(os.path.abspath(__file__)), "corpus", "_targets", "mvc5-classic")
+        with tempfile.TemporaryDirectory() as tmp:
+            text, _ = extract.extract(target, os.path.join(tmp, "out"), workers=0, use_cache=False, no_ownership=True)
+        d = json.loads(text)
+        md = ("# Doc\n\n### 5.4 Application-layer access (generated)\n\n<!-- appdoc:generated access-model -->\n"
+              "<!-- /appdoc:generated access-model -->\n")
+        new, filled = fill.fill_text(md, d)
+        self.assertEqual(filled, ["access-model"])
+        self.assertEqual(fill.fill_text(new, d)[0], new)                                 # idempotent
+        self.assertIn("Application-layer evaluation only:", new)
+        self.assertIn("Production configuration: `Release` (default). 1 of 5 configurations could not be evaluated: `Odd`.", new)
+        self.assertIn("| `ContosoGuard` | candidate, undeclared | 4 |", new)
+        self.assertIn("| `Auditors` | `Roles.Auditor` | 1 | 0 |", new)
+        self.assertIn("| `CONTOSO\\FinanceGroup` | `Groups.FinanceGroup` | 0 | 1 |", new)
+        self.assertIn("| `Contoso.Portal/Web.config` | 2 | 1 | 1 | 0 | 0 |", new)
+        raw = ""
+        for n in ("Web.config", "Infrastructure/Constants.cs"):
+            with open(os.path.join(target, "Contoso.Portal", n), encoding="utf-8") as fh:
+                raw += fh.read()
+        for secret in re.findall(r"(?:not-a-real-\w+-\d{4}|0123456789ABCDEF{2,}|FEDCBA98\w+)", raw):
+            self.assertNotIn(secret, new)
+        for svc in ("svc-portal", "CONTOSO\\pat", "sql01.contoso.test"):
+            self.assertNotIn(svc, new)
 
 
 class NotesTests(unittest.TestCase):
