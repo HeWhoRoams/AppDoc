@@ -2,8 +2,10 @@
 
 The 2.4 numbers are pinned against docs/diagnostic-2.4-comparison.md only (the 2.4 example folders are gone, they
 remain in git history). Since 2.7.0 examples/previous holds the 2.6.0 examples and examples/current the fresh 2.7.0
-run (T27.42); the 2.6.0 numbers (POST_2_6, FACTS_2_6) pin previous and the 2.7.0 numbers (POST_2_7, FACTS_2_7) pin
-current. The 2.5.0 values are in docs/diagnostic-2.4-comparison.md and docs/diagnostic-2.6.0-comparison.md.
+run (T27.42). Since 2.7.1 (R71.E3) examples/previous holds the 2.7.0 set and examples/current the 2.7.1 set: the
+2.7.0 numbers (POST_2_7, FACTS_2_7) pin previous and the 2.7.1 numbers (POST_2_7_1, FACTS_2_7_1) pin current. The
+2.6.0 numbers (POST_2_6, FACTS_2_6) stay as the record of the 2.6.0 examples (docs/diagnostic-2.6.0-comparison.md) and
+are no longer read from disk. The 2.5.0 values are in docs/diagnostic-2.4-comparison.md.
 """
 import os
 import unittest
@@ -62,15 +64,31 @@ POST_2_6 = {
     "eShop": ("PASS", 1301, 94.7, 113, 83.2, 1765),
     "gitea": ("PASS", 1284, 89.8, 141, 85.8, 19536),
 }
-# 2.7.0 examples (T27.42): a fresh run with a new Narrative and a new audit, so citations, audit rows and Supported %
-# move; the Facts totals do not (the extractor is unchanged).
+# 2.7.0 examples (T27.42); since 2.7.1 they are examples/previous. A fresh run with a new Narrative and a new audit,
+# so citations, audit rows and Supported % moved against 2.6.0; the Facts totals did not (the extractor is unchanged).
 POST_2_7 = {
     "flaskr-tdd": ("PASS", 381, 86.1, 53, 79.2, 84),
     "spring-petclinic": ("PASS", 463, 91.1, 87, 86.2, 409),
     "eShop": ("PASS", 713, 90.6, 147, 93.2, 1765),
     "gitea": ("PASS", 1246, 88.7, 174, 81.6, 19536),
 }
-POST_2_5 = POST_2_6   # the artifact-reading test iterates the names
+# 2.7.1 examples (R71.E3), examples/current: Facts byte-identical to 2.7.0 except generator and bundle hash; the
+# delta audit and its Narrative edits moved citations (eShop 713 to 715, flaskr-tdd 381 to 382, gitea 1246 to 1247)
+# and the audit-row counts and Supported %.
+POST_2_7_1 = {
+    "flaskr-tdd": ("PASS", 382, 86.1, 70, 81.4, 84),
+    "spring-petclinic": ("PASS", 463, 91.1, 106, 87.7, 409),
+    "eShop": ("PASS", 715, 90.6, 173, 92.5, 1765),
+    "gitea": ("PASS", 1247, 88.7, 206, 84.0, 19536),
+}
+POST_2_5 = POST_2_7_1   # the artifact-reading test iterates the names
+
+# Tolerance of test_no_regression_against_previous: Supported % may fall at most this many points below the previous
+# release. The relaxed rule and the reason (each release re-audits independently) are recorded in the amendment to
+# docs/adr/0015-append-only-evidence-and-audit-provenance.md.
+SUPPORTED_PCT_TOLERANCE = 10.0
+MIN_SUPPORTED_PCT = 75.0
+CITES_WITH_LINE_TOLERANCE = 5.0
 
 
 class DiagMetricsPost25(unittest.TestCase):
@@ -94,8 +112,8 @@ class DiagMetricsPost25(unittest.TestCase):
                     self.assertGreater(m["words"], 0)
                     self.assertIsNotNone(m["scan"])
 
-    def test_pinned_post_2_6_and_2_7(self):
-        for pins, base in ((POST_2_6, PREVIOUS), (POST_2_7, CURRENT)):
+    def test_pinned_post_2_7_and_2_7_1(self):
+        for pins, base in ((POST_2_7, PREVIOUS), (POST_2_7_1, CURRENT)):
             for name, want in pins.items():
                 with self.subTest(base=os.path.basename(base), example=name):
                     m = self._m(name, base)
@@ -104,24 +122,24 @@ class DiagMetricsPost25(unittest.TestCase):
                     self.assertEqual(got, want)
 
     def test_no_regression_against_previous(self):
-        """examples/current (2.7.0, a fresh run) against examples/previous (2.6.0). The 2.6.0 check held Supported % and
-        audit rows equal because only the generated blocks moved; a fresh Narrative and audit legitimately change
-        them (a smaller, sampled audit), so those two are bounded instead of pinned equal: the Check passes, the Facts
-        are the same, Supported % stays within 10 points and above 75, citations with a line within 5 points."""
-        for name in POST_2_7:
+        """examples/current against examples/previous. Each release re-audits independently, so Supported % and audit
+        rows are bounded instead of pinned equal (ADR 0015, amendment on the relaxed check): the Check passes, the
+        Facts totals are equal, Supported % is at least MIN_SUPPORTED_PCT and within SUPPORTED_PCT_TOLERANCE points of
+        the previous release, citations with a line within CITES_WITH_LINE_TOLERANCE points."""
+        for name in POST_2_7_1:
             with self.subTest(example=name):
                 old = self._m(name, PREVIOUS)
                 new = self._m(name, CURRENT)
                 self.assertEqual(new["check"], "PASS")
                 self.assertEqual(new["facts_total"], old["facts_total"])
-                self.assertGreaterEqual(new["pct_supported"], old["pct_supported"] - 10.0)
-                self.assertGreaterEqual(new["pct_supported"], 75.0)
+                self.assertGreaterEqual(new["pct_supported"], old["pct_supported"] - SUPPORTED_PCT_TOLERANCE)
+                self.assertGreaterEqual(new["pct_supported"], MIN_SUPPORTED_PCT)
                 self.assertGreater(new["audit_rows"], 0)
-                self.assertGreaterEqual(new["pct_cites_with_line"], old["pct_cites_with_line"] - 5.0)
+                self.assertGreaterEqual(new["pct_cites_with_line"], old["pct_cites_with_line"] - CITES_WITH_LINE_TOLERANCE)
 
 
-# Facts-level baselines the 2.6.0 work moved. Since 2.7.0 examples/previous holds the 2.6.0 examples, so FACTS_2_6
-# (below) pins previous/ and FACTS_2_7 pins current/. The 2.5.0 values (retired 0/9/40/0 by content, 569 unclassified
+# Facts-level baselines. Since 2.7.1 examples/previous holds the 2.7.0 examples, so FACTS_2_7 (below) pins previous/
+# and FACTS_2_7_1 pins current/; FACTS_2_6 stays as the 2.6.0 record. The 2.5.0 values (retired 0/9/40/0 by content, 569 unclassified
 # gitea keys, no capabilities) are in docs/diagnostic-2.6.0-comparison.md.
 
 
@@ -133,7 +151,7 @@ class DiagMetricsFactsBaseline(unittest.TestCase):
         return diag_metrics.baselines(base, name)
 
     def test_pinned_facts_level_baselines(self):
-        for name, want in FACTS_2_6.items():
+        for name, want in FACTS_2_7.items():
             with self.subTest(example=name):
                 got = self._b(name)
                 self.assertEqual({k: got[k] for k in want}, want)
@@ -186,7 +204,7 @@ FACTS_2_6 = {
                   secret_locations=190, not_classified=(62, 1), bare_name_cites=101, cites_total=1284),
 }
 
-# 2.7.0 values of examples/current (T27.42). The Facts-level numbers are the 2.6.0 ones (the extractor did not move);
+# 2.7.0 values (T27.42; examples/previous since 2.7.1). The Facts-level numbers are the 2.6.0 ones (the extractor did not move);
 # only the Narrative-dependent bare_name_cites and cites_total changed with the fresh Narratives.
 FACTS_2_7 = {
     "flaskr-tdd": dict(retired_name=0, retired_content=0, duplicate_pairs=0, stacks=1,
@@ -199,6 +217,15 @@ FACTS_2_7 = {
                   secret_locations=190, not_classified=(62, 1), bare_name_cites=134, cites_total=1246),
 }
 
+# 2.7.1 values of examples/current (R71.E3): Facts-level numbers identical to 2.7.0; the delta audit's Narrative edits
+# moved only cites_total (flaskr-tdd 382, eShop 715, gitea 1247).
+FACTS_2_7_1 = {
+    "flaskr-tdd": dict(FACTS_2_7["flaskr-tdd"], cites_total=382),
+    "spring-petclinic": dict(FACTS_2_7["spring-petclinic"]),
+    "eShop": dict(FACTS_2_7["eShop"], cites_total=715),
+    "gitea": dict(FACTS_2_7["gitea"], cites_total=1247),
+}
+
 
 class DiagMetricsFacts26(unittest.TestCase):
     def _b(self, name, base=CURRENT):
@@ -206,16 +233,16 @@ class DiagMetricsFacts26(unittest.TestCase):
             self.skipTest(f"example {name} not present under {base}")
         return diag_metrics.baselines(base, name)
 
-    def test_pinned_facts_level_baselines_2_7(self):
-        for name, want in FACTS_2_7.items():
+    def test_pinned_facts_level_baselines_2_7_1(self):
+        for name, want in FACTS_2_7_1.items():
             with self.subTest(example=name):
                 got = self._b(name)
                 self.assertEqual({k: got[k] for k in want}, want)
 
     def test_expected_movement_against_previous(self):
-        """2.6.0 -> 2.7.0: the extractor did not move, so every Facts-level number holds; only the Narrative-side
-        counts (bare-name cites, citations) differ."""
-        for name in FACTS_2_7:
+        """2.7.0 -> 2.7.1: the extractor did not move, so every Facts-level number holds; only the Narrative-side
+        counts (bare-name cites, citations) may differ."""
+        for name in FACTS_2_7_1:
             with self.subTest(example=name):
                 old, new = self._b(name, PREVIOUS), self._b(name)
                 self.assertEqual(new["retired_name"], 0)
@@ -226,7 +253,7 @@ class DiagMetricsFacts26(unittest.TestCase):
 
     def test_trailer_no_longer_lists_example_ini_and_nothing_scans_appdoc_output(self):
         import json
-        for name in FACTS_2_6:
+        for name in FACTS_2_7_1:
             with self.subTest(example=name):
                 d = os.path.join(CURRENT, name)
                 if not os.path.isdir(d):
@@ -243,12 +270,12 @@ class DiagMetricsFacts26(unittest.TestCase):
 
 
 class CurrentExamplesAreStrictClean(unittest.TestCase):
-    """examples/current is a fresh 2.7.0 run (T27.42): strict-clean provenance and a passing Check."""
+    """examples/current is the 2.7.1 set (a delta audit of the 2.7.0 run): strict-clean provenance and a passing Check."""
 
     def test_register_line_1_is_an_audit_record_with_provenance_and_no_upgrade_seal(self):
         import json
         from appdoc import register
-        for name in POST_2_7:
+        for name in POST_2_7_1:
             with self.subTest(example=name):
                 with open(os.path.join(CURRENT, name, "evidence.jsonl"), encoding="utf-8") as fh:
                     text = fh.read()
@@ -264,7 +291,7 @@ class CurrentExamplesAreStrictClean(unittest.TestCase):
                 self.assertEqual([r["id"] for _, r in live if r.get("sealed_by") == "upgrade"], [])
 
     def test_check_report_says_pass(self):
-        for name in POST_2_7:
+        for name in POST_2_7_1:
             with self.subTest(example=name):
                 with open(os.path.join(CURRENT, name, "check-report.md"), encoding="utf-8") as fh:
                     self.assertEqual(fh.readline().strip(), "# Check: PASS")
