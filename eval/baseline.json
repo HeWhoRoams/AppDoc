@@ -231,6 +231,14 @@
     "recall": 1.0,
     "tp": 5
   },
+  "generic/context_directive": {
+    "expected": 0,
+    "found": 0,
+    "fp": 2,
+    "precision": 0.0,
+    "recall": null,
+    "tp": 0
+  },
   "generic/dependency": {
     "expected": 32,
     "found": 32,
@@ -240,12 +248,20 @@
     "tp": 32
   },
   "generic/owner_file": {
-    "expected": 12,
-    "found": 12,
+    "expected": 24,
+    "found": 24,
     "fp": 0,
     "precision": 1.0,
     "recall": 1.0,
-    "tp": 12
+    "tp": 24
+  },
+  "generic/project": {
+    "expected": 0,
+    "found": 0,
+    "fp": 4,
+    "precision": 0.0,
+    "recall": null,
+    "tp": 0
   },
   "generic/schema_object": {
     "expected": 11,
@@ -256,12 +272,12 @@
     "tp": 11
   },
   "generic/smell": {
-    "expected": 36,
-    "found": 36,
+    "expected": 48,
+    "found": 48,
     "fp": 0,
     "precision": 1.0,
     "recall": 1.0,
-    "tp": 36
+    "tp": 48
   },
   "go/auth_check": {
     "expected": 4,
@@ -560,12 +576,12 @@
     "tp": 2
   },
   "scan/pruned": {
-    "expected": 13,
-    "found": 13,
+    "expected": 24,
+    "found": 24,
     "fp": 0,
     "precision": 1.0,
     "recall": 1.0,
-    "tp": 13
+    "tp": 24
   },
   "scan/retired_candidate": {
     "expected": 1,
