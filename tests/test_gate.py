@@ -27,6 +27,10 @@ def _text(res):
     return res.stdout + res.stderr
 
 
+# A generator stamp from an earlier build of the running major.minor (a dev build of its .0), whatever the release.
+_EARLIER_PATCH = ".".join(__import__("appdoc").__version__.split(".")[:2]) + ".0.dev0"
+
+
 class GateTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -117,7 +121,7 @@ class GateTests(unittest.TestCase):
         path = os.path.join(self.out, "provenance.json")
         with open(path, encoding="utf-8") as fh:
             prov = json.load(fh)
-        prov.update(generator="2.6.0", bundle="0" * 12)
+        prov.update(generator=_EARLIER_PATCH, bundle="0" * 12)
         with open(path, "w", encoding="utf-8", newline="\n") as fh:
             json.dump(prov, fh, indent=1, sort_keys=True)
         res = run_gate(self.target)

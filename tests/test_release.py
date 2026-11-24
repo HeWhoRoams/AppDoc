@@ -31,6 +31,16 @@ def load_tool(name, path):
 gen_docs = load_tool("appdoc_gen_docs", GEN_DOCS)
 
 
+# Release versions whose CHANGELOG entry and rotated examples are written by the release step (T27.44, tools/release.py)
+# and not yet on this branch; while the version is listed, the tree still carries the previous release's entry and
+# examples. T27.44 removes the entry from this map.
+RELEASE_PENDING = {"2.7.0": "2.6.0"}
+
+
+def pending_previous(version=appdoc.__version__):
+    return RELEASE_PENDING.get(version)
+
+
 def is_release(version=appdoc.__version__):
     return ".dev" not in version
 
@@ -223,7 +233,9 @@ class SharedConstants(unittest.TestCase):
 class ChangelogAndPin(unittest.TestCase):
     def test_changelog_top_heading_matches_version(self):
         top = next(l for l in read("CHANGELOG.md").splitlines() if l.startswith("## "))
-        if is_release():
+        if pending_previous():
+            self.assertRegex(top, rf"^## {re.escape(pending_previous())}(\s|$)")
+        elif is_release():
             self.assertRegex(top, rf"^## {re.escape(appdoc.__version__)}(\s|$)")
         else:
             self.assertEqual(top, "## Unreleased")
@@ -263,9 +275,10 @@ def _tree_copy(dest):
     with open(gate, encoding="utf-8", newline="") as fh:
         text = fh.read()
     with open(gate, "w", encoding="utf-8", newline="") as fh:
-        fh.write(text.replace("APPDOC_REF: v2.6.0", "APPDOC_REF: v2.5.0"))  # the pin of the last release
-    # The tree as it is before the release: dev version, an Unreleased heading (the real tree may already be released).
-    for rel, a, b in (("CHANGELOG.md", "## " + appdoc.__version__.split(".dev")[0] + "\n", "## Unreleased\n"),
+        fh.write(text.replace(f"APPDOC_REF: v{appdoc.__version__}", "APPDOC_REF: v2.5.0"))  # the pin of the last release
+    # The tree as it is before release 2.6.0 (the scripted release these tests replay): dev version and an Unreleased
+    # heading, whatever version the real tree is on.
+    for rel, a, b in (("CHANGELOG.md", "## 2.6.0\n", "## Unreleased\n"),
                       (os.path.join("appdoc", "__init__.py"), f'__version__ = "{appdoc.__version__}"',
                        '__version__ = "2.6.0.dev0"')):
         path = os.path.join(dest, rel)
@@ -456,7 +469,7 @@ class ExampleLayout(unittest.TestCase):
             for d, v in ((cur, cur_v), (prev, prev_v)):
                 self.assertEqual(slurp(d, app, "VERSION").strip(), v, f"{d}/{app}/VERSION")
                 self.assertTrue(os.path.isfile(os.path.join(d, app, "application-documentation.md")))
-        self.assertEqual(cur_v, appdoc.__version__.split(".dev")[0])
+        self.assertEqual(cur_v, pending_previous() or appdoc.__version__.split(".dev")[0])
 
     def test_rotation_moves_current_to_previous_and_writes_the_new_current(self):
         release = load_tool("appdoc_release", RELEASE)

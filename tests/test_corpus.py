@@ -41,6 +41,10 @@ PENDING: dict = {
 }
 
 
+# A generator stamp from an earlier build of the running major.minor (a dev build of its .0), whatever the release.
+_EARLIER_PATCH = ".".join(__import__("appdoc").__version__.split(".")[:2]) + ".0.dev0"
+
+
 @dataclass
 class CaseResult:
     name: str
@@ -346,7 +350,7 @@ class GateCases(CorpusCase):
         prov_path = os.path.join(r.out, "provenance.json")
         with open(prov_path, encoding="utf-8") as fh:
             prov = json.load(fh)
-        prov.update(generator="2.6.0", bundle="0" * 12)   # committed by an older patch of the same major.minor
+        prov.update(generator=_EARLIER_PATCH, bundle="0" * 12)   # committed by an older patch of the same major.minor
         with open(prov_path, "w", encoding="utf-8", newline="\n") as fh:
             json.dump(prov, fh, indent=1, sort_keys=True)
         res = _gate(r.target)
