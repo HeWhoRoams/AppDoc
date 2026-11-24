@@ -157,6 +157,13 @@ def finding_candidates(facts: list[dict], stacks: list[dict]) -> list[str]:
         out.append(f"| `{pattern}`{label} | {len(group)} | " + ", ".join(_cite(f) for f in first)
                    + " | " + ", ".join(f"`{i}`" for i in ids) + " |")
     out.append("")
+    for f in sorted(by_pattern.get("post-without-antiforgery", []), key=lambda f: (f["path"], f["line"] or 0))[:1]:
+        d = f["detail"]
+        if d.get("controllers"):
+            out += [f"`post-without-antiforgery`: {d.get('unprotected', 0)} of {d.get('total', 0)} state-changing POST "
+                    "actions have no token validation. Controllers with unprotected actions (location, N of M):", ""]
+            out += [f"- `{row}`" for row in d["controllers"][:LIST_CAP]]
+            out += [""] + _shown(min(len(d["controllers"]), LIST_CAP), len(d["controllers"]))
     quiet = [p for p in ran if p not in by_pattern]
     if quiet:
         out += [f"Patterns that ran with no hit: {', '.join(f'`{p}`' for p in quiet)}.", ""]
@@ -189,6 +196,90 @@ def unclassified_attributes(facts: list[dict], stacks: list[dict]) -> list[str]:
         d = f["detail"]
         out.append(f"| `{f['name']}` | {d.get('uses', 0)} | {', '.join(str(a) for a in d.get('arity_set', []))} | {_cite(f)} |")
     return out + [""] + _shown(min(len(cands), LIST_CAP), len(cands))
+
+
+def _norm_attr(name: str) -> str:
+    n = name.strip().rsplit(".", 1)[-1].lower()
+    return n[:-9] if n.endswith("attribute") and len(n) > 9 else n
+
+
+def accountability_counts(facts: list[dict]) -> dict:
+    """Detector accountability (T28.80): how many guard attributes and configuration reads the extractors saw, how many
+    they recognised and how many they did not. A guard attribute is recognised when it is the framework ``Authorize`` or
+    became an ``auth_check`` (custom, declared or promoted); a code read of a configuration key is recognised when the
+    key is defined in a configuration file of the Target. Counts only: no attribute or key name is printed.
+    ``{"guard_attributes": {seen, recognised, unrecognised}, "config_reads": {...}}``."""
+    live = [f for f in facts if not f["detail"].get("test")]
+    checked = {(f["path"], f["line"]) for f in live
+               if f["kind"] == "auth_check" and f["detail"].get("mechanism") == "attribute"}
+    uses = [f for f in live if f["kind"] == "guard_use"]
+    known = sum(1 for f in uses if _norm_attr(f["name"]) == "authorize" or (f["path"], f["line"]) in checked)
+    defined = {f["name"].lower() for f in live if f["kind"] == "config_key" and f["detail"].get("source") != "code"
+               and f["detail"].get("use") == "define"}
+    reads = [f for f in live if f["kind"] == "config_key" and f["detail"].get("source") == "code"
+             and f["detail"].get("use") == "read"]
+    got = sum(1 for f in reads if f["name"].lower() in defined)
+    return {"guard_attributes": {"seen": len(uses), "recognised": known, "unrecognised": len(uses) - known},
+            "config_reads": {"seen": len(reads), "recognised": got, "unrecognised": len(reads) - got}}
+
+
+def accountability(facts: list[dict], stacks: list[dict]) -> list[str]:
+    """The accountability section; nothing without a supported Stack. A detector that ran and recognised nothing says so."""
+    if not any(s["detail"].get("supported") for s in stacks):
+        return []
+    counts = accountability_counts(facts)
+    out = ["## Detector accountability", "",
+           "Seen is what the extractors found in the code; recognised is what they could place; unrecognised needs a "
+           "reader. Counts only.", ""]
+    rows = [("Config reads", counts["config_reads"])]
+    if any(s["name"] in ("aspnet", "aspnet-core") for s in stacks):
+        rows.insert(0, ("Guard attributes", counts["guard_attributes"]))
+    for label, c in rows:
+        tail = " (ran, found no match)" if c["recognised"] == 0 else ""
+        out.append(f"{label}: seen {c['seen']}, recognised {c['recognised']}, unrecognised {c['unrecognised']}{tail}.")
+    return out + [""]
+
+
+def _defining_configs(facts: list[dict], path: str, symbols: list) -> str:
+    """The configurations whose ``DefineConstants`` define one of ``symbols`` in the project holding ``path``."""
+    defs = [f for f in facts if f["kind"] == "build_define" and _inside(path, _dirname(f["path"]))]
+    if defs:
+        deepest = max(len(_dirname(f["path"])) for f in defs)
+        defs = [f for f in defs if len(_dirname(f["path"])) == deepest]
+    names = sorted({("all configurations" if f["detail"].get("config") in (None, "*", "") else str(f["detail"]["config"]))
+                    for f in defs if set(symbols) & set(f["detail"].get("symbols", []))})
+    return ", ".join(names) if names else "no configuration defines it"
+
+
+def conditional_compilation(facts: list[dict]) -> list[str]:
+    """Constants under ``#if`` that a guard argument refers to, ``#if DEBUG`` blocks that assign a local in a handler file
+    and production-mode comparisons in a handler that calls an auth method (summary-only), with the configurations
+    that define each symbol."""
+    live = [f for f in facts if not f["detail"].get("test")]
+    consts = [f for f in live if f["kind"] == "conditional_const"]
+    modes = [f for f in live if f["kind"] == "mode_branch"]
+    blocks = [f for f in live if f["kind"] == "smell" and f["detail"].get("pattern") == "debug-block-assigns-local"]
+    if not (consts or modes or blocks):
+        return []
+    out = ["## Conditional compilation", "",
+           "Summary only. A guard argument or a handler branch that differs between builds: read the build "
+           "configurations before calling the behaviour fixed.", "",
+           "| Location | What | Symbols | Configurations defining the symbols |", "|---|---|---|---|"]
+    rows = []
+    for f in consts:
+        sym = list(f["detail"].get("under_if", []))
+        rows.append((f["path"], f["line"] or 0, f"a constant under `#if` is used in {f['detail'].get('uses', 0)} guard "
+                     f"argument(s)", sym, _defining_configs(live, f["path"], sym)))
+    for f in blocks:
+        sym = list(f["detail"].get("symbols", []))
+        rows.append((f["path"], f["line"] or 0, "a `#if` block assigns a local in a file that holds handlers", sym,
+                     _defining_configs(live, f["path"], sym)))
+    for f in modes:
+        rows.append((f["path"], f["line"] or 0, f"{f['detail'].get('count', 0)} production-mode comparison(s) in a "
+                     "handler that calls an auth method", [], "not a compile-time symbol"))
+    for path, line, what, sym, configs in sorted(rows, key=lambda r: (r[0], r[1], r[2]))[:LIST_CAP]:
+        out.append(f"| `{path}:{line}` | {what} | {', '.join(f'`{x}`' for x in sym) or '-'} | {configs} |")
+    return out + [""] + _shown(min(len(rows), LIST_CAP), len(rows))
 
 
 def _dirname(path: str) -> str:
@@ -324,6 +415,8 @@ def render_summary(doc: dict) -> str:
     out += ui_pages(facts)
     out += unclassified_attributes(facts, stacks)
     out += access_rules_matching_nothing(facts)
+    out += conditional_compilation(facts)
+    out += accountability(facts, stacks)
     out += finding_candidates(facts, stacks)
 
     return "\n".join(out).rstrip() + "\n"

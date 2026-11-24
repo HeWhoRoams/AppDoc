@@ -32,13 +32,31 @@ GRANDFATHERED = frozenset({"actuator-exposed", "distinct-auth-errors", "flash-wi
                            "hardcoded-credential-constant", "logger-type-mismatch", "state-change-on-get",
                            "unescaped-template-output"})
 OBLIGING = DETERMINISTIC | GRANDFATHERED
+# Heuristics (text or structure) and the summary-only patterns. A heuristic obliges only through ``OBLIGING``, and only
+# after eval/smell_precision.py measures >= 0.8 on a labelled set a second person has re-labelled (T28.75, V31);
+# until then it is a candidate in the summary. ``GRANDFATHERED`` are heuristics of 2.7 and earlier that keep their
+# obligation unmeasured; every other heuristic is listed here and is not obliging.
+HEURISTIC = frozenset({"handler-without-guard", "state-change-authenticated-only", "post-without-antiforgery",
+                       "deref-before-null-check", "deref-in-null-branch", "dead-null-fallback",
+                       "hardcoded-production-mode"}) | GRANDFATHERED
+SUMMARY_ONLY = frozenset({"config-year-horizon", "debug-setting-in-debug-config", "debug-block-assigns-local"})
+
+
+def pattern_class(pattern: str) -> str:
+    """``deterministic`` (a read of a declared value), ``summary-only`` or ``heuristic``."""
+    if pattern in DETERMINISTIC:
+        return "deterministic"
+    return "summary-only" if pattern in SUMMARY_ONLY else "heuristic"
+
 
 # Patterns whose detector runs for a Stack, so the summary can say "none" for a pattern that ran without a hit.
 PATTERNS_BY_STACK = {
     "aspnet": ("machinekey-in-config", "named-user-access-rule", "duplicate-config-key",
                "debug-setting-in-nondebug-config", "debug-setting-in-debug-config", "identifier-list-in-config",
                "deref-before-null-check",
-               "deref-in-null-branch", "dead-null-fallback", "hardcoded-production-mode", "config-year-horizon"),
+               "deref-in-null-branch", "dead-null-fallback", "hardcoded-production-mode", "config-year-horizon",
+               "handler-without-guard", "state-change-authenticated-only", "post-without-antiforgery",
+               "debug-block-assigns-local"),
 }
 
 # ---------------------------------------------------------------------------
@@ -1099,6 +1117,30 @@ def _production_mode(ctx: _Ctx):
                    "in production mode whatever the configuration says")
 
 
+_IF_DEBUG = re.compile(r"(?m)^[ \t]*#[ \t]*if[ \t]+\(?[ \t]*DEBUG[ \t]*\)?[ \t]*$")
+_IF_END = re.compile(r"(?m)^[ \t]*#[ \t]*(?:else|elif|endif)\b")
+_CONTROLLER_CLASS = re.compile(r"\bclass\s+\w+\s*:\s*[^{;]*\bController\b")
+_LOCAL_ASSIGN = re.compile(r"(?m)^[ \t]*(?:(?:var|[A-Za-z_][\w.<>,\[\]?]*)[ \t]+)?[A-Za-z_]\w*[ \t]*=(?!=)[^;\n]*;")
+
+
+def _debug_block(ctx: _Ctx):
+    """A ``#if DEBUG`` block that assigns a local in a file that holds a controller (summary-only). The compile-time
+    symbol is defined by some configurations only (the summary names them); a guard decision that differs between
+    builds is easy to miss in review."""
+    if "DEBUG" not in ctx.text:
+        return
+    code = _cs_code(ctx.text)
+    if not _CONTROLLER_CLASS.search(code):
+        return
+    for m in _IF_DEBUG.finditer(code):
+        end = _IF_END.search(code, m.end())
+        body = code[m.end():end.start() if end else len(code)]
+        if _LOCAL_ASSIGN.search(body):
+            yield _hit("debug-block-assigns-local", ctx.line(m.start()),
+                       "a block compiled only when a build symbol is defined assigns a local in a file that holds "
+                       "handlers", symbols=["DEBUG"])
+
+
 def _classic_net(ctx: _Ctx, handler):
     """Run a .NET Framework text pattern only for files a classic ASP.NET Stack owns (the pattern is specified on that
     shape; the public .NET Core examples stay unchanged)."""
@@ -1112,7 +1154,8 @@ def _classic_net(ctx: _Ctx, handler):
 _BY_EXT = {
     ".cs": (_logger_mismatch, lambda c: _distinct_auth(c, "c"), lambda c: _unescaped_razor(c, "c"),
             _state_aspnet, lambda c: _credentials(c, "cs"), lambda c: _classic_net(c, _null_patterns),
-            lambda c: _classic_net(c, _dead_null_fallback), _production_mode),
+            lambda c: _classic_net(c, _dead_null_fallback), _production_mode,
+            lambda c: _classic_net(c, _debug_block)),
     ".config": (_duplicate_keys,),
     ".cshtml": (lambda c: _unescaped_razor(c, "xml"),),
     ".razor": (lambda c: _unescaped_razor(c, "xml"),),
@@ -1167,6 +1210,122 @@ _JOINED_PATTERNS = frozenset({"hardcoded-production-mode"})   # found in text, c
 
 def _source(f: Fact) -> tuple:
     return (f.path, f.line or 0, f.kind, f.name)
+
+
+def _norm_attr(name: str) -> str:
+    n = name.strip().rsplit(".", 1)[-1].lower()
+    return n[:-9] if n.endswith("attribute") and len(n) > 9 else n
+
+
+def _handlers(facts):
+    """``(entry_point, detail)`` of every live action of the classic ASP.NET Stack that W4 evaluated, one per line."""
+    seen, out = set(), []
+    for f in facts:
+        if f.kind != "entry_point" or f.stack != "aspnet" or is_test_path(f.path):
+            continue
+        d = f.detail_dict()
+        if d.get("test") or d.get("type") != "route" or "reach" not in d or (f.path, f.line) in seen:
+            continue
+        seen.add((f.path, f.line))
+        out.append((f, d))
+    return out
+
+
+def _handler_patterns(facts, add) -> None:
+    """``handler-without-guard`` and ``state-change-authenticated-only`` (heuristics, plan 2.8 W11): both read the
+    reach label W4 computed for the production configuration; both need a handler that changes state and writes."""
+    handlers = _handlers(facts)
+    role_by_area: dict = {}
+    for f, d in handlers:
+        if d.get("reach") == "role_restricted":
+            role_by_area.setdefault(str(d.get("mvc_area") or "").lower(), []).append(str(d.get("handler") or "").split(".")[0])
+    for f, d in handlers:
+        if d.get("state_changing") != "true" or d.get("writes") is not True:
+            continue
+        reasons = {"reasons": list(d["reasons"])} if d.get("reasons") else {}
+        if d.get("reach") == "no_app_restriction" and d.get("reach_anon") == "allow":
+            add("handler-without-guard", f, "a handler that changes state has no application-layer restriction",
+                [_source(f)], writes=True, **reasons)
+        elif d.get("reach") == "signed_in_any":
+            own = str(d.get("handler") or "").split(".")[0]
+            siblings = [c for c in role_by_area.get(str(d.get("mvc_area") or "").lower(), []) if c != own]
+            if siblings:
+                add("state-change-authenticated-only", f,
+                    "a handler that changes state is open to any signed-in user while a sibling controller in the "
+                    "same area is restricted to roles", [_source(f)], count=len(siblings), writes=True)
+
+
+_MVC_BASES = frozenset({"Controller", "AsyncController"})
+
+
+def _antiforgery(facts, add) -> None:
+    """``post-without-antiforgery``: one Target-level hit, anchored on the first affected controller class line, with a
+    per-controller table ``path:line N of M``. A POST is protected by an own, class-level or inherited
+    ``[ValidateAntiForgeryToken]`` (``antiforgery_check``), an in-body ``AntiForgery.Validate``, a Target attribute class
+    that calls it (used on the action, a class of its chain, or added as a global filter) or a global
+    ``ValidateAntiForgeryToken`` filter. ``ApiController`` and Web Forms are out of scope and a chain with an unresolved
+    external base gives no hit (R20: an absence claim needs a closed world)."""
+    live = [f for f in facts if not is_test_path(f.path) and not f.detail_dict().get("test")]
+    classes: dict = {}                       # (path, name) -> controller_class Fact
+    by_name: dict = {}
+    for f in live:
+        if f.kind == "controller_class" and f.stack == "aspnet":
+            classes[(f.path, f.name)] = f
+            by_name.setdefault(f.name, []).append(f.path)
+    validators = {_norm_attr(f.name) for f in live if f.kind == "antiforgery_check"
+                  and f.detail_dict().get("scope") == "validator"}
+    global_on = any(f.kind == "antiforgery_check" and f.detail_dict().get("scope") == "global" for f in live) or any(
+        f.kind == "auth_check" and f.detail_dict().get("mechanism") == "global-filter"
+        and not f.detail_dict().get("api_pipeline") and _norm_attr(f.name) in validators for f in live)
+    class_checks = {(f.path, f.detail_dict().get("applies_to")) for f in live
+                    if f.kind == "antiforgery_check" and f.detail_dict().get("scope") == "class"}
+    line_checks = {(f.path, f.line) for f in live if f.kind == "antiforgery_check"
+                   and f.detail_dict().get("scope") in ("method", "body")}
+    uses: dict = {}
+    for f in live:
+        if f.kind == "guard_use" and _norm_attr(f.name) in validators:
+            uses.setdefault((f.path, f.detail_dict().get("applies_to")), []).append(f)
+
+    def chain(path, name):
+        out, seen, todo = [], set(), [(path, name)]
+        while todo:
+            key = todo.pop(0)
+            if key in seen or key not in classes:
+                continue
+            seen.add(key)
+            out.append(key)
+            for b in classes[key].detail_dict().get("base_list", []):
+                todo.extend((p, b) for p in by_name.get(b, []))
+        return out
+
+    table: dict = {}                         # (path, class) -> [unprotected, total]
+    for f, d in _handlers(facts):
+        if d.get("state_changing") != "true" or "POST" not in (d.get("verbs") or []) or d.get("http_route"):
+            continue
+        cls = str(d.get("handler") or "").split(".")[0]
+        ch = chain(f.path, cls)
+        if not ch or (f.path, cls) not in classes:
+            continue
+        bases = {b for k in ch for b in classes[k].detail_dict().get("base_list", [])}
+        if any(classes[k].detail_dict().get("base_external") for k in ch) or d.get("base_external") \
+                or "ApiController" in bases or not bases & _MVC_BASES:
+            continue
+        protected = (global_on or (f.path, f.line) in line_checks
+                     or any(k in class_checks for k in ch)
+                     or (f.path, d.get("handler")) in uses
+                     or any(k in uses for k in ch))
+        row = table.setdefault((f.path, cls), [0, 0])
+        row[1] += 1
+        row[0] += 0 if protected else 1
+    exposed = sorted((k for k, (n, _m) in table.items() if n), key=lambda k: (k[0], classes[k].line or 0, k[1]))
+    if not exposed:
+        return
+    anchor = classes[exposed[0]]
+    add("post-without-antiforgery", anchor,
+        "state-changing POST actions have no anti-forgery token validation (the per-controller table lists them)",
+        [_source(classes[k]) for k in exposed],
+        unprotected=sum(table[k][0] for k in exposed), total=sum(m for _n, m in table.values()),
+        controllers=[f"{k[0]}:{classes[k].line} {table[k][0]} of {table[k][1]}" for k in exposed])
 
 
 def from_facts(facts) -> list:
@@ -1235,6 +1394,9 @@ def from_facts(facts) -> list:
                 add("config-year-horizon", f,
                     "a configuration value is a year within one year of the declared reference year; if it is a "
                     "limit, confirm with the owner", [_source(f)])
+
+    _handler_patterns(facts, add)
+    _antiforgery(facts, add)
 
     projects = sorted(((f.path.rsplit("/", 1)[0] if "/" in f.path else "", f.detail_dict()) for f in facts
                        if f.kind == "project" and f.detail_dict().get("kind") != "solution"),

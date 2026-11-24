@@ -392,6 +392,9 @@ def file_facts(stack_id: str, path: str, ctx, classes, methods, core: bool = Fal
         yield from _inbody_checks(stack_id, path, ctx, blank)
     yield from _filter_providers(stack_id, path, ctx, blank)
     yield from _calls(stack_id, path, ctx, blank, classes, methods)
+    if not core:                                 # MVC 5 only: Core has its own token filters (plan 2.8 W11)
+        yield from antiforgery_facts(stack_id, path, ctx, blank, classes, methods, meta)
+        yield from mode_facts(stack_id, path, ctx, blank, methods, meta)
 
 
 def _uses(stack_id, path, ctx, uses, scope, applies_to, usings, is_api, core):
@@ -564,6 +567,75 @@ def _calls(stack_id, path, ctx, blank, classes, methods):
         yield Fact.make("method_call", stack_id, path, ctx.line(m.start(1)), name, **detail)
 
 
+# --- anti-forgery and mode comparisons (raw Facts of plan 2.8 W11; joined in smells.from_facts and in promote)
+
+_AF_ATTRS = frozenset({"validateantiforgerytoken"})
+_AF_CALL = re.compile(r"\bAntiForgery\s*\.\s*Validate\s*\(")
+_AF_GLOBAL = re.compile(r"\b[\w.]*[Ff]ilters\s*\.\s*Add\s*\(\s*new\s+(?:[\w.]+\.)?ValidateAntiForgeryToken(?:Attribute)?\s*\(")
+_COMMENTS = re.compile(r"//[^\n]*|/\*.*?\*/", re.S)
+_MODE_CMP = re.compile(r"(?<![=!<>])[\w.\])]+\s*==\s*[A-Za-z_]\w*\s*\.\s*Production\b|\b[A-Za-z_]\w*\s*\.\s*Production\s*==(?!=)\s*[\w.(\[]")
+
+
+def _method_body(blank: str, m) -> str:
+    i = blank.find("{", m.end())
+    if i < 0 or blank.find(";", m.end(), i) >= 0:
+        return ""
+    j = _match_close(blank, i)
+    return blank[i:j if j > 0 else len(blank)]
+
+
+def antiforgery_facts(stack_id, path, ctx, blank, classes, methods, meta):
+    """``antiforgery_check``: where a token is validated. ``scope`` is ``class`` or ``method`` (an own
+    ``[ValidateAntiForgeryToken]``; a method's Fact sits on the method-name line, the line of its ``entry_point``, so an
+    overload is not confused with its twin), ``body`` (an in-body ``AntiForgery.Validate(``, same line rule), ``validator``
+    (a Target attribute or filter class whose body calls it) and ``global`` (``filters.Add(new
+    ValidateAntiForgeryToken())``). Uses of a validator class are ordinary ``guard_use`` Facts; the join is in ``smells``."""
+    if "AntiForgery" not in ctx.t and "Antiforgery" not in ctx.t:
+        return
+    for c in classes:
+        ctrl, _api, uses = meta.get(id(c), (False, False, []))
+        if ctrl:
+            if any(attr_key(u[0]) in _AF_ATTRS for u in uses):
+                yield Fact.make("antiforgery_check", stack_id, path, ctx.line(c.pos), "ValidateAntiForgeryToken",
+                                scope="class", applies_to=c.name)
+        elif _AF_CALL.search(_class_body(blank, c)) and (
+                c.name.endswith("Attribute") or any(b.endswith("Attribute") or b in _FILTER_IFACES for b in _bases(c))):
+            yield Fact.make("antiforgery_check", stack_id, path, ctx.line(c.pos), c.name, scope="validator",
+                            applies_to=c.name)
+    for m, cls, _ in methods:
+        if cls is None or "static" in m.group("mods") or id(cls) not in meta or not meta[id(cls)][0]:
+            continue
+        uses = _attr_uses(m.start("attrs"), m.group("attrs"))
+        if any(attr_key(u[0]) == "nonaction" for u in uses):
+            continue
+        line, at = ctx.line(m.start("name")), f"{cls.name}.{m.group('name')}"
+        if any(attr_key(u[0]) in _AF_ATTRS for u in uses):
+            yield Fact.make("antiforgery_check", stack_id, path, line, "ValidateAntiForgeryToken", scope="method",
+                            applies_to=at)
+        if _AF_CALL.search(_method_body(blank, m)):
+            yield Fact.make("antiforgery_check", stack_id, path, line, "AntiForgery.Validate", scope="body",
+                            applies_to=at)
+    g = _AF_GLOBAL.search(blank)
+    if g:
+        yield Fact.make("antiforgery_check", stack_id, path, ctx.line(g.start()), "ValidateAntiForgeryToken",
+                        scope="global", applies_to="")
+
+
+def mode_facts(stack_id, path, ctx, blank, methods, meta):
+    """``mode_branch`` (raw): the count of ``X == Enum.Production`` comparisons in an action. ``promote`` keeps it only
+    for an action that also calls an auth method. The name is the handler, never the enum or the value compared."""
+    if "Production" not in ctx.t:
+        return
+    for m, cls, _ in methods:
+        if cls is None or "static" in m.group("mods") or id(cls) not in meta or not meta[id(cls)][0]:
+            continue
+        body = _COMMENTS.sub(lambda x: re.sub(r"[^\n]", " ", x.group(0)), _method_body(blank, m))
+        n = len(_MODE_CMP.findall(body))
+        if n:
+            at = f"{cls.name}.{m.group('name')}"
+            yield Fact.make("mode_branch", stack_id, path, ctx.line(m.start("name")), at, applies_to=at, count=n)
+
+
 # --- constants
 
 _CONST = re.compile(
@@ -627,7 +699,7 @@ def const_facts(stack_id: str, path: str, ctx, classes):
 
 # --------------------------------------------------------------------------- post-pass
 
-_RAW = ("guard_use", "guard_class", "const_def", "method_call", "controller_class")
+_RAW = ("guard_use", "guard_class", "const_def", "method_call", "controller_class", "mode_branch")
 CANDIDATE_MIN_USES = 3
 
 
@@ -877,7 +949,27 @@ def promote(facts: list) -> list:
                 ac["applies_to"] = f.detail_dict()["applies_to"]
             added.append(Fact.make("auth_check", f.stack, f.path, f.line, f"{name}()", **ac))
 
-    out = [replaced.get(id(f), f) for f in facts]
+    # ---- conditional_const: a const under #if that some guard-attribute argument refers to (never its value)
+    refs: dict = {}
+    for _f, d in uses:
+        for r in d.get("arg_refs", []):
+            segs = r.split(".")
+            k = ".".join(segs[-2:]) if len(segs) >= 2 else segs[0]
+            refs[k] = refs.get(k, 0) + 1
+    for f in sorted(by.get("const_def", []), key=key):
+        d = f.detail_dict()
+        if not d.get("under_if") or d.get("secret"):
+            continue
+        q = d.get("qualified") or f.name
+        n = refs.get(q, 0) + (refs.get(q.rsplit(".", 1)[-1], 0) if "." not in q else 0)
+        if n:
+            added.append(Fact.make("conditional_const", f.stack, f.path, f.line, q, under_if=list(d["under_if"]), uses=n))
+
+    # ---- mode_branch: only in a handler that also calls an auth method
+    auth_calls = {(f.path, f.detail_dict().get("applies_to")) for f in added
+                  if f.kind == "auth_check" and f.detail_dict().get("via") == "call"}
+    out = [replaced.get(id(f), f) for f in facts
+           if not (f.kind == "mode_branch" and (f.path, f.detail_dict().get("applies_to")) not in auth_calls)]
     out.extend(added)
     return out
 

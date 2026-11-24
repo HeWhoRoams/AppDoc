@@ -60,6 +60,9 @@ KINDS = (
     "controller_class",      # MVC/Web API controller class marker (class line, base list)
     "host_auth",             # IIS/OWIN authentication disclosure
     "method_call",           # a call whose arguments hold >= 2 constant references (auth_method candidates)
+    "antiforgery_check",     # anti-forgery token validation (attribute, in-body call, validator class, global filter)
+    "conditional_const",     # a const under #if that a guard-attribute argument refers to
+    "mode_branch",           # X == Enum.Production comparisons in a handler that also calls an auth method
 )
 
 # Allowed detail keys per kind (conformance guard, Phase 2.3).
@@ -83,7 +86,9 @@ DETAIL_KEYS = {
         "scope users_named via".split()),
     "message": frozenset("context exception".split()),
     "ownership": frozenset("commits contributors first_commit last_commit role source".split()),  # counts and dates, no names (R18)
-    "smell": frozenset("configs constant count fid overridden_in pattern sources".split()),
+    "smell": frozenset(
+        "configs constant controllers count fid overridden_in pattern reasons sources symbols total unprotected "
+        "writes".split()),
     "schema_object": frozenset("columns dialect expression type unique".split()),
     "owner_file": frozenset("entries kind".split()),
     "ui_page": frozenset("root route type x_class".split()),
@@ -111,6 +116,9 @@ DETAIL_KEYS = {
     "controller_class": frozenset("base_external base_list filter_hooks override_authorization".split()),
     "host_auth": frozenset("iis_anonymous iis_authorization_present owin_auth source".split()),
     "method_call": frozenset("applies_to arg_refs arity".split()),
+    "antiforgery_check": frozenset("applies_to scope".split()),
+    "conditional_const": frozenset("under_if uses".split()),
+    "mode_branch": frozenset("applies_to count".split()),
 }
 
 

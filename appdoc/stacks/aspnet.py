@@ -783,7 +783,7 @@ class AspNetStack(Stack):
     capabilities = frozenset((
         "auth_check config_key connection const_def controller_class data_access entry_point.route "
         "entry_point.page entry_point.handler entry_point.desktop entry_point.guard_mechanism entry_point.guard_reach "
-        "external_call guard_candidate guard_class guard_use "
+        "external_call guard_candidate guard_class guard_use antiforgery_check conditional_const mode_branch "
         "message method_call smell ui_page host_auth security_setting access_rule config_transform"
     ).split())
     extensions = frozenset({".aspx", ".ascx", ".master", ".asax", ".cs", ".vb", ".cshtml", ".config"})

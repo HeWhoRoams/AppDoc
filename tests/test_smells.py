@@ -920,5 +920,535 @@ class DeterminismTests(unittest.TestCase):
                          "deref-before-null-check"} <= found, found)
 
 
+facts_mod = facts
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# 2.8 W11 (T28.72): handler-without-guard, state-change-authenticated-only, post-without-antiforgery
+# ---------------------------------------------------------------------------------------------------------------
+
+def entry(path, line, handler, verbs=("POST",), state="true", writes=True, reach="no_app_restriction",
+          anon="allow", area=None, reasons=None, stack="aspnet", **extra):
+    d = dict(type="route", handler=handler, verbs=list(verbs), state_changing=state, writes=writes, reach=reach,
+             reach_anon=anon, reach_auth="allow" if reach != "denied" else "deny", **extra)
+    if area:
+        d["mvc_area"] = area
+    if reasons:
+        d["reasons"] = list(reasons)
+    return Fact.make("entry_point", stack, path, line, "/" + handler.replace(".", "/"), **d)
+
+
+def controller(path, line, name, bases=("Controller",), external=False):
+    return Fact.make("controller_class", "aspnet", path, line, name, base_list=list(bases), base_external=external)
+
+
+def check(path, line, scope, applies_to, name="ValidateAntiForgeryToken"):
+    return Fact.make("antiforgery_check", "aspnet", path, line, name, scope=scope, applies_to=applies_to)
+
+
+def hits_of(found, pattern):
+    return [(f.path, f.line) for f in smells.from_facts(found) if f.detail_dict()["pattern"] == pattern]
+
+
+class HandlerWithoutGuardTests(unittest.TestCase):
+    def test_handler_without_guard_positive(self):
+        found = [entry("Controllers/A.cs", 12, "AController.Save", reasons=["host_auth_set"])]
+        got = by_pattern(smells.from_facts(found), "handler-without-guard")
+        self.assertEqual([(f.path, f.line) for f in got], [("Controllers/A.cs", 12)])
+        d = got[0].detail_dict()
+        self.assertEqual(d["reasons"], ["host_auth_set"])
+        self.assertIn("no application-layer restriction", got[0].name)
+        self.assertNotIn("Save", got[0].name)
+        self.assertEqual(d["sources"], [("Controllers/A.cs", 12, "entry_point", "/AController/Save")])
+
+    def test_read_only_post_is_not_flagged(self):
+        self.assertEqual(hits_of([entry("C/A.cs", 12, "A.Show", writes=False)], "handler-without-guard"), [])
+
+    def test_redirect_only_stub_is_not_flagged(self):
+        self.assertEqual(hits_of([entry("C/A.cs", 12, "A.Go", writes=False, state="true")], "handler-without-guard"), [])
+
+    def test_restricted_or_unknown_reach_is_not_flagged(self):
+        for reach, anon in (("signed_in_any", "deny"), ("role_restricted", "deny"), ("denied", "deny"),
+                            ("unknown", "unknown")):
+            self.assertEqual(hits_of([entry("C/A.cs", 12, "A.Save", reach=reach, anon=anon)],
+                                     "handler-without-guard"), [], reach)
+
+    def test_not_state_changing_is_not_flagged(self):
+        for state in ("false", "unknown"):
+            self.assertEqual(hits_of([entry("C/A.cs", 12, "A.Save", state=state)], "handler-without-guard"), [], state)
+
+    def test_allow_star_data_api_read_is_not_flagged(self):
+        api = entry("Controllers/ApiDataController.cs", 9, "ApiDataController.Get", verbs=("GET",), state="false",
+                    writes=False, reasons=["iis_anonymous_unknown"])
+        self.assertEqual(hits_of([api], "handler-without-guard"), [])
+
+    def test_core_entry_points_have_no_reach_and_no_hit(self):
+        e = Fact.make("entry_point", "aspnet-core", "C/A.cs", 3, "/a", type="route", handler="A.Save",
+                      guard_mechanism=["none"])
+        self.assertEqual(hits_of([e], "handler-without-guard"), [])
+
+    def test_attribute_routes_of_one_action_are_one_hit(self):
+        a = entry("C/A.cs", 12, "A.Save")
+        b = Fact.make("entry_point", "aspnet", "C/A.cs", 12, "/other", **a.detail_dict())
+        self.assertEqual(hits_of([a, b], "handler-without-guard"), [("C/A.cs", 12)])
+
+
+class AuthenticatedOnlyTests(unittest.TestCase):
+    def sample(self, **kw):
+        return [entry("Areas/Admin/C/UsersController.cs", 10, "UsersController.Save", reach="signed_in_any",
+                      anon="deny", area="Admin", **kw),
+                entry("Areas/Admin/C/RolesController.cs", 10, "RolesController.Save", reach="role_restricted",
+                      anon="deny", area="Admin")]
+
+    def test_authenticated_only_requires_role_sibling_in_same_area(self):
+        pos = by_pattern(smells.from_facts(self.sample()), "state-change-authenticated-only")
+        self.assertEqual([(f.path, f.line) for f in pos], [("Areas/Admin/C/UsersController.cs", 10)])
+        self.assertEqual(pos[0].detail_dict()["count"], 1)
+        other_area = self.sample()
+        other_area[1] = entry("Areas/Ops/C/RolesController.cs", 10, "RolesController.Save", reach="role_restricted",
+                              anon="deny", area="Ops")
+        self.assertEqual(hits_of(other_area, "state-change-authenticated-only"), [])
+        self.assertEqual(hits_of(self.sample()[:1], "state-change-authenticated-only"), [])
+
+    def test_root_area_siblings_count_as_one_area(self):
+        a = entry("C/UsersController.cs", 10, "UsersController.Save", reach="signed_in_any", anon="deny")
+        b = entry("C/RolesController.cs", 10, "RolesController.Save", reach="role_restricted", anon="deny")
+        self.assertEqual(hits_of([a, b], "state-change-authenticated-only"), [("C/UsersController.cs", 10)])
+
+    def test_authenticated_only_needs_a_writing_state_change(self):
+        a = self.sample(writes=False)
+        self.assertEqual(hits_of(a, "state-change-authenticated-only"), [])
+
+    def test_role_restricted_handler_is_not_flagged_itself(self):
+        self.assertEqual([p for p, _ in hits_of(self.sample(), "state-change-authenticated-only")
+                          if "Roles" in p], [])
+
+    def test_no_name_in_message(self):
+        for f in by_pattern(smells.from_facts(self.sample()), "state-change-authenticated-only"):
+            self.assertNotIn("Users", f.name)
+            self.assertNotIn("Admin", f.name)
+
+
+class AntiforgeryTests(unittest.TestCase):
+    A = "Controllers/AController.cs"
+    B = "Controllers/BController.cs"
+
+    def base(self):
+        return [controller(self.A, 5, "AController"), controller(self.B, 5, "BController"),
+                entry(self.A, 10, "AController.Save"), entry(self.A, 20, "AController.Drop"),
+                entry(self.B, 10, "BController.Save")]
+
+    def table(self, found):
+        got = by_pattern(smells.from_facts(found), "post-without-antiforgery")
+        return got
+
+    def test_antiforgery_one_target_level_hit_with_per_controller_table(self):
+        got = self.table(self.base())
+        self.assertEqual(len(got), 1)
+        f = got[0]
+        self.assertEqual((f.path, f.line), (self.A, 5))
+        d = f.detail_dict()
+        self.assertEqual((d["unprotected"], d["total"]), (3, 3))
+        self.assertEqual(d["controllers"], [f"{self.A}:5 2 of 2", f"{self.B}:5 1 of 1"])
+        self.assertEqual([s[2] for s in d["sources"]], ["controller_class", "controller_class"])
+        for word in ("AController", "Save"):
+            self.assertNotIn(word, f.name)
+
+    def test_antiforgery_own_attribute_protects(self):
+        found = self.base() + [check(self.A, 10, "method", "AController.Save"),
+                               check(self.A, 20, "method", "AController.Drop"),
+                               check(self.B, 10, "method", "BController.Save")]
+        self.assertEqual(self.table(found), [])
+
+    def test_antiforgery_partial_table_counts_n_of_m(self):
+        found = self.base() + [check(self.A, 10, "method", "AController.Save"), check(self.B, 10, "body", "BController.Save", "AntiForgery.Validate")]
+        got = self.table(found)
+        self.assertEqual(got[0].detail_dict()["controllers"], [f"{self.A}:5 1 of 2"])
+        self.assertEqual((got[0].detail_dict()["unprotected"], got[0].detail_dict()["total"]), (1, 3))   # Target-wide M
+
+    def test_antiforgery_class_level_protects(self):
+        found = self.base() + [check(self.A, 5, "class", "AController")]
+        self.assertEqual(hits_of(found, "post-without-antiforgery"), [(self.B, 5)])
+
+    def test_antiforgery_inherited_from_in_target_base_protects(self):
+        found = [controller("Base.cs", 3, "SecureBase"), check("Base.cs", 3, "class", "SecureBase"),
+                 controller(self.A, 5, "AController", bases=("SecureBase",)), entry(self.A, 10, "AController.Save")]
+        self.assertEqual(hits_of(found, "post-without-antiforgery"), [])
+        unsafe = [controller("Base.cs", 3, "SecureBase")] + found[2:]
+        self.assertEqual(hits_of(unsafe, "post-without-antiforgery"), [(self.A, 5)])
+
+    def test_antiforgery_target_attribute_calling_validate_protects(self):
+        validator = Fact.make("antiforgery_check", "aspnet", "Filters/F.cs", 4, "SiteForgeryAttribute",
+                              scope="validator", applies_to="SiteForgeryAttribute")
+        use = Fact.make("guard_use", "aspnet", self.A, 9, "SiteForgery", attribute="SiteForgery", scope="method",
+                        applies_to="AController.Save", arity=0, arg_kinds=[])
+        found = self.base() + [validator, use]
+        self.assertEqual(sorted(hits_of(found, "post-without-antiforgery")), [(self.A, 5)])
+        got = self.table(found)[0].detail_dict()
+        self.assertEqual((got["unprotected"], got["total"]), (2, 3))
+        cls_use = Fact.make("guard_use", "aspnet", self.A, 4, "SiteForgery", attribute="SiteForgery", scope="class",
+                            applies_to="AController", arity=0, arg_kinds=[])
+        self.assertEqual(hits_of(self.base() + [validator, cls_use], "post-without-antiforgery"), [(self.B, 5)])
+
+    def test_antiforgery_attribute_without_validate_call_is_not_a_protection(self):
+        use = Fact.make("guard_use", "aspnet", self.A, 9, "SiteForgery", attribute="SiteForgery", scope="method",
+                        applies_to="AController.Save", arity=0, arg_kinds=[])
+        self.assertEqual(len(self.table(self.base() + [use])[0].detail_dict()["controllers"]), 2)
+        self.assertEqual(self.table(self.base() + [use])[0].detail_dict()["unprotected"], 3)
+
+    def test_antiforgery_global_filter_of_that_class_protects_everything(self):
+        validator = Fact.make("antiforgery_check", "aspnet", "Filters/F.cs", 4, "SiteForgeryAttribute",
+                              scope="validator", applies_to="SiteForgeryAttribute")
+        glob = Fact.make("auth_check", "aspnet", "App_Start/FilterConfig.cs", 8, "SiteForgeryAttribute",
+                         mechanism="global-filter", scope="global")
+        self.assertEqual(self.table(self.base() + [validator, glob]), [])
+        other = Fact.make("auth_check", "aspnet", "App_Start/FilterConfig.cs", 8, "OtherAttribute",
+                          mechanism="global-filter", scope="global")
+        self.assertEqual(len(self.table(self.base() + [validator, other])), 1)
+
+    def test_antiforgery_global_validate_token_filter_protects(self):
+        glob = check("App_Start/FilterConfig.cs", 8, "global", "", "ValidateAntiForgeryToken")
+        self.assertEqual(self.table(self.base() + [glob]), [])
+
+    def test_antiforgery_in_body_validate_protects(self):
+        found = self.base() + [check(self.A, 10, "body", "AController.Save", "AntiForgery.Validate")]
+        self.assertEqual(self.table(found)[0].detail_dict()["unprotected"], 2)
+
+    def test_antiforgery_api_controller_is_excluded(self):
+        found = [controller(self.A, 5, "AController", bases=("ApiController",)), entry(self.A, 10, "AController.Post")]
+        self.assertEqual(self.table(found), [])
+        via_base = [controller("B.cs", 2, "BaseApi", bases=("ApiController",)),
+                    controller(self.A, 5, "AController", bases=("BaseApi",)), entry(self.A, 10, "AController.Post")]
+        self.assertEqual(self.table(via_base), [])
+
+    def test_antiforgery_unresolved_external_base_gives_no_hit(self):
+        found = [controller(self.A, 5, "AController", bases=("VendorBase",), external=True),
+                 entry(self.A, 10, "AController.Save")]
+        self.assertEqual(self.table(found), [])
+
+    def test_antiforgery_only_state_changing_posts_count(self):
+        found = [controller(self.A, 5, "AController"),
+                 entry(self.A, 10, "AController.Show", writes=False, state="true"),
+                 entry(self.A, 20, "AController.List", verbs=("GET",), state="false", writes=False),
+                 entry(self.A, 30, "AController.Any", verbs=("any",), state="unknown", writes=False)]
+        # a POST is state_changing by its verb (the write test is separate), a GET and a verb-less read are not
+        got = self.table(found)[0].detail_dict()
+        self.assertEqual((got["unprotected"], got["total"]), (1, 1))
+
+    def test_antiforgery_web_forms_and_core_are_not_in_scope(self):
+        page = Fact.make("entry_point", "aspnet", "Admin/users.aspx", 1, "/Admin/users.aspx", type="page")
+        core = entry(self.A, 10, "AController.Save", stack="aspnet-core")
+        self.assertEqual(self.table([page, core, controller(self.A, 5, "AController")]), [])
+
+    def test_per_controller_anchor_stable_when_action_added(self):
+        before = self.table(self.base())[0]
+        after = self.table(self.base() + [entry(self.A, 30, "AController.Extra")])[0]
+        self.assertEqual((before.path, before.line), (after.path, after.line))
+        self.assertEqual(before.detail_dict()["fid"], after.detail_dict()["fid"])
+        self.assertNotEqual(before.detail_dict()["total"], after.detail_dict()["total"])
+
+    def test_antiforgery_test_controllers_are_left_out(self):
+        found = [controller("Tests/AControllerTests.cs", 5, "AController"),
+                 entry("Tests/AControllerTests.cs", 10, "AController.Save")]
+        self.assertEqual(self.table(found), [])
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# End to end: the raw antiforgery_check Facts, conditional_const and mode_branch, on invented Targets
+# ---------------------------------------------------------------------------------------------------------------
+
+MVC_USING = "using System.Web.Mvc;\n"
+
+
+def mvc(path_body: dict) -> dict:
+    files = dict(GLOBAL)
+    files.update(path_body)
+    return files
+
+
+def kinds_at(doc, kind, **detail):
+    return sorted((f["path"], f["line"], f["name"], f["detail"]) for f in of(doc, kind, **detail))
+
+
+class AntiforgeryRawFactTests(unittest.TestCase):
+    FILTER = (MVC_USING + "namespace Contoso.Web {\n"
+              "  public class SiteForgeryAttribute : FilterAttribute, IAuthorizationFilter {\n"
+              "    public void OnAuthorization(AuthorizationContext c) {\n"
+              "      AntiForgery.Validate();\n    }\n  }\n}\n")
+    CTRL = (MVC_USING + "namespace Contoso.Web {\n"
+            "  public class OrdersController : Controller {\n"                       # 3
+            "    [HttpPost]\n    [ValidateAntiForgeryToken]\n    public ActionResult Save(Order o) { Db.SaveChanges(); return View(); }\n"   # 4,5,6
+            "    [HttpPost]\n    public ActionResult Drop(int id) { Db.SaveChanges(); return View(); }\n"    # 7,8
+            "    [HttpPost]\n    public ActionResult Check(int id) {\n      AntiForgery.Validate();\n      return View();\n    }\n"   # 9..13
+            "    [SiteForgery]\n    [HttpPost]\n    public ActionResult Merge(int id) { return View(); }\n"       # 14..16
+            "  }\n"
+            "  [ValidateAntiForgeryToken]\n  public class SafeController : Controller {\n"                          # 18,19
+            "    [HttpPost]\n    public ActionResult Edit(int id) { return View(); }\n  }\n}\n")
+    FILTERS = (MVC_USING + "public static class FilterConfig {\n"
+               "  public static void RegisterGlobalFilters(GlobalFilterCollection filters) {\n"
+               "    filters.Add(new ValidateAntiForgeryTokenAttribute());\n  }\n}\n")
+
+    def doc(self, **extra):
+        files = mvc({"Controllers/OrdersController.cs": self.CTRL, "Filters/SiteForgeryAttribute.cs": self.FILTER})
+        files.update(extra)
+        return run_target(files)
+
+    def test_raw_antiforgery_check_facts(self):
+        got = {(f["path"], f["line"], f["detail"]["scope"], f["detail"]["applies_to"])
+               for f in of(self.doc(), "antiforgery_check")}
+        scopes = {(s, a) for _, _, s, a in got}
+        self.assertIn(("method", "OrdersController.Save"), scopes)
+        self.assertIn(("body", "OrdersController.Check"), scopes)
+        self.assertIn(("class", "SafeController"), scopes)
+        self.assertIn(("validator", "SiteForgeryAttribute"), scopes)
+        self.assertNotIn(("method", "OrdersController.Drop"), scopes)
+        for path, line, scope, applies in got:
+            if scope in ("method", "body"):
+                entries = [e for e in of(self.doc(), "entry_point", handler=applies)]
+                self.assertIn(line, {e["line"] for e in entries}, "joined to the entry point by its line")
+
+    def test_raw_facts_join_to_one_target_level_smell(self):
+        doc = self.doc()
+        hit = [f for f in doc["facts"] if f["kind"] == "smell" and f["detail"]["pattern"] == "post-without-antiforgery"]
+        self.assertEqual(len(hit), 1)
+        d = hit[0]["detail"]
+        self.assertEqual(hit[0]["path"], "Controllers/OrdersController.cs")
+        self.assertEqual(hit[0]["line"], 3)                        # the class line
+        self.assertEqual((d["unprotected"], d["total"]), (1, 5))   # Drop only: Save, Check, Merge and Edit are protected
+        self.assertEqual(d["controllers"], ["Controllers/OrdersController.cs:3 1 of 4"])
+
+    def test_global_validate_filter_protects_every_post(self):
+        doc = self.doc(**{"App_Start/FilterConfig.cs": self.FILTERS})
+        self.assertEqual([f for f in doc["facts"] if f["kind"] == "smell"
+                          and f["detail"]["pattern"] == "post-without-antiforgery"], [])
+
+    def test_api_controller_and_core_are_out_of_scope(self):
+        api = (MVC_USING + "using System.Web.Http;\nnamespace Contoso.Web {\n  public class ItemsController : ApiController {\n"
+               "    [HttpPost] public IHttpActionResult Post(int id) { Db.SaveChanges(); return Ok(); }\n  }\n}\n")
+        doc = run_target(mvc({"Controllers/ItemsController.cs": api}))
+        self.assertEqual([f for f in doc["facts"] if f["kind"] == "smell"
+                          and f["detail"]["pattern"] == "post-without-antiforgery"], [])
+
+    def test_unresolved_external_base_gives_no_hit(self):
+        text = (MVC_USING + "namespace Contoso.Web {\n  public class OrdersController : VendorController {\n"
+                "    [HttpPost] public ActionResult Save(int id) { Db.SaveChanges(); return View(); }\n  }\n}\n")
+        doc = run_target(mvc({"Controllers/OrdersController.cs": text}))
+        self.assertEqual([f for f in doc["facts"] if f["kind"] == "smell"
+                          and f["detail"]["pattern"] == "post-without-antiforgery"], [])
+
+    def test_adding_an_action_keeps_the_fid(self):
+        a = self.doc()
+        extra = self.CTRL.replace("  }\n  [ValidateAntiForgeryToken]",
+                                  "    [HttpPost]\n    public ActionResult Extra(int id) { Db.SaveChanges(); return View(); }\n  }\n"
+                                  "  [ValidateAntiForgeryToken]")
+        b = run_target(mvc({"Controllers/OrdersController.cs": extra, "Filters/SiteForgeryAttribute.cs": self.FILTER}))
+        fid = lambda doc: [f["detail"]["fid"] for f in doc["facts"] if f["kind"] == "smell"          # noqa: E731
+                           and f["detail"]["pattern"] == "post-without-antiforgery"]
+        self.assertEqual(fid(a), fid(b))
+        self.assertEqual(len(fid(a)), 1)
+
+
+class ConditionalConstTests(unittest.TestCase):
+    CONSTS = ("namespace Contoso.Web {\n  public static class Roles {\n"
+              "#if DEBUG\n    public const string Admin = \"Everyone\";\n#else\n    public const string Admin = \"Admins\";\n#endif\n"
+              "    public const string Clerk = \"Clerks\";\n"
+              "#if DEBUG\n    public const string Unused = \"U\";\n#endif\n  }\n}\n")
+    CTRL = (MVC_USING + "namespace Contoso.Web {\n  public class OrdersController : Controller {\n"
+            "    [Authorize(Roles = Roles.Admin)]\n    public ActionResult Index() { return View(); }\n"
+            "    [Authorize(Roles = Roles.Clerk)]\n    public ActionResult Other() { return View(); }\n  }\n}\n")
+
+    def doc(self, ctrl=None, **extra):
+        files = mvc({"Infra/Roles.cs": self.CONSTS, "Controllers/OrdersController.cs": ctrl or self.CTRL})
+        files.update(extra)
+        return run_target(files)
+
+    def test_conditional_const_fact(self):
+        got = of(self.doc(), "conditional_const")
+        self.assertEqual([(f["path"], f["line"], f["name"]) for f in got], [("Infra/Roles.cs", 4, "Roles.Admin")])
+        self.assertEqual(got[0]["detail"], {"under_if": ["DEBUG"], "uses": 1})
+        self.assertEqual(got[0]["stack"], "aspnet")
+
+    def test_conditional_const_joined_to_guard_argument(self):
+        no_use = self.CTRL.replace("Roles.Admin", "Roles.Clerk")
+        self.assertEqual(of(self.doc(ctrl=no_use), "conditional_const"), [])
+
+    def test_conditional_const_never_records_a_value(self):
+        for f in of(self.doc(), "conditional_const"):
+            self.assertNotIn("value", f["detail"])
+
+    def test_secret_constant_under_if_is_not_a_conditional_const(self):
+        consts = self.CONSTS.replace("Admin = \"Everyone\"", "AdminPassword = \"hunter2hunter2\"").replace(
+            "Admin = \"Admins\"", "AdminPassword = \"x\"")
+        ctrl = self.CTRL.replace("Roles.Admin", "Roles.AdminPassword")
+        doc = run_target(mvc({"Infra/Roles.cs": consts, "Controllers/OrdersController.cs": ctrl}))
+        self.assertEqual(of(doc, "conditional_const"), [])
+        self.assertNotIn("hunter2hunter2", json.dumps(doc))
+
+
+class ModeBranchTests(unittest.TestCase):
+    CONSTS = ("namespace Contoso.Web {\n  public static class Roles {\n    public const string Admin = \"Admins\";\n"
+              "    public const string Clerk = \"Clerks\";\n  }\n  public enum Mode { Test, Production }\n}\n")
+    GUARDED = ("[Authorize(Roles = Roles.Admin)]\n")
+    CTRL = (MVC_USING + "namespace Contoso.Web {\n  public class OrdersController : Controller {\n"
+            "    [Authorize(Roles = Roles.Admin)]\n    public ActionResult Index() { return View(); }\n"
+            "    [Authorize(Roles = Roles.Clerk)]\n    public ActionResult Other() { return View(); }\n"
+            "    public ActionResult Save() {\n"                                                           # 8
+            "      if (Settings.Mode == Mode.Production) { return View(); }\n"
+            "      if (Mode.Production == Settings.Mode) { Log(); }\n"
+            "      if (!CheckAuth(Roles.Admin, Roles.Clerk)) { return new HttpUnauthorizedResult(); }\n"
+            "      return View();\n    }\n"
+            "    public ActionResult Show() {\n      if (Settings.Mode == Mode.Production) { return View(); }\n      return View();\n    }\n"
+            "  }\n}\n")
+
+    def doc(self):
+        return run_target(mvc({"Infra/Roles.cs": self.CONSTS, "Controllers/OrdersController.cs": self.CTRL}))
+
+    def test_mode_branch_counts(self):
+        got = of(self.doc(), "mode_branch")
+        self.assertEqual([(f["path"], f["name"], f["detail"]["count"], f["detail"]["applies_to"]) for f in got],
+                         [("Controllers/OrdersController.cs", "OrdersController.Save", 2, "OrdersController.Save")])
+
+    def test_mode_branch_only_for_a_handler_that_calls_an_auth_method(self):
+        got = {f["name"] for f in of(self.doc(), "mode_branch")}
+        self.assertNotIn("OrdersController.Show", got)
+
+    def test_no_mode_branch_without_any_auth_method(self):
+        doc = run_target(mvc({"Controllers/OrdersController.cs": self.CTRL.replace("CheckAuth(Roles.Admin, Roles.Clerk)", "Ok()")}))
+        self.assertEqual(of(doc, "mode_branch"), [])
+
+
+class DebugBlockTests(unittest.TestCase):
+    PATTERN = "debug-block-assigns-local"
+
+    def hits(self, body, stacks=("aspnet",), path="Controllers/A.cs"):
+        text = cs("public class AController : Controller {\n" + body + "\n}") if "class " not in body else cs(body)
+        return [(f.line, f.detail_dict()) for f in smells.extract(path, text, list(stacks))
+                if f.detail_dict()["pattern"] == self.PATTERN]
+
+    def test_debug_block_assigning_a_local_in_a_handler_file(self):
+        got = self.hits("  public ActionResult Index() {\n    var who = User.Name;\n#if DEBUG\n    who = \"tester\";\n#endif\n"
+                        "    return View();\n  }")
+        self.assertEqual([line for line, _ in got], [7])
+        self.assertEqual(got[0][1]["symbols"], ["DEBUG"])
+
+    def test_typed_declaration_counts_as_a_local_assignment(self):
+        got = self.hits("  public ActionResult Index() {\n#if DEBUG\n    string who = \"tester\";\n#endif\n    return View();\n  }")
+        self.assertEqual(len(got), 1)
+
+    def test_block_without_assignment_is_not_flagged(self):
+        self.assertEqual(self.hits("  public ActionResult Index() {\n#if DEBUG\n    Trace.WriteLine(1);\n#endif\n    return View();\n  }"), [])
+
+    def test_assignment_in_the_else_branch_is_not_flagged(self):
+        self.assertEqual(self.hits("  public ActionResult Index() {\n#if DEBUG\n    Trace.WriteLine(1);\n#else\n    who = 1;\n#endif\n    return View();\n  }"), [])
+
+    def test_file_without_handlers_is_not_flagged(self):
+        text = cs("public class Helper {\n  void M() {\n#if DEBUG\n    var x = 1;\n#endif\n  }\n}")
+        self.assertEqual([f for f in smells.extract("Code/H.cs", text, ["aspnet"])
+                          if f.detail_dict()["pattern"] == self.PATTERN], [])
+
+    def test_other_stacks_are_unchanged(self):
+        self.assertEqual(self.hits("  public ActionResult Index() {\n#if DEBUG\n    var x = 1;\n#endif\n    return View();\n  }",
+                                   stacks=("aspnet-core",)), [])
+
+    def test_summary_only(self):
+        self.assertNotIn(self.PATTERN, smells.OBLIGING)
+        self.assertNotIn(self.PATTERN, smells.HEURISTIC)
+        self.assertIn(self.PATTERN, smells.SUMMARY_ONLY)
+
+
+class SummaryAccountabilityTests(unittest.TestCase):
+    STACKS = [{"kind": "stack", "stack": "aspnet", "path": "Web.config", "line": None, "name": "aspnet",
+               "detail": {"supported": True}}]
+
+    def doc(self, facts):
+        return {"schema": facts_mod.SCHEMA, "target": {"name": "t", "commit": None, "history": "none"},
+                "stacks": self.STACKS, "facts": facts}
+
+    @staticmethod
+    def f(kind, path, line, name, stack="aspnet", **detail):
+        return {"kind": kind, "stack": stack, "path": path, "line": line, "name": name, "detail": detail}
+
+    def test_accountability_counts_for_guard_attributes(self):
+        from appdoc import summary
+        facts = [self.f("guard_use", "A.cs", 3, "Authorize", attribute="Authorize", applies_to="A"),
+                 self.f("guard_use", "A.cs", 9, "SiteGuard", attribute="SiteGuard", applies_to="A.Save"),
+                 self.f("guard_use", "A.cs", 12, "Ui", attribute="Ui", applies_to="A.Show"),
+                 self.f("auth_check", "A.cs", 9, "[SiteGuard]", mechanism="attribute", via="custom", applies_to="A.Save")]
+        c = summary.accountability_counts(facts)
+        self.assertEqual(c["guard_attributes"], {"seen": 3, "recognised": 2, "unrecognised": 1})
+
+    def test_accountability_counts_for_config_reads(self):
+        from appdoc import summary
+        facts = [self.f("config_key", "Web.config", 3, "Site", source="Web.config", role="app", use="define"),
+                 self.f("config_key", "A.cs", 9, "Site", source="code", role="app", use="read", read_kind="file"),
+                 self.f("config_key", "A.cs", 10, "Other", source="code", role="app", use="read", read_kind="file"),
+                 self.f("config_key", "A.cs", 11, "Path", source="code", role="env", use="read", read_kind="env")]
+        c = summary.accountability_counts(facts)
+        self.assertEqual(c["config_reads"], {"seen": 3, "recognised": 1, "unrecognised": 2})
+
+    def test_accountability_section_is_printed_for_supported_stacks(self):
+        from appdoc import summary
+        text = summary.render_summary(self.doc([
+            self.f("guard_use", "A.cs", 3, "Authorize", attribute="Authorize", applies_to="A")]))
+        self.assertIn("## Detector accountability", text)
+        self.assertIn("Guard attributes: seen 1, recognised 1, unrecognised 0.", text)
+
+    def test_zero_recognised_reads_say_ran_found_no_match(self):
+        from appdoc import summary
+        text = summary.render_summary(self.doc([
+            self.f("config_key", "A.cs", 9, "Other", source="code", role="app", use="read", read_kind="file")]))
+        self.assertIn("Config reads: seen 1, recognised 0, unrecognised 1 (ran, found no match).", text)
+        text = summary.render_summary(self.doc([]))
+        self.assertIn("Config reads: seen 0, recognised 0, unrecognised 0 (ran, found no match).", text)
+
+    def test_no_accountability_section_without_a_supported_stack(self):
+        from appdoc import summary
+        d = self.doc([])
+        d["stacks"] = []
+        self.assertNotIn("## Detector accountability", summary.render_summary(d))
+
+    def test_conditional_compilation_names_the_defining_configurations(self):
+        from appdoc import summary
+        facts = [self.f("conditional_const", "Infra/Roles.cs", 4, "Roles.Admin", under_if=["DEBUG"], uses=2),
+                 self.f("build_define", "Infra/Infra.csproj", 9, "Debug", stack="generic", config="Debug",
+                        symbols=["DEBUG", "TRACE"], inherits=False),
+                 self.f("build_define", "Infra/Infra.csproj", 12, "Release", stack="generic", config="Release",
+                        symbols=["TRACE"], inherits=False),
+                 self.f("build_define", "Other/Other.csproj", 9, "Staging", stack="generic", config="Staging",
+                        symbols=["DEBUG"], inherits=False)]
+        text = summary.render_summary(self.doc(facts))
+        self.assertIn("## Conditional compilation", text)
+        row = [ln for ln in text.splitlines() if "Infra/Roles.cs:4" in ln][0]
+        self.assertIn("`DEBUG`", row)
+        self.assertIn("Debug", row)
+        self.assertNotIn("Release", row)
+        self.assertNotIn("Staging", row)
+
+    def test_antiforgery_table_is_printed_in_the_summary(self):
+        from appdoc import summary
+        facts = [self.f("smell", "C/A.cs", 5, "x", pattern="post-without-antiforgery", fid="aaaaaaaa", unprotected=3,
+                        total=7, controllers=["C/A.cs:5 2 of 4", "C/B.cs:6 1 of 1"])]
+        text = summary.render_summary(self.doc(facts))
+        self.assertIn("3 of 7 state-changing POST actions", text)
+        self.assertIn("- `C/B.cs:6 1 of 1`", text)
+        row = [ln for ln in text.splitlines() if ln.startswith("| `post-without-antiforgery`")][0]
+        self.assertIn("candidate (not an obligation)", row)
+
+    def test_symbol_defined_nowhere_is_said_so(self):
+        from appdoc import summary
+        facts = [self.f("conditional_const", "Infra/Roles.cs", 4, "Roles.Admin", under_if=["DEBUG"], uses=1)]
+        text = summary.render_summary(self.doc(facts))
+        row = [ln for ln in text.splitlines() if "Infra/Roles.cs:4" in ln][0]
+        self.assertIn("no configuration defines it", row)
+
+    def test_mode_branch_rows_in_the_summary(self):
+        from appdoc import summary
+        facts = [self.f("mode_branch", "C/A.cs", 8, "A.Save", count=3, applies_to="A.Save")]
+        text = summary.render_summary(self.doc(facts))
+        self.assertIn("## Conditional compilation", text)
+        self.assertIn("C/A.cs:8", text)
+        self.assertIn("3", [ln for ln in text.splitlines() if "C/A.cs:8" in ln][0])
+
+
 if __name__ == "__main__":
     unittest.main()
