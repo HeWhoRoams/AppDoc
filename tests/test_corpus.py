@@ -56,7 +56,6 @@ PENDING: dict = {
     "test_location_allow_override_and_system_webserver_only": ("T28.42", "missing access_rule: no access_rule Facts yet"),
     "test_secrets_never_recorded_wcf_address_is_scheme_and_host": ("T28.37", "missing external_call: WCF client endpoints are not read yet"),
     # --- 4B: classification and route fidelity
-    "test_core_false_positive_old_style_projects_are_aspnet": ("T28.11", "missing classification: aspnet-core is still detected from old-style projects"),
     "test_stack_markers_in_fixtures_and_tooling_are_ignored": ("T28.11", "missing ignored_markers: no stack records dropped markers yet"),
     # --- 4C: project and publish Facts
     # --- 4D: guards

@@ -22,6 +22,7 @@ from . import scan, smells
 from .citations import OWNER_CONTEXT
 from .secrets import is_secret_ref
 from .stacks import capabilities_of, generic, load
+from .stacks import detect as detect_markers
 from .summary import render_summary
 
 PARALLEL_THRESHOLD = 50  # below this file count, the pool's overhead isn't worth it
@@ -335,10 +336,13 @@ def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: boo
     stacks = load()
 
     detected = {}
+    ignored: dict = {}   # stack id -> markers dropped because they sit under test paths or in test projects
     for st in stacks:
-        markers = st.detect_in(paths, root) if hasattr(st, "detect_in") else st.detect(paths)
+        markers, dropped = detect_markers(st, paths, root)
         if markers:
             detected[st.id] = (st, sorted(markers))
+        if dropped:
+            ignored[st.id] = dropped
 
     # folder -> set of file names, for i18n message-bundle detection (a sibling <base>_<ll>.<ext>)
     siblings: dict[str, set[str]] = {}
@@ -358,9 +362,10 @@ def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: boo
     for sid, (st, markers) in sorted(detected.items()):
         count = sum(1 for sf in files if sf.ext in st.extensions)
         caps = sorted(capabilities_of(st))
+        extra = {"ignored_markers": ignored[sid]} if sid in ignored else {}
         facts.append(F.Fact.make("stack", sid, markers[0], None, sid,
                                  marker_files=markers, file_count=count, supported=True,
-                                 capabilities=caps))
+                                 capabilities=caps, **extra))
     for eco, markers in generic.unsupported_stacks(paths, set(detected)):
         facts.append(F.Fact.make("stack", "generic", markers[0], None, eco,
                                  marker_files=markers, file_count=len(markers), supported=False))
