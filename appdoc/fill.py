@@ -70,7 +70,7 @@ def _names(stacks: list[str]) -> str:
 
 
 COUNTED_ENTRY_TYPES = ("route", "page", "command", "job")
-UNCOUNTED_ENTRY_TYPES = frozenset({"handler"})
+UNCOUNTED_ENTRY_TYPES = frozenset({"handler", "desktop"})
 
 
 def entry_point_counts(doc: dict) -> dict:

@@ -104,12 +104,12 @@
     "tp": 7
   },
   "aspnet/entry_point": {
-    "expected": 22,
-    "found": 22,
+    "expected": 23,
+    "found": 23,
     "fp": 0,
     "precision": 1.0,
     "recall": 1.0,
-    "tp": 22
+    "tp": 23
   },
   "aspnet/external_call": {
     "expected": 4,
@@ -136,6 +136,14 @@
     "tp": 1
   },
   "aspnet/stack": {
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
+  },
+  "aspnet/ui_page": {
     "expected": 1,
     "found": 1,
     "fp": 0,

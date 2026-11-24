@@ -33,6 +33,8 @@
     {"kind": "entry_point", "stack": "aspnet", "path": "Controllers/TicketsController.cs", "line": 30, "name": "/Tickets/Create", "detail": {"type": "route", "method": "POST"}},
     {"kind": "entry_point", "stack": "aspnet", "path": "Global.asax.cs", "line": 9, "name": "Application_Start", "detail": {"type": "handler"}},
     {"kind": "entry_point", "stack": "aspnet", "path": "Global.asax.cs", "line": 14, "name": "Application_Error", "detail": {"type": "handler"}},
+    {"kind": "entry_point", "stack": "aspnet", "path": "Desktop/MainForm.cs", "line": 16, "name": "Main", "detail": {"type": "desktop", "handler": "Program.Main"}},
+    {"kind": "ui_page", "stack": "aspnet", "path": "Desktop/MainForm.cs", "line": 6, "name": "MainForm", "detail": {"type": "form", "root": "Form"}},
     {"kind": "entry_point", "stack": "aspnet", "path": "TicketService.cs", "line": 9, "name": "/api/tickets", "detail": {"type": "route", "method": "GET"}},
     {"kind": "entry_point", "stack": "aspnet", "path": "TicketService.cs", "line": 15, "name": "/api/tickets", "detail": {"type": "route", "method": "POST"}},
     {"kind": "entry_point", "stack": "aspnet", "path": "index.aspx", "line": 1, "name": "/index.aspx", "detail": {"type": "page"}},
@@ -53,7 +55,7 @@
     {"kind": "message", "stack": "aspnet", "path": "resetpwd.aspx.cs", "line": 25, "name": "Reset link sent to", "detail": {"context": "info"}},
     {"kind": "message", "stack": "aspnet", "path": "search.aspx.cs", "line": 34, "name": "Ticket not found.", "detail": {"context": "error"}},
     {"kind": "smell", "stack": "aspnet", "path": "Controllers/TicketsController.cs", "line": 14, "detail": {"pattern": "hardcoded-credential-constant"}},
-    {"kind": "stack", "stack": "aspnet", "path": "Admin/users.aspx", "name": "aspnet", "detail": {"supported": true, "capabilities": ["auth_check", "config_key", "connection", "data_access", "entry_point.handler", "entry_point.page", "entry_point.route", "external_call", "message", "smell"]}},
+    {"kind": "stack", "stack": "aspnet", "path": "Admin/users.aspx", "name": "aspnet", "detail": {"supported": true, "capabilities": ["auth_check", "config_key", "connection", "data_access", "entry_point.desktop", "entry_point.handler", "entry_point.page", "entry_point.route", "external_call", "message", "smell", "ui_page"]}},
     {"kind": "config_key", "stack": "generic", "path": "web.config", "line": 9, "name": "HelpDesk.LogLevel", "detail": {"use": "define", "secret_location": false, "role": "app"}},
     {"kind": "config_key", "stack": "generic", "path": "web.config", "line": 10, "name": "HelpDesk.SupportApiUrl", "detail": {"use": "define", "secret_location": false, "role": "app"}},
     {"kind": "connection", "stack": "generic", "path": "web.config", "line": 4, "name": "HelpDeskMain", "detail": {"type": "database", "secret_location": true}}
