@@ -34,6 +34,23 @@ KINDS = (
     "schema_object",  # DDL: detail type = table|index|fk, dialect, columns/expression/unique
     "owner_file",     # CODEOWNERS, MAINTAINERS, ...: detail entries (count only, never names)
     "ui_page",        # XAML page or similar: detail x_class, route
+    # 2.8 raw per-file kinds (stream 4C/4D foundation); each is emitted per file and joined only in post-passes
+    "security_setting",       # .config security element/attribute (closed set), value from a closed enumeration
+    "access_rule",           # <allow>/<deny>/<clear/>/<remove> in <authorization>
+    "access_rule_unmatched", # a rule whose scope_path matches no route prefix and no folder (summary-only)
+    "config_transform",      # one XDT transform element
+    "config_external",       # configSource / appSettings file=
+    "config_unparsed",       # a config file the hardened reader refused (reason dtd|oversize|malformed|encoding)
+    "guard_class",           # Target class deriving from an authorization-capable type
+    "guard_use",             # one use of a guard attribute
+    "guard_candidate",       # external attribute used on >=3 controllers/actions
+    "const_def",             # const / static readonly string
+    "project",               # .csproj: output type, sdk, kind
+    "build_define",          # per-configuration DefineConstants tokens
+    "publish_profile",       # .pubxml: name, build_config, method, host only
+    "context_directive",     # one appdoc-context.md directive
+    "controller_class",      # MVC/Web API controller class marker (class line, base list)
+    "host_auth",             # IIS/OWIN authentication disclosure
 )
 
 # Allowed detail keys per kind (conformance guard, Phase 2.3).
@@ -57,6 +74,27 @@ DETAIL_KEYS = {
     "schema_object": frozenset("columns dialect expression type unique".split()),
     "owner_file": frozenset("entries kind".split()),
     "ui_page": frozenset("root route x_class".split()),
+    "security_setting": frozenset(
+        "config config_status local_only overridden_in reason secret_location value".split()),
+    "access_rule": frozenset(
+        "all allow_override anon config config_status domain_qualified effect file inherit_in_child_apps order "
+        "reason_codes roles scope_path users_named verbs".split()),
+    "access_rule_unmatched": frozenset("effect file order scope_path".split()),
+    "config_transform": frozenset(
+        "attributes config locator operation recognised supported target_path unsupported_reason".split()),
+    "config_external": frozenset("element resolved target".split()),
+    "config_unparsed": frozenset("reason".split()),
+    "guard_class": frozenset("base_list base_external overrides_authorization".split()),
+    "guard_use": frozenset(
+        "arg_kinds arity attribute namespace role role_ref scope users_named".split()),
+    "guard_candidate": frozenset("arity_set attribute uses".split()),
+    "const_def": frozenset("qualified secret under_if value".split()),
+    "project": frozenset("kind output_type sdk test web".split()),
+    "build_define": frozenset("config inherits symbols".split()),
+    "publish_profile": frozenset("build_config host method".split()),
+    "context_directive": frozenset("directive entries matched".split()),
+    "controller_class": frozenset("base_external base_list".split()),
+    "host_auth": frozenset("iis_anonymous iis_authorization_present owin_auth source".split()),
 }
 
 
@@ -81,6 +119,8 @@ class Fact:
         items = []
         for k in sorted(detail):
             v = detail[k]
+            if isinstance(v, dict) or (isinstance(v, (list, set, tuple)) and any(isinstance(x, (dict, list, set)) for x in v)):
+                raise ValueError(f"Fact detail {k!r} must be a scalar or a list of scalars, not a dict or nested list")
             if isinstance(v, (list, set, tuple)):
                 v = _freeze_list(v)
             items.append((k, v))
