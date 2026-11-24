@@ -55,6 +55,31 @@ class CitationTests(unittest.TestCase):
         self.assertEqual(parse_span("settings.conf:4"), ("settings.conf", 4, 4))
         self.assertEqual(parse_span(".gitignore"), (".gitignore", None, None))
 
+    def test_every_extractor_language_and_config_extension_is_a_citation(self):
+        for ext in ("go rs rb php kt kts gradle ps1 sh razor cshtml proto tf toml".split()):
+            self.assertEqual(parse_span(f"src/a.{ext}:3-5"), (f"src/a.{ext}", 3, 5), ext)
+            self.assertEqual(parse_span(f"a.{ext}:7"), (f"a.{ext}", 7, 7), ext)
+            self.assertEqual(parse_span(f"a.{ext}"), (f"a.{ext}", None, None), ext)
+        for ext in ("mod", "sum", "lock"):
+            self.assertEqual(parse_span(f"vendor/x.{ext}:3-5"), (f"vendor/x.{ext}", 3, 5), ext)
+            self.assertEqual(parse_span(f"x.{ext}:3"), (f"x.{ext}", 3, 3), ext)
+
+    def test_bare_go_files_and_module_files_are_citations(self):
+        self.assertEqual(parse_span("main.go:36-45"), ("main.go", 36, 45))
+        self.assertEqual(parse_span("go.mod:3-5"), ("go.mod", 3, 5))
+        self.assertEqual(parse_span("go.sum:9"), ("go.sum", 9, 9))
+        self.assertEqual(parse_span("go.mod"), ("go.mod", None, None))
+        self.assertEqual(parse_span("Cargo.lock:2"), ("Cargo.lock", 2, 2))
+
+    def test_a_bare_new_extension_named_in_prose_is_not_a_citation(self):
+        for span in (".proto", ".go", ".rs", ".tf"):
+            self.assertIsNone(parse_span(span), span)
+        self.assertEqual(parse_span(".go:3"), (".go", 3, 3))
+
+    def test_mod_sum_lock_code_members_without_a_line_stay_non_citations(self):
+        for span in ("math.mod", "np.sum", "self.lock", "Cargo.lock"):
+            self.assertIsNone(parse_span(span), span)
+
     def test_code_members_with_a_line_are_not_citations(self):
         for span in ("Session.Timeout:20", "v1.2:3", "Math.max:2", "Foo.Db:3", "a.b:4", ".5:3", "..:2", "x:3", "obj.Lock:1"):
             self.assertIsNone(parse_span(span), span)

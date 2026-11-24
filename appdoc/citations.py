@@ -19,11 +19,19 @@ SOURCE_EXTENSIONS = frozenset(
     "asp aspx ascx asax asa inc master cshtml razor vb cs csproj sln config java jsp xml xsl xslt json "
     "properties yml yaml toml ini env py js jsx ts tsx mjs cjs html htm css sql md txt gradle sh ps1 bat cmd "
     "edmx resx svc ashx asmx dll gif png sqlite sqlite3 csv tsv pem plist "
+    "go rs rb php kt kts proto tf tfvars "
     "dockerfile gitignore gitattributes dockerignore editorconfig npmrc nvmrc".split()
 )
 
 # Lowercase extensions that are also common code members (`self.db`, `console.log`): a Citation only with a line.
-LINE_ONLY_EXTENSIONS = frozenset("db lock log key cfg conf crt cer".split())
+LINE_ONLY_EXTENSIONS = frozenset("db lock log key cfg conf crt cer mod sum".split())
+
+# Extensions added in 2.7: a bare `.ext` is a way of naming the file type in prose, so it is a Citation only with a line.
+# (`.json` and the older extensions keep their earlier behaviour.)
+_EXTENSION_MENTIONS = frozenset("go rs rb php kt kts proto tf tfvars".split())
+
+# Module files whose extension is also a common code member (`math.mod`, `np.sum`): a Citation by exact name.
+KNOWN_MODULE_FILES = frozenset("go.mod go.sum go.work go.work.sum".split())
 
 # Leading words that make a spaced span a command or HTTP request, not a path.
 _NOT_PATH_FIRST_WORDS = frozenset(
@@ -56,11 +64,15 @@ def _file_like(name: str, has_line: bool) -> bool:
     """Is this last path segment a file name? With a line, dotfiles and data extensions count too."""
     if name in KNOWN_BARE_FILES or name.startswith("Dockerfile.") or name.endswith(".Dockerfile"):
         return True
+    if name in KNOWN_MODULE_FILES:
+        return True
     if has_line and _is_dotfile(name):
         return True
     parts = name.rsplit(".", 1)
     if len(parts) != 2:
         return False
+    if not parts[0] and parts[1].lower() in _EXTENSION_MENTIONS and not has_line:
+        return False  # prose naming a file type (`.proto`, `.go`), not a file
     return parts[1].lower() in SOURCE_EXTENSIONS or (has_line and parts[1] in LINE_ONLY_EXTENSIONS)
 
 
