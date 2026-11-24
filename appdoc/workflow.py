@@ -35,8 +35,9 @@ SKILL_STEPS = (
     Step("Audit plan", "audit-plan <target>",
          "writes audit-plan.json: the IDs the audit must cover, a sample chosen by the tool"),
     Step("Audit", None,
-         "a fresh agent audits every planned ID (more if useful) and writes evidence.jsonl; generated and opaque "
-         "blocks are not audited"),
+         "a fresh agent audits every planned ID (more if useful) and writes evidence.jsonl; for every 10.1 finding "
+         "it audits, it also checks that the cited finding-candidate id and line range support the claim; only the "
+         "opaque generated blocks are not audited"),
     Step("Seal", "seal <target> --audit --date <YYYY-MM-DD>",
          "records the audit date and provenance and seals the new rows as audited; the date is given, never read "
          "from the clock"),

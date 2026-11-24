@@ -184,7 +184,7 @@ class SkillDoc(unittest.TestCase):
         "exclusions are whole sections",
         "a bare section number",
         "never exclude a section that has planned ids",
-        "generated blocks inside such a section are simply not audited",
+        "opaque blocks inside such a section are simply not audited",
         # (d) the final pass
         "cover every row of the sampled sections",
         "so a later reseed cannot leave an unaudited planned id",
@@ -228,7 +228,7 @@ class SkillDoc(unittest.TestCase):
             self.assertIn(needle, self.skill, needle)
 
     def test_not_audited_blocks_stated(self):
-        self.assertRegex(self.skill, r"(?i)generated and opaque blocks are not audited")
+        self.assertRegex(self.skill, r"(?i)only the opaque generated blocks are not audited")
 
     def test_template_headings_count_is_17(self):
         self.assertIn("keeping all 17 headings", self.skill)

@@ -13,7 +13,7 @@ CONVENTIONS:
   - A count is a count marker: the number between an opening `appdoc:count CLASS` comment and a closing `/appdoc:count` comment (the same comment syntax as the generated markers, with the class in the opening one). Write any number there and `appdoc fill` replaces it. Classes: V F UI C X Q R, rows superseded, routes jobs pages commands config-keys (C15). A hand-written "N of M" is only an advisory.
   - A limitation of a generated block is a line of `docs/appdoc/notes.jsonl` ({"block", "text", "cites", "block_sha"}), rendered by `fill` as "Known extractor limitation: ..." inside its block; leave `block_sha` empty and `appdoc build` seals it. That label is reserved: written by hand in the Narrative it fails C18.
   - Never delete an `evidence.jsonl` row; a correction is a new row with `"supersedes": "E-n"`. A row that closes a question (`Answerable`) names the answering section in `"answered_in"`.
-  - The audit record's `scope` describes the method only (no IDs, no numbers); what the audit covered is computed into Appendix A.1, and a section left out is a reasoned entry in `exclusions` (C17).
+  - The audit record's `scope` describes the method only: C17 rejects any ID token and any digit 0-9 at all, even a lone "3" (words such as "three" are fine); what the audit covered is computed into Appendix A.1, and a section left out is a reasoned entry in `exclusions` (C17).
 - Writing rules the Check enforces (2.7):
   - A backticked file name is a Citation even in a negative sentence: write a name that does not exist without backticks (appdoc-context.md does not exist), or C1 fails.
   - A sentence that carries a count marker still needs a Citation (C5).
