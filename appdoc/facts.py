@@ -59,6 +59,7 @@ KINDS = (
     "context_directive",     # one appdoc-context.md directive
     "controller_class",      # MVC/Web API controller class marker (class line, base list)
     "host_auth",             # IIS/OWIN authentication disclosure
+    "method_call",           # a call whose arguments hold >= 2 constant references (auth_method candidates)
 )
 
 # Allowed detail keys per kind (conformance guard, Phase 2.3).
@@ -66,7 +67,7 @@ DETAIL_KEYS = {
     "file": frozenset("encoding ext lines size stacks".split()),
     "stack": frozenset("capabilities file_count ignored_markers marker_files supported".split()),
     "entry_point": frozenset(
-        "class codebehind component controller enabled exists framework handler inherits inputs "
+        "base_external class codebehind component controller enabled exists framework handler inherits inputs "
         "listener master method middleware mvc_area mvc_area_path page prefix_unresolved route_name "
         "schedule scheduler source type usage view".split()),
     "data_access": frozenset(
@@ -75,7 +76,9 @@ DETAIL_KEYS = {
     "config_key": frozenset("read_kind role secret_location secret_ref source use via".split()),
     "dependency": frozenset("manager mode version".split()),
     "external_call": frozenset("call client method mode operation type via".split()),
-    "auth_check": frozenset("applies_to mechanism policy roles scope".split()),
+    "auth_check": frozenset(
+        "api_pipeline applies_to arity mechanism namespace overrides_authorization policy role_guard role_refs roles "
+        "scope users_named via".split()),
     "message": frozenset("context exception".split()),
     "ownership": frozenset("commits contributors first_commit last_commit role source".split()),  # counts and dates, no names (R18)
     "smell": frozenset("constant fid pattern".split()),
@@ -92,9 +95,10 @@ DETAIL_KEYS = {
         "attributes config locator operation recognised supported target_path unsupported_reason".split()),
     "config_external": frozenset("element resolved target".split()),
     "config_unparsed": frozenset("reason".split()),
-    "guard_class": frozenset("base_list base_external overrides_authorization".split()),
+    "guard_class": frozenset("authorization_capable base_list base_external overrides_authorization".split()),
     "guard_use": frozenset(
-        "arg_kinds arity attribute namespace role role_ref scope users_named".split()),
+        "api_pipeline applies_to arg_kinds arg_refs arity arity_override attribute namespace role role_arg role_ref "
+        "scope users_named users_ref".split()),
     "guard_candidate": frozenset("arity_set attribute uses".split()),
     "const_def": frozenset("qualified secret under_if value".split()),
     "project": frozenset("kind output_type sdk test web".split()),
@@ -103,6 +107,7 @@ DETAIL_KEYS = {
     "context_directive": frozenset("context_unmatched directive names value".split()),
     "controller_class": frozenset("base_external base_list".split()),
     "host_auth": frozenset("iis_anonymous iis_authorization_present owin_auth source".split()),
+    "method_call": frozenset("applies_to arg_refs arity".split()),
 }
 
 

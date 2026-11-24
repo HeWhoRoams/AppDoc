@@ -14,6 +14,7 @@ import re
 from typing import Iterable
 from urllib.parse import urlsplit
 
+from .. import aspnet_guards
 from ..facts import Fact
 from ..secrets import find_secret_shapes, is_secret_key
 from .base import Stack, strip_comments
@@ -387,10 +388,9 @@ def dotnet_common(stack, path, ctx: Ctx, web_forms: bool) -> Iterable[Fact]:
         kind, args = m.group(1), m.group(2)
         roles = []
         policy = None
+        users = 0
         if args:
-            rm = re.search(r"\bRoles\s*:?=\s*(" + STR + ")", args)
-            if rm:
-                roles = [r.strip() for r in _unq(rm.group(1), vb).split(",") if r.strip()]
+            args, roles, users = aspnet_guards.scrub_attribute_args(args)   # R18: users and email/SID roles are counted
             pm = re.search(r"\bPolicy\s*:?=\s*(" + STR + ")", args)
             if pm:
                 policy = _unq(pm.group(1), vb)
@@ -400,12 +400,18 @@ def dotnet_common(stack, path, ctx: Ctx, web_forms: bool) -> Iterable[Fact]:
             detail["roles"] = roles
         if policy:
             detail["policy"] = policy
+        if users:
+            detail["users_named"] = users
         applies = _applies_to(ctx, classes, m.end()) if classes else ""
         if applies:
             detail["applies_to"] = applies
         yield Fact.make("auth_check", stack, path, ctx.line(m.start()), _safe(nm, 120), **detail)
     for m in _ISINROLE.finditer(t):
         role = _unq(m.group(1), vb)
+        if aspnet_guards._identity_like(role):          # R18: an email or SID is counted, not recorded
+            yield Fact.make("auth_check", stack, path, ctx.line(m.start()), "User.IsInRole(<user>)",
+                            mechanism="role", users_named=1)
+            continue
         yield Fact.make("auth_check", stack, path, ctx.line(m.start()), _safe(f'User.IsInRole("{role}")', 120),
                         mechanism="role", roles=[role])
     for m in _IDENTITY.finditer(t):
@@ -652,7 +658,8 @@ def _controller_actions(stack, path, ctx: Ctx, classes):
                 continue
             seen.add(key)
             yield Fact.make("entry_point", stack, path, ctx.line(m.start("name")), route, type="route",
-                            method=out_verbs, handler=f"{cls.name}.{method}", **_area_detail(area))
+                            method=out_verbs, handler=f"{cls.name}.{method}", **_area_detail(area),
+                            **aspnet_guards.inherits_detail(cls, classes))
 
 
 def _route_tables(stack, path, ctx: Ctx):
@@ -707,8 +714,9 @@ def _strip_markup_comments(text: str) -> str:
 class AspNetStack(Stack):
     id = STACK_ID
     capabilities = frozenset((
-        "auth_check config_key connection data_access entry_point.route "
-        "entry_point.page entry_point.handler entry_point.desktop external_call message smell ui_page"
+        "auth_check config_key connection const_def controller_class data_access entry_point.route "
+        "entry_point.page entry_point.handler entry_point.desktop external_call guard_candidate guard_class guard_use "
+        "message method_call smell ui_page"
     ).split())
     extensions = frozenset({".aspx", ".ascx", ".master", ".asax", ".cs", ".vb", ".cshtml"})
 
@@ -756,6 +764,9 @@ class AspNetStack(Stack):
             yield from _controller_actions(STACK_ID, path, ctx, classes)
             yield from _desktop(STACK_ID, path, ctx, classes)
         yield from _route_tables(STACK_ID, path, ctx)
+        if not vb:
+            yield from aspnet_guards.const_facts(STACK_ID, path, ctx, classes)
+            yield from aspnet_guards.file_facts(STACK_ID, path, ctx, classes, list(find_methods(ctx, classes)))
 
     # -- markup files
     def _markup(self, path, text, ext):

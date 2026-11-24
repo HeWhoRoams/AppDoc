@@ -11,7 +11,7 @@ import os
 import re
 from urllib.parse import urlsplit
 
-from .. import scan
+from .. import aspnet_guards, scan
 from ..facts import Fact
 from ..secrets import is_secret_key
 from .aspnet import (STR, Ctx, _join_route, _safe, _strip_markup_comments, _unq, dotnet_common, error_messages,
@@ -179,7 +179,8 @@ def _controllers(path, ctx: Ctx, classes, paths=None):
             route = _norm(f"{ctrl}/{action}")
         route = route.replace("[controller]", ctrl).replace("[action]", action)
         yield Fact.make("entry_point", STACK_ID, path, ctx.line(m.start("name")), route, type="route",
-                        method=",".join(sorted(set(verbs))) or "ANY", handler=f"{cls.name}.{action}")
+                        method=",".join(sorted(set(verbs))) or "ANY", handler=f"{cls.name}.{action}",
+                        **aspnet_guards.inherits_detail(cls, classes))
         yield from _views(path, ctx, m, ctrl, action, f"{cls.name}.{action}", route, verbs, paths)
 
 
@@ -553,9 +554,9 @@ def _is_core_project(root: str, rel: str) -> bool:
 class AspNetCoreStack(Stack):
     id = STACK_ID
     capabilities = frozenset((
-        "auth_check config_key connection data_access entry_point.route "
-        "entry_point.page entry_point.handler entry_point.job external_call "
-        "message ui_page"
+        "auth_check config_key connection const_def controller_class data_access entry_point.route "
+        "entry_point.page entry_point.handler entry_point.job external_call guard_candidate guard_class guard_use "
+        "message method_call ui_page"
     ).split())
     extensions = frozenset({".cs", ".cshtml", ".razor", ".xaml"})
 
@@ -602,6 +603,7 @@ class AspNetCoreStack(Stack):
             classes = find_classes(ctx)
             yield from _jobs(path, ctx)
             yield from _config_reads(path, ctx)
+            yield from aspnet_guards.const_facts(STACK_ID, path, ctx, classes)
             if not _CORE_HINT.search(text):
                 return
             http_client = list(_httpclient(path, ctx))
@@ -616,6 +618,7 @@ class AspNetCoreStack(Stack):
             yield from _controllers(path, ctx, classes, self._files)
             yield from _page_models(path, ctx, classes)
             yield from _minimal_apis(path, ctx)
+            yield from aspnet_guards.file_facts(STACK_ID, path, ctx, classes, list(find_methods(ctx, classes)), core=True)
             yield from _data_and_calls(path, ctx)
             yield from _ef(path, ctx)
             yield from http_client

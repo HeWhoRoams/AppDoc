@@ -7,6 +7,7 @@ NEW_KINDS_2_8 = (
     "security_setting", "access_rule", "access_rule_unmatched", "config_transform", "config_external",
     "config_unparsed", "guard_class", "guard_use", "guard_candidate", "const_def", "project", "build_define",
     "publish_profile", "context_directive", "controller_class", "host_auth",
+    "method_call",
 )
 
 

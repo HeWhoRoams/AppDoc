@@ -152,6 +152,25 @@ def finding_candidates(facts: list[dict], stacks: list[dict]) -> list[str]:
     return out
 
 
+def unclassified_attributes(facts: list[dict], stacks: list[dict]) -> list[str]:
+    """External attributes used on three or more controllers or actions (guard or not): the owner decides which are guards."""
+    cands = sorted((f for f in facts if f["kind"] == "guard_candidate" and not f["detail"].get("test")),
+                   key=lambda f: (-f["detail"].get("uses", 0), f["name"], f["path"]))
+    if not cands:
+        if any(s["name"] in ("aspnet", "aspnet-core") for s in stacks):
+            return ["## Unclassified controller attributes", "", "None extracted. This is not proof of absence.", ""]
+        return []
+    out = ["## Unclassified controller attributes", "",
+           "Attributes that are not defined in the Target and not declared, used at least three times on controllers or "
+           "actions. Each may be an authorization guard or an unrelated one (a layout attribute): ask the owner, then "
+           "declare guards with `Auth attributes:` in `appdoc-context.md`.", "",
+           "| Attribute | Uses | Argument counts | First use |", "|---|---|---|---|"]
+    for f in cands[:LIST_CAP]:
+        d = f["detail"]
+        out.append(f"| `{f['name']}` | {d.get('uses', 0)} | {', '.join(str(a) for a in d.get('arity_set', []))} | {_cite(f)} |")
+    return out + [""] + _shown(min(len(cands), LIST_CAP), len(cands))
+
+
 def render_summary(doc: dict) -> str:
     facts = doc["facts"]
     stacks = doc["stacks"]
@@ -231,6 +250,7 @@ def render_summary(doc: dict) -> str:
     out += schema_objects(facts)
     out += ownership_files(facts)
     out += ui_pages(facts)
+    out += unclassified_attributes(facts, stacks)
     out += finding_candidates(facts, stacks)
 
     return "\n".join(out).rstrip() + "\n"

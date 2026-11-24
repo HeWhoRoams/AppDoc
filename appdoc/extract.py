@@ -16,7 +16,7 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
 
-from . import context, version
+from . import aspnet_guards, context, version
 from . import facts as F
 from . import scan, smells
 from .citations import OWNER_CONTEXT
@@ -357,6 +357,7 @@ def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: boo
 
     facts.extend(_owner_context(root))   # one parse of appdoc-context.md; its Facts exist before every post-pass
     facts = _config_roles(facts)
+    facts = aspnet_guards.promote(facts)     # W3: guard joins over the raw per-file Facts
     facts = _match_directives(facts)
 
     for sid, (st, markers) in sorted(detected.items()):

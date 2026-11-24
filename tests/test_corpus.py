@@ -59,11 +59,6 @@ PENDING: dict = {
     "test_stack_markers_in_fixtures_and_tooling_are_ignored": ("T28.11", "missing ignored_markers: no stack records dropped markers yet"),
     # --- 4C: project and publish Facts
     # --- 4D: guards
-    "test_custom_guard_external_attribute_is_a_candidate": ("T28.51", "missing guard_candidate: no guard_candidate Facts yet"),
-    "test_custom_guard_declared_in_context_is_auth_check_declared": ("T28.52", "missing auth_check: no declared auth_check yet"),
-    "test_custom_guard_arguments_arity_and_credential_constant": ("T28.53", "missing guard_use: no guard_use Facts yet"),
-    "test_custom_guard_auth_method_promotion_lists_constants": ("T28.54", "missing auth_check: no promoted auth_check via=call yet"),
-    "test_secrets_never_recorded_secret_constant_is_not_resolved": ("T28.53", "missing const_def: no const_def Facts yet"),
     # --- 4E: effective protection (after the first slice)
     "test_core_fallback_policy_mechanism_only_no_reach": ("T28.60", "missing guard_mechanism: entry_points carry no guard_mechanism yet"),
     "test_core_absence_claim_only_without_auth_services": ("T28.60", "missing guard_mechanism: entry_points carry no guard_mechanism yet"),
@@ -1414,7 +1409,7 @@ class Slice1Code(CorpusCase):
         self.assertTrue(all("ContosoGuard" in f["name"] for f in declared))
         self.assertEqual([f for f in r.facts_of("guard_candidate") if dtl(f).get("attribute") == "ContosoGuard"], [],
                          "a declared attribute is no longer a candidate")
-        need_fact(r, "context_directive", directive="Auth attributes")
+        need_fact(r, "context_directive", directive="auth_attributes")
 
     def test_custom_guard_arguments_arity_and_credential_constant(self):
         r = self.case("custom-guard")
