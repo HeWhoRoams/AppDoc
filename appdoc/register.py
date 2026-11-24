@@ -16,7 +16,7 @@ import re
 
 from . import scan
 from .citations import parse_span
-from .template_spec import version_tuple
+from .template_spec import OPAQUE_BLOCKS, version_tuple
 from .textutil import plural
 
 REGISTER = "evidence.jsonl"
@@ -462,6 +462,12 @@ def _provenance_lines(reg: Register | None) -> list[str]:
     return out
 
 
+def _not_audited_lines() -> list[str]:
+    """The one A.1 line that names the blocks no audit row covers (ADR 0015). Only the opaque blocks are unaudited;
+    scan-coverage and config-reference are audited."""
+    return ["", f"Not audited: generated and opaque blocks ({', '.join(OPAQUE_BLOCKS)})"]
+
+
 def appendix_markdown(reg: Register | None, facts: dict | None = None, coverage=None,
                       root: str | None = None, blocks_by: dict | None = None, plan: dict | None = None,
                       coverage_ids=None, list_missing: bool = False) -> str:
@@ -476,7 +482,7 @@ def appendix_markdown(reg: Register | None, facts: dict | None = None, coverage=
     list_missing (a template 2.7 document): A.2 names the E-ids no row carries.
     """
     out = ["### A.1 Audit state", "", *_audit_state(reg), *_blocks_lines(reg, blocks_by),
-           *_provenance_lines(reg), *_scope_lines(reg, coverage_ids)]
+           *_provenance_lines(reg), *_scope_lines(reg, coverage_ids), *_not_audited_lines()]
     if reg is not None and reg.performed:
         out += ["", "### A.2 Coverage", "", *_coverage(reg, coverage, plan, list_missing),
                 "", "### A.3 Register", "", *_table(reg),

@@ -44,6 +44,16 @@ class AppendixMarkdownTests(unittest.TestCase):
         self.assertIn("3 rows: 1 Supported, 1 Corrected, 1 Downgraded.", md)
         self.assertNotIn("Dismissed", block(md, "A.2 Coverage"))
 
+    def test_a1_names_the_opaque_blocks_as_not_audited(self):
+        from appdoc import template_spec as spec
+        for reg in (reg_of(row(1)), None):
+            a1 = block(appendix_markdown(reg, {}), "A.1 Audit state")
+            lines = [l for l in a1.splitlines() if l.startswith("Not audited:")]
+            self.assertEqual(len(lines), 1, a1)
+            names = lines[0].split("(", 1)[1].rstrip(")").split(", ")
+            self.assertEqual(tuple(names), spec.OPAQUE_BLOCKS)
+            self.assertTrue(lines[0].startswith("Not audited: generated and opaque blocks ("))
+
     def test_dismissed_and_answerable_parse_and_count(self):
         reg = reg_of(row(1), row(2, "Dismissed", ref="smell/ab12cd34", anchor="", cites=()),
                      row(3, "Answerable", ref="14/Q-1", anchor="", cites=()))
@@ -182,6 +192,7 @@ class AppendixMarkdownTests(unittest.TestCase):
             "`seal` writes `claim_sha` and `sealed_by` only on ID rows, workflow (7.x) and per-row section keys. "
             "Other section-level rows, Answerable rows and Dismissed rows are never sealed, so they carry no "
             "`sealed_by`. C17 `--strict` fails only on `sealed_by: upgrade`, never on an absent key.", "",
+            "Not audited: generated and opaque blocks (entry-points, scheduled-jobs, closed-questions, appendix-a)", "",
             "### A.2 Coverage", "",
             "2 rows: 1 Supported, 1 Corrected, 0 Downgraded. "
             "Each Supported or Corrected row's anchor text was found in its cited lines by the Check.", "",
