@@ -178,6 +178,18 @@ class NodeExpressDetection(unittest.TestCase):
         })
         self.assertIn("node-express", names)
 
+    def test_no_express_from_tooling_manifest(self):
+        # A front-end tooling manifest that lists only type definitions (``@types/express``) and a
+        # test runner declares no server dependency; source that merely imports the types is not a server.
+        pkg = json.dumps({"name": "tooling", "devDependencies": {
+            "@types/express": "^4", "@types/node": "^20", "typescript": "^5", "vitest": "^1"}})
+        names = _stack_names({
+            "package.json": pkg,
+            "scripts/check.ts": "import type { Request } from 'express';\nexport const f = (r: Request) => r;\n",
+            "src/app.js": "const express = require('express');\nconst app = express();\napp.get('/x', () => 1);\n",
+        })
+        self.assertNotIn("node-express", names)
+
 
 if __name__ == "__main__":
     unittest.main()
