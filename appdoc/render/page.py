@@ -98,7 +98,33 @@ def _stale_block(target: str, md_path: str, out_dir: str) -> str | None:
     return None
 
 
-def run(target: str, out_dir: str, css: str | None) -> int:
+MERMAID_MODES = ("inline", "sibling")
+MERMAID_FILE = "mermaid.min.js"
+_MERMAID_INIT = "mermaid.initialize({startOnLoad:true,securityLevel:'strict'});"
+
+
+def _mermaid_script(out_dir: str, mode: str) -> str:
+    """The script element(s) of a page that has a diagram. `inline` (the default) embeds the library, so the page is one
+    self-contained file. `sibling` links `mermaid.min.js` beside the HTML and copies it there once (T28.B3): the
+    page stays small and the browser caches the library; the folder must be kept together."""
+    src = os.path.join(ASSETS, MERMAID_FILE)
+    if mode == "sibling":
+        dest = os.path.join(out_dir, MERMAID_FILE)
+        with open(src, "rb") as f:
+            lib = f.read()
+        try:
+            with open(dest, "rb") as f:
+                same = f.read() == lib
+        except OSError:
+            same = False
+        if not same:   # written once; a file with the packaged bytes is left alone
+            with open(dest, "wb") as f:
+                f.write(lib)
+        return f'<script src="{MERMAID_FILE}"></script>\n<script>\n{_MERMAID_INIT}\n</script>'
+    return "<script>\n" + _read(src).replace("</script", "<\\/script") + "\n" + _MERMAID_INIT + "\n</script>"
+
+
+def run(target: str, out_dir: str, css: str | None, mermaid: str = "inline") -> int:
     md_path = os.path.join(out_dir, MD_NAME)
     if not os.path.isfile(md_path):
         print(f"appdoc: {md_path} not found; write the Narrative first", file=sys.stderr)
@@ -119,9 +145,7 @@ def run(target: str, out_dir: str, css: str | None) -> int:
             body = (body[:m.end()] + "\n" + view_html + body[m.end():]) if m else view_html + body
         script = ""
         if 'class="mermaid"' in body:
-            lib = _read(os.path.join(ASSETS, "mermaid.min.js")).replace("</script", "<\\/script")
-            script = ("<script>\n" + lib + "\nmermaid.initialize("
-                      "{startOnLoad:true,securityLevel:'strict'});\n</script>")
+            script = _mermaid_script(out_dir, mermaid)
     except OSError as exc:
         print(f"appdoc: cannot read render input: {exc}", file=sys.stderr)
         return 1

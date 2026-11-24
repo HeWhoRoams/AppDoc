@@ -42,9 +42,9 @@ All commands:
 | `appdoc extract <target>` | `--out OUT`, `--workers WORKERS`, `--skip-tests`, `--no-cache`, `--no-ownership`, `--ownership-top OWNERSHIP_TOP` | write facts.json, facts-summary.md and provenance.json |
 | `appdoc fill <target>` | `--out OUT` | write the generated blocks of the Narrative from the Facts and the register |
 | `appdoc check <target>` | `--out OUT`, `--require-audit`, `--strict` | verify the Narrative; exit 0 pass, 2 problems, 1 tool error |
-| `appdoc render <target>` | `--out OUT`, `--css CSS` | write application-documentation.html |
+| `appdoc render <target>` | `--out OUT`, `--css CSS`, `--mermaid MERMAID` | write application-documentation.html |
 | `appdoc seal <target>` | `--out OUT`, `--audit`, `--date DATE` | write claim_sha into the register rows that lack one; --audit --date records the audit |
-| `appdoc build <target>` | `--out OUT`, `--expand-citations`, `--require-audit`, `--strict` | seal (rows and notes), fill, check and render in one step |
+| `appdoc build <target>` | `--out OUT`, `--mermaid MERMAID`, `--expand-citations`, `--require-audit`, `--strict` | seal (rows and notes), fill, check and render in one step |
 | `appdoc gate <target>` | `--out OUT`, `--workers WORKERS`, `--require-audit`, `--strict` | CI gate: regenerate the Facts and compare with the committed facts.json, then check; exit 0 pass, 1 tool error, 2 Facts changed, 3 AppDoc upgraded |
 | `appdoc audit-plan <target>` | `--out OUT`, `--check` | write docs/appdoc/audit-plan.json: the ids and per-row keys the independent audit must cover (a sample is chosen by the tool) |
 | `appdoc upgrade <target>` | `--out OUT`, `--workers WORKERS`, `--no-ownership` | bring a document of an older template to the running one: add the missing headings, blocks, columns and rows, keep every line of text, then extract and fill; the rest is for a person |

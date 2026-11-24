@@ -65,6 +65,10 @@ def build_parser() -> argparse.ArgumentParser:
             sp.add_argument("--date", help="the audit date, YYYY-MM-DD (required with --audit)")
         if name == "render":
             sp.add_argument("--css", help="CSS file replacing the default theme")
+        if name in ("render", "build"):
+            sp.add_argument("--mermaid", choices=("inline", "sibling"), default="inline",
+                            help="inline (default): the diagram library is embedded in the page; sibling: write "
+                                 "mermaid.min.js once beside the HTML and link it (a much smaller page)")
         if name == "check":
             sp.add_argument("--require-audit", action="store_true",
                             help="fail when the source-to-claim audit was declared not performed")
@@ -184,9 +188,9 @@ def main(argv=None) -> int:
             rc = check.run(args.target, out_dir, args.require_audit, args.strict)
             if rc != 0:
                 return rc
-            return page.run(args.target, out_dir, None)
+            return page.run(args.target, out_dir, None, args.mermaid)
         from .render import page
-        return page.run(args.target, out_dir, args.css)
+        return page.run(args.target, out_dir, args.css, args.mermaid)
     except ImportError as exc:
         print(f"appdoc: {args.cmd} is not available yet ({exc})", file=sys.stderr)
         return 1
