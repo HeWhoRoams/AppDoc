@@ -463,3 +463,55 @@ class SupersedesTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Section53RowKeyTests(unittest.TestCase):
+    """T28.A5: the rows of 5.3 (the role-to-capability matrix) are keyed `5.3/<slug>` like the rows of 10.2."""
+
+    MATRIX = ("| Capability | admin | viewer |\n|---|---|---|\n"
+              "| Service: change settings | Y | |\n| Service: view reports | Y | Y |\n| Service: view reports | Y | ? |")
+
+    def doc(self, matrix=None):
+        from tests.test_check import SECTION_BODY, build_doc
+        old = SECTION_BODY[5].split("| Capability | admin |")[1].split("\n\n**Restriction")[0]
+        body = SECTION_BODY[5].replace("| Capability | admin |" + old, matrix or self.MATRIX)
+        return build_doc({5: body}).replace("<!-- appdoc:template 2.4 -->", "<!-- appdoc:template 2.8 -->")
+
+    def test_5_3_row_key_valid_and_sealed(self):
+        from appdoc import audit_plan, docmodel as dm, fingerprint, seal, template_spec as spec
+        for ref in ("5.3/service-change-settings", "5.3/service-view-reports-2"):
+            self.assertTrue(register.REF_RE.match(ref), ref)
+            self.assertEqual(register.ref_key(ref), ref)
+            self.assertEqual(audit_plan.ref_for(ref), ref)
+            self.assertTrue(audit_plan._in_section(ref, "5.3"))
+        self.assertTrue(audit_plan._in_section("5.3", "5.3"))          # a section-level ref is extra, not a row key
+        self.assertFalse(audit_plan._in_section("5.3/x", "5"))
+        self.assertIn("5.3", spec.ROW_KEY_SECTIONS)
+        lines = fingerprint.document_text(self.doc()).splitlines()
+        heads = dm.headings(lines)
+        keys = [k for k, _, _ in fingerprint.row_keys(lines, heads, "5.3")]
+        self.assertEqual(keys, ["5.3/service-change-settings", "5.3/service-view-reports", "5.3/service-view-reports-2"])
+        sha = fingerprint.claim_sha(lines, heads, {}, "5.3/service-change-settings")
+        self.assertRegex(sha, "^[0-9a-f]{12}$")
+        self.assertIsNone(fingerprint.claim_sha(lines, heads, {}, "5.3/no-such-row"))
+        other = fingerprint.document_text(self.doc(self.MATRIX.replace("Y | |", "Y | Y |"))).splitlines()
+        self.assertNotEqual(sha, fingerprint.claim_sha(other, dm.headings(other), {}, "5.3/service-change-settings"))
+        # `seal` writes claim_sha and sealed_by on a 5.3 row key, and on nothing else of section 5
+        tmp, target = make_target()
+        self.addCleanup(tmp.cleanup)
+        out = os.path.join(target, "docs", "appdoc")
+        os.makedirs(out)
+        with open(os.path.join(out, "application-documentation.md"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(self.doc())
+        rows = [row(1, ref="5.3/service-change-settings", claim="Only admin changes settings"),
+                row(2, ref="5.3", claim="section level, never sealed")]
+        with open(os.path.join(out, "evidence.jsonl"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write("\n".join(json.dumps(o) for o in (AUDIT, *rows)) + "\n")
+        with open(os.path.join(out, "facts.json"), "w", encoding="utf-8") as fh:
+            json.dump({"schema": facts.SCHEMA, "target": {"name": "t", "commit": None}, "stacks": [], "facts": []}, fh)
+        self.assertEqual(seal.seal_register(target, out), 1)
+        with open(os.path.join(out, "evidence.jsonl"), encoding="utf-8") as fh:
+            sealed = {o["ref"]: o for o in (json.loads(l) for l in fh if l.strip()) if "ref" in o}
+        self.assertEqual(sealed["5.3/service-change-settings"]["claim_sha"], sha)
+        self.assertIn("sealed_by", sealed["5.3/service-change-settings"])
+        self.assertNotIn("claim_sha", sealed["5.3"])

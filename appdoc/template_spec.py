@@ -222,7 +222,9 @@ ROW_SAMPLED = ("9",)
 
 # The sections whose register rows are keyed per table row: `<section>/<slug>`, the slug being the row's first cell
 # (R71.A1a, ADR 0015). Sections 10.2, 16.5 and 17 are audited in full (rows with a claim), section 9 is sampled.
-ROW_KEY_SECTIONS = ("9", "10.2", "16.5", "17")
+# Section 5.3 (the role-to-capability matrix) is keyed and audited in full, every row, from template 2.8 (T28.A5).
+ROW_KEY_SECTIONS = ("5.3", "9", "10.2", "16.5", "17")
+PLAN_5_3_SINCE = (2, 8)   # the audit plan names the 5.3 rows of a document of this template version or later
 
 
 @dataclass(frozen=True)

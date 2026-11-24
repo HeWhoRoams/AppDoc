@@ -1361,7 +1361,7 @@ def _c18_notes(target, out_dir, raw, facts, cache, add):
 
 def _c19_plan(target, out_dir, reg, add):
     """C19, 2.7 rule under --require-audit: audit-plan.json equals a fresh computation and every planned key (an ID, a
-    workflow, or one row of 10.2, 16.5, 17 or 9) has a live register row. A section the audit record lists under `exclusions` is not required (and is printed).
+    workflow, or one row of 5.3, 10.2, 16.5, 17 or 9) has a live register row. A section the audit record lists under `exclusions` is not required (and is printed).
     Returns the plan's advisories."""
     from . import audit_plan
     path = os.path.join(out_dir, audit_plan.PLAN)

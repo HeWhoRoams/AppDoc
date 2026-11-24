@@ -1344,6 +1344,67 @@ class AuditPlanTests(unittest.TestCase):
         self.assertEqual((nine["mode"], nine["ids"], nine["items"]),
                          ("sampled", ["9/service-will-not-start"], ["Service will not start"]))
 
+    # --- T28.A5: one planned key per row of 5.3 (the role-to-capability matrix), from template 2.8
+
+    MATRIX_5_3 = ("| Capability | admin | viewer |\n|---|---|---|\n"
+                  "| Service: change settings | Y | |\n| Service: view reports | Y | Y |\n| Service: view reports | ? | |")
+
+    def write_5_3(self, stamp="2.8", matrix=None):
+        from tests.test_check import SECTION_BODY
+        old = SECTION_BODY[5].split("### 5.3 Role-to-capability matrix\n\n")[1].split("\n\n**Restriction")[0]
+        text = self.write(stamp=stamp)
+        text = text.replace(old, matrix or self.MATRIX_5_3)
+        with open(os.path.join(self.out, "application-documentation.md"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
+
+    def test_section_5_3_rows_planned_per_row(self):
+        self.write_5_3()
+        plan = self.plan()
+        s = self.section(plan, "5.3")
+        # every row, whatever its cells say (no status filter), in row order, a repeat suffixed; full coverage
+        self.assertEqual((s["mode"], s["total"]), ("full", 3))
+        self.assertEqual(s["ids"], ["5.3/service-change-settings", "5.3/service-view-reports", "5.3/service-view-reports-2"])
+        self.assertEqual(s["items"], ["Service: change settings", "Service: view reports", "Service: view reports"])
+        order = [x["section"] for x in plan["sections"]]
+        self.assertLess(order.index("5.3"), order.index("10.2"))                # document order among the row sections
+        self.assertNotIn("5.3", [x["section"] for x in self.plan_of(stamp="2.7")["sections"]])   # a 2.7 document: as before
+        # the key is the first cell: renaming it re-keys the row; another cell does not move any key
+        self.write_5_3(matrix=self.MATRIX_5_3.replace("| Y | |", "| N | Y |", 1))
+        self.assertEqual(self.section(self.plan(), "5.3")["ids"], s["ids"])
+        self.write_5_3(matrix=self.MATRIX_5_3.replace("change settings", "edit settings"))
+        self.assertEqual(self.section(self.plan(), "5.3")["ids"][0], "5.3/service-edit-settings")
+        # the plan on disk is what C19 compares: deterministic and CRLF-free
+        self.write_5_3()
+        rc, first, out = self.run_cli()
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(self.run_cli()[1], first)
+        self.assertIn(b"5.3/service-change-settings", first)
+
+    def plan_of(self, stamp):
+        self.write_5_3(stamp=stamp)
+        return self.plan()
+
+    def test_5_3_row_without_register_row_fails_c19(self):
+        """C19 names a 5.3 row that has no live register row by its text, and the ref to use, as it does for 10.2."""
+        from appdoc import audit_plan, check
+        from appdoc import register as reg_mod
+        self.write_5_3()
+        with open(os.path.join(self.out, audit_plan.PLAN), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(audit_plan.render(self.plan()))
+        rows = [{"type": "audit", "performed": True, "auditor": "independent", "scope": "x"},
+                {"id": "E-1", "ref": "5.3/service-change-settings", "claim": "c", "result": "Supported", "cites": [],
+                 "anchor": "", "limitation": "none"}]
+        found = []
+        add = lambda rule, line, msg, fix: found.append((rule, msg, fix))
+        check._c19_plan(self.target, self.out, reg_mod.parse("\n".join(json.dumps(x) for x in rows)), add)
+        names = [(m, f) for r, m, f in found if "5.3/" in m]
+        self.assertEqual(names, [
+            ('the audit plan names 5.3/service-view-reports (row "Service: view reports"), which has no live register row',
+             "audit it and add a row with ref 5.3/service-view-reports"),
+            ('the audit plan names 5.3/service-view-reports-2 (row "Service: view reports"), which has no live register row',
+             "audit it and add a row with ref 5.3/service-view-reports-2")])
+        self.assertEqual({r for r, _, _ in found}, {"C19"})
+
     def test_section_9_sample_is_k_rows_seeded_by_doc_sha(self):
         import hashlib
         self.write_rows(extra_symptoms=[f"| Symptom {i} | Check | Fix | Never |" for i in range(2, 31)])

@@ -520,6 +520,31 @@ class RegisterHistory(CorpusCase):
                       "register row. Fix: audit it and add a row with ref 10.2/encrypted-backups", r.report)
         self.assertIn("| 10.2 | 3 | 1 | 0 |", r.narrative)        # A.2: planned, audited, extra per row key
 
+    def test_audit_per_row_5_3_names_each_uncovered_matrix_row(self):
+        """T28.A5: 5.3 lists three capabilities and the register audits one of them (10.2 is fully covered): C19 fails,
+        naming the two uncovered rows by their text and the ref to use. A 2.8 document (the plan names 5.3 rows
+        from template 2.8)."""
+        r = self.case("audit-per-row-5-3", require_audit=True)
+        self.assertEqual(r.code, 2, r.report)
+        self.assertEqual(r.rules(), {"C19"})
+        self.assertEqual(r.report.count("the audit plan names"), 2, r.report)
+        self.assertIn('the audit plan names 5.3/service-view-reports-see-app-main-py-4 (row "Service: view reports, '
+                      'see app/main.py:4"), which has no live register row. '
+                      "Fix: audit it and add a row with ref 5.3/service-view-reports-see-app-main-py-4", r.report)
+        self.assertIn("5.3/service-delete-records-see-app-main-py-4", r.report)
+        self.assertIn("| 5.3 | 3 | 1 | 0 |", r.narrative)        # A.2: planned, audited, extra per row key
+        self.assertIn("| 10.2 | 3 | 3 | 0 |", r.narrative)
+        # auditing the other two rows is what the Check asks for: it then passes
+        reg = os.path.join(r.out, "evidence.jsonl")
+        with open(reg, "a", encoding="utf-8", newline="\n") as fh:
+            for n, slug in enumerate(("service-view-reports", "service-delete-records"), 20):
+                fh.write(json.dumps({"id": f"E-{n}", "ref": f"5.3/{slug}-see-app-main-py-4", "claim": "c", "result": "Supported",
+                                     "cites": ["app/main.py:4"], "anchor": "line 4", "limitation": "none"}) + "\n")
+        with contextlib.redirect_stdout(io.StringIO()):
+            seal.seal_register(r.target, r.out)                 # what `build` does: seal, fill, check
+            fill.run(r.target, r.out)
+            self.assertEqual(check.run(r.target, r.out, True), 0)
+
     def _live_rows(self, out):
         from appdoc import register
         with open(os.path.join(out, "evidence.jsonl"), encoding="utf-8") as fh:
@@ -566,7 +591,7 @@ class RegisterHistory(CorpusCase):
         with open(os.path.join(r.out, "check-report.md"), encoding="utf-8") as fh:
             report = fh.read()
         self.assertIn("ref '10.2/no-such-control' names no row of section 10.2", report)
-        self.assertIn("ref '4/run' is a row key, which only sections 9, 10.2, 16.5, 17 have", report)
+        self.assertIn("ref '4/run' is a row key, which only sections 5.3, 9, 10.2, 16.5, 17 have", report)
         # changing the audited row re-opens its seal
         doc = os.path.join(r.out, "application-documentation.md")
         with open(doc, encoding="utf-8") as fh:
@@ -771,11 +796,14 @@ class UpgradeCases(CorpusCase):
         rows = self._rows(reg)
         have = {x["ref"].split("/")[-1] for x in rows[1:]} | {x["ref"] for x in rows[1:]}
         missing = sorted(i for i in planned if i not in have)
-        self.assertEqual(missing, ["17/run", "9/service-will-not-start"],
-                         "the register already audits every planned ID except the new section 17 and, per row (R71.A1a), "
-                         "the section 9 row its old section-level row 9 stood for")
+        self.assertEqual(missing, ["17/run", "5.3/service-change-settings-see-app-main-py-4", "9/service-will-not-start"],
+                         "the register already audits every planned ID except the new section 17, the 5.3 row (planned "
+                         "per row from template 2.8, T28.A5) and, per row (R71.A1a), the section 9 row its old "
+                         "section-level row 9 stood for")
         rows.append({"id": "E-12", "ref": "17/run", "claim": "The Run command starts the service", "result": "Supported",
                      "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"})   # the audit itself
+        rows.append({"id": "E-14", "ref": "5.3/service-change-settings-see-app-main-py-4", "claim": "Only admin changes settings",
+                     "result": "Supported", "cites": ["app/main.py:4"], "anchor": "line 4", "limitation": "none"})
         rows.append({"id": "E-13", "ref": "9/service-will-not-start", "claim": "The troubleshooting row is accurate",
                      "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"})
         with open(reg, "w", encoding="utf-8", newline="\n") as fh:

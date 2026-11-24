@@ -5,13 +5,14 @@
 the sample.
 
 * **Full coverage:** every 10.1 finding, every 7 workflow, every 14 question, every finding candidate no 10.1 row
-  cites (it needs a Dismissed row; the cited ones are covered by their finding), every 10.2 control with Status
-  Present, and every 16.5 and 17 row that is not Unknown (or Not applicable): one key `<section>/<slug>` each.
+  cites (it needs a Dismissed row; the cited ones are covered by their finding), every row of 5.3 (the role-to-
+  capability matrix, from template 2.8), every 10.2 control with Status Present, and every 16.5 and 17 row that is
+  not Unknown (or Not applicable): one key `<section>/<slug>` each.
 * **Sampled:** sections 4, 6, 8.1, 8.3, 9 and 15, `k = min(n, max(minimum, ceil(fraction * n)))` items, those
   with the smallest `sha1(doc_sha + id)`. Defaults 25% and 5. An organization may only raise either number.
 
 Each section entry lists `ids`: the keys the Evidence Register must hold a live row for (an ID, a workflow ref,
-`smell/<fid>`, or a per-row key `<section>/<slug>` for the rows of 10.2, 16.5, 17 and 9; the slug is the row's
+`smell/<fid>`, or a per-row key `<section>/<slug>` for the rows of 5.3, 10.2, 16.5, 17 and 9; the slug is the row's
 first cell, lower-cased, runs of non-alphanumerics to `-`, repeats suffixed `-2`, `-3` in row order). `items` names
 the row of each per-row key (its first cell), in the same order.
 Generated and opaque blocks are not audited.
@@ -158,6 +159,9 @@ def compute(target: str, out_dir: str) -> dict:
         smells = [f"smell/{fid}" for fid, _ in check.uncited_smells(
             target, {"__out__": out_dir}, lines, heads, json.loads(read_text(facts_path)))]
     full("candidates", len(smells), smells)
+    if spec.stamp_version(raw) >= spec.PLAN_5_3_SINCE:   # every row of the matrix: no status filter (T28.A5)
+        total, named = _rows_all(lines, heads, "5.3", "Capability")
+        full("5.3", total, [k for k, _ in named], [name for _, name in named])
     for key, rows in (("10.2", lambda: _rows_present(lines, heads, "10.2", "Status", spec.CONTROL_STATUS_PRESENT)),
                       ("16.5", lambda: _rows_claimed(lines, heads, "16.5", "Procedure")),
                       ("17", lambda: _rows_claimed(lines, heads, "17", "Command"))):
