@@ -381,6 +381,8 @@ def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: boo
                 "found": len(files) + stats["ignored"] + pruned_files, "pruned": stats["pruned"],
                 "metadata": stats.get("metadata", 0), "retired_candidates": stats.get("retired_candidates", []),
                 "duplicate_folders": stats.get("duplicate_folders", [])}
+    if ignored:   # markers dropped under test paths and in test projects, also for Stacks that were then not detected
+        coverage["ignored_markers"] = {k: ignored[k] for k in sorted(ignored)}
     facts_text = F.dumps(name, commit, facts, _history(root), coverage)
     if use_cache and cache is not None:
         _save_cache(out_dir, cache)
