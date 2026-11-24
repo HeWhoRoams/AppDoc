@@ -180,6 +180,45 @@ class SkillDoc(unittest.TestCase):
             part = template.split(sec)[1][:900]
             self.assertIn("one combined row", part, sec)
 
+    S7_RULES = (
+        # (a) C16 and C20 under What the Check enforces
+        "c16 universal claims cite only single lines",
+        "c20 citation precision",
+        "a cell may cite at most 5 sources, each range at most 100 lines",
+        "plain `build` prints them as advisories and `check --strict` fails on them",
+        # (b) a Needs-owner question
+        "a `needs owner` question has no result value",
+        "write a supported row citing the nearest source",
+        "the question stays open in section 14",
+        # (c) exclusions
+        "exclusions are whole sections",
+        "a bare section number",
+        "never exclude a section that has planned ids",
+        "generated blocks inside such a section are simply not audited",
+        # (d) the final pass
+        "cover every row of the sampled sections",
+        "so a later reseed cannot leave an unaudited planned id",
+        # (e) audit-state sentences
+        "must not state counts by result",
+        "`rows` count marker",
+        "refer to appendix a",
+    )
+
+    def test_s7_audit_rules_in_skill(self):
+        """S7.3: what the four fresh runs learned about C16/C20, Needs-owner rows, exclusions and the final pass."""
+        skill = " ".join(self.skill.split()).lower()
+        for needle in self.S7_RULES:
+            self.assertIn(needle, skill, needle)
+
+    def test_s7_audit_state_rule_in_the_template_guide(self):
+        template = " ".join(slurp(os.path.join(ROOT, "appdoc", "assets", "template.md")).split())
+        for sec, end in (("### 2.1 ", "<!-- appdoc:generated"), ("### 15.1 ", "## 16.")):
+            part = template.split(sec)[1].split(end)[0]
+            for needle in ("must not state counts by result", "`rows` count marker", "Appendix A"):
+                self.assertIn(needle, part, (sec, needle))
+        for needle in ("c16 universal claims cite only single lines", "c20 citation precision"):
+            self.assertIn(needle, template.lower(), needle)
+
     def test_every_workflow_command_is_a_real_subcommand(self):
         for step in workflow.SKILL_STEPS:
             if step.command:

@@ -20,6 +20,7 @@ CONVENTIONS:
   - A `|` inside a table cell must be written `\|`.
   - A ref allows one live register row. Where a section has several planned items under one ref (9, 10.2, 16.5, 17) the auditor writes one combined row with per-item notes in `limitation`; a failing item makes the whole row Corrected or Downgraded.
   - Section 11 Status is Cited, Inferred or Unknown.
+  - C16 universal claims cite only single lines: a sentence with all, any, each, every, always, never, whole or entire needs the covering range (`path:start-end`) or **Inferred:**. C20 citation precision: a cell may cite at most 5 sources, each range at most 100 lines, and a wide range that is the claim's only lined Citation fails. A plain `build` prints both as advisories and `check --strict` fails on them: fix them before the audit plan.
 - Section 17 (Build, Run and Test Locally): the Command cell holds exactly one backticked command and nothing else (extra commands and prose go under the table). In each Command cell write a backticked command, `Unknown - see Open questions.` (the repository does not show it; also a row in section 14), or `Not applicable` (cite the evidence). Any row but an Unknown one cites its Evidence with a lined Citation (C9).
 - Run `appdoc fill` to write the generated blocks (scan-coverage, entry-points, closed-questions, config-reference, scheduled-jobs, appendix-a); never edit them by hand (C7). Run it again after every change to evidence.jsonl or notes.jsonl. -->
 
@@ -37,7 +38,7 @@ CONVENTIONS:
 <!-- appdoc:guide Fed by: facts-summary.md, `stack` Facts, Owner context. Name every unsupported Stack here (C7 fails otherwise). -->
 
 ### 2.1 What was inspected
-<!-- appdoc:guide The generated block below states stacks, counts and pruned folders. Add what was NOT read (folders, file types, runtime) and name unsupported Stacks explicitly. -->
+<!-- appdoc:guide The generated block below states stacks, counts and pruned folders. Add what was NOT read (folders, file types, runtime) and name unsupported Stacks explicitly. A sentence here that states the audit state must not state counts by result (they go stale after every delta pass): use a `rows` count marker and refer to Appendix A. -->
 
 <!-- appdoc:generated scan-coverage -->
 <!-- /appdoc:generated scan-coverage -->
@@ -218,7 +219,7 @@ Severity: Critical, High, Medium, Low. Effort: S, M, L. IDs R-1, R-2, ... -->
 |---|---|---|---|---|
 
 ### 15.1 Coverage summary
-<!-- appdoc:guide What this document verified, what it did not inspect, and what a reader must confirm before relying on it. -->
+<!-- appdoc:guide What this document verified, what it did not inspect, and what a reader must confirm before relying on it. A sentence that states the audit state must not state counts by result (they go stale after every delta pass): use a `rows` count marker and refer to Appendix A. -->
 
 ## 16. Operations Runbook
 <!-- appdoc:guide Fed by: config, connections, dependencies, Owner context. Do not invent environments; use Unknown. -->
