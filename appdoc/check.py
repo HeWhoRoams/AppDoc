@@ -1,22 +1,31 @@
-"""The Check: pass/fail verification of a finished Narrative (rules C1-C13). No score, no warnings."""
+"""The Check: pass/fail verification of a finished Narrative. No score, no warnings.
+
+The module docstring is assigned below, after RULES, so the rule range it names is the constant.
+"""
 
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import re
 import sys
+from typing import NamedTuple
 
-from . import __version__
+from . import __version__, version
+from . import context
 from . import docmodel as dm
 from . import fill as fill_mod
+from . import fingerprint
+from . import notes as notes_mod
 from . import register as reg_mod
 from . import scan
+from . import smells as smells_mod
 from . import template_spec as spec
-from .citations import OWNER_CONTEXT, Citation, find_citations, parse_span
+from .citations import KNOWN_BARE_FILES, OWNER_CONTEXT, Citation, find_citations, parse_span
 from .facts import fact_id
 from .secrets import find_secret_shapes
+from .textnorm import normalize_newlines
+from .textutil import plural, read_text
 
 NARRATIVE = "application-documentation.md"
 FACTS = "facts.json"
@@ -24,30 +33,108 @@ REPORT = "check-report.md"
 REGISTER = reg_mod.REGISTER
 
 
-def _major_minor(version: str) -> str | None:
-    """The major.minor of a dotted version string, or None if it is not dotted numeric."""
-    parts = version.split(".")
-    if len(parts) >= 2 and parts[0].isdigit() and parts[1].isdigit():
-        return f"{parts[0]}.{parts[1]}"
-    return None
-
-SECTIONS = list(spec.SECTIONS)
+SECTIONS = list(spec.sections(spec.version_tuple(spec.TEMPLATE_VERSION)))   # the running template's sections
 REQUIRED_SUBSECTIONS = spec.REQUIRED_SUBSECTIONS
-RULE_TITLES = {
-    "C1": "Citations resolve", "C2": "Security lines", "C3": "Sections complete", "C4": "Gaps declared",
-    "C5": "Claims grounded", "C6": "No secrets", "C7": "Coverage honest", "C8": "Structure complete",
-    "C9": "Tables conform", "C10": "References resolve", "C11": "Register valid",
-    "C12": "Finding candidates addressed", "C13": "Entry points not cited",  # C13 fails only under --strict
-    "C14": "Unknowns match the register", "C15": "Register counts in prose",
-    "C16": "Universal claims cite single lines",  # C16 is advisory; fails only under --strict
-}
+
+
+class Rule(NamedTuple):
+    """One Check rule. ``flags``: "advisory" and/or "strict" (see tools/gen_docs.py). ``preview`` is the
+    text of a 2.7 rule that is only an advisory on an older template ("" when there is none)."""
+    id: str
+    title: str
+    summary: str   # one sentence: what makes it fail; tools/gen_docs.py writes it into the README
+    flags: tuple = ()
+    preview: str = ""
+
+
+# The one rule registry (R5). Everything else about rules is derived from it below.
+RULES = (
+    Rule("C1", "Citations resolve",
+         "a Citation points to a missing file or a line past the end (folders and unique bare filenames resolve; "
+         "extensionless non-existent spans are not Citations)",
+         preview="a bare file name (in the Narrative, a register row or a note) that resolves to a file in a folder: "
+                 "cite the full path"),
+    Rule("C2", "Security lines", "a Citation in section 10 has no line"),
+    Rule("C3", "Sections complete",
+         "a section is missing, out of order, empty or a placeholder, the stamp is not the running template, or an "
+         "`appdoc:upgrade-orphan` comment from `appdoc upgrade` is left"),
+    Rule("C4", "Gaps declared",
+         "section 14 is empty while Unknowns exist, or Data and Integrations is empty though Facts exist"),
+    Rule("C5", "Claims grounded",
+         "a paragraph, list item or table row in sections 3 to 10 is neither cited, Inferred nor Unknown"),
+    Rule("C6", "No secrets", "secret-shaped text, or a `never-mention` term, appears in a published file"),
+    Rule("C7", "Coverage honest",
+         "an unsupported Stack is not named in section 2; a count or a generated block differs from the Facts; "
+         "facts.json was written by another major.minor of AppDoc", ("strict",)),
+    Rule("C8", "Structure complete", "a required numbered subsection is missing, outside its section or empty"),
+    Rule("C9", "Tables conform",
+         "a table differs from the template (header, cell count, ID prefix, allowed value, required row), "
+         "the 5.3 Restriction line is missing, a section 17 (2.7) Command cell is not a backticked command, Unknown or "
+         "Not applicable or lacks a lined Citation, or a guidance comment remains",
+         preview="a section 10.1 or 15 row that outranks the row before it (Critical, High, Medium, Low)"),
+    Rule("C10", "References resolve",
+         "an ID is defined twice or referenced but not defined, or a reference between sections does not resolve"),
+    Rule("C11", "Register valid",
+         "`evidence.jsonl` is missing, malformed or does not cover the document; an anchor is not in its cited lines",
+         preview="an Answerable register row without `answered_in`, the section that answers the question"),
+    Rule("C12", "Finding candidates addressed",
+         "a finding candidate is neither cited in 10.1 nor Dismissed in the register"),
+    Rule("C13", "Entry points not cited", "an entry point file is not cited anywhere in the document",
+         ("advisory", "strict")),   # fails only under --strict
+    Rule("C14", "Unknowns match the register",
+         "section 14 lists a question the register resolved, or its unknown count disagrees with the register"),
+    Rule("C15", "Register counts in prose",
+         "a register count written in prose disagrees with the register; from template 2.7 a count marker holds a "
+         "stale number or an unknown class (a hand-written \"N of M\" is then only an advisory: use a count marker)",
+         preview="a count marker holds a stale number or an unknown class"),
+    Rule("C16", "Universal claims cite single lines",
+         "a universal claim (all, every, never) cites only single lines", ("advisory", "strict")),
+    Rule("C17", "Audit scope names the method only",
+         "the audit record's scope text holds an ID or a digit; with `--require-audit` the record lacks "
+         "`audited_on`, `audited_with`, `audited_bundle` or `doc_sha`, and with `--strict` a row was sealed at "
+         "upgrade (all fail from template 2.7)", ("advisory",),
+         preview="the audit record's scope text holds an ID or a digit"),
+    Rule("C18", "Notes match their block",
+         "a note in `notes.jsonl` names an unknown block, was written about an older version of its block "
+         "(`block_sha`), or cites a file that does not resolve; the label `Known extractor limitation:` is "
+         "written in the Narrative outside a generated block (fails from template 2.7)", ("advisory",),
+         preview="a note in `notes.jsonl` that does not match its block, or the reserved label written by hand"),
+    Rule("C19", "Audit follows the plan",
+         "with `--require-audit` on template 2.7, `audit-plan.json` is missing or differs from a fresh computation, "
+         "or a planned id or per-row key has no live register row (a section listed under `exclusions` is not required)"),
+    Rule("C20", "Citation precision",
+         "a range over 100 lines is a claim's only lined Citation in section 4, 7 or 10, "
+         "or a section 4 or 10.1 table cell holds more than 5 Citations", ("advisory", "strict")),
+    Rule("C21", "Mandatory inputs cited",
+         "a file holding a security setting, access rule, external config reference or secret-bearing application key "
+         "is not cited with a line in text outside the generated blocks (a file that could not be parsed needs its path)"),
+    Rule("C22", "Area and protection coverage",
+         "an MVC area is not the folder of a 4.1 row, or a handler file that changes state or has no application-layer "
+         "restriction (or an unknown one) is not cited; with `--strict`, a guard candidate is not declared",
+         ("strict",)),
+    Rule("C23", "Unknown the repository may answer",
+         "an Unknown about identity, authentication, authorization or roles while the repository holds a security "
+         "setting or access rule that may answer it", ("advisory", "strict")),
+)
+RULE_TITLES = {r.id: r.title for r in RULES}
+RULE_SUMMARIES = {r.id: r.summary for r in RULES}
+# Rules that are advisory by default ("advisory") or fail only under --strict ("strict").
+RULE_FLAGS = {r.id: r.flags for r in RULES if r.flags}
+# Previews of template 2.7 rules: printed as "fails from template 2.7", never failing a 2.4 document.
+PREVIEW_RULES = {r.id: r.preview for r in RULES if r.preview}
+RULE_RANGE = f"C1-C{max(int(r.id[1:]) for r in RULES)}"
+__doc__ = (f"The Check: pass/fail verification of a finished Narrative (rules {RULE_RANGE}). "
+           "No score, no warnings.")
+FAILS_FROM = (2, 7)
+PREVIEW_HEADING = "## Template 2.7 previews (advisory)"
+WIDE_RANGE = 100   # C20: a lined range spanning more lines than this is imprecise
+CELL_CITES = 5     # C20: more Citations than this in one table cell is imprecise
 C5_CAP = 30
 C5_MIN_LEN = 40
-RULE_CAP = 50  # C9-C13 on a large document: show the first problems, count the rest
+RULE_CAP = 50  # C9-C13, C19 and C21-C23 on a large document: show the first problems, count the rest
 FOLDER_CAP = 30  # folders listed under "Entry points not cited"
 ENTRY_TYPES = ("route", "page", "command", "job")
 
-_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
 _H2_RE = re.compile(r"^##\s+(\d+)\.\s*(.*?)\s*$")
 _LIST_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
 _SEP_RE = re.compile(r"^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$")
@@ -70,20 +157,6 @@ _PROSE_TOTAL = {  # noun -> (entry_point_counts key, what the Facts count)
     "routes": ("routes", "routes"), "endpoints": ("routes", "routes"),
     "scheduled jobs": ("jobs", "jobs"), "cron tasks": ("jobs", "jobs"), "background jobs": ("jobs", "jobs"),
 }
-
-
-def _read_text(path: str) -> str:
-    with open(path, "rb") as fh:
-        raw = fh.read()
-    try:
-        return raw.decode("utf-8")
-    except UnicodeDecodeError:
-        return raw.decode("cp1252", errors="replace")
-
-
-def _strip_comments(text: str) -> str:
-    """Remove HTML comments but keep line numbering intact."""
-    return _COMMENT_RE.sub(lambda m: "\n" * m.group(0).count("\n"), text)
 
 
 def _sections(lines: list[str]) -> list[dict]:
@@ -236,7 +309,7 @@ def _resolve(target: str, cache: dict, c) -> tuple[bool | None, str]:
     if c.start is None:
         return True, ""
     if full not in cache:
-        cache[full] = len(_read_text(full).splitlines())
+        cache[full] = len(read_text(full).splitlines())
     n = cache[full]
     if c.start < 1 or c.end < c.start or c.end > n:
         return False, f"line {c.raw.rsplit(':', 1)[1]} is outside `{c.path}` ({n} lines)"
@@ -245,17 +318,33 @@ def _resolve(target: str, cache: dict, c) -> tuple[bool | None, str]:
 
 def _never_mention(target: str) -> list[str]:
     path = os.path.join(target, OWNER_CONTEXT)
-    if not os.path.isfile(path):
+    return context.parse(read_text(path) if os.path.isfile(path) else None).never_mention
+
+
+def _rows_all_unknown(rows) -> bool:
+    return bool(rows) and all(_UNKNOWN_RE.search(r) for _, r in rows)
+
+
+def _absent_owner_advisories(lines, by_num, facts) -> list[str]:
+    """C4 advisories (never failures): ownership / runbook Unknown by absence of an owner file.
+
+    Needs the Facts file: without it, whether an owner file exists is not known, so say nothing.
+    """
+    if not facts or any(f.get("kind") == "owner_file" for f in facts.get("facts", [])):
         return []
-    terms, active = [], False
-    for line in _read_text(path).splitlines():
-        s = line.strip()
-        if s.startswith("```"):
-            active = (not active) and s[3:].strip() == "never-mention"
-            continue
-        if active and s:
-            terms.append(s)
-    return terms
+    out = []
+    s11 = by_num.get(11)
+    if s11 and _rows_all_unknown([c for c in _content_lines(lines, s11) if c[1].startswith("|")]):
+        out.append("ownership is Unknown by absence (no appdoc-context.md); add one to fill section 11")
+    s16 = by_num.get(16)
+    sub = _subsection(lines, s16, "16.5") if s16 else None
+    if sub:
+        rows = [(no, r) for no, r in _content_lines(lines, sub) if r.startswith("|")
+                and r.strip("| ").split("|")[0].strip().lower() in ("rollback", "backup", "restore")]
+        if _rows_all_unknown(rows):
+            out.append("deployment runbook is Unknown by absence (no appdoc-context.md); "
+                       "add one to fill section 16.5 Rollback, Backup and Restore")
+    return out
 
 
 def _spec_table(lines, heads, key):
@@ -302,7 +391,7 @@ def _c9_tables(lines, raw, heads, add):
                 if v not in allowed:
                     add("C9", no, f"{key} {name} '{v}' is not one of: {', '.join(allowed)}", f"use one of: {', '.join(allowed)}")
         labels = {dm.cell_text(c[0]).casefold() for _, c in t.rows if c}
-        for label in ts.required_rows:
+        for label in spec.required_rows_at(key, spec.stamp_version(raw)):
             if label.casefold() not in labels:
                 add("C9", t.line, f"{key} has no '{label}' row",
                     "add the row; write Unknown if the repository does not show it")
@@ -312,6 +401,47 @@ def _c9_tables(lines, raw, heads, add):
     for i, line in enumerate(raw.splitlines(), 1):
         if spec.GUIDE_RE.search(line):
             add("C9", i, "template guidance comment left in the document", "delete the appdoc:guide comment")
+
+
+# Exactly one backticked command and nothing else (a chain such as `npm ci`, then `npm start` is two).
+_BUILD_COMMAND_RE = re.compile(r"^`[^`\n]+`$")
+_BACKTICK_SPAN_RE = re.compile(r"`[^`\n]+`")
+
+
+def _c9_build_rows(lines, heads, add):
+    """C9, section 17: the Command cell is a backticked command, `Unknown - see Open questions.` or `Not applicable`;
+    every row but an Unknown one cites its Evidence with a lined Citation (`path:line`)."""
+    h = heads.get("17")
+    t = dm.first_table(lines, h) if h else None
+    if t is None or not spec.TABLES["17"].header_ok([dm.cell_text(c) for c in t.header]):
+        return   # a missing table or a changed header is reported by the generic table rule
+    ts = spec.TABLES["17"]
+    cmd, ev = ts.columns.index("Command"), ts.columns.index("Evidence")
+    for no, cells in t.rows:
+        if not ts.row_fits(len(cells)):
+            continue
+        step = dm.cell_text(cells[0])
+        value = cells[cmd].strip()
+        if value == spec.BUILD_UNKNOWN:
+            continue
+        if (value != spec.BUILD_NOT_APPLICABLE and not _BUILD_COMMAND_RE.match(value)
+                and len(_BACKTICK_SPAN_RE.findall(value)) > 1):
+            add("C9", no, f"17 {step}: the Command cell holds more than one command; it must hold exactly one "
+                "backticked command and nothing else",
+                "use one command or one wrapper script (a Makefile target or script that runs the chain) and cite "
+                "where it is defined; put the steps it runs under the table")
+        elif value != spec.BUILD_NOT_APPLICABLE and not _BUILD_COMMAND_RE.match(value) and "`" in value:
+            add("C9", no, f"17 {step}: the Command cell must hold exactly one backticked command and nothing else",
+                "put the command alone in backticks in the Command cell; extra commands and prose go under the table")
+        elif value != spec.BUILD_NOT_APPLICABLE and not _BUILD_COMMAND_RE.match(value):
+            add("C9", no, f"17 {step}: the Command cell is not a backticked command, '{spec.BUILD_UNKNOWN}' "
+                f"or '{spec.BUILD_NOT_APPLICABLE}'",
+                f"write the command in backticks, or '{spec.BUILD_UNKNOWN}' when the repository does not show it, "
+                f"or '{spec.BUILD_NOT_APPLICABLE}' with the evidence cited")
+        elif not any(c.start is not None for c in find_citations(cells[ev])):
+            add("C9", no, f"17 {step}: a {'command' if value != spec.BUILD_NOT_APPLICABLE else 'Not applicable row'} "
+                "needs a Citation with a line in Evidence",
+                "cite where it is defined (`path:line`), or write the Command as Unknown")
 
 
 def defined_ids(lines, heads, add) -> dict[str, int]:
@@ -334,7 +464,7 @@ def defined_ids(lines, heads, add) -> dict[str, int]:
     return ids
 
 
-def _c10_refs(lines, heads, ids, register_ids, add):
+def _c10_refs(lines, heads, ids, register_ids, add, superseded=None):
     fence = dm.fenced(lines)
     slugs = dm.all_slugs(lines) | {APPENDIX_SLUG}
     for i, line in enumerate(lines):
@@ -345,7 +475,10 @@ def _c10_refs(lines, heads, ids, register_ids, add):
             ref = m.group(1)
             if ref.startswith("E-"):
                 if register_ids is not None and ref not in register_ids:
-                    add("C10", i + 1, f"{ref} is not a row of {REGISTER}", "cite an existing register ID")
+                    if ref in (superseded or {}):
+                        add("C10", i + 1, f"{ref} is superseded by {superseded[ref]}", f"cite {superseded[ref]}")
+                    else:
+                        add("C10", i + 1, f"{ref} is not a row of {REGISTER}", "cite an existing register ID")
             elif ref not in ids:
                 add("C10", i + 1, f"{ref} is not defined in any table", "define the ID in its table or correct the reference")
         for m in _ANCHOR_RE.finditer(text):
@@ -359,7 +492,7 @@ def _c10_refs(lines, heads, ids, register_ids, add):
     if t15:
         named = set(_ID_REF_RE.findall(addressed))
         for vid, no in ids.items():
-            if vid.startswith("V-") and vid not in named:
+            if vid.startswith(spec.id_prefix_of("10.1")) and vid not in named:
                 add("C10", no, f"finding {vid} is addressed by no recommendation in section 15",
                     f"add a section 15 row whose Addresses names {vid}")
     t102 = _spec_table(lines, heads, "10.2")
@@ -380,19 +513,24 @@ def _c10_refs(lines, heads, ids, register_ids, add):
                 add("C10", no, f"{idv} has no row in 8.5", f"add an 8.5 row for {idv} (none is a valid answer)")
 
 
-def _c7_counts(target, lines, heads, facts, add):
+def _inventory_rows(target, lines, heads):
+    """(line, cells, folder) of each well-formed 4.1 row whose first cell cites a folder of the Target (C7, C22)."""
     t = _spec_table(lines, heads, "4.1")
-    if not t or not facts:
-        return
-    files = [f["path"] for f in facts.get("facts", []) if f.get("kind") == "file"]
     root = os.path.realpath(target)
-    for no, cells in t.rows:
+    for no, cells in (t.rows if t else ()):
         if len(cells) != len(spec.TABLES["4.1"].columns):
             continue
         cites = [c for c in find_citations(cells[0]) if c.start is None]
         folder = next((c.path.rstrip("/") for c in cites if os.path.isdir(os.path.join(root, c.path))), None)
-        if folder is None:
-            continue
+        if folder is not None:
+            yield no, cells, folder
+
+
+def _c7_counts(target, lines, heads, facts, add):
+    if not facts:
+        return
+    files = [f["path"] for f in facts.get("facts", []) if f.get("kind") == "file"]
+    for no, cells, folder in _inventory_rows(target, lines, heads):
         stated = dm.cell_text(cells[1])
         n = sum(1 for p in files if p.startswith(folder + "/"))
         if stated.isdigit():
@@ -482,30 +620,41 @@ def _cited_paths(target, cache, cites) -> set[str]:
     return out
 
 
-def _c12_smells(target, cache, lines, heads, facts, reg, add):
-    """Every non-test smell Fact is cited in a 10.1 row (path and a line that covers it) or dismissed."""
-    smells = sorted((f for f in facts.get("facts", []) if f.get("kind") == "smell" and not f["detail"].get("test")),
+def uncited_smells(target, cache, lines, heads, facts) -> list[tuple[str, dict]]:
+    """(fid, smell Fact) of every obliging, non-test smell Fact no 10.1 row cites (the path, and a line that covers it)."""
+    smells = sorted((f for f in facts.get("facts", []) if f.get("kind") == "smell" and not f["detail"].get("test")
+                     and f["detail"].get("pattern") in smells_mod.OBLIGING),   # the others are summary-only (W11 C)
                     key=lambda f: (f["path"], f.get("line") or 0, f["detail"].get("fid", "")))
     if not smells:
-        return
+        return []
     spans: list[tuple[str, int | None, int | None]] = []
     t = _spec_table(lines, heads, "10.1")
     for _, cells in (t.rows if t else ()):
         for c in find_citations(" ".join(cells)):
             for p in _cited_paths(target, cache, [c]):
                 spans.append((p, c.start, c.end))
-    dismissed = set()
-    for _, row in (reg.rows if reg else ()):
-        m = reg_mod.SMELL_REF_RE.match(str(row["ref"]))
-        if m and row["result"] == "Dismissed" and str(row["limitation"]).strip():
-            dismissed.add(m.group(1))
-    h = heads.get("10.1")
+    out = []
     for f in smells:
         d = f["detail"]
         fid = d.get("fid") or fact_id("smell", d.get("pattern", ""), f["path"], f.get("line"))
         ln = f.get("line")
-        if fid in dismissed or any(p == f["path"] and (ln is None or (s is not None and s <= ln <= e))
-                                   for p, s, e in spans):
+        if not any(p == f["path"] and (ln is None or (s is not None and s <= ln <= e)) for p, s, e in spans):
+            out.append((fid, f))
+    return out
+
+
+def _c12_smells(target, cache, lines, heads, facts, reg, add):
+    """Every non-test smell Fact is cited in a 10.1 row (path and a line that covers it) or dismissed."""
+    dismissed = set()
+    for _, row in (reg.live_rows() if reg else ()):   # a superseded dismissal is history
+        m = reg_mod.SMELL_REF_RE.match(str(row["ref"]))
+        if m and row["result"] == "Dismissed" and str(row["limitation"]).strip():
+            dismissed.add(m.group(1))
+    h = heads.get("10.1")
+    for fid, f in uncited_smells(target, cache, lines, heads, facts):
+        d = f["detail"]
+        ln = f.get("line")
+        if fid in dismissed:
             continue
         at = f"{f['path']}:{ln}" if ln else f["path"]
         add("C12", h.idx + 1 if h else 1,
@@ -516,21 +665,183 @@ def _c12_smells(target, cache, lines, heads, facts, reg, add):
             f'"cites": [], "anchor": "", "limitation": "<why>"}} to {REGISTER}')
 
 
+C22_REACH = ("no_app_restriction", "signed_in_any", "unknown")   # labels that make a handler file mandatory (C22)
+
+
+def _entry_point_map(target, cache, facts, cites) -> dict[str, dict]:
+    """One entry per non-test entry point file, the citation map C13 and C22 share (R5): ``cited`` (some Citation names
+    the file), ``c13`` (it holds a route, page, command or job), ``why`` (what makes C22 demand it: "state-changing" or
+    a reach label; empty for a read-only or role-restricted file and for a ``desktop`` entry), ``area`` (the
+    ``mvc_area_path`` values of its entry points)."""
+    cited = _cited_paths(target, cache, cites)
+    out: dict[str, dict] = {}
+    for f in facts.get("facts", []):
+        d = f.get("detail") or {}
+        if f.get("kind") != "entry_point" or d.get("test"):
+            continue
+        e = out.setdefault(f["path"], {"cited": f["path"] in cited, "c13": False, "why": set(), "area": set()})
+        e["c13"] |= d.get("type") in ENTRY_TYPES
+        if d.get("type") != "desktop":
+            if d.get("state_changing") in ("true", True):
+                e["why"].add("state-changing")
+            if d.get("reach") in C22_REACH:
+                e["why"].add(d["reach"])
+        if d.get("mvc_area_path"):
+            e["area"].add(str(d["mvc_area_path"]).strip("/"))
+    return out
+
+
 def _uncited_entry_points(target, cache, facts, cites) -> list[tuple[str, int, list[str]]]:
     """(top-level folder, files, first 5 paths) of entry point files no Citation names, largest folder first."""
-    cited = _cited_paths(target, cache, cites)
-    paths = sorted({f["path"] for f in facts.get("facts", []) if f.get("kind") == "entry_point"
-                    and not f["detail"].get("test") and f["detail"].get("type") in ENTRY_TYPES} - cited)
+    paths = sorted(p for p, e in _entry_point_map(target, cache, facts, cites).items() if e["c13"] and not e["cited"])
     groups: dict[str, list[str]] = {}
     for p in paths:
         groups.setdefault(p.split("/", 1)[0] + "/" if "/" in p else "(root)", []).append(p)
     return sorted(((k, len(v), v[:5]) for k, v in groups.items()), key=lambda g: (-g[1], g[0]))
 
 
-def _c7_blocks(raw, heads, facts, out_dir, target, add):
+def _block_detail(name, body, facts) -> str:
+    """Which count differs, for the 16.6 block (the exact comparison above is the check; this is its message)."""
+    if name != "config-reference":
+        return ""
+    rows = [ln for ln in body.splitlines() if ln.startswith("|")][2:]
+    return (f" (the Facts expect {fill_mod.config_shown_count(facts)} of {fill_mod.config_app_count(facts)} "
+            f"application keys; the block has {len(rows)} shown)")
+
+
+C21_KINDS = ("security_setting", "access_rule", "config_external")
+C21_FIX = "this file is mandatory input (R16); read it and cite what it shows, redacting values"
+
+
+def _c21_files(facts) -> tuple[dict[str, int], set[str]]:
+    """({path: first line} of files that must be cited with a line, {paths} that only need a citation)."""
+    lined: dict[str, int] = {}
+    unparsed: set[str] = set()
+    for f in facts.get("facts", []):
+        d = f.get("detail") or {}
+        k = f.get("kind")
+        if k in C21_KINDS or (k == "config_key" and d.get("role") == "app" and d.get("secret_location")):
+            lined[f["path"]] = min(lined.get(f["path"], f.get("line") or 1), f.get("line") or 1)
+        elif k == "config_unparsed":
+            unparsed.add(f["path"])
+    return lined, unparsed - set(lined)
+
+
+def _c21_mandatory(target, cache, raw, facts, add):
+    """C21: every file with security-bearing configuration is cited with a line in Narrative text, every generated
+    block masked (the 16.6 block cites each application config file); the wording of the sentence is not read."""
+    lined, path_only = _c21_files(facts)
+    if not lined and not path_only:
+        return
+    text = dm.strip_comments(dm.mask_blocks(normalize_newlines(raw), tuple(spec.GENERATED.values())))
+    cites = find_citations(text)
+    any_cite = _cited_paths(target, cache, cites)
+    with_line = _cited_paths(target, cache, [c for c in cites if c.start is not None])
+    for path, first in sorted(lined.items()):
+        if path not in with_line:
+            add("C21", 1, f"`{path}` is not cited with a line outside the generated blocks "
+                f"(it holds security-bearing configuration from line {first})", C21_FIX)
+    for path in sorted(path_only):
+        if path not in any_cite:
+            add("C21", 1, f"`{path}` could not be parsed and is not cited", C21_FIX)
+
+
+C22_FIX = ("cite the handler file with `path:line` where the document describes it; while guard attributes are "
+           "undeclared most handlers are `unknown` and so mandatory (declare guards with `Auth attributes:` in "
+           "appdoc-context.md)")
+_ROOT_AREAS = ("", ".")
+
+
+def _c22_coverage(target, cache, lines, heads, facts, cites, add) -> int:
+    """C22: every non-root MVC area is the folder of a 4.1 row; every handler file that changes state or has no
+    application-layer restriction (or an unknown one) is cited, on the citation map C13 uses. Returns the number of
+    undeclared guard candidates (the caller reports them: an advisory, a failure under --strict)."""
+    emap = _entry_point_map(target, cache, facts, cites)
+    h4, h41 = heads.get("4"), heads.get("4.1")
+    at = (h41 or h4).idx + 1 if (h41 or h4) else 1
+    inventory = {folder.lower() for _, _, folder in _inventory_rows(target, lines, heads)}
+    areas: dict[str, int] = {}
+    for p, e in emap.items():
+        for a in e["area"] - set(_ROOT_AREAS):
+            areas[a] = areas.get(a, 0) + 1
+    for a, n in sorted(areas.items()):
+        if a.lower() not in inventory:
+            add("C22", at, f"MVC area `{a}/` ({plural(n, 'entry point file')}) is not the folder of any 4.1 row",
+                f"add a 4.1 row whose Subsystem cell cites `{a}/`")
+    h = h4.idx + 1 if h4 else 1
+    for p, e in sorted(emap.items()):
+        if e["why"] and not e["cited"]:
+            add("C22", h, f"handler file `{p}` is not cited but holds handlers that are {', '.join(sorted(e['why']))}",
+                C22_FIX)
+    return sum(1 for f in facts.get("facts", [])
+               if f.get("kind") == "guard_candidate" and not (f.get("detail") or {}).get("test"))
+
+
+def _undeclared_text(n: int) -> str:
+    return f'{plural(n, "undeclared guard candidate")}; declare with "Auth attributes:" in appdoc-context.md'
+
+
+# C23 (2.8): the closed vocabulary of authentication and authorization topics. The other topics are 2.9 (W9).
+_C23_TOPIC_RE = re.compile(r"\b(?:identity providers?|idp|single sign-on|sso|authenticat\w*|authori[sz]\w*|"
+                           r"log-?in|sign-?in|roles?|access control|permissions?)\b", re.I)
+C23_KINDS = ("security_setting", "access_rule")
+
+
+def _c23_unknowns(glines, heads, facts) -> list[tuple[int, str]]:
+    """(line, text) of each section 14 row and each `Unknown - see Open questions.` paragraph that names an
+    authentication or authorization topic while a security_setting or access_rule Fact exists; the text names where."""
+    where = sorted({(f["path"], f.get("line") or 0, f["kind"]) for f in facts.get("facts", [])
+                    if f.get("kind") in C23_KINDS and not (f.get("detail") or {}).get("test")})
+    if not where:
+        return []
+    named = ", ".join(f"{p}:{n} ({k})" if n else f"{p} ({k})" for p, n, k in where[:3])
+    named += f" and {len(where) - 3} more" if len(where) > 3 else ""
+    cands: dict[int, str] = {}
+    t14 = _spec_table(glines, heads, "14")
+    for no, cells in (t14.rows if t14 else ()):
+        cands[no] = " ".join(dm.cell_text(c) for c in cells[1:4])
+    for no, blk in _blocks(glines, 0, len(glines)):
+        if spec.UNKNOWN_TEXT in blk:
+            cands.setdefault(no, blk)
+    return [(no, f"`{text.strip()[:80]}` names an authentication or authorization topic; the repository may answer "
+                 f"this: {named}")
+            for no, text in sorted(cands.items()) if _C23_TOPIC_RE.search(text)]
+
+
+_EXCLUSION_RE = re.compile(r"\b(?:not reviewed|not inspected|excluded|was not read)\b", re.I)
+_SENTENCE_RE = re.compile(r"(?<=[.!?])\s+")
+_ONE_LINE_RANGE_RE = re.compile(r":(\d+)-(\d+)$")
+C20_EXCLUDED_MSG = "this sentence cites a file it says was not reviewed"
+C20_EXCLUDED_FIX = "read the file and cite what it shows, or remove the citation from the sentence"
+
+
+def _c20_wording(target, cache, glines, facts) -> list[tuple[int, str, str]]:
+    """(line, message, fix) of the C20-family advisories (2.8): a Citation inside a sentence that says the file was
+    not reviewed (with the C21 hint when the file is mandatory input), and a one-line range `a-a`."""
+    lined = _c21_files(facts)[0]
+    hits = []
+    for no, blk in _blocks(glines, 0, len(glines)):
+        for sentence in _SENTENCE_RE.split(blk):
+            if not _EXCLUSION_RE.search(sentence):
+                continue
+            cs = find_citations(sentence)
+            if not cs:
+                continue
+            msg = C20_EXCLUDED_MSG
+            if any(p in lined for p in _cited_paths(target, cache, cs)):
+                msg += "; C21 requires a lined citation"
+            hits.append((no, msg, C20_EXCLUDED_FIX))
+    for c in find_citations("\n".join(glines)):
+        m = _ONE_LINE_RANGE_RE.search(c.raw)
+        if c.start is not None and m and m.group(1) == m.group(2):
+            hits.append((c.doc_line, f"`{c.raw}` is a one-line range; write `:{c.start}`", f"write `:{c.start}`"))
+    return sorted(set(hits))
+
+
+def _c7_blocks(raw, heads, facts, out_dir, target, add, doc_ver=()):
     ctx = {"out_dir": out_dir, "text": raw, "target": target}
-    found = {name: (body, line) for name, body, line in fill_mod.blocks(raw.replace("\r\n", "\n"))}
-    for key, name in spec.GENERATED.items():
+    found = {name: (body, line) for name, body, line in fill_mod.blocks(normalize_newlines(raw))}
+    for key, name in spec.generated_blocks(doc_ver).items():
         h = heads.get(key)
         line = h.idx + 1 if h else 1
         if name not in found:
@@ -538,60 +849,8 @@ def _c7_blocks(raw, heads, facts, out_dir, target, add):
                 "copy its appdoc:generated markers from the template, then run `appdoc fill`")
             continue
         if facts is not None and found[name][0] != (fill_mod.render_block(name, facts, ctx) or "").strip():
-            add("C7", found[name][1], f"generated block '{name}' differs from the Facts",
+            add("C7", found[name][1], f"generated block '{name}' differs from the Facts{_block_detail(name, found[name][0], facts)}",
                 "run `appdoc fill <target>`; never edit a generated block by hand")
-
-
-def _claim_sha(lines, heads, ids, ref):
-    """12-hex-char SHA-1 over the normalised text a ref points to. None if the ref is unresolvable."""
-    m = reg_mod.REF_RE.match(ref)
-    if not m:
-        return None
-    sec_key, id_part = m.group(1), m.group(2)
-    if id_part and id_part in ids:
-        # ID ref: the table row that defines the ID
-        no = ids[id_part]
-        text = lines[no - 1]
-    elif sec_key.startswith("7.") and sec_key in heads:
-        # workflow: the subsection
-        h = heads[sec_key]
-        text = "\n".join(lines[h.idx + 1: h.own_end])
-    elif sec_key in heads:
-        # section-level: the section with generated blocks masked
-        h = heads[sec_key]
-        text = fill_mod.mask_blocks("\n".join(lines[h.idx: h.end]), spec.OPAQUE_BLOCKS)
-    else:
-        return None
-    text = dm.strip_comments(text)
-    text = " ".join(text.split())
-    return hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
-
-
-def seal_register(target, out_dir) -> int:
-    """Write claim_sha into every ID/workflow register row that lacks one. Returns rows sealed."""
-    md_path = os.path.join(out_dir, NARRATIVE)
-    reg_path = os.path.join(out_dir, REGISTER)
-    if not os.path.isfile(md_path) or not os.path.isfile(reg_path):
-        return 0
-    raw = _read_text(md_path)
-    lines = _strip_comments(fill_mod.mask_blocks(raw.replace("\r\n", "\n"), spec.OPAQUE_BLOCKS)).splitlines()
-    heads = dm.headings(lines)
-    ids = defined_ids(lines, heads, lambda *a: None)
-    reg = reg_mod.parse(_read_text(reg_path))
-    claim_shas: dict[str, str] = {}
-    for _, row in reg.rows:
-        if row["result"] in ("Dismissed", "Answerable"):
-            continue
-        m = reg_mod.REF_RE.match(str(row["ref"]))
-        if not m:
-            continue
-        sec_key, id_part = m.group(1), m.group(2)
-        if not (id_part or sec_key.startswith("7.")):
-            continue
-        sha = _claim_sha(lines, heads, ids, str(row["ref"]))
-        if sha:
-            claim_shas[str(row["id"])] = sha
-    return reg_mod.seal(reg_path, claim_shas)
 
 
 def _c2_per_claim(lines, s10, add):
@@ -628,7 +887,44 @@ def _c2_per_claim(lines, s10, add):
             add("C2", no, "security claim has no lined Citation", fix)
 
 
-def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smell_fids, add):
+def _c11_supersedes(reg, all_ids, add):
+    """A `supersedes` target must be a row of this register with the same ref, and the links may not cycle."""
+    for no, row in reg.rows:
+        where = f"{REGISTER} line {no}"
+        for t in reg.supersedes_of(row):
+            if t not in all_ids:
+                add("C11", no, f"{where}: {row['id']} supersedes {t}, which is not a row of this register",
+                    "name an existing E-<n> row, or remove \"supersedes\"")
+            elif str(all_ids[t]["ref"]) != str(row["ref"]):
+                add("C11", no, f"{where}: {row['id']} supersedes {t}, which has the ref {all_ids[t]['ref']}, "
+                    f"not {row['ref']}", "a row may supersede only a row of the same ref")
+    edges = {str(r["id"]): [t for t in reg.supersedes_of(r) if t in all_ids] for _, r in reg.rows}
+    state: dict[str, int] = {}   # 1 = on the current path, 2 = finished
+
+    def visit(rid, path):
+        state[rid] = 1
+        for t in edges.get(rid, ()):
+            if state.get(t) == 1:
+                cyc = path[path.index(t):] + [t] if t in path else [rid, t]
+                return cyc
+            if t not in state:
+                found = visit(t, path + [t])
+                if found:
+                    return found
+        state[rid] = 2
+        return None
+
+    line_of = {str(r["id"]): no for no, r in reg.rows}
+    for rid in list(edges):
+        if rid not in state:
+            cyc = visit(rid, [rid])
+            if cyc:
+                add("C11", line_of[cyc[0]], f"{REGISTER} line {line_of[cyc[0]]}: supersedes form a cycle "
+                    f"({' -> '.join(cyc)})", "a superseded row cannot supersede the row that replaced it")
+
+
+def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smell_fids, add,
+                  doc_ver=(), add27=None):
     """Validate evidence.jsonl. Returns (Register or None, coverage rows)."""
     path = os.path.join(out_dir, REGISTER)
     if not os.path.isfile(path):
@@ -636,7 +932,7 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
             f'write {REGISTER}: the audit record, then one row per audited claim; or line 1 '
             '{"type": "audit", "performed": false, "scope": "<why>"}')
         return None, []
-    reg = reg_mod.parse(_read_text(path))
+    reg = reg_mod.parse(read_text(path))
     for no, msg in reg.errors:
         add("C11", no, f"{REGISTER} line {no}: {msg}", "fix the record; see SKILL.md, Evidence Register")
     if not reg.performed:
@@ -649,9 +945,13 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
         return reg, []
     seen: dict[str, int] = {}
     covered: set[str] = set()
+    all_ids = {str(r["id"]): r for _, r in reg.rows}
+    live_ids = {str(r["id"]) for _, r in reg.live_rows()}
+    _c11_supersedes(reg, all_ids, add)
     for no, row in reg.rows:
         where = f"{REGISTER} line {no}"
         rid = str(row["id"])
+        live = rid in live_ids
         if not reg_mod.ID_RE.match(rid):
             add("C11", no, f"{where}: id '{rid}' is not E-<number>", "number rows E-1, E-2, ...")
         elif rid in seen:
@@ -675,17 +975,32 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
         elif result == "Answerable" and not am:
             add("C11", no, f"{where}: an Answerable row needs ref 14/Q-<n>, not '{ref}'", "use ref 14/Q-<n>")
         elif result == "Answerable":
-            if am.group(1) in ids:   # a question that was closed and removed is no longer a problem
+            if live and am.group(1) in ids:   # a question that was closed and removed is no longer a problem
                 shown = ", ".join(str(c).strip("`") for c in row["cites"]) or "no citation recorded"
                 add("C11", no, f"{where}: {am.group(1)} can be closed from source ({shown}); "
                     "close it and remove the question", f"answer {am.group(1)} in the document, then delete it from section 14")
+            if live and add27:   # 2.7: the row says where the document answers the question
+                where_in = row.get("answered_in")
+                if not where_in:
+                    add27("C11", no, f"{where}: an Answerable row needs answered_in, the section that answers {am.group(1)}",
+                          'add "answered_in": "<section>" (for example 16.3)')
+                elif where_in not in heads:
+                    add27("C11", no, f"{where}: answered_in {where_in} names no section of the document",
+                          "name the section or subsection (for example 16.3) that answers the question")
         elif not m or m.group(1) not in heads:
             add("C11", no, f"{where}: ref '{row['ref']}' names no section or subsection",
                 "use a heading number such as 7.3, optionally with an ID: 10.1/V-2")
         elif m.group(2) and m.group(2) not in ids:
             add("C11", no, f"{where}: ref '{row['ref']}' names an ID that is not defined", "use an ID from the document")
+        elif m.group(3) and m.group(1) not in spec.ROW_KEY_SECTIONS:
+            add("C11", no, f"{where}: ref '{row['ref']}' is a row key, which only sections "
+                f"{', '.join(spec.ROW_KEY_SECTIONS)} have", "use a section ref, or an ID of the section")
+        elif m.group(3) and ref not in {k for k, _, _ in fingerprint.row_keys(lines, heads, m.group(1))}:
+            add("C11", no, f"{where}: ref '{row['ref']}' names no row of section {m.group(1)}",
+                f"use {m.group(1)}/<slug of the row's first cell>, the keys `appdoc audit-plan` prints")
         else:
-            covered.add(m.group(2) or m.group(1))
+            if live:
+                covered.add(reg_mod.ref_key(ref))
         for raw_cite in row["cites"]:
             parsed = parse_span(raw_cite.strip("`"))
             if not parsed:
@@ -695,6 +1010,8 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
             ok, why = _resolve(target, cache, c)
             if not ok:
                 add("C11", no, f"{where}: citation does not resolve: {why}", "cite an existing file and line")
+            elif add27 and (finding := _c1_bare_finding(target, cache, c)):
+                add27("C1", no, f"{where}: {finding[0]}", finding[1])
         anchor = " ".join(str(row["anchor"]).split())
         one_line = str(row["anchor"]).strip()
         if "\n" in one_line or "\r" in one_line or len(one_line) > reg_mod.MAX_ANCHOR:
@@ -708,34 +1025,38 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
             if not anchor:
                 add("C11", no, f"{where}: a {row['result']} row needs an anchor",
                     "copy a short literal string from the cited lines into anchor")
-        if anchor and row["result"] in ("Supported", "Corrected"):
+        if live and anchor and row["result"] in ("Supported", "Corrected"):   # a superseded row's text is history
             loc = reg_mod.locate(target, row)
             if loc is None:
                 add("C11", no, f"{where}: anchor not found on a single cited line (exact, case-sensitive)",
                     "copy the anchor exactly from one line of the cited lines")
     # claim_sha checks (1.2): ID and workflow rows must be sealed; Dismissed/Answerable are exempt.
     # Activates when the template version reaches 2.4 (Phase 3).
-    if spec.TEMPLATE_VERSION >= "2.4":
+    if doc_ver >= (2, 4):
         id_ref_rows: dict[str, list[tuple[int, dict]]] = {}
-        for no, row in reg.rows:
+        for no, row in reg.live_rows():
             if row["result"] in ("Dismissed", "Answerable"):
                 continue
             m = reg_mod.REF_RE.match(str(row["ref"]))
             if not m:
                 continue
             sec_key, id_part = m.group(1), m.group(2)
-            if not (id_part or sec_key.startswith("7.")):
+            if not (id_part or m.group(3) or sec_key.startswith("7.")):
                 continue
             ref_key = str(row["ref"])
             id_ref_rows.setdefault(ref_key, []).append((no, row))
         for ref_key, rows in id_ref_rows.items():
             if len(rows) > 1:
                 for no, row in rows[1:]:
-                    add("C11", no, f"{REGISTER} line {no}: two rows for the same ID ref {ref_key}",
-                        "keep the row that describes the current text")
+                    if doc_ver >= FAILS_FROM:
+                        add("C11", no, f"{REGISTER} line {no}: two live rows for {ref_key}",
+                            f'add "supersedes": "{rows[0][1]["id"]}" to the newer row; do not delete the older row')
+                    else:
+                        add("C11", no, f"{REGISTER} line {no}: two rows for the same ID ref {ref_key}",
+                            "keep the row that describes the current text")
             no, row = rows[0]
             where = f"{REGISTER} line {no}"
-            expected = _claim_sha(lines, heads, ids, ref_key)
+            expected = fingerprint.claim_sha(lines, heads, ids, ref_key)
             if expected is None:
                 continue
             if "claim_sha" not in row:
@@ -745,11 +1066,11 @@ def _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smel
                 add("C11", no, f"{where}: the text of {ref_key} changed after it was audited; re-audit it and replace the row",
                     "re-audit the claim and rewrite the row without claim_sha, then run `appdoc build`")
     for vid, no in ids.items():
-        if vid.startswith("V-") and vid not in covered:
+        if vid.startswith(spec.id_prefix_of("10.1")) and vid not in covered:
             add("C11", no, f"finding {vid} has no register row", f"audit {vid} and add a row with ref 10.1/{vid}")
     workflows = sorted((k for k in heads if k.startswith("7.")), key=lambda k: int(k.split(".")[1]))
     for k in workflows:
-        if k not in covered and not any(str(r["ref"]).startswith(k + "/") for _, r in reg.rows):
+        if k not in covered and not any(str(r["ref"]).startswith(k + "/") for _, r in reg.live_rows()):
             add("C11", heads[k].idx + 1, f"workflow {k} has no register row", f"audit it and add a row with ref {k}")
     return reg, coverage(heads, ids, reg, workflows)
 
@@ -765,7 +1086,7 @@ def _c14_unknowns(lines, heads, ids, reg, appendix, add):
     """
     if reg is None or not reg.performed:
         return
-    q_rows = [(no, row, m.group(1)) for no, row in reg.rows if (m := _Q_REF_RE.match(str(row.get("ref", ""))))]
+    q_rows = [(no, row, m.group(1)) for no, row in reg.live_rows() if (m := _Q_REF_RE.match(str(row.get("ref", ""))))]
     t14 = _spec_table(lines, heads, "14")
     in14 = {dm.cell_text(cells[0]): no for no, cells in t14.rows if cells} if t14 else {}
     for no, row, qid in q_rows:
@@ -784,35 +1105,63 @@ def _c14_unknowns(lines, heads, ids, reg, appendix, add):
 # M is the total rows of the doc's table for that ID class, N is how many of them have a
 # register row. A sentence that disagrees with either is stale prose (RC-A). Only ID-class
 # nouns are checked; "control" and "row" are not single ID classes, so they are skipped.
-_C15_NOUNS = {"recommendation": "R-", "finding": "V-", "v-finding": "V-", "unknown": "Q-"}
+# The nouns are `template_spec.ID_CLASSES[prefix].nouns`.
 _C15_RE = re.compile(r"\b(\d+) of (\d+)\s+([A-Za-z-]+)")
 
 
-def _c15_register_counts(lines, ids, reg, add):
-    """Every 'N of M <noun>' sentence must agree with the doc's table total and the register."""
-    if reg is None or not reg.performed:
-        return
-    refs = set()
-    for _, row in reg.rows:
-        m = reg_mod.REF_RE.match(str(row.get("ref", "")))
-        if m:
-            refs.add(m.group(2) or m.group(1))
+def _c15_sentences(lines, ids):
+    """(line, text, noun, ID prefix, N, M) of every hand-written 'N of M <noun>' sentence about an ID class."""
+    nouns = {n: c.prefix for c in spec.ID_CLASSES.values() for n in c.nouns}
     for i, line in enumerate(lines):
         for m in _C15_RE.finditer(line):
             noun = m.group(3).lower().rstrip("s")
-            prefix = _C15_NOUNS.get(noun)
-            if not prefix:
-                continue
-            n, total = int(m.group(1)), int(m.group(2))
-            doc_total = sum(1 for k in ids if k.startswith(prefix))
-            if doc_total and total != doc_total:
-                add("C15", i + 1, f'states "{m.group(0).strip()}" but the document has {doc_total} {noun}s',
-                    "reword the sentence to the current table total, or run `appdoc fill`")
-                continue
-            reg_count = sum(1 for k in refs if k.startswith(prefix))
-            if reg_count and n != reg_count:
-                add("C15", i + 1, f'states "{m.group(0).strip()}" but the register has {reg_count} {noun}s with a row',
-                    "reword the sentence to the current register count, or run `appdoc fill`")
+            prefix = nouns.get(noun)
+            if prefix:
+                yield i + 1, m.group(0).strip(), noun, prefix, int(m.group(1)), int(m.group(2))
+
+
+def _c15_register_counts(lines, ids, reg, add):
+    """Every 'N of M <noun>' sentence must agree with the doc's table total and the register (template 2.4)."""
+    if reg is None or not reg.performed:
+        return
+    refs = set()
+    for _, row in reg.live_rows():
+        key = reg_mod.ref_key(str(row.get("ref", "")))
+        if key:
+            refs.add(key)
+    for no, text, noun, prefix, n, total in _c15_sentences(lines, ids):
+        doc_total = sum(1 for k in ids if k.startswith(prefix))
+        if doc_total and total != doc_total:
+            add("C15", no, f'states "{text}" but the document has {doc_total} {noun}s',
+                "reword the sentence to the current table total, or run `appdoc fill`")
+            continue
+        reg_count = sum(1 for k in refs if k.startswith(prefix))
+        if reg_count and n != reg_count:
+            add("C15", no, f'states "{text}" but the register has {reg_count} {noun}s with a row',
+                "reword the sentence to the current register count, or run `appdoc fill`")
+
+
+def _c15_markers(raw, facts, ids, reg, add):
+    """C15, 2.7 rule: a count marker holds the number `fill` would write, and its class is a known one.
+
+    Reads the raw Narrative (the marker is an HTML comment) with the generated blocks masked."""
+    text = dm.mask_blocks(normalize_newlines(raw), tuple(spec.GENERATED.values()))
+    for m in spec.COUNT_MARKER_RE.finditer(text):
+        cls, shown = m.group(2).strip(), m.group(3).strip()
+        no = text.count("\n", 0, m.start()) + 1
+        if cls not in spec.COUNT_CLASSES:
+            add("C15", no, f"count marker class '{cls}' is not one of {', '.join(spec.COUNT_CLASSES)}",
+                "use one of those classes")
+            continue
+        kind = spec.COUNT_CLASSES[cls]
+        if kind == "facts" and facts is None:
+            continue
+        want = fill_mod.count_marker_value(cls, facts or {}, ids, reg)
+        if want is not None and shown != str(want):
+            source = {"id": "document has", "register": "register has", "facts": "Facts have"}[kind]
+            noun = spec.COUNT_NOUNS.get(cls)
+            add("C15", no, f"count marker {cls} says {shown} but the {source} {want}" + (f" {noun}" if noun else ""),
+                "run `appdoc fill`, which writes the number")
 
 
 # C16: a universal claim ("all handlers …") whose only citations are single lines is under-evidenced
@@ -845,23 +1194,226 @@ def _c16_quantifier(lines, cites, add, strict):
     return hits
 
 
-def coverage(heads, ids, reg, workflows) -> list[tuple[str, int, int]]:
-    """(section, IDs with a register row, IDs) for every ID-bearing section, and workflows."""
+def _c20_precision(lines, heads):
+    """(line, message) for imprecise Citations in sections 4, 7 and 10 (C20).
+
+    A claim (paragraph, list item or table row) whose only lined Citation is a range over WIDE_RANGE
+    lines; and a section 4 or 10.1 table cell with more than CELL_CITES Citations.
+    """
+    hits = []
+    for key in ("4", "7", "10"):
+        h = heads.get(key)
+        if not h:
+            continue
+        for no, blk in _blocks(lines, h.idx + 1, h.end):
+            lined = [c for c in find_citations(blk) if c.start is not None]
+            if len(lined) == 1 and lined[0].end - lined[0].start + 1 > WIDE_RANGE:
+                c = lined[0]
+                hits.append((no, f"`{c.path}:{c.start}-{c.end}` spans {c.end - c.start + 1} lines "
+                                 f"(more than {WIDE_RANGE}) and is this claim's only lined Citation"))
+    for key in ("4", "10.1"):
+        h = heads.get(key)
+        if not h:
+            continue
+        for t in dm.tables(lines, h.idx + 1, h.end):
+            for no, cells in t.rows:
+                for col, cell in enumerate(cells):
+                    n = len(find_citations(cell))
+                    if n > CELL_CITES:
+                        name = dm.cell_text(t.header[col]) if col < len(t.header) else str(col + 1)
+                        hits.append((no, f"the {name} cell cites {n} sources (more than {CELL_CITES})"))
+    return sorted(set(hits))
+
+
+_C20_FIX = ("cite the specific lines the claim rests on (`path:start-end`, at most "
+            f"{WIDE_RANGE} lines), and split a cell that cites many sources")
+
+
+def _c9_severity_order(lines, heads, add):
+    """C9, 2.7 rule: a 10.1 or 15 row may not outrank the row before it. Skips values C9 reports itself."""
+    rank = {v: i for i, v in enumerate(spec.SEVERITY_ORDER)}
+    for key in ("10.1", "15"):
+        h = heads.get(key)
+        t = dm.first_table(lines, h) if h else None
+        if not t or "Severity" not in t.header:
+            continue
+        col = t.header.index("Severity")
+        prev = None
+        for no, cells in t.rows:
+            if len(cells) <= col:
+                continue
+            sev = dm.cell_text(cells[col])
+            if sev not in rank:
+                continue
+            rid = dm.cell_text(cells[0])
+            if prev is not None and rank[sev] < rank[prev[1]]:
+                add("C9", no, f"{key} row {rid} ({sev}) outranks the row before it ({prev[0]}, {prev[1]})",
+                    "move the row; keep its ID")
+            prev = (rid, sev)
+
+
+def c1_bare_name(target, cache, c):
+    """The unique full path of a bare-name Citation that resolves outside the Target root, else None (C1, 2.7 rule)."""
+    if "/" in c.path or c.path in KNOWN_BARE_FILES:
+        return None
+    if os.path.isfile(os.path.join(os.path.realpath(target), c.path)):
+        return None  # a root file
+    hits = _basenames(target, cache).get(c.path, [])
+    return hits[0] if len(hits) == 1 else None
+
+
+def _c1_bare_finding(target, cache, c):
+    """(message, fix) for a bare-name Citation that has one full path, else None. One wording for the Narrative,
+    the register's cites and a note's cites."""
+    full = c1_bare_name(target, cache, c)
+    if not full:
+        return None
+    span = "" if c.start is None else f":{c.start}" + ("" if c.end in (None, c.start) else f"-{c.end}")
+    return f"`{c.path}` is a bare name; the file is `{full}`", f"cite the full path: `{full}{span}`"
+
+
+def _c17_scope(reg, heads, add):
+    """C17, 2.7 rule: the audit record's scope describes the method only, with no ID token or digit; `exclusions`
+    is {section: reason}, its keys are sections of the document and its reasons follow the same token rule."""
+    if reg is None or not reg.performed:
+        return
+    audit = reg.audit or {}
+    scope = str(audit.get("scope") or "")
+    if _ID_REF_RE.search(scope) or re.search(r"\d", scope):
+        add("C17", 1, f"{REGISTER} line 1: the audit scope text holds an ID or a number",
+            "describe only the method; coverage is computed")
+    exclusions = audit.get("exclusions")
+    if exclusions is None:
+        return
+    if not isinstance(exclusions, dict):
+        add("C17", 1, f"{REGISTER} line 1: exclusions must be an object of section: reason",
+            'write "exclusions": {"9": "reason"}')
+        return
+    for key, why in exclusions.items():
+        if key not in heads or not re.fullmatch(r"\d+(?:\.\d+)?", str(key)):
+            add("C17", 1, f"{REGISTER} line 1: exclusions key '{key}' is not a section of the document",
+                "use a section number such as 8.3")
+        why = str(why)
+        if _ID_REF_RE.search(why) or re.search(r"\d", why):
+            add("C17", 1, f"{REGISTER} line 1: the exclusion for {key} holds an ID or a number",
+                "state the reason without IDs or numbers; coverage is computed")
+
+
+def _c17_provenance(reg, require_audit, strict, add):
+    """C17, template 2.7: under --require-audit line 1 carries the audit provenance; with --strict no live row
+    was sealed at upgrade (its text was never re-audited). Callers gate this on the document's stamp."""
+    if reg is None or not reg.performed or not require_audit:
+        return
+    missing = [k for k in reg_mod.AUDIT_RECORD_KEYS if not (reg.audit or {}).get(k)]
+    if missing:
+        add("C17", 1, f"{REGISTER} line 1: the audit record lacks {', '.join(missing)}",
+            "run `appdoc seal --audit --date YYYY-MM-DD` when the audit is finished")
+    if strict:
+        for no, row in reg.live_rows():
+            if row.get("sealed_by") == "upgrade":
+                add("C17", no, f"{REGISTER} line {no}: {row['id']} was sealed at upgrade; its text was not re-audited",
+                    "audit the row, then run `appdoc seal --audit --date YYYY-MM-DD`")
+
+
+def _c18_notes(target, out_dir, raw, facts, cache, add):
+    """C18, 2.7 rule: notes.jsonl notes match their block, and the reserved label is not hand-written.
+
+    A note names a generated block, carries a `block_sha` equal to the hash of that block's current generated
+    body (so a note written about an older block fails), and cites files that resolve by their full path (a bare
+    name is C1, 2.7 rule). `add` is the stamp-gated adder. The label
+    `Known extractor limitation:` may appear in the Narrative only inside a generated block (where `fill` put it).
+    """
+    path = os.path.join(out_dir, notes_mod.NOTES)
+    where = f"{notes_mod.NOTES} line"
+    if os.path.isfile(path):
+        parsed = notes_mod.parse(read_text(path))
+        for no, why in parsed.errors:
+            add("C18", no, f"{where} {no}: {why}", f"fix the note in {notes_mod.NOTES}")
+        known = tuple(spec.GENERATED.values())
+        ctx = {"out_dir": out_dir, "target": target, "text": raw}
+        for no, note in parsed.notes:
+            name = note["block"]
+            if name not in known:
+                add("C18", no, f"{where} {no}: '{name}' is not a generated block", "use one of " + ", ".join(known))
+            elif facts is not None and note["block_sha"] == "":
+                add("C18", no, f"{where} {no}: the note is not sealed", "run `appdoc build`")
+            elif facts is not None:
+                body = fill_mod.generated_body(name, facts, ctx)
+                if body is not None and note["block_sha"] != notes_mod.body_sha(body):
+                    add("C18", no, f"{where} {no}: the {name} block changed after this note was written",
+                        "re-read the block, rewrite or delete the note, and clear block_sha")
+            for raw_cite in note["cites"]:
+                p = parse_span(raw_cite.strip("`"))
+                if not p:
+                    add("C18", no, f"{where} {no}: '{raw_cite}' is not a path:line Citation",
+                        "cite `path:line` or `path:start-end`")
+                    continue
+                ok, why = _resolve(target, cache, Citation(no, p[0], p[1], p[2], raw_cite))
+                if not ok:
+                    add("C18", no, f"{where} {no}: citation does not resolve: {why}", "cite an existing file and line")
+                elif finding := _c1_bare_finding(target, cache, Citation(no, p[0], p[1], p[2], raw_cite)):
+                    add("C1", no, f"{where} {no}: {finding[0]}", finding[1])
+    prose = dm.strip_comments(dm.mask_blocks(normalize_newlines(raw), tuple(spec.GENERATED.values())))
+    for i, line in enumerate(prose.splitlines(), 1):
+        if notes_mod.LABEL.casefold() in line.casefold():
+            add("C18", i, f"the reserved label '{notes_mod.LABEL}' is written in the Narrative outside a generated block",
+                f"move this note to {notes_mod.NOTES}")
+
+
+def _c19_plan(target, out_dir, reg, add):
+    """C19, 2.7 rule under --require-audit: audit-plan.json equals a fresh computation and every planned key (an ID, a
+    workflow, or one row of 5.3, 10.2, 16.5, 17 or 9) has a live register row. A section the audit record lists under `exclusions` is not required (and is printed).
+    Returns the plan's advisories."""
+    from . import audit_plan
+    path = os.path.join(out_dir, audit_plan.PLAN)
+    if not os.path.isfile(path):
+        add("C19", 1, f"{audit_plan.PLAN} is missing", "run `appdoc audit-plan`")
+        return []
+    fresh = audit_plan.compute(target, out_dir)
+    if normalize_newlines(read_text(path)) != audit_plan.render(fresh):
+        add("C19", 1, f"{audit_plan.PLAN} is not what `appdoc audit-plan` computes now "
+            "(the Narrative, the Facts or the audit floor changed)", "run `appdoc audit-plan`, then audit the ids it names")
+        return fresh["advisories"]
+    if reg is None or not reg.performed:
+        return fresh["advisories"]
+    ex = (reg.audit or {}).get("exclusions")
+    excluded = set(ex) if isinstance(ex, dict) else set()
+    live = reg.live_keys()
+    for s in fresh["sections"]:
+        if s["section"] in excluded:
+            continue
+        names = dict(zip(s["ids"], s.get("items") or []))   # a per-row key: the row's first cell
+        for key in s["ids"]:
+            if key not in live:
+                row = f' (row "{names[key]}")' if key in names else ""
+                add("C19", 1, f"the audit plan names {key}{row}, which has no live register row",
+                    f"audit it and add a row with ref {audit_plan.ref_for(key)}")
+    return fresh["advisories"]
+
+
+def coverage_detail(heads, ids, reg, workflows) -> list[tuple[str, list[str], list[str]]]:
+    """(section, IDs with a live register row, all IDs) for every ID-bearing section, and workflows."""
+    live = reg.live_rows()
     refs = set()
-    for _, r in reg.rows:
-        m = reg_mod.REF_RE.match(str(r["ref"]))
-        if m:
-            refs.add(m.group(2) or m.group(1))
+    for _, r in live:
+        key = reg_mod.ref_key(str(r["ref"]))
+        if key:
+            refs.add(key)
     out = []
     for key, ts in spec.TABLES.items():
         if ts.id_prefix:
             mine = [i for i in ids if i.startswith(ts.id_prefix)]
             if mine:
-                out.append((key, sum(1 for i in mine if i in refs), len(mine)))
+                out.append((key, [i for i in mine if i in refs], mine))
     if workflows:
-        out.append(("7 (workflows)", sum(1 for k in workflows if k in refs or any(
-            str(r["ref"]).startswith(k + "/") for _, r in reg.rows)), len(workflows)))
+        out.append(("7 (workflows)", [k for k in workflows if k in refs or any(
+            str(r["ref"]).startswith(k + "/") for _, r in live)], list(workflows)))
     return out
+
+
+def coverage(heads, ids, reg, workflows) -> list[tuple[str, int, int]]:
+    """(section, IDs with a register row, IDs) for every ID-bearing section, and workflows."""
+    return [(key, len(hit), len(mine)) for key, hit, mine in coverage_detail(heads, ids, reg, workflows)]
 
 
 def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = False) -> int:
@@ -869,24 +1421,29 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     if not os.path.isfile(narrative_path):
         print(f"appdoc check: narrative not found: {narrative_path}", file=sys.stderr)
         return 1
-    raw = _read_text(narrative_path)
+    raw = read_text(narrative_path)
     facts_path = os.path.join(out_dir, FACTS)
     facts = None
     if os.path.isfile(facts_path):
         try:
-            facts = json.loads(_read_text(facts_path))
+            facts = json.loads(read_text(facts_path))
         except ValueError as exc:
             print(f"appdoc check: facts.json is not valid JSON: {exc}", file=sys.stderr)
             return 1
 
-    text = _strip_comments(fill_mod.mask_blocks(raw.replace("\r\n", "\n"), spec.OPAQUE_BLOCKS))
+    prov = version.read_provenance(out_dir) if facts is not None else None
+    text = fingerprint.document_text(raw)
     lines = text.splitlines()
     secs = _sections(lines)
     by_num = {s["num"]: s for s in secs}
     problems: dict[str, list[tuple[int, str, str]]] = {k: [] for k in RULE_TITLES}
+    dup_missing: list[dict] = []  # duplicate-folder pairs section 2 does not name (advisory unless --strict)
 
     def add(rule, line, msg, fix):
         problems[rule].append((line, msg, fix))
+
+    previews: list[tuple[str, int, str, str]] = []  # 2.7 rules on a document older than 2.7: advisory only
+    bare: list = []                                  # (line, message, fix) bare names, a C1 2.7 rule
 
     # C1 + register
     cites = find_citations(text)
@@ -902,9 +1459,15 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                 ok = False
                 why = f"`{c.path}` is a binary file; cite it without a line"
         register.append((c, ok))
+        if ok:
+            finding = _c1_bare_finding(target, cache, c)
+            if finding:
+                bare.append((c.doc_line, *finding))
         if not ok:
-            add("C1", c.doc_line, f"citation does not resolve: {why}",
-                "cite an existing Target-relative path and a line within the file")
+            fix = "cite an existing Target-relative path and a line within the file"
+            if "does not exist in the Target" in why:
+                fix += "; a backticked file name is a Citation; write it without backticks if it does not exist"
+            add("C1", c.doc_line, f"citation does not resolve: {why}", fix)
 
     # C2: per-claim. A security claim must carry at least one lined Citation; a bare
     # mention (no line) is still a resolved Citation (C1) but does not satisfy C2.
@@ -915,13 +1478,21 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     # C3
     stamp = spec.STAMP_RE.search(raw)
     current = bool(stamp) and stamp.group(1) == spec.TEMPLATE_VERSION
+    doc_ver = spec.stamp_version(raw)
+    # The 2.7 rules are written once. Below the stamp gate they are printed as previews; from 2.7 they fail.
+    add27 = add if doc_ver >= FAILS_FROM else (lambda rule, line, msg, fix: previews.append((rule, line, msg, fix)))
     if not current:
         found_v = stamp.group(1) if stamp else "none"
         add("C3", 1, f"the document is not on template {spec.TEMPLATE_VERSION} (stamp: {found_v}); "
                       "structure rules C8-C13 were not run",
             f"upgrade it to the current template ({spec.UPGRADE_NOTES}) and keep `{spec.STAMP}`")
+    for m in spec.ORPHAN_RE.finditer(raw):
+        add("C3", raw.count("\n", 0, m.start()) + 1, "`appdoc upgrade` left text it could not map to the template "
+            f"(an `{spec.ORPHAN_MARK}` comment)",
+            "move what still applies into the template's table or section, then delete the leftover text and the comment")
     found = [s["num"] for s in secs]
-    for n, title in enumerate(SECTIONS, 1):
+    doc_sections = spec.sections(doc_ver)
+    for n, title in enumerate(doc_sections, 1):
         s = by_num.get(n)
         if not s or not s["title"].lower().startswith(title.lower()):
             add("C3", s["start"] if s else 1, f"section {n} '{title}' is missing or renamed",
@@ -930,10 +1501,11 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
             add("C3", s["start"], f"section {n} '{title}' has no content",
                 "fill it from the Facts file and source, or write Unknown - see Open questions")
     if found != sorted(found) or len(found) != len(set(found)):
-        add("C3", 1, "sections are out of order or duplicated", "keep sections 1-16 once each, in template order")
+        add("C3", 1, "sections are out of order or duplicated",
+            f"keep sections 1-{len(doc_sections)} once each, in template order")
 
     # C8
-    for key, title in (REQUIRED_SUBSECTIONS.items() if current else ()):
+    for key, title in (spec.subsections(doc_ver).items() if current else ()):
         parent = by_num.get(int(key.split(".")[0]))
         if not parent:
             continue  # C3 already reports the missing section
@@ -961,6 +1533,8 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
             add("C4", s8["start"], f"section 8 is empty but facts.json has {', '.join(kinds)} facts",
                 "document the connections, SQL and external calls, or state Unknown")
 
+    absent = _absent_owner_advisories(lines, by_num, facts)
+
     # C5
     c5 = []
     for n in range(3, 11):
@@ -982,7 +1556,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     published = [("", raw)]
     reg_path = os.path.join(out_dir, REGISTER)
     if os.path.isfile(reg_path):
-        published.append((f"{REGISTER} ", _read_text(reg_path)))
+        published.append((f"{REGISTER} ", read_text(reg_path)))
     terms = _never_mention(target)
     for label, body in published:
         for no, shape in find_secret_shapes(body):
@@ -999,15 +1573,17 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     s2 = by_num.get(2)
     if facts:
         sec2 = "\n".join(lines[s2["idx"]: s2["end"]]).lower() if s2 else ""
-        # Version skew: facts.json records the AppDoc version that wrote it (generator).
-        # A missing generator (older Facts) is treated as no skew. Only a major.minor
-        # difference fails, so a patch bump (2.3.0 vs 2.3.1) is fine.
-        gen = facts.get("generator")
-        if gen:
-            gen_mm = _major_minor(gen)
-            if gen_mm and _major_minor(__version__) != gen_mm:
+        # Version skew: provenance.json (written by extract) records the AppDoc that wrote the Facts.
+        # Only a major.minor difference fails, so a patch bump (2.6.0 vs 2.6.1) is fine. A missing
+        # file (Facts from before 2.6) is an advisory, never a failure.
+        if prov is not None:
+            gen = str(prov.get("generator") or "")
+            if gen and spec.version_tuple(gen)[:2] != spec.version_tuple(__version__)[:2]:
                 add("C7", 1, f"facts.json was written by AppDoc {gen}; re-run extract",
                     f"re-run `appdoc extract` with AppDoc {__version__}")
+            if prov.get("schema") and facts.get("schema") and prov["schema"] != facts["schema"]:
+                add("C7", 1, f"provenance.json schema {prov['schema']} does not match facts.json schema "
+                    f"{facts['schema']}; re-run extract", "re-run `appdoc extract` so both files come from one run")
         for st in facts.get("stacks", []):
             if (st.get("detail") or {}).get("supported") is False and st.get("name", "").lower() not in sec2:
                 add("C7", s2["start"] if s2 else 1, f"unsupported stack '{st.get('name')}' is not named in section 2",
@@ -1016,7 +1592,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         # in section 2 prose. Content-signal candidates are advisory only (rendered in scan-coverage).
         # Generated blocks are masked so the scan-coverage list of candidates does not count as naming.
         if s2:
-            masked = _strip_comments(fill_mod.mask_blocks(raw.replace("\r\n", "\n"),
+            masked = dm.strip_comments(dm.mask_blocks(normalize_newlines(raw),
                                                           tuple(spec.GENERATED.values()))).splitlines()
             msecs = _sections(masked)
             ms2 = next((s for s in msecs if s["num"] == 2), None)
@@ -1029,28 +1605,82 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                     add("C7", s2["start"],
                         f"folder '{name}' looks retired but is not named in section 2",
                         "name it in 2.1 and record the decision: documented as live, or excluded via .appdocignore")
+            # A duplicate pair (byte-identical folders) should be named in section 2 too, saying which copy is
+            # live: an advisory, and a C7 failure under --strict.
+            for pair in (facts.get("target") or {}).get("scan", {}).get("duplicate_folders", []):
+                sides = [pair[k].rstrip("/") for k in ("a", "b")]
+                if all(re.search(r"(?<!\w)" + re.escape(x.rsplit("/", 1)[-1].lower()) + r"(?!\w)", sec2_prose)
+                       for x in sides):
+                    continue
+                if strict:
+                    add("C7", s2["start"],
+                        f"folders '{sides[0]}' and '{sides[1]}' duplicate each other but are not both named in section 2",
+                        "name both in 2.1 and say which copy is live")
+                else:
+                    dup_missing.append(pair)
 
     # C7 (counts and generated blocks), C9, C10, C11: template-2.2 structure
-    reg, cov, uncited, quant_hits = None, [], [], []
+    reg, cov, uncited, quant_hits, wide_hits, count_advice = None, [], [], [], [], []
+    floor_advice, exclusions = [], {}
+    cand_n, unknown_hits, wording_hits = 0, [], []   # C22 candidates, C23 and the C20 wording advisories
     if current:
         heads = dm.headings(lines)
         _c7_counts(target, lines, heads, facts, add)
         _c7_prose(lines, by_num, facts, add)
-        _c7_blocks(raw, heads, facts, out_dir, target, add)
+        _c7_blocks(raw, heads, facts, out_dir, target, add, doc_ver)
         _c9_tables(lines, raw, heads, add)
+        _c9_build_rows(lines, heads, add)
         ids = defined_ids(lines, heads, add)
         smell_fids = None if facts is None else {
             f["detail"].get("fid") for f in facts.get("facts", []) if f.get("kind") == "smell"}
-        reg, cov = _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smell_fids, add)
+        reg, cov = _c11_register(target, out_dir, lines, heads, ids, cache, require_audit, smell_fids, add,
+                                 doc_ver=doc_ver, add27=add27)
         appendix = next((body for name, body, _ in fill_mod.blocks(raw) if name == "appendix-a"), "")
         _c14_unknowns(lines, heads, ids, reg, appendix, add)
-        _c15_register_counts(lines, ids, reg, add)
+        count_advice: list = []
+        if doc_ver >= FAILS_FROM:   # a stronger structural rule replaces the English one (P2, Q2)
+            count_advice = [(no, text) for no, text, *_ in _c15_sentences(
+                fingerprint.document_text(raw, mask_counts=True).splitlines(), ids)]
+        else:
+            _c15_register_counts(lines, ids, reg, add)
+        _c15_markers(raw, facts, ids, reg, add27)
         quant_hits = _c16_quantifier(lines, cites, add, strict)
-        reg_ids = {str(r["id"]) for _, r in reg.rows} if reg else None
-        _c10_refs(lines, heads, ids, reg_ids, add)
+        generated = tuple(spec.GENERATED.values())
+        glines = dm.strip_comments(dm.mask_blocks(normalize_newlines(raw), generated)).splitlines()
+        wide_hits = _c20_precision(glines, dm.headings(glines))
+        for no, msg in wide_hits:
+            if strict:
+                add("C20", no, msg, _C20_FIX)
+        _c9_severity_order(lines, heads, add27)
+        for no, msg, fix in bare:
+            add27("C1", no, msg, fix)
+        _c17_scope(reg, heads, add27)
+        _c18_notes(target, out_dir, raw, facts, cache, add27)
+        if doc_ver >= FAILS_FROM:
+            _c17_provenance(reg, require_audit, strict, add)
+            if require_audit:
+                floor_advice = _c19_plan(target, out_dir, reg, add)
+            if reg is not None and reg.performed:
+                exclusions = (reg.audit or {}).get("exclusions")
+                exclusions = exclusions if isinstance(exclusions, dict) else {}
+        reg_ids = {str(r["id"]) for _, r in reg.live_rows()} if reg else None   # a superseded row is history
+        gone = {t: reg.superseded_by(t) for t in reg.superseded_ids()} if reg else None
+        _c10_refs(lines, heads, ids, reg_ids, add, gone)
         _c10_coverage(lines, heads, facts, add)
         if facts is not None:
             _c12_smells(target, cache, lines, heads, facts, reg, add)
+            _c21_mandatory(target, cache, raw, facts, add)
+            cand_n = _c22_coverage(target, cache, lines, heads, facts, cites, add)
+            if cand_n and strict:
+                add("C22", 1, _undeclared_text(cand_n), "declare each guard attribute with `Auth attributes:` in "
+                    "appdoc-context.md, or leave it undeclared and run without --strict")
+            unknown_hits = _c23_unknowns(glines, dm.headings(glines), facts)
+            wording_hits = _c20_wording(target, cache, glines, facts)
+            if strict:
+                for no, msg in unknown_hits:
+                    add("C23", no, msg, "read the location and answer the question, or say why it does not answer it")
+                for no, msg, fix in wording_hits:
+                    add("C20", no, msg, fix)
             uncited = _uncited_entry_points(target, cache, facts, cites)
             if strict:
                 h4 = heads.get("4")
@@ -1064,7 +1694,7 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
 
     for k in problems:
         items = problems[k] if k == "C5" else sorted(set(problems[k]), key=lambda p: (p[0], p[1]))
-        if k in ("C9", "C10", "C11", "C12", "C13") and len(items) > RULE_CAP:
+        if k in ("C9", "C10", "C11", "C12", "C13", "C19", "C21", "C22", "C23") and len(items) > RULE_CAP:
             items = items[:RULE_CAP] + [(items[RULE_CAP][0], f"... {len(items) - RULE_CAP} more", "fix the above, then rerun")]
         problems[k] = items
     total = sum(len(v) for v in problems.values())
@@ -1093,6 +1723,67 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
                      "This is not a problem; `appdoc check --strict` fails on it.", ""]
         advisory += [f"- line {no}: `{text}`" for no, text in quant_hits[:RULE_CAP]]
         advisory.append("")
+    if wide_hits and not strict:
+        advisory += ["## Citation precision (advisory)", "",
+                     f"{len(wide_hits)} citation{'s are' if len(wide_hits) != 1 else ' is'} broader than the claim "
+                     f"needs. This is not a problem; `appdoc check --strict` fails on it. Fix: {_C20_FIX}.", ""]
+        advisory += [f"- line {no}: {msg}" for no, msg in wide_hits[:RULE_CAP]]
+        if len(wide_hits) > RULE_CAP:
+            advisory.append(f"- ... {len(wide_hits) - RULE_CAP} more")
+        advisory.append("")
+    if cand_n and not strict:
+        advisory += ["## Undeclared guard candidates (advisory)", "",
+                     f"{_undeclared_text(cand_n)}. This is not a problem; `appdoc check --strict` fails on it.", ""]
+    if unknown_hits and not strict:
+        advisory += ["## Unknown that the repository may answer (advisory)", "",
+                     f"{plural(len(unknown_hits), 'Unknown')} may be answered by the repository. This is not a problem; "
+                     "`appdoc check --strict` fails on it.", ""]
+        advisory += [f"- line {no}: {msg}" for no, msg in unknown_hits[:RULE_CAP]]
+        advisory.append("")
+    if wording_hits and not strict:
+        advisory += ["## Citation wording (advisory)", "",
+                     f"{plural(len(wording_hits), 'citation')} in a sentence or range that needs rewording (a "
+                     "C20-family advisory). This is not a problem; `appdoc check --strict` fails on it.", ""]
+        advisory += [f"- line {no}: {msg}. Fix: {fix}" for no, msg, fix in wording_hits[:RULE_CAP]]
+        if len(wording_hits) > RULE_CAP:
+            advisory.append(f"- ... {len(wording_hits) - RULE_CAP} more")
+        advisory.append("")
+    if exclusions:
+        advisory += ["## Audit exclusions", "", "The audit record declares sections the audit did not cover:", ""]
+        advisory += [f"- {sec}: {why}" for sec, why in sorted(exclusions.items())] + [""]
+    if floor_advice:
+        advisory += ["## Audit floor (advisory)", ""] + [f"- {a}" for a in floor_advice] + [""]
+    if count_advice:
+        advisory += ["## Hand-written counts (advisory)", "",
+                     f"{plural(len(count_advice), 'count')} written by hand. This is not a problem; a count marker "
+                     "(`<!-- appdoc:count R -->13<!-- /appdoc:count -->`) is filled by `appdoc fill`, so it cannot "
+                     "go stale. Fix: use a count marker.", ""]
+        advisory += [f"- line {no}: `{text}` is a hand-written count; use a count marker" for no, text in count_advice[:RULE_CAP]]
+        advisory.append("")
+    if previews:
+        previews = sorted(set(previews), key=lambda p: (p[0], p[1], p[2]))
+        advisory += [PREVIEW_HEADING, "",
+                     f"{len(previews)} finding{'s' if len(previews) != 1 else ''} would fail a template "
+                     f"{'.'.join(map(str, FAILS_FROM))} document. This document is on template {stamp.group(1)}, "
+                     "so none of them fails it; they need no action yet.", ""]
+        advisory += [f"- {rule} line {no}: {msg}. Fix: {fix} (fails from template {'.'.join(map(str, FAILS_FROM))})"
+                     for rule, no, msg, fix in previews[:RULE_CAP]]
+        if len(previews) > RULE_CAP:
+            advisory.append(f"- ... {len(previews) - RULE_CAP} more")
+        advisory.append("")
+    if dup_missing:
+        advisory += ["## Duplicate folders not named in section 2 (advisory)", "",
+                     f"{plural(len(dup_missing), 'pair')} of byte-identical folders "
+                     f"{'is' if len(dup_missing) == 1 else 'are'} not named in section 2. This is not a problem; "
+                     "name both in 2.1 and say which copy is live. `appdoc check --strict` fails on it.", ""]
+        advisory += [f"- `{d['a']}` and `{d['b']}` ({plural(d['files'], 'file')})" for d in dup_missing[:RULE_CAP]]
+        advisory.append("")
+    if facts is not None and prov is None:
+        advisory += ["## Provenance missing (advisory)", "",
+                     f"`{version.PROVENANCE_FILE}` is not beside facts.json, so the AppDoc version that wrote the "
+                     "Facts is unknown and version skew was not checked. Re-run `appdoc extract` to write it.", ""]
+    if absent:
+        advisory += ["## Gaps declared: Unknown by absence", "Advisory only; this is not a problem.", ""] + [f"- {m}" for m in absent] + [""]
     head = "# Check: PASS" if total == 0 else f"# Check: FAIL ({total} problem{'s' if total != 1 else ''})"
     cite_reg = ["## Citation register", "", "| Doc line | Cited path | Line/range | Resolved |", "|---|---|---|---|"]
     for c, ok in sorted(register, key=lambda r: (r[0].doc_line, r[0].raw)):
@@ -1100,13 +1791,13 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         cite_reg.append(f"| {c.doc_line} | `{c.path}` | {rng} | {'yes' if ok else 'no'} |")
 
     scope = [
-        f"**Scope.** Run by AppDoc {__version__}. This Check verifies **resolution and structure**: "
+        f"**Scope.** Run by AppDoc {__version__} (bundle {version.bundle_hash()[:version.BUNDLE_LEN]}). This Check verifies **resolution and structure**: "
         "every Citation points to a real file and line inside the Target (see the Citation register), "
         "and every Evidence Register row's anchor text appears in the lines it cites. It does **not** "
         "judge whether a claim's wording follows from those lines; that is the source-to-claim audit, "
         f"recorded in `{REGISTER}`. A PASS is not an accuracy certification.",
         "",
-    ]
+    ] + ([spec.drift_note(raw), ""] if spec.drift_note(raw) else [])   # plan 2.8, 8.2 (not in facts-summary.md)
 
     verification = ["## Verification", ""]
     if reg is None:
@@ -1117,15 +1808,17 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
         verification.append(f"**Source-to-claim audit:** not performed ({why}). The HTML shows a banner.")
         verification_status = "Source-to-claim audit: declared not performed."
     else:
-        c = reg.counts()
+        live = reg.live_rows()
+        c = reg.counts(live)
+        n_old = len(reg.rows) - len(live)
         verification += [
             f"**Source-to-claim audit:** performed (auditor: {reg.audit.get('auditor')}). "
-            f"{len(reg.rows)} rows: {c['Supported']} Supported, {c['Corrected']} Corrected, "
+            f"{len(live)} rows{f' ({n_old} superseded)' if n_old else ''}: {c['Supported']} Supported, {c['Corrected']} Corrected, "
             f"{c['Downgraded']} Downgraded"
             + "".join(f", {c[r]} {r}" for r in ("Dismissed", "Answerable") if c[r]) + ".", "",
             "| Section | IDs with a register row |", "|---|---|",
         ] + [f"| {s} | {hit} of {n} |" for s, hit, n in cov]
-        verification_status = f"Source-to-claim audit: {len(reg.rows)} rows ({reg.audit.get('auditor')})."
+        verification_status = f"Source-to-claim audit: {len(live)} rows ({reg.audit.get('auditor')})."
 
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, REPORT), "w", encoding="utf-8", newline="\n") as fh:
@@ -1133,8 +1826,25 @@ def run(target: str, out_dir: str, require_audit: bool = False, strict: bool = F
     note = []
     if uncited and not strict:
         note.append(f"Advisory: {sum(n for _, n, _ in uncited)} entry point files are not cited (see {REPORT}).")
+    if dup_missing:
+        note.append(f"Advisory: {plural(len(dup_missing), 'duplicate folder pair')} "
+                    f"{'is' if len(dup_missing) == 1 else 'are'} not named in section 2 (see {REPORT}).")
     if quant_hits and not strict:
         note.append(f"Advisory: {len(quant_hits)} universal claim{'s' if len(quant_hits) != 1 else ''} "
                     f"{'cite' if len(quant_hits) != 1 else 'cites'} only single lines (see {REPORT}).")
+    if wide_hits and not strict:
+        note.append(f"Advisory: {len(wide_hits)} wide range or crowded cell{'s' if len(wide_hits) != 1 else ''} "
+                    f"(citation precision, see {REPORT}).")
+    if cand_n and not strict:
+        note.append(f"Advisory: {_undeclared_text(cand_n)} (see {REPORT}).")
+    if unknown_hits and not strict:
+        note.append(f"Advisory: {plural(len(unknown_hits), 'Unknown')} may be answered by the repository (see {REPORT}).")
+    if wording_hits and not strict:
+        note.append(f"Advisory: {plural(len(wording_hits), 'citation')} to reword (see {REPORT}).")
+    if count_advice:
+        note.append(f"Advisory: {plural(len(count_advice), 'hand-written count')}; use a count marker (see {REPORT}).")
+    if previews:
+        note.append(f"Advisory: {len(previews)} finding{'s' if len(previews) != 1 else ''} fail from template "
+                    f"{'.'.join(map(str, FAILS_FROM))} (see {REPORT}).")
     print("\n".join([head] + [b for b in body if b] + note + [verification_status]))
     return 0 if total == 0 else 2

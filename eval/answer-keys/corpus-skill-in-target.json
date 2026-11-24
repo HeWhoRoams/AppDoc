@@ -1,0 +1,12 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/skill-in-target",
+  "exhaustive": true,
+  "note": "A vendored AppDoc skill bundle is pruned, not scanned.",
+  "must_exist": [
+    {"kind": "pruned", "stack": "scan", "path": "tools/appdoc-skill/", "name": "AppDoc skill bundle"}
+  ],
+  "must_not_exist": [
+    {"kind": "config_key", "stack": "python-flask", "path": "tools/appdoc-skill/run_appdoc.py"}
+  ]
+}

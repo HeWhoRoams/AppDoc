@@ -49,3 +49,27 @@ A name people choose must raise a question, never drive a behaviour.
 - A name people choose triggers a question, never a behaviour; a closed set (an OS or tool
   specification) may drive one.
 - A retired candidate is not evidence that the code is dead. The writer reads it and decides.
+
+## Amendment (2026-11-23, 2.6.0): duplicate folders and AppDoc-artifact pruning
+
+1. **Retired candidates are by name only.** The content signal in decision 3 ("at least five files,
+   at least half byte-identical to a file outside the folder") flagged folders whose
+   names gave no sign of being retired, so `retired_candidates` mixed two different claims. The content test moves
+   to its own list, `target.scan.duplicate_folders` (`{a, b, files}`), rendered as "Folders that
+   duplicate another folder (not excluded; say in 2.1 which copy is live)". A folder `a` with at
+   least five non-test files pairs with the folder `b` holding most of its matches when at least half
+   of its files match. Ties go to the smallest path; a pair is stored once with `a < b`; the list is
+   sorted; nested entries are collapsed in both lists; each list renders at most ten. Test paths
+   (`facts.is_test_path`) are ignored. C7 requires 2.1 to name each retired-by-name candidate and
+   reports an unnamed duplicate pair as an advisory, which fails under `--strict`. The entry-points
+   headline counts name candidates only. One streaming SHA-1 per scanned file builds the index
+   (oversize and binary files are never read).
+2. **Pruning of AppDoc's own artifacts, by evidence.** A folder is pruned, rule `AppDoc output`,
+   when the first 4 KiB of its `facts.json` contain `"schema": "appdoc-facts/` or of its
+   `application-documentation.md` contain `<!-- appdoc:template `; and, rule `AppDoc skill bundle`,
+   when it holds `run_appdoc.py` and `appdoc/assets/template.md`. Without this, a prior run's output
+   or a vendored skill was scanned as the Target and its own Facts, routes and secrets-shaped test
+   strings entered the new Facts. Both are recorded in `target.scan.pruned`, disclosed in 2.1, and
+   re-included by `!name` in `.appdocignore`. A plain `docs/` folder is not pruned; the evidence is
+   the file's own content, never a name.
+

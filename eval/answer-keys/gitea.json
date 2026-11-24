@@ -46,5 +46,53 @@
     "must_cite": "cmd/main.go:122-125",
     "must_contain": ["gitea dump", "gitea doctor", "gitea admin", "rollback", "secret rotation"],
     "note": "Verified: cmd/main.go:122-125 register dump, admin, migrate and doctor. 2.2 16.5 has Rollback, Secret rotation and a dump mention, but no explicit doctor or admin operator rows."
+  },
+  {
+    "id": "GT-6",
+    "section": "10.1",
+    "alt_sections": [],
+    "must_cite": "services/auth/oauth2.go:84-97",
+    "must_contain": ["DISABLE_QUERY_AUTH_TOKEN", "query string"],
+    "note": "Verified at a61ad48: oauth2.go:84-97 accepts token and access_token form values unless setting.DisableQueryAuthToken is set, and warns about 'API token sent in query string'; app.example.ini:520 shows ;DISABLE_QUERY_AUTH_TOKEN = false. V-1 in the 2.5.0 example."
+  },
+  {
+    "id": "GT-7",
+    "section": "10.1",
+    "alt_sections": ["10.2"],
+    "must_cite": "modules/setting/security.go:147-152",
+    "must_contain": ["SECRET_KEY", "rotation"],
+    "note": "Verified: security.go:147-152 falls back to a built-in default when SECRET_KEY is empty, with a FIXME that rotating an existing key is not supported. V-13 in the 2.5.0 example. The default value must stay out of the document."
+  },
+  {
+    "id": "GT-8",
+    "section": "10.1",
+    "alt_sections": [],
+    "must_cite": "models/auth/twofactor.go:102-108",
+    "must_contain": ["MD5"],
+    "note": "Verified: twofactor.go:102-104 derives the 2FA encryption key as md5.Sum of setting.SecretKey (no salt). V-6 in the 2.5.0 example."
+  },
+  {
+    "id": "GT-9",
+    "section": "10.1",
+    "alt_sections": [],
+    "must_cite": "models/webhook/webhook.go:132",
+    "must_contain": ["plain text", "webhook"],
+    "note": "Verified: webhook.go:132 declares Secret string `xorm:\"TEXT\"`, a plain database column; the authorization header is handled separately. V-7 in the 2.5.0 example."
+  },
+  {
+    "id": "GT-10",
+    "section": "10.1",
+    "alt_sections": ["10.2"],
+    "must_cite": "routers/web/metrics.go:17-20",
+    "must_contain": ["metrics", "TOKEN"],
+    "note": "Verified: metrics.go:17-20 serves promhttp when setting.Metrics.Token is empty. V-4 in the 2.5.0 example."
+  },
+  {
+    "id": "GT-11",
+    "section": "10.1",
+    "alt_sections": [],
+    "must_cite": "routers/web/web.go:734",
+    "must_contain": ["sign-out", "GET"],
+    "note": "Verified: web.go:734 is m.Get(\"/logout\", auth.SignOut), a state-changing GET. V-8 in the 2.5.0 example."
   }
 ]

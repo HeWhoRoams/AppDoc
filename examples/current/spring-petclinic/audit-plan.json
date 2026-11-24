@@ -1,0 +1,182 @@
+{
+ "advisories": [],
+ "doc_sha": "616be66196d2",
+ "floor": {
+  "fraction": "0.25",
+  "minimum": 5
+ },
+ "schema": "appdoc-audit-plan/1",
+ "sections": [
+  {
+   "ids": [
+    "V-1",
+    "V-2",
+    "V-3",
+    "V-4",
+    "V-5",
+    "V-6"
+   ],
+   "mode": "full",
+   "section": "10.1",
+   "total": 6
+  },
+  {
+   "ids": [
+    "7.1",
+    "7.2",
+    "7.3",
+    "7.4",
+    "7.5",
+    "7.6",
+    "7.7",
+    "7.8",
+    "7.9"
+   ],
+   "mode": "full",
+   "section": "7",
+   "total": 9
+  },
+  {
+   "ids": [
+    "Q-1",
+    "Q-2",
+    "Q-3",
+    "Q-4",
+    "Q-5",
+    "Q-6"
+   ],
+   "mode": "full",
+   "section": "14",
+   "total": 6
+  },
+  {
+   "ids": [],
+   "mode": "full",
+   "section": "candidates",
+   "total": 0
+  },
+  {
+   "ids": [
+    "10.2/input-validation",
+    "10.2/mass-assignment-guard-on-id"
+   ],
+   "items": [
+    "Input validation",
+    "Mass-assignment guard on id"
+   ],
+   "mode": "full",
+   "section": "10.2",
+   "total": 11
+  },
+  {
+   "ids": [
+    "16.5/build",
+    "16.5/test",
+    "16.5/deploy"
+   ],
+   "items": [
+    "Build",
+    "Test",
+    "Deploy"
+   ],
+   "mode": "full",
+   "section": "16.5",
+   "total": 8
+  },
+  {
+   "ids": [
+    "17/build",
+    "17/run",
+    "17/test"
+   ],
+   "items": [
+    "Build",
+    "Run",
+    "Test"
+   ],
+   "mode": "full",
+   "section": "17",
+   "total": 5
+  },
+  {
+   "ids": [
+    "F-1",
+    "F-2",
+    "F-4",
+    "F-6",
+    "F-11"
+   ],
+   "k": 5,
+   "mode": "sampled",
+   "section": "4",
+   "total": 13
+  },
+  {
+   "ids": [
+    "UI-3",
+    "UI-4",
+    "UI-5",
+    "UI-7",
+    "UI-8"
+   ],
+   "k": 5,
+   "mode": "sampled",
+   "section": "6",
+   "total": 9
+  },
+  {
+   "ids": [
+    "C-1",
+    "C-2",
+    "C-3",
+    "C-4"
+   ],
+   "k": 4,
+   "mode": "sampled",
+   "section": "8.1",
+   "total": 4
+  },
+  {
+   "ids": [
+    "X-1"
+   ],
+   "k": 1,
+   "mode": "sampled",
+   "section": "8.3",
+   "total": 1
+  },
+  {
+   "ids": [
+    "9/error-page-after-opening-or-editing-an-unknown-owner-the-text-owner-not-found-with-id-appears-only-if-error-message-inclusion-is-enabled",
+    "9/error-page-when-booking-a-visit-for-a-pet-the-owner-does-not-have-the-text-pet-with-id-not-found-for-owner-appears-only-if-error-message-inclusion-is-enabled",
+    "9/pet-form-shows-is-already-in-use",
+    "9/pet-form-shows-an-invalid-date",
+    "9/owner-form-re-shown-with-no-banner"
+   ],
+   "items": [
+    "Error page after opening or editing an unknown owner (the text \"Owner not found with id:\" appears only if error message inclusion is enabled)",
+    "Error page when booking a visit for a pet the owner does not have (the text \"Pet with id ... not found for owner\" appears only if error message inclusion is enabled)",
+    "Pet form shows \"is already in use\"",
+    "Pet form shows an invalid date",
+    "Owner form re-shown with no banner"
+   ],
+   "k": 5,
+   "mode": "sampled",
+   "section": "9",
+   "total": 11
+  },
+  {
+   "ids": [
+    "R-3",
+    "R-4",
+    "R-7",
+    "R-8",
+    "R-9"
+   ],
+   "k": 5,
+   "mode": "sampled",
+   "section": "15",
+   "total": 9
+  }
+ ]
+}

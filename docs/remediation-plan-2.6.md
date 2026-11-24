@@ -1,6 +1,6 @@
 # AppDoc v2.5.0 → v2.6.0 Remediation Plan: Tooling and Facts release
 
-**Date:** 2026-11-13
+**Date:** 2026-11-13 (rev 2, 2026-11-23: status and amendments below)
 **Status:** Next phase. Starts after **2.5.0 ships as written** in `docs/remediation-plan-2.5.md`, which another agent is executing now. Nothing in this plan changes 2.5's scope, files or tests.
 **Basis:**
 - the 2.4 example audit (`AppDoc-v2.4-Examples-Audit-2026-11-13.md`, AppDoc project);
@@ -19,6 +19,23 @@
 **Rule of this release (Q19):** a new rule that would fail a committed template-2.4 document runs here as an **advisory labelled "fails from template 2.7"**. It is enforced only on documents stamped 2.7. C14 and C15 already fail in 2.5.0, because the 2.5 plan was written before Q19. That is a recorded R6 exception and is not reversed here (R2). 2.7 replaces C15's English matching with count markers.
 
 **Format:** house convention. Every item has a failing test (TDD), a corpus case where a Target is needed, and a "why this is not a weakening" line.
+
+---
+
+## Status and amendments (rev 2, 2026-11-23)
+
+**Not started.** Baseline is `origin/main` at `2e59393`: version 2.4.0, schema `/5`, with C14–C16 done and the rest of 2.5 open (`remediation-plan-2.5.md`, "Status and amendments"). There is no `tools/` directory, no `tests/corpus/`, no `tests/test_determinism.py` and no tag after `v2.0.0`. Everything below the line-by-line plan still applies, with these amendments. Findings verified on `main` on 2026-11-23: CRIT-01 (capabilities recorded as `[]`) and NEW-03 (`scan._retired_candidates` re-reads every outside file for every candidate folder) are still present.
+
+| # | Amendment |
+|---|---|
+| **B-1 Cache salt** | `main` carries a content-hash cache (`.appdoc-cache.json`, salted with `SCHEMA` and a hand-bumped `extract.EXTRACTOR_VERSION`). A stack change that nobody remembers to bump silently serves stale Facts. New **§4.6**: the cache salt becomes `schema` plus `version.bundle_hash()` (12 hex), so every AppDoc build invalidates the cache and the manual constant is deleted. Cost: a cold run after any AppDoc patch. Tests: `test_cache::test_bundle_change_invalidates`, `::test_same_bundle_hits`; `test_version::test_no_manual_extractor_version`. 2.5's R21 holds until this lands. |
+| **B-2 Determinism harness covers the new paths** | §3.3 adds: `--workers 1` vs `--workers 2` byte-identical; cold vs warm cache byte-identical; `--no-cache`; `--skip-tests` off by default and a different output when on (documented); `facts-summary.md` including the `System Connections` view; the cache file and `provenance.json` excluded from artifact hashes and from the Target scan (the out dir is already excluded). The ambient-input scan (R13) allow-lists `os.cpu_count()` in `extract.py` (the worker count; it cannot change output) and `APPDOC_CI`. |
+| **B-3 Prune rules live in `scan.prune_rule`** | §4.3's two new prunes (`AppDoc output`, `AppDoc skill bundle`) are added as rules in the existing `scan.prune_rule(name, parent_files, full, dotnet_above)`, which today returns a rule name for build output, vendored packages and so on. They need a bounded read of a folder's files (first 4 KiB), so update that function's "tree only" docstring and keep the rule deterministic. Disclosure and `.appdocignore !name` re-inclusion are unchanged. |
+| **B-4 One hash pass** | §4.2's `_content_index` also replaces the per-folder reads in `_retired_candidates`. `extract._extract_file` already reads each file's bytes for its cache key; the scan should compute one SHA-1 per scanned file (streaming) and hand it to both. Test: `test_core::test_content_index_reads_each_file_once` (exists in the plan); add the 10,000-file scale test from §7.1 with `--workers 2`. |
+| **B-5 Capabilities and shared emitters** | The integration catalog (`stacks/integrations.py`) is called from five stacks and emits `connection` and `external_call` Facts on their behalf. §4.1 states the rule: **a Fact is attributed to the Stack that called the emitter** (the `stack` field of the Fact), and conformance counts by that field. Kinds that `generic.extract` emits (it is not a registered Stack and emits no `stack` Fact) are listed once in `tests/test_conformance.py::GENERIC_KINDS` and exempt from per-stack capability checks. `capabilities_of` accepts dotted detail capabilities beyond subtypes (2.8 declares `entry_point.guard_mechanism`, `entry_point.guard_reach`, `entry_point.desktop`). Blocks fed by generic kinds say "read by the generic reader", not "no supported Stack". |
+| **B-6 Gate** | §6.1: the gate extracts with `--no-cache` into `.appdoc-regen/` so a stale cache can never mask a code change, and `appdoc gate` accepts `--workers`. Test: `test_gate::test_gate_ignores_stale_cache`. |
+| **B-7 Tags first** | §3.0.1 is unchanged and urgent: `git tag -a v2.4.0 9241c2f`. `v2.5.0` is created at the 2.5 release commit, which now also contains the performance and integration work (see 2.5 A-1). |
+| **B-8 Effort** | +0.5 d (§4.6 and the wider harness): about **8.5 d**. |
 
 ---
 
@@ -83,8 +100,9 @@
 
 Add `template_spec.version_tuple(s) -> tuple[int, ...]` and use it for every version comparison:
 - the template gate (`check.py:717`: `doc_ver >= (2, 4)`, using the **document's** stamp);
-- C7 version skew;
-- the gate's schema comparison.
+- C7 version skew.
+
+The gate's schema comparison is **not** a version comparison: it tests equality, and an older and a newer committed schema are both "AppDoc upgraded" (exit 3), so it does not use `version_tuple` (review plan F9).
 
 `tests/test_core.py::test_no_string_version_compares` greps `appdoc/` for `>= "2.`/`<= "2.`; `::test_version_tuple`.
 
@@ -142,7 +160,7 @@ Add `template_spec.version_tuple(s) -> tuple[int, ...]` and use it for every ver
    - `aspnet.py:680`, `aspnet_core.py:537`, `classic_asp.py:470`, `go.py:653`, `java_spring.py:894`, `node_express.py:632`, `python_flask.py:689`.
 
    Include the kinds 2.5.0 added (Phase 2: `ui_page`, `data_access`, `external_call`, `connection`, `schema_object`). Keep a module alias for one release.
-2. Replace `entry_point` with the emitted subtypes `entry_point.route|page|command|job`, derived from each stack's code paths.
+2. Replace `entry_point` with the emitted subtypes `entry_point.route|page|command|job|handler` (`handler` is declared but not counted: `fill.UNCOUNTED_ENTRY_TYPES`), derived from each stack's code paths.
 3. `stacks.capabilities_of(stack)` is the only lookup. It is used by `extract.py:118` and by `tests/test_conformance.py:53-56` (that test read the module while production read the instance, which is why it missed the bug).
 4. **Conformance:**
    - `test_supported_stack_declares_capabilities`;
@@ -190,12 +208,19 @@ Builds on 2.5 §1.5, which adds `env`/`ci` roles in the same post-pass (`extract
    - The set is closed and lives in code (Q6).
 3. The `fill._config_reference` guard raises an internal error if a file is both `app` and "not classified".
 4. C6 is untouched (it uses `find_secret_shapes`), and a test proves it.
+5. **`secrets.never_record_value(key)`** is `is_secret_key` or the pre-2.6 broad substring test. `is_secret_key` only sets the `secret_location` flag; R19 value gating (recording or resolving a value) uses `never_record_value`. A `config_key` Fact never carries a value.
 
-**Tests:** `test_generic_facts::test_file_level_promotion`, `::test_ini_section_key_variants`; `test_core::test_secret_key_segments` (≥20 positive, ≥25 negative names, including gitea's), `::test_secret_ref_flag`, `::test_c6_unaffected_by_key_naming`; `test_fill::test_config_trailer_never_lists_app_file`.
+**Tests:** `test_generic_facts::test_file_level_promotion`, `::test_ini_section_key_variants`; `test_core::test_secret_key_segments` (≥20 positive, ≥25 negative names, including gitea's), `::test_secret_ref_flag`, `::test_c6_unaffected_by_key_naming`, `::test_never_record_value_is_superset`, `::test_password_hash_not_flagged_but_never_recorded`, `::test_config_key_facts_never_carry_a_value`; `test_fill::test_config_trailer_never_lists_app_file`.
 
 ### 4.5 Generated copy (MIN-04, MIN-07)
 
 `fill.plural()` is used everywhere (no `(s)`); omit "(0 under folders that look retired)"; the A.4 label becomes `**E-1** (section 1), expect \`path:line\``. `test_fill::test_generated_copy` and `test_register::test_a4_label_section_and_location` cover them.
+
+---
+
+### 4.6 Cache salt from the bundle hash (B-1)
+
+Replace `extract.EXTRACTOR_VERSION` with `version.bundle_hash()` in `_cache_key`. Delete the constant and the CHANGELOG instruction "bump `EXTRACTOR_VERSION`". The cache is best-effort, so a cold run after an AppDoc patch is the only cost. **Why this is not a weakening:** the cache can only miss more often.
 
 ---
 
@@ -340,7 +365,8 @@ Phase 1  capabilities 4 h · prune 2 h · duplicates 5 h · config/secrets 4 h �
 Phase 2  C20 + previews of 2.7 rules                                             4 h
 Phase 4  answer keys + eval gate + scale test 1 d · rotation migration +
          mechanical regen, diagnostic, release 1 d                              2 d
-                                                                    Total about 8 d
+§4.6     cache salt from the bundle hash, wider determinism harness (B-1, B-2)  0.5 d
+                                                                    Total about 8.5 d
 ```
 
 **Order:**

@@ -1,5 +1,7 @@
 # AppDoc Review-Remediation Plan
 
+> **Status (2026-11-23): done.** The fixes are on `main` and recorded in the CHANGELOG (`## Unreleased`: versioned cache key, `smtp` in the view vocabulary, ASCII view, `read_bytes` TOCTOU, cache cap, Windows CI, de-duplication, scratch exclusion in `conftest.py`). The cache-key part is superseded by 2.6 §4.6.
+
 Fixes the findings from the pre-push code review (5 commits, `bb86a08 → main 5a9af09`).
 The review found **no blockers / no HIGH** — determinism, default-neutrality, stdlib-only, and
 redaction all hold with byte-level evidence. Two **MEDIUM** issues are worth fixing before
@@ -71,9 +73,7 @@ by the *older* extractor for unchanged files — silently.
 manually-bumped constant is the standard versioning approach (like a schema migration) — cheap,
 explicit, and the reviewer's recommended alternative.
 
-**Discipline:** Add a one-line note in `CHANGELOG.md` ("Unreleased") and a comment at the constant:
-"bump `EXTRACTOR_VERSION` when a stack/catalog regex or extraction logic changes." Any worker
-touching `stacks/` or `integrations.py` must bump it.
+**Discipline (superseded in 2.6.0):** the cache salt is now `version.bundle_hash()` and the constant is gone; nothing is bumped by hand (`docs/remediation-plan-2.6.md` §4.6).
 
 **Verification:**
 - Unit test: two cache keys for the same `(raw, path, detected_ids)` but different

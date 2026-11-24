@@ -1,0 +1,13 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/owner-absent",
+  "exhaustive": true,
+  "note": "No owner file: no owner_file Fact.",
+  "must_exist": [
+    {"kind": "smell", "stack": "generic", "path": "app/main.py", "line": 6, "detail": {"pattern": "hardcoded-credential-constant"}},
+    {"kind": "pruned", "stack": "scan", "path": "docs/appdoc/", "name": "AppDoc output"}
+  ],
+  "must_not_exist": [
+    {"kind": "owner_file", "stack": "generic"}
+  ]
+}

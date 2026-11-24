@@ -16,14 +16,17 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
 
+from . import aspnet_guards, configs, context, guard, version
 from . import facts as F
 from . import scan, smells
-from .stacks import generic, load
+from .citations import OWNER_CONTEXT
+from .secrets import is_secret_ref
+from .stacks import capabilities_of, generic, load
+from .stacks import detect as detect_markers
 from .summary import render_summary
 
 PARALLEL_THRESHOLD = 50  # below this file count, the pool's overhead isn't worth it
 CACHE_NAME = ".appdoc-cache.json"
-EXTRACTOR_VERSION = 1  # bump whenever a stack/catalog regex or extraction logic changes
 _CACHE_MAX_ENTRIES = 10_000  # best-effort cap on cache entries (never prune, just bound growth)
 
 is_test_path = F.is_test_path
@@ -41,7 +44,7 @@ def _is_repo_root(root: str) -> bool:
     """True only when the Target is itself the top of a git repo.
 
     A Target nested inside another repo (a sample, a subfolder) must not borrow that repo's
-    commit or authors.
+    commit or history.
     """
     top = _git(root, "rev-parse", "--show-toplevel")
     return bool(top) and os.path.normcase(os.path.realpath(top)) == os.path.normcase(os.path.realpath(root))
@@ -55,8 +58,12 @@ def _history(root: str) -> str:
 
 
 def _ownership(root: str, files: list[scan.SourceFile], ownership_top: int | None = None):
-    """Top authors per top-level folder (names only). Only with full git history.
+    """Commit activity per top-level folder: counts and dates, never a person's name. Only with full git history.
 
+    Each Fact records `commits`, `contributors` (the number of distinct authors, counted and then
+    forgotten) and the dates (`YYYY-MM-DD`) of the first and last commit, and ``source="git"`` (the gate ignores
+    exactly these Facts; the ``Ownership:`` role Facts of appdoc-context.md carry that file's name). R18: no author
+    name, no email.
     ``ownership_top``, when set, ranks folders by file count (stable: descending count then name)
     and runs ``git log`` only on the top-N, bounding the subprocess count on wide repos.
     """
@@ -67,28 +74,88 @@ def _ownership(root: str, files: list[scan.SourceFile], ownership_top: int | Non
         counts = Counter(f.path.split("/", 1)[0] for f in files if "/" in f.path)
         folders = sorted(folders, key=lambda fo: (-counts[fo], fo))[:ownership_top]
     for folder in folders:
-        out = _git(root, "log", "--format=%an", "--", folder)
+        out = _git(root, "log", "--date=short", "--format=%an%x09%ad", "--", folder)
         if not out:
             continue
-        names = Counter(out.splitlines())
-        top = sorted(names.items(), key=lambda kv: (-kv[1], kv[0]))[:3]
+        rows = [line.split("\t") for line in out.splitlines() if "\t" in line]
+        if not rows:
+            continue
+        dates = sorted(r[1] for r in rows)
         yield F.Fact.make("ownership", "generic", folder, None, folder,
-                          authors=[n for n, _ in top], commits=sum(names.values()))
+                          commits=len(rows), contributors=len({r[0] for r in rows}),
+                          first_commit=dates[0], last_commit=dates[-1], source="git")
+
+
+def _owner_context(root: str):
+    """Facts from `appdoc-context.md` at the Target root: one owner_file, one ownership per `Ownership:` line.
+
+    Only the role (e.g. "Business owner") and line are recorded, never the value, which may name a person.
+    """
+    path = os.path.join(root, OWNER_CONTEXT)
+    if not os.path.isfile(path):
+        return
+    with open(path, encoding="utf-8", errors="replace") as fh:
+        ctx = context.parse(fh.read())
+    # `kind` is a detail key and Fact.make's own first parameter, so build this Fact directly.
+    yield F.Fact("owner_file", "generic", OWNER_CONTEXT, None, OWNER_CONTEXT,
+                 (("entries", len(ctx.ownership) + len(ctx.never_mention)), ("kind", "context")))
+    for o in ctx.ownership:
+        yield F.Fact.make("ownership", "generic", OWNER_CONTEXT, o.line, o.role,
+                          role=o.role, source=OWNER_CONTEXT)
+    # one context_directive per directive line, from the same single parse; a value that may name a person is not carried
+    for d in context.directives(ctx):
+        detail = {"directive": d.key}
+        if d.value is not None:
+            detail["value"] = d.value
+        if d.names:
+            detail["names"] = list(d.names)
+        yield F.Fact.make("context_directive", "generic", OWNER_CONTEXT, d.line, d.name, **detail)
+
+
+_GUARD_EVIDENCE = ("guard_use", "guard_class", "guard_candidate")
+
+
+def _attr_key(name: str) -> str:
+    low = name.strip().lower()
+    return low[:-9] if low.endswith("attribute") and len(low) > 9 else low
+
+
+def _match_directives(facts: list) -> list:
+    """Post-pass: disclose directive names that match nothing as ``context_unmatched`` (a note, never an error).
+
+    ``Auth attributes`` names are compared, case-insensitively and with or without the ``Attribute`` suffix, with the
+    names of guard_use, guard_class and guard_candidate Facts. Absence is only claimed when at least one such Fact
+    exists: with none, no detector has run and absence proves nothing. Directives are rebuilt with ``Fact.make``.
+    """
+    known = {_attr_key(f.name) for f in facts if f.kind in _GUARD_EVIDENCE}
+    if not known:
+        return facts
+    out = []
+    for f in facts:
+        if f.kind == "context_directive" and dict(f.detail).get("directive") == "auth_attributes":
+            d = f.detail_dict()
+            miss = sorted(n for n in d.get("names", []) if _attr_key(n) not in known)
+            if miss:
+                d["context_unmatched"] = miss
+                f = F.Fact.make(f.kind, f.stack, f.path, f.line, f.name, **d)
+        out.append(f)
+    return out
 
 
 # ------------------------------------------------------------------ caching
 
-def _cache_key(raw: bytes, path: str, detected_ids, siblings=None) -> str:
-    """Content-hash key, versioned so an AppDoc upgrade invalidates a stale cache.
+def _cache_key(raw: bytes, path: str, detected_ids, siblings=None, salt: str | None = None) -> str:
+    """Content-hash key, salted so an AppDoc change invalidates a stale cache.
 
-    The leading bytes (schema + extractor version) change whenever the extraction logic
-    changes, so a ``.appdoc-cache.json`` written by an older AppDoc build is never served
-    to a newer one. ``siblings`` (the folder's file names) is folded in because i18n
-    message-bundle detection depends on the folder's file set, not just this file's content.
+    The leading bytes are the Facts schema and the bundle hash (``version.bundle_hash()``, a hash of
+    every file in the ``appdoc`` package), so a ``.appdoc-cache.json`` written by any other build of
+    AppDoc is never served; nobody has to remember to bump a constant. ``salt`` lets a caller that
+    keys many files compute the bundle hash once. ``siblings`` (the folder's file names) is folded in
+    because i18n message-bundle detection depends on the folder's file set, not just this file's content.
     """
     h = hashlib.sha256()
     h.update(str(F.SCHEMA).encode("utf-8")); h.update(b"\x00")
-    h.update(str(EXTRACTOR_VERSION).encode("utf-8")); h.update(b"\x00")
+    h.update((salt if salt is not None else version.bundle_hash()).encode("utf-8")); h.update(b"\x00")
     h.update(raw); h.update(b"\x00")
     h.update(path.encode("utf-8")); h.update(b"\x00")
     h.update("\x00".join(sorted(detected_ids)).encode("utf-8"))
@@ -126,7 +193,8 @@ def _save_cache(out_dir: str, cache: dict) -> None:
 # ------------------------------------------------------------------ per-file extraction
 
 def _extract_file(root: str, sf: scan.SourceFile, detected: dict,
-                  cache: dict | None = None, siblings: dict | None = None) -> list[F.Fact]:
+                  cache: dict | None = None, siblings: dict | None = None,
+                  salt: str | None = None) -> list[F.Fact]:
     """Pure per-file extraction. No cross-file state beyond the picklable ``siblings`` map.
 
     Returns exactly the facts the serial loop appends for this file. If ``cache`` is a dict, a
@@ -141,7 +209,7 @@ def _extract_file(root: str, sf: scan.SourceFile, detected: dict,
     sib = siblings.get(folder) if siblings is not None else None
     key = None
     if cache is not None:
-        key = _cache_key(raw, sf.path, sorted(detected), sib)
+        key = _cache_key(raw, sf.path, sorted(detected), sib, salt)
         if key in cache:
             return [F.Fact.from_json(d) for d in cache[key]]
     text, enc = scan._decode(raw)
@@ -149,7 +217,7 @@ def _extract_file(root: str, sf: scan.SourceFile, detected: dict,
     owners = sorted(sid for sid, (st, _) in detected.items() if sf.ext in st.extensions)
     detail["stacks"] = owners
     facts = [F.Fact.make("file", "generic", sf.path, None, sf.path, **detail)]
-    found = list(generic.extract(sf.path, text, sib))
+    found = list(generic.extract(sf.path, text, sib, raw))
     for sid in owners:
         found.extend(detected[sid][0].extract(sf.path, text))
     found.extend(smells.extract(sf.path, text, owners))
@@ -162,7 +230,8 @@ def _extract_file(root: str, sf: scan.SourceFile, detected: dict,
 
 
 def _worker_chunk(root: str, detected: dict, chunk: list[scan.SourceFile],
-                  cache: dict | None = None, siblings: dict | None = None) -> tuple[list[F.Fact], dict]:
+                  cache: dict | None = None, siblings: dict | None = None,
+                  salt: str | None = None) -> tuple[list[F.Fact], dict]:
     """Process a chunk of files in a worker process; return (combined Facts, new cache entries).
 
     Each worker gets a pickled copy of the loaded cache; misses are computed locally and the new
@@ -171,7 +240,7 @@ def _worker_chunk(root: str, detected: dict, chunk: list[scan.SourceFile],
     before = set(cache) if cache is not None else None
     out: list[F.Fact] = []
     for sf in chunk:
-        out.extend(_extract_file(root, sf, detected, cache, siblings))
+        out.extend(_extract_file(root, sf, detected, cache, siblings, salt))
     new = {k: cache[k] for k in cache if k not in before} if cache is not None else {}
     return out, new
 
@@ -182,10 +251,11 @@ def _extract_all(root: str, files: list[scan.SourceFile], detected: dict, worker
 
     Completion order is irrelevant: ``facts.dumps`` sorts + de-duplicates the set of Facts.
     """
+    salt = version.bundle_hash() if cache is not None else None
     if workers <= 1 or len(files) < PARALLEL_THRESHOLD:
         out: list[F.Fact] = []
         for sf in files:
-            out.extend(_extract_file(root, sf, detected, cache, siblings))
+            out.extend(_extract_file(root, sf, detected, cache, siblings, salt))
         return out
     nchunks = min(workers * 4, len(files))
     size = max(1, -(-len(files) // nchunks))            # ceil division
@@ -193,10 +263,60 @@ def _extract_all(root: str, files: list[scan.SourceFile], detected: dict, worker
     out: list[F.Fact] = []
     with ProcessPoolExecutor(max_workers=workers) as ex:
         for chunk_facts, new in ex.map(
-                partial(_worker_chunk, root, detected, cache=cache, siblings=siblings), chunks):
+                partial(_worker_chunk, root, detected, cache=cache, siblings=siblings, salt=salt), chunks):
             out.extend(chunk_facts)
             if cache is not None and new:
                 cache.update(new)
+    return out
+
+
+def _key_variants(name: str) -> set:
+    """The names a config-file key can be read under: the full name and its last dotted segment.
+
+    `server.HTTP_PORT` in an INI file is read from code as `server.HTTP_PORT` or as `HTTP_PORT`.
+    """
+    return {name, name.rsplit(".", 1)[-1]}
+
+
+def _config_roles(facts: list) -> list:
+    """Post-pass over the combined Facts (1.4A, 1.5, 2.6 4.4). The cache stores pre-promotion per-file Facts,
+    so warm == cold only while every role decision stays here and depends on per-file details.
+
+    A code read of a config key (a config_key Fact with use="read", source="code") gets a role from
+    how it reads: an environment variable (``read_kind`` env) is role ``env``; any read in a CI/build
+    file path is ``ci``; any other code read is ``app``. Only ``app`` keys can be secret locations
+    (an env var or CI variable is not an application secret). Promotion is per file: when any key of a
+    config file that is ``unclassified`` matches a code-read key (through ``_key_variants``), every
+    ``unclassified`` key of that file becomes ``app``. ``env`` and ``ci`` keys are never promoted.
+    A key whose name points at a secret held elsewhere (``..._URI``, ``..._FILE``) gets ``secret_ref``.
+    """
+    def is_code(d):
+        return d.get("source") == "code"
+    read_keys = {f.name for f in facts if f.kind == "config_key"
+                 and f.detail_dict().get("use") == "read" and is_code(f.detail_dict())}
+    promoted = {f.path for f in facts if f.kind == "config_key" and not is_code(f.detail_dict())
+                and f.detail_dict().get("role") == "unclassified" and _key_variants(f.name) & read_keys}
+    out = []
+    for f in facts:
+        if f.kind != "config_key":
+            out.append(f)
+            continue
+        d = f.detail_dict()
+        before = dict(d)
+        role = d.get("role")
+        if is_code(d) and d.get("read_kind") and not d.get("test"):
+            role = "ci" if generic.config_role(f.path) == "ci" else ("env" if d["read_kind"] == "env" else "app")
+        elif role == "unclassified" and not is_code(d) and f.path in promoted:
+            role = "app"
+        if role in ("env", "ci") and d.get("secret_location"):
+            d["secret_location"] = False
+        if not d.get("secret_location") and is_secret_ref(f.name):
+            d["secret_ref"] = True
+        if role != before.get("role"):
+            d["role"] = role
+        if d != before:
+            f = F.Fact.make(f.kind, f.stack, f.path, f.line, f.name, **d)
+        out.append(f)
     return out
 
 
@@ -216,10 +336,13 @@ def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: boo
     stacks = load()
 
     detected = {}
+    ignored: dict = {}   # stack id -> markers dropped because they sit under test paths or in test projects
     for st in stacks:
-        markers = st.detect_in(paths, root) if hasattr(st, "detect_in") else st.detect(paths)
+        markers, dropped = detect_markers(st, paths, root)
         if markers:
             detected[st.id] = (st, sorted(markers))
+        if dropped:
+            ignored[st.id] = dropped
 
     # folder -> set of file names, for i18n message-bundle detection (a sibling <base>_<ll>.<ext>)
     siblings: dict[str, set[str]] = {}
@@ -232,30 +355,21 @@ def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: boo
         workers = min(os.cpu_count() or 1, 8)
     facts = _extract_all(root, files, detected, workers, cache, siblings)
 
-    # Post-pass (1.4A): a config file classified `unclassified` is promoted to `app` when one of its
-    # keys is read from code (a config_key Fact with use="read", source="code"). Runs on the
-    # combined set after extraction; the cache stores pre-promotion per-file facts, so warm==cold.
-    code_read_keys = {f.name for f in facts
-                      if f.kind == "config_key" and f.detail_dict().get("use") == "read"
-                      and f.detail_dict().get("source") == "code"}
-    if code_read_keys:
-        promoted = []
-        for f in facts:
-            if f.kind == "config_key" and f.detail_dict().get("role") == "unclassified" \
-                    and f.name in code_read_keys:
-                d = f.detail_dict()
-                d["role"] = "app"
-                promoted.append(F.Fact.make(f.kind, f.stack, f.path, f.line, f.name, **d))
-            else:
-                promoted.append(f)
-        facts = promoted
+    facts.extend(_owner_context(root))   # one parse of appdoc-context.md; its Facts exist before every post-pass
+    facts = _config_roles(facts)
+    facts = configs.apply(facts)             # W1/W2: effective .config values per build configuration
+    facts = aspnet_guards.promote(facts)     # W3: guard joins over the raw per-file Facts
+    facts = guard.apply(facts)               # W4: effective protection per handler (reads Facts only)
+    facts = smells.apply(facts)              # W11 part A: finding candidates that follow from Facts alone
+    facts = _match_directives(facts)
 
     for sid, (st, markers) in sorted(detected.items()):
         count = sum(1 for sf in files if sf.ext in st.extensions)
-        caps = sorted(getattr(st, "capabilities", frozenset()))
+        caps = sorted(capabilities_of(st))
+        extra = {"ignored_markers": ignored[sid]} if sid in ignored else {}
         facts.append(F.Fact.make("stack", sid, markers[0], None, sid,
                                  marker_files=markers, file_count=count, supported=True,
-                                 capabilities=caps))
+                                 capabilities=caps, **extra))
     for eco, markers in generic.unsupported_stacks(paths, set(detected)):
         facts.append(F.Fact.make("stack", "generic", markers[0], None, eco,
                                  marker_files=markers, file_count=len(markers), supported=False))
@@ -267,7 +381,10 @@ def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: boo
     pruned_files = sum(p["files"] for p in stats["pruned"])
     coverage = {"scanned": len(files), "ignored": stats["ignored"], "pruned_files": pruned_files,
                 "found": len(files) + stats["ignored"] + pruned_files, "pruned": stats["pruned"],
-                "metadata": stats.get("metadata", 0), "retired_candidates": stats.get("retired_candidates", [])}
+                "metadata": stats.get("metadata", 0), "retired_candidates": stats.get("retired_candidates", []),
+                "duplicate_folders": stats.get("duplicate_folders", [])}
+    if ignored:   # markers dropped under test paths and in test projects, also for Stacks that were then not detected
+        coverage["ignored_markers"] = {k: ignored[k] for k in sorted(ignored)}
     facts_text = F.dumps(name, commit, facts, _history(root), coverage)
     if use_cache and cache is not None:
         _save_cache(out_dir, cache)
@@ -282,7 +399,8 @@ def write(root: str, out_dir: str, workers: int | None = None, skip_tests: bool 
                                        ownership_top=ownership_top)
     os.makedirs(out_dir, exist_ok=True)
     written = []
-    for fname, text in (("facts.json", facts_text), ("facts-summary.md", summary_text)):
+    for fname, text in (("facts.json", facts_text), ("facts-summary.md", summary_text),
+                        (version.PROVENANCE_FILE, version.dumps_provenance(version.provenance()))):
         p = os.path.join(out_dir, fname)
         with open(p, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(text)

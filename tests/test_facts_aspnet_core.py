@@ -103,6 +103,14 @@ class AspNetCoreFacts(unittest.TestCase):
         missing = [e[:4] for e in expected if not self.has(*e[:4], **e[4])]
         self.assertEqual(missing, [])
 
+    def test_httpclient_call_supersedes_generic_http_emission(self):
+        """One HttpClient call at a line is one external_call, not a plain http Fact plus a via:HttpClient Fact."""
+        for path, line in (("Services/NotificationService.cs", 21), ("Services/PagerClient.cs", 9)):
+            with self.subTest(path=path):
+                at = [f for f in self.facts if f["kind"] == "external_call" and f["path"] == path and f["line"] == line]
+                self.assertEqual(len(at), 1, at)
+                self.assertEqual(at[0]["detail"].get("via"), "HttpClient")
+
     def test_commented_out_code_yields_nothing(self):
         names = " ".join(f["name"] for f in self.facts)
         self.assertNotIn("Commented out", names)
@@ -171,7 +179,7 @@ class AspNetCoreFacts(unittest.TestCase):
         self.assertTrue(self.has("config_key", W, 18, "Smtp:Host", use="read"))
         self.assertTrue(self.has("config_key", W, 19, "Smtp:ApiKey", use="read", secret_location=True))
         self.assertTrue(self.has("config_key", W, 20, "Digest", use="read"))
-        self.assertTrue(self.has("config_key", W, 21, "DIGEST_TOKEN", use="read", secret_location=True))
+        self.assertTrue(self.has("config_key", W, 21, "DIGEST_TOKEN", use="read", secret_location=False, role="env"))
 
     def test_hardcoded_secret_constant_is_a_define(self):
         self.assertTrue(self.has("config_key", "Services/NotificationService.cs", 10, "_smtpPassword", use="define"))
@@ -181,7 +189,7 @@ class AspNetCoreFacts(unittest.TestCase):
             if f["kind"] == "entry_point":
                 self.assertIn(f["detail"]["type"], ("route", "page", "handler", "job"))
             if f["kind"] == "data_access":
-                self.assertIn(f["detail"]["type"], ("stored_procedure", "sql", "entity", "repository"))
+                self.assertIn(f["detail"]["type"], ("stored_procedure", "sql", "entity", "repository", "ef"))
 
     def test_no_secret_values_in_facts(self):
         secrets = set()
@@ -200,6 +208,132 @@ class AspNetCoreFacts(unittest.TestCase):
 
     def test_two_runs_identical(self):
         self.assertEqual(run(), run())
+
+    def test_razor_ui_page(self):
+        self.assertTrue(self.has("ui_page", "Pages/Counter.razor", 1, "Pages/Counter.razor",
+                                 root="Pages/Counter.razor", route="/counter"))
+
+    def test_ef_dbset_data_access(self):
+        self.assertTrue(self.has("data_access", "Data/AppDbContext.cs", 8, "Tickets", type="ef", operation="set"))
+        self.assertTrue(self.has("data_access", "Data/AppDbContext.cs", 9, "Comments", type="ef", operation="set",
+                                 entity="Comment"))
+        self.assertTrue(self.has("data_access", "Data/AppDbContext.cs", 18, "ExecuteSqlRaw", type="ef", operation="query"))
+        qs = [f for f in self.facts if f["path"] == "Data/TicketQueries.cs" and f["kind"] == "data_access"]
+        self.assertEqual([(f["line"], f["detail"]["operation"]) for f in qs], [(10, "query"), (12, "query")])
+
+    def test_httpclient_external_call(self):
+        self.assertTrue(self.has("external_call", "Services/PagerClient.cs", 9, "https://status.fixture.internal/v1/health",
+                                 type="http", via="HttpClient", method="GET"))
+        self.assertTrue(self.has("external_call", "Services/PagerClient.cs", 11, "HttpClient.SendAsync", via="HttpClient"))
+        self.assertTrue(self.has("external_call", "Services/NotificationService.cs", 21,
+                                 "https://pager.fixture.internal/v1/notify", via="HttpClient", method="POST"))
+
+
+def _target(files: dict):
+    """Run the real pipeline on an inline Target; return the parsed Facts document."""
+    with tempfile.TemporaryDirectory() as root, tempfile.TemporaryDirectory() as out:
+        for rel, body in files.items():
+            full = os.path.join(root, *rel.split("/"))
+            os.makedirs(os.path.dirname(full), exist_ok=True)
+            with open(full, "w", encoding="utf-8") as fh:
+                fh.write(body)
+        return json.loads(extract.extract(root, out)[0])
+
+
+def _stack(doc, name):
+    found = [s for s in doc["stacks"] if s["name"] == name]
+    return found[0] if found else None
+
+
+WEB_CSPROJ = '<Project Sdk="Microsoft.NET.Sdk.Web">\n  <PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup>\n</Project>\n'
+PLAIN_CSPROJ = ('<Project Sdk="Microsoft.NET.Sdk">\n  <PropertyGroup><OutputType>Exe</OutputType>'
+                '<TargetFramework>net8.0</TargetFramework></PropertyGroup>\n</Project>\n')
+PROGRAM = "namespace Contoso.Tool { public static class Program { public static void Main(string[] args) { } } }\n"
+CONTROLLER = ("using Microsoft.AspNetCore.Mvc;\nnamespace Contoso.Api {\n"
+              "public class PingController : Controller {\n public IActionResult Index() { return View(); }\n}\n}\n")
+
+
+class AspNetCoreDetection(unittest.TestCase):
+    def test_no_core_without_web_sdk(self):
+        doc = _target({"Tool/Tool.csproj": PLAIN_CSPROJ, "Tool/Program.cs": PROGRAM})
+        self.assertIsNone(_stack(doc, "aspnet-core"))
+
+    def test_classic_project_is_not_core(self):
+        classic = ('<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">\n'
+                   '<ItemGroup><Reference Include="System.Web.Mvc"><HintPath>..\\packages\\Mvc.dll</HintPath></Reference>'
+                   '</ItemGroup></Project>\n')
+        doc = _target({"Web/Web.csproj": classic, "Web/Program.cs": PROGRAM})
+        self.assertIsNone(_stack(doc, "aspnet-core"))
+
+    def test_core_by_web_sdk_razor_sdk_package_or_framework_reference(self):
+        cases = {
+            "web": WEB_CSPROJ,
+            "razor": WEB_CSPROJ.replace("Sdk.Web", "Sdk.Razor"),
+            "package": PLAIN_CSPROJ.replace("</Project>", '<ItemGroup><PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" /></ItemGroup></Project>'),
+            "framework": PLAIN_CSPROJ.replace("</Project>", '<ItemGroup><FrameworkReference Include="Microsoft.AspNetCore.App" /></ItemGroup></Project>'),
+        }
+        for name, csproj in cases.items():
+            doc = _target({"Api/Api.csproj": csproj, "Api/Program.cs": PROGRAM})
+            st = _stack(doc, "aspnet-core")
+            self.assertIsNotNone(st, name)
+            self.assertEqual(st["detail"]["marker_files"], ["Api/Api.csproj", "Api/Program.cs"], name)
+
+    def test_test_path_markers_ignored(self):
+        doc = _target({
+            "src/Api/Api.csproj": WEB_CSPROJ, "src/Api/Program.cs": PROGRAM,
+            "tests/Sample/Sample.csproj": WEB_CSPROJ, "tests/Sample/Program.cs": PROGRAM,
+        })
+        st = _stack(doc, "aspnet-core")
+        self.assertEqual(st["detail"]["marker_files"], ["src/Api/Api.csproj", "src/Api/Program.cs"])
+        self.assertEqual(st["detail"]["ignored_markers"], 2)
+        only_tests = _target({"tests/Sample/Sample.csproj": WEB_CSPROJ, "tests/Sample/Program.cs": PROGRAM})
+        self.assertIsNone(_stack(only_tests, "aspnet-core"))
+
+    def test_fixture_markers_outside_tests_ignored(self):
+        doc = _target({
+            "src/Api/Api.csproj": WEB_CSPROJ, "src/Api/Program.cs": PROGRAM,
+            "fixtures/sample-app/App.csproj": WEB_CSPROJ, "fixtures/sample-app/Program.cs": PROGRAM,
+            "Contoso.TestData/Seed.csproj": WEB_CSPROJ,
+        })
+        st = _stack(doc, "aspnet-core")
+        self.assertEqual(st["detail"]["marker_files"], ["src/Api/Api.csproj", "src/Api/Program.cs"])
+        self.assertEqual(st["detail"]["ignored_markers"], 3)
+
+    def test_marker_in_test_project_ignored(self):
+        test_proj = WEB_CSPROJ.replace("</Project>", '<ItemGroup><PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" /></ItemGroup></Project>')
+        doc = _target({
+            "Api/Api.csproj": WEB_CSPROJ, "Api/Program.cs": PROGRAM,
+            "Api.Specs/Api.Specs.csproj": test_proj, "Api.Specs/Program.cs": PROGRAM,
+        })
+        st = _stack(doc, "aspnet-core")
+        self.assertEqual(st["detail"]["marker_files"], ["Api/Api.csproj", "Api/Program.cs"])
+        self.assertEqual(st["detail"]["ignored_markers"], 2)
+        # a Web Forms marker inside a test project (MSTest) is dropped for the aspnet Stack too
+        mstest = '<Project><ItemGroup><PackageReference Include="MSTest.TestFramework" Version="3.0.0" /></ItemGroup></Project>\n'
+        doc = _target({
+            "Web/Default.aspx": '<%@ Page Language="C#" %>\n<html></html>\n',
+            "Web.Specs/Web.Specs.csproj": mstest, "Web.Specs/Sample.aspx": '<%@ Page Language="C#" %>\n<html></html>\n',
+        })
+        st = _stack(doc, "aspnet")
+        self.assertEqual(st["detail"]["marker_files"], ["Web/Default.aspx"])
+        self.assertEqual(st["detail"]["ignored_markers"], 1)
+
+    def test_no_ignored_markers_key_when_nothing_dropped(self):
+        doc = _target({"Api/Api.csproj": WEB_CSPROJ, "Api/Program.cs": PROGRAM})
+        self.assertNotIn("ignored_markers", _stack(doc, "aspnet-core")["detail"])
+
+    def test_detect_returns_ignored_markers_explicitly(self):
+        from appdoc import stacks
+        from appdoc.stacks import aspnet_core
+        files = ["src/Api/Api.csproj", "src/Api/Program.cs", "tests/Sample/Sample.csproj"]
+        with tempfile.TemporaryDirectory() as root:
+            for rel in files:
+                full = os.path.join(root, *rel.split("/"))
+                os.makedirs(os.path.dirname(full), exist_ok=True)
+                with open(full, "w", encoding="utf-8") as fh:
+                    fh.write(WEB_CSPROJ if rel.endswith(".csproj") else PROGRAM)
+            self.assertEqual(stacks.detect(aspnet_core.STACK, files, root), (["src/Api/Api.csproj", "src/Api/Program.cs"], 1))
+        self.assertFalse(hasattr(aspnet_core.STACK, "ignored_markers"))
 
 
 if __name__ == "__main__":

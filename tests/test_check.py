@@ -7,8 +7,11 @@ import shutil
 import tempfile
 import unittest
 
-from appdoc import check, fill
+from appdoc import check, fill, fingerprint
+from appdoc import seal as seal_mod
+from appdoc import facts as facts_mod
 from appdoc import template_spec as spec
+from tests.template_pin import STAMP_2_4, STAMP_2_7, run_as_2_4, run_as_2_7, run_as_stamped
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FIXTURES_21 = os.path.join(HERE, "fixtures", "docs-2.1")
@@ -80,7 +83,15 @@ SECTION_BODY = {
 APPENDIX = ("## Appendix A. Evidence Register and Verification\n\n"
             "<!-- appdoc:generated appendix-a -->\n<!-- /appdoc:generated appendix-a -->")
 
-AUDIT = {"type": "audit", "performed": True, "auditor": "independent", "scope": "sections 3-10"}
+SECTION_BODY[17] = (
+    "| Step | Command | Working directory | Evidence |\n|---|---|---|---|\n"
+    "| Prerequisites | Unknown - see Open questions. | . | not in the repository |\n"
+    "| Restore dependencies | Unknown - see Open questions. | . | not in the repository |\n"
+    "| Build | Unknown - see Open questions. | . | not in the repository |\n"
+    "| Run | Unknown - see Open questions. | . | not in the repository |\n"
+    "| Test | Unknown - see Open questions. | . | not in the repository |")
+
+AUDIT = {"type": "audit", "performed": True, "auditor": "independent", "scope": "an independent read of the cited source"}
 ROWS = [
     {"id": "E-1", "ref": "10.1/V-1", "claim": "A password is set in code", "result": "Supported",
      "cites": ["app/main.py:6"], "anchor": "line 6", "limitation": "value not shown"},
@@ -89,10 +100,14 @@ ROWS = [
 ]
 
 
+OLD_STAMP = STAMP_2_4
+
+
 def build_doc(override=None):
+    """A document on template 2.4: 16 sections, no closed-questions block. `doc27` makes the 2.7 form of it."""
     override = override or {}
-    parts = ["# Demo Documentation", spec.STAMP, "<!-- a comment `nope/missing.py:99` -->", ""]
-    for n, title in enumerate(check.SECTIONS, 1):
+    parts = ["# Demo Documentation", OLD_STAMP, "<!-- a comment `nope/missing.py:99` -->", ""]
+    for n, title in enumerate(spec.sections((2, 4)), 1):
         parts += [f"## {n}. {title}", "", override.get(n, SECTION_BODY[n]), ""]
     parts += [APPENDIX, ""]
     return "\n".join(parts)
@@ -118,6 +133,7 @@ class CheckTests(unittest.TestCase):
                           {"kind": "entry_point", "stack": "python-flask", "path": "app/main.py", "line": 8,
                            "name": "nightly", "detail": {"type": "job", "schedule": "0 2 * * *", "enabled": True}}])
         self.write_register(AUDIT, ROWS)
+        self.write_provenance()
         self.base_facts = list(self.facts["facts"])
 
     def with_facts(self, *extra):
@@ -155,6 +171,10 @@ class CheckTests(unittest.TestCase):
         return fill.fill_text(doc, self.facts, {"out_dir": self.out, "target": self.target})[0]
 
     def run_check(self, doc, filled=True, require_audit=False, strict=False, seal=True):
+        # a 2.4 document: the rule tests run it as the 2.4-era Check (tests/template_pin.py)
+        return run_as_stamped(doc, self._run_check, doc, filled, require_audit, strict, seal)
+
+    def _run_check(self, doc, filled, require_audit, strict, seal):
         if filled:
             doc = self.fill_doc(doc)
         with open(os.path.join(self.out, "application-documentation.md"), "w") as fh:
@@ -175,7 +195,7 @@ class CheckTests(unittest.TestCase):
                         except (ValueError, TypeError):
                             pass
                         fh.write(line)
-            check.seal_register(self.target, self.out)
+            seal_mod.seal_register(self.target, self.out)
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
             code = check.run(self.target, self.out, require_audit, strict)
@@ -248,9 +268,11 @@ class CheckTests(unittest.TestCase):
         code, report, _ = self.run_check(self._swap("`To be deleted/Front Dev/nope.asp:12`"))
         self.assertEqual(code, 2)
         self.assertIn("does not exist in the Target", report)
+        self.assertIn("a backticked file name is a Citation; write it without backticks if it does not exist", report)
         code, report, _ = self.run_check(self._swap("`To be deleted/Front Dev/logcall.asp:99`"))
         self.assertEqual(code, 2)
         self.assertIn("line 99 is outside", report)
+        self.assertNotIn("write it without backticks", report)     # only for a name that does not exist
 
     def test_c1_dotfile_and_data_file_citations_resolve(self):
         for name in (".gitignore", "test.db"):
@@ -301,17 +323,494 @@ class CheckTests(unittest.TestCase):
 
     def test_c11_claim_sha_sealed_passes(self):
         self._write_narrative(build_doc())
-        self.assertEqual(check.seal_register(self.target, self.out), 2)
+        self.assertEqual(seal_mod.seal_register(self.target, self.out), 2)
         self.assertEqual(self.fired(build_doc()), set())
 
     def test_c11_claim_sha_stale_fails(self):
         self._write_narrative(build_doc())
-        self.assertEqual(check.seal_register(self.target, self.out), 2)
+        self.assertEqual(seal_mod.seal_register(self.target, self.out), 2)
         # change the text of the V-1 finding row so the sealed sha no longer matches
         doc = build_doc().replace("A password is set in code", "A secret is set in code")
         code, report, _ = self.run_check(doc, seal=False)
         self.assertEqual(code, 2)
         self.assertIn("changed after it was audited", report)
+
+    # --- 2.7: superseded rows (append-only register)
+
+    def doc27(self, doc=None, cq=True, s17=True):
+        doc = (doc or build_doc()).replace(OLD_STAMP, STAMP_2_7)
+        if s17 and "\n## 17. " not in doc:
+            doc = doc.replace("\n## Appendix A.", f"\n## 17. {spec.SECTIONS[16]}\n\n{SECTION_BODY[17]}\n\n## Appendix A.", 1)
+        if cq and "appdoc:generated closed-questions" not in doc:
+            doc = doc.replace("\n## 15. ", "\n" + self.CQ.format("") + "\n\n## 15. ", 1)
+        return doc
+
+    def run27(self, doc=None, cq=True, s17=True, **kw):
+        """Check a document stamped 2.7.
+
+        A 2.7 document carries the closed-questions block under 14 and section 17; `cq` and `s17` add them when the
+        test document has none (pass cq=False or s17=False to check the document as given)."""
+        doc = self.doc27(doc, cq, s17)
+        self.run_check(doc, **kw)                        # seals the register (sealed_by is printed in A.1) ...
+        return self.run_check(doc, seal=False, **kw)     # ... so fill again, as `build` does, and check
+
+    SECOND_V1 = {"id": "E-3", "ref": "10.1/V-1", "claim": "A password is set in code (re-read)",
+                 "result": "Corrected", "cites": ["app/main.py:6"], "anchor": "line 6", "limitation": "none"}
+
+    def test_c11_two_live_rows_fail_with_supersedes_fix(self):
+        self.write_register(AUDIT, ROWS + [self.SECOND_V1])
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("C11", self.rules(report))
+        self.assertIn("two live rows for 10.1/V-1. Fix: "
+                      'add "supersedes": "E-1" to the newer row; do not delete the older row', report)
+        # the same register passes once the newer row supersedes the older one
+        self.write_register(AUDIT, ROWS + [dict(self.SECOND_V1, supersedes="E-1")])
+        code, report, _ = self.run27()
+        self.assertEqual(code, 0, report)
+
+    def test_c11_superseded_row_is_not_sealed_anchored_or_counted_for_coverage(self):
+        old = dict(ROWS[0], anchor="text that is gone now")   # would fail the anchor rule were it live
+        self.write_register(AUDIT, [old, ROWS[1], dict(self.SECOND_V1, supersedes=["E-1"])])
+        code, report, _ = self.run27()
+        self.assertEqual(code, 0, report)
+        with open(os.path.join(self.out, check.REGISTER), encoding="utf-8") as fh:
+            rows = {json.loads(l).get("id"): json.loads(l) for l in fh if l.strip()}
+        self.assertNotIn("claim_sha", rows["E-1"])           # a superseded row is not sealed
+        self.assertIn("claim_sha", rows["E-3"])
+
+    def test_c11_superseded_rows_keep_id_ref_result_and_cites_validation(self):
+        old = dict(ROWS[0], result="Fine", cites=["app/nope.py:1"])
+        self.write_register(AUDIT, [old, ROWS[1], dict(self.SECOND_V1, supersedes="E-1")])
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("result 'Fine' is not one of", report)
+        self.assertIn("citation does not resolve", report)
+
+    def test_c11_supersedes_unknown_or_cycle_fails(self):
+        cases = {
+            "E-9": "supersedes E-9, which is not a row of this register",
+            "E-2": "supersedes E-2, which has the ref 7.1, not 10.1/V-1",
+        }
+        for target_id, msg in cases.items():
+            self.write_register(AUDIT, ROWS + [dict(self.SECOND_V1, supersedes=target_id)])
+            code, report, _ = self.run27()
+            self.assertEqual(code, 2, report)
+            self.assertIn(msg, report)
+        # a cycle: E-1 and E-3 supersede each other
+        self.write_register(AUDIT, [dict(ROWS[0], supersedes="E-3"), ROWS[1], dict(self.SECOND_V1, supersedes="E-1")])
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("supersedes form a cycle", report)
+        # a row may not supersede itself
+        self.write_register(AUDIT, [dict(ROWS[0], supersedes="E-1"), ROWS[1]])
+        self.assertIn("supersedes form a cycle", self.run27()[1])
+
+    def _audited(self, **extra):
+        """A register whose line 1 carries the full audit provenance for the document under test."""
+        doc27 = self.doc27()
+        rec = dict(AUDIT, audited_on="2026-11-23", audited_with="2.7.0", audited_bundle="0123456789ab",
+                   doc_sha=fingerprint.doc_sha(self.fill_doc(doc27)), **extra)
+        self.write_register(rec, ROWS)
+
+    def test_c17_require_audit_needs_provenance(self):
+        code, report, _ = self.run27(require_audit=True)           # line 1 has none of the four fields
+        self.assertEqual(code, 2, report)
+        self.assertIn("C17", self.rules(report))
+        self.assertIn("the audit record lacks audited_on, audited_with, audited_bundle, doc_sha", report)
+        self.assertIn("appdoc seal --audit --date YYYY-MM-DD", report)
+        self.write_register(dict(AUDIT, audited_on="2026-11-23", doc_sha="0" * 12), ROWS)
+        self.assertIn("lacks audited_with, audited_bundle.", self.run27(require_audit=True)[1])
+        self._audited()
+        code, report, _ = self.run27(require_audit=True)
+        self.assertEqual(self.rules(report), {"C19"}, report)    # provenance is complete; only the plan (T27.15) is missing
+        # without --require-audit the fields are not demanded, and a 2.4 document is never asked for them
+        self.write_register(AUDIT, ROWS)
+        self.assertEqual(self.run27()[0], 0)
+        self.assertEqual(self.run_check(build_doc(), require_audit=True)[0], 0)
+
+    def test_c17_strict_fails_on_upgrade_seal(self):
+        self.write_register(dict(AUDIT, audited_on="2026-11-23", audited_with="2.7.0",
+                                 audited_bundle="0123456789ab", doc_sha="0" * 12), ROWS)   # a doc_sha for other text
+        code, report, _ = self.run27(require_audit=True, strict=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C17", self.rules(report))
+        self.assertIn("E-1 was sealed at upgrade; its text was not re-audited", report)
+        self.assertIn("E-2 was sealed at upgrade", report)
+        self.assertIn("appdoc seal --audit", report)
+        # not strict: the upgrade seal is reported in Appendix A, not failed
+        self.assertEqual(self.rules(self.run27(require_audit=True)[1]), {"C19"})   # no C17; the plan is T27.15's
+        # audited rows pass under strict
+        self._audited()
+        code, report, _ = self.run27(require_audit=True, strict=True)
+        self.assertEqual(self.rules(report), {"C19"}, report)
+
+    def test_c12_c10_and_verification_read_live_rows(self):
+        """T27.19: a superseded row is history; it no longer dismisses a candidate, names a register id or counts."""
+        self.with_facts(self.smell("aaaa0009", 9))
+        old = {"id": "E-3", "ref": "smell/aaaa0009", "claim": "A fixture constant, not a credential",
+               "result": "Dismissed", "cites": ["app/main.py:9"], "anchor": "line 9", "limitation": "test fixture"}
+        self.write_register(AUDIT, ROWS + [old])
+        self.assertEqual(self.run27()[0], 0)                       # live: the dismissal counts
+        # E-4 replaces the dismissal with one that gives no reason: the candidate is no longer dismissed
+        self.write_register(AUDIT, ROWS + [old, dict(old, id="E-4", limitation="", supersedes="E-3")])
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("C12", self.rules(report))
+        self.assertIn("smell aaaa0009", report)
+        # prose may not cite a superseded row, and says what replaced it
+        self.with_facts()
+        self.write_register(AUDIT, ROWS + [dict(self.SECOND_V1, supersedes="E-1")])
+        doc = build_doc().replace("- The entry module wires", "- See E-1 for the first audit. The entry module wires")
+        code, report, _ = self.run27(doc)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C10", self.rules(report))
+        self.assertIn("E-1 is superseded by E-3", report)
+        code, report, _ = self.run27()
+        self.assertEqual(code, 0, report)
+        self.assertIn("2 rows (1 superseded):", report.split("## Verification")[1])
+
+    # --- 2.7: the closed-questions block (T27.10)
+
+    CQ = "<!-- appdoc:generated closed-questions -->\n{}\n<!-- /appdoc:generated closed-questions -->"
+
+    def with_cq(self, body=""):
+        return build_doc({14: SECTION_BODY[14] + "\n\n" + self.CQ.format(body)})
+
+    def test_closed_questions_is_opaque(self):
+        self.assertEqual(spec.GENERATED["14"], "closed-questions")
+        self.assertIn("closed-questions", spec.OPAQUE_BLOCKS)
+        # opaque: what the block says changes neither the audit fingerprint nor the text the Check reads
+        a, b = self.with_cq("No questions were closed by the audit."), self.with_cq("Closed by the audit: Q-11 (16.3).")
+        self.assertEqual(fingerprint.doc_sha(a), fingerprint.doc_sha(b))
+        self.assertEqual(fingerprint.document_text(a), fingerprint.document_text(b))
+        self.assertNotIn("Q-11", fingerprint.document_text(b))
+        # it is required on 2.7 and later, never on 2.4
+        self.assertEqual(self.fired(build_doc()), set())
+        code, report, _ = self.run27(build_doc(), cq=False)
+        self.assertEqual(code, 2, report)
+        self.assertIn("generated block 'closed-questions' is missing from 14", report)
+        code, report, _ = self.run27(self.with_cq())
+        self.assertEqual(code, 0, report)
+        old = {k: v for k, v in spec.GENERATED.items() if v not in spec.GENERATED_2_8.values()}
+        self.assertEqual(spec.generated_blocks((2, 4)), {k: v for k, v in old.items() if k != "14"})
+        self.assertEqual(spec.generated_blocks((2, 7)), old)      # the 2.8 blocks are required from a 2.8 stamp only
+        self.assertEqual(spec.generated_blocks((2, 8)), spec.GENERATED)
+
+    # --- 2.8: the five new generated blocks are registered, opaque and unaudited (T28.90)
+
+    BLOCKS_2_8 = (("2.4", "repo-docs"), ("5.4", "access-model"), ("8.1", "connections"), ("8.3", "integrations"),
+                  ("16.8", "pipeline"))
+
+    @staticmethod
+    def _gen_block(name, body=""):
+        return f"<!-- appdoc:generated {name} -->\n{body}\n<!-- /appdoc:generated {name} -->"
+
+    def with_2_8_blocks(self, body=""):
+        """The 2.7 test document with the five 2.8 blocks added, each holding `body`."""
+        mk = lambda n: self._gen_block(n, body)   # noqa: E731
+        return build_doc({
+            2: SECTION_BODY[2] + "\n\n### 2.4 Repository documentation (generated)\n\n" + mk("repo-docs"),
+            5: SECTION_BODY[5] + "\n\n### 5.4 Application-layer access (generated)\n\n" + mk("access-model"),
+            8: SECTION_BODY[8].replace("\n\n### 8.2", "\n\n" + mk("connections") + "\n\n### 8.2")
+                              .replace("\n\n### 8.4", "\n\n" + mk("integrations") + "\n\n### 8.4"),
+            16: SECTION_BODY[16] + "\n\n### 16.8 Pipeline (generated)\n\n" + mk("pipeline")})
+
+    def test_new_blocks_are_opaque(self):
+        from appdoc import docmodel as dm
+        for key, name in self.BLOCKS_2_8:
+            self.assertEqual(spec.GENERATED[key], name)
+            self.assertIn(name, spec.OPAQUE_BLOCKS)
+            self.assertIn(name, spec.opaque_blocks((2, 8)))
+            self.assertNotIn(name, spec.opaque_blocks((2, 7)))    # A.1 of a 2.7 document does not name them
+        # what a block says changes neither the audit fingerprint nor the text the Check reads, tables and IDs
+        # and Citations inside it included (a Citation in a block is not the document citing that file)
+        a = self.with_2_8_blocks("Nothing was extracted.")
+        b = self.with_2_8_blocks("| ID | Name |\n|---|---|\n| C-9 | `app/main.py:10` |\n\nQ-77 is open.")
+        self.assertEqual(fingerprint.doc_sha(a), fingerprint.doc_sha(b))
+        self.assertEqual(fingerprint.document_text(a, pad=False), fingerprint.document_text(b, pad=False))
+        for needle in ("C-9", "Q-77", "app/main.py:10"):
+            self.assertNotIn(needle, fingerprint.document_text(b))
+            self.assertNotIn(needle, dm.strip_comments(dm.mask_blocks(b, tuple(spec.GENERATED.values()))))
+        # a 2.7 document is never asked for them ...
+        code, report, _ = self.run27()
+        self.assertEqual(code, 0, report)
+        # ... and a 2.8 stamp asks for each (the registry's one version switch; T28.A4 bumps the template)
+        found = []
+        check._c7_blocks(self.doc27(), {}, None, None, None, lambda *x: found.append(x), (2, 8))
+        self.assertEqual(sorted(m.split("'")[1] for _, _, m, _ in found if "is missing" in m),
+                         sorted(n for _, n in self.BLOCKS_2_8))
+        found.clear()
+        check._c7_blocks(self.doc27(), {}, None, None, None, lambda *x: found.append(x), (2, 7))
+        self.assertEqual(found, [])
+
+    def test_seal_survives_block_content_change(self):
+        """A register row sealed against a section that holds a 2.8 block keeps its seal when a later release
+        fills the block (2.9): the block is masked from claim_sha and doc_sha."""
+        rows = [dict(ROWS[0]), dict(ROWS[1]),
+                {"id": "E-3", "ref": "8.3/X-1", "claim": "The health ping is the only external call", "result": "Supported",
+                 "cites": ["app/main.py:8"], "anchor": "line 8", "limitation": "none"},
+                {"id": "E-4", "ref": "8.1/C-1", "claim": "The database connection is configured", "result": "Supported",
+                 "cites": ["app/main.py:6"], "anchor": "line 6", "limitation": "none"}]
+        self.write_register(AUDIT, rows)
+        code, report, _ = self.run27(self.with_2_8_blocks())              # fills the blocks and seals the register
+        self.assertEqual(code, 0, report)
+        path = os.path.join(self.out, "application-documentation.md")
+        with open(path, encoding="utf-8") as fh:
+            sealed = fh.read()
+        with open(os.path.join(self.out, check.REGISTER), encoding="utf-8") as fh:
+            before = fh.read()
+        self.assertEqual(before.count("claim_sha"), 4)
+        for _, name in self.BLOCKS_2_8:
+            self.assertIn(f"<!-- appdoc:generated {name} -->\n", sealed)
+        changed = sealed
+        for _, name in self.BLOCKS_2_8:
+            m = re.search(rf"(<!-- appdoc:generated {name} -->)(.*?)(<!-- /appdoc:generated {name} -->)", changed, re.S)
+            changed = changed.replace(m.group(0), f"{m.group(1)}\n| ID | Call |\n|---|---|\n| X-1 | a row a later release writes |\n| C-1 | likewise |\n"
+                                                  f"{m.group(3)}")
+        self.assertNotEqual(changed, sealed)
+        self.assertEqual(fingerprint.doc_sha(changed), fingerprint.doc_sha(sealed))
+        code, report, _ = self.run_check(changed, filled=False, seal=False)
+        self.assertEqual(code, 0, report)
+        self.assertNotIn("changed after", report)
+        with open(os.path.join(self.out, check.REGISTER), encoding="utf-8") as fh:
+            self.assertEqual(fh.read(), before)                           # nothing resealed, nothing lost
+
+    # --- notes.jsonl (T27.11, C18 in T27.12)
+
+    def write_notes(self, *notes):
+        with open(os.path.join(self.out, "notes.jsonl"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write("".join(json.dumps(n) + "\n" for n in notes))
+
+    def read_notes(self):
+        with open(os.path.join(self.out, "notes.jsonl"), encoding="utf-8") as fh:
+            return [json.loads(l) for l in fh if l.strip()]
+
+    NOTE = {"block": "entry-points", "text": "Routes registered by decorator are not listed",
+            "cites": ["app/main.py:2"], "block_sha": ""}
+
+    def test_c18_build_seals_empty_sha(self):
+        from appdoc import __main__ as cli
+        self._write_narrative(build_doc())
+        self.write_notes(self.NOTE, dict(self.NOTE, block="scheduled-jobs", text="kept", block_sha="a" * 12))
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(run_as_2_4(cli.main, ["build", self.target]), 0)
+        first, second = self.read_notes()
+        body = fill.generated_body("entry-points", self.facts, {"out_dir": self.out, "target": self.target})
+        from appdoc import notes
+        self.assertEqual(first["block_sha"], notes.body_sha(body))
+        self.assertRegex(first["block_sha"], r"^[0-9a-f]{12}$")
+        self.assertEqual(second["block_sha"], "a" * 12)               # never overwrites an existing one
+        self.assertEqual(seal_mod.seal_notes(self.target, self.out), 0)  # and sealing twice is a no-op
+        with open(os.path.join(self.out, "application-documentation.md"), encoding="utf-8") as fh:
+            self.assertIn("Known extractor limitation: Routes registered by decorator are not listed (`app/main.py:2`)",
+                          fh.read())
+
+    def _good_note(self, **kw):
+        from appdoc import notes
+        body = fill.generated_body("entry-points", self.facts, {"out_dir": self.out, "target": self.target})
+        return dict(self.NOTE, block_sha=notes.body_sha(body), **kw)
+
+    def test_c18_current_note_passes_on_2_7(self):
+        self.write_notes(self._good_note())
+        code, report, _ = self.run27()
+        self.assertEqual(code, 0, report)
+        self.assertEqual(self.rules(report), set())
+
+    def test_c18_stale_note_fails(self):
+        self.write_notes(dict(self._good_note(), block_sha="b" * 12))
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("C18", self.rules(report))
+        self.assertIn("notes.jsonl line 1: the entry-points block changed after this note was written. Fix: "
+                      "re-read the block, rewrite or delete the note, and clear block_sha", report)
+        # a note whose block_sha was cleared is waiting for `appdoc build`, which seals it
+        self.write_notes(dict(self.NOTE))
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("notes.jsonl line 1: the note is not sealed. Fix: run `appdoc build`", report)
+
+    def test_c18_unknown_block_fails(self):
+        self.write_notes(self._good_note(block="no-such-block"), self._good_note(text=""))
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("notes.jsonl line 1: 'no-such-block' is not a generated block. Fix: use one of "
+                      "scan-coverage, entry-points, closed-questions, config-reference, scheduled-jobs, appendix-a", report)
+        self.assertIn('notes.jsonl line 2: "text" must be one non-empty line', report)
+
+    def test_c18_note_cites_must_resolve(self):
+        self.write_notes(self._good_note(cites=["app/main.py:2", "app/nope.py:1", "app/main.py:99", "not a cite"]))
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertIn("notes.jsonl line 1: citation does not resolve: `app/nope.py` does not exist in the Target", report)
+        self.assertIn("line 99 is outside `app/main.py`", report)
+        self.assertIn("'not a cite' is not a path:line Citation", report)
+
+    def test_c18_label_in_prose_fails(self):
+        doc = build_doc().replace("- The entry module wires the handlers in `app/main.py:3-5`.",
+                                  "- The entry module wires the handlers in `app/main.py:3-5`.\n"
+                                  "- Known extractor limitation: decorators are missed (`app/main.py:2`).")
+        code, report, _ = self.run27(doc)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C18", self.rules(report))
+        self.assertIn("the reserved label 'Known extractor limitation:' is written in the Narrative outside a "
+                      "generated block. Fix: move this note to notes.jsonl", report)
+        # the label a block renders from notes.jsonl is not prose
+        self.write_notes(self._good_note())
+        self.assertEqual(self.run27()[0], 0)
+
+    def test_c18_is_a_preview_on_a_2_4_document(self):
+        self.write_notes(dict(self._good_note(), block_sha="b" * 12))
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(code, 0, report)
+        self.assertNotIn("C18", self.rules(report))
+        self.assertIn("C18 line 1: notes.jsonl line 1: the entry-points block changed after this note was written", report)
+        self.assertIn("(fails from template 2.7)", report)
+
+    # --- C19: the audit follows the plan (T27.15)
+
+    PLANNED = [("14/Q-1", "Question one is open"), ("4/F-1", "F-1 runs"), ("6/UI-1", "UI-1 renders"),
+               ("8.1/C-1", "C-1 is a database"), ("8.3/X-1", "X-1 is a ping"), ("9/service-will-not-start", "Troubleshooting is accurate"),
+               ("15/R-1", "R-1 moves the password")]
+
+    def plan27(self, drop=(), exclusions=None, **audit_extra):
+        """A register that covers the whole audit plan of the base document (minus the refs in `drop`), and the plan."""
+        from appdoc import audit_plan
+        rows = list(ROWS)
+        for n, (ref, claim) in enumerate(self.PLANNED, 3):
+            if ref not in drop:
+                rows.append({"id": f"E-{n}", "ref": ref, "claim": claim, "result": "Supported",
+                             "cites": ["app/main.py:2"], "anchor": "line 2", "limitation": "none"})
+        audit = dict(AUDIT, audited_on="2026-11-23", audited_with="2.7.0", audited_bundle="0123456789ab",
+                     doc_sha=fingerprint.doc_sha(self.doc27()), **audit_extra)
+        if exclusions:
+            audit["exclusions"] = exclusions
+        self.write_register(audit, rows)
+        self.run27()
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(audit_plan.run(self.target, self.out), 0)
+
+    def test_c19_missing_planned_row_fails(self):
+        self.plan27()
+        code, report, _ = self.run27(require_audit=True)
+        self.assertEqual(code, 0, report)
+        self.plan27(drop=("8.3/X-1", "4/F-1"))
+        code, report, _ = self.run27(require_audit=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C19", self.rules(report))
+        self.assertIn("the audit plan names X-1, which has no live register row. Fix: audit it and add a row "
+                      "with ref 8.3/X-1", report)
+        self.assertIn("names F-1", report)
+        # a superseded row is history: the replacement is the live one
+        self.assertEqual(self.run27(require_audit=False)[0], 0)        # not asked for without --require-audit
+        self.assertEqual(self.run_check(build_doc(), require_audit=True)[0], 0)   # a 2.4 document is never asked
+
+    def test_c19_stale_plan_fails(self):
+        import os
+        self.plan27()
+        os.remove(os.path.join(self.out, "audit-plan.json"))
+        code, report, _ = self.run27(require_audit=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("audit-plan.json is missing. Fix: run `appdoc audit-plan`", report)
+        self.plan27()
+        doc = build_doc().replace("- The entry module wires", "- The entry module also wires")
+        code, report, _ = self.run27(doc, require_audit=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C19", self.rules(report))
+        self.assertIn("audit-plan.json is not what `appdoc audit-plan` computes now", report)
+        self.assertIn("Fix: run `appdoc audit-plan`, then audit the ids it names", report)
+
+    def audit_plan_check(self):
+        """(exit code, output) of `appdoc audit-plan <target> --check`."""
+        from appdoc import __main__ as cli
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+            code = cli.main(["audit-plan", self.target, "--check"])
+        return code, buf.getvalue()
+
+    def test_audit_plan_check_is_read_only_and_reports_staleness(self):
+        """S7.4: an auditor under a read-only mandate can ask whether the plan on disk is current."""
+        import os
+        path = os.path.join(self.out, "audit-plan.json")
+        self.plan27()
+        before = open(path, "rb").read()
+        code, out = self.audit_plan_check()
+        self.assertEqual(code, 0, out)
+        self.assertIn("current", out)
+        self.assertEqual(open(path, "rb").read(), before)
+        self.run27(build_doc().replace("- The entry module wires", "- The entry module also wires"))
+        code, out = self.audit_plan_check()
+        self.assertEqual(code, 2, out)
+        self.assertIn("on disk:", out)
+        self.assertIn("fresh:", out)
+        self.assertIn("F-1", out)
+        self.assertIn("doc_sha", out)          # the ids may be equal while the fingerprint (the seed) moved
+        self.assertEqual(open(path, "rb").read(), before, "--check must not write the plan")
+        os.remove(path)
+        code, out = self.audit_plan_check()
+        self.assertEqual(code, 2, out)
+        self.assertIn("missing", out)
+        self.assertFalse(os.path.exists(path), "--check must not create the plan")
+
+    def test_c19_exclusion_printed(self):
+        self.plan27(drop=("9",), exclusions={"9": "troubleshooting rows are owner knowledge, not read from source"})
+        code, report, out = self.run27(require_audit=True)
+        self.assertEqual(code, 0, report)
+        self.assertIn("## Audit exclusions", report)
+        self.assertIn("- 9: troubleshooting rows are owner knowledge, not read from source", report)
+        # an exclusion excuses only the section it names
+        self.plan27(drop=("9", "15/R-1"), exclusions={"9": "owner knowledge"})
+        code, report, _ = self.run27(require_audit=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("names R-1", report)
+        self.assertNotIn("names 9", report)
+
+    # --- C17 scope on 2.7 (T27.13)
+
+    def scope27(self, scope="an independent read of the cited source", **extra):
+        self.write_register(dict(AUDIT, scope=scope, **extra), ROWS)
+        return self.run27()
+
+    def test_c17_scope_ids_fail(self):
+        code, report, _ = self.scope27("covers E-4 and V-1 only")
+        self.assertEqual(code, 2, report)
+        self.assertIn("C17", self.rules(report))
+        self.assertIn("evidence.jsonl line 1: the audit scope text holds an ID or a number. "
+                      "Fix: describe only the method; coverage is computed", report)
+
+    def test_c17_scope_digits_fail(self):
+        code, report, _ = self.scope27("sections 3 to 10")
+        self.assertEqual(code, 2, report)
+        self.assertIn("C17", self.rules(report))
+
+    def test_c17_method_only_passes(self):
+        code, report, _ = self.scope27()
+        self.assertEqual(code, 0, report)
+        # a 2.4 document keeps the old behaviour: the same scope is only a preview
+        self.write_register(dict(AUDIT, scope="sections 3-10"), ROWS)
+        self.assertEqual(self.run_check(build_doc())[0], 0)
+
+    def test_c17_exclusions_keys_are_sections(self):
+        code, report, _ = self.scope27(exclusions={"9": "owner knowledge, not read from source", "8.3": "none are read"})
+        self.assertEqual(code, 0, report)
+        code, report, _ = self.scope27(exclusions={"V-1": "skipped", "nine": "skipped", "9.9": "no such section"})
+        self.assertEqual(code, 2, report)
+        self.assertIn("C17", self.rules(report))
+        for key in ("V-1", "nine", "9.9"):
+            self.assertIn(f"exclusions key '{key}' is not a section of the document. Fix: use a section number "
+                          "such as 8.3", report)
+        code, report, _ = self.scope27(exclusions={"9": "rows E-4 to E-9", "8.3": "about 40 of them"})
+        self.assertIn("the exclusion for 9 holds an ID or a number. Fix: state the reason without IDs or numbers", report)
+        self.assertIn("the exclusion for 8.3 holds an ID or a number", report)
+        code, report, _ = self.scope27(exclusions=["9"])
+        self.assertIn("exclusions must be an object of section: reason. Fix:", report)
+
+    def test_c11_2_4_document_keeps_the_old_duplicate_message(self):
+        self.write_register(AUDIT, ROWS + [self.SECOND_V1])
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(code, 2, report)
+        self.assertIn("two rows for the same ID ref 10.1/V-1", report)
+        self.assertIn("keep the row that describes the current text", report)
 
     def test_c3_missing_section(self):
         doc = build_doc().replace("## 13. Glossary", "## 13. Terms")
@@ -322,11 +821,67 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(self.fired(build_doc({12: "<fill me> TODO"})), {"C3"})
 
     def test_c3_missing_stamp_is_one_upgrade_problem(self):
-        code, report, _ = self.run_check(build_doc().replace(spec.STAMP, ""))
+        code, report, _ = self.run_check(build_doc().replace(OLD_STAMP, ""))
         self.assertEqual(set(re.findall(r"^## (C\d+) ", report, re.M)), {"C3"})
-        self.assertIn("not on template 2.4", report)
-        code, report, _ = self.run_check(build_doc().replace(spec.STAMP, "<!-- appdoc:template 2.1 -->"))
+        self.assertIn(f"not on template {spec.TEMPLATE_VERSION}", report)
+        code, report, _ = self.run_check(build_doc().replace(OLD_STAMP, "<!-- appdoc:template 2.1 -->"))
         self.assertIn("(stamp: 2.1)", report)
+
+    def test_a_2_4_document_fails_c3_with_the_upgrade_problem(self):
+        """A 2.4 document (what AppDoc 2.4 to 2.6 wrote) is not on the running template 2.8: one C3 problem that
+        names 2.8 and points to `appdoc upgrade`; no structure rule runs and no preview is printed."""
+        code, report, _ = self._run_check(build_doc(), True, False, False, True)   # unpinned: the real Check
+        self.assertEqual(code, 2)
+        self.assertEqual(self.rules(report), {"C3"})
+        self.assertEqual(len(re.findall(r"^- line \d+", report.split("## C3")[1].split("\n## ")[0], re.M)), 1, report)
+        self.assertIn("not on template 2.8 (stamp: 2.4)", report)
+        self.assertIn("appdoc upgrade", report)
+        self.assertNotIn("previews (advisory)", report)
+
+    def test_a_2_7_document_fails_c3_until_upgraded(self):
+        """T28.A4, strict C3 by decision (no grace window): a document stamped 2.7 passes on its own template (the
+        pinned Check) and, on the running 2.8, fails with the one C3 upgrade problem that says so and points to
+        `appdoc upgrade`; the 2.8 structure rules (the new subsections, blocks and the maintenance row) do not run."""
+        code, report, _ = self.run27()               # its own template (pinned): passes, and `fill` wrote the blocks
+        self.assertEqual(code, 0, report)
+        with open(os.path.join(self.out, "application-documentation.md"), encoding="utf-8") as fh:
+            doc = fh.read()
+        code, report, _ = self._run_check(doc, False, False, False, False)   # the real, running 2.8 Check
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C3"})
+        self.assertEqual(len(re.findall(r"^- line \d+", report.split("## C3")[1].split("\n## ")[0], re.M)), 1, report)
+        self.assertIn("not on template 2.8 (stamp: 2.7)", report)
+        self.assertIn("appdoc upgrade", report)
+        self.assertIn("no grace window", report)
+        self.assertNotIn("previews (advisory)", report)
+
+    def test_2_8_document_needs_the_2_8_subsections_blocks_and_maintenance_row(self):
+        """T28.A4: on the running template the Check asks for 2.4, 5.4 and 16.8, their blocks and the 16.5 Periodic
+        maintenance row; stamped 2.7 it asks for none of them (spec.subsections, GENERATED_SINCE, ROWS_SINCE)."""
+        self.assertEqual(set(spec.subsections((2, 8))) - set(spec.subsections((2, 7))), {"2.4", "5.4", "16.8"})
+        self.assertEqual(set(spec.required_rows_at("16.5", (2, 8))) - set(spec.required_rows_at("16.5", (2, 7))),
+                         {"Periodic maintenance"})
+        text = self.instantiate_template()
+        self.write_register(dict(AUDIT, performed=False, scope="not audited yet"), [])
+        self.assertEqual(self.run_check(text)[0], 0)
+        for needle, rule in (("### 5.4 Application-layer access (generated)", "C8"), ("Periodic maintenance", "C9")):
+            broken = "\n".join(l for l in text.splitlines() if not l.startswith(needle)
+                               and not (needle == "Periodic maintenance" and l.startswith("| Periodic maintenance")))
+            code, report, _ = self.run_check(broken)
+            self.assertEqual(code, 2, (needle, report))
+            self.assertIn(rule, self.rules(report), needle)
+
+    def test_c3_upgrade_orphan_comment_fails(self):
+        """`appdoc upgrade` leaves text it could not map under an `appdoc:upgrade-orphan` comment; C3 fails on it
+        (one problem per comment) until the text is moved and the comment deleted."""
+        orphan = "<!-- appdoc:upgrade-orphan 14: the text below did not fit the template 2.7 table; move it -->"
+        doc = build_doc({14: orphan + "\n\n" + SECTION_BODY[14]})
+        code, report, _ = self.run_check(doc)
+        self.assertEqual(code, 2)
+        self.assertEqual(self.rules(report), {"C3"})
+        self.assertRegex(report, r"- line \d+: `appdoc upgrade` left text it could not map to the template "
+                                 r"\(an `appdoc:upgrade-orphan` comment\)\. Fix: move what still applies")
+        self.assertEqual(self.fired(build_doc()), set())     # without the comment the same document passes
 
     def test_c4_unknown_without_gaps(self):
         doc = build_doc({14: ""}).replace(
@@ -415,6 +970,36 @@ class CheckTests(unittest.TestCase):
             json.dump(self.facts, fh)
         self.assertNotIn("looks retired", self.run_check(doc2, filled=False)[1])
 
+    def _dup_facts(self):
+        for d in ("alpha", "beta"):
+            os.makedirs(os.path.join(self.target, d), exist_ok=True)
+        self.write_facts(self.facts["stacks"], self.facts["facts"])
+        self.facts["target"] = {"scan": {"duplicate_folders": [{"a": "alpha/", "b": "beta/", "files": 5}]}}
+        with open(os.path.join(self.out, "facts.json"), "w") as fh:
+            json.dump(self.facts, fh)
+
+    def test_c7_duplicate_pair_advisory(self):
+        self._dup_facts()
+        doc = self.fill_doc(build_doc())
+        code, report, out = self.run_check(doc, filled=False)
+        self.assertEqual(code, 0, report)
+        self.assertNotIn("C7", self.rules(report))
+        self.assertIn("## Duplicate folders not named in section 2 (advisory)", report)
+        self.assertIn("`alpha/` and `beta/` (5 files)", report)
+        self.assertIn("Advisory: 1 duplicate folder pair is not named in section 2", out)
+        # strict fails it as C7
+        code, report, _ = self.run_check(doc, filled=False, strict=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C7", self.rules(report))
+        self.assertIn("folders 'alpha' and 'beta' duplicate each other but are not both named in section 2", report)
+        # naming both folders in section 2 clears it, advisory and strict
+        named = self.fill_doc(build_doc().replace(
+            "### 2.1 What was inspected",
+            "The `alpha/` and `beta/` folders are byte-identical; `beta/` is the live copy.\n\n### 2.1 What was inspected"))
+        code, report, _ = self.run_check(named, filled=False, strict=True)
+        self.assertNotIn("duplicate", report.lower().replace("duplicate defined", ""))
+        self.assertEqual(self.rules(report) & {"C7"}, set(), report)
+
     def test_c7_content_signal_retired_is_advisory_only(self):
         doc = self.fill_doc(build_doc())
         self.write_facts(self.facts["stacks"], self.facts["facts"])
@@ -429,39 +1014,62 @@ class CheckTests(unittest.TestCase):
         os.remove(os.path.join(self.out, "facts.json"))
         self.assertEqual(self.fired(doc, filled=False), set())
 
-    def test_c7_version_skew_fails_on_major_minor_difference(self):
+    def write_provenance(self, **over):
+        from appdoc import version
+        prov = {**version.provenance(), **over}
+        with open(os.path.join(self.out, "provenance.json"), "w") as fh:
+            json.dump(prov, fh)
+        return prov
+
+    def test_c7_skew_reads_provenance(self):
         from appdoc import __version__
         doc = self.fill_doc(build_doc())
-        self.write_facts(self.facts["stacks"], self.facts["facts"])
-        # a different major.minor than the running version
         major, minor, *_ = __version__.split(".")
-        self.facts["generator"] = f"{int(major) + 1}.{minor}.0"
-        with open(os.path.join(self.out, "facts.json"), "w") as fh:
-            json.dump(self.facts, fh)
+        gen = f"{int(major) + 1}.{minor}.0"
+        self.write_provenance(generator=gen)
         code, report, _ = self.run_check(doc, filled=False)
-        self.assertIn("C7", set(re.findall(r"^## (C\d+) ", report, re.M)))
-        self.assertIn(f"facts.json was written by AppDoc {self.facts['generator']}; re-run extract", report)
+        self.assertIn("C7", self.rules(report))
+        self.assertIn(f"facts.json was written by AppDoc {gen}; re-run extract", report)
         self.assertEqual(code, 2)
+
+    def test_c7_skew_compares_numerically(self):
+        # 2.10 is newer than 2.9: a string compare of major.minor must not matter, only equality does
+        doc = self.fill_doc(build_doc())
+        self.write_provenance(generator="2.10.0")
+        self.assertIn("C7", self.rules(self.run_check(doc, filled=False)[1]))
 
     def test_c7_version_skew_ignores_patch_difference(self):
         from appdoc import __version__
         doc = self.fill_doc(build_doc())
-        self.write_facts(self.facts["stacks"], self.facts["facts"])
-        # same major.minor, different patch: no skew
         major, minor, *_ = __version__.split(".")
-        self.facts["generator"] = f"{major}.{minor}.99"
-        with open(os.path.join(self.out, "facts.json"), "w") as fh:
-            json.dump(self.facts, fh)
+        self.write_provenance(generator=f"{major}.{minor}.99", bundle="0" * 12)
         code, report, _ = self.run_check(doc, filled=False)
         self.assertNotIn("re-run extract", report)
-        self.assertNotIn("C7", set(re.findall(r"^## (C\d+) ", report, re.M)))
+        self.assertNotIn("C7", self.rules(report))
         self.assertEqual(code, 0, report)
 
-    def test_c7_version_skew_ignores_missing_generator(self):
-        # the base facts.json has no generator field: treated as no skew
+    def test_c7_missing_provenance_is_an_advisory(self):
         doc = self.fill_doc(build_doc())
+        os.remove(os.path.join(self.out, "provenance.json"))
         code, report, _ = self.run_check(doc, filled=False)
-        self.assertNotIn("re-run extract", report)
+        self.assertEqual(code, 0, report)
+        self.assertNotIn("C7", self.rules(report))
+        self.assertIn("## Provenance missing (advisory)", report)
+        self.assertIn("provenance.json", report.split("## Provenance missing (advisory)")[1])
+
+    def test_c7_provenance_schema_mismatch_fails(self):
+        doc = self.fill_doc(build_doc())
+        self.write_facts(self.facts["stacks"], self.facts["facts"])
+        self.facts["schema"] = facts_mod.SCHEMA
+        with open(os.path.join(self.out, "facts.json"), "w") as fh:
+            json.dump(self.facts, fh)
+        self.write_provenance(schema="appdoc-facts/5")
+        code, report, _ = self.run_check(doc, filled=False)
+        self.assertIn("C7", self.rules(report))
+        self.assertIn(f"provenance.json schema appdoc-facts/5 does not match facts.json schema {facts_mod.SCHEMA}", report)
+        self.assertEqual(code, 2)
+        self.write_provenance(schema=facts_mod.SCHEMA)
+        code, report, _ = self.run_check(doc, filled=False)
         self.assertEqual(code, 0, report)
 
     def test_check_report_prints_running_version(self):
@@ -615,6 +1223,128 @@ class CheckTests(unittest.TestCase):
 
     # --- template and upgrade fixtures
 
+    # --- section 17 (template 2.7)
+
+    def sec17(self, *rows, doc=None):
+        """A 2.7 document whose section 17 table holds these rows (`| Step | Command | Directory | Evidence |`)."""
+        head = "| Step | Command | Working directory | Evidence |\n|---|---|---|---|\n"
+        body = head + "\n".join(rows)
+        return re.sub(r"(?s)(\n## 17\. [^\n]*\n\n).*?(\n## Appendix A\.)",
+                      lambda m: m.group(1) + body + "\n" + m.group(2), self.doc27(doc), count=1)
+
+    def c9_messages(self, report):
+        part = report.split("## C9 ")[1].split("\n## ")[0] if "## C9 " in report else ""
+        return [l for l in part.splitlines() if l.startswith("- ")]
+
+    def test_template_2_7_sections(self):
+        self.assertEqual(len(spec.sections((2, 7))), 17)
+        self.assertEqual(spec.sections((2, 7))[16], "Build, Run and Test Locally")
+        self.assertEqual(spec.sections((2, 6)), spec.SECTIONS[:16])
+        self.assertEqual(spec.sections(()), spec.SECTIONS[:16])
+        self.assertEqual(spec.TABLES["17"].columns, ("Step", "Command", "Working directory", "Evidence"))
+        self.assertEqual(spec.TABLES["17"].required_rows,
+                         ("Prerequisites", "Restore dependencies", "Build", "Run", "Test"))
+        path = os.path.join(os.path.dirname(check.__file__), "assets", "template.md")
+        with open(path, encoding="utf-8") as fh:
+            text = fh.read()
+        self.assertRegex(text, r"(?m)^## 17\. Build, Run and Test Locally$")
+        for step in spec.BUILD_STEPS:
+            self.assertIn(f"| {step} | | | |", text)
+        self.assertIn("<!-- appdoc:generated closed-questions -->\n<!-- /appdoc:generated closed-questions -->", text)
+
+    def test_section_17_is_not_asked_of_a_2_4_document(self):
+        self.assertEqual(self.fired(build_doc()), set())     # no section 17, stamped with the running template
+
+    def test_c3_a_2_7_document_needs_section_17(self):
+        doc = re.sub(r"(?s)\n## 17\. .*?(\n## Appendix A\.)", r"\1", self.doc27())
+        code, report, _ = self.run27(doc, s17=False)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C3", self.rules(report))
+        self.assertIn("section 17 'Build, Run and Test Locally' is missing or renamed", report)
+
+    def test_c9_section_17_rows(self):
+        code, report, _ = self.run27()
+        self.assertEqual(code, 0, report)
+        steps = ("Prerequisites", "Restore dependencies", "Build", "Run", "Test")
+        ok = [f"| {s} | Unknown - see Open questions. | . | not in the repository |" for s in steps]
+        self.assertEqual(self.run27(self.sec17(*ok))[0], 0)
+        # a missing row
+        code, report, _ = self.run27(self.sec17(*ok[:3], ok[4]))
+        self.assertEqual(code, 2, report)
+        self.assertIn("17 has no 'Run' row", "\n".join(self.c9_messages(report)))
+        # a command must be backticked
+        bad = ok[:3] + ["| Run | python app/main.py | . | `app/main.py:2` |"] + ok[4:]
+        code, report, _ = self.run27(self.sec17(*bad))
+        self.assertEqual(code, 2, report)
+        self.assertIn("17 Run: the Command cell is not a backticked command, 'Unknown - see Open questions.' or "
+                      "'Not applicable'", report)
+        # S6.4: a command plus anything else says why it fails
+        for cell in ("`npm start` (see the README)", "`npm start` runs the app", "run `npm start`"):
+            row = ok[:3] + [f"| Run | {cell} | . | `app/main.py:2` |"] + ok[4:]
+            code, report, _ = self.run27(self.sec17(*row))
+            self.assertEqual(code, 2, (cell, report))
+            self.assertIn("17 Run: the Command cell must hold exactly one backticked command and nothing else", report)
+        # a command needs a lined Citation; a Citation without a line does not do
+        for ev in ("", "`app/main.py`", "see the README"):
+            row = ok[:3] + [f"| Run | `python app/main.py` | . | {ev} |"] + ok[4:]
+            code, report, _ = self.run27(self.sec17(*row))
+            self.assertEqual(code, 2, (ev, report))
+            self.assertIn("17 Run: a command needs a Citation with a line in Evidence", report)
+        # a free Working directory passes; a chain of commands does not (R71.C1a)
+        row = ok[:3] + ["| Run | `npm start` | `app/` | `app/main.py:2` |"] + ok[4:]
+        self.assertEqual(self.run27(self.sec17(*row))[0], 0)
+        for cell in ("`npm ci`, then `npm start`", "`npm ci` `npm start`", "`a` and `b`"):
+            row = ok[:3] + [f"| Run | {cell} | `app/` | `app/main.py:2` |"] + ok[4:]
+            code, report, _ = self.run27(self.sec17(*row))
+            self.assertEqual(code, 2, (cell, report))
+            self.assertIn("17 Run: the Command cell holds more than one command", report)
+            self.assertIn("use one command or one wrapper script", report)
+
+    def test_c9_17_not_applicable_needs_citation(self):
+        ok = [f"| {s} | Unknown - see Open questions. | . | not in the repository |" for s in spec.BUILD_STEPS]
+        na = ok[:1] + ["| Restore dependencies | Not applicable | . | no dependency file |"] + ok[2:]
+        code, report, _ = self.run27(self.sec17(*na))
+        self.assertEqual(code, 2, report)
+        self.assertIn("17 Restore dependencies: a Not applicable row needs a Citation with a line in Evidence", report)
+        na[1] = "| Restore dependencies | Not applicable | . | no dependency file in `app/main.py:1` |"
+        self.assertEqual(self.run27(self.sec17(*na))[0], 0)
+        # an Unknown row needs none
+        self.assertEqual(self.run27(self.sec17(*ok))[0], 0)
+
+    def instantiate_template(self):
+        """A freshly started document of the running template: the template with its guidance deleted and nothing but Unknown written."""
+        path = os.path.join(os.path.dirname(check.__file__), "assets", "template.md")
+        with open(path, encoding="utf-8") as fh:
+            text = fh.read()
+        unknown = "Unknown - see Open questions."
+        text = re.sub(r"<!-- appdoc:guide.*?-->\n?", "", text, flags=re.S)
+        text = text.replace("# <Target name> Documentation", "# Demo Documentation")
+        text = re.sub(r"<fill: [^>]*>", "Unknown", text)
+        for label in spec.OWNERSHIP_ROWS:
+            text = text.replace(f"| {label} | | |", f"| {label} | not in the repository | Unknown |")
+        for step in spec.BUILD_STEPS:
+            text = text.replace(f"| {step} | | | |", f"| {step} | {unknown} | . | not in the repository |")
+        runbook = "".join(f"| {step} | Unknown | not in the repository |\n" for step in spec.RUNBOOK_STEPS)
+        text = text.replace("| Step | Procedure | Evidence |\n|---|---|---|\n", "| Step | Procedure | Evidence |\n|---|---|---|\n" + runbook)
+        text = re.sub(r"(?m)^(#{2,3} \d+(?:\.\d+)?\.? [^\n]*\n)", lambda m: m.group(1) + "\n" + unknown + "\n", text)
+        text = text.replace("|---|---|---|---|---|---|\n\n<!-- appdoc:generated closed-questions",
+                            "|---|---|---|---|---|---|\n| Q-1 | Everything is Unknown | New document | Write the sections | Unknown | High |\n\n"
+                            "<!-- appdoc:generated closed-questions")
+        return text
+
+    def test_a_fresh_2_8_template_passes_with_only_unknowns(self):
+        text = self.instantiate_template()
+        self.assertIn(spec.STAMP, text)
+        self.assertEqual(spec.stamp_version(text), (2, 8))
+        for name in spec.GENERATED.values():
+            self.assertIn(f"<!-- appdoc:generated {name} -->", text)   # all eleven blocks, the 2.8 ones included
+        self.write_register(dict(AUDIT, performed=False, scope="not audited yet"), [])
+        code, report, _ = self.run_check(text)
+        self.assertEqual(code, 0, report)
+        with open(os.path.join(self.out, "application-documentation.md"), encoding="utf-8") as fh:
+            filled = fh.read()
+        self.assertIn("No questions were closed by the audit.", filled)
+
     def test_template_matches_spec(self):
         from appdoc import docmodel as dm
         path = os.path.join(os.path.dirname(check.__file__), "assets", "template.md")
@@ -622,20 +1352,21 @@ class CheckTests(unittest.TestCase):
             text = fh.read()
         self.assertIn(spec.STAMP, text)
         heads = re.findall(r"^## (\d+)\. (.+)$", text, re.M)
-        self.assertEqual([int(n) for n, _ in heads], list(range(1, 17)))
-        for (_, t), want in zip(heads, check.SECTIONS):
+        self.assertEqual([int(n) for n, _ in heads], list(range(1, 18)))
+        for (_, t), want in zip(heads, spec.SECTIONS):
             self.assertTrue(t.startswith(want))
         for key, title in check.REQUIRED_SUBSECTIONS.items():
             self.assertRegex(text, rf"(?m)^### {re.escape(key)} {re.escape(title)}$")
         lines = dm.strip_comments(text).splitlines()
         heads = dm.headings(lines)
+        gen = spec.generated_blocks(spec.version_tuple(spec.TEMPLATE_VERSION))   # the blocks this template carries
         for key, ts in spec.TABLES.items():
-            if spec.GENERATED.get(key) not in (None, *spec.OPAQUE_BLOCKS):
+            if gen.get(key) not in (None, *spec.OPAQUE_BLOCKS):
                 continue  # its first table is the generated one
             t = dm.first_table(lines, heads[key])
             self.assertIsNotNone(t, key)
             self.assertEqual(t.header[:len(ts.columns)], list(ts.columns), key)
-        for name in spec.GENERATED.values():
+        for name in gen.values():
             self.assertIn(f"<!-- appdoc:generated {name} -->", text)
         self.assertIn(spec.RESTRICTION_LINE, text)
         self.assertIn("## Appendix A. Evidence Register and Verification", text)
@@ -654,7 +1385,7 @@ class CheckTests(unittest.TestCase):
                 doc = fh.read()
             code, report, _ = self.run_check(doc, filled=False)
             self.assertEqual(code, 2)
-            self.assertIn("not on template 2.4 (stamp: none)", report)
+            self.assertIn(f"not on template {spec.TEMPLATE_VERSION} (stamp: none)", report)
             self.assertNotRegex(report, r"(?m)^## C(8|9|10|11) ")
 
     def test_new_rules_catch_the_2_1_defects(self):
@@ -663,7 +1394,7 @@ class CheckTests(unittest.TestCase):
         for repo in ("flaskr-tdd", "eShop"):
             with open(os.path.join(FIXTURES_21, repo, "application-documentation.md"), encoding="utf-8") as fh:
                 doc = fh.read()
-            doc = doc.replace("\n", "\n" + spec.STAMP + "\n", 1)
+            doc = doc.replace("\n", "\n" + OLD_STAMP + "\n", 1)
             code, report, _ = self.run_check(doc, filled=False)
             rules = set(re.findall(r"^## (C\d+) ", report, re.M))
             self.assertTrue({"C7", "C9", "C11"} <= rules, (repo, rules))
@@ -703,7 +1434,7 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(code, 0, report)
         with open(os.path.join(self.out, "application-documentation.md")) as fh:
             text = fh.read()
-        self.assertIn("1 route handler files; 1 routes; 0 pages; 0 commands; 1 jobs.", text)
+        self.assertIn("1 route handler file; 1 route; 0 pages; 0 commands; 1 job.", text)
         self.assertIn("| `app/main.py` | job, route | 1 | 0 | 1 | 0 |", text)
 
     def test_appendix_is_generated_from_the_register_in_out_dir(self):
@@ -759,8 +1490,8 @@ class CheckTests(unittest.TestCase):
         self.assertIn("| nightly | `0 2 * * *` | yes | `app/main.py:8` | python-flask |", once)
         self.assertIn("### A.1 Audit state", once)
         with contextlib.redirect_stdout(io.StringIO()):
-            check.seal_register(self.target, self.out)
-            self.assertEqual(check.run(self.target, self.out), 0)  # what `fill` wrote is what the Check expects
+            seal_mod.seal_register(self.target, self.out)
+            self.assertEqual(run_as_2_4(check.run, self.target, self.out), 0)  # what `fill` wrote is what the Check expects
 
     # --- C7 prose counts
 
@@ -844,6 +1575,42 @@ class CheckTests(unittest.TestCase):
         counts = self.run_check(closed)[1]
         self.assertIn("3 rows: 2 Supported, 0 Corrected, 0 Downgraded, 1 Answerable.", counts)
 
+    def test_c11_answerable_needs_answered_in(self):
+        """From template 2.7 an Answerable row names the section that answers the question (`answered_in`)."""
+        closed = build_doc().replace("| Q-1 | Unknown: who deploys the service |", "| Q-2 | Unknown: who owns the service |")
+        self.write_register(AUDIT, ROWS + [self.ANSWER])
+        code, report, _ = self.run27(closed)
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C11"})
+        self.assertIn("an Answerable row needs answered_in, the section that answers Q-1. Fix: add "
+                      '"answered_in": "<section>" (for example 16.3)', report)
+        self.write_register(AUDIT, ROWS + [dict(self.ANSWER, answered_in="9.9")])
+        self.assertIn("answered_in 9.9 names no section of the document", self.run27(closed)[1])
+        self.write_register(AUDIT, ROWS + [dict(self.ANSWER, answered_in="16.3")])
+        self.assertEqual(self.run27(closed)[0], 0)
+        # the block under 14 says which question was closed and where, and C7 holds it to that
+        self.run27(closed)
+        with open(os.path.join(self.out, "application-documentation.md"), encoding="utf-8") as fh:
+            self.assertIn("Closed by the audit and answered in the body: Q-1 (16.3).", fh.read())
+        # a superseded Answerable row needs none, and on a 2.4 document the gap is only a preview
+        self.write_register(AUDIT, ROWS + [self.ANSWER, dict(self.ANSWER, id="E-4", ref="14/Q-1", supersedes="E-3",
+                                                             answered_in="16.3")])
+        self.assertEqual(self.run27(closed)[0], 0)
+        self.write_register(AUDIT, ROWS + [self.ANSWER])
+        code, report, _ = self.run_check(closed)
+        self.assertEqual(code, 0, report)
+        self.assertIn("answered_in", report.split(self.PREVIEW)[1])
+
+    def test_closed_questions_block_must_match_the_register(self):
+        closed = build_doc().replace("| Q-1 | Unknown: who deploys the service |", "| Q-2 | Unknown: who owns the service |")
+        self.write_register(AUDIT, ROWS + [dict(self.ANSWER, answered_in="16.3")])
+        doc = self.doc27(closed).replace("<!-- appdoc:generated closed-questions -->\n<!-- /appdoc:generated closed-questions -->",
+                                         "<!-- appdoc:generated closed-questions -->\nNo questions were closed by the audit.\n"
+                                         "<!-- /appdoc:generated closed-questions -->")
+        code, report, _ = self.run27(doc, filled=False)
+        self.assertEqual(code, 2, report)
+        self.assertIn("generated block 'closed-questions' differs from the Facts", report)
+
     def test_c11_result_and_ref_must_agree(self):
         self.with_facts(self.smell("aaaa0009", 9))
         bad = [dict(self.ANSWER, id="E-3", ref="7.1"),
@@ -886,6 +1653,22 @@ class CheckTests(unittest.TestCase):
         self.assertIn("| 14 | 10 of 10 |", report)
         self.assertIn("C14", self.rules(report))
         self.assertIn("Appendix A.2 states 10 unknowns have a register row but the register carries 14 Q-refs", report)
+
+    def test_c14_uses_live_rows(self):
+        # E-3 said Q-1 was answerable; E-4 supersedes it (the question needs an owner after all) and Q-1 stays
+        old = self._q_row(1, "Answerable")
+        new = dict(self._q_row(1), id="E-4", supersedes="E-3")
+        self.write_register(AUDIT, ROWS + [old, new])
+        code, report, _ = self.run_check(self._q_doc(1))
+        self.assertNotIn("C14", self.rules(report), report)
+        self.assertNotIn("C11", self.rules(report), report)
+        # without the supersedes link the Answerable row is live and fails as before
+        self.write_register(AUDIT, ROWS + [old, {k: v for k, v in new.items() if k != "supersedes"}])
+        self.assertIn("C14", self.rules(self.run_check(self._q_doc(1))[1]))
+        # superseded Q rows are not counted against Appendix A.2
+        self.write_register(AUDIT, ROWS + [self._q_row(1), dict(self._q_row(2), id="E-9"),
+                                           dict(self._q_row(2), id="E-10", supersedes="E-9")])
+        self.assertNotIn("C14", self.rules(self.run_check(self._q_doc(2))[1]))
 
     def test_c14_partial_audit_no_false_positive(self):
         self.write_register(AUDIT, ROWS + [self._q_row(n) for n in range(1, 6)])
@@ -936,6 +1719,80 @@ class CheckTests(unittest.TestCase):
         code, report, _ = self.run_check(build_doc())
         self.assertNotIn("C15", self.rules(report), report)
 
+    # --- C15 on 2.7: count markers (T27.18)
+
+    @staticmethod
+    def _marker(cls, n):
+        return f"<!-- appdoc:count {cls} -->{n}<!-- /appdoc:count -->"
+
+    def _marked_doc(self, *markers, sentence=""):
+        body = SECTION_BODY[3] + "\n- Counts: " + ", ".join(markers) + "." + (f"\n- {sentence}" if sentence else "")
+        return build_doc({3: body})
+
+    def _tamper27(self, doc, old, new):
+        """Check a 2.7 document whose marker was edited after `fill` wrote it (fill would repair it)."""
+        from unittest import mock
+        self.run27(doc)
+        with open(os.path.join(self.out, "application-documentation.md"), encoding="utf-8") as fh:
+            text = fh.read()
+        self.assertIn(old, text)
+        with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"):
+            return self.run_check(text.replace(old, new), filled=False, seal=False)
+
+    def test_c15_stale_marker_fails(self):
+        doc = self._marked_doc(self._marker("V", 0), self._marker("rows", 0), self._marker("routes", 0))
+        code, report, _ = self.run27(doc)
+        self.assertEqual(code, 0, report)            # fill wrote 1, 2 and 1
+        self.assertIn(self._marker("rows", 2), open(os.path.join(self.out, "application-documentation.md")).read())
+        code, report, _ = self._tamper27(doc, self._marker("V", 1), self._marker("V", 14))
+        self.assertEqual(code, 2, report)
+        self.assertIn("C15", self.rules(report))
+        self.assertIn("count marker V says 14 but the document has 1. Fix: run `appdoc fill`, which writes the number", report)
+        code, report, _ = self._tamper27(doc, self._marker("routes", 1), self._marker("routes", "many"))
+        self.assertIn("count marker routes says many but the Facts have 1", report)
+        code, report, _ = self._tamper27(doc, self._marker("rows", 2), self._marker("rows", 3))
+        self.assertIn("count marker rows says 3 but the register has 2", report)
+        # on a 2.4 document the same stale marker is only a preview
+        code, report, _ = self.run_check(doc.replace(self._marker("V", 0), self._marker("V", 14)), filled=False)
+        self.assertNotIn("C15", self.rules(report))
+
+    def test_c15_unknown_class_fails(self):
+        doc = self._marked_doc(self._marker("widgets", 3))
+        code, report, _ = self.run27(doc)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C15", self.rules(report))
+        self.assertIn("count marker class 'widgets' is not one of V, F, UI, C, X, Q, R, rows, superseded, routes, "
+                      "jobs, pages, commands, config-keys, areas, ", report)
+        self.assertIn("Fix: use one of those classes", report)
+
+    def test_c15_access_model_classes(self):
+        doc = self._marked_doc(self._marker("areas", 0), self._marker("access-rules", 0),
+                               self._marker("state-changing-unknown", 0))
+        code, report, _ = self.run27(doc)
+        self.assertEqual(code, 0, report)            # fill wrote 0 for each: the Facts have none
+        code, report, _ = self._tamper27(doc, self._marker("areas", 0), self._marker("areas", 4))
+        self.assertEqual(code, 2, report)
+        self.assertIn("count marker areas says 4 but the Facts have 0 MVC areas", report)
+
+    def test_c15_handwritten_count_advisory(self):
+        self.write_register(AUDIT, ROWS + [self._r_row(n) for n in range(1, 8)])
+        sentence = "The audit covered 5 of 12 recommendations."        # stale on both counts, and not a failure on 2.7
+        doc = self._r_doc(13, sentence).replace("Recommendation 1 | V-1 |", "Recommendation 1 | V-1, TLS |")
+        code, report, out = self.run27(doc)
+        self.assertEqual(code, 0, report)
+        self.assertNotIn("C15", self.rules(report))
+        self.assertIn("## Hand-written counts (advisory)", report)
+        self.assertIn("`5 of 12 recommendations` is a hand-written count; use a count marker", report)
+        self.assertIn("Advisory: 1 hand-written count; use a count marker (see check-report.md).", out)
+        # the 2.4 rule is unchanged: the same stale sentence still fails there
+        self.assertIn("C15", self.rules(self.run_check(doc)[1]))
+        # a count written with markers is not hand-written
+        marked = self._r_doc(13, f"The audit covered {self._marker('rows', 9)} of {self._marker('R', 13)} "
+                                 "recommendations.").replace("Recommendation 1 | V-1 |", "Recommendation 1 | V-1, TLS |")
+        code, report, _ = self.run27(marked)
+        self.assertEqual(code, 0, report)
+        self.assertNotIn("Hand-written counts", report)
+
     # --- C16: universal claims that cite only single lines
 
     @staticmethod
@@ -966,6 +1823,254 @@ class CheckTests(unittest.TestCase):
         self.assertNotIn("Universal claims cite single lines", report)
         self.assertNotIn("universal claim", out)
 
+    # --- C20: citation precision (advisory; fails under --strict)
+
+    def _big(self, n=200):
+        with open(os.path.join(self.target, "app", "big.py"), "w") as fh:
+            fh.write("\n".join(f"line {i}" for i in range(1, n + 1)) + "\n")
+
+    def _wide_doc(self, cite, section=7):
+        bodies = {
+            7: "### 7.1 Start the service\n1. Operators launch the entry point in `%s` and wait.\n"
+               "2. Failure and escalation: restart once, as `app/main.py:2` exits on error." % cite,
+            3: "- The entry module wires the handlers in `%s`.\n" % cite,
+            10: SECTION_BODY[10].replace("`app/main.py:6`; value omitted.", "`%s`; value omitted." % cite),
+            4: SECTION_BODY[4].replace("| `app/main.py:2` | The `run` entry point lives in `app/main.py:2` and starts",
+                                       "| run | The `run` entry point lives in `%s` and starts" % cite),
+        }
+        return build_doc({section: bodies[section]})
+
+    def test_c20_constants(self):
+        self.assertEqual((check.WIDE_RANGE, check.CELL_CITES), (100, 5))
+        self.assertEqual(check.RULE_TITLES["C20"], "Citation precision")
+
+    def test_c20_wide_range_is_an_advisory(self):
+        self._big()
+        code, report, out = self.run_check(self._wide_doc("app/big.py:1-150"))
+        self.assertEqual(code, 0, report)
+        self.assertEqual(report.splitlines()[0], "# Check: PASS")
+        self.assertIn("## Citation precision (advisory)", report)
+        self.assertIn("app/big.py:1-150", report.split("## Citation precision (advisory)")[1])
+        self.assertNotIn("C20", self.rules(report))
+        self.assertIn("Advisory: 1 wide range", out)
+
+    def test_c20_range_threshold_is_over_100_lines(self):
+        self._big()
+        for cite, flagged in (("app/big.py:1-100", False), ("app/big.py:50-150", True),
+                              ("app/big.py:1-101", True), ("app/big.py:7", False)):
+            report = self.run_check(self._wide_doc(cite))[1]
+            self.assertEqual("## Citation precision (advisory)" in report, flagged, cite)
+
+    def test_c20_applies_to_sections_4_7_and_10_only(self):
+        self._big()
+        for section, flagged in ((3, False), (4, True), (7, True), (10, True)):
+            report = self.run_check(self._wide_doc("app/big.py:1-150", section))[1]
+            self.assertEqual("## Citation precision (advisory)" in report, flagged, section)
+
+    def test_c20_a_second_lined_citation_covers_the_claim(self):
+        self._big()
+        doc = self._wide_doc("app/big.py:1-150").replace(
+            "launch the entry point in", "launch the entry point (see `app/main.py:2`) in")
+        self.assertNotIn("Citation precision", self.run_check(doc)[1])
+
+    def test_c20_generated_blocks_are_not_flagged(self):
+        self._big()
+        self.with_facts(self.entry("app/big.py", line=1))
+        report = self.run_check(build_doc())[1]
+        self.assertNotIn("Citation precision", report)
+
+    def test_c20_fails_under_strict(self):
+        self._big()
+        code, report, _ = self.run_check(self._wide_doc("app/big.py:1-150"), strict=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C20", self.rules(report))
+        self.assertNotIn("(advisory)", report.split("## Citation register")[0].split("C20")[0])
+
+    def test_c20_cell_with_more_than_five_citations(self):
+        cites = lambda n: ", ".join(f"`app/main.py:{i}`" for i in range(1, n + 1))
+        for n, flagged in ((5, False), (6, True)):
+            doc = build_doc({4: SECTION_BODY[4].replace("| C-1 | Cited |\n\n### 4.1",
+                                                        f"| C-1, {cites(n)} | Cited |\n\n### 4.1")})
+            report = self.run_check(doc)[1]
+            self.assertEqual("## Citation precision (advisory)" in report, flagged, n)
+        self.assertIn("cites 6 sources", report)
+        doc = build_doc({10: SECTION_BODY[10].replace("`app/main.py:6`; value omitted.", cites(6))})
+        self.assertIn("## Citation precision (advisory)", self.run_check(doc)[1])
+
+    def test_c20_cell_limit_does_not_apply_to_other_sections(self):
+        cites = ", ".join(f"`app/main.py:{i}`" for i in range(1, 8))
+        doc = build_doc({9: SECTION_BODY[9].replace("Look at `app/main.py:2`", f"Look at {cites}")})
+        self.assertNotIn("Citation precision", self.run_check(doc)[1])
+
+    def test_c20_cell_fails_under_strict(self):
+        cites = ", ".join(f"`app/main.py:{i}`" for i in range(1, 7))
+        doc = build_doc({10: SECTION_BODY[10].replace("`app/main.py:6`; value omitted.", cites)})
+        code, report, _ = self.run_check(doc, strict=True)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C20", self.rules(report))
+
+    # --- previews of template 2.7 rules (advisory, never a failure on 2.4)
+
+    PREVIEW = "## Template 2.7 previews (advisory)"
+
+    def _sev_doc(self):
+        return build_doc({15: SECTION_BODY[15].replace(
+            "| R-1 | High | S |", "| R-0 | Low | S | Tidy the module | V-1 |\n| R-1 | High | S |")})
+
+    def test_preview_c9_severity_order(self):
+        code, report, out = self.run_check(self._sev_doc())
+        self.assertEqual(code, 0, report)
+        part = report.split(self.PREVIEW)[1]
+        self.assertIn("C9", part)
+        self.assertIn("R-1", part)
+        self.assertIn("fails from template 2.7", part)
+        self.assertIn("move the row; keep its ID", part)
+        self.assertNotIn("C9", self.rules(report))
+        self.assertIn("fail from template 2.7", out)
+
+    def test_preview_c9_10_1_severity_order(self):
+        doc = build_doc({10: SECTION_BODY[10].replace(
+            "| V-1 | High |", "| V-1 | Low |").replace(
+            "\n\n### 10.2", "\n| V-2 | High | Another | `app/main.py:6` | Exposure |\n\n### 10.2")})
+        rows = [ROWS[0], ROWS[1], dict(ROWS[0], id="E-3", ref="10.1/V-2")]
+        self.write_register(AUDIT, rows)
+        doc = doc.replace("| V-1, TLS |", "| V-1, V-2, TLS |")
+        code, report, _ = self.run_check(doc)
+        self.assertIn("V-2", report.split(self.PREVIEW)[1])
+        self.assertNotIn("C9", self.rules(report))
+
+    def test_c9_15_severity_order(self):
+        """From template 2.7 an out-of-order section 15 row fails C9 (the 2.6 preview, now enforced)."""
+        code, report, _ = self.run27(self._sev_doc())
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C9"})
+        self.assertIn("15 row R-1 (High) outranks the row before it (R-0, Low)", report)
+        self.assertIn("move the row; keep its ID", report)
+        self.assertNotIn(self.PREVIEW, report)
+
+    def test_c9_10_1_severity_order(self):
+        doc = build_doc({10: SECTION_BODY[10].replace(
+            "| V-1 | High |", "| V-1 | Low |").replace(
+            "\n\n### 10.2", "\n| V-2 | High | Another | `app/main.py:6` | Exposure |\n\n### 10.2")})
+        self.write_register(AUDIT, [ROWS[0], ROWS[1], dict(ROWS[0], id="E-3", ref="10.1/V-2")])
+        doc = doc.replace("| V-1, TLS |", "| V-1, V-2, TLS |")
+        code, report, _ = self.run27(doc)
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C9"})
+        self.assertIn("10.1 row V-2 (High) outranks the row before it (V-1, Low)", report)
+        # keeping the order of equal or falling severity passes
+        ok = doc.replace("| V-1 | Low |", "| V-1 | High |").replace("| V-2 | High |", "| V-2 | Low |")
+        self.assertNotIn("C9", self.rules(self.run27(ok)[1]))
+
+    def test_preview_in_order_clean_document_has_no_preview_section(self):
+        self.write_register(dict(AUDIT, scope="the cited source"), ROWS)
+        self.assertNotIn(self.PREVIEW, self.run_check(build_doc())[1])
+
+    def test_preview_c1_bare_name_prints_the_full_path(self):
+        doc = build_doc().replace("`app/main.py:5` for visitors", "`main.py:5` for visitors")
+        code, report, _ = self.run_check(doc)
+        self.assertEqual(code, 0, report)
+        part = report.split(self.PREVIEW)[1]
+        self.assertIn("C1", part)
+        self.assertIn("`main.py` is a bare name", part)
+        self.assertIn("`app/main.py`", part)
+        self.assertIn("fails from template 2.7", part)
+        self.assertNotIn("C1", self.rules(report))
+
+    def test_c1_bare_name_fails_on_2_7(self):
+        """From template 2.7 a bare name that resolves to a file in a folder fails C1 and prints the full path;
+        the same holds for a register row's cites and a note's cites."""
+        doc = build_doc().replace("`app/main.py:5` for visitors", "`main.py:5` for visitors")
+        code, report, _ = self.run27(doc)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C1", self.rules(report))
+        self.assertIn("`main.py` is a bare name; the file is `app/main.py`. Fix: cite the full path: `app/main.py:5`",
+                      report)
+        self.assertNotIn(self.PREVIEW, report)
+        # a register row
+        self.write_register(AUDIT, [dict(ROWS[0], cites=["main.py:6"]), ROWS[1]])
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C1"})
+        self.assertIn("evidence.jsonl line 2: `main.py` is a bare name; the file is `app/main.py`. Fix: cite the "
+                      "full path: `app/main.py:6`", report)
+        # a note
+        self.write_register(AUDIT, ROWS)
+        from appdoc import notes
+        body = fill.generated_body("entry-points", self.facts, {"out_dir": self.out, "target": self.target})
+        self.write_notes(dict(self.NOTE, cites=["main.py:2"], block_sha=notes.body_sha(body)))
+        code, report, _ = self.run27()
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C1"})
+        self.assertIn("notes.jsonl line 1: `main.py` is a bare name; the file is `app/main.py`. Fix: cite the "
+                      "full path: `app/main.py:2`", report)
+
+    def test_c1_bare_name_in_register_is_a_preview_on_2_4(self):
+        self.write_register(AUDIT, [dict(ROWS[0], cites=["main.py:6"]), ROWS[1]])
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(code, 0, report)
+        self.assertIn("evidence.jsonl line 2: `main.py` is a bare name", report.split(self.PREVIEW)[1])
+
+    def test_c1_root_and_known_bare_allowed(self):
+        with open(os.path.join(self.target, "app", "Procfile"), "w") as fh:
+            fh.write("web: run\n")
+        doc = build_doc().replace("`app/main.py:5` for visitors", "`Procfile` and `appdoc-context.md:1` for visitors")
+        code, report, _ = self.run27(doc)
+        self.assertNotIn("bare name", report)
+        self.assertNotIn("C1", self.rules(report))
+
+    def test_preview_c1_root_and_known_bare_files_are_allowed(self):
+        with open(os.path.join(self.target, "app", "Procfile"), "w") as fh:
+            fh.write("web: run\n")
+        doc = build_doc().replace("`app/main.py:5` for visitors", "`Procfile` and `appdoc-context.md:1` for visitors")
+        report = self.run_check(doc)[1]
+        self.assertNotIn("bare name", report)
+
+    def test_preview_c17_scope_with_ids_or_digits(self):
+        for scope, flagged in (("sections 3-10", True), ("covers E-4 only", True),
+                               ("an independent read of the cited source", False)):
+            self.write_register(dict(AUDIT, scope=scope), ROWS)
+            report = self.run_check(build_doc())[1]
+            self.assertEqual(self.PREVIEW in report and "C17" in report.split(self.PREVIEW)[1], flagged, scope)
+            if flagged:
+                self.assertIn("describe only the method; coverage is computed", report)
+                self.assertIn("fails from template 2.7", report)
+
+    def test_previews_never_fail_a_2_4_document_even_under_strict(self):
+        doc = self._sev_doc().replace("`app/main.py:5` for visitors", "`main.py:5` for visitors")
+        self.write_register(dict(AUDIT, scope="sections 3-10"), ROWS)
+        code, report, _ = self.run_check(doc, strict=True)
+        self.assertEqual(code, 0, report)
+        part = report.split(self.PREVIEW)[1]
+        for rule in ("C1", "C9", "C17"):
+            self.assertIn(rule, part)
+
+    def test_previews_are_enforced_when_the_stamp_is_2_7(self):
+        from unittest import mock
+        doc = self._sev_doc().replace(OLD_STAMP, STAMP_2_7)
+        with mock.patch.object(spec, "TEMPLATE_VERSION", "2.7"):
+            code, report, _ = self.run_check(doc)
+        self.assertEqual(code, 2, report)
+        self.assertIn("C9", self.rules(report))
+        self.assertNotIn(self.PREVIEW, report)
+
+    def test_gates_flip_from_preview_to_failure_with_the_stamp(self):
+        """T27.25: one document with a severity-order, a bare-name and a scope defect. Stamped 2.4 it passes and
+        previews all three (even under --strict); stamped 2.7 the same three fail. Nothing else changes."""
+        old = self._sev_doc().replace("`app/main.py:5` for visitors", "`main.py:5` for visitors")
+        self.write_register(dict(AUDIT, scope="sections 3-10"), ROWS)
+        for strict in (False, True):
+            code, report, _ = self.run_check(old, strict=strict)
+            self.assertEqual(code, 0, report)
+            self.assertEqual(self.rules(report), set())
+            part = report.split(self.PREVIEW)[1]
+            for rule in ("C1", "C9", "C17"):
+                self.assertIn(f"- {rule} line", part)
+        code, report, _ = self.run27(old)
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C1", "C9", "C17"})
+        self.assertNotIn(self.PREVIEW, report)
+
     def _bad_result_report(self):
         self.write_register(AUDIT, [ROWS[0], dict(ROWS[1], result="Fine")])
         return self.run_check(build_doc())[1]
@@ -995,6 +2100,16 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(self.fired(ranged), set())
         self.with_facts(self.smell("aaaa0008", 8))
         self.assertEqual(self.fired(ranged), {"C12"})
+
+    def test_c12_only_obliging_patterns(self):
+        for pattern in ("deref-before-null-check", "dead-null-fallback", "hardcoded-production-mode",
+                        "config-year-horizon", "debug-setting-in-debug-config"):
+            self.with_facts(self.smell("aaaa0007", 7, pattern=pattern))
+            self.assertEqual(self.fired(build_doc()), set(), pattern)
+        for pattern in ("machinekey-in-config", "named-user-access-rule", "duplicate-config-key",
+                        "debug-setting-in-nondebug-config", "identifier-list-in-config"):
+            self.with_facts(self.smell("aaaa0007", 7, pattern=pattern))
+            self.assertEqual(self.fired(build_doc()), {"C12"}, pattern)
 
     def test_c12_message_prints_the_fid_pattern_location_and_fix(self):
         self.with_facts(self.smell("aaaa0009", 9))
@@ -1104,8 +2219,8 @@ class CheckTests(unittest.TestCase):
         self.run_check(build_doc())
         args = ["check", self.target, "--out", self.out]
         with contextlib.redirect_stdout(io.StringIO()):
-            self.assertEqual(main(args), 0)
-            self.assertEqual(main(args + ["--strict"]), 2)
+            self.assertEqual(run_as_2_4(main, args), 0)
+            self.assertEqual(run_as_2_4(main, args + ["--strict"]), 2)
 
     # --- appendix-a coverage
 
@@ -1125,8 +2240,8 @@ class CheckTests(unittest.TestCase):
             self.assertEqual(fill.run(self.target, self.out), 0)
             with open(path) as fh:
                 self.assertEqual(fh.read(), once)
-            check.seal_register(self.target, self.out)
-            self.assertEqual(check.run(self.target, self.out), 0)
+            seal_mod.seal_register(self.target, self.out)
+            self.assertEqual(run_as_2_4(check.run, self.target, self.out), 0)
         appendix = once.split("### A.2 Coverage")[1].split("### A.3")[0]
         for row in ("| 10.1 | 1 of 1 |", "| 7 (workflows) | 1 of 1 |", "| 4 | 0 of 1 |"):
             self.assertIn(row, appendix)
@@ -1135,10 +2250,10 @@ class CheckTests(unittest.TestCase):
                                             "result": "Supported", "cites": ["app/main.py:2"], "anchor": "line 2",
                                             "limitation": "none"}])
         with contextlib.redirect_stdout(io.StringIO()):
-            self.assertEqual(check.run(self.target, self.out), 2)
+            self.assertEqual(run_as_2_4(check.run, self.target, self.out), 2)
             self.assertEqual(fill.run(self.target, self.out), 0)
-            check.seal_register(self.target, self.out)
-            self.assertEqual(check.run(self.target, self.out), 0)
+            seal_mod.seal_register(self.target, self.out)
+            self.assertEqual(run_as_2_4(check.run, self.target, self.out), 0)
         with open(path) as fh:
             self.assertIn("| 4 | 1 of 1 |", fh.read())
 
@@ -1173,6 +2288,209 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(self.fired(build_doc()), set())
 
 
+    # --- C21: a file holding security-bearing configuration is cited with a line outside every generated block
+    MSG = "this file is mandatory input (R16); read it and cite what it shows, redacting values"
+
+    def _web_config(self):
+        with open(os.path.join(self.target, "Web.config"), "w") as fh:
+            fh.write("\n".join(f"<!-- {i} -->" for i in range(1, 11)) + "\n")
+
+    def cfg(self, kind="security_setting", line=3, path="Web.config", **detail):
+        return {"kind": kind, "stack": "generic", "path": path, "line": line, "name": f"{kind}@{line}", "detail": detail}
+
+    def doc_with(self, sentence):
+        return build_doc({9: SECTION_BODY[9] + "\n\n" + sentence})
+
+    def c21(self, doc, **kw):
+        self._web_config()
+        code, report, _ = self.run_check(doc, **kw)
+        return code, report, "C21" in self.rules(report)
+
+    def test_c21_uncited_security_config_fails(self):
+        for f in (self.cfg(), self.cfg("access_rule"), self.cfg("config_external"),
+                  self.cfg("config_key", role="app", secret_location=True)):
+            self.with_facts(f)
+            code, report, hit = self.c21(build_doc())
+            self.assertTrue(hit, (f["kind"], report))
+            self.assertEqual(code, 2)
+            self.assertIn(self.MSG, report)
+            self.assertIn("Web.config", report)
+        self.with_facts(self.cfg())
+        self.assertFalse(self.c21(self.doc_with("Authentication is set at `Web.config:3`."))[2])
+
+    def test_c21_vacuous_without_such_facts(self):
+        self.with_facts(self.cfg("config_key", role="app", secret_location=False))
+        self.assertFalse(self.c21(build_doc())[2])
+
+    def test_c21_unlined_citation_fails(self):
+        self.with_facts(self.cfg())
+        self.assertTrue(self.c21(self.doc_with("Authentication is set in `Web.config`."))[2])
+
+    def test_c21_generated_16_6_citation_does_not_satisfy(self):
+        self.with_facts(self.cfg("config_key", role="app", secret_location=True, line=4))
+        doc = self.fill_doc(build_doc())
+        self.assertIn("Web.config:4", doc.split("appdoc:generated config-reference")[1])
+        self.assertTrue(self.c21(build_doc())[2])
+
+    def test_c21_unparsed_file_needs_path_only(self):
+        self.with_facts(self.cfg("config_unparsed", line=None, reason="malformed"))
+        self.assertTrue(self.c21(build_doc())[2])
+        self.assertFalse(self.c21(self.doc_with("`Web.config` could not be parsed."))[2])
+        # a file that also holds a security setting still needs a line
+        self.with_facts(self.cfg("config_unparsed", line=None, reason="malformed"), self.cfg())
+        self.assertTrue(self.c21(self.doc_with("`Web.config` could not be parsed."))[2])
+
+    def test_c21_ignores_wording(self):
+        self.with_facts(self.cfg())
+        self.assertFalse(self.c21(self.doc_with("Not reviewed: `Web.config:3`."))[2])
+
+
+    # --- C22: areas are 4.1 folders; state-changing and unprotected handler files are cited
+    C22_AREA = "Areas/Billing"
+    C22_HANDLER = f"{C22_AREA}/Controllers/InvoicesController.cs"
+
+    def _area_target(self):
+        os.makedirs(os.path.join(self.target, "Areas", "Billing", "Controllers"), exist_ok=True)
+        with open(os.path.join(self.target, self.C22_HANDLER), "w") as fh:
+            fh.write("// handler\n")
+
+    def _area_doc(self, with_4_1_row):
+        row = ("\n| `Areas/Billing/` | 1 | F-1 | C-1 | Billing screens in `Areas/Billing/Controllers/InvoicesController.cs:1` | Cited |"
+               if with_4_1_row else "")
+        return build_doc({3: SECTION_BODY[3] + f"\n- Invoices: `{self.C22_HANDLER}:1`.",
+                          4: SECTION_BODY[4] + row})
+
+    def _area_entry(self, **detail):
+        d = {"mvc_area_path": self.C22_AREA, "reach": "role_restricted", "state_changing": "false"}
+        d.update(detail)
+        return self.entry(self.C22_HANDLER, **d)
+
+    def test_c22_area_missing_from_4_1_fails(self):
+        self._area_target()
+        self.with_facts(self._area_entry(), {"kind": "file", "path": self.C22_HANDLER, "line": None,
+                                             "name": self.C22_HANDLER, "detail": {}})
+        code, report, _ = self.run_check(self._area_doc(False))
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C22"})
+        self.assertIn("Areas/Billing/", report)
+        self.assertIn("4.1", report)
+        self.assertEqual(self.fired(self._area_doc(True)), set())
+
+    def test_c22_root_area_not_demanded(self):
+        self._area_target()
+        self.with_facts(self._area_entry(mvc_area_path=""), self.entry("app/main.py", mvc_area_path="."),
+                        self.entry(self.C22_HANDLER + "x", reach="role_restricted"))
+        self.assertEqual(self.fired(self._area_doc(False)), set())
+
+    def _open(self, path="svc/open.py", **detail):
+        os.makedirs(os.path.join(self.target, "svc"), exist_ok=True)
+        with open(os.path.join(self.target, path), "w") as fh:
+            fh.write("pass\n")
+        return self.entry(path, **detail)
+
+    def test_c22_unguarded_file_uncited_fails(self):
+        cites = build_doc({3: SECTION_BODY[3] + "\n- Open handlers: `svc/open.py:1`."})
+        for detail in ({"reach": "no_app_restriction"}, {"reach": "signed_in_any"}, {"reach": "unknown"},
+                       {"reach": "role_restricted", "state_changing": "true"}):
+            self.with_facts(self._open(**detail))
+            code, report, _ = self.run_check(build_doc())
+            self.assertEqual(code, 2, (detail, report))
+            self.assertEqual(self.rules(report), {"C22"}, (detail, report))
+            self.assertIn("`svc/open.py`", report)
+            self.assertIn("Auth attributes:", report)
+            self.assertEqual(self.fired(cites), set(), detail)
+        self.with_facts(self._open(reach="no_app_restriction", test=True))
+        self.assertEqual(self.fired(build_doc()), set())
+        self.with_facts(self._open(reach="unknown", type="desktop"))
+        self.assertEqual(self.fired(build_doc()), set())
+
+    def test_c22_readonly_guarded_stays_advisory(self):
+        self.with_facts(self._open(reach="role_restricted", state_changing="false"))
+        code, report, _ = self.run_check(build_doc())
+        self.assertEqual(code, 0, report)
+        self.assertIn("## Entry points not cited (advisory)", report)
+        self.assertNotIn("C22", report)
+        code, report, _ = self.run_check(build_doc(), strict=True)
+        self.assertEqual(self.rules(report), {"C13"})
+
+    def test_c22_shares_c13_map(self):
+        self.with_facts(self._open(reach="no_app_restriction"))
+        code, report, _ = self.run_check(build_doc(), strict=True)
+        self.assertEqual(self.rules(report), {"C13", "C22"}, report)
+        # a bare file name that resolves to the one file cites it for both rules
+        bare = build_doc({3: SECTION_BODY[3] + "\n- Open handlers: `open.py:1`."})
+        self.assertEqual(self.run_check(bare, strict=True)[0], 0)
+        # C13 still groups by folder: one folder, one file
+        got = check._uncited_entry_points(self.target, {"__out__": self.out}, self.facts, [])
+        self.assertEqual(got, [("app/", 1, ["app/main.py"]), ("svc/", 1, ["svc/open.py"])])
+
+    def test_c22_undeclared_candidates_strict_only(self):
+        cand = {"kind": "guard_candidate", "stack": "aspnet", "path": "app/main.py", "line": 3, "name": "Gate",
+                "detail": {"attribute": "Gate", "uses": 4, "arity_set": [0]}}
+        self.with_facts(cand, dict(cand, name="Test", path="tests/t.py", detail=dict(cand["detail"], test=True)))
+        code, report, out = self.run_check(build_doc())
+        self.assertEqual(code, 0, report)
+        self.assertIn("1 undeclared guard candidate; declare with \"Auth attributes:\" in appdoc-context.md", report)
+        self.assertNotRegex(report, r"(?m)^## C22")
+        code, report, _ = self.run_check(build_doc(), strict=True)
+        self.assertEqual(code, 2, report)
+        self.assertEqual(self.rules(report), {"C22"})
+        self.assertIn("1 undeclared guard candidate; declare with \"Auth attributes:\" in appdoc-context.md", report)
+
+    # --- C23: Unknown that the repository may answer (auth topics)
+    def test_c23_auth_topic_advisory(self):
+        cited = SECTION_BODY[9] + "\n\nAuthentication is set at `Web.config:3`."
+        row14 = ("| Q-1 | Unknown: which identity provider signs users in | Access | Ask the team | Unknown | High |\n"
+                 "| Q-2 | Unknown: who deploys the service | Releases | Ask the team | Unknown | Medium |")
+        header14 = SECTION_BODY[14].split("\n")[0] + "\n" + SECTION_BODY[14].split("\n")[1] + "\n"
+        doc = build_doc({9: cited, 14: header14 + row14})
+        para = build_doc({9: cited, 5: SECTION_BODY[5] + "\n\nThe authentication mechanism: Unknown - see Open questions."})
+        self._web_config()
+        for text in (doc, para):
+            self.with_facts(self.cfg())
+            code, report, _ = self.run_check(text)
+            self.assertEqual(code, 0, report)
+            self.assertIn("## Unknown that the repository may answer (advisory)", report)
+            self.assertIn("the repository may answer this: Web.config:3 (security_setting)", report)
+            code, report, _ = self.run_check(text, strict=True)
+            self.assertEqual(code, 2, report)
+            self.assertEqual(self.rules(report), {"C23"})
+        self.with_facts(self.cfg())
+        code, report, _ = self.run_check(build_doc({9: cited}))
+        self.assertNotIn("may answer", report)   # the base Q-1 asks who deploys: no auth topic
+        self.with_facts()
+        self.assertNotIn("may answer", self.run_check(doc)[1])   # no security_setting or access_rule Fact: nothing to name
+
+    # --- the C20 family: sentence and range advisories
+    def test_c20_cite_in_not_reviewed_sentence_advisory(self):
+        for phrase in ("was not reviewed", "was not inspected", "is excluded", "was not read"):
+            doc = build_doc({3: SECTION_BODY[3] + f"\n- `app/main.py:9` {phrase}."})
+            code, report, _ = self.run_check(doc)
+            self.assertEqual(code, 0, (phrase, report))
+            self.assertIn("this sentence cites a file it says was not reviewed", report)
+            self.assertNotIn("C21 requires", report)
+            code, report, _ = self.run_check(doc, strict=True)
+            self.assertEqual(self.rules(report), {"C20"}, report)
+        # a sentence without the phrase, or a phrase in another sentence, is quiet
+        doc = build_doc({3: SECTION_BODY[3] + "\n- `app/main.py:9` is read. Nothing was excluded."})
+        self.assertNotIn("not reviewed", self.run_check(doc)[1])
+
+    def test_c20_mandatory_input_hint(self):
+        self._web_config()
+        self.with_facts(self.cfg())
+        doc = build_doc({9: SECTION_BODY[9] + "\n\n`Web.config:3` was not reviewed."})
+        report = self.run_check(doc)[1]
+        self.assertIn("this sentence cites a file it says was not reviewed; C21 requires a lined citation", report)
+
+    def test_c20_single_line_range_advisory(self):
+        doc = build_doc({3: SECTION_BODY[3] + "\n- Handler at `app/main.py:5-5`."})
+        code, report, _ = self.run_check(doc)
+        self.assertEqual(code, 0, report)
+        self.assertIn("write `:5`", report)
+        self.assertEqual(self.rules(self.run_check(doc, strict=True)[1]), {"C20"})
+        self.assertNotIn("write `:", self.run_check(build_doc({3: SECTION_BODY[3] + "\n- Handler at `app/main.py:5-6`."}))[1])
+
+
 class Frozen22Tests(unittest.TestCase):
     """The v2.2 outputs of two Targets, kept as they were written."""
 
@@ -1184,7 +2502,7 @@ class Frozen22Tests(unittest.TestCase):
                     self.assertEqual(check.run(os.path.join(tmp, "target"), out), 2)
                 with open(os.path.join(out, "check-report.md")) as fh:
                     report = fh.read()
-            self.assertIn("not on template 2.4 (stamp: 2.2)", report)
+            self.assertIn(f"not on template {spec.TEMPLATE_VERSION} (stamp: 2.2)", report)
             self.assertNotRegex(report, r"(?m)^## C(8|9|10|11) ")
 
     def test_restamped_2_4_still_fails_on_the_missing_blocks_sections_and_line(self):
@@ -1192,7 +2510,7 @@ class Frozen22Tests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as tmp:
                 out = self._copy(repo, tmp, restamp=True)
                 with contextlib.redirect_stdout(io.StringIO()):
-                    self.assertEqual(check.run(os.path.join(tmp, "target"), out), 2)
+                    self.assertEqual(run_as_2_4(check.run, os.path.join(tmp, "target"), out), 2)
                 with open(os.path.join(out, "check-report.md")) as fh:
                     report = fh.read()
             rules = set(re.findall(r"^## (C\d+) ", report, re.M))
@@ -1210,10 +2528,70 @@ class Frozen22Tests(unittest.TestCase):
             with open(os.path.join(HERE, "fixtures", "docs-2.2", repo, name), encoding="utf-8", newline="") as fh:
                 text = fh.read()
             if restamp and name.endswith(".md"):
-                text = text.replace("<!-- appdoc:template 2.2 -->", spec.STAMP)
+                text = text.replace("<!-- appdoc:template 2.2 -->", OLD_STAMP)
             with open(os.path.join(out, name), "w", encoding="utf-8", newline="") as fh:
                 fh.write(text)
         return out
+
+
+class RuleRegistryTests(unittest.TestCase):
+    """F2: one registry; every rule check.py can raise is in it."""
+
+    def test_every_raised_rule_is_registered(self):
+        with open(check.__file__, encoding="utf-8") as fh:
+            src = fh.read()
+        raised = set(re.findall(r'\badd(?:27)?\(\s*"(C\d+)"', src)) | set(re.findall(r'problems\["(C\d+)"\]', src))
+        self.assertIn("C17", raised)
+        self.assertEqual(sorted(raised - {r.id for r in check.RULES}), [])
+
+    def test_rule_range_matches_registry(self):
+        ids = [r.id for r in check.RULES]
+        self.assertEqual(len(ids), len(set(ids)))
+        self.assertEqual(check.RULE_RANGE, "C1-C" + str(max(int(i[1:]) for i in ids)))
+        self.assertEqual(list(check.RULE_TITLES), ids)
+        self.assertEqual(list(check.RULE_SUMMARIES), ids)
+        self.assertTrue(all(r.title and r.summary for r in check.RULES))
+        self.assertEqual(set(check.RULE_FLAGS), {r.id for r in check.RULES if r.flags})
+        self.assertEqual(check.PREVIEW_RULES, {r.id: r.preview for r in check.RULES if r.preview})
+
+    def test_c17_is_titled_and_summarised(self):
+        self.assertTrue(check.RULE_TITLES["C17"])
+        self.assertIn("C17", check.RULE_SUMMARIES)
+
+
+class ConfigBlockCountTests(unittest.TestCase):
+    """F3: the 16.6 count is checked by the exact block comparison; its message says which count differs."""
+
+    @staticmethod
+    def _doc(*names):
+        return {"stacks": [], "facts": [{"kind": "config_key", "stack": "s", "path": "a.py", "line": i + 1, "name": n,
+                                         "detail": {"role": "app"}} for i, n in enumerate(names)]}
+
+    @staticmethod
+    def _raw(body):
+        return ("<!-- appdoc:generated config-reference -->\n" + body + "\n<!-- /appdoc:generated config-reference -->\n")
+
+    def _problems(self, doc_blocks_from, facts):
+        found = []
+        body = fill.render_block("config-reference", doc_blocks_from)
+        check._c7_blocks(self._raw(body), {}, facts, None, None, lambda *a: found.append(a))
+        return [f for f in found if "config-reference" in f[2]]
+
+    def test_c7_config_block_count_message(self):
+        got = self._problems(self._doc("A"), self._doc("A", "B"))
+        self.assertEqual(len(got), 1, got)
+        rule, _line, msg, fix = got[0]
+        self.assertEqual(rule, "C7")
+        self.assertIn("2 application keys", msg)       # what the Facts expect
+        self.assertIn("1 shown", msg)                  # what the block holds
+        self.assertIn("appdoc fill", fix)
+
+    def test_equal_block_raises_nothing(self):
+        self.assertEqual(self._problems(self._doc("A", "B"), self._doc("A", "B")), [])
+
+    def test_no_prose_parser_remains(self):
+        self.assertFalse(hasattr(check, "_c7_config_count"))
+        self.assertFalse(hasattr(check, "_CONFIG_SHOWN_RE"))
 
 
 if __name__ == "__main__":

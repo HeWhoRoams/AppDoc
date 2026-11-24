@@ -1,9 +1,49 @@
 # AppDoc v2.4.0 → v2.5.0 Remediation Plan
 
-**Date:** 2026-11-13
+**Date:** 2026-11-13 (rev 2, 2026-11-23: status and amendments below)
 **Basis:** `docs/diagnostic-2.4-comparison.md` (objective metrics + four independent deep-dives of the public 2.4 examples) and a line-level map of `appdoc/check.py`, `appdoc/fill.py`, `appdoc/extract.py`, `appdoc/facts.py`, `appdoc/scan.py` and `appdoc/stacks/*.py`.
 **Goal:** fix the six systemic findings so the same class of failure cannot come back on a new run, a new Target or a new Stack — not just patch the four examples.
 **Format:** follows the house remediation-plan convention (`remediation-plan-rev2.md`); every item carries a failing test (TDD) and a corpus case.
+
+---
+
+## Status and amendments (rev 2, 2026-11-23)
+
+Checked against `origin/main` at `2e59393` (version 2.4.0, schema `/5`). `main` now holds the `v2.5.0` branch merged with the performance and integration work, so **there is one line**. No `v2.4.0` or `v2.5.0` tag exists on the remote.
+
+### Implementation status
+
+| Item | State on `main` | Evidence |
+|---|---|---|
+| 0.1 diagnostic in repo | Done | `docs/diagnostic-2.4-comparison.md`, `tests/diag_metrics.py`, `tests/test_diag_metrics.py` |
+| 0.2 failure corpus (`tests/corpus/`, `tests/test_corpus.py`) | **Not started** | no `tests/corpus/` |
+| 0.3 pin the metric baseline | Partly (the 2.4 values are pinned; confirm the "before" values still match) | `tests/test_diag_metrics.py::test_pinned_baseline` |
+| 1.1 C14 | **Done** | `check._c14_unknowns` (commits ed4c099, db2589e) |
+| 1.2 C15 | **Done** (English "N of M" matching, failing; 2.7 replaces it with count markers) | `check._c15_register_counts` (a7e2921) |
+| 1.3 C16 | **Done** (advisory; fails under `--strict`) | `check` (8deea1b) |
+| 1.4 owner context and advisory | **Not started.** `appdoc-context.md` is read today only for its ```` ```never-mention ```` block (`check._never_mention`); no `owner_file` Fact is emitted from it and there is no advisory | `check.py`, `citations.OWNER_CONTEXT` |
+| 1.5 config role split (`env`, `ci`) | **Not started.** The post-pass only promotes `unclassified` to `app`. A `ci` role already exists for CI file names (`generic.config_role`) | `extract.extract`, `generic.py` |
+| 2.1 aspnet_core Razor `ui_page`, EF `data_access`, HttpClient `external_call` | **Not started.** `ui_page` is emitted for XAML only | `aspnet_core.py` |
+| 2.2 Go connection, schema, templates | **Not started** | `go.py` |
+| 2.3 Flask SQLAlchemy connection | **Not started.** The shared integration catalog runs in the Flask stack but has no SQLAlchemy entry (database connections stay in the stack code) | `python_flask.py`, `stacks/integrations.py` |
+| 2.4 conformance pins | **Not started** | `tests/test_conformance.py` |
+| Phase 3 release (schema `/6`, ADRs 0011/0012, examples, CHANGELOG) | **Not started.** No ADR past 0010 except 0016 | `docs/adr/` |
+
+Remaining effort: about **4.5 d** of the original 6 d (C14–C16 took about 10 h).
+
+### What changed underneath the plan
+
+`main` carries unreleased work that this plan was written before: the performance phases 0–4 (a process pool, `--workers`, a content-hash cache, `--skip-tests`, `--no-ownership`, `--ownership-top`) and the integration catalog and `System Connections` view (`stacks/integrations.py`, `appdoc/integration.py`). It has no version bump and a `## Unreleased` CHANGELOG section. Amendments:
+
+- **A-1 Release content.** 2.5.0 ships that unreleased work too. It is additive (the `connection.type` vocabulary widened; no `SCHEMA` change of its own), and the `/6` bump below covers it. The CHANGELOG 2.5.0 entry absorbs `## Unreleased`.
+- **A-2 R21 (new; superseded in 2.6 §4.6, no manual bump remains): extractor logic changes bump `extract.EXTRACTOR_VERSION`.** The per-file cache key is salted with `SCHEMA` and this constant. A change to what a Stack emits for a file is invisible to the cache unless one of them changes. Every Phase 2 item, and 1.5 if it adds a per-file detail key, bumps it in the same commit. (2.6 §4.6 replaces the manual constant with the bundle hash.) Test: `tests/test_cache.py::test_bumped_extractor_version_changes_key` already exists; add `test_phase2_items_bump_extractor_version`, which compares the constant with a pinned value in the Phase 3 commit.
+- **A-3 The cache stores pre-promotion Facts** (`extract.py`: "the cache stores pre-promotion per-file facts, so warm==cold"). Therefore 1.5's role split must stay in the **post-pass**, and the read kind it needs (env var, CI file, other) must be a **per-file detail** emitted by the Stacks and recorded in `DETAIL_KEYS["config_key"]` (today `role secret_location source use via`; use `via` if it already names the read call, otherwise add `read_kind`). It must not depend on another file's content.
+- **A-4 Phase 2 gets parallel and cache coverage for free but must be proven.** Each new sample file runs through `test_core::test_two_runs_are_byte_identical_for_every_sample` and `test_parallel`. Add one assertion per new capability that a warm-cache run (`use_cache=True` twice) and a `--workers 2` run give byte-identical `facts.json`.
+- **A-5 `appdoc-context.md` has one parser.** 1.4 adds `Ownership:` lines; the file already carries a `never-mention` block, and 2.7 adds `Audit floor:` and 2.8 adds `Auth attributes:`, `Production config:` and `Reference year:`. Implement 1.4 with a small `appdoc/context.py` that returns every directive in one pass (2.8 W13 extends it) rather than a second ad-hoc reader beside `check._never_mention`.
+- **A-6 Line numbers in this plan predate the performance refactor** (`extract.py:99-114` is now a function `extract.extract` with `_extract_file`, `_extract_all` and a post-pass). Locate by function name.
+- **A-7 Examples layout.** `examples/` holds `eShop`, `flaskr-tdd`, `gitea`, `spring-petclinic` (2.4 runs at the old names) and `*-2.4` copies. 2.5 regenerates the four unsuffixed folders; 2.6 §7.2 migrates to `current/` and `previous/`.
+- **A-8 Tags.** Create `v2.4.0` at `9241c2f` now (it exists in history and was never tagged), and `v2.5.0` at the 2.5 release commit (2.6 §3.0). The gate YAML still tells adopters to pin a tag that does not exist.
+- **A-9 Amendments proposed in 2.6 §10 (A1–A3).** A1 (tags) is A-8 here. A2 (fix the gate YAML clone path and `--out`) and A3 (make C15 advisory) are **not applied**; C15 shipped as a failure. This is a recorded R6 exception; 2.7 demotes it.
 
 ---
 
@@ -48,6 +88,7 @@ Every item is checked against these in review (carried forward from rev2, R1–R
 - **R6 Version honestly.** A change to `facts.json` output bumps `SCHEMA`. A change that fails committed documents bumps `TEMPLATE_VERSION`.
 - **R7 House constraints.** Standard library only, `unittest` only, Python 3.10+, Windows and Linux.
 - **R8 (new) A lint that is a heuristic is advisory, not a gate.** A rule that depends on English quantifiers or a fuzzy pattern is advisory by default and may fail only under `--strict`. It can never be the only thing standing between a doc and a PASS.
+- **R21 (added in rev 2; superseded in 2.6 §4.6) The cache salt is `schema` plus `version.bundle_hash()`, so nothing is bumped by hand.** See A-2 for the interim rule.
 - **R9 (new) The Check re-validates prose against the register, not just structure.** Any hand-written sentence that states a count of register rows or Facts is checked against the live value (RC-A).
 
 ---
@@ -137,7 +178,7 @@ Every item is checked against these in review (carried forward from rev2, R1–R
    - an **env-var read** (`os.getenv`, `os.environ`, `os.lookupenv`, `Environment.GetEnvironmentVariable`, `getenv`, `os.Getenv`) → role `env`;
    - a read whose source file is a CI/build file (`.github/`, `Jenkinsfile`, `azure-pipelines*`, `*.pipeline.*`) → role `ci`;
    - any other code read of a config file → role `app` (the current behaviour).
-2. `secret_location` is set `True` only for role `app` keys (an env var is not an application secret). This removes the gitea mis-flags (`GO`, `SSH_ORIGINAL_COMMAND`).
+2. `secret_location` is never set on `env` or `ci` keys (an env var is not an application secret). It is kept on `app` and `unclassified` keys, so an INI `[db] DB_PASSWORD` that no code reads keeps the flag. This removes the gitea mis-flags (`GO`, `SSH_ORIGINAL_COMMAND`).
 3. `fill.py::_config_reference` (line 155) already filters `role == "app"`, so `env`/`ci` keys drop out of the 16.6 block automatically. Add to its trailer:
    `f"{env_n} env-var keys and {ci_n} CI keys are excluded from the application table (see facts.json)"`.
 4. The 16.6 count (C7 `_c7_counts`) now compares against the `app`-role key count, so the gitea 785-vs-758 mismatch is resolved by construction.

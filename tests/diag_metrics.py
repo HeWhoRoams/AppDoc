@@ -2,7 +2,7 @@
 emits a comparable metric table. Stdlib only.
 
 Usage: python tests/diag_metrics.py <base_dir> <name1> <name2> ...
-  where each <name> is a folder under <base_dir> (e.g. examples/flaskr-tdd-2.4).
+  where each <name> is a folder under <base_dir> (e.g. examples/previous or examples/current).
 """
 from __future__ import annotations
 import json, os, re, sys, collections
@@ -111,6 +111,49 @@ def analyze(base, name):
         "words": words, "sections": secs, "unknown_Q": unk, "vuln_V": vul, "smells_S": sm,
         "scan": cov, "retired_candidates": ret,
     }
+
+def _json(path):
+    try:
+        return json.loads(_read(path))
+    except ValueError:
+        return {}
+
+def baselines(base, name):
+    """Facts-level numbers the 2.6.0 work must move, read from one example folder.
+
+    Tolerant of both layouts: 2.5.0 examples carry `generator` in facts.json and no provenance.json;
+    2.6.0 examples carry provenance.json instead.
+    """
+    d = os.path.join(base, name)
+    doc = _json(os.path.join(d, "facts.json"))
+    narrative = _read(os.path.join(d, "application-documentation.md"))
+    report = _read(os.path.join(d, "check-report.md"))
+    scan = (doc.get("target") or {}).get("scan") or {}
+    retired = scan.get("retired_candidates") or []
+    cites = CITE_LINE.findall(report)
+    prov = _json(os.path.join(d, "provenance.json"))
+    m = re.search(r"(\d+) keys? in (\d+) file\S* were not classified", narrative)
+    return {
+        "retired_name": sum(1 for c in retired if c.get("signal") == "name"),
+        "retired_content": sum(1 for c in retired if c.get("signal") == "content"),
+        "duplicate_pairs": len(scan.get("duplicate_folders") or []),
+        "capabilities": sorted({c for st in doc.get("stacks", []) for c in (st.get("detail") or {}).get("capabilities") or []}),
+        "stacks": len(doc.get("stacks", [])),
+        "secret_locations": sum(1 for f in doc.get("facts", [])
+                                if f.get("kind") == "config_key" and (f.get("detail") or {}).get("secret_location")),
+        "not_classified": (int(m.group(1)), int(m.group(2))) if m else None,
+        "bare_name_cites": sum(1 for _, path, _, _ in cites if "/" not in path.strip("/")),
+        "cites_total": len(cites),
+        "generator": doc.get("generator") or prov.get("generator"),
+    }
+
+def config_reference(base, name):
+    """(application keys shown, application keys total, (keys, files) not classified or None) from section 16.6."""
+    narrative = _read(os.path.join(base, name, "application-documentation.md"))
+    m = re.search(r"Shown (\d+) of (\d+) application keys", narrative)
+    nc = re.search(r"(\d+) keys? in (\d+) file\S* were not classified", narrative)
+    return (int(m.group(1)) if m else 0, int(m.group(2)) if m else 0,
+            (int(nc.group(1)), int(nc.group(2))) if nc else None)
 
 def main():
     base = sys.argv[1]

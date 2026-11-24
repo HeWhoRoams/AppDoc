@@ -1,0 +1,128 @@
+{
+  "pattern": "post-without-antiforgery",
+  "target": "targets/contoso-labels",
+  "labelled_by": "author",
+  "second_labeller": null,
+  "note": "Labels are by the author of the detector, on invented code (Contoso, Fabrikam; no real application). A second person must re-label this set independently and record the name in second_labeller before this heuristic may oblige C12; until then it stays a candidate in the summary (plan 2.8 W11 part C, T28.75). label tp: a hit at this site is correct; fp: a hit at this site would be a false positive.",
+  "labels": [
+    {
+      "path": "Areas/Staff/Controllers/RolesController.cs",
+      "line": 7,
+      "text": "public class RolesController : Controller",
+      "label": "tp",
+      "reason": "a role-guarded POST with no token validation"
+    },
+    {
+      "path": "Areas/Staff/Controllers/SettingsController.cs",
+      "line": 7,
+      "text": "public class SettingsController : Controller",
+      "label": "tp",
+      "reason": "a POST with no token validation"
+    },
+    {
+      "path": "Areas/Staff/Controllers/TemplatesController.cs",
+      "line": 7,
+      "text": "public class TemplatesController : Controller",
+      "label": "tp",
+      "reason": "two POSTs with no token validation"
+    },
+    {
+      "path": "Areas/Staff/Controllers/UsersController.cs",
+      "line": 7,
+      "text": "public class UsersController : Controller",
+      "label": "tp",
+      "reason": "two POSTs with no token validation"
+    },
+    {
+      "path": "Controllers/AccountsController.cs",
+      "line": 6,
+      "text": "public class AccountsController : Controller",
+      "label": "tp",
+      "reason": "a role-guarded POST with no token validation"
+    },
+    {
+      "path": "Controllers/CustomersController.cs",
+      "line": 6,
+      "text": "public class CustomersController : Controller",
+      "label": "tp",
+      "reason": "a POST with no token validation"
+    },
+    {
+      "path": "Controllers/NotesController.cs",
+      "line": 6,
+      "text": "public class NotesController : Controller",
+      "label": "tp",
+      "reason": "a POST with no token validation"
+    },
+    {
+      "path": "Controllers/OrdersController.cs",
+      "line": 6,
+      "text": "public class OrdersController : Controller",
+      "label": "tp",
+      "reason": "two POSTs with no token validation"
+    },
+    {
+      "path": "Controllers/TagsController.cs",
+      "line": 6,
+      "text": "public class TagsController : Controller",
+      "label": "tp",
+      "reason": "a POST with no token validation"
+    },
+    {
+      "path": "Controllers/SafeOwnController.cs",
+      "line": 7,
+      "text": "public class SafeOwnController : Controller",
+      "label": "fp",
+      "reason": "own [ValidateAntiForgeryToken] on the POST"
+    },
+    {
+      "path": "Controllers/SafeClassController.cs",
+      "line": 8,
+      "text": "public class SafeClassController : Controller",
+      "label": "fp",
+      "reason": "class-level [ValidateAntiForgeryToken]"
+    },
+    {
+      "path": "Controllers/SafeChildController.cs",
+      "line": 7,
+      "text": "public class SafeChildController : TokenBaseController",
+      "label": "fp",
+      "reason": "token validation inherited from an in-Target base class"
+    },
+    {
+      "path": "Controllers/SafeValidatorController.cs",
+      "line": 8,
+      "text": "public class SafeValidatorController : Controller",
+      "label": "fp",
+      "reason": "a Target attribute whose body calls AntiForgery.Validate"
+    },
+    {
+      "path": "Controllers/SafeInlineController.cs",
+      "line": 8,
+      "text": "public class SafeInlineController : Controller",
+      "label": "fp",
+      "reason": "AntiForgery.Validate() in the action body"
+    },
+    {
+      "path": "Controllers/VendorChildController.cs",
+      "line": 8,
+      "text": "public class VendorChildController : FabrikamBaseController",
+      "label": "fp",
+      "reason": "an unresolved external base class: no absence claim"
+    },
+    {
+      "path": "Controllers/ApiItemsController.cs",
+      "line": 7,
+      "text": "public class ApiItemsController : ApiController",
+      "label": "fp",
+      "reason": "a Web API controller is out of scope"
+    },
+    {
+      "path": "Controllers/ReportsController.cs",
+      "line": 6,
+      "text": "public class ReportsController : Controller",
+      "label": "fp",
+      "reason": "own [ValidateAntiForgeryToken] on the POST"
+    }
+  ]
+}

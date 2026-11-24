@@ -2,6 +2,129 @@
 
 ## Unreleased
 
+(2.8.0 slice 1 in progress; interim version 2.7.1.dev1 until the examples rotate.)
+
+## 2.7.1
+
+### Changed
+- Six 2.7.0 additions that the 2.7 plan did not list are now recorded in `docs/remediation-plan-2.7.md` ("Changes made during implementation"): the C1 extensions for Go, protobuf, Ruby, PHP, Kotlin and Terraform files; `audit-plan --check`; the "Fix advisories" run step; auditors covering every row of a sampled section after any edit; `Audit floor:` percent syntax; and fill-before-seal (S6.1). ADR 0015 has an amendment for the last three audit rules.
+- `doc_sha` masks the opaque generated blocks only. `scan-coverage` and `config-reference` stay in the fingerprint, so a Facts change that alters them reseeds the audit sample. Documented in ADR 0015 and plan 3.1; behaviour unchanged.
+- The C17 scope rule is documented as implemented: any single digit in the scope line fails, not only a digit sequence.
+
+- Per-row audit coverage. `audit-plan` plans one key `<section>/<slug>` per row: every 10.2 control with Status Present, every 16.5 and 17 row that is not Unknown or Not applicable, and the sampled section 9 rows (same floor, seeded by `doc_sha`). The slug is the first cell, lower-cased, non-alphanumerics to `-`, repeats suffixed `-2`, `-3`. The register `ref` of such a row is its key (`10.2/read-only-db-role`); C11 checks the key against the table, and C19 under `--require-audit` names each uncovered row and the ref to use. The plan file keeps the schema `appdoc-audit-plan/1` (the `ids` hold row keys and `items` the first cells). A.2 counts planned, audited and extra per row.
+- `seal` also stamps per-row keys with `claim_sha` and `sealed_by`; Answerable, Dismissed and other section-level rows stay unsealed by design, and Appendix A and the comparison diagnostic say so (they no longer call them "mostly Corrected or Downgraded rows").
+- Appendix A.1 prints one line, `Not audited: generated and opaque blocks (entry-points, scheduled-jobs, closed-questions, appendix-a)`, from `OPAQUE_BLOCKS`. Only the opaque blocks are unaudited; `scan-coverage` and `config-reference` are audited. Appendix A is opaque, so `doc_sha` is unchanged.
+
+- C9 section 17: the Command cell holds exactly one backticked command. A chain (several backtick spans, or `a`, then `b`) fails with a message to use one command or one wrapper script. Corpus case `build-command-chain`.
+
+- Internal refactors, no behaviour change (Facts and rendered output identical): one ID-class table (`template_spec.ID_CLASSES`) replaces the prefix-to-section maps in `audit_plan.py` and `check.py`; a typed `audit_plan.Floor`; upgrade steps as data (`upgrade.py` dispatch table and `template_spec` table helpers); `check.py` split into `fingerprint.py` (`document_text`, `doc_sha`, `claim_sha`) and `seal.py` (`seal_register`, `seal_notes`, `expand_citations`); `mask_blocks` moved to `docmodel`; the `check._read_text` alias removed; `tests/test_layering.py` pins the module import edges.
+- Finding candidates that a 10.1 row cites are audited through that row: the auditor checks that the cited candidate id and lines support the claim (SKILL.md audit step).
+- Examples re-audited independently for per-row keys (flaskr-tdd 63 live rows, spring-petclinic 80, eShop 157, gitea 159), sealed with `--audit --date 2026-11-24`; `examples/previous` is the 2.7.0 set. Facts are byte-identical to 2.7.0 apart from the generator field and the bundle hash. The audit corrected cells in the Narratives (wrong cited lines, an overclaiming symptom check, a mis-ordered upgrade procedure), which moved some citation counts.
+
+### Notes
+- **Known limitation:** the cross-OS Windows hash job has not run for 2.7.1 (the CI matrix already includes `windows-latest`; `tests/test_windows_shims.py` covers newline and path normalisation on Linux).
+- **Upgrade note:** a document audited under 2.7.0 fails C19 under `--require-audit` until its register has a row for each planned key in 10.2 (Present controls), 16.5, 17 and the sampled section 9 rows. Run `appdoc audit-plan`, audit the rows it names and add them with the refs it prints, then `appdoc seal --audit --date YYYY-MM-DD`. The old one-row-per-section refs (`10.2`, `16.5`, `17`, `9`) stay valid but cover nothing. A section 17 Command cell with more than one command (a chain such as `npm ci`, then `npm start`) fails C9 and must become one command or one wrapper script.
+
+## 2.7.0
+
+Template release. Template **2.7**; schema stays `appdoc-facts/7` (`audit-plan.json`, `notes.jsonl` and the new register keys are separate files). Plan: `docs/remediation-plan-2.7.md`; comparison with 2.6.0: `docs/diagnostic-2.7.0-comparison.md`.
+
+### Upgrade notes (2.6.0 to 2.7.0)
+A 2.6 document (template 2.4) fails C3 on 2.7.0 until it is upgraded once. Run these steps in order on each Target.
+1. `appdoc upgrade <target>`. It adds what is mechanical (stamp 2.7, the `closed-questions` markers under section 14, section 17, the fixed 5.3 line, missing columns and rows), keeps every line of text (text that does not fit goes under an `appdoc:upgrade-orphan` comment that C3 fails on until you move it), re-extracts the Facts and fills the generated blocks. It never writes `evidence.jsonl`, `notes.jsonl` or `audit-plan.json` and never seals. It writes `docs/appdoc/UPGRADE-TODO.md`.
+2. Work through `UPGRADE-TODO.md`; each item names the Check rule that fails until it is done. Move "Known extractor limitation" paragraphs to `notes.jsonl`. Shorten the audit `scope` to the method and move per-section caveats to `exclusions`. Fix severity order in 10.1 and 15 (C9), `answered_in` on Answerable rows, section 17 rows, and two live rows on one ref. If rows were deleted under 2.4, restore them from git history and add `supersedes` to the replacing row.
+3. `appdoc build --expand-citations <target>`. It rewrites each bare file name that has exactly one full path to the full path, in the Narrative only (outside code fences and generated blocks). Bare names in register rows and notes are fixed by hand (C1 names the full path).
+4. Replace hand-written counts with count markers (`<!-- appdoc:count V -->7<!-- /appdoc:count -->`); `fill` and `build` write the number. C15 lists what is still hand-written.
+5. `notes.jsonl` for the limitations and answers that belong to a block (C18 checks that each note matches its block).
+6. Fill section 17, Build, Run and Test Locally (one command per step, or `Not applicable` with the evidence that says why).
+7. `appdoc audit-plan <target>`, then audit the planned IDs (and the finding candidates the plan lists), then `appdoc seal --audit --date YYYY-MM-DD <target>`. `audit-plan --check` prints whether the plan on disk is stale. The sample reseeds on every Narrative edit, so audit every row of the sampled sections in the final pass, after the last edit.
+8. `appdoc build --require-audit --strict <target>`; commit `docs/appdoc/`. Update the `APPDOC_REF` pin in `.github/workflows/appdoc-docs-gate.yml` to `v2.7.0` (the shipped `ci/appdoc-docs-gate.yml` already pins it). The Facts schema is the same as in 2.6.0, so the gate does not exit 3 for this release.
+
+Examples: `examples/current/` (2.7.0) is a fresh run, not an upgrade: new Narratives, an independent audit from `audit-plan.json`, sealed with `--audit --date`; `examples/previous/` is 2.6.0. The four 2.7.0 Checks pass with `--require-audit --strict`.
+
+### Added
+- Register history: rows may carry `supersedes` (an id or a list; a replaced row stays in the file) and `sealed_by` (`audit` or `upgrade`). The audit record on line 1 carries `audited_on`, `audited_with`, `audited_bundle` and `doc_sha`. C11 counts live rows; C10, C12, C14 and the Check's Verification read live rows only. Appendix A shows audit provenance, upgrade seals and superseded rows.
+- `appdoc seal --audit --date YYYY-MM-DD` records the audit and seals unsealed rows as audited. C17 checks the provenance under `--require-audit` and `--strict`.
+- `notes.jsonl`: notes rendered inside their block, sealed by `build` (empty `block_sha`), and C18 checks each note against its block.
+- Computed audit scope: A.1 prints the scope line from the register; C17 on 2.7 fails an audit `scope` with an ID or a digit, and `exclusions` are whole sections.
+- `appdoc audit-plan <target>` writes `docs/appdoc/audit-plan.json` (every finding, workflow, open question and finding candidate, full sections, and a seeded sample of the others with a 25% / minimum 5 floor); `audit-plan --check` is read-only (exit 0 equal, 2 stale or missing). C19: the audit follows the plan; A.2 shows planned, audited and extra.
+- Count markers (`appdoc:count`, closed class list `template_spec.COUNT_CLASSES`): `fill` writes the number from the Facts or the register; C15 checks them and a hand-written "N of M" is an advisory.
+- C9 severity order in 10.1 and 15; C1 full-path Citations (bare names fail, also in register rows and notes), and `build --expand-citations`.
+- Closed-questions block (section 14) rendered by `fill`; Answerable rows need `answered_in`; A.2 lists missing E-IDs.
+- Section 17, Build, Run and Test Locally (template, spec, C3 and C9 on 2.7).
+- `appdoc upgrade <target>` (`appdoc/upgrade.py`, steps in `template_spec.UPGRADE_STEPS`) writes `UPGRADE-TODO.md`; corpus cases `upgrade-2-1` and `upgrade-2-6-to-2-7` replay the steps.
+- Go and other extractor-read extensions are Citations (`go`, `rs`, `rb`, `php`, `kt`, `kts`, `proto`, `tf`; `mod` and `sum` line-only, plus the exact names `go.mod` and `go.sum`).
+- SKILL.md and the template guide teach C16 and C20 (documented, not new), Needs-owner rows, whole-section exclusions, the final audit pass and count-free audit-state sentences. CONTEXT.md terms; ADR 0015 and 0017; ADR 0007 amended.
+
+### Changed
+- `TEMPLATE_VERSION` is 2.7. C3 is strict: a document must carry the running template's stamp (the 2.4 older-stamp window is removed), and C3 fails on an `upgrade-orphan` comment.
+- The C1, C9 and C17 rules that 2.6.0 previewed as "fails from template 2.7" now fail on a 2.7 stamp.
+- `seal` and `build` fill the non-opaque generated blocks before computing `doc_sha`, so the sealed hash matches the finished document.
+- The skill's run order (SKILL.md, `appdoc/workflow.py`): upgrade, fix advisories, `audit-plan`, audit the planned IDs, apply findings, audit the delta, `seal --audit --date`, `build`.
+- Check messages say why (section 17 Command cell; C1 on a backticked name that does not exist).
+- `tools/release.py` rotation and the example folders also carry `audit-plan.json`.
+
+### Known limitations
+- Determinism is verified on Linux only: `extract --workers 1` and `--workers 4` reproduce the committed `facts.json` of all four examples byte for byte. The CI hash job has not run on Windows, so Windows is not verified.
+- Audit exclusions are whole sections only: a generated block inside a section that has planned IDs cannot be excluded on its own.
+- The audit-plan sample reseeds on every Narrative edit, so the final audit pass must cover every row of the sampled sections.
+- Test-code finding candidates are not planned.
+- A Needs-owner question needs a Supported row.
+- The section 17 Command cell check accepts a short command chain, though the docs say exactly one command.
+- A hand-written "N of M" is an advisory only (C15); only count markers are checked against the Facts.
+
+## 2.6.0
+
+Tooling, provenance and Facts release. Schema `appdoc-facts/7`; template stays 2.4. Plan: `docs/remediation-plan-2.6.md`.
+
+### Upgrade notes (2.5.0 to 2.6.0)
+1. Re-run `extract` on every Target. It writes the new `provenance.json` next to `facts.json` and `facts-summary.md`, and `facts.json` now carries schema `appdoc-facts/7` (typed capabilities, `scan.duplicate_folders`, `secret_ref`, no `generator` field, no author names in `ownership`). Then run `build`.
+2. Expect advisories marked "fails from template 2.7" (C1 bare-name Citations, C9 severity order, C17 scope text) and the C7 duplicate-folder advisory. They need no action on a template 2.4 document; the duplicate-folder advisory asks you to name both folders in 2.1 and say which copy is live.
+3. The docs-as-code gate exits 3 ("AppDoc upgraded") until `facts.json` is re-extracted and committed, because the schema changed. From 2.6.0 on, an AppDoc patch release with the same schema never trips the gate: the version in `provenance.json` is informational.
+4. Update the `APPDOC_REF` pin in `.github/workflows/appdoc-docs-gate.yml` to `v2.6.0` (the shipped `ci/appdoc-docs-gate.yml` already pins it).
+5. Examples: `examples/current/` (2.6.0) and `examples/previous/` (2.5.0) replace the unsuffixed and `*-2.4` folders. The 2.6.0 examples were regenerated mechanically from the 2.5.0 Narratives and registers with no new audit; Appendix A.1 says the generated blocks were regenerated after the audit. See `docs/diagnostic-2.6.0-comparison.md`.
+
+### Added
+- `provenance.json` sidecar (`generator`, `bundle` hash, `schema`, and `blocks_by` written by `fill`), replacing the `generator` field in `facts.json`; C7 reads it (ADR 0013). Appendix A.1 prints the AppDoc version and bundle that wrote the generated blocks.
+- Stack `capabilities` live on the Stack class with `entry_point` subtypes; `stacks.capabilities_of` is the only lookup and `fill` names the Stacks that report a kind instead of a "not covered" list.
+- Determinism harness (`tests.test_determinism`, `tools/artifact_hashes.py`, a CI job comparing hashes across the OS matrix), the shared `textnorm.normalize_text`, and ten corpus cases for 2.6.
+- Extractor answer keys with precision and recall per Stack and kind (`eval/extractor_checks.py`, `eval/baseline.json`) and narrative answer keys for all four examples (`eval/score.py`); `tools/release.py` runs both and refuses a regression. `tests/test_scale.py` runs a 10,000-file tree.
+- `appdoc gate <target> [--require-audit] [--strict] [--workers N]`: regenerates the Facts (no cache) and compares them with the committed `facts.json` (exit 2 "Facts changed" with a diff of at most 200 lines; exit 3 "AppDoc upgraded" when the schema differs), then runs the Check. The checkout-dependent fields (`target.commit`, `target.history`, git `ownership` Facts) are not compared. The gate YAML clones the pinned release to `$RUNNER_TEMP/appdoc-skill` and calls `gate` from there.
+- C20 Citation precision (advisory; fails under `--strict`): a range over 100 lines as a claim's only lined Citation in sections 4, 7 and 10, and more than 5 Citations in a section 4 or 10.1 cell.
+- Previews of template 2.7 rules, printed as "fails from template 2.7" and never failing a 2.4 document: C9 severity order in 10.1 and 15, C1 bare-name Citations (the message names the full path), C17 audit scope text with an ID or a digit.
+- `tools/gen_docs.py` writes the generated blocks of README.md, SKILL.md and the gate YAML (`--check` for CI); `appdoc/workflow.py` holds the skill's steps; `tools/release.py X.Y.Z [--dry-run]` cuts a release; CI runs the gate self-test and `tests/test_release.py`.
+
+### Changed
+- Example layout and rotation: `tools/release.py` deletes `examples/previous`, moves `examples/current` to it, regenerates `current`, writes the `VERSION` files and `docs/diagnostic-<version>-comparison.md` (`test_release::test_examples_current_and_previous`).
+- The cache key is salted with `version.bundle_hash()` (every file of the `appdoc` package) plus the Facts schema. `extract.EXTRACTOR_VERSION` is deleted; nothing is bumped by hand, and the first run after any AppDoc change is a cold run.
+- `scan` records `retired_candidates` by folder name only and a new `duplicate_folders` list (`{a, b, files}`) for byte-identical folders; both lists collapse nested entries; test paths are never compared. `scan-coverage` renders both, capped at 10 each. C7 asks section 2 to name a duplicate pair (an advisory; it fails under `--strict`).
+- Folders holding AppDoc output (`facts.json` with an `appdoc-facts/` schema, or a Narrative with the template stamp) and AppDoc skill bundles inside a Target are pruned and disclosed in 2.1; `.appdocignore` `!name` re-includes them.
+- A config file with at least one key that code reads is promoted to `app` as a whole (INI `section.KEY` matches the code's `KEY`); `env` and `ci` keys are never promoted.
+- Secret naming is segment-aware (`MIN_PASSWORD_LENGTH` is not a secret location); keys ending in `uri`, `path` or `file` carry the new `config_key` detail `secret_ref`.
+- Generated copy uses one `plural()` helper everywhere; the A.4 verification label reads `**E-1** (section N), expect `path:line``.
+- `ownership` Facts no longer record git author names (R18): they hold `commits`, `contributors` (a count) and `first_commit`/`last_commit` dates; `facts.DETAIL_KEYS` drops `authors`.
+- The rendered HTML page no longer ends with a `Generated: <date>` footer: it read the clock, so two renders of the same Narrative differed (R13). Rendering twice is byte-identical (`test_render`, `test_determinism`).
+- `facts.DETAIL_KEYS["entry_point"]` accepts `listener` (the Java Spring extractor already emitted it, and conformance now checks detail keys against the table).
+
+### Fixed
+- ASP.NET Core: one `HttpClient` call produced two `external_call` Facts (a plain `http` one and one with `via: HttpClient`); the `HttpClient` emission now supersedes the generic one at the same file and line.
+
+## 2.5.0 — remediation of the 2.4 diagnostic
+
+Schema `appdoc-facts/6`. Template stays 2.4. Re-run `extract`, then `fill` and `build`; the gate exits with "AppDoc upgraded" until `facts.json` is re-extracted and committed.
+
+### Added
+- **Owner context** (`appdoc/context.py`): one parser for `appdoc-context.md` (`never-mention` block, `Ownership: <role>: <value>` lines). `extract` emits `owner_file` and `ownership` Facts from it (values are never stored). When §11 or the §16.5 runbook rows are all Unknown and no owner file exists, the Check prints an advisory "Unknown by absence" (C4).
+- **Config role split by read kind.** `config_key` gains `read_kind` (`env` or `file`); a post-pass assigns role `env`, `ci` or `app`. Only `app` keys appear in the application table; the 16.6 trailer counts the `env` and `ci` keys it excludes, and C7 compares the block with the `app` count. Env and CI keys are no longer `secret_location`.
+- **Extractor coverage:** ASP.NET Core Razor `ui_page`, EF `data_access type=ef`, `HttpClient` `external_call`; Go `connection`, xorm `schema_object`, `templates/**/*.html` `ui_page`; Flask `SQLAlchemy(...)` `connection`. Each is declared in the Stack's capabilities and exercised by a sample.
+- **Corpus** (`tests/corpus/`, `tests/test_corpus.py`): small Targets with expected Facts and Check output.
+- ADRs 0011 (the register is the single source of truth for unknowns) and 0012 (extractor coverage); ADR 0009 amended.
+
+### Changed
+- `facts.SCHEMA` is `appdoc-facts/6`; `extract.EXTRACTOR_VERSION` is 2 (cache salt). Facts for Targets using the newly detected libraries change.
+- The four public examples were regenerated from clean clones with 2.5.0 (see `docs/diagnostic-2.4-comparison.md`, "Post-remediation (2.5.0)").
+
+
 ### Added — the integration picture (content Phases 6a + 6b)
 - **Widened the `connection.type` vocabulary** (an *additive convention* change — `KINDS` and `SCHEMA` in `facts.py` are unchanged). A shared catalog (`appdoc/stacks/integrations.py`) now detects the non-database system connections the per-stack extractors previously missed: `cache` (Redis/Memcached), `queue` (Kafka, RabbitMQ, SQS, pika, kombu, MassTransit, Confluent), `object_storage` (S3, Azure Blob, GCS), `grpc`, `ldap`, and `search` (Elasticsearch/OpenSearch), wired into the python, java, node and dotnet Stacks. Each yields a `connection` Fact with the correct `type`; `external_call.type` also accepts `grpc`.
 - **A `System Connections` view** (`appdoc/integration.py`): a deterministic post-pass (not the AI Narrative) that aggregates the raw `connection`/`external_call`/`dependency` Facts into a system-to-system summary — per-type distinct drivers, counts, file/line provenance, a compact integration map, and the manifest dependencies. Rendered near the top of the Facts summary, and (when a Narrative is present) of the HTML page. It is a pure function of the Facts, so it is byte-identical across runs.
@@ -10,7 +133,7 @@
 > **Extraction changelog note:** Phases 6a/6b are **additive** and on by default (no flag). Existing Samples' `facts.json` is byte-identical to before; `facts.json` only changes for Targets that actually use the newly-detected integrations. This is a *content* change, not a silent change to the default output of existing codebases — documented here so it is not mistaken for a regression.
 
 ### Changed — the cache key is now versioned (schema + extractor version)
-- The per-file content-hash cache key (`.appdoc-cache.json`) is salted with the Facts `SCHEMA` and a manually-bumped `EXTRACTOR_VERSION` constant (new in `appdoc/extract.py`). A cache written by an older AppDoc build is never served to a newer one, so a schema or extractor-logic change cleanly invalidates stale entries. Default (no-flag) `facts.json` is byte-identical to before — the version bytes are part of the *key*, not the output. Bump `EXTRACTOR_VERSION` whenever a stack/catalog regex or extraction logic changes.
+- The per-file content-hash cache key (`.appdoc-cache.json`) is salted with the Facts `SCHEMA` and a manually-bumped `EXTRACTOR_VERSION` constant (new in `appdoc/extract.py`). A cache written by an older AppDoc build is never served to a newer one, so a schema or extractor-logic change cleanly invalidates stale entries. Default (no-flag) `facts.json` is byte-identical to before — the version bytes are part of the *key*, not the output. (Superseded in 2.6.0: the salt is the bundle hash and nothing is bumped by hand.)
 ### Fixed — `smtp` is now in the integration view vocabulary
 - `smtp` (a Spring-XML mail-sender `connection`) is a canonical type in the view's `TYPE_ORDER`/`TYPE_LABEL` (rendered "Email (SMTP)"), so it groups with the canonical list instead of appearing as an orphan "Smtp" row sorted after it.
 

@@ -1,0 +1,8 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/config-not-reviewed",
+  "exhaustive": false,
+  "note": "C21 Check case (Web.config must be cited with a line); asserted in tests/test_corpus.py. No row is scored here: the 2.8 Fact kinds do not exist yet.",
+  "must_exist": [],
+  "must_not_exist": []
+}

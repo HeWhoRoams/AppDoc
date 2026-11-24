@@ -1,0 +1,8 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/location-paths",
+  "exhaustive": false,
+  "note": "access_rule scope_path forms; asserted in tests/test_corpus.py (Slice1Config). No row is scored here: the 2.8 Fact kinds do not exist yet.",
+  "must_exist": [],
+  "must_not_exist": []
+}

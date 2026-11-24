@@ -1,0 +1,72 @@
+{
+  "pattern": "hardcoded-production-mode",
+  "target": "targets/contoso-labels",
+  "labelled_by": "author",
+  "second_labeller": null,
+  "note": "Labels are by the author of the detector, on invented code (Contoso, Fabrikam; no real application). A second person must re-label this set independently and record the name in second_labeller before this heuristic may oblige C12; until then it stays a candidate in the summary (plan 2.8 W11 part C, T28.75). label tp: a hit at this site is correct; fp: a hit at this site would be a false positive.",
+  "labels": [
+    {
+      "path": "Tools/ToolA/Program.cs",
+      "line": 9,
+      "text": "Settings.Mode = AppMode.Production;",
+      "label": "tp",
+      "reason": "console project: Main assigns the Production member"
+    },
+    {
+      "path": "Tools/ToolB/Program.cs",
+      "line": 9,
+      "text": "Settings.Mode = AppMode.Production;",
+      "label": "tp",
+      "reason": "WinExe project: Main assigns the Production member"
+    },
+    {
+      "path": "Tools/ToolC/Program.cs",
+      "line": 9,
+      "text": "Settings.Mode = AppMode.Production;",
+      "label": "tp",
+      "reason": "console project: Main assigns the Production member"
+    },
+    {
+      "path": "Tools/ToolD/Program.cs",
+      "line": 9,
+      "text": "Settings.Mode = AppMode.Production;",
+      "label": "tp",
+      "reason": "WinExe project: Main assigns the Production member"
+    },
+    {
+      "path": "Tools/ToolE/Program.cs",
+      "line": 9,
+      "text": "Settings.Mode = AppMode.Production;",
+      "label": "tp",
+      "reason": "console project: Main assigns the Production member"
+    },
+    {
+      "path": "Tools/ToolF/Program.cs",
+      "line": 9,
+      "text": "Settings.Mode = AppMode.Production;",
+      "label": "fp",
+      "reason": "a web project has a Main too: not a desktop harness"
+    },
+    {
+      "path": "Tools/Lib/Program.cs",
+      "line": 9,
+      "text": "Settings.Mode = AppMode.Production;",
+      "label": "fp",
+      "reason": "a library project"
+    },
+    {
+      "path": "Tools/ToolG/Settings.cs",
+      "line": 7,
+      "text": "Settings.Mode = AppMode.Production;",
+      "label": "fp",
+      "reason": "assigned outside the file that holds Main"
+    },
+    {
+      "path": "Tools/ToolH/Program.cs",
+      "line": 9,
+      "text": "if (Settings.Mode == AppMode.Production)",
+      "label": "fp",
+      "reason": "a comparison, not an assignment"
+    }
+  ]
+}

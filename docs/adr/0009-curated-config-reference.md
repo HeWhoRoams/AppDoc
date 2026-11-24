@@ -37,3 +37,43 @@ never records values, because detecting which values are secrets is heuristic.
 - A key defined only in an unscanned folder or an extensionless file shows up as a read, or not at
   all. The 2.1 block lists pruned folders.
 - Truncation is visible: a reader sees that rows are missing and by how many.
+
+## Amendment (2026-11-23, 2.5.0): role split by read kind
+
+A key read from code is no longer always application configuration. A per-file `read_kind` (`env` for
+environment-variable reads, `file` otherwise) feeds a post-pass that assigns role `env` to
+environment-variable reads, `ci` to reads in CI or build files, and `app` to the rest. Only `app`
+keys appear in the application table; the trailer counts the `env` and `ci` keys it excludes. The
+`secret_location` flag is never set on `env` or `ci` keys, because the variable is the name of a
+secret held elsewhere, not the secret itself. It stays on `unclassified` keys: an INI `[db]
+DB_PASSWORD` that no code reads is still a password location. The cache keeps pre-promotion Facts, so the split stays in the
+post-pass.
+
+## Amendment (2026-11-23, 2.6.0): file-level promotion and segment-aware secret naming
+
+1. **File-level promotion.** Role `app` was assigned key by key, so a file that an application
+   plainly reads (a gitea `app.ini` read through `setting.Cfg.Section(...).Key("X")`) still had
+   most of its keys classified as `unclassified`, and 16.6 listed a few keys and called the rest
+   "not classified". In the post-pass, any unclassified key in a file that has at least one
+   code-read key (matched through `_key_variants`: the full name and the last dotted segment, so
+   `server.HTTP_PORT` in an INI matches a read of `HTTP_PORT`) becomes `app`. File promotion runs
+   after the read-kind split and never promotes `env` or `ci` keys. The trailer guard raises an
+   internal error if a file is both `app` and "not classified".
+2. **Segment-aware secret names.** `secret_location` was a substring test, so `MIN_PASSWORD_LENGTH`
+   was a secret location. `secrets.is_secret_key` now tokenizes the name on separators and camel
+   case. A name is a secret when it has a secret noun (password, passwd, pwd, secret, token, credential,
+   sas) or a secret pair (api key, private key, account key, connection string) and none of a closed set of modifiers: `length min max size count ttl lifetime expiry
+   expires minutes seconds hours days algo algorithm hash complexity policy check pwn enable enabled
+   disable disabled allow require required form cache uri url path file header name type mode scope
+   scopes regex pattern`. The set is closed and lives in code, not in configuration.
+3. **`secret_ref`.** A name whose modifier is `uri`, `path` or `file` (`SECRET_KEY_URI`) is not a
+   secret location but refers to one; the Fact carries `secret_ref: true` (a `DETAIL_KEYS` entry)
+   and still holds no value.
+4. **Two predicates (2.6.0).** `secrets.is_secret_key` is the display predicate for `secret_location`
+   and stays precise. `secrets.never_record_value(key)` is true when `is_secret_key` is true **or** the
+   pre-2.6 broad substring test matches (`PasswordHash`, `TOKEN_CACHE`, `PASSWORD_FILE`). R19 gates
+   value recording and value resolution with `never_record_value` only. A `config_key` Fact never
+   carries a value; a test asserts it.
+5. The finding-candidate and secret-shape scan (C6, `find_secret_shapes`) is independent of key
+   naming and is unchanged; a test proves it.
+

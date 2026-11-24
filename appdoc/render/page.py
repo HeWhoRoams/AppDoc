@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
-import datetime
 import html
 import json
 import os
 import re
 import sys
 
+from .. import docmodel as dm
+from .. import fill as fill_mod
+from .. import template_spec as spec
 from .markdown import render_markdown
+from ..textnorm import normalize_newlines
 from ..integration import render_integration_view
 
 ASSETS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
@@ -20,7 +23,7 @@ _HEADING_RE = re.compile(r'<h([123]) id="([^"]+)">(.*?)</h\1>', re.S)
 
 def _read(path: str) -> str:
     with open(path, encoding="utf-8-sig", newline="") as f:
-        return f.read().replace("\r\n", "\n")
+        return normalize_newlines(f.read())
 
 
 def pick_css(out_dir: str, css: str | None) -> str:
@@ -68,7 +71,6 @@ def _footer(target_name: str, out_dir: str) -> str:
             parts.append(f"Commit: {commit}")
     except (OSError, ValueError, AttributeError):
         pass
-    parts.append(f"Generated: {datetime.date.today().isoformat()}")
     report = os.path.join(out_dir, "check-report.md")
     if os.path.isfile(report):
         first = (_read(report).split("\n", 1)[0]).strip()
@@ -80,17 +82,13 @@ def _footer(target_name: str, out_dir: str) -> str:
 
 def _stale_block(target: str, md_path: str, out_dir: str) -> str | None:
     """The name of a generated block that differs from what fill would write, or None."""
-    from .. import fill as fill_mod
-    from .. import template_spec as spec
-    from .. import docmodel as dm
-    from .. import check
     with open(os.path.join(out_dir, "facts.json"), encoding="utf-8") as fh:
         facts = json.load(fh)
     raw = _read(md_path)
-    lines = check._strip_comments(fill_mod.mask_blocks(raw.replace("\r\n", "\n"), spec.OPAQUE_BLOCKS)).splitlines()
+    lines = dm.strip_comments(dm.mask_blocks(normalize_newlines(raw), spec.OPAQUE_BLOCKS)).splitlines()
     heads = dm.headings(lines)
     ctx = {"out_dir": out_dir, "text": raw, "target": os.path.abspath(target)}
-    found = {name: body for name, body, _ in fill_mod.blocks(raw.replace("\r\n", "\n"))}
+    found = {name: body for name, body, _ in fill_mod.blocks(normalize_newlines(raw))}
     for key, name in spec.GENERATED.items():
         if name not in found:
             continue
@@ -100,7 +98,33 @@ def _stale_block(target: str, md_path: str, out_dir: str) -> str | None:
     return None
 
 
-def run(target: str, out_dir: str, css: str | None) -> int:
+MERMAID_MODES = ("inline", "sibling")
+MERMAID_FILE = "mermaid.min.js"
+_MERMAID_INIT = "mermaid.initialize({startOnLoad:true,securityLevel:'strict'});"
+
+
+def _mermaid_script(out_dir: str, mode: str) -> str:
+    """The script element(s) of a page that has a diagram. `inline` (the default) embeds the library, so the page is one
+    self-contained file. `sibling` links `mermaid.min.js` beside the HTML and copies it there once (T28.B3): the
+    page stays small and the browser caches the library; the folder must be kept together."""
+    src = os.path.join(ASSETS, MERMAID_FILE)
+    if mode == "sibling":
+        dest = os.path.join(out_dir, MERMAID_FILE)
+        with open(src, "rb") as f:
+            lib = f.read()
+        try:
+            with open(dest, "rb") as f:
+                same = f.read() == lib
+        except OSError:
+            same = False
+        if not same:   # written once; a file with the packaged bytes is left alone
+            with open(dest, "wb") as f:
+                f.write(lib)
+        return f'<script src="{MERMAID_FILE}"></script>\n<script>\n{_MERMAID_INIT}\n</script>'
+    return "<script>\n" + _read(src).replace("</script", "<\\/script") + "\n" + _MERMAID_INIT + "\n</script>"
+
+
+def run(target: str, out_dir: str, css: str | None, mermaid: str = "inline") -> int:
     md_path = os.path.join(out_dir, MD_NAME)
     if not os.path.isfile(md_path):
         print(f"appdoc: {md_path} not found; write the Narrative first", file=sys.stderr)
@@ -121,9 +145,7 @@ def run(target: str, out_dir: str, css: str | None) -> int:
             body = (body[:m.end()] + "\n" + view_html + body[m.end():]) if m else view_html + body
         script = ""
         if 'class="mermaid"' in body:
-            lib = _read(os.path.join(ASSETS, "mermaid.min.js")).replace("</script", "<\\/script")
-            script = ("<script>\n" + lib + "\nmermaid.initialize("
-                      "{startOnLoad:true,securityLevel:'strict'});\n</script>")
+            script = _mermaid_script(out_dir, mermaid)
     except OSError as exc:
         print(f"appdoc: cannot read render input: {exc}", file=sys.stderr)
         return 1

@@ -1,0 +1,215 @@
+{
+ "advisories": [],
+ "doc_sha": "8776b33748a7",
+ "floor": {
+  "fraction": "0.25",
+  "minimum": 5
+ },
+ "schema": "appdoc-audit-plan/1",
+ "sections": [
+  {
+   "ids": [
+    "V-1",
+    "V-2",
+    "V-3",
+    "V-4",
+    "V-5",
+    "V-6",
+    "V-7",
+    "V-8",
+    "V-9",
+    "V-10",
+    "V-11"
+   ],
+   "mode": "full",
+   "section": "10.1",
+   "total": 11
+  },
+  {
+   "ids": [
+    "7.1",
+    "7.2",
+    "7.3",
+    "7.4",
+    "7.5",
+    "7.6",
+    "7.7",
+    "7.8",
+    "7.9",
+    "7.10",
+    "7.11",
+    "7.12",
+    "7.13",
+    "7.14",
+    "7.15"
+   ],
+   "mode": "full",
+   "section": "7",
+   "total": 15
+  },
+  {
+   "ids": [
+    "Q-1",
+    "Q-2",
+    "Q-3",
+    "Q-4",
+    "Q-5",
+    "Q-6",
+    "Q-9",
+    "Q-10"
+   ],
+   "mode": "full",
+   "section": "14",
+   "total": 8
+  },
+  {
+   "ids": [],
+   "mode": "full",
+   "section": "candidates",
+   "total": 0
+  },
+  {
+   "ids": [
+    "10.2/csrf",
+    "10.2/mfa",
+    "10.2/cookie-flags",
+    "10.2/outbound-request-filtering"
+   ],
+   "items": [
+    "CSRF",
+    "MFA",
+    "Cookie flags",
+    "Outbound request filtering"
+   ],
+   "mode": "full",
+   "section": "10.2",
+   "total": 9
+  },
+  {
+   "ids": [
+    "16.5/build",
+    "16.5/test",
+    "16.5/deploy",
+    "16.5/upgrade",
+    "16.5/backup",
+    "16.5/secret-rotation"
+   ],
+   "items": [
+    "Build",
+    "Test",
+    "Deploy",
+    "Upgrade",
+    "Backup",
+    "Secret rotation"
+   ],
+   "mode": "full",
+   "section": "16.5",
+   "total": 8
+  },
+  {
+   "ids": [
+    "17/restore-dependencies",
+    "17/build",
+    "17/run",
+    "17/test"
+   ],
+   "items": [
+    "Restore dependencies",
+    "Build",
+    "Run",
+    "Test"
+   ],
+   "mode": "full",
+   "section": "17",
+   "total": 5
+  },
+  {
+   "ids": [
+    "F-4",
+    "F-8",
+    "F-9",
+    "F-18",
+    "F-19",
+    "F-21",
+    "F-22"
+   ],
+   "k": 7,
+   "mode": "sampled",
+   "section": "4",
+   "total": 25
+  },
+  {
+   "ids": [
+    "UI-2",
+    "UI-5",
+    "UI-7",
+    "UI-11",
+    "UI-16",
+    "UI-23"
+   ],
+   "k": 6,
+   "mode": "sampled",
+   "section": "6",
+   "total": 23
+  },
+  {
+   "ids": [
+    "C-1",
+    "C-3",
+    "C-5",
+    "C-7",
+    "C-8"
+   ],
+   "k": 5,
+   "mode": "sampled",
+   "section": "8.1",
+   "total": 9
+  },
+  {
+   "ids": [
+    "X-2",
+    "X-5",
+    "X-6",
+    "X-9",
+    "X-10"
+   ],
+   "k": 5,
+   "mode": "sampled",
+   "section": "8.3",
+   "total": 13
+  },
+  {
+   "ids": [
+    "9/the-installer-page-keeps-appearing-or-startup-logs-is-gitea-already-running",
+    "9/browser-shows-failed-to-authenticate-user-with-401",
+    "9/startup-exits-because-the-database-version-differs-from-the-expected-one",
+    "9/metrics-scrape-returns-401",
+    "9/git-client-gets-401-update-your-password"
+   ],
+   "items": [
+    "The installer page keeps appearing, or startup logs \"Is Gitea already running?\"",
+    "Browser shows \"Failed to authenticate user\" with 401",
+    "Startup exits because the database version differs from the expected one",
+    "Metrics scrape returns 401",
+    "Git client gets 401 \"Update your password\""
+   ],
+   "k": 5,
+   "mode": "sampled",
+   "section": "9",
+   "total": 17
+  },
+  {
+   "ids": [
+    "R-2",
+    "R-3",
+    "R-7",
+    "R-8",
+    "R-14"
+   ],
+   "k": 5,
+   "mode": "sampled",
+   "section": "15",
+   "total": 14
+  }
+ ]
+}

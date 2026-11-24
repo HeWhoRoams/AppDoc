@@ -7,9 +7,11 @@ Shared lexical helpers and the framework independent patterns come from ``aspnet
 
 from __future__ import annotations
 
+import os
 import re
 from urllib.parse import urlsplit
 
+from .. import aspnet_guards, scan
 from ..facts import Fact
 from ..secrets import is_secret_key
 from .aspnet import (STR, Ctx, _join_route, _safe, _strip_markup_comments, _unq, dotnet_common, error_messages,
@@ -177,7 +179,8 @@ def _controllers(path, ctx: Ctx, classes, paths=None):
             route = _norm(f"{ctrl}/{action}")
         route = route.replace("[controller]", ctrl).replace("[action]", action)
         yield Fact.make("entry_point", STACK_ID, path, ctx.line(m.start("name")), route, type="route",
-                        method=",".join(sorted(set(verbs))) or "ANY", handler=f"{cls.name}.{action}")
+                        method=",".join(sorted(set(verbs))) or "ANY", handler=f"{cls.name}.{action}",
+                        **aspnet_guards.inherits_detail(cls, classes))
         yield from _views(path, ctx, m, ctrl, action, f"{cls.name}.{action}", route, verbs, paths)
 
 
@@ -284,6 +287,50 @@ def _data_and_calls(path, ctx: Ctx):
         yield Fact.make("connection", STACK_ID, path, ctx.line(m.start()), m.group(1), type="database", secret_location=True)
 
 
+_EF_HINT = re.compile(r"EntityFrameworkCore|\bDbContext\b|\bDbSet\s*<")
+_DBSET = re.compile(r"\bDbSet\s*<\s*([\w.]+)\s*>\s+(\w+)\s*(?:\{|=>|;)")
+_EF_QUERY = re.compile(r"(?:\b(\w+)\s*)?\.\s*(Where|ToListAsync|FirstOrDefaultAsync|ExecuteSqlRaw)\s*\(")
+_HTTP_VERBS = re.compile(r"\.\s*(SendAsync|PostAsync|GetAsync|GetStringAsync)\s*\(\s*(" + STR + ")?")
+
+
+def _ef(path, ctx: Ctx):
+    t = ctx.t
+    if not _EF_HINT.search(t):
+        return
+    for m in _DBSET.finditer(t):
+        yield Fact.make("data_access", STACK_ID, path, ctx.line(m.start()), m.group(2), type="ef", operation="set",
+                        entity=m.group(1).rsplit(".", 1)[-1])
+    seen = set()
+    for m in _EF_QUERY.finditer(t):
+        line = ctx.line(m.start(2))
+        if line in seen:
+            continue
+        seen.add(line)
+        recv = m.group(1)
+        name = recv if recv and m.group(2) != "ExecuteSqlRaw" else m.group(2)
+        yield Fact.make("data_access", STACK_ID, path, line, name, type="ef", operation="query")
+
+
+def _httpclient(path, ctx: Ctx):
+    t = ctx.t
+    if "HttpClient" not in t and "CreateClient" not in t:
+        return
+    for m in _HTTP_VERBS.finditer(t):
+        verb = m.group(1)
+        d = dict(type="http", via="HttpClient")
+        if verb != "SendAsync":
+            d["method"] = {"PostAsync": "POST"}.get(verb, "GET")
+        name = f"HttpClient.{verb}"
+        if m.group(2):
+            lit = _unq(m.group(2))
+            sp = urlsplit(lit)
+            if sp.scheme and sp.netloc:
+                name = f"{sp.scheme}://{sp.netloc.rsplit('@', 1)[-1]}{sp.path}"
+            elif lit and not sp.scheme:
+                name = sp.path or name
+        yield Fact.make("external_call", STACK_ID, path, ctx.line(m.start()), _safe(name, 200), **d)
+
+
 def _messages(path, ctx: Ctx):
     t = ctx.t
     verbs = r"BadRequest|NotFound|Unauthorized|Conflict|UnprocessableEntity|Forbid|ValidationProblem"
@@ -332,6 +379,7 @@ def _razor_pages(path, text):
         if path.lower().endswith(".razor"):
             route = _norm(tm) if tm is not None else _norm(path)
             yield Fact.make("entry_point", STACK_ID, path, line, route, type="page", component=True)
+            yield Fact.make("ui_page", STACK_ID, path, line, path, root=path, route=route)
         else:
             yield Fact.make("entry_point", STACK_ID, path, line, _page_route(path, tm), type="page", method="GET,POST")
 
@@ -402,7 +450,8 @@ def _config_reads(path, ctx: Ctx):
                 continue
             assigned = rx is _CFG_READS[0] and re.match(r"\s*=(?!=)", t[m.end():])
             yield Fact.make("config_key", STACK_ID, path, ctx.line(m.start()), key, source="code",
-                            secret_location=is_secret_key(key), use="define" if assigned else "read")
+                            secret_location=is_secret_key(key), use="define" if assigned else "read",
+                            read_kind="env" if rx is _CFG_READS[3] else "file")
 
 
 def _as_define(f: Fact) -> Fact:
@@ -487,19 +536,61 @@ def _jobs(path, ctx: Ctx):
 
 # --------------------------------------------------------------------------- the Stack
 
+_CORE_SDK = re.compile(r"(?i)\bSdk\s*=\s*\"[^\"]*Microsoft\.NET\.Sdk\.(?:Web|Razor)\b|<Sdk\s[^>]*\bName\s*=\s*\"Microsoft\.NET\.Sdk\.(?:Web|Razor)\b")
+_CORE_REF = re.compile(r"(?i)<(?:PackageReference|FrameworkReference)\b[^>]*\bInclude\s*=\s*\"Microsoft\.AspNetCore\.")
+_MAX_PROJECT_BYTES = 1 << 20
+
+
+def _is_core_project(root: str, rel: str) -> bool:
+    try:
+        if os.path.getsize(os.path.join(root, rel)) > _MAX_PROJECT_BYTES:
+            return False
+        text = scan.read_text(root, rel)[0]
+    except OSError:
+        return False
+    return bool(_CORE_SDK.search(text) or _CORE_REF.search(text))
+
+
 class AspNetCoreStack(Stack):
     id = STACK_ID
+    capabilities = frozenset((
+        "auth_check config_key connection const_def controller_class data_access entry_point.route "
+        "entry_point.page entry_point.handler entry_point.job entry_point.guard_mechanism external_call guard_candidate "
+        "guard_class guard_use "
+        "message method_call ui_page"
+    ).split())
     extensions = frozenset({".cs", ".cshtml", ".razor", ".xaml"})
 
     def __init__(self):
         self._files = None
 
     def detect(self, files):
+        """Path-only check, used when the Target root is unknown. ``detect_in`` is the real test."""
         self._files = _Files(files)
         base = lambda p: p.rsplit("/", 1)[-1]
         proj = sorted(p for p in files if p.lower().endswith(".csproj"))
         entry = sorted(p for p in files if base(p) in ("Program.cs", "Startup.cs"))
         return sorted(proj + entry) if proj and entry else []
+
+    def detect_in(self, files, root):
+        """The ``.csproj`` files that make a web project, plus the ``Program.cs``/``Startup.cs`` of those projects: ``Sdk="Microsoft.NET.Sdk.Web"`` or ``.Razor``, a
+        ``Microsoft.AspNetCore.*`` package, or an AspNetCore framework reference. A project plus
+        ``Program.cs`` is not enough; a classic ``System.Web`` project belongs to the ``aspnet`` Stack."""
+        self._files = _Files(files)
+        projects = sorted(p for p in files if p.lower().endswith(".csproj") and _is_core_project(root, p))
+        if not projects:
+            return []
+        all_dirs = {p.rsplit("/", 1)[0] if "/" in p else "" for p in files if p.lower().endswith(".csproj")}
+        web_dirs = {p.rsplit("/", 1)[0] if "/" in p else "" for p in projects}
+
+        def owner(p):
+            d = p.rsplit("/", 1)[0] if "/" in p else ""
+            while d not in all_dirs and d:
+                d = d.rsplit("/", 1)[0] if "/" in d else ""
+            return d
+
+        entry = [p for p in files if p.rsplit("/", 1)[-1] in ("Program.cs", "Startup.cs") and owner(p) in web_dirs]
+        return sorted(projects + entry)
 
     def extract(self, path, text):
         ext = "." + path.rsplit(".", 1)[-1].lower() if "." in path.rsplit("/", 1)[-1] else ""
@@ -513,15 +604,26 @@ class AspNetCoreStack(Stack):
             classes = find_classes(ctx)
             yield from _jobs(path, ctx)
             yield from _config_reads(path, ctx)
+            yield from aspnet_guards.const_facts(STACK_ID, path, ctx, classes)
+            yield from aspnet_guards.service_facts(STACK_ID, path, ctx)
             if not _CORE_HINT.search(text):
                 return
+            http_client = list(_httpclient(path, ctx))
+            http_lines = {f.line for f in http_client}
             for f in dotnet_common(STACK_ID, path, ctx, web_forms=False):
+                # An HttpClient emission at a line supersedes the generic http emission for the same file and line.
+                d = dict(f.detail)
+                if f.kind == "external_call" and d.get("type") == "http" and "via" not in d and f.line in http_lines:
+                    continue
                 yield _as_define(f) if f.kind == "config_key" else f
             yield from error_messages(STACK_ID, path, ctx)
             yield from _controllers(path, ctx, classes, self._files)
             yield from _page_models(path, ctx, classes)
             yield from _minimal_apis(path, ctx)
+            yield from aspnet_guards.file_facts(STACK_ID, path, ctx, classes, list(find_methods(ctx, classes)), core=True)
             yield from _data_and_calls(path, ctx)
+            yield from _ef(path, ctx)
+            yield from http_client
             yield from _messages(path, ctx)
             yield from integrations.scan_facts("dotnet", STACK_ID, path, strip_comments(text, "c"))
         elif ext in (".cshtml", ".razor"):
@@ -534,9 +636,5 @@ class AspNetCoreStack(Stack):
                 yield _as_define(f) if f.kind == "config_key" else f
             yield from error_messages(STACK_ID, path, ctx)
             yield from _messages(path, ctx)
-
-
-capabilities = frozenset(
-    "auth_check config_key connection data_access entry_point external_call message ui_page".split())
 
 STACK = AspNetCoreStack()

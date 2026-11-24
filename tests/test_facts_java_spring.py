@@ -123,7 +123,7 @@ class JavaSpringTest(unittest.TestCase):
         self.assertEqual(self.find_all("config_key", R, 14, "reports.output-dir")[0]["use"], "read")
         self.assertEqual(self.find_all("config_key", R, 28, "reports.sink.url")[0]["use"], "read")
         tok = self.find_all("config_key", R, 29, "REPORT_API_TOKEN")[0]
-        self.assertEqual((tok["use"], tok["secret_location"]), ("read", True))
+        self.assertEqual((tok["use"], tok["secret_location"]), ("read", False))
         self.assertEqual(self.find_all("config_key", J + "TicketService.java", 20, "itsm.base-url")[0]["use"], "read")
 
     def test_commented_out_code_yields_nothing(self):

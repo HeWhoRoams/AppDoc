@@ -1,0 +1,11 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/upgrade-2-1",
+  "exhaustive": true,
+  "note": "A template 2.1 Narrative and a verification.md; the Target is the same small service. The unstamped output folder is not recognised as AppDoc output, so it is not pruned.",
+  "must_exist": [
+    {"kind": "owner_file", "stack": "generic", "path": "appdoc-context.md", "name": "appdoc-context.md", "detail": {"kind": "context"}},
+    {"kind": "smell", "stack": "generic", "path": "app/main.py", "line": 6, "detail": {"pattern": "hardcoded-credential-constant"}}
+  ],
+  "must_not_exist": []
+}

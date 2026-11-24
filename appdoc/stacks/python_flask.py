@@ -31,6 +31,10 @@ _TABLE = r"([A-Za-z_#@\[\"`{][\w.\[\]\"`{}#@$]*)"
 
 class PythonFlaskStack(Stack):
     id = STACK_ID
+    capabilities = frozenset((
+        "auth_check config_key connection data_access entry_point.route "
+        "entry_point.job external_call message smell"
+    ).split())
     extensions = frozenset({".py"})
 
     def detect(self, files: list[str]) -> list[str]:
@@ -237,6 +241,7 @@ def _extract(path: str, text: str) -> Iterable[Fact]:
     out.extend(_models(path, t))
     out.extend(_sql(path, t))
     out.extend(_connections(path, t))
+    out.extend(_flask_sqlalchemy(path, t))
     out.extend(_config(path, t))
     out.extend(_jobs(path, t))
     out.extend(_external(path, t))
@@ -377,6 +382,17 @@ def _connections(path, t):
                         type="database", secret_location=bool(secret))
 
 
+_SQLA = re.compile(r"(?<![\w.])(?:flask_sqlalchemy\.)?SQLAlchemy\s*\(")
+
+
+def _flask_sqlalchemy(path, t):
+    for m in _SQLA.finditer(t):
+        if re.match(r"[ \t]*(?:class|def)\b", t[t.rfind("\n", 0, m.start()) + 1:m.start()]):
+            continue
+        yield Fact.make("connection", STACK_ID, path, line_of(t, m.start()), "SQLAlchemy", type="sqlalchemy",
+                        secret_location=False)
+
+
 def _split_pos(args: str):
     """Top-level comma split of an argument list: [(offset, text)] with string-aware nesting."""
     out, depth, i, start = [], 0, 0, 0
@@ -402,7 +418,8 @@ def _split_pos(args: str):
 
 def _cfg(path, t, off, key, use, via):
     return Fact.make("config_key", STACK_ID, path, line_of(t, off), key, source="code",
-                     secret_location=is_secret_key(key), use=use, via=via)
+                     secret_location=is_secret_key(key), use=use, via=via,
+                     **({"read_kind": "env" if via == "environ" else "file"} if use == "read" else {}))
 
 
 _UPPER_DEF = re.compile(r"(?m)^([A-Z][A-Z0-9_]*)[ \t]*(?::[^=\n]+)?=(?!=)")
@@ -688,7 +705,3 @@ def _messages(path, t):
             f = _msg(path, t, m.start(), s or "", _ctx(s or ""))
             if f:
                 yield f
-
-
-capabilities = frozenset(
-    "auth_check config_key connection data_access entry_point external_call message smell".split())

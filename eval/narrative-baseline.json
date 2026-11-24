@@ -1,0 +1,51 @@
+{
+  "eShop": {
+    "ES-1": "Absent",
+    "ES-2": "Present",
+    "ES-3": "Present",
+    "ES-4": "Present",
+    "ES-5": "Present",
+    "ES-6": "Partial",
+    "ES-7": "Partial",
+    "ES-8": "Partial",
+    "ES-9": "Retired"
+  },
+  "flaskr-tdd": {
+    "FL-1": "Partial",
+    "FL-10": "Present",
+    "FL-2": "Present",
+    "FL-3": "Partial",
+    "FL-4": "Partial",
+    "FL-5": "Partial",
+    "FL-6": "Partial",
+    "FL-7": "Present",
+    "FL-8": "Present",
+    "FL-9": "Present"
+  },
+  "gitea": {
+    "GT-1": "Present",
+    "GT-10": "Present",
+    "GT-11": "Present",
+    "GT-2": "Partial",
+    "GT-3": "Absent",
+    "GT-4": "Partial",
+    "GT-5": "Absent",
+    "GT-6": "Present",
+    "GT-7": "Partial",
+    "GT-8": "Present",
+    "GT-9": "Present"
+  },
+  "spring-petclinic": {
+    "SP-1": "Absent",
+    "SP-10": "Partial",
+    "SP-11": "Partial",
+    "SP-2": "Partial",
+    "SP-3": "Partial",
+    "SP-4": "Present",
+    "SP-5": "Partial",
+    "SP-6": "Present",
+    "SP-7": "Present",
+    "SP-8": "Partial",
+    "SP-9": "Partial"
+  }
+}

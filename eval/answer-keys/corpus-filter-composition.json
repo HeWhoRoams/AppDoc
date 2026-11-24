@@ -1,0 +1,8 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/filter-composition",
+  "exhaustive": false,
+  "note": "authorization filters ANDed per handler; asserted in tests/test_corpus.py. No row is scored here: the 2.8 Fact kinds do not exist yet.",
+  "must_exist": [],
+  "must_not_exist": []
+}

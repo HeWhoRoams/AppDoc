@@ -16,6 +16,10 @@ class Stack:
     id: str = ""
     extensions: frozenset = frozenset()   # lowercase, with dot; files this Stack reads
     supported: bool = True
+    # What this Stack emits: Fact kinds ("data_access") and dotted detail capabilities. ``entry_point``
+    # is declared by subtype (``entry_point.route|page|command|job|handler``), never bare. Read it
+    # through ``stacks.capabilities_of``.
+    capabilities: frozenset = frozenset()
 
     def detect(self, files: list[str]) -> list[str]:
         """Return the marker files (sorted, Target-relative) that show this Stack is present."""

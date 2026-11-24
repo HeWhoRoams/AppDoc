@@ -34,6 +34,22 @@ python -m appdoc check <target>       # exit 0 pass, 2 problems, 1 tool error; -
 python -m appdoc render <target>      # writes application-documentation.html
 ```
 
+All commands:
+
+<!-- appdoc-self:generated commands -->
+| Command | Options | What it does |
+|---|---|---|
+| `appdoc extract <target>` | `--out OUT`, `--workers WORKERS`, `--skip-tests`, `--no-cache`, `--no-ownership`, `--ownership-top OWNERSHIP_TOP` | write facts.json, facts-summary.md and provenance.json |
+| `appdoc fill <target>` | `--out OUT` | write the generated blocks of the Narrative from the Facts and the register |
+| `appdoc check <target>` | `--out OUT`, `--require-audit`, `--strict` | verify the Narrative; exit 0 pass, 2 problems, 1 tool error |
+| `appdoc render <target>` | `--out OUT`, `--css CSS`, `--mermaid MERMAID` | write application-documentation.html |
+| `appdoc seal <target>` | `--out OUT`, `--audit`, `--date DATE` | write claim_sha into the register rows that lack one; --audit --date records the audit |
+| `appdoc build <target>` | `--out OUT`, `--mermaid MERMAID`, `--expand-citations`, `--require-audit`, `--strict` | seal (rows and notes), fill, check and render in one step |
+| `appdoc gate <target>` | `--out OUT`, `--workers WORKERS`, `--require-audit`, `--strict` | CI gate: regenerate the Facts and compare with the committed facts.json, then check; exit 0 pass, 1 tool error, 2 Facts changed, 3 AppDoc upgraded |
+| `appdoc audit-plan <target>` | `--out OUT`, `--check` | write docs/appdoc/audit-plan.json: the ids and per-row keys the independent audit must cover (a sample is chosen by the tool) |
+| `appdoc upgrade <target>` | `--out OUT`, `--workers WORKERS`, `--no-ownership` | bring a document of an older template to the running one: add the missing headings, blocks, columns and rows, keep every line of text, then extract and fill; the rest is for a person |
+<!-- /appdoc-self:generated commands -->
+
 Run these from the AppDoc folder (or call `python run_appdoc.py ...` from anywhere). On Windows use `py -3 -m appdoc ...` if `python` is not on PATH. Run on a **scratch copy** of the Target if you do not want files added to its `docs/appdoc/`. All output goes to `<target>/docs/appdoc/` (override with `--out`, which must stay inside the Target).
 
 ## What you get
@@ -66,7 +82,13 @@ Every Target also gets the **generic** extractor: files, dependency manifests, c
 
 ## The Facts file
 
-`facts.json` holds records of `{kind, stack, path, line, name, detail}`. Kinds: `file`, `stack`, `entry_point`, `data_access`, `connection`, `config_key`, `dependency`, `external_call`, `auth_check`, `message`, `ownership`, `smell`, `schema_object`, `owner_file`, `ui_page`. It contains no timestamps, no absolute paths and no secret values; entries are sorted and de-duplicated, and the Target's git commit is recorded when there is one. Schema `appdoc-facts/4` adds `target.scan` (files found = scanned + pruned + ignored, and each pruned folder with its rule), a `role` on every `config_key` (`app`, `build`, `ci`, `orchestration`) and a `use` (`define` or `read`), and `entry_point` records of `type=job` with `schedule` and `enabled`. Lockfiles and i18n message bundles produce no config keys.
+`facts.json` holds records of `{kind, stack, path, line, name, detail}`.
+
+<!-- appdoc-self:generated facts-schema -->
+Schema `appdoc-facts/8`. Kinds: `file`, `stack`, `entry_point`, `data_access`, `connection`, `config_key`, `dependency`, `external_call`, `auth_check`, `message`, `ownership`, `smell`, `schema_object`, `owner_file`, `ui_page`, `security_setting`, `access_rule`, `access_rule_unmatched`, `config_transform`, `config_external`, `config_unparsed`, `guard_class`, `guard_use`, `guard_candidate`, `const_def`, `project`, `build_define`, `publish_profile`, `context_directive`, `controller_class`, `host_auth`, `method_call`, `antiforgery_check`, `conditional_const`, `mode_branch`. The allowed `detail` keys of each kind are `facts.DETAIL_KEYS`.
+<!-- /appdoc-self:generated facts-schema -->
+
+It contains no timestamps, no absolute paths and no secret values; entries are sorted and de-duplicated, and the Target's git commit is recorded when there is one. `target.scan` records the files found (scanned + pruned + ignored) and each pruned folder with its rule, plus retired and duplicate folder candidates; every `config_key` has a `role` (`app`, `build`, `ci`, `orchestration`, `env`) and a `use` (`define` or `read`); `entry_point` records of `type=job` carry `schedule` and `enabled`. Lockfiles and i18n message bundles produce no config keys. `provenance.json` beside it records which AppDoc wrote the Facts (version, bundle hash, schema); `facts.json` itself carries no generator, so an AppDoc patch release that changes no Facts changes no Facts file.
 
 Folders are pruned on evidence, not by name alone: `bin`/`obj` only under a .NET project, `target` beside `pom.xml`/`Cargo.toml`, `build` beside a Gradle or CMake file, `dist`/`out` beside `package.json`/`tsconfig.json`/`*.csproj`, `packages` when it is a NuGet cache, `vendor` when it is Go, Composer or Bundler output. VCS metadata, IDE folders, `node_modules`, `__pycache__` and virtualenvs are always pruned.
 
@@ -78,26 +100,50 @@ Some code patterns are worth a second look but cannot be proved by a script. The
 
 ## The Check
 
-| Rule | Fails when |
-|---|---|
-| C1 | a Citation points to a missing file or a line past the end (folders and unique bare filenames, including `Procfile`, `Dockerfile`, `Makefile` and `MAINTAINERS`, resolve; extensionless non-existent spans are not Citations) |
-| C2 | a Citation in section 10 has no line |
-| C3 | a section is missing, out of order, empty or still a placeholder; or the document is not on the current template (one upgrade problem, and C8-C12 are not run) |
-| C4 | section 14 is empty while Unknowns exist, or Data and Integrations is empty though Facts exist |
-| C5 | a paragraph, list item or table row in sections 3 to 10 is neither cited, Inferred nor Unknown |
-| C6 | secret-shaped text, or a `never-mention` term, appears in any published file (the Narrative and `evidence.jsonl`) |
-| C7 | an unsupported Stack is not named in section 2; a 4.1 file count differs from the Facts; a generated block is missing or differs from what `fill` writes; a count in sections 2 to 4 ("five controllers", "30 cron tasks") differs from the Facts ("N of M" passes when M matches) |
-| C8 | a required numbered subsection (4.1, 5.1-5.3, 8.1-8.5, 10.1-10.2, 15.1, 16.1-16.7) is missing, outside its section, or empty |
-| C9 | a table header differs from the template; a row has the wrong number of cells; an ID, Severity, Status, Priority or Effort value is not allowed; a 16.5 step or an 11 owner row is missing; the 5.3 Restriction line is missing; a template guidance comment remains |
-| C10 | an ID is defined twice or referenced but not defined; a `#anchor` link matches no heading; a 10.1 finding has no recommendation; a 10.2 control that is not Present is in neither 15 nor 14; an 8.1 or 8.3 ID has no 8.5 row; a section 4 Area is absent from 5.3; a Key in a 16.6 effect table is not a `config_key` Fact |
-| C11 | `evidence.jsonl` is missing, malformed, or has a bad ID, result, ref or Citation; a 10.1 finding or workflow has no row; a row's anchor text is not in its cited lines, or is longer than 200 characters or spans lines; a section 14 question marked `Answerable` is still open; with `--require-audit`, the audit was declared not performed |
-| C12 | a finding candidate (`smell` Fact) is neither cited in 10.1 nor `Dismissed` in the register with a reason |
+<!-- appdoc-self:generated rules -->
+Rules C1-C23. Each rule fails or is not reported; there is no score.
 
-There is no score. Each rule fails or is not reported. The template's structure (headings, table columns, ID prefixes, allowed values) is defined once in `appdoc/template_spec.py`; the Check reads it.
+| Rule | Name | Fails when | Kind |
+|---|---|---|---|
+| C1 | Citations resolve | a Citation points to a missing file or a line past the end (folders and unique bare filenames resolve; extensionless non-existent spans are not Citations) | fails |
+| C2 | Security lines | a Citation in section 10 has no line | fails |
+| C3 | Sections complete | a section is missing, out of order, empty or a placeholder, the stamp is not the running template, or an `appdoc:upgrade-orphan` comment from `appdoc upgrade` is left | fails |
+| C4 | Gaps declared | section 14 is empty while Unknowns exist, or Data and Integrations is empty though Facts exist | fails |
+| C5 | Claims grounded | a paragraph, list item or table row in sections 3 to 10 is neither cited, Inferred nor Unknown | fails |
+| C6 | No secrets | secret-shaped text, or a `never-mention` term, appears in a published file | fails |
+| C7 | Coverage honest | an unsupported Stack is not named in section 2; a count or a generated block differs from the Facts; facts.json was written by another major.minor of AppDoc | part fails only under `--strict` |
+| C8 | Structure complete | a required numbered subsection is missing, outside its section or empty | fails |
+| C9 | Tables conform | a table differs from the template (header, cell count, ID prefix, allowed value, required row), the 5.3 Restriction line is missing, a section 17 (2.7) Command cell is not a backticked command, Unknown or Not applicable or lacks a lined Citation, or a guidance comment remains | fails |
+| C10 | References resolve | an ID is defined twice or referenced but not defined, or a reference between sections does not resolve | fails |
+| C11 | Register valid | `evidence.jsonl` is missing, malformed or does not cover the document; an anchor is not in its cited lines | fails |
+| C12 | Finding candidates addressed | a finding candidate is neither cited in 10.1 nor Dismissed in the register | fails |
+| C13 | Entry points not cited | an entry point file is not cited anywhere in the document | advisory; fails under `--strict` |
+| C14 | Unknowns match the register | section 14 lists a question the register resolved, or its unknown count disagrees with the register | fails |
+| C15 | Register counts in prose | a register count written in prose disagrees with the register; from template 2.7 a count marker holds a stale number or an unknown class (a hand-written "N of M" is then only an advisory: use a count marker) | fails |
+| C16 | Universal claims cite single lines | a universal claim (all, every, never) cites only single lines | advisory; fails under `--strict` |
+| C17 | Audit scope names the method only | the audit record's scope text holds an ID or a digit; with `--require-audit` the record lacks `audited_on`, `audited_with`, `audited_bundle` or `doc_sha`, and with `--strict` a row was sealed at upgrade (all fail from template 2.7) | advisory before template 2.7; fails from 2.7 |
+| C18 | Notes match their block | a note in `notes.jsonl` names an unknown block, was written about an older version of its block (`block_sha`), or cites a file that does not resolve; the label `Known extractor limitation:` is written in the Narrative outside a generated block (fails from template 2.7) | advisory before template 2.7; fails from 2.7 |
+| C19 | Audit follows the plan | with `--require-audit` on template 2.7, `audit-plan.json` is missing or differs from a fresh computation, or a planned id or per-row key has no live register row (a section listed under `exclusions` is not required) | fails |
+| C20 | Citation precision | a range over 100 lines is a claim's only lined Citation in section 4, 7 or 10, or a section 4 or 10.1 table cell holds more than 5 Citations | advisory; fails under `--strict` |
+| C21 | Mandatory inputs cited | a file holding a security setting, access rule, external config reference or secret-bearing application key is not cited with a line in text outside the generated blocks (a file that could not be parsed needs its path) | fails |
+| C22 | Area and protection coverage | an MVC area is not the folder of a 4.1 row, or a handler file that changes state or has no application-layer restriction (or an unknown one) is not cited; with `--strict`, a guard candidate is not declared | part fails only under `--strict` |
+| C23 | Unknown the repository may answer | an Unknown about identity, authentication, authorization or roles while the repository holds a security setting or access rule that may answer it | advisory; fails under `--strict` |
+
+Previews of template 2.7 rules. On a template 2.4 document these are advisories, listed in `check-report.md` as "fails from template 2.7"; they fail only on a document stamped 2.7:
+
+- C1: a bare file name (in the Narrative, a register row or a note) that resolves to a file in a folder: cite the full path
+- C9: a section 10.1 or 15 row that outranks the row before it (Critical, High, Medium, Low)
+- C11: an Answerable register row without `answered_in`, the section that answers the question
+- C15: a count marker holds a stale number or an unknown class
+- C17: the audit record's scope text holds an ID or a digit
+- C18: a note in `notes.jsonl` that does not match its block, or the reserved label written by hand
+<!-- /appdoc-self:generated rules -->
+
+There is no score. The template's structure (headings, table columns, ID prefixes, allowed values) is defined once in `appdoc/template_spec.py`; the Check reads it.
 
 A Citation path may contain spaces (`` `To be deleted/App/logcall.asp:212` ``) when it has a folder and ends in a file name.
 
-**Advisory.** `check-report.md` lists **Entry points not cited**: route, page, command and job Facts whose file the document never cites, grouped by folder. It does not fail the Check. `check --strict` fails on it.
+**Advisory.** `check-report.md` lists **Entry points not cited**: route, page, command and job Facts whose file the document never cites, grouped by folder. It does not fail the Check. `check --strict` fails on it. Other advisories: universal claims that cite single lines (C16), citations broader than the claim needs (C20), duplicate folders not named in section 2, and the previews of template 2.7 rules above.
 
 **Scope.** The Check verifies resolution, structure, references, counts against the Facts, that each finding candidate is addressed, and that each Evidence Register anchor appears in its cited lines. It does **not** judge whether a claim's wording follows from those lines; a PASS is not an accuracy certification.
 
@@ -105,7 +151,7 @@ A Citation path may contain spaces (`` `To be deleted/App/logcall.asp:212` ``) w
 
 ## Docs-as-code
 
-To keep the generated docs in lockstep with the code, add the deterministic gate (`ci/appdoc-docs-gate.yml`) to the target repo's `.github/workflows/`. On every push and pull request it regenerates the Facts and diffs them against the committed `docs/appdoc/facts.json` (change detection), then runs the AppDoc Check with `--require-audit` (C1–C12, consistency). If the code changed or the docs are broken, the gate fails until the docs are refreshed; if AppDoc itself was upgraded (a new Facts schema), the gate says so instead of blaming the code. AppDoc holds no LLM key, so the AI-written Narrative is not regenerated in CI — refresh it in a session. See `docs/docs-as-code.md` for the full process.
+To keep the generated docs in lockstep with the code, add the deterministic gate (`ci/appdoc-docs-gate.yml`) to the target repo's `.github/workflows/`. On every push and pull request it clones the pinned AppDoc release outside the workspace and runs `appdoc gate`: the Facts are regenerated and compared with the committed `docs/appdoc/facts.json` (exit 2 "Facts changed" with a short diff, or exit 3 "AppDoc upgraded" when the Facts schema differs), then the Check runs with `--require-audit`. A patch release of AppDoc with the same schema never trips the gate. AppDoc holds no LLM key, so the AI-written Narrative is not regenerated in CI; refresh it in a session. See `docs/docs-as-code.md` for the full process.
 
 ## Configuration
 

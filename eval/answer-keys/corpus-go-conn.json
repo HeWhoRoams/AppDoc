@@ -1,0 +1,12 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/go-conn",
+  "exhaustive": true,
+  "note": "Go sql.Open and xorm.NewEngine are connections.",
+  "must_exist": [
+    {"kind": "connection", "stack": "go", "path": "main.go", "line": 9, "name": "sql.Open", "detail": {"type": "database", "secret_location": false}},
+    {"kind": "connection", "stack": "go", "path": "main.go", "line": 10, "name": "xorm.NewEngine", "detail": {"type": "database", "secret_location": false}},
+    {"kind": "stack", "stack": "go", "path": "go.mod", "name": "go", "detail": {"supported": true, "capabilities": ["connection"]}}
+  ],
+  "must_not_exist": []
+}

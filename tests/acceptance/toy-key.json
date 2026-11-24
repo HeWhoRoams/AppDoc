@@ -1,0 +1,18 @@
+{
+  "type": "acceptance",
+  "note": "An invented toy key for the invented mvc5-classic Target (T28.04). Private keys live outside the repository.",
+  "rows": [
+    {"id": "TOY-1", "desc": "the classic ASP.NET stack is detected",
+     "fact": {"kind": "stack", "name": "aspnet"}, "min": 1},
+    {"id": "TOY-2", "desc": "four areas appear as distinct mvc_area_path values",
+     "fact": {"kind": "entry_point", "detail": {"type": "route"}}, "distinct": "detail.mvc_area_path", "count": 4},
+    {"id": "TOY-3", "desc": "exactly one WinForms project",
+     "fact": {"kind": "project", "detail": {"kind": "winforms"}}, "count": 1},
+    {"id": "TOY-4", "desc": "one desktop entry point",
+     "fact": {"kind": "entry_point", "detail": {"type": "desktop"}}, "count": 1},
+    {"id": "TOY-5", "desc": "no node-express stack from the tooling manifest",
+     "fact": {"kind": "stack", "name": "node-express"}, "max": 0},
+    {"id": "TOY-6", "desc": "a secret key's location is recorded, never its value",
+     "fact": {"kind": "config_key", "name": "ReportServerPassword", "detail": {"secret_location": true}}, "min": 1}
+  ]
+}

@@ -1,0 +1,1 @@
+{"block": "entry-points", "text": "Routes registered by decorator are not listed", "cites": ["app/main.py:2"], "block_sha": "935f9c9421e0"}

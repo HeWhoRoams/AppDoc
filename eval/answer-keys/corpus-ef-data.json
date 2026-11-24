@@ -1,0 +1,13 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/ef-data",
+  "exhaustive": true,
+  "note": "EF DbSet is data_access set; a LINQ query over it is data_access query.",
+  "must_exist": [
+    {"kind": "data_access", "stack": "aspnet-core", "path": "Data/ShopContext.cs", "line": 5, "name": "Order", "detail": {"type": "entity", "operation": "access"}},
+    {"kind": "data_access", "stack": "aspnet-core", "path": "Data/ShopContext.cs", "line": 5, "name": "Orders", "detail": {"type": "ef", "operation": "set"}},
+    {"kind": "data_access", "stack": "aspnet-core", "path": "Services/OrderService.cs", "line": 7, "name": "Orders", "detail": {"type": "ef", "operation": "query"}},
+    {"kind": "stack", "stack": "aspnet-core", "path": "Program.cs", "name": "aspnet-core", "detail": {"supported": true, "capabilities": ["data_access"]}}
+  ],
+  "must_not_exist": []
+}

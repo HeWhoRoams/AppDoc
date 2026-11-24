@@ -1,5 +1,7 @@
 # AppDoc Performance Plan — Large-Repo Optimization
 
+> **Status (2026-11-23).** Phases 0–4 and the content phases 6a/6b (§13) are **implemented on `main`** (`extract._extract_file`, `--workers`, the content-hash cache, `--skip-tests`, `--no-ownership`, `--ownership-top`, `stacks/integrations.py`, `appdoc/integration.py`). **Phase 5 (two-pass scan, `--sample N`) is not started** and stays deferred; if it is ever built it must record the sampling in `target` and must not interact with the 2.6 content index (the duplicate-folder and retired-candidate passes need the full file list). Follow-ups owned by other plans: the cache salt becomes the bundle hash (2.6 §4.6); the determinism harness covers `--workers` and warm/cold cache (2.6 §3.3).
+
 > Deep technical implementation plan for the 6 large-repo optimizations.
 > Grounded in the verified source at HEAD `bb86a08`. All line refs are to the git-tracked source.
 > **Non-negotiable invariant: `facts.json` stays byte-identical across runs.** Every phase has a determinism guard + a test that proves it.

@@ -1,0 +1,86 @@
+{
+  "pattern": "state-change-authenticated-only",
+  "target": "targets/contoso-labels",
+  "labelled_by": "author",
+  "second_labeller": null,
+  "note": "Labels are by the author of the detector, on invented code (Contoso, Fabrikam; no real application). A second person must re-label this set independently and record the name in second_labeller before this heuristic may oblige C12; until then it stays a candidate in the summary (plan 2.8 W11 part C, T28.75). label tp: a hit at this site is correct; fp: a hit at this site would be a false positive.",
+  "labels": [
+    {
+      "path": "Areas/Staff/Controllers/UsersController.cs",
+      "line": 10,
+      "text": "public ActionResult Save(int id)",
+      "label": "tp",
+      "reason": "signed-in-only writer; a sibling controller in the area is role-restricted"
+    },
+    {
+      "path": "Areas/Staff/Controllers/UsersController.cs",
+      "line": 17,
+      "text": "public ActionResult Drop(int id)",
+      "label": "tp",
+      "reason": "signed-in-only delete; a sibling controller in the area is role-restricted"
+    },
+    {
+      "path": "Areas/Staff/Controllers/SettingsController.cs",
+      "line": 10,
+      "text": "public ActionResult Update(int id)",
+      "label": "tp",
+      "reason": "signed-in-only update; a sibling controller in the area is role-restricted"
+    },
+    {
+      "path": "Areas/Staff/Controllers/TemplatesController.cs",
+      "line": 10,
+      "text": "public ActionResult Create(int id)",
+      "label": "tp",
+      "reason": "signed-in-only insert; a sibling controller in the area is role-restricted"
+    },
+    {
+      "path": "Areas/Staff/Controllers/TemplatesController.cs",
+      "line": 17,
+      "text": "public ActionResult Remove(int id)",
+      "label": "tp",
+      "reason": "signed-in-only delete; a sibling controller in the area is role-restricted"
+    },
+    {
+      "path": "Areas/Staff/Controllers/LookupsController.cs",
+      "line": 11,
+      "text": "public ActionResult Filter(string term)",
+      "label": "fp",
+      "reason": "read-only POST in the same area"
+    },
+    {
+      "path": "Areas/Staff/Controllers/LookupsController.cs",
+      "line": 18,
+      "text": "public ActionResult Go(string target)",
+      "label": "fp",
+      "reason": "redirect-only stub in the same area"
+    },
+    {
+      "path": "Areas/Staff/Controllers/RolesController.cs",
+      "line": 10,
+      "text": "public ActionResult Save(int id)",
+      "label": "fp",
+      "reason": "the role-restricted sibling itself"
+    },
+    {
+      "path": "Areas/Ops/Controllers/JobsController.cs",
+      "line": 11,
+      "text": "public ActionResult Run(int id)",
+      "label": "fp",
+      "reason": "signed-in-only writer in an area with no role-restricted sibling"
+    },
+    {
+      "path": "Areas/Ops/Controllers/QueuesController.cs",
+      "line": 11,
+      "text": "public ActionResult Clear(int id)",
+      "label": "fp",
+      "reason": "signed-in-only writer in an area with no role-restricted sibling"
+    },
+    {
+      "path": "Areas/Ops/Controllers/QueuesController.cs",
+      "line": 18,
+      "text": "public ActionResult Pause(int id)",
+      "label": "fp",
+      "reason": "signed-in-only writer in an area with no role-restricted sibling"
+    }
+  ]
+}

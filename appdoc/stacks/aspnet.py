@@ -10,10 +10,12 @@ The shared ``dotnet_*`` helpers at the bottom half are reused by ``aspnet_core``
 from __future__ import annotations
 
 import bisect
+import os
 import re
 from typing import Iterable
 from urllib.parse import urlsplit
 
+from .. import aspnet_guards, dotnetcfg, dotnetsec, scan
 from ..facts import Fact
 from ..secrets import find_secret_shapes, is_secret_key
 from .base import Stack, strip_comments
@@ -387,10 +389,9 @@ def dotnet_common(stack, path, ctx: Ctx, web_forms: bool) -> Iterable[Fact]:
         kind, args = m.group(1), m.group(2)
         roles = []
         policy = None
+        users = 0
         if args:
-            rm = re.search(r"\bRoles\s*:?=\s*(" + STR + ")", args)
-            if rm:
-                roles = [r.strip() for r in _unq(rm.group(1), vb).split(",") if r.strip()]
+            args, roles, users = aspnet_guards.scrub_attribute_args(args)   # R18: users and email/SID roles are counted
             pm = re.search(r"\bPolicy\s*:?=\s*(" + STR + ")", args)
             if pm:
                 policy = _unq(pm.group(1), vb)
@@ -400,12 +401,18 @@ def dotnet_common(stack, path, ctx: Ctx, web_forms: bool) -> Iterable[Fact]:
             detail["roles"] = roles
         if policy:
             detail["policy"] = policy
+        if users:
+            detail["users_named"] = users
         applies = _applies_to(ctx, classes, m.end()) if classes else ""
         if applies:
             detail["applies_to"] = applies
         yield Fact.make("auth_check", stack, path, ctx.line(m.start()), _safe(nm, 120), **detail)
     for m in _ISINROLE.finditer(t):
         role = _unq(m.group(1), vb)
+        if aspnet_guards._identity_like(role):          # R18: an email or SID is counted, not recorded
+            yield Fact.make("auth_check", stack, path, ctx.line(m.start()), "User.IsInRole(<user>)",
+                            mechanism="role", users_named=1)
+            continue
         yield Fact.make("auth_check", stack, path, ctx.line(m.start()), _safe(f'User.IsInRole("{role}")', 120),
                         mechanism="role", roles=[role])
     for m in _IDENTITY.finditer(t):
@@ -478,19 +485,124 @@ def _join_route(*parts: str) -> str:
     return "/" + "/".join(segs)
 
 
+_PAGE_BASES = frozenset({"Page", "UserControl", "MasterPage"})
+_APP_BASES = frozenset({"HttpApplication"})
+_VB_PAGE_BASE = re.compile(r"(?im)^\s*Inherits\s+(?:[\w.]+\.)?(?:Page|UserControl|MasterPage|HttpApplication)\b")
+_MVC_USING = re.compile(r"\busing\s+(?:static\s+)?(?:System\.Web\.(?:Mvc|Http)|Microsoft\.AspNetCore\.Mvc)\b")
+_DESKTOP_USING = re.compile(r"\busing\s+System\.Windows(?:\.Forms)?\s*;")
+_DESKTOP_BASES = frozenset({"Form", "Window"})
+_MAIN = re.compile(r"\bstatic\s+(?:void|int)\s+Main\s*\(")
+
+
+def _bases(cls) -> list:
+    """Last name segments of a class's base list (``System.Web.UI.Page, IFoo`` gives ``Page``, ``IFoo``)."""
+    return [b.strip().split("<")[0].rsplit(".", 1)[-1] for b in (cls.base or "").split(",") if b.strip()]
+
+
 def _handlers(stack, path, ctx: Ctx, classes, vb: bool):
+    """Web Forms event handlers: code-behind of ``.aspx/.ascx/.master/.asax``, inline ``<script runat="server">``,
+    or a class deriving ``Page``/``UserControl``/``MasterPage`` (``HttpApplication`` for the global handlers).
+    A WinForms or console class with the same handler signature is not an entry point. VB classes are not
+    parsed (``classes`` is empty), so a plain ``.vb`` file counts only when it declares an ``Inherits`` of those bases."""
     cb = _CODEBEHIND_PAGE.match(path)
-    for rx in ((_HANDLER_VB, _HANDLER_VB_GLOBAL) if vb else (_HANDLER_CS, _HANDLER_GLOBAL)):
+    is_code = path.lower().endswith((".cs", ".vb"))
+    vb_base = bool(vb and not cb and is_code and _VB_PAGE_BASE.search(ctx.t))
+    for rx, base_set in (((_HANDLER_VB, _PAGE_BASES), (_HANDLER_VB_GLOBAL, _APP_BASES)) if vb
+                         else ((_HANDLER_CS, _PAGE_BASES), (_HANDLER_GLOBAL, _APP_BASES))):
         for m in rx.finditer(ctx.t):
             cls = class_at(classes, m.start()) if classes else None
-            page = cb.group(1) if cb else (path if not path.lower().endswith((".cs", ".vb")) else (cls.name if cls else ""))
+            if is_code and not cb and not vb_base and not (cls and base_set.intersection(_bases(cls))):
+                continue
+            page = cb.group(1) if cb else (path if not is_code else (cls.name if cls else ""))
             detail = dict(type="handler", page=page)
             if cls:
                 detail["class"] = cls.name
             yield Fact.make("entry_point", stack, path, ctx.line(m.start()), m.group(1), **detail)
 
 
+# --------------------------------------------------------------------------- desktop (WinForms / WPF)
+
+def _desktop(stack, path, ctx: Ctx, classes):
+    """Forms and windows are ``ui_page type=form``; ``static void Main`` of a file that uses
+    ``System.Windows[.Forms]`` is one ``entry_point type=desktop``. A web ``Program.Main`` is not desktop.
+    The project's ``OutputType`` (``WinExe``) is a project property, joined later, not read here."""
+    uses = bool(_DESKTOP_USING.search(ctx.t))
+    for c in classes:
+        hit = [b for b in _bases(c) if b in _DESKTOP_BASES]
+        qualified = re.search(r"\bSystem\.Windows(?:\.Forms)?\.(?:Form|Window)\b", c.base)
+        if hit and (uses or qualified):
+            yield Fact.make("ui_page", stack, path, ctx.line(c.pos), c.name, type="form", root=hit[0])
+    if uses:
+        m = _MAIN.search(ctx.t)
+        if m:
+            cls = class_at(classes, m.start())
+            yield Fact.make("entry_point", stack, path, ctx.line(m.start()), "Main", type="desktop",
+                            handler=f"{cls.name}.Main" if cls else "Main")
+
+
+# --------------------------------------------------------------------------- MVC areas
+
+_AREA_DIR = re.compile(r"(?i)(?:^|/)areas/([^/]+)/")
+_AREA_NS = re.compile(r"\bnamespace\s+(?:\w+\.)*?Areas\.(\w+)")
+_AREA_NAME = re.compile(r"\bAreaName\s*(?:=>|\{\s*get\s*\{?\s*return)\s*(" + STR + ")")
+_AREA_PREFIX = re.compile(r"\bAreaPrefix\s*=\s*(" + STR + ")")
+
+
+def _default_area(path: str, text: str) -> str | None:
+    """The area a file belongs to: its ``Areas/<X>/`` folder, else the ``...Areas.<X>`` namespace. The folder wins."""
+    m = _AREA_DIR.search(path)
+    if m:
+        return m.group(1)
+    m = _AREA_NS.search(text)
+    return m.group(1) if m else None
+
+
+def _route_area(cls_attrs, default: str | None):
+    """``(area, area_prefix)`` for a controller from ``[RouteArea]``: positional name plus ``AreaPrefix``,
+    ``AreaPrefix`` only, or an empty name and prefix (root: no area). Without the attribute the folder area applies."""
+    args = None
+    for a, ar in cls_attrs:
+        if a == "RouteArea":
+            args = ar or ""
+    if args is None:
+        return default, None
+    pos = re.match(r"\s*(" + STR + ")", args)
+    name = _unq(pos.group(1)) if pos else None
+    pm = _AREA_PREFIX.search(args)
+    pref = _unq(pm.group(1)) if pm else None
+    if name == "" and not pref:
+        return None, None            # root
+    if name:
+        return name, (pref if pref is not None else name)
+    if pref:
+        return default, pref
+    return default, None
+
+
+def _area_detail(area: str | None) -> dict:
+    return {"mvc_area": area, "mvc_area_path": f"Areas/{area}"} if area else {}
+
+
+def _method_end_line(ctx: Ctx, blank: str, m) -> int:
+    """Line of the ``}`` that closes the method matched by ``m`` (the line of its ``;`` for an expression body)."""
+    i = m.end()
+    n = len(blank)
+    while i < n and blank[i] in " \t\r\n":
+        i += 1
+    if blank.startswith("where", i):
+        i = min([j for j in (blank.find("{", i), blank.find("=>", i), blank.find(";", i)) if j >= 0] or [n])
+    if i < n and blank[i] == "{":
+        j = aspnet_guards._match_close(blank, i)
+        return ctx.line(j if j > 0 else n - 1)
+    j = blank.find(";", i)
+    return ctx.line(j if j >= 0 else n - 1)
+
+
 def _controller_actions(stack, path, ctx: Ctx, classes):
+    seen = set()
+    blank = None
+    mvc_using = bool(_MVC_USING.search(ctx.t))
+    default_area = _default_area(path, ctx.t)
     for m, cls, attrs in find_methods(ctx, classes):
         if cls is None or "static" in m.group("mods"):
             continue
@@ -498,23 +610,33 @@ def _controller_actions(stack, path, ctx: Ctx, classes):
         if "NonAction" in names:
             continue
         verbs = []
-        route_tmpl = None
+        templates = []
         has_route = False
+        attr_route = False
+        action_name = None
         for a, args in attrs:
             if a in _HTTP_VERBS:
                 verbs.append(a[4:].upper())
                 has_route = True
                 tm = first_string_arg(args)
-                if tm is not None and route_tmpl is None:
-                    route_tmpl = tm
+                if tm is not None:
+                    attr_route = True
+                    if tm not in templates:
+                        templates.append(tm)
             elif a == "Route":
                 has_route = True
+                attr_route = True
                 tm = first_string_arg(args)
-                if tm is not None:
-                    route_tmpl = tm
+                if tm is not None and tm not in templates:
+                    templates.append(tm)
             elif a == "AcceptVerbs":
                 verbs += [v.upper() for v in re.findall(r'"(\w+)"', args or "")]
-        is_ctrl = cls.name.endswith("Controller") or re.search(r"\b(?:Async)?Controller\b|\bApiController\b", cls.base)
+                verbs += [v.upper() for v in re.findall(r"HttpVerbs\s*\.\s*(\w+)", args or "")]
+            elif a == "ActionName":
+                action_name = first_string_arg(args, names=("name",)) or action_name
+        bases = _bases(cls)
+        # A Controller-named class needs an MVC using or a base that is itself a controller.
+        is_ctrl = any(b.endswith("Controller") for b in bases) or (cls.name.endswith("Controller") and mvc_using)
         is_api = "ApiController" in cls.base
         ret = m.group("ret").strip()
         implicit = None
@@ -528,45 +650,73 @@ def _controller_actions(stack, path, ctx: Ctx, classes):
                 continue
         elif not has_route:
             continue
-        # class-level prefix
+        # class-level prefix and area
         prefix = None
         for a, args in cls.attrs:
             if a in ("RoutePrefix", "Route"):
                 prefix = first_string_arg(args) or prefix
+        area, area_prefix = _route_area(cls.attrs, default_area)
         ctrl = cls.name[:-len("Controller")] if cls.name.endswith("Controller") else cls.name
-        action = m.group("name")
-        if route_tmpl is not None:
-            if route_tmpl.startswith(("/", "~/")):
-                route = _join_route(route_tmpl.lstrip("~"))
+        method = m.group("name")
+        action = action_name or method
+        routes = []
+        for tmpl in templates:
+            if tmpl.startswith(("/", "~/")):   # a tilde or leading slash overrides the prefix and the area prefix
+                routes.append(_join_route(tmpl.lstrip("~")))
             else:
-                route = _join_route(prefix or "", route_tmpl)
-        elif prefix is not None:
-            route = _join_route(prefix)
-        elif is_api and implicit:
-            route = _join_route("api", ctrl)
-        else:
-            route = _join_route(ctrl, action)
-        route = route.replace("[controller]", ctrl).replace("[action]", action)
-        verbs = verbs or ([implicit] if implicit else [])
-        yield Fact.make("entry_point", stack, path, ctx.line(m.start("name")), route, type="route",
-                        method=",".join(sorted(set(verbs))) or "ANY", handler=f"{cls.name}.{action}")
+                routes.append(_join_route(area_prefix or "", prefix or "", tmpl))
+        if not routes:
+            if prefix is not None and is_api:
+                routes.append(_join_route(area_prefix or "", prefix))
+            elif is_api and implicit:
+                routes.append(_join_route("api", ctrl))
+            else:
+                routes.append(_join_route(ctrl, action))   # conventional: RoutePrefix and RouteArea do not apply
+        out_verbs = ",".join(sorted(set(verbs or ([implicit] if implicit else [])))) or "ANY"
+        # raw facts for the W4 post-pass (guard.py reads Facts only): the span, route style, verb source and filter markers
+        if blank is None:
+            blank = _blank_strings(ctx)
+        raw = {"end_line": _method_end_line(ctx, blank, m)}
+        if attr_route:
+            raw["attr_route"] = True
+        if implicit and not verbs:
+            raw["verb_convention"] = True
+        if "OverrideAuthorization" in names:
+            raw["override_authorization"] = True
+        if "ChildActionOnly" in names:
+            raw["child_action"] = True
+        for route in routes:
+            route = route.replace("[controller]", ctrl).replace("[action]", action)
+            key = (route, out_verbs, method, cls.name)
+            if key in seen:
+                continue
+            seen.add(key)
+            yield Fact.make("entry_point", stack, path, ctx.line(m.start("name")), route, type="route",
+                            method=out_verbs, handler=f"{cls.name}.{method}", **_area_detail(area), **raw,
+                            **aspnet_guards.inherits_detail(cls, classes))
 
 
 def _route_tables(stack, path, ctx: Ctx):
     t = ctx.t
     eq = r"\s*:=?\s*"
+    area = None
+    if "AreaRegistration" in t:
+        # Conventional area routes: the ``MapRoute`` url literal is the route; the folder name is not prepended.
+        nm = _AREA_NAME.search(t)
+        area = _unq(nm.group(1)) if nm else _default_area(path, t)
+    extra = _area_detail(area)
     for m in re.finditer(r"\.\s*MapRoute\s*\(\s*(?:name" + eq + r")?(" + STR + r")\s*,\s*(?:url" + eq + r")?(" + STR + ")", t):
         tail = t[m.end():m.end() + 500]
         tail = tail[:re.search(r"\)\s*;|\n\s*\n", tail + ");").start()]
         c = re.search(r"controller\s*:?=\s*\"(\w+)\"", tail)
         a = re.search(r"action\s*:?=\s*\"(\w+)\"", tail)
-        detail = dict(type="route", method="ANY", route_name=_unq(m.group(1)))
+        detail = dict(type="route", method="ANY", route_name=_unq(m.group(1)), **extra)
         if c:
             detail["handler"] = f"{c.group(1)}Controller.{a.group(1) if a else '{action}'}"
         yield Fact.make("entry_point", stack, path, ctx.line(m.start()), _join_route(_unq(m.group(2))), **detail)
     for m in re.finditer(r"\.\s*MapHttpRoute\s*\(\s*(?:name" + eq + r")?(" + STR + r")\s*,\s*(?:routeTemplate" + eq + r")?(" + STR + ")", t):
         yield Fact.make("entry_point", stack, path, ctx.line(m.start()), _join_route(_unq(m.group(2))),
-                        type="route", method="ANY", route_name=_unq(m.group(1)))
+                        type="route", method="ANY", route_name=_unq(m.group(1)), http_route=True, **extra)
     for m in re.finditer(r"\.\s*MapPageRoute\s*\(\s*(" + STR + r")\s*,\s*(" + STR + r")\s*,\s*(" + STR + ")", t):
         yield Fact.make("entry_point", stack, path, ctx.line(m.start()), _join_route(_unq(m.group(2))),
                         type="route", method="ANY", route_name=_unq(m.group(1)), handler=_unq(m.group(3)))
@@ -593,34 +743,88 @@ def _strip_markup_comments(text: str) -> str:
     return re.sub(r"@\*.*?\*@", _blank, text, flags=re.S)
 
 
+# --------------------------------------------------------------------------- detection helpers (T28.25)
+
+_MAX_DETECT_BYTES = 1024 * 1024
+_WEB_API_CODE = re.compile(r"\bSystem\.Web\.Http\b")
+_API_CONTROLLER = re.compile(r":\s*(?:[\w.]+\s*,\s*)*(?:System\.Web\.Http\.)?ApiController\b")
+
+
+def _read_small(root: str, rel: str) -> str:
+    full = os.path.join(root, rel)
+    try:
+        if os.path.getsize(full) > _MAX_DETECT_BYTES:
+            return ""
+        return scan.read_text(root, rel)[0]
+    except OSError:
+        return ""
+
+
+def _has_system_web(root: str, rel: str) -> bool:
+    """A Web.config whose ``configuration`` holds a ``system.web`` section (an IIS-hosting stub for ASP.NET Core only
+    has ``system.webServer``)."""
+    text = _read_small(root, rel)
+    if "<system.web" not in text:
+        return False
+    doc = dotnetcfg.parse(text.encode("utf-8"), encoding="utf-8")
+    return doc.root is not None and doc.root.name == "configuration" and doc.root.find("system.web") is not None
+
+
+def _is_web_api_source(root: str, rel: str) -> bool:
+    text = _read_small(root, rel)
+    return "ApiController" in text and bool(_WEB_API_CODE.search(text)) and bool(_API_CONTROLLER.search(text)) \
+        and "Microsoft.AspNetCore" not in text
+
+
 # --------------------------------------------------------------------------- the Stack
 
 class AspNetStack(Stack):
     id = STACK_ID
-    extensions = frozenset({".aspx", ".ascx", ".master", ".asax", ".cs", ".vb", ".cshtml"})
+    capabilities = frozenset((
+        "auth_check config_key connection const_def controller_class data_access entry_point.route "
+        "entry_point.page entry_point.handler entry_point.desktop entry_point.guard_mechanism entry_point.guard_reach "
+        "external_call guard_candidate guard_class guard_use antiforgery_check conditional_const mode_branch "
+        "message method_call smell ui_page host_auth security_setting access_rule config_transform"
+    ).split())
+    extensions = frozenset({".aspx", ".ascx", ".master", ".asax", ".cs", ".vb", ".cshtml", ".config"})
 
-    def __init__(self):
-        self._web_target = False
-
+    # No state on ``self`` (T28.25): ``extract`` only runs for a Target on which this Stack was detected, so every
+    # ``.cs`` helper of a Web Forms/MVC Target is read; detection returns its markers and keeps nothing.
     def detect(self, files):
+        """Path-only check, used when the Target root is unknown. ``detect_in`` is the full test."""
         markers = sorted(p for p in files if p.lower().endswith((".aspx", ".ascx", ".master", ".asax")))
         if any(p.rsplit("/", 1)[-1].lower() == "global.asax" for p in files):
             markers += sorted(p for p in files
                               if p.lower().endswith(".cs") and "controllers/" in ("/" + p.lower()))
-        markers = sorted(set(markers))
-        # Remembered so that plain .cs helpers in a Web Forms/MVC Target (no System.Web reference) are still read.
-        self._web_target = bool(markers)
-        return markers[:20]
+        return sorted(set(markers))[:20]
+
+    def detect_in(self, files, root):
+        """``detect`` plus the classic projects it cannot see by path: a ``Web.config`` with a ``system.web`` section
+        (no Web Forms pages, no ``Global.asax``) and Web API-only projects (a ``System.Web.Http`` ``ApiController``).
+        Returns the sorted marker files; the result depends only on the arguments (process pool safe)."""
+        files = list(files)
+        markers = set(self.detect(files))
+        classic_asp = any(p.lower().endswith((".asp", "global.asa")) for p in files)   # a Classic ASP site may ship a web.config
+        for p in files:
+            low = p.lower()
+            if low.endswith("/web.config") or low == "web.config":
+                if not classic_asp and _has_system_web(root, p):
+                    markers.add(p)
+            elif low.endswith(".cs") and _is_web_api_source(root, p):
+                markers.add(p)
+        return sorted(markers)[:20]
 
     def extract(self, path, text):
         ext = "." + path.rsplit(".", 1)[-1].lower() if "." in path.rsplit("/", 1)[-1] else ""
         if ext in (".cs", ".vb"):
             if "Microsoft.AspNetCore" in text:
                 return
-            if "System.Web" not in text and not self._web_target:
-                return
             yield from self._code(path, text, ext == ".vb")
             yield from integrations.scan_facts("dotnet", STACK_ID, path, strip_comments(text, "c"))
+            if ext == ".cs":
+                yield from dotnetsec.code_facts(path, strip_comments(text, "c"))
+        elif ext == ".config":
+            yield from dotnetsec.config_facts(path, text)
         elif ext in (".aspx", ".ascx", ".master", ".asax"):
             yield from self._markup(path, text, ext)
         elif ext == ".cshtml":
@@ -641,7 +845,11 @@ class AspNetStack(Stack):
         yield from _handlers(STACK_ID, path, ctx, classes, vb)
         if not vb:
             yield from _controller_actions(STACK_ID, path, ctx, classes)
+            yield from _desktop(STACK_ID, path, ctx, classes)
         yield from _route_tables(STACK_ID, path, ctx)
+        if not vb:
+            yield from aspnet_guards.const_facts(STACK_ID, path, ctx, classes)
+            yield from aspnet_guards.file_facts(STACK_ID, path, ctx, classes, list(find_methods(ctx, classes)))
 
     # -- markup files
     def _markup(self, path, text, ext):
@@ -677,9 +885,5 @@ class AspNetStack(Stack):
         inputs = sorted(set(re.findall(r"<(?:input|select|textarea)\b[^>]*?\bname\s*=\s*\"([^\"]+)\"", clean, re.I)))
         detail["inputs"] = inputs
         return Fact.make("entry_point", STACK_ID, path, ctx.line(m.start()) if m else 1, "/" + path, **detail)
-
-
-capabilities = frozenset(
-    "auth_check config_key connection data_access entry_point external_call message smell".split())
 
 STACK = AspNetStack()

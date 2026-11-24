@@ -1,0 +1,12 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/upgrade-2-6-to-2-7",
+  "exhaustive": true,
+  "note": "A template 2.4 Narrative (what AppDoc 2.6 wrote) and its register; the Target is the same small service.",
+  "must_exist": [
+    {"kind": "owner_file", "stack": "generic", "path": "appdoc-context.md", "name": "appdoc-context.md", "detail": {"kind": "context"}},
+    {"kind": "smell", "stack": "generic", "path": "app/main.py", "line": 6, "detail": {"pattern": "hardcoded-credential-constant"}},
+    {"kind": "pruned", "stack": "scan", "path": "docs/appdoc/", "name": "AppDoc output"}
+  ],
+  "must_not_exist": []
+}

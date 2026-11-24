@@ -6,11 +6,12 @@ from collections import Counter, defaultdict
 
 from .facts import fact_id
 from .integration import render_integration_view
+from .smells import OBLIGING, PATTERNS_BY_STACK
 
 LIST_CAP = 50
 FOLDER_CAP = 25
 SCHEMA_CAP = 40
-PATTERN_STACKS = ("python-flask", "java-spring", "aspnet-core", "node-express", "classic-asp")
+PATTERN_STACKS = ("python-flask", "java-spring", "aspnet", "aspnet-core", "node-express", "classic-asp")
 LISTED_KINDS = (
     ("entry_point", "Entry points"),
     ("data_access", "Data access"),
@@ -132,11 +133,17 @@ def ui_pages(facts: list[dict]) -> list[str]:
     return out + [""] + _shown(min(len(items), LIST_CAP), len(items))
 
 
+NOT_OBLIGING = "candidate (not an obligation)"
+
+
 def finding_candidates(facts: list[dict], stacks: list[dict]) -> list[str]:
     smells = [f for f in facts if f["kind"] == "smell" and not f["detail"].get("test")]
+    ran = sorted({p for s in stacks for p in PATTERNS_BY_STACK.get(s["name"], ())})
+    notes = _year_notice(facts) if any(s["name"] in PATTERNS_BY_STACK for s in stacks) else []
     if not smells:
         if any(s["name"] in PATTERN_STACKS for s in stacks):
-            return ["## Finding candidates", "", "Finding candidates: none extracted. This is not proof of absence.", ""]
+            return ["## Finding candidates", "", "Finding candidates: none extracted. This is not proof of absence.", ""] + (
+                [f"Patterns that ran with no hit: {', '.join(f'`{p}`' for p in ran)}.", ""] if ran else []) + notes
         return []
     by_pattern: dict[str, list[dict]] = defaultdict(list)
     for f in smells:
@@ -146,10 +153,185 @@ def finding_candidates(facts: list[dict], stacks: list[dict]) -> list[str]:
         group = sorted(by_pattern[pattern], key=lambda f: (f["path"], f["line"] or 0))
         first = group[:3]
         ids = [f["detail"].get("fid") or fact_id("smell", pattern, f["path"], f["line"]) for f in first]
-        out.append(f"| `{pattern}` | {len(group)} | " + ", ".join(_cite(f) for f in first)
+        label = "" if pattern in OBLIGING else f" {NOT_OBLIGING}"
+        out.append(f"| `{pattern}`{label} | {len(group)} | " + ", ".join(_cite(f) for f in first)
                    + " | " + ", ".join(f"`{i}`" for i in ids) + " |")
     out.append("")
-    return out
+    for f in sorted(by_pattern.get("post-without-antiforgery", []), key=lambda f: (f["path"], f["line"] or 0))[:1]:
+        d = f["detail"]
+        if d.get("controllers"):
+            out += [f"`post-without-antiforgery`: {d.get('unprotected', 0)} of {d.get('total', 0)} state-changing POST "
+                    "actions have no token validation. Controllers with unprotected actions (location, N of M):", ""]
+            out += [f"- `{row}`" for row in d["controllers"][:LIST_CAP]]
+            out += [""] + _shown(min(len(d["controllers"]), LIST_CAP), len(d["controllers"]))
+    quiet = [p for p in ran if p not in by_pattern]
+    if quiet:
+        out += [f"Patterns that ran with no hit: {', '.join(f'`{p}`' for p in quiet)}.", ""]
+    return out + notes
+
+
+def _year_notice(facts: list[dict]) -> list[str]:
+    """``config-year-horizon`` needs ``Reference year:`` in ``appdoc-context.md`` (no clock, P3); say so when it matters."""
+    declared = any(f["kind"] == "context_directive" and f["detail"].get("directive") == "reference_year" for f in facts)
+    if declared or not any(f["kind"] == "config_key" and f["detail"].get("year") for f in facts):
+        return []
+    return ["`config-year-horizon` is off: a configuration key holds a year and no `Reference year:` is declared in "
+            "`appdoc-context.md`.", ""]
+
+
+def unclassified_attributes(facts: list[dict], stacks: list[dict]) -> list[str]:
+    """External attributes used on three or more controllers or actions (guard or not): the owner decides which are guards."""
+    cands = sorted((f for f in facts if f["kind"] == "guard_candidate" and not f["detail"].get("test")),
+                   key=lambda f: (-f["detail"].get("uses", 0), f["name"], f["path"]))
+    if not cands:
+        if any(s["name"] in ("aspnet", "aspnet-core") for s in stacks):
+            return ["## Unclassified controller attributes", "", "None extracted. This is not proof of absence.", ""]
+        return []
+    out = ["## Unclassified controller attributes", "",
+           "Attributes that are not defined in the Target and not declared, used at least three times on controllers or "
+           "actions. Each may be an authorization guard or an unrelated one (a layout attribute): ask the owner, then "
+           "declare guards with `Auth attributes:` in `appdoc-context.md`.", "",
+           "| Attribute | Uses | Argument counts | First use |", "|---|---|---|---|"]
+    for f in cands[:LIST_CAP]:
+        d = f["detail"]
+        out.append(f"| `{f['name']}` | {d.get('uses', 0)} | {', '.join(str(a) for a in d.get('arity_set', []))} | {_cite(f)} |")
+    return out + [""] + _shown(min(len(cands), LIST_CAP), len(cands))
+
+
+def _norm_attr(name: str) -> str:
+    n = name.strip().rsplit(".", 1)[-1].lower()
+    return n[:-9] if n.endswith("attribute") and len(n) > 9 else n
+
+
+def accountability_counts(facts: list[dict]) -> dict:
+    """Detector accountability (T28.80): how many guard attributes and configuration reads the extractors saw, how many
+    they recognised and how many they did not. A guard attribute is recognised when it is the framework ``Authorize`` or
+    became an ``auth_check`` (custom, declared or promoted); a code read of a configuration key is recognised when the
+    key is defined in a configuration file of the Target. Counts only: no attribute or key name is printed.
+    ``{"guard_attributes": {seen, recognised, unrecognised}, "config_reads": {...}}``."""
+    live = [f for f in facts if not f["detail"].get("test")]
+    checked = {(f["path"], f["line"]) for f in live
+               if f["kind"] == "auth_check" and f["detail"].get("mechanism") == "attribute"}
+    uses = [f for f in live if f["kind"] == "guard_use"]
+    known = sum(1 for f in uses if _norm_attr(f["name"]) == "authorize" or (f["path"], f["line"]) in checked)
+    defined = {f["name"].lower() for f in live if f["kind"] == "config_key" and f["detail"].get("source") != "code"
+               and f["detail"].get("use") == "define"}
+    reads = [f for f in live if f["kind"] == "config_key" and f["detail"].get("source") == "code"
+             and f["detail"].get("use") == "read"]
+    got = sum(1 for f in reads if f["name"].lower() in defined)
+    return {"guard_attributes": {"seen": len(uses), "recognised": known, "unrecognised": len(uses) - known},
+            "config_reads": {"seen": len(reads), "recognised": got, "unrecognised": len(reads) - got}}
+
+
+def accountability(facts: list[dict], stacks: list[dict]) -> list[str]:
+    """The accountability section; nothing without a supported Stack. A detector that ran and recognised nothing says so."""
+    if not any(s["detail"].get("supported") for s in stacks):
+        return []
+    counts = accountability_counts(facts)
+    out = ["## Detector accountability", "",
+           "Seen is what the extractors found in the code; recognised is what they could place; unrecognised needs a "
+           "reader. Counts only.", ""]
+    rows = [("Config reads", counts["config_reads"])]
+    if any(s["name"] in ("aspnet", "aspnet-core") for s in stacks):
+        rows.insert(0, ("Guard attributes", counts["guard_attributes"]))
+    for label, c in rows:
+        tail = " (ran, found no match)" if c["recognised"] == 0 else ""
+        out.append(f"{label}: seen {c['seen']}, recognised {c['recognised']}, unrecognised {c['unrecognised']}{tail}.")
+    return out + [""]
+
+
+def _defining_configs(facts: list[dict], path: str, symbols: list) -> str:
+    """The configurations whose ``DefineConstants`` define one of ``symbols`` in the project holding ``path``."""
+    defs = [f for f in facts if f["kind"] == "build_define" and _inside(path, _dirname(f["path"]))]
+    if defs:
+        deepest = max(len(_dirname(f["path"])) for f in defs)
+        defs = [f for f in defs if len(_dirname(f["path"])) == deepest]
+    names = sorted({("all configurations" if f["detail"].get("config") in (None, "*", "") else str(f["detail"]["config"]))
+                    for f in defs if set(symbols) & set(f["detail"].get("symbols", []))})
+    return ", ".join(names) if names else "no configuration defines it"
+
+
+def conditional_compilation(facts: list[dict]) -> list[str]:
+    """Constants under ``#if`` that a guard argument refers to, ``#if DEBUG`` blocks that assign a local in a handler file
+    and production-mode comparisons in a handler that calls an auth method (summary-only), with the configurations
+    that define each symbol."""
+    live = [f for f in facts if not f["detail"].get("test")]
+    consts = [f for f in live if f["kind"] == "conditional_const"]
+    modes = [f for f in live if f["kind"] == "mode_branch"]
+    blocks = [f for f in live if f["kind"] == "smell" and f["detail"].get("pattern") == "debug-block-assigns-local"]
+    if not (consts or modes or blocks):
+        return []
+    out = ["## Conditional compilation", "",
+           "Summary only. A guard argument or a handler branch that differs between builds: read the build "
+           "configurations before calling the behaviour fixed.", "",
+           "| Location | What | Symbols | Configurations defining the symbols |", "|---|---|---|---|"]
+    rows = []
+    for f in consts:
+        sym = list(f["detail"].get("under_if", []))
+        rows.append((f["path"], f["line"] or 0, f"a constant under `#if` is used in {f['detail'].get('uses', 0)} guard "
+                     f"argument(s)", sym, _defining_configs(live, f["path"], sym)))
+    for f in blocks:
+        sym = list(f["detail"].get("symbols", []))
+        rows.append((f["path"], f["line"] or 0, "a `#if` block assigns a local in a file that holds handlers", sym,
+                     _defining_configs(live, f["path"], sym)))
+    for f in modes:
+        rows.append((f["path"], f["line"] or 0, f"{f['detail'].get('count', 0)} production-mode comparison(s) in a "
+                     "handler that calls an auth method", [], "not a compile-time symbol"))
+    for path, line, what, sym, configs in sorted(rows, key=lambda r: (r[0], r[1], r[2]))[:LIST_CAP]:
+        out.append(f"| `{path}:{line}` | {what} | {', '.join(f'`{x}`' for x in sym) or '-'} | {configs} |")
+    return out + [""] + _shown(min(len(rows), LIST_CAP), len(rows))
+
+
+def _dirname(path: str) -> str:
+    return path.rsplit("/", 1)[0] if "/" in path else ""
+
+
+def _inside(path: str, folder: str) -> bool:
+    return folder == "" or path == folder or path.startswith(folder + "/")
+
+
+def unmatched_rules(facts: list[dict]) -> list[dict]:
+    """Access rules whose ``scope_path`` names no route prefix and no folder or file of the Target (stale rules).
+
+    ``facts`` are the Facts file's dicts. Only base rules are listed, once each, as ``{path, line, scope_path, effect}``
+    sorted by path and line. A rule for the application root (empty scope) is never unmatched. The scope is relative to
+    the web application root (the outermost folder holding a ``Web.config``); matching is case-insensitive on whole
+    path segments, so ``Admin`` does not match the folder ``AdminTools``. Summary only: this is not a Fact kind.
+    """
+    files = [f["path"] for f in facts if f["kind"] == "file"]
+    web_dirs = sorted({_dirname(p) for p in files if p.rsplit("/", 1)[-1].lower() == "web.config"})
+    roots = [d for d in web_dirs if not any(o != d and _inside(d, o) for o in web_dirs)]
+    routes = [tuple(s for s in str(f["name"]).lower().split("/") if s)
+              for f in facts if f["kind"] == "entry_point" and str(f["name"]).startswith("/")]
+    out = []
+    for f in facts:
+        d = f.get("detail", {})
+        if f["kind"] != "access_rule" or d.get("config") != "base" or not d.get("scope_path"):
+            continue
+        segs = tuple(s for s in d["scope_path"].lower().split("/") if s)
+        root = max((r for r in roots if _inside(f["path"], r)), key=len, default="")
+        wanted = ((root + "/" if root else "") + d["scope_path"]).lower().rstrip("/")
+        if any(p.lower() == wanted or p.lower().startswith(wanted + "/") for p in files) \
+                or any(r[:len(segs)] == segs for r in routes):
+            continue
+        out.append({"path": f["path"], "line": f.get("line"), "scope_path": d["scope_path"], "effect": d.get("effect")})
+    return sorted(out, key=lambda x: (x["path"], x["line"] or 0, x["effect"] or ""))
+
+
+def access_rules_matching_nothing(facts: list[dict]) -> list[str]:
+    """Summary section for ``unmatched_rules``; nothing when the Target has no access rules."""
+    if not any(f["kind"] == "access_rule" for f in facts):
+        return []
+    rows = unmatched_rules(facts)
+    if not rows:
+        return ["## Access rules matching nothing", "", "None: every rule path names a route prefix, a folder or a file.", ""]
+    out = ["## Access rules matching nothing", "",
+           "Rules whose path matches no route prefix and no folder or file in the Target: stale rules, or routes the "
+           "extractors do not see. Confirm with the owner before calling the path protected or open.", "",
+           "| Rule | Scope | Location |", "|---|---|---|"]
+    for r in rows[:LIST_CAP]:
+        out.append(f"| {r['effect']} | `{r['scope_path']}` | {_cite(r)} |")
+    return out + [""] + _shown(min(len(rows), LIST_CAP), len(rows))
 
 
 def render_summary(doc: dict) -> str:
@@ -231,6 +413,10 @@ def render_summary(doc: dict) -> str:
     out += schema_objects(facts)
     out += ownership_files(facts)
     out += ui_pages(facts)
+    out += unclassified_attributes(facts, stacks)
+    out += access_rules_matching_nothing(facts)
+    out += conditional_compilation(facts)
+    out += accountability(facts, stacks)
     out += finding_candidates(facts, stacks)
 
     return "\n".join(out).rstrip() + "\n"

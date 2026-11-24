@@ -64,3 +64,11 @@ register records the text it was audited against.
    from the document → "the text of 10.1/V-4 changed after it was audited; re-audit it and replace
    the row"; two rows for the same ID ref → "keep the row that describes the current text".
    `Dismissed` and `Answerable` rows are exempt (a smell id already encodes path and line).
+
+## Amendment (2026-11-23, 2.7.0): rows are superseded, not deleted, and a seal says who vouched for it
+
+Decisions 1 and 2 of the 2.4 amendment ("two rows for the same ID ref", "`appdoc seal` writes `claim_sha` into every row that lacks one") are changed as follows. ADR 0015 holds the reasoning.
+
+1. **`supersedes`.** A row may carry `supersedes` (an `E-<n>` or a list naming older rows of the same `ref`). A row that no later row supersedes is **live**. The duplicate-ref rule now counts live rows only; the message becomes `add "supersedes": "<older id>" to the newer row; do not delete the older row`. Seals, anchors, `locate`, coverage and the readers of C11, C12 and C14 use live rows. A superseded row keeps full validation of id, ref, result and Citations.
+2. **`sealed_by`.** Each `claim_sha` that `seal` writes comes with `sealed_by`: `"audit"` or `"upgrade"`. `appdoc seal --audit --date YYYY-MM-DD` writes the audit provenance on line 1 and seals unsealed rows `"audit"`; a plain `seal` or `build` seals `"audit"` only when the audit record's `doc_sha` equals the document's current fingerprint and `"upgrade"` otherwise. `claim_sha` is still never overwritten, and a row is still re-audited by writing a new row (now with `supersedes`, not by removing the old one).
+3. **Audit record fields.** Line 1 gains `audited_on`, `audited_with`, `audited_bundle` and `doc_sha`, required on template 2.7 under `--require-audit`, and an `exclusions` object for declared gaps. The anchor and result rules above are unchanged, and `Answerable` rows on 2.7 carry `answered_in`.

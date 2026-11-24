@@ -1,0 +1,79 @@
+{
+  "pattern": "deref-before-null-check",
+  "target": "targets/contoso-labels",
+  "labelled_by": "author",
+  "second_labeller": null,
+  "note": "Labels are by the author of the detector, on invented code (Contoso, Fabrikam; no real application). A second person must re-label this set independently and record the name in second_labeller before this heuristic may oblige C12; until then it stays a candidate in the summary (plan 2.8 W11 part C, T28.75). label tp: a hit at this site is correct; fp: a hit at this site would be a false positive.",
+  "labels": [
+    {
+      "path": "Code/NullChecksBefore.cs",
+      "line": 16,
+      "text": "var n = c.Name;",
+      "label": "tp",
+      "reason": "member access, then the null check, no assignment between"
+    },
+    {
+      "path": "Code/NullChecksBefore.cs",
+      "line": 26,
+      "text": "string id = c.Id;",
+      "label": "tp",
+      "reason": "property read before a reversed null comparison"
+    },
+    {
+      "path": "Code/NullChecksBefore.cs",
+      "line": 36,
+      "text": "int s = c.Scores[0];",
+      "label": "tp",
+      "reason": "index access before the null check"
+    },
+    {
+      "path": "Code/NullChecksBefore.cs",
+      "line": 46,
+      "text": "var text = c.ToString();",
+      "label": "tp",
+      "reason": "object method before an is-null check"
+    },
+    {
+      "path": "Code/NullChecksBefore.cs",
+      "line": 56,
+      "text": "Console.WriteLine(c.Id);",
+      "label": "tp",
+      "reason": "member access in an argument before the null check"
+    },
+    {
+      "path": "Code/NullChecksBefore.cs",
+      "line": 66,
+      "text": "var blank = c.IsBlank();",
+      "label": "fp",
+      "reason": "extension-method dereference: legal on null"
+    },
+    {
+      "path": "Code/NullChecksBefore.cs",
+      "line": 78,
+      "text": "var n = c.Name;",
+      "label": "fp",
+      "reason": "deref in an inner block: not a direct statement of the block holding the check"
+    },
+    {
+      "path": "Code/NullChecksBefore.cs",
+      "line": 89,
+      "text": "var ok = c == null || c.Name == \"\";",
+      "label": "fp",
+      "reason": "the member access is inside a short-circuit that already tests the variable"
+    },
+    {
+      "path": "Code/NullChecksBefore.cs",
+      "line": 99,
+      "text": "var n = c.Name;",
+      "label": "fp",
+      "reason": "the variable is reassigned between the access and the check"
+    },
+    {
+      "path": "Code/NullChecksBefore.cs",
+      "line": 110,
+      "text": "var n = c?.Name;",
+      "label": "fp",
+      "reason": "conditional access is null-safe"
+    }
+  ]
+}

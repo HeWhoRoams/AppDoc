@@ -360,5 +360,275 @@ class ConfigRoleUnclassifiedTests(unittest.TestCase):
         self.assertEqual(roles.get("PORT"), "app")
 
 
+class FilePromotionTests(unittest.TestCase):
+    def _keys(self, files):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = os.path.join(tmp.name, "target")
+        for rel, text in files.items():
+            full = os.path.join(root, rel)
+            os.makedirs(os.path.dirname(full), exist_ok=True)
+            with open(full, "w") as fh:
+                fh.write(text)
+        out = os.path.join(tmp.name, "out")
+        doc = json.loads(extract.extract(root, out)[0])
+        self.assertEqual(doc, json.loads(extract.extract(root, out)[0]), "warm run differs from cold run")
+        return {(f["path"], f["name"]): f["detail"] for f in doc["facts"] if f["kind"] == "config_key"}
+
+    APP = ("from flask import Flask\nimport os\napp = Flask(__name__)\n"
+           "a = app.config['HTTP_PORT']\nb = os.getenv('RUNNER')\n")
+
+    def test_file_level_promotion(self):
+        keys = self._keys({
+            "requirements.txt": "flask\n", "app.py": self.APP,
+            "conf/app.ini": "[server]\nHTTP_PORT = 3000\nDOMAIN = x\n[other]\nUNRELATED = 1\n",
+            "conf/lone.ini": "[a]\nZED = 1\n",
+            ".github/workflows/ci.yml": "env:\n  RUNNER: x\n"})
+        self.assertEqual({d["role"] for (p, n), d in keys.items() if p == "conf/app.ini"}, {"app"})
+        self.assertEqual(keys[("conf/lone.ini", "a.ZED")]["role"], "unclassified")
+        self.assertEqual(keys[("app.py", "RUNNER")]["role"], "env")      # env keys are never promoted
+        self.assertTrue(all(d["role"] == "ci" for (p, n), d in keys.items() if p.startswith(".github/")))
+
+    def test_file_promotion_leaves_a_ci_file_alone(self):
+        keys = self._keys({"requirements.txt": "flask\n", "app.py": self.APP,
+                           ".github/workflows/ci.yml": "env:\n  HTTP_PORT: 1\n"})
+        self.assertEqual({d["role"] for (p, n), d in keys.items() if p.startswith(".github/")}, {"ci"})
+
+    def test_ini_section_key_variants(self):
+        self.assertEqual(extract._key_variants("server.HTTP_PORT"), {"server.HTTP_PORT", "HTTP_PORT"})
+        self.assertEqual(extract._key_variants("PORT"), {"PORT"})
+        by_last = self._keys({"requirements.txt": "flask\n", "app.py": self.APP, "conf/a.ini": "[server]\nHTTP_PORT = 3\n"})
+        self.assertEqual(by_last[("conf/a.ini", "server.HTTP_PORT")]["role"], "app")
+        by_full = self._keys({"requirements.txt": "flask\n",
+                              "app.py": "from flask import Flask\napp = Flask(__name__)\nx = app.config['server.HTTP_PORT']\n",
+                              "conf/a.ini": "[server]\nHTTP_PORT = 3\nDOMAIN = d\n"})
+        self.assertEqual({d["role"] for d in by_full.values() if d.get("source") != "code"}, {"app"})
+
+
+class ConfigRoleSplitTests(unittest.TestCase):
+    """T25.21/T25.22: code reads are split into env / ci / app in the post-pass."""
+
+    def _keys(self, files):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = os.path.join(tmp.name, "target")
+        for rel, text in files.items():
+            full = os.path.join(root, rel)
+            os.makedirs(os.path.dirname(full), exist_ok=True)
+            with open(full, "w") as fh:
+                fh.write(text)
+        out = os.path.join(tmp.name, "out")
+        doc = json.loads(extract.extract(root, out)[0])
+        # a second, warm run must give the same answer (the cache stores pre-promotion Facts)
+        self.assertEqual(doc, json.loads(extract.extract(root, out)[0]))
+        return {(f["path"], f["name"]): f["detail"] for f in doc["facts"] if f["kind"] == "config_key"}
+
+    def test_env_key_role_env(self):
+        keys = self._keys({"requirements.txt": "flask\n",
+                           "app.py": "import os\nfrom flask import Flask\napp = Flask(__name__)\n"
+                                     "a = os.getenv('GO')\nb = app.config['DEBUG']\n"})
+        self.assertEqual(keys[("app.py", "GO")]["role"], "env")
+        self.assertEqual(keys[("app.py", "DEBUG")]["role"], "app")
+
+    def test_ci_key_role_ci(self):
+        keys = self._keys({"requirements.txt": "flask\n", "app.py": "x = 1\n",
+                           ".github/workflows/ci.yml": "env:\n  BUILD_FLAG: 1\n"})
+        ci = [d for (p, n), d in keys.items() if p.startswith(".github/")]
+        self.assertTrue(ci)
+        self.assertTrue(all(d["role"] == "ci" for d in ci))
+
+    def test_env_key_not_secret(self):
+        keys = self._keys({"requirements.txt": "flask\n",
+                           "app.py": "import os\nfrom flask import Flask\napp = Flask(__name__)\n"
+                                     "a = os.getenv('SSH_ORIGINAL_COMMAND')\nb = os.getenv('API_TOKEN')\n"
+                                     "c = app.config['DB_PASSWORD']\n"})
+        self.assertFalse(keys[("app.py", "API_TOKEN")]["secret_location"])
+        self.assertTrue(keys[("app.py", "DB_PASSWORD")]["secret_location"])
+
+
+    def test_unclassified_secret_key_keeps_flag(self):
+        """An INI key no code reads stays `unclassified` and keeps its secret flag (never set on env or ci keys)."""
+        keys = self._keys({"requirements.txt": "flask\n", "app.py": "x = 1\n",
+                           "conf/db.ini": "[db]\nDB_PASSWORD = hunter2value\n"})
+        d = keys[("conf/db.ini", "db.DB_PASSWORD")]
+        self.assertEqual(d["role"], "unclassified")
+        self.assertIs(d["secret_location"], True)
+
+
+CSPROJ_WEB = """<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants);TRACE;DEBUG;STAGING_BUILD</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>RELEASE;$(UserMacro);not valid</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+</Project>
+"""
+
+CSPROJ_LEGACY_WINFORMS = """<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <DefineConstants>LEGACY</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+</Project>
+"""
+
+PUBXML = """<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <WebPublishMethod>MSDeploy</WebPublishMethod>
+    <LastUsedBuildConfiguration>Release</LastUsedBuildConfiguration>
+    <MSDeployServiceURL>https://deploy-user:hunter2@Web01.example.test:8172/msdeploy.axd?token=abc123</MSDeployServiceURL>
+    <UserName>deploy-user</UserName>
+    <Password>hunter2</Password>
+    <PublishUrl>C:\\publish\\site</PublishUrl>
+  </PropertyGroup>
+</Project>
+"""
+
+
+def _one(facts, kind):
+    got = [f for f in facts if f.kind == kind]
+    return got
+
+
+class ProjectFactsTests(unittest.TestCase):
+    def _project(self, path, text, **kw):
+        return list(generic.extract(path, text, **kw))
+
+    def test_web_sdk_project_fact(self):
+        (p,) = _one(self._project("src/App/App.csproj", CSPROJ_WEB), "project")
+        self.assertEqual((p.path, p.name, p.line, p.stack), ("src/App/App.csproj", "App", 1, "generic"))
+        d = p.detail_dict()
+        self.assertEqual((d["sdk"], d["kind"], d["web"], d["test"]), ("Microsoft.NET.Sdk.Web", "web", True, False))
+        self.assertNotIn("output_type", d)  # not declared, not guessed
+
+    def test_legacy_winforms_project_fact(self):
+        (p,) = _one(self._project("Tools/Desk.csproj", CSPROJ_LEGACY_WINFORMS, raw=CSPROJ_LEGACY_WINFORMS.encode()), "project")
+        d = p.detail_dict()
+        self.assertEqual((d["output_type"], d["kind"], d["web"], d["test"]), ("winexe", "winforms", False, False))
+        self.assertNotIn("sdk", d)
+        self.assertEqual(p.line, 2)
+
+    def test_project_kinds(self):
+        def kind(body, sdk="Microsoft.NET.Sdk"):
+            text = f'<Project Sdk="{sdk}">{body}</Project>'
+            return _one(self._project("X.csproj", text), "project")[0].detail_dict()
+        self.assertEqual(kind("<PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>")["kind"], "console")
+        self.assertEqual(kind("")["kind"], "library")
+        t = kind('<ItemGroup><PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0"/></ItemGroup>'
+                 '<PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>')
+        self.assertEqual((t["kind"], t["test"]), ("test", True))
+        for pkg in ("xunit", "NUnit", "MSTest.TestFramework", "NUnit3TestAdapter"):
+            self.assertTrue(kind(f'<ItemGroup><PackageReference Include="{pkg}"/></ItemGroup>')["test"], pkg)
+        self.assertTrue(kind("<PropertyGroup><IsTestProject>true</IsTestProject></PropertyGroup>")["test"])
+        w = kind('<ItemGroup><FrameworkReference Include="Microsoft.AspNetCore.App"/></ItemGroup>')
+        self.assertEqual((w["kind"], w["web"]), ("web", True))
+        self.assertTrue(kind('<ItemGroup><PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.9"/></ItemGroup>')["web"])
+        self.assertTrue(kind('<ItemGroup><Reference Include="System.Web.Mvc, Version=5.2.9.0"/></ItemGroup>')["web"])
+        self.assertTrue(kind("<PropertyGroup><ProjectTypeGuids>{349C5851-65DF-11DA-9384-00065B846F21};"
+                             "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids></PropertyGroup>")["web"])
+        self.assertEqual(kind("<PropertyGroup><UseWPF>true</UseWPF></PropertyGroup>")["kind"], "winforms")
+        self.assertEqual(kind("<PropertyGroup><OutputType>Weird</OutputType></PropertyGroup>")["output_type"], "other")
+        # a project that is neither a Web SDK nor has web references is not web
+        self.assertFalse(kind("")["web"])
+
+    def test_build_defines_per_configuration(self):
+        defs = _one(self._project("src/App/App.csproj", CSPROJ_WEB), "build_define")
+        by = {f.detail_dict()["config"]: f for f in defs}
+        self.assertEqual(sorted(by), ["Debug", "Release"])
+        dbg = by["Debug"].detail_dict()
+        self.assertEqual(dbg["symbols"], ["DEBUG", "STAGING_BUILD", "TRACE"])
+        self.assertIs(dbg["inherits"], True)
+        self.assertEqual(by["Debug"].line, 6)  # the DefineConstants start tag
+        rel = by["Release"].detail_dict()
+        self.assertEqual(rel["symbols"], ["RELEASE"])  # macros and non-identifiers are dropped
+        self.assertIs(rel["inherits"], False)
+
+    def test_unconditional_define_is_all_configurations(self):
+        (b,) = _one(self._project("D.csproj", CSPROJ_LEGACY_WINFORMS), "build_define")
+        self.assertEqual(b.detail_dict()["config"], "*")
+        self.assertEqual(b.detail_dict()["symbols"], ["LEGACY"])
+
+    def test_publish_profile_host_only(self):
+        facts = self._project("Web/Properties/PublishProfiles/Prod-Web01.pubxml", PUBXML)
+        (pp,) = _one(facts, "publish_profile")
+        d = pp.detail_dict()
+        self.assertEqual(pp.name, "Prod-Web01")
+        self.assertEqual((d["build_config"], d["method"], d["host"]), ("Release", "MSDeploy", "web01.example.test"))
+        blob = repr(pp)
+        for leak in ("deploy-user", "hunter2", "abc123", "8172", "msdeploy", "site\\"):
+            self.assertNotIn(leak, blob)
+
+    def test_publish_profile_hosts_and_filesystem(self):
+        def host(prop, value):
+            text = f"<Project><PropertyGroup><WebPublishMethod>FileSystem</WebPublishMethod><{prop}>{value}</{prop}></PropertyGroup></Project>"
+            (pp,) = _one(self._project("P.pubxml", text), "publish_profile")
+            return pp.detail_dict().get("host")
+        self.assertEqual(host("MSDeployServiceURL", "Web02"), "web02")
+        self.assertEqual(host("MSDeployServiceURL", "web02.example.test:8172"), "web02.example.test")
+        self.assertEqual(host("PublishUrl", "ftp://ftp.example.test/site"), "ftp.example.test")
+        self.assertEqual(host("PublishUrl", "\\\\fs01\\share\\app"), "fs01")
+        self.assertIsNone(host("PublishUrl", "C:\\inetpub\\site"))   # a local folder is not a host
+        self.assertIsNone(host("PublishUrl", "$(PublishDir)site"))
+
+    def test_pubxml_user_never_read(self):
+        self.assertEqual(self._project("Web/Properties/PublishProfiles/Prod.pubxml.user", PUBXML), [])
+        self.assertEqual(self._project("a/b.PubXml.User", PUBXML), [])
+
+    def test_filename_case_insensitive(self):
+        self.assertTrue(_one(self._project("A/APP.CSPROJ", CSPROJ_WEB), "project"))
+        self.assertTrue(_one(self._project("A/P/Prod.PUBXML", PUBXML), "publish_profile"))
+
+    def test_malformed_project_one_config_unparsed_dependencies_kept(self):
+        text = '<Project Sdk="Microsoft.NET.Sdk"><ItemGroup><PackageReference Include="Foo" Version="1.0"/></ItemGroup>'
+        facts = self._project("Bad.csproj", text)
+        (u,) = _one(facts, "config_unparsed")
+        self.assertEqual((u.detail_dict()["reason"], u.path, u.line), ("malformed", "Bad.csproj", None))
+        self.assertEqual(_one(facts, "project") + _one(facts, "build_define"), [])
+        self.assertEqual([f.name for f in _one(facts, "dependency")], ["Foo"])  # the regex dependency read still runs
+
+    def test_doctype_project_rejected_with_reason(self):
+        facts = self._project("D.csproj", '<!DOCTYPE Project [<!ENTITY a "b">]><Project/>')
+        self.assertEqual([f.detail_dict()["reason"] for f in _one(facts, "config_unparsed")], ["dtd"])
+
+    def test_raw_bytes_honoured_text_fallback_same_facts(self):
+        a = self._project("A.csproj", CSPROJ_WEB, raw=CSPROJ_WEB.encode("utf-8"))
+        b = self._project("A.csproj", CSPROJ_WEB)
+        c = self._project("A.csproj", CSPROJ_WEB, raw=b"\xef\xbb\xbf" + CSPROJ_WEB.encode("utf-8"))
+        self.assertEqual(a, b)
+        self.assertEqual(a, c)
+
+    def test_msbuild_property_names_case_insensitive_and_legacy_test_reference(self):
+        text = ('<Project><PropertyGroup><outputtype>Exe</outputtype><DEFINECONSTANTS>A1</DEFINECONSTANTS></PropertyGroup>'
+                '<ItemGroup><Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0"/>'
+                '</ItemGroup></Project>')
+        facts = self._project("T.csproj", text)
+        d = _one(facts, "project")[0].detail_dict()
+        self.assertEqual((d["output_type"], d["kind"], d["test"]), ("exe", "test", True))
+        self.assertEqual(_one(facts, "build_define")[0].detail_dict()["symbols"], ["A1"])
+        (pp,) = _one(self._project("P.pubxml", "<Project><PropertyGroup><publishUrl>\\\\fs01\\portal$</publishUrl>"
+                                               "</PropertyGroup></Project>"), "publish_profile")
+        self.assertEqual(pp.detail_dict()["host"], "fs01")
+
+    def test_facts_are_conformant(self):
+        from appdoc import facts as F
+        for path, text in (("A.csproj", CSPROJ_WEB), ("B.csproj", CSPROJ_LEGACY_WINFORMS),
+                           ("P/PublishProfiles/Prod.pubxml", PUBXML), ("Bad.csproj", "<Project>")):
+            for f in self._project(path, text):
+                self.assertIn(f.kind, F.KINDS)
+                self.assertLessEqual({k for k, _ in f.detail}, F.DETAIL_KEYS[f.kind], (path, f.kind))
+
+
 if __name__ == "__main__":
     unittest.main()

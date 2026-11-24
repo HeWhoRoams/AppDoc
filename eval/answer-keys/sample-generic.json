@@ -1,0 +1,26 @@
+{
+  "type": "extractor",
+  "target": "tests/samples/generic",
+  "exhaustive": true,
+  "note": "Stack-less files: SQL DDL, owner files, properties.",
+  "must_exist": [
+    {"kind": "config_key", "stack": "generic", "path": "config/app.properties", "line": 1, "name": "server.port", "detail": {"use": "define", "secret_location": false, "role": "unclassified"}},
+    {"kind": "config_key", "stack": "generic", "path": "config/app.properties", "line": 2, "name": "db.password", "detail": {"use": "define", "secret_location": true, "role": "unclassified"}},
+    {"kind": "owner_file", "stack": "generic", "path": "CODEOWNERS", "name": "CODEOWNERS", "detail": {"kind": "codeowners"}},
+    {"kind": "owner_file", "stack": "generic", "path": "CONTRIBUTING.md", "name": "CONTRIBUTING.md", "detail": {"kind": "contributing"}},
+    {"kind": "schema_object", "stack": "generic", "path": "db/mysql/schema.sql", "line": 1, "name": "accounts", "detail": {"type": "table"}},
+    {"kind": "schema_object", "stack": "generic", "path": "db/mysql/schema.sql", "line": 6, "name": "projects", "detail": {"type": "table"}},
+    {"kind": "schema_object", "stack": "generic", "path": "db/mysql/schema.sql", "line": 10, "name": "projects(account_id)", "detail": {"type": "fk"}},
+    {"kind": "schema_object", "stack": "generic", "path": "db/mysql/schema.sql", "line": 13, "name": "tasks", "detail": {"type": "table"}},
+    {"kind": "schema_object", "stack": "generic", "path": "db/mysql/schema.sql", "line": 17, "name": "fk_tasks_projects", "detail": {"type": "fk"}},
+    {"kind": "schema_object", "stack": "generic", "path": "db/postgres/schema.sql", "line": 2, "name": "accounts", "detail": {"type": "table"}},
+    {"kind": "schema_object", "stack": "generic", "path": "db/postgres/schema.sql", "line": 10, "name": "projects", "detail": {"type": "table"}},
+    {"kind": "schema_object", "stack": "generic", "path": "db/postgres/schema.sql", "line": 14, "name": "projects(account_id)", "detail": {"type": "fk"}},
+    {"kind": "schema_object", "stack": "generic", "path": "db/postgres/schema.sql", "line": 17, "name": "idx_projects_title", "detail": {"type": "index"}},
+    {"kind": "schema_object", "stack": "generic", "path": "db/postgres/schema.sql", "line": 18, "name": "unique_account_project_title", "detail": {"type": "index"}},
+    {"kind": "schema_object", "stack": "generic", "path": "db/postgres/schema.sql", "line": 20, "name": "idx_projects_note", "detail": {"type": "index"}}
+  ],
+  "must_not_exist": [
+    {"kind": "config_key", "stack": "generic", "name": "server.port", "detail": {"secret_location": true}}
+  ]
+}

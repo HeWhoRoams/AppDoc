@@ -1,0 +1,16 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/static-assets",
+  "exhaustive": true,
+  "note": "wwwroot, oldest, holder and copyright are not retired by name (whole-token match only).",
+  "must_exist": [
+    {"kind": "entry_point", "stack": "aspnet-core", "path": "Program.cs", "line": 4, "name": "/ping", "detail": {"type": "route", "method": "GET"}},
+    {"kind": "stack", "stack": "aspnet-core", "path": "Program.cs", "name": "aspnet-core", "detail": {"supported": true, "capabilities": ["entry_point.route"]}}
+  ],
+  "must_not_exist": [
+    {"kind": "retired_candidate", "stack": "scan", "path": "wwwroot/"},
+    {"kind": "retired_candidate", "stack": "scan", "path": "oldest/"},
+    {"kind": "retired_candidate", "stack": "scan", "path": "holder/"},
+    {"kind": "retired_candidate", "stack": "scan", "path": "copyright/"}
+  ]
+}

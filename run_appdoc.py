@@ -1,4 +1,4 @@
-"""Run AppDoc from any directory:  python <skill folder>/run_appdoc.py <extract|fill|check|render> <target> [options]"""
+"""Run AppDoc from any directory:  python <skill folder>/run_appdoc.py <command> <target> [options]  (python -m appdoc --help lists the commands)"""
 
 import os
 import sys

@@ -78,7 +78,7 @@ class PythonFlaskFacts(unittest.TestCase):
         self.has("connection", "data/db.py", 28, "psycopg2.connect", secret_location=True)
         self.has("connection", "admin/views.py", 19, "create_engine", secret_location=True)
         self.has("connection", "admin/views.py", 20, "pyodbc.connect", secret_location=True)
-        self.has("config_key", "data/db.py", 22, "DB_PASSWORD", source="code", secret_location=True)
+        self.has("config_key", "data/db.py", 22, "DB_PASSWORD", source="code", secret_location=False, role="env")
         self.has("config_key", "app.py", 25, "PORT", source="code", secret_location=False)
         self.has("config_key", "admin/views.py", 59, "ADMIN_EMAIL", source="code")
 
@@ -99,7 +99,7 @@ class PythonFlaskFacts(unittest.TestCase):
     def test_config_reads_stay_reads(self):
         self.has("config_key", "config_app.py", 25, "PAGE_SIZE", use="read")
         self.has("config_key", "admin/views.py", 59, "ADMIN_EMAIL", use="read")
-        self.has("config_key", "admin/views.py", 59, "ADMIN_API_TOKEN", use="read", secret_location=True)
+        self.has("config_key", "admin/views.py", 59, "ADMIN_API_TOKEN", use="read", secret_location=False)
         self.has("config_key", "app.py", 25, "PORT", use="read")
 
     def test_lowercase_and_unloaded_module_constants_are_not_config(self):
@@ -149,6 +149,9 @@ class PythonFlaskFacts(unittest.TestCase):
 
     def test_byte_identical_two_runs(self):
         self.assertEqual(_run()[0], _run()[0])
+
+    def test_sqlalchemy_connection(self):
+        self.has("connection", "extensions.py", 4, "SQLAlchemy", type="sqlalchemy")
 
 
 if __name__ == "__main__":

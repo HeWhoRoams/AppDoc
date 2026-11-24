@@ -4,7 +4,7 @@ import re
 import tempfile
 import unittest
 
-from appdoc import register
+from appdoc import check, fill, register
 from appdoc.render import page
 from appdoc.render.markdown import render_markdown as md
 
@@ -112,10 +112,63 @@ class PageTests(unittest.TestCase):
         for needle in ("my-app", "abc1234", "Check: FAIL (3 problems)", 'href="#overview"', 'href="#detail"',
                        "--brand: #6a0032", "&lt;script&gt;alert(1)&lt;/script&gt;"):
             self.assertIn(needle, h)
-        self.assertRegex(h, r"Generated: \d{4}-\d{2}-\d{2}")
+        self.assertNotIn("Generated:", h)  # R13: the page reads no clock, so rendering twice gives the same bytes
         self.assertEqual(h.count("<script>"), 1)  # only the Mermaid one
         self.assertIn("mermaid.initialize", h)
         self.assertNotIn("{{", h.split("<script>")[0])
+
+    MD_WITH_DIAGRAM = "# My App\n## Overview\n### Detail\n```mermaid\ngraph TD; A-->B\n```\n"
+
+    def test_inline_default_unchanged(self):
+        """T28.B3: with no option (and with `inline`) the page carries the library in one inline script and no
+        file is written beside it."""
+        self.write("application-documentation.md", self.MD_WITH_DIAGRAM)
+        self.assertEqual(page.run(self.target, self.out, None), 0)
+        default = self.html()
+        self.assertEqual(page.run(self.target, self.out, None, "inline"), 0)
+        self.assertEqual(self.html(), default)
+        self.assertEqual(default.count("<script"), 1)
+        self.assertNotIn('<script src=', default)
+        self.assertIn("mermaid.initialize", default)
+        self.assertGreater(len(default), 100_000)                                  # the library is inline
+        self.assertFalse(os.path.exists(os.path.join(self.out, "mermaid.min.js")))
+
+    def test_mermaid_sibling_mode(self):
+        """T28.B3: `sibling` writes mermaid.min.js once beside the HTML and the page links it instead of inlining it."""
+        self.write("application-documentation.md", self.MD_WITH_DIAGRAM)
+        self.assertEqual(page.run(self.target, self.out, None, "sibling"), 0)
+        h = self.html()
+        lib = os.path.join(self.out, "mermaid.min.js")
+        self.assertTrue(os.path.isfile(lib))
+        with open(os.path.join(page.ASSETS, "mermaid.min.js"), "rb") as fh:
+            asset = fh.read()
+        with open(lib, "rb") as fh:
+            self.assertEqual(fh.read(), asset)                                      # byte-identical to the packaged library
+        self.assertIn('<script src="mermaid.min.js"></script>', h)
+        self.assertIn("mermaid.initialize", h)
+        self.assertLess(len(h), 20_000)                                             # the page itself stays small
+        self.assertNotIn("mermaid.min.js\n", h)
+        # once: a second render leaves the file (same bytes, same mtime) and the page identical
+        before = os.stat(lib).st_mtime_ns
+        self.assertEqual(page.run(self.target, self.out, None, "sibling"), 0)
+        self.assertEqual((os.stat(lib).st_mtime_ns, self.html()), (before, h))
+        # a document with no diagram needs no library: no file, no script
+        os.remove(lib)
+        self.write("application-documentation.md", "# T\ntext\n")
+        self.assertEqual(page.run(self.target, self.out, None, "sibling"), 0)
+        self.assertFalse(os.path.exists(lib))
+        self.assertNotIn("<script", self.html())
+
+    def test_mermaid_option_on_the_command_line(self):
+        from appdoc.__main__ import main
+        import contextlib, io
+        self.write("application-documentation.md", self.MD_WITH_DIAGRAM)
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(main(["render", self.target, "--mermaid", "sibling"]), 0)
+        self.assertTrue(os.path.isfile(os.path.join(self.out, "mermaid.min.js")))
+        with self.assertRaises(SystemExit):
+            with contextlib.redirect_stderr(io.StringIO()):
+                main(["render", self.target, "--mermaid", "cdn"])
 
     def test_no_mermaid_no_script(self):
         self.write("application-documentation.md", "# T\ntext\n")
@@ -230,3 +283,48 @@ class PageTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ConfigTrailerTests(unittest.TestCase):
+    @staticmethod
+    def _doc(*specs):
+        return {"stacks": [], "facts": [{"kind": "config_key", "stack": "s", "path": p, "line": 1, "name": n,
+                                         "detail": {"role": r}} for p, n, r in specs]}
+
+    def test_config_trailer_counts(self):
+        d = self._doc(("a.py", "K", "app"), ("a.py", "E1", "env"), ("b.py", "E1", "env"), ("b.py", "E2", "env"),
+                      (".github/workflows/ci.yml", "C1", "ci"))
+        out = fill.render_block("config-reference", d)
+        self.assertIn("Shown 1 of 1 application key.", out)
+        self.assertEqual(out.splitlines()[-1],
+                         "2 env-var keys and 1 CI key are excluded from the application table (see facts.json).")
+
+    def test_trailer_absent_without_env_or_ci_keys(self):
+        self.assertNotIn("excluded", fill.render_block("config-reference", self._doc(("a.py", "K", "app"))))
+
+    def test_trailer_when_no_application_keys(self):
+        out = fill.render_block("config-reference", self._doc(("a.py", "E", "env")))
+        self.assertIn("No application config keys were extracted.", out)
+        self.assertIn("1 env-var key and 0 CI keys are excluded", out)
+
+    def test_app_key_count_is_distinct_uncommented_app_names(self):
+        d = self._doc(("a.py", "K", "app"), ("b.py", "K", "app"), ("a.py", "E", "env"))
+        self.assertEqual(fill.config_app_count(d), 1)
+
+    def test_c7_flags_a_16_6_block_count_that_is_not_the_app_role_count(self):
+        """F3: the exact block comparison replaces the prose parser; it flags the same count mismatch."""
+        d = self._doc(("a.py", "K", "app"), ("a.py", "E", "env"))
+        found = []
+        add = lambda *a: found.append(a)
+
+        def run(body):
+            raw = "<!-- appdoc:generated config-reference -->\n" + body + "\n<!-- /appdoc:generated config-reference -->\n"
+            del found[:]
+            check._c7_blocks(raw, {}, d, None, None, add)
+            return [f for f in found if "config-reference" in f[2]]
+
+        self.assertEqual(run(fill.render_block("config-reference", d)), [])
+        bad = fill.render_block("config-reference", d).replace("Shown 1 of 1 application key", "Shown 2 of 2 application keys")
+        got = run(bad)
+        self.assertEqual(len(got), 1)
+        self.assertIn("1", got[0][2])

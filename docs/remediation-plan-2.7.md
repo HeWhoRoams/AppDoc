@@ -1,6 +1,6 @@
 # AppDoc v2.6.0 → v2.7.0 Remediation Plan: Template release
 
-**Date:** 2026-11-13 (formerly drafted as `remediation-plan-2.6.md` revs 1–3; renumbered after 2.5.0 turned out to be in flight)
+**Date:** 2026-11-13, rev 2 2026-11-23 (formerly drafted as `remediation-plan-2.6.md` revs 1–3; renumbered after 2.5.0 turned out to be in flight)
 **Status:** Phase after next. Release sequence: 2.5.0 (`remediation-plan-2.5.md`, in flight, unchanged) → 2.6.0 (`remediation-plan-2.6.md`, tooling and Facts) → **2.7.0 (this plan, template)**.
 **Basis:**
 - the 2.4 example audit (`AppDoc-v2.4-Examples-Audit-2026-11-13.md`, AppDoc project);
@@ -22,6 +22,31 @@ Users upgrade each document once, and the examples get a fresh run and a fresh a
 - everything 2.6.0 ships: tags, the provenance sidecar and `version_tuple`, the determinism harness, capabilities, duplicate folders and pruning, config and secret naming, `appdoc gate`, generated AppDoc docs, the release script, answer keys, example rotation, C20, and previews of the rules below.
 
 **Format:** house convention. Every item has a failing test (TDD), a corpus case where a Target is needed, and a "why this is not a weakening" line.
+
+---
+
+## Status and amendments (rev 2, 2026-11-23)
+
+**Not started**, and it cannot start until 2.5.0 (partly done; see its status table) and 2.6.0 (not started) ship. Amendments:
+
+| # | Amendment |
+|---|---|
+| **C-1 Name collision** | The rows "Q5 eShop chatbot PII flow" and "Q6 No 'how to run it' section" in §2 and §7 are **audit questions**, not decisions, and they reuse the numbers of decisions Q5 and Q6 in §1 (2.6 uses them too). Rename them **AQ5** and **AQ6** everywhere in this plan. |
+| **C-2 Block registry** | The `closed-questions` block (§3.8) is added to `template_spec.OPAQUE_BLOCKS` as well as `GENERATED` (key `"14"`), so that `doc_sha`, the seals (`_claim_sha`) and the audit plan mask it like the other generated blocks. 2.8 adds five more blocks the same way and needs each to be opaque; a block that is not opaque makes a sealed register row fail C11 when its content changes between releases. Test: `test_check::test_closed_questions_is_opaque`. |
+| **C-3 Count-marker classes** | The closed `CLASS` list in §3.5 is extended in 2.8 (areas, state-changing handlers by label, access rules, role constants, guard shapes, secret-location files, configurations; 2.9 adds CI jobs and test suites). Implement the list as one constant in `template_spec` so 2.8 adds to it without changing the marker syntax. |
+| **C-4 Audit plan scope** | §3.4 samples sections 4, 6, 8.1, 8.3, 9 and 15 and covers 10.1, 7, 14, smells, 10.2, 16.5 and §17 fully. Generated and opaque blocks (including 2.8's access model in template §5.4) are **not audited**; say so in the A.1 line and in SKILL.md, so the omission is stated rather than assumed. |
+| **C-5 `appdoc upgrade` (proposed; decision Q23, take before 2.7 starts)** | 2.7 is the release that makes every committed document change template once, and it has no tool for it. §5.1's eight steps are mostly mechanical. If Q23 is accepted, add **§3.11** below (about 2 d, taking the total to about 8.5 d). If not, 2.8 carries it (its W15). |
+| **C-6 Schema** | §5.1's "schema stays `/7`" depends on 2.6 landing at `/7` (2.5 `/6`, 2.6 `/7`). 2.8 therefore writes its schema as "the next after 2.7's" and re-checks at its start. |
+| **C-7 Rules** | C21–C23 are free after C17–C20 and are reserved for 2.8 (mandatory inputs, area and protection coverage, unknowns the repository may answer). C20 stays advisory. |
+
+### 3.11 `appdoc upgrade <target>` (proposed, pending Q23)
+
+1. Add `template_spec.UPGRADE_STEPS[version]`, a **machine-readable** list of operations for each template version: add block markers at a given `GENERATED` position, add headings with `appdoc:guide` comments, add required-row skeletons with `Unknown - see Open questions.`, rename table headers. Today `UPGRADE_NOTES` is prose and cannot be applied. 2.7 supplies the 2.4 to 2.7 steps (stamp, `closed-questions` markers, §17 skeleton, the 2.2 to 2.4 header renames and block markers); 2.8 adds its own.
+2. A document with no stamp is treated as 2.1 when it has the 2.1 subsections (4.1, 5.1–5.3, 8.4, 8.5, 10.1/10.2, 15.1, 16.1–16.5), otherwise as 2.0.
+3. After the mechanical steps it re-runs `extract` and `fill` and writes `docs/appdoc/UPGRADE-TODO.md` listing the non-mechanical steps (convert `verification.md` to `evidence.jsonl`, write register rows for new finding candidates, replace hand-written counts with markers), each with the Check rule that fails until it is done.
+4. It never deletes Narrative (unmappable text goes under an `appdoc:upgrade-orphan` comment that C3 fails on) and never writes `evidence.jsonl`, `notes.jsonl` or `audit-plan.json` (P4). It does not convert `verification.md` automatically (the register needs source anchors).
+
+**Tests:** `test_core::test_upgrade_2_1_to_current_mechanical`, `::test_upgrade_2_0_adds_2_1_subsections`, `::test_upgrade_idempotent`, `::test_upgrade_never_drops_text`, `::test_upgrade_never_touches_register`, `::test_upgrade_todo_lists_failing_rules`, `::test_upgrade_step_table_covers_every_version`. Corpus `upgrade-2-1`, and `upgrade-2-6-to-2-7` replaces the hand-run §5.1 corpus test.
 
 ---
 
@@ -58,8 +83,8 @@ Users upgrade each document once, and the examples get a fresh run and a fresh a
 | MIN-05 | Q-/E-ID gaps unexplained | 3.8 |
 | F2 (diagnostic) | §14/register reconciliation uses live rows | 3.10 |
 | F4 (diagnostic) | Stale hand-written counts | 3.5 |
-| Q5 | eShop chatbot PII flow | 5.2 |
-| Q6 | No "how to run it" section | 3.9 |
+| AQ5 | eShop chatbot PII flow | 5.2 |
+| AQ6 | No "how to run it" section | 3.9 |
 
 ---
 
@@ -74,7 +99,7 @@ Users upgrade each document once, and the examples get a fresh run and a fresh a
    - `audited_on` (`YYYY-MM-DD`, supplied explicitly);
    - `audited_with` (version);
    - `audited_bundle` (12-hex);
-   - `doc_sha`: 12-hex SHA-1 of `normalize_text(Narrative with generated blocks and count markers masked, comments stripped)`, the same text C11 uses.
+   - `doc_sha`: 12-hex SHA-1 of `normalize_text(Narrative with the opaque generated blocks and count markers masked, comments stripped)`, the same text C11 uses. **Only the opaque blocks** (`template_spec.OPAQUE_BLOCKS`: `entry-points`, `scheduled-jobs`, `closed-questions`, `appendix-a`) are masked. `scan-coverage` and `config-reference` are not opaque: they are text the auditor reads and register rows cite, so a change to them changes `doc_sha` (decision D3 of the 2.7.1 plan). A Facts change therefore reseeds the audit sample by design (`test_core::test_audit_plan_changes_with_doc`). Fill-before-seal (S6.1, see "Changes made during implementation") is what keeps the fingerprint reproducible.
 3. **C11 superseding:**
    - The duplicate-ref rule (`check.py:731-735`) counts **live** rows only. Two live rows on one ref fail with `add "supersedes": "<older id>" to the newer row; do not delete the older row`.
    - A `supersedes` target must exist, share the `ref`, and not form a cycle.
@@ -119,7 +144,7 @@ Corpus `superseded`, `upgrade-seal`.
 ### 3.3 Audit scope is computed (P1/P2 → MAJ-05)
 
 1. **A.1 prints a computed coverage line** from `coverage(...)` and the audit plan (3.4): `Register rows cover: 10.1 V-1–V-14 (14 of 14) · workflows 7.1–7.10 (10 of 10) · …`.
-2. **C17 (scope):** the line-1 `scope` may not contain an ID token (`_ID_REF_RE`) or a digit sequence. Fix: `describe only the method; coverage is computed`. This was previewed in 2.6.0.
+2. **C17 (scope):** the line-1 `scope` may not contain an ID token (`_ID_REF_RE`) or any digit. The check is `re.search(r"\d", scope)`, so a single digit (for example `2.7` or `10`) fails, not only a digit sequence; the same rule applies to each `exclusions` reason. Accepted as implemented (2.7.1 decision, review finding S-c3): a scope that names a number is a coverage claim, and coverage is computed. Fix: `describe only the method; coverage is computed`. This was previewed in 2.6.0.
 3. **`exclusions`:** `{"<section>": "<reason>"}`. Keys are section refs; values follow the same token rule; each is printed verbatim in A.1.
 
 **Tests:** `test_check::test_c17_scope_ids_fail`, `::test_c17_scope_digits_fail`, `::test_c17_method_only_passes`, `::test_c17_exclusions_keys_are_sections`; `test_register::test_a1_computed_scope_line`. Corpus `scope-ids`.
@@ -129,13 +154,14 @@ Corpus `superseded`, `upgrade-seal`.
 1. **`appdoc audit-plan <target>`** writes `docs/appdoc/audit-plan.json`, a pure function of the Narrative:
    - **Full coverage:** every 10.1 V-ID, every §7 workflow, every §14 Q-ID, every finding candidate, every 10.2 control marked Present, every 16.5 and §17 row that is not Unknown/Not applicable.
    - **Sampled sections** (4, 6, 8.1, 8.3, 9, 15): `k = min(n, max(5, ceil(0.25 * n)))`, chosen by sorting IDs on `sha1(doc_sha + id)`.
-   - **Organization override:** `appdoc-context.md` line `Audit floor: <fraction>, <minimum>` is applied only when stricter than both defaults. A looser value is ignored and reported as an advisory.
+   - **Organization override:** `appdoc-context.md` line `Audit floor: <fraction>, <minimum>` is applied only when stricter than both defaults. The fraction is a decimal or a percent (`0.4, 8` and `40%, 8` are the same floor; see "Changes made during implementation"). A looser value is ignored and reported as an advisory.
 2. **C19 "Audit follows the plan"** (stamp 2.7, `--require-audit`):
    - `audit-plan.json` must equal a fresh computation;
    - every planned ID has a live row;
    - exclusions are printed.
 3. A.2 shows `planned / audited / extra` per section.
 4. **SKILL.md audit step:** run `audit-plan`, audit every planned ID (more if useful), then `seal --audit --date …`.
+5. **Per-row coverage (implemented in 2.7.1, R71.A1a-d).** The 2.7.0 plan listed one key per section for 10.2, 16.5, 17 and 9, so "every control" and "every row" were planned but not enforced: one register row per section satisfied C19. From 2.7.1 the plan holds one key `<section>/<slug>` per row (10.2 controls with Status Present, 16.5 and 17 rows that are not Unknown / Not applicable, and the sampled 9 rows, `k` from the same floor, seeded by `doc_sha`), the register `ref` is that key, and C19 names the row text and the ref to use for each key without a live row. `seal` stamps these rows. The slug is the first cell, lower-cased, runs of non-alphanumerics to `-`, repeats suffixed `-2`, `-3` in row order. A document audited under 2.7.0 fails C19 under `--require-audit` until the rows exist (CHANGELOG, Unreleased). Tests: `test_core::AuditPlanTests::test_per_row_*`, corpus `audit-per-row-coverage`.
 
 **Tests:** `test_core::test_audit_plan_deterministic`, `::test_audit_plan_changes_with_doc`, `::test_audit_plan_floor_math`, `::test_audit_floor_override_only_raises`; `test_check::test_c19_missing_planned_row_fails`, `::test_c19_stale_plan_fails`, `::test_c19_exclusion_printed`. Corpus `audit-plan`.
 
@@ -207,6 +233,23 @@ All five rows required (C9). Status values: a cited command; Unknown (the reposi
 C14 already fails from 2.5.0 (shipped before Q19). It needs no change here beyond using the live-row definition from 3.1 when it reads the register.
 
 **Tests:** `test_check::test_c14_uses_live_rows`.
+
+---
+
+## Changes made during implementation (2.7.0, recorded in 2.7.1)
+
+The 2.7.0 code review (2026-11-24, review findings S-b1 to S-b6) found six additions that this plan did not list. Each came from a failure met while running the 2.7 audits, and each is accepted (decision D5 of the 2.7.1 plan). ADR 0015 carries the amendment for the three that touch audit semantics.
+
+| # | Addition | Why it was added |
+|---|---|---|
+| 1 | **Section 3.7 C1 extensions** (`citations.py`): `go rs rb php kt kts proto tf tfvars` are Citation extensions, `mod` and `sum` are line-only, `go.mod go.sum go.work go.work.sum` are Citations by exact name, and a bare `.ext` (such as `.proto`) without a line is prose naming a file type, not a file. `expand_bare` leaves fenced code and HTML comments alone. | The Go and protobuf examples cited files the C1 extension list did not know, and prose such as `.go` and `math.mod` was read as a Citation. |
+| 2 | **`audit-plan --check`**: read-only; prints the planned IDs on disk and from a fresh computation; exit 0 when equal, 2 when the plan is stale or missing. | An auditor under a read-only mandate could not tell whether the plan was current without rewriting it. |
+| 3 | **"Fix advisories" run step** (SKILL.md, before `audit-plan`): run `check --strict` and fix every advisory first. | The sample is seeded by `doc_sha`, so an advisory fix made after the plan reshuffled the sample and forced another audit pass. |
+| 4 | **Auditors cover every row of a sampled section after any edit.** The sample is a floor, not a ceiling: an auditor may cover more, and after any Narrative edit must cover every row of sections 4, 6, 8.1, 8.3, 9 and 15, because the edit reseeds the sample. | A late edit changed which rows were planned, and a planned row had never been read. |
+| 5 | **`Audit floor:` percent syntax**: `Audit floor: 40%, 8` is accepted as well as `0.4, 8`; the percent is divided by 100 and the result must be above 0 and at most 1. Only a stricter value than 25% / 5 applies; a looser one is an advisory (section 3.4). | Organizations write a floor as a percent; the decimal-only form was rejected silently. |
+| 6 | **Section 6.1, fill before seal**: `seal` (plain and `--audit`) first fills the non-opaque generated blocks (`scan-coverage`, `config-reference`) from the Facts, so the fingerprint is that of the filled document. | A stale block was filled after the seal, so `doc_sha` changed and rows sealed `upgrade` against text the auditor had read (`test_core::test_seal_audit_fingerprints_the_filled_document`). |
+
+Related decision recorded here (2.7.1, review finding S-c3): the C17 scope rule rejects any single digit, not only a digit sequence (section 3.3).
 
 ---
 
@@ -329,8 +372,8 @@ fresh regeneration of four examples + audits, diagnostic, release              2
 | MIN-05 | 3.8 | `test_fill::test_closed_questions_block` | — |
 | F2 | 3.10 | `test_check::test_c14_uses_live_rows` | unknowns-leak |
 | F4 | 3.5 | `test_check::test_c15_stale_marker_fails` | stale-count |
-| Q5 | 5.2 | eShop 2.7 example: V-finding or 10.2 row present | — |
-| Q6 | 3.9 | `test_check::test_c9_section_17_rows` | — |
+| AQ5 | 5.2 | eShop 2.7 example: V-finding or 10.2 row present | — |
+| AQ6 | 3.9 | `test_check::test_c9_section_17_rows` | — |
 | Upgrade path | 5.1 | `test_corpus::test_upgrade_2_5_to_2_7` | upgrade-2-6-to-2-7 |
 
 ---

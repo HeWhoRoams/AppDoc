@@ -17,11 +17,17 @@ import json
 import re
 from typing import Iterable
 
+from .. import dotnetcfg, dotnetsec
 from ..facts import Fact, is_test_path
 from ..secrets import is_secret_key, find_secret_shapes
 from .base import iter_matches, line_of, strip_comments
 
 STACK_ID = "generic"
+# Fact kinds this reader emits (it is not a registered Stack). tests/test_conformance.py derives the set from
+# the samples and compares it with its own literal, so an addition is deliberate.
+GENERIC_KINDS = frozenset({"build_define", "config_external", "config_key", "config_unparsed", "connection",
+                           "context_directive", "dependency", "file", "owner_file", "project", "publish_profile",
+                           "schema_object", "smell"})
 
 CONFIG_NAMES_JSON = re.compile(r"^(appsettings(\..+)?|config|settings|local\.settings)\.json$", re.I)
 # Framework-defined application config names (closed set, R3): positive evidence for role `app`.
@@ -137,7 +143,9 @@ def _roled(path: str, facts: Iterable[Fact], siblings: set[str] | None = None) -
         yield f.as_test() if role == "test" else f
 
 
-def extract(path: str, text: str, siblings: set[str] | None = None) -> Iterable[Fact]:
+def extract(path: str, text: str, siblings: set[str] | None = None, raw: bytes | None = None) -> Iterable[Fact]:
+    """Facts for one file. ``raw`` is the file's bytes (the XML readers need them for the BOM and the declared
+    encoding); without it the decoded ``text`` is re-encoded as UTF-8. Pure per file: no state between calls."""
     n = _name(path)
     low = n.lower()
     kind = _owner_kind(path)
@@ -148,6 +156,7 @@ def extract(path: str, text: str, siblings: set[str] | None = None) -> Iterable[
         yield from _ddl(path, text)
     elif low in ("web.config", "app.config") or (low.endswith(".config") and "<configuration" in text[:2000]):
         yield from _roled(path, _dotnet_config(path, text), siblings)
+        yield from dotnetsec.generic_facts(path, text, raw)
     elif CONFIG_NAMES_JSON.match(n):
         yield from _roled(path, _json_config(path, text), siblings)
     elif low.endswith((".properties", ".yml", ".yaml", ".ini")):
@@ -163,10 +172,14 @@ def extract(path: str, text: str, siblings: set[str] | None = None) -> Iterable[
         yield from _pom(path, text)
     elif low in ("build.gradle", "build.gradle.kts"):
         yield from _gradle(path, text)
-    elif low.endswith(".csproj"):
-        yield from _csproj(path, text)
+    elif dotnetcfg.is_project_name(path):
+        yield from _csproj(path, text, raw)
+    elif dotnetcfg.is_pubxml_name(path):
+        yield from _pubxml(path, text, raw)
     elif low == "packages.config":
         yield from _packages_config(path, text)
+    elif low.endswith(".sln"):
+        yield from _solution(path, text)
     elif low == "gemfile":
         for ln, m in iter_matches(_GEM_RE, text):
             yield _dep(path, ln, m.group(1), m.group(2), "bundler")
@@ -183,9 +196,9 @@ def _dep(path, line, name, version, manager) -> Fact:
     return Fact.make("dependency", STACK_ID, path, line, name, version=version or "", manager=manager)
 
 
-def _cfg(path, line, key, source, role="app") -> Fact:
+def _cfg(path, line, key, source, role="app", **extra) -> Fact:
     return Fact.make("config_key", STACK_ID, path, line, key, source=source, role=role, use="define",
-                     secret_location=is_secret_key(key))
+                     secret_location=is_secret_key(key), **extra)
 
 
 def _with_role(f: Fact, role: str) -> Fact:
@@ -229,7 +242,21 @@ def _dotnet_config(path, text):
                 secret = is_secret_key(key) or bool(find_secret_shapes(value))
                 yield _conn(path, line, key, "database", secret)
             else:
-                yield _cfg(path, line, key, _name(path))
+                yield _cfg(path, line, key, _name(path), **_traits(key, attrs.get("value", "")))
+
+
+def _traits(key: str, value: str) -> dict:
+    """Counts and a year, never a value (R18, R19): ``list_count`` for an identifier list, ``year`` for a horizon key."""
+    if is_secret_key(key):
+        return {}
+    out = {}
+    n = dotnetcfg.id_list_count(key, value)
+    if n:
+        out["list_count"] = n
+    y = dotnetcfg.year_value(key, value)
+    if y:
+        out["year"] = y
+    return out
 
 
 # ---------------------------------------------------------------- JSON config
@@ -425,9 +452,167 @@ def _gradle(path, text):
         yield _dep(path, ln, m.group(1), m.group(2), "gradle")
 
 
-def _csproj(path, text):
+_TEST_PACKAGES = re.compile(r"(?i)^(microsoft\.net\.test\.sdk|mstest(\.|$)|xunit(\.|$)|nunit(\.|$)|nunit3testadapter$"
+                            r"|microsoft\.visualstudio\.(qualitytools|testplatform|testtools)\.)")
+_WEB_PACKAGES = re.compile(r"(?i)^(microsoft\.aspnetcore(\.|$)|microsoft\.aspnet\.(mvc|webapi|webpages|razor|web)(\.|$)"
+                           r"|system\.web(\.|$))")
+_WEB_PROJECT_GUID = "349c5851-65df-11da-9384-00065b846f21"
+_CONFIG_COND = re.compile(r"\$\(Configuration\)(?:\|\$\(Platform\))?'\s*==\s*'([^'|]*)(?:\|[^']*)?'")
+_DEFINE_TOKEN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+_OUTPUT_TYPES = ("exe", "winexe", "library", "module", "appcontainerexe")
+
+
+def _xml(path: str, text: str, raw: bytes | None):
+    """Parse with dotnetcfg: (doc, config_unparsed Fact or None)."""
+    doc = dotnetcfg.parse(raw) if raw is not None else dotnetcfg.parse(text.encode("utf-8"), encoding="utf-8")
+    if doc.root is None:
+        return None, Fact.make("config_unparsed", STACK_ID, path, None, _name(path), reason=doc.unparsed)
+    return doc, None
+
+
+def _props(root):
+    """(lower-cased name, element, group condition) for every property in every PropertyGroup, document order."""
+    for g in root.findall("PropertyGroup"):
+        cond = g.attrs.get("Condition")
+        for e in g.children:   # MSBuild property names are case-insensitive: yield them lower-cased
+            yield e.name.lower(), e, e.attrs.get("Condition", cond)
+
+
+def _config_of(cond: "str | None") -> str:
+    """``Debug`` from ``'$(Configuration)|$(Platform)'=='Debug|AnyCPU'``; ``*`` with no condition; else ``unknown``."""
+    if not cond:
+        return "*"
+    m = _CONFIG_COND.search(cond)
+    return m.group(1).strip() if m and m.group(1).strip() else "unknown"
+
+
+def _csproj(path, text, raw=None):
     for ln, m in iter_matches(_CSPROJ_RE, text):
         yield _dep(path, ln, m.group(1), m.group(2), "nuget")
+    doc, bad = _xml(path, text, raw)
+    if bad:
+        yield bad
+        return
+    root = doc.root
+    if root.name != "Project":
+        return
+    sdk = (root.attrs.get("Sdk") or "").split("/")[0].strip()
+    props = list(_props(root))
+    out_type = None
+    for n, e, c in props:
+        if n == "outputtype" and e.text:
+            out_type = e.text.lower()
+            break
+    refs = []
+    for ig in root.findall("ItemGroup"):
+        for e in ig.children:
+            if e.name in ("PackageReference", "FrameworkReference", "Reference"):
+                inc = (e.attrs.get("Include") or "").split(",")[0].strip()
+                if inc:
+                    refs.append(inc)
+    flag = lambda name: any(n == name and e.text.strip().lower() == "true"  # noqa: E731
+                            for n, e, _ in props)
+    guids = " ".join(e.text.lower() for n, e, _ in props if n == "projecttypeguids")
+    is_test = flag("istestproject") or any(_TEST_PACKAGES.match(r) for r in refs)
+    is_web = (sdk.lower().endswith((".web", ".razor")) or any(_WEB_PACKAGES.match(r) for r in refs)
+              or _WEB_PROJECT_GUID in guids)
+    desktop = (out_type == "winexe" or flag("usewindowsforms") or flag("usewpf")
+               or any(r.lower() == "system.windows.forms" for r in refs))
+    kind = ("test" if is_test else "web" if is_web else "winforms" if desktop
+            else "console" if out_type == "exe" else "library")
+    detail = {"test": is_test, "web": is_web}
+    configs = sorted({_config_of(c) for _n, _e, c in props if c} - {"*", "unknown"})
+    configs += sorted({_config_of(g.attrs.get("Condition")) for g in root.findall("PropertyGroup")
+                       if g.attrs.get("Condition")} - {"*", "unknown"} - set(configs))
+    if configs:
+        detail["configs"] = configs
+    if any(n == "projectconfigtransformfilename" for n, _e, _c in props):
+        detail["transform_lookup"] = "unknown"      # a custom transform file name: the lookup cannot be evaluated (R17)
+    if any(n.startswith("iisexpress") or n == "useiisexpress" for n, _e, _c in props):
+        detail["iis_express"] = True                # dev-only host values (disclosed as csproj_dev_only, never used for reach)
+    if re.match(r"^[A-Za-z][\w.]*$", sdk):
+        detail["sdk"] = sdk
+    if out_type:
+        detail["output_type"] = out_type if out_type in _OUTPUT_TYPES else "other"
+    # `kind` is a detail key and Fact.make's own first parameter, so add it to the made Fact directly.
+    base = Fact.make("project", STACK_ID, path, root.line, _stem(path), **detail)
+    yield Fact(base.kind, base.stack, base.path, base.line, base.name, tuple(sorted(base.detail + (("kind", kind),))))
+    for n, e, cond in props:
+        if n != "defineconstants":
+            continue
+        value = e.text or ""
+        toks = [t.strip() for t in value.split(";") if t.strip()]
+        yield Fact.make("build_define", STACK_ID, path, e.line, _config_of(cond), config=_config_of(cond),
+                        symbols=sorted({t for t in toks if _DEFINE_TOKEN.match(t)}),
+                        inherits="$(DefineConstants)" in toks)
+
+
+_SLN_CONFIG = re.compile(r"(?m)^\s*([^|=\r\n]+)\|[^=\r\n]+=\s*\1\|")
+
+
+def _solution(path, text):
+    """A solution's ``SolutionConfigurationPlatforms`` names, as one ``project`` Fact of kind ``solution``."""
+    m = re.search(r"(?s)GlobalSection\(SolutionConfigurationPlatforms\)[^\n]*\n(.*?)EndGlobalSection", text)
+    if not m:
+        return
+    names = sorted({c.strip() for c in _SLN_CONFIG.findall(m.group(1)) if c.strip()})
+    if names:
+        base = Fact.make("project", STACK_ID, path, line_of(text, m.start()), _stem(path), configs=names)
+        yield Fact(base.kind, base.stack, base.path, base.line, base.name,
+                   tuple(sorted(base.detail + (("kind", "solution"),))))
+
+
+def _stem(path: str) -> str:
+    return _name(path).rsplit(".", 1)[0]
+
+
+_HOST_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9.-]{0,252}$")
+
+
+def _host_of(value: str) -> "str | None":
+    """Host only: never userinfo, port, path or query. A local folder, a drive path or a MSBuild macro is no host."""
+    v = value.strip()
+    if not v or "$(" in v or re.match(r"^[A-Za-z]:[\\/]", v):
+        return None
+    if v.startswith("\\\\"):
+        host = re.split(r"[\\/]", v[2:], maxsplit=1)[0]
+    elif "://" in v:
+        host = v.split("://", 1)[1]
+        host = re.split(r"[/?#]", host, maxsplit=1)[0].rsplit("@", 1)[-1]
+        host = host.split(":", 1)[0]
+    elif v.startswith(("/", ".")) or "\\" in v:
+        return None
+    else:
+        host = re.split(r"[/?#]", v, maxsplit=1)[0].rsplit("@", 1)[-1].split(":", 1)[0]
+    return host.lower() if _HOST_RE.match(host) else None
+
+
+def _pubxml(path, text, raw=None):
+    """One publish_profile per ``*.pubxml`` (``*.pubxml.user`` is never routed here and never read)."""
+    doc, bad = _xml(path, text, raw)
+    if bad:
+        yield bad
+        return
+    root = doc.root
+    if root.name != "Project":
+        return
+    vals = {}
+    for n, e, _ in _props(root):
+        t = e.text
+        if t and n not in vals:
+            vals[n] = t
+    detail = {}
+    cfg = vals.get("lastusedbuildconfiguration") or vals.get("configuration")
+    if cfg and re.match(r"^[A-Za-z0-9_. -]{1,64}$", cfg):
+        detail["build_config"] = cfg
+    if re.match(r"^[A-Za-z]{1,32}$", vals.get("webpublishmethod", "")):
+        detail["method"] = vals["webpublishmethod"]
+    for key in ("msdeployserviceurl", "publishurl"):
+        host = _host_of(vals.get(key, ""))
+        if host:
+            detail["host"] = host
+            break
+    yield Fact.make("publish_profile", STACK_ID, path, root.line, _stem(path), **detail)
 
 
 def _packages_config(path, text):

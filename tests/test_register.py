@@ -3,7 +3,7 @@ import os
 import tempfile
 import unittest
 
-from appdoc import register
+from appdoc import facts, register
 from appdoc.register import appendix_markdown, locate, parse
 
 AUDIT = {"type": "audit", "performed": True, "auditor": "independent", "scope": "sections 3-10"}
@@ -43,6 +43,28 @@ class AppendixMarkdownTests(unittest.TestCase):
         self.assertIn("**Auditor:** independent. **Scope:** sections 3-10", block(md, "A.1 Audit state"))
         self.assertIn("3 rows: 1 Supported, 1 Corrected, 1 Downgraded.", md)
         self.assertNotIn("Dismissed", block(md, "A.2 Coverage"))
+
+    def test_a1_names_the_opaque_blocks_as_not_audited(self):
+        from appdoc import template_spec as spec
+        for reg in (reg_of(row(1)), None):
+            a1 = block(appendix_markdown(reg, {}), "A.1 Audit state")
+            lines = [l for l in a1.splitlines() if l.startswith("Not audited:")]
+            self.assertEqual(len(lines), 1, a1)
+            names = lines[0].split("(", 1)[1].rstrip(")").split(", ")
+            self.assertEqual(tuple(names), spec.opaque_blocks(spec.version_tuple(spec.TEMPLATE_VERSION)))
+            self.assertTrue(lines[0].startswith("Not audited: generated and opaque blocks ("))
+
+    def test_not_audited_line_lists_the_2_8_blocks(self):
+        from appdoc import template_spec as spec
+        new = ("access-model", "connections", "integrations", "pipeline", "repo-docs")
+        for reg in (reg_of(row(1)), None):
+            a1 = block(appendix_markdown(reg, {}, opaque=spec.opaque_blocks((2, 8))), "A.1 Audit state")
+            line = next(l for l in a1.splitlines() if l.startswith("Not audited:"))
+            names = tuple(line.split("(", 1)[1].rstrip(")").split(", "))
+            self.assertEqual(names, spec.OPAQUE_BLOCKS)                       # generated, not retyped
+            self.assertTrue(set(new) <= set(names))
+            old = block(appendix_markdown(reg, {}, opaque=spec.opaque_blocks((2, 7))), "A.1 Audit state")
+            self.assertTrue(all(n not in old for n in new), old)              # a 2.7 document's line is unchanged
 
     def test_dismissed_and_answerable_parse_and_count(self):
         reg = reg_of(row(1), row(2, "Dismissed", ref="smell/ab12cd34", anchor="", cites=()),
@@ -93,9 +115,21 @@ class AppendixMarkdownTests(unittest.TestCase):
         md = appendix_markdown(reg_of(row(1, ref="7.1", anchor="line 8", cites=("app/main.py:8",))), {},
                                root=target)
         cmds = block(md, "A.4 Verification commands")
-        self.assertIn("- **E-1** (`7.1`), expect line 8\n\n```text\n"
+        self.assertIn("- **E-1** (section 7), expect `app/main.py:8`\n\n```text\n"
                       "Select-String -LiteralPath 'app/main.py' -SimpleMatch -CaseSensitive -Pattern 'line 8'\n"
                       "grep -nF -- 'line 8' 'app/main.py'\n```", cmds)
+
+    def test_a4_label_section_and_location(self):
+        tmp, target = make_target()
+        self.addCleanup(tmp.cleanup)
+        md = appendix_markdown(reg_of(row(1, ref="10.1/V-1", anchor="line 8", cites=("app/main.py:8",))), {},
+                               root=target)
+        self.assertIn("- **E-1** (section 10), expect `app/main.py:8`", block(md, "A.4 Verification commands"))
+        self.assertNotIn("expect line", md)
+
+    def test_one_row_is_singular(self):
+        md = appendix_markdown(reg_of(row(1)), {})
+        self.assertIn("1 row: ", block(md, "A.2 Coverage"))
 
     def test_command_uses_located_path_not_first_cite(self):
         tmp, target = make_target()
@@ -106,7 +140,7 @@ class AppendixMarkdownTests(unittest.TestCase):
         md = appendix_markdown(reg_of(row(1, anchor="beta", cites=("app/main.py:1", "other/b.py:2"))), {},
                                root=target)
         cmds = block(md, "A.4 Verification commands")
-        self.assertIn("expect line 2", cmds)
+        self.assertIn("expect `other/b.py:2`", cmds)
         self.assertIn("-LiteralPath 'other/b.py'", cmds)
 
     def test_command_quoting_special_characters(self):
@@ -167,6 +201,11 @@ class AppendixMarkdownTests(unittest.TestCase):
         self.assertEqual(appendix_markdown(reg, {}, coverage=[("10.1", 1, 1)], root=target), "\n".join([
             "### A.1 Audit state", "",
             "**Auditor:** independent. **Scope:** sections 3-10", "",
+            "`seal` writes `claim_sha` and `sealed_by` only on ID rows, workflow (7.x) and per-row section keys. "
+            "Other section-level rows, Answerable rows and Dismissed rows are never sealed, so they carry no "
+            "`sealed_by`. C17 `--strict` fails only on `sealed_by: upgrade`, never on an absent key.", "",
+            "Not audited: generated and opaque blocks (entry-points, scheduled-jobs, closed-questions, appendix-a, "
+            "access-model, connections, integrations, pipeline, repo-docs)", "",
             "### A.2 Coverage", "",
             "2 rows: 1 Supported, 1 Corrected, 0 Downgraded. "
             "Each Supported or Corrected row's anchor text was found in its cited lines by the Check.", "",
@@ -178,12 +217,67 @@ class AppendixMarkdownTests(unittest.TestCase):
             "### A.4 Verification commands", "",
             "Run from the Target root. Each block names the expected line, then a PowerShell command and a POSIX command.",
             "",
-            "- **E-1** (`10.1/V-1`), expect line 6", "", "```text",
+            "- **E-1** (section 10), expect `app/main.py:6`", "", "```text",
             "Select-String -LiteralPath 'app/main.py' -SimpleMatch -CaseSensitive -Pattern 'line 6'",
             "grep -nF -- 'line 6' 'app/main.py'", "```", "",
-            "- **E-2** (`7.1`), expect line 2", "", "```text",
+            "- **E-2** (section 7), expect `app/main.py:2`", "", "```text",
             "Select-String -LiteralPath 'app/main.py' -SimpleMatch -CaseSensitive -Pattern 'line 2'",
             "grep -nF -- 'line 2' 'app/main.py'", "```"]))
+
+
+class BlocksProvenanceTests(unittest.TestCase):
+    BY = {"generator": "2.6.0", "bundle": "7c1e5a9b03d2"}
+
+    def a1(self, audit=AUDIT, blocks_by=BY):
+        md = appendix_markdown(reg_of(row(1), audit=audit), {}, blocks_by=blocks_by)
+        return block(md, "A.1 Audit state")
+
+    def test_a1_blocks_provenance_line(self):
+        self.assertIn("Generated blocks written by AppDoc 2.6.0 (bundle 7c1e5a9b03d2).", self.a1())
+        self.assertNotIn("regenerated after the audit", self.a1())
+
+    def test_a1_line_absent_without_blocks_by(self):
+        self.assertNotIn("Generated blocks", self.a1(blocks_by=None))
+
+    def test_a1_regenerated_after_audit_line(self):
+        line = "Generated blocks were regenerated after the audit and are not covered by it."
+        self.assertIn(line, self.a1({**AUDIT, "audited_with": "2.5.0"}))
+        self.assertIn(line, self.a1({**AUDIT, "audited_with": "2.5"}))
+        self.assertNotIn(line, self.a1({**AUDIT, "audited_with": "2.6.3"}))   # same major.minor
+        self.assertNotIn(line, self.a1({**AUDIT, "audited_with": "2.6.0.dev0"}))
+        self.assertNotIn(line, self.a1())                                      # audited_with is optional
+
+    def test_a1_line_when_audit_not_performed(self):
+        md = appendix_markdown(reg_of(audit={"type": "audit", "performed": False, "scope": "x"}), {},
+                               blocks_by=self.BY)
+        self.assertIn("Generated blocks written by AppDoc 2.6.0", md)
+
+    def test_fill_writes_the_line_and_blocks_by(self):
+        from appdoc import fill, version
+        tmp, target = make_target()
+        self.addCleanup(tmp.cleanup)
+        out = os.path.join(target, "docs", "appdoc")
+        os.makedirs(out)
+        with open(os.path.join(out, "facts.json"), "w") as fh:
+            json.dump({"schema": facts.SCHEMA, "facts": [], "stacks": [], "target": {}}, fh)
+        with open(os.path.join(out, "evidence.jsonl"), "w") as fh:
+            fh.write(json.dumps({**AUDIT, "audited_with": "1.0.0"}) + "\n")
+        with open(os.path.join(out, "application-documentation.md"), "w") as fh:
+            fh.write("<!-- appdoc:generated appendix-a -->\n<!-- /appdoc:generated appendix-a -->\n")
+        with open(os.path.join(out, "provenance.json"), "w") as fh:
+            json.dump(version.provenance(), fh)
+        import contextlib, io
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(fill.run(target, out), 0)
+        with open(os.path.join(out, "application-documentation.md"), encoding="utf-8") as fh:
+            md = fh.read()
+        p = version.provenance()
+        self.assertIn(f"Generated blocks written by AppDoc {p['generator']} (bundle {p['bundle']}).", md)
+        self.assertIn("were regenerated after the audit", md)
+        with open(os.path.join(out, "provenance.json"), encoding="utf-8") as fh:
+            prov = json.load(fh)
+        self.assertEqual(prov["blocks_by"], {"generator": p["generator"], "bundle": p["bundle"]})
+        self.assertEqual(prov["generator"], p["generator"])  # extract's keys are kept
 
 
 class SealTests(unittest.TestCase):
@@ -229,5 +323,195 @@ class SealTests(unittest.TestCase):
         self.assertTrue(any("claim_sha" in e[1] for e in reg.errors))
 
 
+class AuditRecordTests(unittest.TestCase):
+    FULL = {"audited_on": "2026-11-23", "audited_with": "2.7.0", "audited_bundle": "0123456789ab",
+            "doc_sha": "abcdef012345"}
+
+    def test_audit_record_fields_parse(self):
+        self.assertEqual(reg_of(row(1), audit={**AUDIT, **self.FULL}).errors, [])
+        self.assertEqual(register.AUDIT_RECORD_KEYS, tuple(self.FULL))
+
+    def test_audit_record_fields_are_validated(self):
+        for key, bad in (("audited_on", "23/11/2026"), ("audited_with", "latest"),
+                         ("audited_bundle", "xyz"), ("doc_sha", "ABCDEF012345")):
+            reg = reg_of(row(1), audit={**AUDIT, **self.FULL, key: bad})
+            self.assertTrue(any(key in e[1] for e in reg.errors), key)
+
+
+class AppendixHistoryTests(unittest.TestCase):
+    FULL = AuditRecordTests.FULL
+
+    def reg(self):
+        # E-3 supersedes E-1 (same ref 10.1/V-1 in this fixture)
+        return reg_of(row(1, anchor="line 6", cites=("app/main.py:6",)),
+                      {**row(2, "Corrected", anchor="line 6", cites=("app/main.py:6",)), "supersedes": "E-1"},
+                      row(3, "Downgraded", ref="10.1/V-2"))
+
+    def test_a1_audit_provenance_line(self):
+        md = appendix_markdown(reg_of(row(1), audit={**AUDIT, **self.FULL}), {},
+                               blocks_by={"generator": "2.7.0", "bundle": "7c1e5a9b03d2"})
+        a1 = block(md, "A.1 Audit state")
+        self.assertIn("Audited on 2026-11-23 with AppDoc 2.7.0 (bundle 0123456789ab).", a1)
+        self.assertLess(a1.index("Generated blocks written by AppDoc"), a1.index("Audited on"))
+        # a register from before 2.7 has none of the fields: no line
+        self.assertNotIn("Audited on", block(appendix_markdown(reg_of(row(1)), {}), "A.1 Audit state"))
+        # a partial record prints what it has
+        part = appendix_markdown(reg_of(row(1), audit={**AUDIT, "audited_on": "2026-11-23"}), {})
+        self.assertIn("Audited on 2026-11-23.", block(part, "A.1 Audit state"))
+
+    def test_a1_upgrade_sealed_note(self):
+        note = "rows were sealed at upgrade; their text was not re-audited."
+        reg = reg_of({**row(1), "sealed_by": "upgrade"}, {**row(2, ref="7.1"), "sealed_by": "upgrade"},
+                     {**row(3, ref="10.1/V-2"), "sealed_by": "audit"})
+        self.assertIn("2 " + note, block(appendix_markdown(reg, {}), "A.1 Audit state"))
+        one = reg_of({**row(1), "sealed_by": "upgrade"}, row(2, ref="7.1"))
+        self.assertIn("1 row was sealed at upgrade; their text was not re-audited.".replace("their", "its"),
+                      block(appendix_markdown(one, {}), "A.1 Audit state"))
+        self.assertNotIn("sealed at upgrade", block(appendix_markdown(reg_of(row(1)), {}), "A.1 Audit state"))
+        # a superseded upgrade-sealed row no longer counts: the text it covered is gone
+        gone = reg_of({**row(1), "sealed_by": "upgrade"}, {**row(2), "supersedes": "E-1", "sealed_by": "audit"})
+        self.assertNotIn("sealed at upgrade", block(appendix_markdown(gone, {}), "A.1 Audit state"))
+
+    def test_superseded_rows_counted_separately(self):
+        a2 = block(appendix_markdown(self.reg(), {}), "A.2 Coverage")
+        self.assertIn("3 rows (1 superseded). Current: 0 Supported, 1 Corrected, 1 Downgraded. "
+                      "As first audited: 1 Supported, 0 Corrected, 1 Downgraded.", a2)
+        # no superseded row: the 2.4 wording is untouched
+        self.assertIn("2 rows: 1 Supported, 1 Corrected, 0 Downgraded. Each Supported",
+                      block(appendix_markdown(reg_of(row(1), row(2, "Corrected", ref="7.1")), {}), "A.2 Coverage"))
+
+    def test_a2_shows_planned_audited_extra(self):
+        plan = {"sections": [
+            {"section": "10.1", "mode": "full", "total": 3, "ids": ["V-1", "V-2", "V-3"]},
+            {"section": "4", "mode": "sampled", "total": 9, "k": 5, "ids": ["F-1", "F-2"]},
+            {"section": "10.2", "mode": "full", "total": 1, "ids": ["10.2"], "items": ["TLS"]}]}
+        reg = reg_of(row(1, ref="10.1/V-1"), row(2, ref="10.1/V-2"), row(3, ref="4/F-1"), row(4, ref="4/F-9"))
+        a2 = block(appendix_markdown(reg, {}, plan=plan), "A.2 Coverage")
+        self.assertIn("| Section | Planned | Audited | Extra |", a2)
+        self.assertIn("| 10.1 | 3 | 2 | 0 |", a2)
+        self.assertIn("| 4 | 2 | 1 | 1 |", a2)          # F-9 has a row the plan did not ask for
+        self.assertIn("| 10.2 | 1 | 0 | 0 |", a2)
+        self.assertNotIn("Planned", block(appendix_markdown(reg, {}), "A.2 Coverage"))   # no plan, no table
+
+    def test_a1_computed_scope_line(self):
+        detail = [("10.1", [f"V-{i}" for i in range(1, 15)], [f"V-{i}" for i in range(1, 15)]),
+                  ("4", ["F-1", "F-2", "F-3", "F-7"], [f"F-{i}" for i in range(1, 41)]),
+                  ("6", [], ["UI-1", "UI-2"]),
+                  ("7 (workflows)", [f"7.{i}" for i in range(1, 11)], [f"7.{i}" for i in range(1, 11)])]
+        audit = dict(AUDIT, exclusions={"9": "owner knowledge", "8.3": "no outbound calls are read"})
+        a1 = block(appendix_markdown(reg_of(row(1), audit=audit), {}, coverage_ids=detail), "A.1 Audit state")
+        self.assertIn("Register rows cover: 10.1 V-1\u2013V-14 (14 of 14) \u00b7 4 F-1\u2013F-3, F-7 (4 of 40) \u00b7 "
+                      "6 none (0 of 2) \u00b7 workflows 7.1\u20137.10 (10 of 10).", a1)
+        # the exclusions the audit record declares are printed verbatim, in section order
+        self.assertIn("Not covered by the audit: 8.3: no outbound calls are read; 9: owner knowledge.", a1)
+        self.assertNotIn("Register rows cover", block(appendix_markdown(reg_of(row(1)), {}), "A.1 Audit state"))
+
+    def test_a3_marks_superseded(self):
+        a3 = block(appendix_markdown(self.reg(), {}), "A.3 Register")
+        rows = {l.split("|")[1].strip(): l for l in a3.splitlines() if l.startswith("| E-")}
+        self.assertIn("Supported (superseded by E-2)", rows["E-1"])
+        self.assertNotIn("superseded", rows["E-2"])
+        self.assertNotIn("superseded", rows["E-3"])
+
+    def test_a4_skips_superseded(self):
+        tmp, target = make_target()
+        self.addCleanup(tmp.cleanup)
+        a4 = block(appendix_markdown(self.reg(), {}, root=target), "A.4 Verification commands")
+        self.assertNotIn("**E-1**", a4)
+        self.assertIn("**E-2**", a4)
+
+
+class MissingIdsTests(unittest.TestCase):
+    def test_a2_lists_missing_ids(self):
+        reg = reg_of(row(1), row(3, ref="7.1"), row(6, ref="7.2"))
+        a2 = block(appendix_markdown(reg, {}, list_missing=True), "A.2 Coverage")
+        self.assertIn("Missing register ids: E-2, E-4, E-5. A row was deleted; restore it from git history "
+                      "and mark the row that replaces it with `supersedes`.", a2)
+        self.assertIn("Missing register id: E-2.", block(
+            appendix_markdown(reg_of(row(1), row(3, ref="7.1")), {}, list_missing=True), "A.2 Coverage"))
+        # no gap, or the list not asked for (a template 2.4 document): nothing is added
+        self.assertNotIn("Missing", block(appendix_markdown(reg_of(row(1), row(2, ref="7.1")), {},
+                                                            list_missing=True), "A.2 Coverage"))
+        self.assertNotIn("Missing", block(appendix_markdown(reg, {}), "A.2 Coverage"))
+
+    def test_answered_in_is_a_section_ref(self):
+        ok = {**row(2, "Answerable", ref="14/Q-1"), "answered_in": "16.3"}
+        self.assertEqual(reg_of(ok).errors, [])
+        for bad in ("Q-1", "", 16, ["16.3"], "16.3.1"):
+            self.assertEqual(len(reg_of({**ok, "answered_in": bad}).errors), 1, bad)
+
+
+class SupersedesTests(unittest.TestCase):
+    def test_supersedes_parsed(self):
+        reg = reg_of(row(1), {**row(2), "supersedes": "E-1"}, {**row(3), "supersedes": ["E-1", "E-2"], "sealed_by": "audit"},
+                     {**row(4), "sealed_by": "upgrade"})
+        self.assertEqual(reg.errors, [])
+        self.assertEqual(register.OPTIONAL_KEYS, ("claim_sha", "supersedes", "sealed_by", "answered_in"))
+        self.assertEqual(reg.supersedes_of(reg.rows[1][1]), ["E-1"])
+        self.assertEqual(reg.supersedes_of(reg.rows[2][1]), ["E-1", "E-2"])
+        self.assertEqual(reg.supersedes_of(reg.rows[0][1]), [])
+        self.assertEqual({r["id"] for _, r in reg.live_rows()}, {"E-3", "E-4"})
+        self.assertEqual(reg.superseded_by("E-1"), "E-2")   # the first (lowest) superseding row
+
+    def test_supersedes_rejects_bad_shapes(self):
+        for bad in ("E-x", 3, ["E-1", 2], [], ""):
+            reg = reg_of(row(1), {**row(2), "supersedes": bad})
+            self.assertTrue(any("supersedes" in e[1] for e in reg.errors), bad)
+        reg = reg_of({**row(1), "sealed_by": "me"})
+        self.assertTrue(any("sealed_by" in e[1] for e in reg.errors))
+
+
 if __name__ == "__main__":
     unittest.main()
+
+
+class Section53RowKeyTests(unittest.TestCase):
+    """T28.A5: the rows of 5.3 (the role-to-capability matrix) are keyed `5.3/<slug>` like the rows of 10.2."""
+
+    MATRIX = ("| Capability | admin | viewer |\n|---|---|---|\n"
+              "| Service: change settings | Y | |\n| Service: view reports | Y | Y |\n| Service: view reports | Y | ? |")
+
+    def doc(self, matrix=None):
+        from tests.test_check import SECTION_BODY, build_doc
+        old = SECTION_BODY[5].split("| Capability | admin |")[1].split("\n\n**Restriction")[0]
+        body = SECTION_BODY[5].replace("| Capability | admin |" + old, matrix or self.MATRIX)
+        return build_doc({5: body}).replace("<!-- appdoc:template 2.4 -->", "<!-- appdoc:template 2.8 -->")
+
+    def test_5_3_row_key_valid_and_sealed(self):
+        from appdoc import audit_plan, docmodel as dm, fingerprint, seal, template_spec as spec
+        for ref in ("5.3/service-change-settings", "5.3/service-view-reports-2"):
+            self.assertTrue(register.REF_RE.match(ref), ref)
+            self.assertEqual(register.ref_key(ref), ref)
+            self.assertEqual(audit_plan.ref_for(ref), ref)
+            self.assertTrue(audit_plan._in_section(ref, "5.3"))
+        self.assertTrue(audit_plan._in_section("5.3", "5.3"))          # a section-level ref is extra, not a row key
+        self.assertFalse(audit_plan._in_section("5.3/x", "5"))
+        self.assertIn("5.3", spec.ROW_KEY_SECTIONS)
+        lines = fingerprint.document_text(self.doc()).splitlines()
+        heads = dm.headings(lines)
+        keys = [k for k, _, _ in fingerprint.row_keys(lines, heads, "5.3")]
+        self.assertEqual(keys, ["5.3/service-change-settings", "5.3/service-view-reports", "5.3/service-view-reports-2"])
+        sha = fingerprint.claim_sha(lines, heads, {}, "5.3/service-change-settings")
+        self.assertRegex(sha, "^[0-9a-f]{12}$")
+        self.assertIsNone(fingerprint.claim_sha(lines, heads, {}, "5.3/no-such-row"))
+        other = fingerprint.document_text(self.doc(self.MATRIX.replace("Y | |", "Y | Y |"))).splitlines()
+        self.assertNotEqual(sha, fingerprint.claim_sha(other, dm.headings(other), {}, "5.3/service-change-settings"))
+        # `seal` writes claim_sha and sealed_by on a 5.3 row key, and on nothing else of section 5
+        tmp, target = make_target()
+        self.addCleanup(tmp.cleanup)
+        out = os.path.join(target, "docs", "appdoc")
+        os.makedirs(out)
+        with open(os.path.join(out, "application-documentation.md"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(self.doc())
+        rows = [row(1, ref="5.3/service-change-settings", claim="Only admin changes settings"),
+                row(2, ref="5.3", claim="section level, never sealed")]
+        with open(os.path.join(out, "evidence.jsonl"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write("\n".join(json.dumps(o) for o in (AUDIT, *rows)) + "\n")
+        with open(os.path.join(out, "facts.json"), "w", encoding="utf-8") as fh:
+            json.dump({"schema": facts.SCHEMA, "target": {"name": "t", "commit": None}, "stacks": [], "facts": []}, fh)
+        self.assertEqual(seal.seal_register(target, out), 1)
+        with open(os.path.join(out, "evidence.jsonl"), encoding="utf-8") as fh:
+            sealed = {o["ref"]: o for o in (json.loads(l) for l in fh if l.strip()) if "ref" in o}
+        self.assertEqual(sealed["5.3/service-change-settings"]["claim_sha"], sha)
+        self.assertIn("sealed_by", sealed["5.3/service-change-settings"])
+        self.assertNotIn("claim_sha", sealed["5.3"])

@@ -1,0 +1,13 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/flask-sa",
+  "exhaustive": true,
+  "note": "Flask-SQLAlchemy extension is a connection.",
+  "must_exist": [
+    {"kind": "dependency", "stack": "generic", "path": "requirements.txt", "line": 1, "name": "flask", "detail": {"manager": "pip"}},
+    {"kind": "dependency", "stack": "generic", "path": "requirements.txt", "line": 2, "name": "flask-sqlalchemy", "detail": {"manager": "pip"}},
+    {"kind": "connection", "stack": "python-flask", "path": "app.py", "line": 5, "name": "SQLAlchemy", "detail": {"type": "sqlalchemy", "secret_location": false}},
+    {"kind": "stack", "stack": "python-flask", "path": "requirements.txt", "name": "python-flask", "detail": {"supported": true, "capabilities": ["connection"]}}
+  ],
+  "must_not_exist": []
+}

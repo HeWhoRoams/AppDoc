@@ -22,5 +22,61 @@
     "must_cite": "project/templates/index.html:74",
     "must_contain": ["safe"],
     "note": "Verified: index.html:74 and search.html:55 render entry.text|safe. The glossary row should define the filter and cite one of the use sites."
+  },
+  {
+    "id": "FL-4",
+    "section": "10.1",
+    "alt_sections": [],
+    "must_cite": "project/app.py:25",
+    "must_contain": ["SECRET_KEY", "forge"],
+    "note": "Verified at 305122f: app.py:25 is SECRET_KEY = \"change_me\", a hardcoded constant. The 2.5.0 example reports it as V-2 (critical) with the forged-cookie consequence."
+  },
+  {
+    "id": "FL-5",
+    "section": "10.1",
+    "alt_sections": [],
+    "must_cite": "project/app.py:99",
+    "must_contain": ["GET", "anti-forgery"],
+    "note": "Verified: app.py:99 is @app.route(\"/delete/<int:post_id>\", methods=[\"GET\"]), so deletion is a GET. The 2.5.0 example reports it as V-4 with the missing anti-forgery token."
+  },
+  {
+    "id": "FL-6",
+    "section": "10.1",
+    "alt_sections": [],
+    "must_cite": "tests/app_test.py:13-21",
+    "must_contain": ["drop_all", "test.db"],
+    "note": "Verified: app_test.py:21 calls db.drop_all() in the fixture teardown, and :15-17 point the config at test.db only after the app exists. The 2.5.0 example reports the default-database wipe as V-9."
+  },
+  {
+    "id": "FL-7",
+    "section": "4",
+    "alt_sections": ["7.4"],
+    "must_cite": "project/app.py:99-112",
+    "must_contain": ["post_id", "status"],
+    "note": "Verified: app.py:99-112 is delete_entry (login_required), returns JSON status 1 on success and status 0 with repr(e) on exception. F-5 in the 2.5.0 example."
+  },
+  {
+    "id": "FL-8",
+    "section": "5.2",
+    "alt_sections": [],
+    "must_cite": "project/app.py:45-53",
+    "must_contain": ["login_required", "abort(401)"],
+    "note": "Verified: app.py:45-53 is the login_required decorator (returns a 401 JSON response when session['logged_in'] is unset) and app.py:66-67 is the inline check with abort(401) on the add route. Section 5.2 of the 2.5.0 example names both."
+  },
+  {
+    "id": "FL-9",
+    "section": "8.4",
+    "alt_sections": [],
+    "must_cite": "project/models.py:4-7",
+    "must_contain": ["Post", "title", "text"],
+    "note": "Verified: models.py:4-7 is class Post(db.Model) with id (primary key), title and text, both non-null strings."
+  },
+  {
+    "id": "FL-10",
+    "section": "16.6",
+    "alt_sections": [],
+    "must_cite": "project/app.py:26",
+    "must_contain": ["DATABASE_URL"],
+    "note": "Verified: app.py:26 reads DATABASE_URL with os.getenv and a SQLite default. The only environment-sourced key; the config reference lists it."
   }
 ]

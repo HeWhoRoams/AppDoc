@@ -1,0 +1,216 @@
+{
+ "advisories": [],
+ "doc_sha": "6f95ae3d41fa",
+ "floor": {
+  "fraction": "0.25",
+  "minimum": 5
+ },
+ "schema": "appdoc-audit-plan/1",
+ "sections": [
+  {
+   "ids": [
+    "V-1",
+    "V-2",
+    "V-3",
+    "V-4",
+    "V-5",
+    "V-6",
+    "V-7",
+    "V-8",
+    "V-9",
+    "V-10",
+    "V-11",
+    "V-12",
+    "V-13",
+    "V-14",
+    "V-15",
+    "V-16",
+    "V-17",
+    "V-18",
+    "V-19",
+    "V-20",
+    "V-21",
+    "V-22"
+   ],
+   "mode": "full",
+   "section": "10.1",
+   "total": 22
+  },
+  {
+   "ids": [
+    "7.1",
+    "7.2",
+    "7.3",
+    "7.4",
+    "7.5",
+    "7.6",
+    "7.7",
+    "7.8"
+   ],
+   "mode": "full",
+   "section": "7",
+   "total": 8
+  },
+  {
+   "ids": [
+    "Q-1",
+    "Q-2",
+    "Q-3",
+    "Q-4",
+    "Q-5",
+    "Q-6",
+    "Q-7",
+    "Q-8"
+   ],
+   "mode": "full",
+   "section": "14",
+   "total": 8
+  },
+  {
+   "ids": [],
+   "mode": "full",
+   "section": "candidates",
+   "total": 0
+  },
+  {
+   "ids": [
+    "10.2/tls-for-the-storefront",
+    "10.2/csrf-protection",
+    "10.2/account-lockout",
+    "10.2/catalog-picture-path-confinement",
+    "10.2/order-input-validation",
+    "10.2/health-endpoints-limited-to-development"
+   ],
+   "items": [
+    "TLS for the storefront",
+    "CSRF protection",
+    "Account lockout",
+    "Catalog picture path confinement",
+    "Order input validation",
+    "Health endpoints limited to Development"
+   ],
+   "mode": "full",
+   "section": "10.2",
+   "total": 18
+  },
+  {
+   "ids": [
+    "16.5/build",
+    "16.5/test",
+    "16.5/deploy"
+   ],
+   "items": [
+    "Build",
+    "Test",
+    "Deploy"
+   ],
+   "mode": "full",
+   "section": "16.5",
+   "total": 8
+  },
+  {
+   "ids": [
+    "17/prerequisites",
+    "17/build",
+    "17/run",
+    "17/test"
+   ],
+   "items": [
+    "Prerequisites",
+    "Build",
+    "Run",
+    "Test"
+   ],
+   "mode": "full",
+   "section": "17",
+   "total": 5
+  },
+  {
+   "ids": [
+    "F-4",
+    "F-6",
+    "F-8",
+    "F-9",
+    "F-14"
+   ],
+   "k": 5,
+   "mode": "sampled",
+   "section": "4",
+   "total": 19
+  },
+  {
+   "ids": [
+    "UI-2",
+    "UI-4",
+    "UI-5",
+    "UI-7",
+    "UI-17",
+    "UI-21"
+   ],
+   "k": 6,
+   "mode": "sampled",
+   "section": "6",
+   "total": 23
+  },
+  {
+   "ids": [
+    "C-1",
+    "C-2",
+    "C-3",
+    "C-6",
+    "C-8"
+   ],
+   "k": 5,
+   "mode": "sampled",
+   "section": "8.1",
+   "total": 8
+  },
+  {
+   "ids": [
+    "X-3",
+    "X-6",
+    "X-8",
+    "X-11",
+    "X-12"
+   ],
+   "k": 5,
+   "mode": "sampled",
+   "section": "8.3",
+   "total": 12
+  },
+  {
+   "ids": [
+    "9/cancel-order-failed-to-process",
+    "9/ship-order-failed-to-process",
+    "9/invalid-grant-url-when-subscribing",
+    "9/assistant-panel-says-it-is-not-switched-on",
+    "9/order-stays-in-one-status"
+   ],
+   "items": [
+    "\"Cancel order failed to process.\"",
+    "\"Ship order failed to process.\"",
+    "\"Invalid grant URL\" when subscribing",
+    "Assistant panel says it is not switched on",
+    "Order stays in one status"
+   ],
+   "k": 5,
+   "mode": "sampled",
+   "section": "9",
+   "total": 13
+  },
+  {
+   "ids": [
+    "R-2",
+    "R-3",
+    "R-9",
+    "R-10",
+    "R-15",
+    "R-18"
+   ],
+   "k": 6,
+   "mode": "sampled",
+   "section": "15",
+   "total": 24
+  }
+ ]
+}

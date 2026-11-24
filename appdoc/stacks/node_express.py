@@ -36,6 +36,10 @@ _ROUTE_VERB_RE = re.compile(r"\s*\.\s*(get|post|put|delete|patch|all|options|hea
 
 class NodeExpressStack(Stack):
     id = STACK_ID
+    capabilities = frozenset((
+        "auth_check config_key connection data_access entry_point.route "
+        "entry_point.job external_call message smell"
+    ).split())
     extensions = frozenset({".js", ".ts", ".mjs", ".cjs", ".jsx", ".tsx"})
 
     def detect(self, files: list[str]) -> list[str]:
@@ -498,7 +502,7 @@ def _config(path, t):
 
 def _cfg(path, t, off, key):
     return Fact.make("config_key", STACK_ID, path, line_of(t, off), key, source="code",
-                     secret_location=is_secret_key(key), use="read")
+                     secret_location=is_secret_key(key), use="read", read_kind="env")
 
 
 # --- scheduled jobs ----------------------------------------------------
@@ -631,7 +635,3 @@ def _messages(path, t):
             f = _msg(path, t, m.start(), s, _ctx(s))
             if f:
                 yield f
-
-
-capabilities = frozenset(
-    "auth_check config_key connection data_access entry_point external_call message smell".split())

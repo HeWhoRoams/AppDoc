@@ -76,7 +76,7 @@ class NodeExpressFacts(unittest.TestCase):
     def test_connections_and_config(self):
         self.has("connection", "src/data/db.ts", 5, "mysql.createPool", secret_location=True)
         self.has("connection", "src/admin/users.js", 6, "knex", secret_location=True)
-        self.has("config_key", "src/data/db.ts", 9, "DB_PASSWORD", source="code", secret_location=True)
+        self.has("config_key", "src/data/db.ts", 9, "DB_PASSWORD", source="code", secret_location=False, role="env")
         self.has("config_key", "src/index.ts", 5, "PORT", source="code", secret_location=False)
         self.has("config_key", "src/services/itsm.ts", 3, "SUPPORT_API_URL", source="code")
 
@@ -101,7 +101,7 @@ class NodeExpressFacts(unittest.TestCase):
 
     def test_config_reads_are_marked_read(self):
         self.has("config_key", "src/index.ts", 5, "PORT", use="read")
-        self.has("config_key", "src/data/db.ts", 9, "DB_PASSWORD", use="read", secret_location=True)
+        self.has("config_key", "src/data/db.ts", 9, "DB_PASSWORD", use="read", secret_location=False)
 
     def test_cron_jobs(self):
         self.has("entry_point", "src/jobs.ts", 5, "syncTickets", type="job", handler="syncTickets",
@@ -177,6 +177,18 @@ class NodeExpressDetection(unittest.TestCase):
             "server/index.ts": "import express from 'express';\nexpress();\n",
         })
         self.assertIn("node-express", names)
+
+    def test_no_express_from_tooling_manifest(self):
+        # A front-end tooling manifest that lists only type definitions (``@types/express``) and a
+        # test runner declares no server dependency; source that merely imports the types is not a server.
+        pkg = json.dumps({"name": "tooling", "devDependencies": {
+            "@types/express": "^4", "@types/node": "^20", "typescript": "^5", "vitest": "^1"}})
+        names = _stack_names({
+            "package.json": pkg,
+            "scripts/check.ts": "import type { Request } from 'express';\nexport const f = (r: Request) => r;\n",
+            "src/app.js": "const express = require('express');\nconst app = express();\napp.get('/x', () => 1);\n",
+        })
+        self.assertNotIn("node-express", names)
 
 
 if __name__ == "__main__":

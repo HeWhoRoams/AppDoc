@@ -14,7 +14,11 @@ import json
 import os
 import re
 
+from . import scan
 from .citations import parse_span
+from . import template_spec as _spec
+from .template_spec import version_tuple
+from .textutil import plural
 
 REGISTER = "evidence.jsonl"
 RESULTS = ("Supported", "Corrected", "Downgraded", "Dismissed", "Answerable")
@@ -26,12 +30,25 @@ MAX_ANCHOR = 200
 _SINGLE_QUOTES = "'\u2018\u2019\u201a\u201b"      # PowerShell treats the curly ones as quotes too
 AUDITORS = ("independent", "same-session")
 ROW_KEYS = ("id", "ref", "claim", "result", "cites", "anchor", "limitation")
-OPTIONAL_KEYS = ("claim_sha",)
+OPTIONAL_KEYS = ("claim_sha", "supersedes", "sealed_by", "answered_in")
+SEALED_BY = ("audit", "upgrade")
 CLAIM_SHA_RE = re.compile(r"^[0-9a-f]{12}$")
 ID_RE = re.compile(r"^E-\d+$")
-REF_RE = re.compile(r"^(\d+(?:\.\d+)?)(?:/([A-Z]+-\d+))?$")
+AUDIT_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+AUDIT_RECORD_KEYS = ("audited_on", "audited_with", "audited_bundle", "doc_sha")   # required on 2.7 (C17)
+REF_RE = re.compile(r"^(\d+(?:\.\d+)?)(?:/(?:([A-Z]+-\d+)|([a-z0-9]+(?:-[a-z0-9]+)*)))?$")   # <section>[/<ID> | /<row slug>]
 SMELL_REF_RE = re.compile(r"^smell/([0-9a-f]{8})$")      # only with result Dismissed
 ANSWERABLE_REF_RE = re.compile(r"^14/(Q-\d+)$")         # only with result Answerable
+SECTION_RE = re.compile(r"^\d+(?:\.\d+)?$")                # an `answered_in` value: a section or subsection number
+
+
+def ref_key(ref: str) -> str | None:
+    """The key a register ref covers: an ID (V-1), a per-row key (10.2/read-only-role), or a section ref (7.1, 10.2);
+    None when the ref is not a section ref at all (`smell/<fid>`, `14/Q-1` and malformed refs have their own readers)."""
+    m = REF_RE.match(ref)
+    if not m:
+        return None
+    return m.group(2) or (ref if m.group(3) else m.group(1))
 
 
 class Register:
@@ -44,9 +61,61 @@ class Register:
     def performed(self) -> bool:
         return bool(self.audit and self.audit.get("performed"))
 
-    def counts(self) -> dict[str, int]:
-        c = {r: 0 for r in RESULTS}
+    @staticmethod
+    def supersedes_of(row: dict) -> list[str]:
+        """The ids a row supersedes, as a list ([] when the key is absent)."""
+        v = row.get("supersedes")
+        if v is None:
+            return []
+        return [v] if isinstance(v, str) else list(v)
+
+    def superseded_ids(self) -> set[str]:
+        return {t for _, row in self.rows for t in self.supersedes_of(row)}
+
+    def superseded_by(self, rid: str) -> str | None:
+        """The id of the first row (in file order) that supersedes `rid`, or None."""
         for _, row in self.rows:
+            if rid in self.supersedes_of(row):
+                return str(row["id"])
+        return None
+
+    def live_rows(self) -> list[tuple[int, dict]]:
+        """The rows no other row supersedes. Everything computed from the register uses these."""
+        gone = self.superseded_ids()
+        return [(no, row) for no, row in self.rows if str(row.get("id")) not in gone]
+
+    def live_keys(self) -> set[str]:
+        """What the live rows cover: an ID (V-1), a workflow or section ref (7.1, 10.2, 9), a per-row key
+        (10.2/read-only-role) or `smell/<fid>`."""
+        keys = set()
+        for _, row in self.live_rows():
+            ref = str(row.get("ref", ""))
+            key = ref_key(ref)
+            if key:
+                keys.add(key)
+            elif SMELL_REF_RE.match(ref):
+                keys.add(ref)
+            if ref.startswith("7."):
+                keys.add(ref.split("/")[0])
+        return keys
+
+    def closed_questions(self) -> list[tuple[int, str | None]]:
+        """(Q number, answered_in or None) of every live Answerable row, in Q order: the questions the audit closed."""
+        out = {}
+        for _, row in self.live_rows():
+            m = ANSWERABLE_REF_RE.match(str(row.get("ref", "")))
+            if m and row.get("result") == "Answerable":
+                out[int(m.group(1)[2:])] = row.get("answered_in")
+        return sorted(out.items())
+
+    def missing_ids(self) -> list[str]:
+        """The E-ids below the highest one that no row carries (a row was deleted)."""
+        have = {int(str(r["id"])[2:]) for _, r in self.rows if ID_RE.match(str(r.get("id", "")))}
+        return [f"E-{n}" for n in range(1, max(have, default=0) + 1) if n not in have]
+
+    def counts(self, rows=None) -> dict[str, int]:
+        c = {r: 0 for r in RESULTS}
+        for _, row in (self.rows if rows is None else rows):
             if row.get("result") in c:
                 c[row["result"]] += 1
         return c
@@ -76,6 +145,12 @@ def parse(text: str) -> Register:
                 reg.errors.append((no, '"performed" must be true or false'))
             elif obj["performed"] and obj.get("auditor") not in AUDITORS:
                 reg.errors.append((no, f'"auditor" must be one of {", ".join(AUDITORS)}'))
+            for key, rx in (("audited_on", AUDIT_DATE_RE), ("audited_bundle", CLAIM_SHA_RE), ("doc_sha", CLAIM_SHA_RE)):
+                if key in obj and not rx.match(str(obj[key])):
+                    what = "YYYY-MM-DD" if rx is AUDIT_DATE_RE else "12 lowercase hex characters"
+                    reg.errors.append((no, f'"{key}" must be {what}'))
+            if "audited_with" in obj and not version_tuple(obj["audited_with"]):
+                reg.errors.append((no, '"audited_with" must be an AppDoc version such as 2.7.0'))
             continue
         missing = [k for k in ROW_KEYS if k not in obj]
         if missing:
@@ -86,6 +161,19 @@ def parse(text: str) -> Register:
             continue
         if "claim_sha" in obj and not CLAIM_SHA_RE.match(str(obj["claim_sha"])):
             reg.errors.append((no, '"claim_sha" must be 12 lowercase hex characters'))
+            continue
+        if "supersedes" in obj:
+            sup = obj["supersedes"]
+            ids = [sup] if isinstance(sup, str) else sup
+            if (not isinstance(ids, list) or not ids
+                    or not all(isinstance(i, str) and ID_RE.match(i) for i in ids)):
+                reg.errors.append((no, '"supersedes" must be an E-<n> id or a non-empty list of them'))
+                continue
+        if "answered_in" in obj and not (isinstance(obj["answered_in"], str) and SECTION_RE.match(obj["answered_in"])):
+            reg.errors.append((no, '"answered_in" must be a section number such as 16.3'))
+            continue
+        if "sealed_by" in obj and obj["sealed_by"] not in SEALED_BY:
+            reg.errors.append((no, f'"sealed_by" must be one of {", ".join(SEALED_BY)}'))
             continue
         reg.rows.append((no, obj))
     return reg
@@ -113,7 +201,6 @@ def _first_path(row: dict) -> str | None:
 
 def _build_basenames(root: str) -> dict[str, list[str]]:
     """Build a basename -> [Target-relative paths] index for the target."""
-    from . import scan
     idx: dict[str, list[str]] = {}
     for sf in scan.walk(root):
         idx.setdefault(sf.path.rsplit("/", 1)[-1], []).append(sf.path)
@@ -193,14 +280,31 @@ def _audit_state(reg: Register | None) -> list[str]:
     return [f"**Auditor:** {_cell(reg.audit.get('auditor'))}. **Scope:** {_cell(reg.audit.get('scope') or 'not stated')}"]
 
 
-def _coverage(reg: Register, coverage) -> list[str]:
-    c = reg.counts()
-    parts = [f"{c[r]} {r}" for r in RESULTS if r in COUNTED_ALWAYS or c[r]]
-    out = [f"{len(reg.rows)} rows: {', '.join(parts)}. "
-           "Each Supported or Corrected row's anchor text was found in its cited lines by the Check."]
+def _result_parts(c: dict) -> str:
+    return ", ".join(f"{c[r]} {r}" for r in RESULTS if r in COUNTED_ALWAYS or c[r])
+
+
+def _coverage(reg: Register, coverage, plan=None, list_missing=False) -> list[str]:
+    live = reg.live_rows()
+    anchors = "Each Supported or Corrected row's anchor text was found in its cited lines by the Check."
+    if len(live) == len(reg.rows):
+        out = [f"{plural(len(reg.rows), 'row')}: {_result_parts(reg.counts())}. {anchors}"]
+    else:
+        first = [(no, r) for no, r in reg.rows if not Register.supersedes_of(r)]   # the rows that replace none
+        out = [f"{plural(len(reg.rows), 'row')} ({len(reg.rows) - len(live)} superseded). "
+               f"Current: {_result_parts(reg.counts(live))}. As first audited: {_result_parts(reg.counts(first))}. "
+               f"{anchors}"]
+    gaps = reg.missing_ids() if list_missing else []
+    if gaps:
+        out += ["", f"Missing register id{'s' if len(gaps) != 1 else ''}: {', '.join(gaps)}. A row was deleted; "
+                    "restore it from git history and mark the row that replaces it with `supersedes`."]
     if coverage:
         out += ["", "| Section | IDs with a register row |", "|---|---|"]
         out += [f"| {_cell(sec)} | {hit} of {n} |" for sec, hit, n in coverage]
+    if plan:
+        from .audit_plan import progress
+        out += ["", "| Section | Planned | Audited | Extra |", "|---|---|---|---|"]
+        out += [f"| {_cell(sec)} | {p} | {a} | {x} |" for sec, p, a, x in progress(plan, reg.live_keys())]
     return out
 
 
@@ -210,7 +314,9 @@ def _table(reg: Register) -> list[str]:
     out = ["| ID | Ref | Claim | Result | Cites | Limitation |", "|---|---|---|---|---|---|"]
     for _, row in reg.rows:
         cites = " ".join(f"`{str(c).strip('`')}`" for c in row["cites"])
-        out.append(f"| {_cell(row['id'])} | {_cell(row['ref'])} | {_cell(row['claim'])} | {_cell(row['result'])} | "
+        by = reg.superseded_by(str(row["id"]))
+        result = _cell(row["result"]) + (f" (superseded by {by})" if by else "")
+        out.append(f"| {_cell(row['id'])} | {_cell(row['ref'])} | {_cell(row['claim'])} | {result} | "
                    f"{cites} | {_cell(row['limitation'])} |")
     return out
 
@@ -221,7 +327,7 @@ def _commands(reg: Register, root: str | None = None) -> list[str]:
     root = os.path.realpath(root)
     basenames = _build_basenames(root)
     out = []
-    for _, row in reg.rows:
+    for _, row in reg.live_rows():
         anchor = str(row.get("anchor") or "")
         if (row.get("result") not in VERIFIABLE or not anchor.strip()
                 or "\n" in anchor or "\r" in anchor or len(anchor) > MAX_ANCHOR):
@@ -230,7 +336,9 @@ def _commands(reg: Register, root: str | None = None) -> list[str]:
         if loc is None:
             continue
         path, line = loc
-        out += [f"- **{_cell(row['id'])}** (`{_cell(row['ref'])}`), expect line {line}", "", "```text",
+        sec = re.match(r"\d+", str(row["ref"]).strip())
+        label = f"section {sec.group(0)}" if sec else f"`{_cell(row['ref'])}`"
+        out += [f"- **{_cell(row['id'])}** ({label}), expect `{path}:{line}`", "", "```text",
                 f"Select-String -LiteralPath {_ps(path)} -SimpleMatch -CaseSensitive -Pattern {_ps(anchor)}",
                 f"grep -nF -- {_sh(anchor)} {_sh(path)}", "```", ""]
     if not out:
@@ -239,10 +347,13 @@ def _commands(reg: Register, root: str | None = None) -> list[str]:
             ""] + out[:-1]
 
 
-def seal(path: str, claim_shas: dict[str, str]) -> int:
+def seal(path: str, claim_shas: dict[str, str], sealed_by: str | None = None,
+         audit_fields: dict | None = None) -> int:
     """Write claim_sha into every row that lacks one. Never overwrites an existing one.
 
     claim_shas maps row id ("E-1") to the 12-hex-char SHA. Returns the number of rows sealed.
+    `sealed_by` ("audit" | "upgrade") is written beside each claim_sha this call adds; None writes none.
+    `audit_fields` (audited_on, audited_with, audited_bundle, doc_sha) replaces those keys on line 1.
     Preserves the file's existing line ending and key order.
     """
     with open(path, encoding="utf-8-sig", newline="") as fh:
@@ -259,12 +370,18 @@ def seal(path: str, claim_shas: dict[str, str]) -> int:
         except ValueError:
             out.append(line)
             continue
+        if isinstance(obj, dict) and obj.get("type") == "audit" and audit_fields:
+            obj.update(audit_fields)
+            out.append(json.dumps(obj, ensure_ascii=False))
+            continue
         if not isinstance(obj, dict) or obj.get("type") == "audit":
             out.append(line)
             continue
         rid = str(obj.get("id", ""))
         if rid in claim_shas and "claim_sha" not in obj:
             obj["claim_sha"] = claim_shas[rid]
+            if sealed_by:
+                obj["sealed_by"] = sealed_by
             sealed += 1
         out.append(json.dumps(obj, ensure_ascii=False))
     with open(path, "w", encoding="utf-8", newline="") as fh:
@@ -272,17 +389,106 @@ def seal(path: str, claim_shas: dict[str, str]) -> int:
     return sealed
 
 
+def _blocks_lines(reg: Register | None, blocks_by: dict | None) -> list[str]:
+    """A.1 lines naming the AppDoc that wrote the generated blocks (empty when blocks_by is None)."""
+    if not blocks_by:
+        return []
+    out = ["", f"Generated blocks written by AppDoc {blocks_by['generator']} (bundle {blocks_by['bundle']})."]
+    audited = str((reg.audit or {}).get("audited_with") or "") if reg is not None else ""
+    if audited and version_tuple(audited)[:2] != version_tuple(blocks_by["generator"])[:2]:
+        out.append("Generated blocks were regenerated after the audit and are not covered by it.")
+    return out
+
+
+def _runs(items: list[str]) -> str:
+    """"V-1, V-2, V-3, V-5" as "V-1\u2013V-3, V-5" (runs of consecutive numbers, in the order given)."""
+    def num(i):
+        return int(re.search(r"(\d+)$", i).group(1))
+    out, run = [], []
+    for i in items:
+        if run and num(i) == num(run[-1]) + 1:
+            run.append(i)
+            continue
+        if run:
+            out.append(run)
+        run = [i]
+    if run:
+        out.append(run)
+    return ", ".join(r[0] if len(r) == 1 else (f"{r[0]}\u2013{r[-1]}" if len(r) > 2 else f"{r[0]}, {r[1]}")
+                     for r in out)
+
+
+def _scope_lines(reg: Register | None, detail) -> list[str]:
+    """A.1: what the register covers, computed (never written by hand), and the exclusions the audit declares."""
+    if reg is None or not reg.performed:
+        return []
+    out = []
+    if detail:
+        parts = []
+        for section, hit, allids in detail:
+            label = "workflows" if section.startswith("7 ") else section
+            parts.append(f"{label} {_runs(hit) if hit else 'none'} ({len(hit)} of {len(allids)})")
+        out += ["", "Register rows cover: " + " \u00b7 ".join(parts) + "."]
+    ex = (reg.audit or {}).get("exclusions")
+    if isinstance(ex, dict) and ex:
+        items = sorted(ex.items(), key=lambda kv: [int(p) if p.isdigit() else 0 for p in str(kv[0]).split(".")])
+        out += ["", "Not covered by the audit: " + "; ".join(f"{_cell(k)}: {_cell(v)}" for k, v in items) + "."]
+    return out
+
+
+SEAL_SCOPE = ("`seal` writes `claim_sha` and `sealed_by` only on ID rows, workflow (7.x) and per-row section keys. "
+              "Other section-level rows, Answerable rows and Dismissed rows are never sealed, so they carry no "
+              "`sealed_by`. C17 `--strict` fails only on `sealed_by: upgrade`, never on an absent key.")
+
+
+def _provenance_lines(reg: Register | None) -> list[str]:
+    """A.1 lines from the audit record: when and with what the audit was sealed, any upgrade-sealed rows, and what
+    `seal` does and does not stamp."""
+    if reg is None or not reg.performed:
+        return []
+    out = []
+    a = reg.audit or {}
+    if a.get("audited_on"):
+        line = f"Audited on {a['audited_on']}"
+        if a.get("audited_with"):
+            line += f" with AppDoc {a['audited_with']}"
+        if a.get("audited_bundle"):
+            line += f" (bundle {a['audited_bundle']})"
+        out += ["", line + "."]
+    n = sum(1 for _, r in reg.live_rows() if r.get("sealed_by") == "upgrade")
+    if n:
+        out += ["", f"{n} rows were sealed at upgrade; their text was not re-audited." if n != 1
+                else "1 row was sealed at upgrade; its text was not re-audited."]
+    out += ["", SEAL_SCOPE]
+    return out
+
+
+def _not_audited_lines(opaque=None) -> list[str]:
+    """The one A.1 line that names the blocks no audit row covers (ADR 0015). Only the opaque blocks are unaudited;
+    scan-coverage and config-reference are audited. `opaque` is the list the document's template carries
+    (`template_spec.opaque_blocks`); by default that of the running template."""
+    names = _spec.opaque_blocks(version_tuple(_spec.TEMPLATE_VERSION)) if opaque is None else opaque
+    return ["", f"Not audited: generated and opaque blocks ({', '.join(names)})"]
+
+
 def appendix_markdown(reg: Register | None, facts: dict | None = None, coverage=None,
-                      root: str | None = None) -> str:
+                      root: str | None = None, blocks_by: dict | None = None, plan: dict | None = None,
+                      coverage_ids=None, list_missing: bool = False, opaque=None) -> str:
     """Body of Appendix A (the `appendix-a` generated block), computed from the register.
 
     reg is None when evidence.jsonl does not exist. coverage is check.coverage() output, or None to omit it.
     facts is the facts.json dict; nothing in the appendix reads it yet.
     root is the Target directory; when given, A.4 commands are generated from locate().
+    blocks_by is {"generator", "bundle"} of the running AppDoc; when given, A.1 says who wrote the blocks.
+    coverage_ids is check.coverage_detail(...): A.1 prints the computed coverage line from it.
+    plan is the audit plan (audit-plan.json); when given, A.2 shows planned / audited / extra per section.
+    list_missing (a template 2.7 document): A.2 names the E-ids no row carries.
+    opaque: the opaque blocks A.1 names as not audited (None: those of the running template).
     """
-    out = ["### A.1 Audit state", "", *_audit_state(reg)]
+    out = ["### A.1 Audit state", "", *_audit_state(reg), *_blocks_lines(reg, blocks_by),
+           *_provenance_lines(reg), *_scope_lines(reg, coverage_ids), *_not_audited_lines(opaque)]
     if reg is not None and reg.performed:
-        out += ["", "### A.2 Coverage", "", *_coverage(reg, coverage),
+        out += ["", "### A.2 Coverage", "", *_coverage(reg, coverage, plan, list_missing),
                 "", "### A.3 Register", "", *_table(reg),
                 "", "### A.4 Verification commands", "", *_commands(reg, root)]
     return "\n".join(out)

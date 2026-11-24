@@ -57,11 +57,11 @@ A numbered `###` heading the Template fixes inside a section (for example 10.2 U
 _Avoid_: mandatory block, sub-heading
 
 **Generated block**:
-Narrative content between `appdoc:generated` markers that `appdoc fill` writes from the Facts file and the Evidence Register: scan coverage in 2.1, the entry-point list in 4, the configuration reference in 16.6, scheduled jobs in 16.7 and Appendix A at the end. Nobody edits it by hand; the Check fails when it differs from what `fill` writes.
+Narrative content between `appdoc:generated` markers that `appdoc fill` writes from the Facts file and the Evidence Register: scan coverage in 2.1, the entry-point list in 4, the configuration reference in 16.6, scheduled jobs in 16.7, the closed questions under 14 and Appendix A at the end. Nobody edits it by hand; the Check fails when it differs from what `fill` writes.
 _Avoid_: auto section, computed table
 
 **Opaque block**:
-A Generated block the Check does not read as Narrative (`entry-points`, `scheduled-jobs`, `appendix-a`; see `OPAQUE_BLOCKS` in the Template spec). Its tables, IDs and Citations are not the writer's, so a Citation inside one does not count as the document citing that file.
+A Generated block the Check does not read as Narrative and the audit does not cover (`entry-points`, `scheduled-jobs`, `closed-questions`, `appendix-a`, and from template 2.8 `access-model`, `connections`, `integrations`, `pipeline`, `repo-docs`; see `OPAQUE_BLOCKS` in the Template spec). Its tables, IDs and Citations are not the writer's, so a Citation inside one does not count as the document citing that file, and an audit row never certifies one.
 _Avoid_: hidden block, skipped section
 
 **Configuration reference**:
@@ -93,16 +93,48 @@ An advisory in `check-report.md` listing entry-point Facts (route, page, command
 _Avoid_: coverage gap, missing endpoints
 
 **Retired candidate**:
-A folder `scan` records as looking retired — by name (a whole token such as `old`, `backup`, `deprecated`, or "to be deleted") or by content (at least five files, at least half byte-identical to a file outside the folder). It is rendered in scan coverage as "Folders that look retired (not excluded)" and raises a question the writer must answer in 2.1; it never prunes.
-_Avoid_: pruned folder, dead code, excluded folder
+A folder `scan` records as looking retired **by name only**: a whole token such as `old`, `backup`, `deprecated`, or "to be deleted" in the folder's own name (`wwwroot` and `oldest` are not candidates). A candidate nested inside another is not listed again. It is rendered in scan coverage as "Folders that look retired by name (not excluded)" and raises a question the writer must name and answer in 2.1; it never prunes. Whether a folder is a copy of another is not a name signal: see **Duplicate folders**.
+_Avoid_: pruned folder, dead code, excluded folder, "retired by content"
+
+**Duplicate folders**:
+Pairs `{a, b, files}` in `target.scan.duplicate_folders`: folder `a` (at least five non-test files) has at least half of its files byte-identical to files in folder `b`, the folder holding most of those matches. A pair is stored once with `a < b`; ties go to the smallest path; test paths are ignored; the list is sorted and rendered (cap 10) as "Folders that duplicate another folder (not excluded; say in 2.1 which copy is live)". The writer says in 2.1 which copy is live. C7 reports a pair 2.1 does not name as an advisory, which fails under `--strict`. It never prunes.
+_Avoid_: retired candidate (that is a name signal), mirror, fork, clone
+
+**Provenance sidecar**:
+`docs/appdoc/provenance.json`, written by `extract`: `{generator, bundle, schema}` for the AppDoc that wrote the Facts (version, a 12-hex hash of the `appdoc/` package, Facts schema), with no timestamps; `fill` adds `blocks_by` for the AppDoc that wrote the generated blocks. `facts.json` itself carries no generator, so an AppDoc patch that changes no Facts changes no Facts file. Appendix A.1 prints the `blocks_by` line; the Check's scope line and C7 version skew read the sidecar; a sidecar whose `schema` disagrees with `facts.json` fails C7. A version difference alone is informational.
+_Avoid_: generator stamp, build info, version file
 
 **Anchor**:
 A short literal string copied from a claim's cited lines into its Evidence Register row. The Check confirms it is still there, so a code change that moves or removes the evidence is caught.
 _Avoid_: quote, snippet, grep pattern
 
 **Seal**:
-The `claim_sha` a register row carries: 12 hex characters of SHA-1 over the normalised text its ref points to. `appdoc seal` (the first step of `build`) writes it into every row that lacks one and never overwrites one, so the Check can tell whether the text changed after the audit.
+The `claim_sha` a register row carries: 12 hex characters of SHA-1 over the normalised text its ref points to. `appdoc seal` (the first step of `build`) writes it into every row that lacks one and never overwrites one, so the Check can tell whether the text changed after the audit. Each Seal has a **Seal provenance**.
 _Avoid_: fingerprint, checksum, hash (too generic)
+
+**Live row**:
+An Evidence Register row that no other row supersedes. The Check, the seals, the coverage and Appendix A read live rows; a superseded row stays in the file as history.
+_Avoid_: current row, active row
+
+**Superseded row**:
+An Evidence Register row that a later row names in its `supersedes` key because it replaces it for the same ref. It is never deleted, and it is shown in Appendix A marked as superseded.
+_Avoid_: deleted row, old row, retired row (a **Retired candidate** is a folder)
+
+**Seal provenance**:
+Which party vouched for a row's Seal: `sealed_by` is `audit` when the Seal was written by the audit command or against the text the auditor read, and `upgrade` when it was written against text no one re-audited. Appendix A counts the second kind.
+_Avoid_: seal source, seal origin
+
+**Note**:
+A line of `notes.jsonl` that states a known limitation of one Generated block. It is rendered inside that block, carries the hash of the block it was written about, and stops matching when the block changes.
+_Avoid_: comment, caveat, annotation
+
+**Audit plan**:
+`audit-plan.json`: the IDs the independent audit must cover, chosen by the tool from the Narrative (every finding, workflow, question and Finding candidate, and a sample of the other sections), not by the auditor. Generated and Opaque blocks are not part of it.
+_Avoid_: audit sample, checklist
+
+**Count marker**:
+A pair of comments around a number in the Narrative that `appdoc fill` writes (`appdoc:count CLASS`). It is how a writer states a count; a hand-written "N of M" is only an advisory.
+_Avoid_: counter, placeholder, variable
 
 **Severity**:
 The rank of a verified finding (10.1) or recommendation (15): Critical, High, Medium or Low, by the rubric in the Template.
@@ -116,6 +148,34 @@ _Avoid_: missing, unknown
 A family of technology a Target is built on (for example Classic ASP, ASP.NET Core, Java Spring) that needs its own way of extracting Facts.
 _Avoid_: framework class, platform
 
+**Mandatory input**:
+A file that holds security-bearing configuration: a `security_setting`, an `access_rule`, a `config_external` reference or an application-role `config_key` that is a secret location (a file the reader could not parse counts, by path). The writer reads it, redacts the values and cites it with a line outside the generated blocks; C21 fails otherwise. See ADR 0018.
+_Avoid_: required file, config to review
+
+**Configuration** (build configuration):
+A named MSBuild configuration such as `Debug` or `Release`, taken from transform file names, project `Condition` groups and the solution's configuration list. Each has its own **Effective values**. A deployment environment is not a Configuration; the two join only through a CI job's build configuration or a publish profile, never by name. The **production configuration** is `Release` unless `appdoc-context.md` says `Production config: <name>`.
+_Avoid_: environment, profile, mode
+
+**Effective value**:
+A configuration setting or access rule as one build configuration yields it after its transform. A transform never overwrites the base Fact; a value that depends on something the extractor cannot evaluate is `unknown`, never the base value. Transforms apply at publish or package time to the project-root `Web.config` only.
+_Avoid_: resolved value, final value, runtime value
+
+**Access rule**:
+An `access_rule` Fact: one `allow` or `deny` entry of `<system.web><authorization>`, with its scope path, verbs and role names as written. User accounts are counted (`users_named`), never recorded.
+_Avoid_: permission, ACL, policy
+
+**Guard candidate**:
+A `guard_candidate` Fact: an attribute that the Target does not define, used on three or more controllers or actions, which may be an authorization guard. Until the owner declares it with `Auth attributes:` in `appdoc-context.md`, a handler it guards is `unknown`, never `signed_in_any`. Not a **Finding candidate**.
+_Avoid_: custom attribute, filter
+
+**Archetype principal**:
+One of the three callers that handler reach is evaluated for: `anon` (not signed in), `auth` (signed in, in no role the Target names) and `role:<R>` (signed in, in role R only). A named user is none of them.
+_Avoid_: user type, persona, actor
+
+**Reach label**:
+The per-handler result `no_app_restriction`, `signed_in_any`, `role_restricted`, `denied` or `unknown`, derived from the Archetype principals for the production configuration. It describes the **application layer only**: IIS, server settings, network exposure and group membership are not in the repository. A handler that changes state and is labelled `no_app_restriction`, `signed_in_any` or `unknown` is a 10.1 finding or a dismissed candidate.
+_Avoid_: permission level, exposure, protection level (those claim more than the code shows)
+
 ## Relationships
 
 - A **Target** is built on one or more **Stacks**
@@ -128,3 +188,12 @@ _Avoid_: framework class, platform
 ## Flagged ambiguities
 
 - "Deterministic" meant the whole output under the old design. It now means the **Facts file** only; the **Narrative** is grounded but may vary in wording.
+
+**Register count**:
+The number of **live rows** of one ID class (V, F, UI, C, X, Q, R, or all rows) in the Evidence Register. A **Count marker** of a register class holds it, and a hand-written "N of M <noun>" in a document on an older template must have a denominator equal to it.
+_Avoid_: total, tally
+
+**Unknown by absence**:
+A section left Unknown because the Target supplies no owner context, as distinct from Unknown after an audit. The Check says so in an advisory.
+_Avoid_: not found, missing
+
