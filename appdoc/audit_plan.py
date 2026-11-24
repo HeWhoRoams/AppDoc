@@ -20,6 +20,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import sys
 from fractions import Fraction
 
 from . import check, context
@@ -205,13 +206,19 @@ def _disk_plan(out_dir: str):
     return text, plan if isinstance(plan, dict) else None
 
 
+def _require_narrative(out_dir: str) -> bool:
+    """True when the Narrative exists; otherwise say so on stderr (the caller exits 1)."""
+    path = os.path.join(out_dir, check.NARRATIVE)
+    if os.path.isfile(path):
+        return True
+    print(f"appdoc audit-plan: {path} not found; write the Narrative first", file=sys.stderr)
+    return False
+
+
 def check_plan(target: str, out_dir: str) -> int:
     """`audit-plan --check`: compare the plan on disk with a fresh computation, writing nothing.
     Exit 0 when equal (the text C19 compares), 2 when stale or missing, 1 when there is no Narrative."""
-    import sys
-    if not os.path.isfile(os.path.join(out_dir, check.NARRATIVE)):
-        print(f"appdoc audit-plan: {os.path.join(out_dir, check.NARRATIVE)} not found; write the Narrative first",
-              file=sys.stderr)
+    if not _require_narrative(out_dir):
         return 1
     fresh = compute(target, out_dir)
     text, disk = _disk_plan(out_dir)
@@ -234,10 +241,7 @@ def check_plan(target: str, out_dir: str) -> int:
 
 
 def run(target: str, out_dir: str) -> int:
-    import sys
-    if not os.path.isfile(os.path.join(out_dir, check.NARRATIVE)):
-        print(f"appdoc audit-plan: {os.path.join(out_dir, check.NARRATIVE)} not found; write the Narrative first",
-              file=sys.stderr)
+    if not _require_narrative(out_dir):
         return 1
     plan = compute(target, out_dir)
     with open(os.path.join(out_dir, PLAN), "w", encoding="utf-8", newline="\n") as fh:
