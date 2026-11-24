@@ -624,7 +624,7 @@ No stored procedures or SQL script files were found; the data-access mechanism i
 | ID | Severity | Finding | Evidence | Impact |
 |---|---|---|---|---|
 | V-1 | High | While `INSTALL_LOCK` is unset, the unauthenticated installer page echoes the configured database password and SMTP password back into the HTML form fields | `routers/install/install.go:74`, `routers/install/install.go:100`, `templates/install.tmpl:42`, `docker/root/etc/templates/app.ini:30` | Needs an instance whose configuration already holds those values (the Docker template fills the database password from the environment, `docker/root/etc/templates/app.ini:30`) and whose lock is still unset, which the image allows when no secret key is supplied (`docker/root/etc/s6/gitea/setup:28-30`); any visitor can then read the credentials from the page source |
-| V-2 | Medium | Reverse-proxy authentication trusts the identity header without checking where the request came from and can auto-register users | `services/auth/reverseproxy.go:47-52`, `services/auth/reverseproxy.go:110-118`, `modules/setting/service.go:175` | Needs `ENABLE_REVERSE_PROXY_AUTHENTICATION` (off by default, `custom/conf/app.example.ini:872`) and a client able to reach Gitea without the proxy; the code says verification is left to the proxy |
+| V-2 | Medium | Reverse-proxy authentication trusts the identity header without checking where the request came from and can auto-register users | `services/auth/reverseproxy.go:47-52`, `services/auth/reverseproxy.go:64-68`, `services/auth/reverseproxy.go:110-118`, `modules/setting/service.go:175` | Needs `ENABLE_REVERSE_PROXY_AUTHENTICATION` (off by default, `custom/conf/app.example.ini:872`) and a client able to reach Gitea without the proxy; the code says verification is left to the proxy |
 | V-3 | Medium | When `SECRET_KEY` is empty the code falls back to a fixed constant (value omitted) that is the same for every installation | `modules/setting/security.go:147-151` | Needs an upgraded or hand-built configuration without a key; the installer generates one (`routers/install/install.go:393-400`). The key encrypts LDAP bind passwords, migration credentials, Actions secrets, webhook headers and the two-factor secrets (`models/auth/twofactor.go:101-104`, `services/task/task.go:73-88`), so a database copy would be decryptable by anyone |
 | V-4 | Medium | Password sign-in and Basic authentication have no per-account or per-IP throttle or lockout | `routers/web/auth/auth.go:303-322`, `services/auth/signin.go:27-132` | Online guessing is limited only by the optional captcha (`custom/conf/app.example.ini:880`) and the optional load shedder (`modules/setting/service.go:258`); weak passwords are allowed by default because complexity is off and the minimum length is eight (`modules/setting/security.go:167`, `modules/setting/security.go:209-212`) |
 | V-5 | Medium | API tokens are accepted in the URL query string by default | `modules/setting/security.go:224`, `services/auth/oauth2.go:83-97` | Tokens in URLs can leak through access logs, proxies and referrers; the server sets only a deprecation header (`routers/api/v1/api.go:932-936`) and the default is `false` for `DISABLE_QUERY_AUTH_TOKEN` |
@@ -863,7 +863,7 @@ This document was written from the extracted Facts and from reading the source c
 | Build | `make build` builds the frontend and the backend; CI builds for several platforms on pull requests | `Makefile:477-483`, `.github/workflows/pull-compliance.yml:81-109` |
 | Test | `make test-backend` for unit tests, `make test-integration` against a chosen database, `make test-migration` and `make test-e2e` | `Makefile:368-370`, `Makefile:436-441`, `Makefile:453-465`, `Makefile:473` |
 | Deploy | Release binaries and container images are built by the nightly and tag workflows; the standard image copies `docker/root` and the rootless image copies `docker/rootless`; how a given environment is deployed is Unknown - see Open questions | `.github/workflows/release-nightly.yml:37-61`, `.github/workflows/release-nightly.yml:101-186`, `.github/workflows/release-tag-version.yml:16-30`, `.github/workflows/release-tag-version.yml:154-168`, `Dockerfile:41`, `Dockerfile.rootless:40` |
-| Upgrade | The helper script stops the service, takes a dump, downloads the release, verifies checksum and signature, swaps the binary and starts the service; the application migrates the schema at start | `contrib/upgrade.sh:3-6`, `contrib/upgrade.sh:99-116`, `contrib/upgrade.sh:123-135`, `routers/common/db.go:43-58` |
+| Upgrade | The helper script downloads the release and verifies the checksum (and the signature unless `--ignore-gpg` is given), then flushes queues, stops the service, takes a dump, swaps the binary and starts the service; the application migrates the schema at start unless automatic migration is disabled | `contrib/upgrade.sh:3-6`, `contrib/upgrade.sh:99-116`, `contrib/upgrade.sh:123-135`, `routers/common/db.go:43-58` |
 | Rollback | Unknown for the schema - see Open questions; the upgrade script keeps the previous binary as a `.bak` copy before replacing it | `contrib/upgrade.sh:132` |
 | Backup | `gitea dump` writes a zip of files and the database; the upgrade script passes extra options through `backupopts` | `cmd/dump.go:26-30`, `contrib/upgrade.sh:32` |
 | Restore | Unknown for a dump; `gitea restore-repo` restores a repository from a directory | `cmd/restore_repo.go:18-25` |
@@ -1103,17 +1103,21 @@ Prerequisites are a Go toolchain matching `go.mod`, Node.js and pnpm matching `p
 
 **Auditor:** independent. **Scope:** A fresh agent read each planned claim against the cited source lines in the Target and traced callers and handlers where the cited span only named a route or setting; findings, workflows, open questions, finding candidates and the sampled sections were all covered as the plan names them. Claims were judged for support, not for whether a citation resolves.
 
-Generated blocks written by AppDoc 2.7.0 (bundle 25b4b70e8137).
+Generated blocks written by AppDoc 2.7.1 (bundle bf8cdbec967b).
 
-Audited on 2026-11-24 with AppDoc 2.7.0 (bundle 25b4b70e8137).
+Audited on 2026-11-24 with AppDoc 2.7.1 (bundle bf8cdbec967b).
+
+`seal` writes `claim_sha` and `sealed_by` only on ID rows, workflow (7.x) and per-row section keys. Other section-level rows, Answerable rows and Dismissed rows are never sealed, so they carry no `sealed_by`. C17 `--strict` fails only on `sealed_by: upgrade`, never on an absent key.
 
 Register rows cover: 4 F-1–F-25 (25 of 25) · 6 UI-1–UI-23 (23 of 23) · 8.1 C-1–C-9 (9 of 9) · 8.3 X-1–X-13 (13 of 13) · 10.1 V-1–V-11 (11 of 11) · 14 Q-1–Q-6, Q-9, Q-10 (8 of 8) · 15 R-1–R-14 (14 of 14) · workflows 7.1–7.15 (15 of 15).
 
 Not covered by the audit: 2.1: generated scan coverage block is not audited; 3.2: diagram is not audited; 12: diagrams are not audited; 16.7: generated scheduled jobs block is not audited.
 
+Not audited: generated and opaque blocks (entry-points, scheduled-jobs, closed-questions, appendix-a)
+
 ### A.2 Coverage
 
-174 rows (46 superseded). Current: 126 Supported, 0 Corrected, 0 Downgraded, 2 Answerable. As first audited: 99 Supported, 27 Corrected, 0 Downgraded, 2 Answerable. Each Supported or Corrected row's anchor text was found in its cited lines by the Check.
+206 rows (47 superseded). Current: 156 Supported, 1 Corrected, 0 Downgraded, 2 Answerable. As first audited: 129 Supported, 28 Corrected, 0 Downgraded, 2 Answerable. Each Supported or Corrected row's anchor text was found in its cited lines by the Check.
 
 | Section | IDs with a register row |
 |---|---|
@@ -1132,14 +1136,14 @@ Not covered by the audit: 2.1: generated scan coverage block is not audited; 3.2
 | 7 | 15 | 15 | 0 |
 | 14 | 8 | 8 | 2 |
 | candidates | 0 | 0 | 0 |
-| 10.2 | 1 | 1 | 0 |
-| 16.5 | 1 | 1 | 0 |
-| 17 | 1 | 1 | 0 |
+| 10.2 | 4 | 4 | 1 |
+| 16.5 | 6 | 6 | 1 |
+| 17 | 4 | 4 | 1 |
 | 4 | 7 | 7 | 18 |
 | 6 | 6 | 6 | 17 |
 | 8.1 | 5 | 5 | 4 |
 | 8.3 | 5 | 5 | 8 |
-| 9 | 1 | 1 | 0 |
+| 9 | 5 | 5 | 13 |
 | 15 | 5 | 5 | 9 |
 
 ### A.3 Register
@@ -1147,7 +1151,7 @@ Not covered by the audit: 2.1: generated scan coverage block is not audited; 3.2
 | ID | Ref | Claim | Result | Cites | Limitation |
 |---|---|---|---|---|---|
 | E-1 | 10.1/V-1 | While INSTALL_LOCK is unset the unauthenticated installer page echoes the configured database password and SMTP password into the HTML form fields | Supported | `routers/install/install.go:74` `routers/install/install.go:100` `templates/install.tmpl:42` `docker/root/etc/templates/app.ini:30` `docker/root/etc/s6/gitea/setup:28-32` | Install() fills the form from loaded settings (install.go:74,100), AssignForm puts it in ctx.Data (:113) and the template renders value={{.db_passwd}}. Image setup sets the lock only when SECRET_KEY is non-empty (setup:28-32). Severity is High here but section 2.2 says V-1 and V-2 are both Medium: Narrative inconsistency, not a source defect. |
-| E-2 | 10.1/V-2 | Reverse-proxy authentication trusts the identity header without checking the request origin and can auto-register users | Supported | `services/auth/reverseproxy.go:50-51` `services/auth/reverseproxy.go:64-68` `modules/setting/service.go:175` `custom/conf/app.example.ini:872` | Code comment says verification is left to the proxy; auto-register path at reverseproxy.go:64-68 depends on isAutoRegisterAllowed (a separate setting). Default off confirmed in ini:872 and service.go:175. |
+| E-2 | 10.1/V-2 | Reverse-proxy authentication trusts the identity header without checking the request origin and can auto-register users | Supported (superseded by E-206) | `services/auth/reverseproxy.go:50-51` `services/auth/reverseproxy.go:64-68` `modules/setting/service.go:175` `custom/conf/app.example.ini:872` | Code comment says verification is left to the proxy; auto-register path at reverseproxy.go:64-68 depends on isAutoRegisterAllowed (a separate setting). Default off confirmed in ini:872 and service.go:175. |
 | E-3 | 10.1/V-3 | When SECRET_KEY is empty the code falls back to a fixed constant shared by every installation | Supported | `modules/setting/security.go:147-152` `routers/install/install.go:393-400` `models/auth/twofactor.go:101-104` `services/task/task.go:73-88` | Constant fallback at security.go:151 (value omitted from this row's claim). Installer generates a key only if none (install.go:393-400). Secret key used for 2FA secret (twofactor.go:101-104) and migration credentials (task.go:73-88). Impact sentence about LDAP, Actions secrets and webhook headers rests on other files not cited in the row. |
 | E-4 | 10.1/V-4 | Password sign-in and Basic authentication have no per-account or per-IP throttle or lockout; guessing limited only by optional captcha and optional load shedder; weak passwords allowed by default (complexity off, minimum length eight) | Corrected (superseded by E-158) | `routers/web/auth/auth.go:302-322` `services/auth/signin.go:27-132` `services/auth/basic.go:140` `modules/setting/service.go:258` `modules/setting/security.go:167` `modules/setting/security.go:209-212` `custom/conf/app.example.ini:880` | Core claim supported: SignInPost and UserSignIn contain no counter or lockout, Basic calls UserSignIn (basic.go:140), captcha default false (ini:880), QoS default off. DEFECT in document: the Impact cites modules/setting/security.go:155-158 for the minimum length of eight, but those lines hold reverse-proxy header settings; MinPasswordLength default 8 is at security.go:167 and complexity default off at 209-212. Correct the citation to security.go:167 and 209-212. |
 | E-5 | 10.1/V-5 | API tokens are accepted in the URL query string by default; server sets only a deprecation header; DISABLE_QUERY_AUTH_TOKEN default false | Supported | `modules/setting/security.go:224` `services/auth/oauth2.go:86-94` `routers/api/v1/api.go:932-935` | parseToken reads token and access_token from the query unless the setting is true; checkDeprecatedAuthMethods only sets X-Gitea-Warning. |
@@ -1320,6 +1324,38 @@ Not covered by the audit: 2.1: generated scan coverage block is not audited; 3.2
 | E-172 | 4/F-23 | Webhooks at four levels for eleven receiver types; deliveries queued, sent with an HMAC secret and recorded with the Authorization header masked | Supported | `routers/web/web.go:448-480` `routers/web/web.go:706-718` `services/webhook/deliver.go:147` `services/webhook/deliver.go:91` `services/webhook/deliver.go:186-192` | Cite now deliver.go:186-192, which includes the masking line 192. |
 | E-173 | 9 | All seventeen troubleshooting symptom rows; mirror and ORM messages now marked abbreviated | Supported | `cmd/web.go:152-156` `cmd/web.go:285-286` `cmd/web.go:213` `routers/private/internal.go:26-31` `routers/private/internal.go:34-40` `routers/web/web.go:160-165` `routers/api/v1/api.go:311-319` `routers/api/v1/api.go:864-877` `routers/api/v1/api.go:303-306` `routers/api/v1/api.go:249-257` `routers/api/v1/api.go:884-896` `routers/web/repo/githttp.go:124-128` `routers/web/repo/githttp.go:41-45` `routers/private/serv.go:160-175` `routers/common/db.go:29-41` `routers/common/db.go:53-56` `models/auth/twofactor.go:125` `cmd/admin_user_disable_2fa.go:21` `routers/api/actions/runner/interceptor.go:49-67` `routers/api/actions/runner/runner.go:57-59` `routers/api/packages/api.go:42-58` `routers/web/metrics.go:20-31` `routers/web/web.go:198-205` `options/locale/locale_en-US.json:383` | All quoted messages match the cited handlers; the two abbreviated messages are now labelled as such. |
 | E-174 | 8.5 | Failure, fallback and observability table and prose | Supported | `routers/common/db.go:21-41` `modules/setting/database.go:87-88` `routers/common/db.go:32-33` `routers/common/db.go:53-56` `routers/common/db.go:28-37` `routers/web/healthcheck/check.go:76` `custom/conf/app.example.ini:796-810` `routers/init.go:59-66` `routers/init.go:116-119` `routers/init.go:116` `modules/cache/cache.go:27-32` `routers/init.go:128` `routers/web/auth/password.go:99-101` `routers/web/healthcheck/check.go:86` `routers/web/healthcheck/check.go:126-130` `modules/setting/session.go:62-66` `routers/common/middleware.go:110-116` `modules/setting/queue.go:30-46` `routers/web/web.go:772-780` `cmd/manager.go:73` `custom/conf/app.example.ini:1611-1612` `routers/init.go:150` `modules/storage/azureblob.go:151-153` `modules/storage/azureblob.go:222-243` `modules/storage/local.go:86-90` `modules/storage/local.go:101` `routers/init.go:125` `routers/init.go:127` `modules/setting/mailer.go:107` `services/auth/signin.go:100-132` `routers/web/auth/auth.go:320-322` `routers/web/auth/auth.go:312` `modules/setting/webhook.go:34-35` `custom/conf/app.example.ini:1780` `services/webhook/deliver.go:147-272` `services/webhook/deliver.go:154-161` `routers/web/web.go:706-718` `custom/conf/app.example.ini:2766-2775` `services/task/migrate.go:67-68` `routers/web/repo/migrate.go:282` `modules/hcaptcha/hcaptcha.go:96` `routers/web/auth/auth.go:303-305` `modules/updatechecker/update_checker.go:30-40` `services/cron/tasks.go:123-140` `modules/auth/password/pwn/pwn.go:49-52` `modules/httplib/client_request.go:23` `modules/httplib/client_request.go:40` `modules/httplib/client_request.go:144` `routers/web/auth/auth.go:594-600` `modules/indexer/internal/elasticsearch/indexer.go:64-73` `modules/lfs/http_client.go:236` `routers/web/auth/oauth.go:302-307` `build/generate-emoji.go:81` `models/unittest/mock_http.go:87` | X-2 to X-4 now cite services/task/migrate.go:67-68, where a failed migration is marked failed with the error text; C-3 cites check.go:86 and 126-130 for the cache check. All other statements were compared with source earlier and match. |
+| E-175 | 10.2/csrf | CSRF: standard-library cross-origin protection on routes that opt in, plus SameSite cookies; some routes carry no check (V-10) | Supported | `routers/web/web.go:179` `routers/web/web.go:220-224` `routers/web/web.go:360` `modules/setting/session.go:38-40` `modules/setting/session.go:66-75` | verifyAuthWithOptionsWeb runs crossOriginProtection.Check unless SignOutRequired or DisableCrossOriginProtection (web.go:220-224); services/context/context.go:174-175 confirms the CSRF token was dropped. Routes carry the check only through the verify middleware (opt-in per route, not a global filter): the /user group (activate, forgot_password POSTs, GET /user/logout, web.go:725-740) and POST /-/web-banner/dismiss (web.go:535) have none, so V-10 is not the only unprotected route. SameSite default is lax (session.go:38-40 default, :66-75 parse of SAME_SITE). Protection depends on the Go stdlib check (browser Sec-Fetch-Site/Origin headers); not tested at runtime. |
+| E-176 | 10.2/mfa | MFA: TOTP and WebAuthn with optional enforcement; not enforced by default | Supported | `routers/web/auth/auth.go:326-366` `modules/setting/security.go:80` `modules/setting/security.go:193-199` `services/context/context.go:202-206` `routers/api/v1/api.go:226-240` | SignInPost redirects to /user/two_factor or /user/webauthn when the user is enrolled (auth.go:326-366); TWO_FACTOR_AUTH accepts only empty or enforced (security.go:193-199) and TwoFactorAuthEnforced defaults false (security.go:80). Enforcement is consulted by the web context and the API (context.go:202-206, api.go:226-240). Sources whose TwoFactorShouldSkip is true bypass local 2FA (auth.go:327-330), and Actions or deploy-key doers are exempt from enforcement (api.go:229); neither exception is stated in the Narrative cell. Enrolment and verification handlers were not read end to end. |
+| E-177 | 10.2/cookie-flags | Cookie flags: HttpOnly, SameSite and derived Secure | Supported | `modules/session/session.go:125-135` `modules/web/middleware/cookie.go:58-75` `modules/setting/session.go:64-75` `modules/session/store.go:133` | Both the session cookie (session.go newCookie, written by store.go:133) and site cookies (cookie.go SetSiteCookie) set HttpOnly always, SameSite from SessionConfig and Secure from SessionConfig.Secure. Secure is derived, not forced: COOKIE_SECURE defaults to whether AppURL starts with https:// (setting/session.go:64), so a deployment with an http AppURL sends cookies without Secure. cookie.go:95-96 (a second helper) also sets the flags; not read in detail. |
+| E-178 | 10.2/outbound-request-filtering | Outbound request filtering: webhook and migration transports use an egress policy that blocks non-public targets in lax mode | Supported | `services/webhook/deliver.go:277` `services/migrations/http_client.go:37` `modules/egress/policies.go:86-103` `modules/egress/policy/policy.go:242-244` `custom/conf/app.example.ini:539-562` | Both transports are built from the egress policy with WithLocalNeedsIPAllow and a dial-time check (policy.go:242-244); default EGRESS_MODE is lax (security.go:29). The ini text (:539-562) states the list is enforced on direct connections only: with an HTTP proxy configured the target is resolved by the proxy and only the host name is checked (policies.go:90-97). Scope is webhooks and migrations; other outbound fetches were not audited. The dial-time implementation (policy.go dialContext) was read only in part. |
+| E-179 | 16.5/build | Build: make build builds the frontend and the backend; CI builds for several platforms on pull requests | Supported | `Makefile:477-483` `Makefile:490` `.github/workflows/pull-compliance.yml:3-4` `.github/workflows/pull-compliance.yml:81-109` | Makefile:477 builds frontend and backend; the backend target depends on generate-backend and the gitea executable (Makefile:483). pull-compliance.yml:81-109 cross-compiles linux/arm64, windows/amd64 and linux/386 with go build (not make build) on pull_request (line 4), and the job runs only when backend or actions files changed (line 82); the frontend job runs make frontend. So CI proves cross-compilation, not make build itself. |
+| E-180 | 16.5/test | Test: make test-backend for unit tests, make test-integration against a chosen database, make test-migration and make test-e2e | Supported | `Makefile:368-370` `Makefile:107-108` `Makefile:436-441` `Makefile:453-465` `Makefile:473-474` `Makefile:30-33` | test-backend runs go test over GO_TEST_PACKAGES, which excludes the integration, migration and modelmigration packages (Makefile:107). test-integration compiles the integration tests and runs tools/test-integration.sh; the database comes from GITEA_TEST_DATABASE, defaulting to sqlite only for local test goals (Makefile:30-33). The script, database setup and e2e shell script (tools/test-e2e.sh) were not read, and no test was run. |
+| E-181 | 16.5/deploy | Deploy: release binaries and container images are built by the nightly and tag workflows; standard image copies docker/root, rootless image copies docker/rootless; environment deployment is Unknown | Supported | `.github/workflows/release-nightly.yml:37-61` `.github/workflows/release-nightly.yml:101-186` `.github/workflows/release-tag-version.yml:16-30` `.github/workflows/release-tag-version.yml:154-168` `Dockerfile:41` `Dockerfile.rootless:40` | Nightly runs on a 12-hour schedule or manual dispatch (release-nightly.yml:3-6); the tag workflow runs on pushed tags v[0-9]* excluding pre-release suffixes (release-tag-version.yml:3-8), so release candidates are not built by it. Both workflows build and publish artifacts (binaries to object storage or release, images to registries with push: true); neither deploys to a running environment, which matches the cell's own Unknown. Workflow steps were read, not executed. |
+| E-182 | 16.5/upgrade | Upgrade: helper script stops the service, takes a dump, downloads the release, verifies checksum and signature, swaps the binary and starts the service; the application migrates the schema at start | Corrected | `contrib/upgrade.sh:14-17` `contrib/upgrade.sh:99-116` `contrib/upgrade.sh:123-135` `routers/common/db.go:43-58` `modules/setting/database.go:89` | Order and conditions were wrong in the Narrative: the script requires gitea to be running (line 14), downloads the binary and verifies the checksum first (99-108), verifies the GPG signature unless --ignore-gpg is given (109-115), and only then flushes queues, stops the service, dumps, swaps the binary (keeping a .bak) and starts it (123-136). Schema migration at start happens because AUTO_MIGRATION defaults to true (database.go:89, db.go:44-45); when disabled and the version differs the process exits fatally (db.go:53-56). Narrative cell corrected. The script was read, not run. |
+| E-183 | 16.5/backup | Backup: gitea dump writes a zip of files and the database; the upgrade script passes extra options through backupopts | Supported | `cmd/dump.go:26-30` `cmd/dump.go:93` `contrib/upgrade.sh:32` `contrib/upgrade.sh:130` | Zip is the default format; dump.go:93 shows other output types exist, chosen by the file extension or a type flag. The upgrade script sets backupopts at line 32 and expands it into giteacmd dump at line 130. Which files the dump includes (skip flags, custom paths) and whether a dump restores cleanly were not checked; no scheduled backup was looked for beyond the scheduled jobs block. |
+| E-184 | 16.5/secret-rotation | Secret rotation: gitea generate creates new internal tokens, JWT secrets and secret keys; the code states that rotating an existing secret key is not yet supported, so there is no supported rotation procedure for existing data | Supported | `cmd/generate.go:54-77` `modules/setting/security.go:147-150` | generate has INTERNAL_TOKEN, JWT_SECRET (alias LFS_JWT_SECRET) and SECRET_KEY subcommands that only print a value (generate.go:54-77, 103-110). The FIXME comment (security.go:148-149) says rotation of an existing secret key is not yet supported; a grep of cmd, modules/secret, models/auth and models/webhook found no re-encryption or rotation command (the only rotation code is for login cookies, models/auth/auth_token.go). The row's cite cmd/generate.go:56-73 is short of the SECRET_KEY definition by four lines (it ends at 77); the claim still holds. Absence of a procedure rests on that search, not on the whole repository. |
+| E-185 | 17/restore-dependencies | Restore dependencies: make deps, from the repository root | Supported | `Makefile:555-556` `Makefile:558-575` `Makefile:576-582` | deps fans out to deps-frontend (pnpm install --frozen-lockfile via node_modules), deps-backend (go mod download), deps-tools (go run -exec true over seven tool packages, which compiles linters and generators and needs network) and deps-py (uv sync). Needs Go, pnpm and uv on the PATH first; the Narrative states that no single command installs them. Cite 555-556 covers only the deps line; the sub-targets are at 558-582. Not executed. |
+| E-186 | 17/build | Build: make build, from the repository root | Supported | `Makefile:477-478` `Makefile:480-483` `Makefile:501-507` | Makefile:477 defines build as frontend plus backend; backend runs generate-go and then the $(EXECUTABLE) rule (Makefile:483, 501). The frontend target needs the node_modules from make deps-frontend, so make deps (or its frontend and backend parts) comes first. The cite Makefile:477-478 ends on a blank line and .PHONY: the defining line is 477. Not executed. |
+| E-187 | 17/run | Run: ./gitea web, from the repository root | Supported | `cmd/web.go:41` `Makefile:54-58` `cmd/web.go:45-52` | The web subcommand starts the server (web.go:38-44). The binary is named gitea on non-Windows hosts (EXECUTABLE ?= gitea, Makefile:57) and appears in the repository root after make build; on Windows it is gitea.exe (Makefile:54). Without an existing configuration the installer is served (web.go:285-286). Not executed. |
+| E-188 | 17/test | Test: make test-backend, from the repository root | Supported | `Makefile:368-370` `Makefile:107` | Runs go test over GO_TEST_PACKAGES, which excludes integration, migration and modelmigration packages (Makefile:107); it is the unit-test target only. Database-backed tests in the covered packages use the repository's test helpers; whether every package passes without extra services was not checked. Not executed. |
+| E-189 | 9/api-returns-403-naming-required-scopes | API returns 403 naming required scopes: the message lists the required and held scopes | Supported | `routers/api/v1/api.go:280-306` | Required level is Write for POST, PUT, PATCH and DELETE and Read otherwise (api.go:291-294), and the check is skipped when the doer has no token scope (api.go:285-288, e.g. password Basic auth). The Narrative cites 303-306; the whole check is 280-306. Route-to-category wiring (tokenRequiresScopes callers) was not traced. |
+| E-190 | 9/api-returns-403-not-available-for-public-only-tokens | API returns 403 not available for public-only tokens: use a token without the public-only restriction | Supported | `routers/api/v1/api.go:249-257` | rejectPublicOnly returns 403 only when IsPublicOnlyDoer is true (api.go:251-255); the exact text is longer than the quoted symptom, which is a substring. Which routes attach rejectPublicOnly and how IsPublicOnlyDoer is derived from the token scope were not traced. |
+| E-191 | 9/git-client-gets-401-update-your-password | Git client gets 401 Update your password: server answers git clients with the translated message auth.must_change_password, English text Update your password; browsers are redirected to the change-password page | Supported | `routers/web/web.go:198-205` `options/locale/locale_en-US.json:383` `routers/common/auth.go:71` | The branch is taken when MustChangePassword is true for a non-bot, non-impersonated doer (auth.go:71) and the path is not the change-password page; a client counts as git when its User-Agent starts with git (web.go:200), not by protocol. The locale string is Update your password (json:383). Git HTTP routes use the same web verify middleware (optSignInFromAnyOrigin); the route-by-route wiring was not traced. |
+| E-192 | 9/startup-logs-repeated-orm-engine-initialization-attempt-n-m-failed-message-abbreviated-the-real-line-ends-with-the-error | Startup logs repeated ORM engine initialization attempt #n/m failed (message abbreviated: the real line ends with the error); the server retries and then stops | Supported | `routers/common/db.go:29-41` `modules/setting/database.go:87-88` `routers/init.go:68-75` `routers/init.go:136` | The real line is 'ORM engine initialization attempt #%d/%d failed. Error: %v' (db.go:35), so the abbreviation note is accurate. Retries default to 10 with a 3 second backoff (database.go:87-88). After the last attempt InitDBEngine returns the error without a further failed line (db.go:32-34) and the startup caller turns it into a fatal log (init.go:68-75, 136); the install path returns it to the installer page instead (install.go:442, not read in detail). The Narrative cite db.go:29-41 does not itself contain the stop. |
+| E-193 | 9/two-factor-validation-fails-with-maybe-secretkey-is-wrong | Two-factor validation fails with maybe SECRET_KEY is wrong: the error text names the cause; an administrator can disable 2FA from the CLI | Supported | `models/auth/twofactor.go:101-104` `models/auth/twofactor.go:123-126` `routers/web/auth/2fa.go:65-68` `cmd/admin_user_disable_2fa.go:21` `cmd/admin_user_disable_2fa.go:65` | The message is returned when AES decryption of the stored secret fails; the key is an MD5 of SECRET_KEY (twofactor.go:101-104). The caller turns it into a server error (2fa.go:65-68), so the text appears in the server log and error page rather than as a normal invalid-code message. disable-2fa takes --username or --id and removes the user's TOTP and WebAuthn credentials via DisableTwoFactor (cmd/admin_user_disable_2fa.go:19-68). The cell's claim that users enrolled before a key change cannot be recovered is consistent with a one-way AES key but not otherwise tested. |
+| E-194 | 9/the-installer-page-keeps-appearing-or-startup-logs-is-gitea-already-running | Installer page keeps appearing or startup logs 'Is Gitea already running?': listener failure is logged and a graceful shutdown starts; the installer is served while the lock is unset | Supported | `cmd/web.go:152-156` `cmd/web.go:285-286` | The log text appears only when the installer listener fails (web.go:152-156); the installer route set is served only while setting.InstallLock is false (web.go:285-286). Whether INSTALL_LOCK is read correctly from the configuration file was not traced. |
+| E-195 | 9/startup-stops-with-can-not-find-appdatapath | Startup stops with 'Can not find APP_DATA_PATH': process exits with a fatal log | Supported | `cmd/web.go:209-214` | os.Stat on AppDataPath fails, then log.Fatal (web.go:212-213). The check runs only after the installer branch, so it applies once the lock is set. The Narrative cites :213 only. Writability is not checked here; the cell's 'and is writable' check is operator advice, not code. |
+| E-196 | 9/git-hooks-or-gitea-manager-return-403-from-the-internal-api | Git hooks or gitea manager return 403 from the internal API: missing INTERNAL_TOKEN is logged and answered 403; a wrong token also answers 403 | Supported | `routers/private/internal.go:26-31` `routers/private/internal.go:34-40` | authInternal answers 403 when InternalToken is empty (internal.go:27-31, with a Warn naming the missing setting) and when the X-Gitea-Internal-Auth bearer value does not match by constant-time compare (internal.go:33-40). Callers (hooks, manager) were not traced; the token comparison is the whole check. |
+| E-197 | 9/browser-shows-failed-to-authenticate-user-with-401 | Browser shows 'Failed to authenticate user' with 401: the handler logs the error and returns 401 | Supported | `routers/web/web.go:160-165` | AuthShared error leads to log.Error('Failed to verify user: %v') then 401 (web.go:160-165). Which auth methods can produce the error was not enumerated. |
+| E-198 | 9/api-returns-401-token-is-required | API returns 401 'token is required': sign in or supply a token; a bad credential gives 'invalid username, password or token' | Supported | `routers/api/v1/api.go:311-319` `routers/api/v1/api.go:864-877` | reqToken returns 401 'token is required' when the request is not signed in (api.go:311-318); apiAuth returns 401 with 'invalid username, password or token' unless the error carries its own user message (api.go:864-872). Route wiring of reqToken not traced. |
+| E-199 | 9/api-returns-403-this-account-is-not-activated-or-you-must-change-your-password-change-it-at | API returns 403 'This account is not activated.' or 'You must change your password. Change it at: ...': activate or change the password at the address in the message | Supported | `routers/api/v1/api.go:884-896` | Both messages come from verifyAuthWithOptionsAPI for a signed-in doer (api.go:884-896), as a JSON message field. The same function also answers 403 for a prohibited login, which the row does not list. The password-change address is built from AppSubURL (api.go:893). |
+| E-200 | 9/git-over-http-returns-403-this-repo-is-archived-or-not-allowed | Git over HTTP returns 403 'This repo is archived' or 'not allowed': handler sends a plain-text message | Supported | `routers/web/repo/githttp.go:124-128` `routers/web/repo/githttp.go:41-45` | The archived message applies only to pushes (githttp.go:125 requires !isPull) and the 'not allowed' text is 'Interacting with repositories by HTTP protocol is not allowed', sent when DisableHTTPGit is true (githttp.go:41-45). Both are plain-text 403s. |
+| E-201 | 9/ssh-push-reports-repository-is-in-a-broken-state-or-mirror-repository-is-read-only-message-abbreviated-the-repository-name-is-omitted | SSH push reports 'Repository is in a broken state' or 'Mirror Repository ... is read-only': serv returns the message from the internal API | Supported | `routers/private/serv.go:160-175` | IsBroken gives the broken-state 403 (serv.go:166-169); a mirror gives 'Mirror Repository %s is read-only' only when the requested mode is above read (serv.go:171-175), so the abbreviation note is accurate. PrivateUserErrorf returns the text as UserMsg in JSON (services/context/private.go:69-71). The SSH client display of the message was not traced. |
+| E-202 | 9/startup-exits-because-the-database-version-differs-from-the-expected-one | Startup exits because the database version differs from the expected one: run the migrate command or enable automatic migration | Supported | `routers/common/db.go:43-58` `modules/setting/database.go:89` | migrateWithSetting migrates when AUTO_MIGRATION is true (default, database.go:89) or when the database is uninitialised; otherwise a version mismatch is fatal with the advice to set AUTO_MIGRATION or run gitea migrate (db.go:43-57). The migrate command itself was not read. |
+| E-203 | 9/runner-reports-unregistered-runner | Runner reports 'unregistered runner': interceptor refuses the request; re-register with a current registration token | Supported | `routers/api/actions/runner/interceptor.go:49-67` `routers/api/actions/runner/runner.go:57-59` | withRunner returns the error for an unknown UUID or a token that fails verifyRunnerToken (interceptor.go:55-66); Register is exempt. Registration rejects an inactive token with 'has been invalidated, please use the latest one' (runner.go:57-59). The runner-side files named in the Checks cell are not in the Target. |
+| E-204 | 9/package-client-receives-401-with-a-basic-realm | Package client receives 401 with a Basic realm: the registry adds the challenge header and refuses | Supported | `routers/api/packages/api.go:42-58` `routers/api/packages/api.go:60-62` | reqPackageAccess sets the Basic realm and returns 401 on a token-scope mismatch (api.go:52-55) and on insufficient package access mode (api.go:59-62; the Narrative cite ends at 58 and misses this second branch). Other 401 sources in individual registries were not checked. |
+| E-205 | 9/metrics-scrape-returns-401 | Metrics scrape returns 401: an empty or wrong header is refused | Supported | `routers/web/metrics.go:20-31` | With a token configured, a missing Authorization header or a mismatch (constant-time compare) gives 401 (metrics.go:21-31); with no token the endpoint is open (metrics.go:17-19, see V-7). |
+| E-206 | 10.1/V-2 | Reverse-proxy authentication trusts the identity header without checking the request origin and can auto-register users | Supported | `services/auth/reverseproxy.go:47-52` `services/auth/reverseproxy.go:64-68` `services/auth/reverseproxy.go:110-118` `modules/setting/service.go:175` `custom/conf/app.example.ini:872` | Code comment says verification is left to the proxy; auto-register path at reverseproxy.go:64-68 depends on isAutoRegisterAllowed (a separate setting). Default off confirmed in ini:872 and service.go:175. Narrative cite list now includes reverseproxy.go:64-68 (the auto-register branch); 110-118 is the Verify entry that logs the user in. |
 
 ### A.4 Verification commands
 
@@ -1330,13 +1366,6 @@ Run from the Target root. Each block names the expected line, then a PowerShell 
 ```text
 Select-String -LiteralPath 'routers/install/install.go' -SimpleMatch -CaseSensitive -Pattern 'form.DbPasswd = setting.Database.Passwd'
 grep -nF -- 'form.DbPasswd = setting.Database.Passwd' 'routers/install/install.go'
-```
-
-- **E-2** (section 10), expect `services/auth/reverseproxy.go:50`
-
-```text
-Select-String -LiteralPath 'services/auth/reverseproxy.go' -SimpleMatch -CaseSensitive -Pattern 'Verification of header data is not performed'
-grep -nF -- 'Verification of header data is not performed' 'services/auth/reverseproxy.go'
 ```
 
 - **E-3** (section 10), expect `modules/setting/security.go:151`
@@ -2205,5 +2234,229 @@ grep -nF -- 'ctx.HTTPError(http.StatusUnauthorized, ctx.Locale.TrString("auth.mu
 ```text
 Select-String -LiteralPath 'services/task/migrate.go' -SimpleMatch -CaseSensitive -Pattern 't.Message = err.Error()'
 grep -nF -- 't.Message = err.Error()' 'services/task/migrate.go'
+```
+
+- **E-175** (section 10), expect `routers/web/web.go:179`
+
+```text
+Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'crossOriginProtection := http.NewCrossOriginProtection()'
+grep -nF -- 'crossOriginProtection := http.NewCrossOriginProtection()' 'routers/web/web.go'
+```
+
+- **E-176** (section 10), expect `modules/setting/security.go:197`
+
+```text
+Select-String -LiteralPath 'modules/setting/security.go' -SimpleMatch -CaseSensitive -Pattern 'TwoFactorAuthEnforced = true'
+grep -nF -- 'TwoFactorAuthEnforced = true' 'modules/setting/security.go'
+```
+
+- **E-177** (section 10), expect `modules/session/session.go:132`
+
+```text
+Select-String -LiteralPath 'modules/session/session.go' -SimpleMatch -CaseSensitive -Pattern 'HttpOnly: true,'
+grep -nF -- 'HttpOnly: true,' 'modules/session/session.go'
+```
+
+- **E-178** (section 10), expect `services/webhook/deliver.go:277`
+
+```text
+Select-String -LiteralPath 'services/webhook/deliver.go' -SimpleMatch -CaseSensitive -Pattern 'transport := egress.NewWebhookPolicy().NewHTTPTransport()'
+grep -nF -- 'transport := egress.NewWebhookPolicy().NewHTTPTransport()' 'services/webhook/deliver.go'
+```
+
+- **E-179** (section 16), expect `Makefile:477`
+
+```text
+Select-String -LiteralPath 'Makefile' -SimpleMatch -CaseSensitive -Pattern 'build: frontend backend ## build everything'
+grep -nF -- 'build: frontend backend ## build everything' 'Makefile'
+```
+
+- **E-180** (section 16), expect `Makefile:368`
+
+```text
+Select-String -LiteralPath 'Makefile' -SimpleMatch -CaseSensitive -Pattern 'test-backend: ## test backend files'
+grep -nF -- 'test-backend: ## test backend files' 'Makefile'
+```
+
+- **E-181** (section 16), expect `Dockerfile:41`
+
+```text
+Select-String -LiteralPath 'Dockerfile' -SimpleMatch -CaseSensitive -Pattern 'COPY docker/root /tmp/local'
+grep -nF -- 'COPY docker/root /tmp/local' 'Dockerfile'
+```
+
+- **E-182** (section 16), expect `contrib/upgrade.sh:130`
+
+```text
+Select-String -LiteralPath 'contrib/upgrade.sh' -SimpleMatch -CaseSensitive -Pattern 'giteacmd dump $backupopts'
+grep -nF -- 'giteacmd dump $backupopts' 'contrib/upgrade.sh'
+```
+
+- **E-183** (section 16), expect `cmd/dump.go:28`
+
+```text
+Select-String -LiteralPath 'cmd/dump.go' -SimpleMatch -CaseSensitive -Pattern 'Description: `Dump compresses all related files and database into zip file.'
+grep -nF -- 'Description: `Dump compresses all related files and database into zip file.' 'cmd/dump.go'
+```
+
+- **E-184** (section 16), expect `modules/setting/security.go:150`
+
+```text
+Select-String -LiteralPath 'modules/setting/security.go' -SimpleMatch -CaseSensitive -Pattern '// Until it supports rotating an existing secret key, we shouldn''t move users off of the widely used default value'
+grep -nF -- '// Until it supports rotating an existing secret key, we shouldn'\''t move users off of the widely used default value' 'modules/setting/security.go'
+```
+
+- **E-185** (section 17), expect `Makefile:555`
+
+```text
+Select-String -LiteralPath 'Makefile' -SimpleMatch -CaseSensitive -Pattern 'deps: deps-frontend deps-backend deps-tools deps-py ## install dependencies'
+grep -nF -- 'deps: deps-frontend deps-backend deps-tools deps-py ## install dependencies' 'Makefile'
+```
+
+- **E-186** (section 17), expect `Makefile:477`
+
+```text
+Select-String -LiteralPath 'Makefile' -SimpleMatch -CaseSensitive -Pattern 'build: frontend backend ## build everything'
+grep -nF -- 'build: frontend backend ## build everything' 'Makefile'
+```
+
+- **E-187** (section 17), expect `cmd/web.go:41`
+
+```text
+Select-String -LiteralPath 'cmd/web.go' -SimpleMatch -CaseSensitive -Pattern 'Name:  "web",'
+grep -nF -- 'Name:  "web",' 'cmd/web.go'
+```
+
+- **E-188** (section 17), expect `Makefile:368`
+
+```text
+Select-String -LiteralPath 'Makefile' -SimpleMatch -CaseSensitive -Pattern 'test-backend: ## test backend files'
+grep -nF -- 'test-backend: ## test backend files' 'Makefile'
+```
+
+- **E-189** (section 9), expect `routers/api/v1/api.go:305`
+
+```text
+Select-String -LiteralPath 'routers/api/v1/api.go' -SimpleMatch -CaseSensitive -Pattern 'ctx.APIError(http.StatusForbidden, fmt.Sprintf("token does not have at least one of required scope(s), required=%v, token scope=%v", requiredScopes, scope))'
+grep -nF -- 'ctx.APIError(http.StatusForbidden, fmt.Sprintf("token does not have at least one of required scope(s), required=%v, token scope=%v", requiredScopes, scope))' 'routers/api/v1/api.go'
+```
+
+- **E-190** (section 9), expect `routers/api/v1/api.go:255`
+
+```text
+Select-String -LiteralPath 'routers/api/v1/api.go' -SimpleMatch -CaseSensitive -Pattern 'ctx.APIError(http.StatusForbidden, "this endpoint is not available for public-only tokens")'
+grep -nF -- 'ctx.APIError(http.StatusForbidden, "this endpoint is not available for public-only tokens")' 'routers/api/v1/api.go'
+```
+
+- **E-191** (section 9), expect `routers/web/web.go:201`
+
+```text
+Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'ctx.HTTPError(http.StatusUnauthorized, ctx.Locale.TrString("auth.must_change_password"))'
+grep -nF -- 'ctx.HTTPError(http.StatusUnauthorized, ctx.Locale.TrString("auth.must_change_password"))' 'routers/web/web.go'
+```
+
+- **E-192** (section 9), expect `routers/common/db.go:35`
+
+```text
+Select-String -LiteralPath 'routers/common/db.go' -SimpleMatch -CaseSensitive -Pattern 'log.Error("ORM engine initialization attempt #%d/%d failed. Error: %v", i+1, setting.Database.DBConnectRetries, err)'
+grep -nF -- 'log.Error("ORM engine initialization attempt #%d/%d failed. Error: %v", i+1, setting.Database.DBConnectRetries, err)' 'routers/common/db.go'
+```
+
+- **E-193** (section 9), expect `models/auth/twofactor.go:125`
+
+```text
+Select-String -LiteralPath 'models/auth/twofactor.go' -SimpleMatch -CaseSensitive -Pattern 'return false, fmt.Errorf("validateTOTP unable to decrypt (maybe SECRET_KEY is wrong): %w", err)'
+grep -nF -- 'return false, fmt.Errorf("validateTOTP unable to decrypt (maybe SECRET_KEY is wrong): %w", err)' 'models/auth/twofactor.go'
+```
+
+- **E-194** (section 9), expect `cmd/web.go:155`
+
+```text
+Select-String -LiteralPath 'cmd/web.go' -SimpleMatch -CaseSensitive -Pattern 'log.Error("Unable to open listener for installer. Is Gitea already running?")'
+grep -nF -- 'log.Error("Unable to open listener for installer. Is Gitea already running?")' 'cmd/web.go'
+```
+
+- **E-195** (section 9), expect `cmd/web.go:213`
+
+```text
+Select-String -LiteralPath 'cmd/web.go' -SimpleMatch -CaseSensitive -Pattern 'log.Fatal("Can not find APP_DATA_PATH %q", setting.AppDataPath)'
+grep -nF -- 'log.Fatal("Can not find APP_DATA_PATH %q", setting.AppDataPath)' 'cmd/web.go'
+```
+
+- **E-196** (section 9), expect `routers/private/internal.go:29`
+
+```text
+Select-String -LiteralPath 'routers/private/internal.go' -SimpleMatch -CaseSensitive -Pattern 'http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)'
+grep -nF -- 'http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)' 'routers/private/internal.go'
+```
+
+- **E-197** (section 9), expect `routers/web/web.go:163`
+
+```text
+Select-String -LiteralPath 'routers/web/web.go' -SimpleMatch -CaseSensitive -Pattern 'ctx.HTTPError(http.StatusUnauthorized, "Failed to authenticate user")'
+grep -nF -- 'ctx.HTTPError(http.StatusUnauthorized, "Failed to authenticate user")' 'routers/web/web.go'
+```
+
+- **E-198** (section 9), expect `routers/api/v1/api.go:317`
+
+```text
+Select-String -LiteralPath 'routers/api/v1/api.go' -SimpleMatch -CaseSensitive -Pattern 'ctx.APIError(http.StatusUnauthorized, "token is required")'
+grep -nF -- 'ctx.APIError(http.StatusUnauthorized, "token is required")' 'routers/api/v1/api.go'
+```
+
+- **E-199** (section 9), expect `routers/api/v1/api.go:886`
+
+```text
+Select-String -LiteralPath 'routers/api/v1/api.go' -SimpleMatch -CaseSensitive -Pattern 'ctx.JSON(http.StatusForbidden, map[string]string{"message": "This account is not activated."})'
+grep -nF -- 'ctx.JSON(http.StatusForbidden, map[string]string{"message": "This account is not activated."})' 'routers/api/v1/api.go'
+```
+
+- **E-200** (section 9), expect `routers/web/repo/githttp.go:126`
+
+```text
+Select-String -LiteralPath 'routers/web/repo/githttp.go' -SimpleMatch -CaseSensitive -Pattern 'ctx.PlainText(http.StatusForbidden, "This repo is archived. You can view files and clone it, but cannot push or open issues/pull-requests.")'
+grep -nF -- 'ctx.PlainText(http.StatusForbidden, "This repo is archived. You can view files and clone it, but cannot push or open issues/pull-requests.")' 'routers/web/repo/githttp.go'
+```
+
+- **E-201** (section 9), expect `routers/private/serv.go:167`
+
+```text
+Select-String -LiteralPath 'routers/private/serv.go' -SimpleMatch -CaseSensitive -Pattern 'ctx.PrivateUserErrorf(http.StatusForbidden, "Repository is in a broken state")'
+grep -nF -- 'ctx.PrivateUserErrorf(http.StatusForbidden, "Repository is in a broken state")' 'routers/private/serv.go'
+```
+
+- **E-202** (section 9), expect `routers/common/db.go:54`
+
+```text
+Select-String -LiteralPath 'routers/common/db.go' -SimpleMatch -CaseSensitive -Pattern 'log.Fatal(`"database.AUTO_MIGRATION" is disabled, but current database version %d is not equal to the expected version %d.`+'
+grep -nF -- 'log.Fatal(`"database.AUTO_MIGRATION" is disabled, but current database version %d is not equal to the expected version %d.`+' 'routers/common/db.go'
+```
+
+- **E-203** (section 9), expect `routers/api/actions/runner/interceptor.go:49`
+
+```text
+Select-String -LiteralPath 'routers/api/actions/runner/interceptor.go' -SimpleMatch -CaseSensitive -Pattern 'errUnregisteredRunner := connect.NewError(connect.CodeUnauthenticated, "unregistered runner")'
+grep -nF -- 'errUnregisteredRunner := connect.NewError(connect.CodeUnauthenticated, "unregistered runner")' 'routers/api/actions/runner/interceptor.go'
+```
+
+- **E-204** (section 9), expect `routers/api/packages/api.go:53`
+
+```text
+Select-String -LiteralPath 'routers/api/packages/api.go' -SimpleMatch -CaseSensitive -Pattern 'ctx.Resp.Header().Set("WWW-Authenticate", `Basic realm="Gitea Package API"`)'
+grep -nF -- 'ctx.Resp.Header().Set("WWW-Authenticate", `Basic realm="Gitea Package API"`)' 'routers/api/packages/api.go'
+```
+
+- **E-205** (section 9), expect `routers/web/metrics.go:27`
+
+```text
+Select-String -LiteralPath 'routers/web/metrics.go' -SimpleMatch -CaseSensitive -Pattern 'want := []byte("Bearer " + setting.Metrics.Token)'
+grep -nF -- 'want := []byte("Bearer " + setting.Metrics.Token)' 'routers/web/metrics.go'
+```
+
+- **E-206** (section 10), expect `services/auth/reverseproxy.go:50`
+
+```text
+Select-String -LiteralPath 'services/auth/reverseproxy.go' -SimpleMatch -CaseSensitive -Pattern 'Verification of header data is not performed'
+grep -nF -- 'Verification of header data is not performed' 'services/auth/reverseproxy.go'
 ```
 <!-- /appdoc:generated appendix-a -->

@@ -1,6 +1,6 @@
 # Check: PASS
 
-**Scope.** Run by AppDoc 2.7.0 (bundle 25b4b70e8137). This Check verifies **resolution and structure**: every Citation points to a real file and line inside the Target (see the Citation register), and every Evidence Register row's anchor text appears in the lines it cites. It does **not** judge whether a claim's wording follows from those lines; that is the source-to-claim audit, recorded in `evidence.jsonl`. A PASS is not an accuracy certification.
+**Scope.** Run by AppDoc 2.7.1 (bundle bf8cdbec967b). This Check verifies **resolution and structure**: every Citation points to a real file and line inside the Target (see the Citation register), and every Evidence Register row's anchor text appears in the lines it cites. It does **not** judge whether a claim's wording follows from those lines; that is the source-to-claim audit, recorded in `evidence.jsonl`. A PASS is not an accuracy certification.
 
 ## Audit exclusions
 
@@ -847,6 +847,7 @@ The audit record declares sections the audit did not cover:
 | 627 | `modules/setting/service.go` | 175 | yes |
 | 627 | `services/auth/reverseproxy.go` | 110-118 | yes |
 | 627 | `services/auth/reverseproxy.go` | 47-52 | yes |
+| 627 | `services/auth/reverseproxy.go` | 64-68 | yes |
 | 628 | `models/auth/twofactor.go` | 101-104 | yes |
 | 628 | `modules/setting/security.go` | 147-151 | yes |
 | 628 | `routers/install/install.go` | 393-400 | yes |
@@ -1264,7 +1265,7 @@ The audit record declares sections the audit did not cover:
 
 ## Verification
 
-**Source-to-claim audit:** performed (auditor: independent). 128 rows (46 superseded): 126 Supported, 0 Corrected, 0 Downgraded, 2 Answerable.
+**Source-to-claim audit:** performed (auditor: independent). 159 rows (47 superseded): 156 Supported, 1 Corrected, 0 Downgraded, 2 Answerable.
 
 | Section | IDs with a register row |
 |---|---|

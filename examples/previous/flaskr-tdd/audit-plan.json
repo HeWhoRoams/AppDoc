@@ -1,0 +1,163 @@
+{
+ "advisories": [],
+ "doc_sha": "cc86d1ffc3e2",
+ "floor": {
+  "fraction": "0.25",
+  "minimum": 5
+ },
+ "schema": "appdoc-audit-plan/1",
+ "sections": [
+  {
+   "ids": [
+    "V-1",
+    "V-2",
+    "V-3",
+    "V-4",
+    "V-5",
+    "V-6",
+    "V-7"
+   ],
+   "mode": "full",
+   "section": "10.1",
+   "total": 7
+  },
+  {
+   "ids": [
+    "7.1",
+    "7.2",
+    "7.3",
+    "7.4",
+    "7.5"
+   ],
+   "mode": "full",
+   "section": "7",
+   "total": 5
+  },
+  {
+   "ids": [
+    "Q-1",
+    "Q-2",
+    "Q-3",
+    "Q-5",
+    "Q-6"
+   ],
+   "mode": "full",
+   "section": "14",
+   "total": 5
+  },
+  {
+   "ids": [],
+   "mode": "full",
+   "section": "candidates",
+   "total": 0
+  },
+  {
+   "ids": [
+    "10.2"
+   ],
+   "items": [
+    "Authentication on state changes"
+   ],
+   "mode": "full",
+   "section": "10.2",
+   "total": 9
+  },
+  {
+   "ids": [
+    "16.5"
+   ],
+   "items": [
+    "Build",
+    "Test",
+    "Deploy"
+   ],
+   "mode": "full",
+   "section": "16.5",
+   "total": 8
+  },
+  {
+   "ids": [
+    "17"
+   ],
+   "items": [
+    "Restore dependencies",
+    "Run",
+    "Test"
+   ],
+   "mode": "full",
+   "section": "17",
+   "total": 5
+  },
+  {
+   "ids": [
+    "F-1",
+    "F-2",
+    "F-4",
+    "F-5",
+    "F-6"
+   ],
+   "k": 5,
+   "mode": "sampled",
+   "section": "4",
+   "total": 7
+  },
+  {
+   "ids": [
+    "UI-1",
+    "UI-2",
+    "UI-3"
+   ],
+   "k": 3,
+   "mode": "sampled",
+   "section": "6",
+   "total": 3
+  },
+  {
+   "ids": [
+    "C-1"
+   ],
+   "k": 1,
+   "mode": "sampled",
+   "section": "8.1",
+   "total": 1
+  },
+  {
+   "ids": [
+    "X-1"
+   ],
+   "k": 1,
+   "mode": "sampled",
+   "section": "8.3",
+   "total": 1
+  },
+  {
+   "ids": [
+    "9"
+   ],
+   "items": [
+    "\"Invalid password\" on the login page",
+    "\"Please log in.\" with HTTP 401 and JSON status 0 on delete",
+    "\"New entry was successfully posted\" missing after a post",
+    "\"The entry was deleted.\" with the entry still visible",
+    "\"No entries yet. Add some!\""
+   ],
+   "k": 5,
+   "mode": "sampled",
+   "section": "9",
+   "total": 10
+  },
+  {
+   "ids": [
+    "R-2",
+    "R-4",
+    "R-6",
+    "R-8",
+    "R-9"
+   ],
+   "k": 5,
+   "mode": "sampled",
+   "section": "15",
+   "total": 12
+  }
+ ]
+}

@@ -495,14 +495,14 @@ WebhookSubscription and ApplicationUser fields (`src/Webhooks.API/Model/WebhookS
 
 | Symptom | Checks | Known response | Escalate when |
 |---|---|---|---|
-| Order API returns "Empty GUID is not valid for request ID" | Is the x-requestid header present and non-empty | Send a new GUID (`src/Ordering.API/Apis/OrdersApi.cs:29`, `src/Ordering.API/Apis/OrdersApi.cs:58`) | The calling client always omits the header |
+| Order API returns "Empty GUID is not valid for request ID" | Is the x-requestid header a GUID other than all zeros | Send a new GUID (`src/Ordering.API/Apis/OrdersApi.cs:29`, `src/Ordering.API/Apis/OrdersApi.cs:58`) | The calling client always sends the all-zero GUID |
 | "RequestId is missing." on create | Same header on POST (`src/Ordering.API/Apis/OrdersApi.cs:135`) | Retry with a header | The storefront sends it empty |
 | "Cancel order failed to process." | Order status; Paid and Shipped orders cannot be cancelled | The command returns false and a 500 problem (`src/Ordering.API/Apis/OrdersApi.cs:45`, `src/Ordering.Domain/AggregatesModel/OrderAggregate/Order.cs:142-148`) | The order is in a cancellable status and still fails |
 | "Ship order failed to process." | Only Paid orders can ship | 500 problem (`src/Ordering.API/Apis/OrdersApi.cs:74`, `src/Ordering.Domain/AggregatesModel/OrderAggregate/Order.cs:130-135`) | The order is Paid and still fails |
-| Webhook post answers "Invalid token" | ValidateToken and the configured token on the receiver | Use the token that was registered (`src/WebhookClient/Endpoints/WebhookEndpoints.cs:28`) | Tokens match and the receiver still rejects |
+| Webhook post answers "Invalid token" | ValidateToken and the configured token on the receiver; the text comes from the OPTIONS check probe, while a post to the hook endpoint with a wrong token gets a bare 400 | Use the token that was registered (`src/WebhookClient/Endpoints/WebhookEndpoints.cs:28`) | Tokens match and the receiver still rejects |
 | "Invalid grant URL" when subscribing | Grant URL must share origin with the hook URL and echo the token | Fix the URL or token (`src/Webhooks.API/Apis/WebHooksApi.cs:61`, `src/Webhooks.API/Services/GrantUrlTesterService.cs:7-10`) | The receiver is reachable and still refused |
 | "Subscriptions {id} not found" | The id belongs to the caller | Use an id from the list (`src/Webhooks.API/Apis/WebHooksApi.cs:32`, `src/Webhooks.API/Apis/WebHooksApi.cs:81`) | The listed id returns not found |
-| Assistant panel says it is not switched on | UseFoundry or Ollama setting | Enable one and reopen (`src/WebApp/Components/Chatbot/Chatbot.razor:50-62`) | The setting is on and the notice stays |
+| Assistant panel says it is not switched on | UseFoundry setting, or the Ollama switch hard-coded to false in the AppHost (`src/eShop.AppHost/AppHost.cs:88`) | Enable one and reopen (`src/WebApp/Components/Chatbot/Chatbot.razor:50-62`) | The setting is on and the notice stays |
 | Assistant answers "My apologies, but I encountered an unexpected error." | Error log for the chat call | Retry once (`src/WebApp/Components/Chatbot/ChatState.cs:84-91`) | The error repeats after one retry |
 | Adding to cart through the assistant says login needed | Session state | Sign in (`src/WebApp/Components/Chatbot/ChatState.cs:145-148`) | Signed-in users still see it |
 | Item picture missing | Item has a picture file name and the file exists in Pics | NotFound by design (`src/Catalog.API/Apis/CatalogApi.cs:258-267`) | Files exist and the route still returns NotFound |
@@ -722,7 +722,7 @@ Closed by the audit and answered in the body: Q-9 (4.1).
 
 ### 15.1 Coverage summary
 
-This document verified, against the cited lines, the structure of the Catalog, Ordering, Basket, Webhooks, Webhook client, Identity configuration, chatbot, event bus, AppHost and CI files. It defines <!-- appdoc:count V -->22<!-- /appdoc:count --> findings (see `src/Catalog.API/Program.cs:5-26` for the most severe) and <!-- appdoc:count Q -->8<!-- /appdoc:count --> open questions (`src/Catalog.API/Program.cs:5-26`). It did not inspect the MAUI clients in depth, the EF migrations, the Identity views, static assets or agent skill files, and it did not run the system. An independent audit with delta passes was done; Appendix A states the register state (<!-- appdoc:count rows -->131<!-- /appdoc:count --> rows). A reader must confirm deployment topology, the logging provider and the AI provider terms before relying on the severity of V-1, V-5 and V-13.
+This document verified, against the cited lines, the structure of the Catalog, Ordering, Basket, Webhooks, Webhook client, Identity configuration, chatbot, event bus, AppHost and CI files. It defines <!-- appdoc:count V -->22<!-- /appdoc:count --> findings (see `src/Catalog.API/Program.cs:5-26` for the most severe) and <!-- appdoc:count Q -->8<!-- /appdoc:count --> open questions (`src/Catalog.API/Program.cs:5-26`). It did not inspect the MAUI clients in depth, the EF migrations, the Identity views, static assets or agent skill files, and it did not run the system. An independent audit with delta passes was done; Appendix A states the register state (<!-- appdoc:count rows -->157<!-- /appdoc:count --> rows). A reader must confirm deployment topology, the logging provider and the AI provider terms before relying on the severity of V-1, V-5 and V-13.
 
 ## 16. Operations Runbook
 
@@ -744,7 +744,7 @@ The storefront cookie lifetime comes from SessionCookieLifetimeMinutes with a de
 |---|---|---|
 | Database not ready at start | Migration error log, service exits | Start the database container first (`src/Shared/MigrateDbContextExtensions.cs:48-55`) |
 | Event handler throws | Warning "Error Processing message" | The message is already acknowledged; replay manually (`src/EventBusRabbitMQ/RabbitMQEventBus.cs:170-180`) |
-| Assistant disabled | Panel notice | Set UseFoundry or enable Ollama (`src/WebApp/Components/Chatbot/Chatbot.razor:50-62`) |
+| Assistant disabled | Panel notice | Set UseFoundry, or enable Ollama by editing the AppHost source (`src/eShop.AppHost/AppHost.cs:88`, `src/WebApp/Components/Chatbot/Chatbot.razor:50-62`) |
 | Embeddings unavailable | Semantic search returns name matches | Configure an embedding model (`src/Catalog.API/Apis/CatalogApi.cs:294-305`) |
 | Webhook receiver down | No delivery, no record | Ask the subscriber to resubscribe; no retry exists (`src/Webhooks.API/Services/WebhooksSender.cs:32`) |
 
@@ -854,17 +854,21 @@ Prerequisites also include a .NET SDK satisfying `global.json:2-6` and a running
 
 **Auditor:** independent. **Scope:** each planned claim was read against its cited source lines and the code that controls the result (callers, handlers, configuration), by an agent that had only the finished document, the Target and the audit plan; unplanned claims were read only where they touched a planned one
 
-Generated blocks written by AppDoc 2.7.0 (bundle 25b4b70e8137).
+Generated blocks written by AppDoc 2.7.1 (bundle bf8cdbec967b).
 
-Audited on 2026-11-23 with AppDoc 2.7.0 (bundle 25b4b70e8137).
+Audited on 2026-11-24 with AppDoc 2.7.1 (bundle bf8cdbec967b).
+
+`seal` writes `claim_sha` and `sealed_by` only on ID rows, workflow (7.x) and per-row section keys. Other section-level rows, Answerable rows and Dismissed rows are never sealed, so they carry no `sealed_by`. C17 `--strict` fails only on `sealed_by: upgrade`, never on an absent key.
 
 Register rows cover: 4 F-1–F-19 (19 of 19) · 6 UI-1–UI-23 (23 of 23) · 8.1 C-1–C-8 (8 of 8) · 8.3 X-1–X-12 (12 of 12) · 10.1 V-1–V-4, V-20, V-22, V-5–V-13, V-21, V-14–V-19 (22 of 22) · 14 Q-1–Q-8 (8 of 8) · 15 R-1–R-4, R-22, R-24, R-5–R-13, R-23, R-14–R-21 (24 of 24) · workflows 7.1–7.8 (8 of 8).
 
 Not covered by the audit: 2.1: scan coverage block is generated and opaque; 12: diagrams are not audited as claims; 16.6: configuration reference block is generated and opaque; 16.7: scheduled jobs block is generated and opaque.
 
+Not audited: generated and opaque blocks (entry-points, scheduled-jobs, closed-questions, appendix-a)
+
 ### A.2 Coverage
 
-147 rows (16 superseded). Current: 130 Supported, 0 Corrected, 0 Downgraded, 1 Answerable. As first audited: 121 Supported, 9 Corrected, 0 Downgraded, 1 Answerable. Each Supported or Corrected row's anchor text was found in its cited lines by the Check.
+173 rows (16 superseded). Current: 153 Supported, 3 Corrected, 0 Downgraded, 1 Answerable. As first audited: 144 Supported, 12 Corrected, 0 Downgraded, 1 Answerable. Each Supported or Corrected row's anchor text was found in its cited lines by the Check.
 
 | Section | IDs with a register row |
 |---|---|
@@ -883,14 +887,14 @@ Not covered by the audit: 2.1: scan coverage block is generated and opaque; 12: 
 | 7 | 8 | 8 | 0 |
 | 14 | 8 | 8 | 1 |
 | candidates | 0 | 0 | 0 |
-| 10.2 | 1 | 1 | 0 |
-| 16.5 | 1 | 1 | 0 |
-| 17 | 1 | 1 | 0 |
+| 10.2 | 6 | 6 | 1 |
+| 16.5 | 3 | 3 | 1 |
+| 17 | 4 | 4 | 1 |
 | 4 | 5 | 5 | 14 |
 | 6 | 6 | 6 | 17 |
 | 8.1 | 5 | 5 | 3 |
 | 8.3 | 5 | 5 | 7 |
-| 9 | 1 | 1 | 0 |
+| 9 | 5 | 5 | 9 |
 | 15 | 6 | 6 | 18 |
 
 ### A.3 Register
@@ -1044,6 +1048,32 @@ Not covered by the audit: 2.1: scan coverage block is generated and opaque; 12: 
 | E-145 | 4.1 | Subsystem inventory rows for build/ and .devcenter/: registry build and manifest scripts, unused (Inferred); one image-definition file whose content is the text Initial Commit | Supported | `build/acr-build/queue-all.ps1:4` `build/multiarch-manifests/create-manifests.ps1:10` `.devcenter/catalog/definitions/imagedefinition.yaml:1` | the older repository name is at queue-all.ps1:4 ($repoName); no file in the Target references either script (grep), so 'unused here' is correctly Inferred; closes Q-9 (E-39) |
 | E-146 | 15/R-5 | Consent notice, minimise or remove the user-info tool, redact PII, document provider terms; V-5, 10.2 Chatbot PII safeguards, Q-4 | Supported | `src/WebApp/Components/Chatbot/ChatState.cs:96-111` `src/WebApp/Components/Chatbot/ChatState.cs:78` `src/WebApp/Components/Chatbot/Chatbot.razor:71-78` | each element maps to a traced gap in the V-5 data flow: tool returns nine PII fields, history is re-sent, no notice in the panel |
 | E-147 | 15/R-15 | Set explicit cookie flags, add rate limiting on login and offer multi-factor authentication; addresses 10.2 Cookie flags, Rate limiting, Multi-factor authentication | Supported | `src/WebApp/Extensions/Extensions.cs:71` `src/Identity.API/Quickstart/Account/AccountController.cs:95` `src/Identity.API/Models/ManageViewModels/IndexViewModel.cs:11` | current text names all three controls in Addresses and the recommendation now has a clause for each; the three 10.2 rows hold as audited in E-40: cookie flags Not established (only ExpireTimeSpan set, :71), rate limiting verified absent (no limiter in src), MFA verified absent (only the TwoFactor view-model member, sign-in is password plus lockout at :95) |
+| E-148 | 10.2/tls-for-the-storefront | TLS for the storefront: Present (HSTS outside Development and HTTPS redirect) | Supported | `src/WebApp/Program.cs:17-26` `src/eShop.AppHost/AppHost.cs:22` | UseHsts is inside the !IsDevelopment() branch (:17-22) and UseHttpsRedirection is unconditional (:26), so the middleware claim holds; these are middleware only: the listener, certificate or ingress TLS and the deployed environment name are not in the repository, and AppHost.cs:22 can select the http launch profile (WebApp launchSettings http profile is Development, HTTP only), where HSTS is skipped and the redirect has no HTTPS port to target |
+| E-149 | 10.2/csrf-protection | CSRF protection: Present (anti-forgery middleware and token attributes) | Supported | `src/WebApp/Program.cs:24` `src/Identity.API/Quickstart/Account/AccountController.cs:59-60` `src/Identity.API/Quickstart/Account/AccountController.cs:165-166` `src/WebhookClient/Endpoints/AuthenticationEndpoints.cs:12-14` | every [HttpPost] action in src (grep) in the Identity Account, Consent, Device and Grants controllers carries [ValidateAntiForgeryToken]; WebApp and WebhookClient call UseAntiforgery (WebApp Program.cs:24, WebhookClient Program.cs:21) and render AntiforgeryToken in the cart, item and user-menu forms; WebhookClient logout validates the token explicitly (:14); bearer-token APIs and the webhook-received endpoint are not form/cookie surfaces and were not assessed; framework-side automatic validation of Blazor forms is not in source |
+| E-150 | 10.2/account-lockout | Account lockout: Present | Supported | `src/Identity.API/Quickstart/Account/AccountController.cs:95` `src/Identity.API/Program.cs:14-16` | only the lockoutOnFailure flag is in source; no lockout option (threshold, duration) is configured anywhere in src (grep Lockout shows only the model snapshot, migrations and ProfileService), so threshold and duration are ASP.NET Identity framework defaults not read here; applies to the Identity password login only; no seeded user turns lockout off (UsersSeed has no Lockout setting) |
+| E-151 | 10.2/catalog-picture-path-confinement | Catalog picture path confinement: Present (files read from a provider rooted at Pics, with a test) | Supported | `src/Catalog.API/Program.cs:7-9` `src/Catalog.API/Apis/CatalogApi.cs:263-267` `tests/Catalog.FunctionalTests/CatalogApiTests.cs:237-262` | the only request-driven file read is GetFileInfo(pictureFileName) on the keyed Pics provider (CatalogApi.cs:263); the file name comes from the database item, which an unauthenticated caller can set (V-1), so confinement rests on PhysicalFileProvider rejecting traversal (framework behaviour, not in source); the test covers only ../appsettings.json (Version 1.0 and 2.0), not absolute or encoded variants; the test passes the item through the real API, it was not run here |
+| E-152 | 10.2/order-input-validation | Order input validation: Present | Supported | `src/Ordering.API/Application/Validations/CreateOrderCommandValidator.cs:6-16` `src/Ordering.API/Extensions/Extensions.cs:40-45` `src/Ordering.API/Application/Behaviors/ValidatorBehavior.cs:20-35` `src/Ordering.API/Application/Commands/IdentifiedCommandHandler.cs:87-102` | a validator exists, is registered (Extensions.cs:45) and runs for the inner CreateOrderCommand through ValidatorBehavior (:20, :32), so an invalid order is not created; but the failure is swallowed by IdentifiedCommandHandler (:99-102) into false and the API still answers Ok (V-12), the card number is masked before validation (OrdersApi.cs:140; short values throw first, V-15), order item units and prices are not validated (:16 only checks the list is non-empty), and CreateOrderDraft has no validator; 'Present' therefore means the rule set exists and blocks creation, not that callers are told |
+| E-153 | 10.2/health-endpoints-limited-to-development | Health endpoints limited to Development: Present | Supported | `src/eShop.ServiceDefaults/Extensions.cs:115-125` | MapHealthChecks appears only at :118 and :121 inside the IsDevelopment() branch (grep across src, no other health mapping); all hosts that call MapDefaultEndpoints get this behaviour; the deployed ASPNETCORE_ENVIRONMENT value is not in the repository, and AppHost.cs:28,45 probe /health for local runs only |
+| E-154 | 16.5/build | Build: dotnet build of the solution filter in the pull-request workflow | Supported | `.github/workflows/pr-validation.yml:26-27` | the step is in the single test job of pr-validation.yml, which runs on pull_request and on push to main (not PR-only); the filter eShop.Web.slnf exists at the root and points to eShop.slnx; two other builds exist and the row does not claim exclusivity: the Azure DevOps 1ES pipeline ci.yml:44 runs the same command on Windows (internal pool, not exercised here) and pr-validation-maui.yml:39 builds src/ClientApp; no publish or image build step in any workflow (grep) |
+| E-155 | 16.5/test | Test: dotnet test of the same filter; Playwright in a separate workflow | Supported | `.github/workflows/pr-validation.yml:28-29` `.github/workflows/playwright.yml:33-34` `package.json:9` | pr-validation.yml:29 is dotnet test --solution eShop.Web.slnf --no-build, same filter as the Build step; playwright.yml is a separate workflow (push to main and pull requests to main) and runs npm run test:e2e, which package.json:9 maps to playwright test; the Playwright job sets ESHOP_USE_HTTP_ENDPOINTS=1 and inline test credentials (V-20); workflow runs and results were not observed |
+| E-156 | 16.5/deploy | Deploy: aspire deploy to Azure Container Apps; the README warns it is for evaluation | Supported | `README.md:113-118` `README.md:127-131` `src/eShop.AppHost/AppHost.cs:7` | deployment is a manual README procedure (az login, aspire deploy --list-steps, aspire deploy), not a workflow: no workflow, ci.yml step or script in the repository runs aspire deploy (grep outside .github/skills); the AppHost declares the Azure Container Apps environment (AppHost.cs:7); the README warning (:117-118) is that this configuration, with PostgreSQL, Redis and RabbitMQ as containers, is for evaluation and demonstrations, not production data; no deployment was run |
+| E-157 | 17/prerequisites | Prerequisites: aspire --version (Aspire CLI present), with a .NET SDK satisfying global.json and a running container runtime | Supported | `README.md:19-26` `README.md:44-45` `global.json:2-6` | README.md:20-24 lists installing the Aspire CLI and verifying it with this command; the command only confirms the CLI is installed, it does not check the SDK (global.json pins 10.0.302 with latestFeature roll-forward) or the container runtime (README.md:26, :44-45); aspire.config.json:5 pins an Aspire SDK version 13.6.0 that the README does not mention; the functional tests start Postgres and Redis containers (CatalogApiFixture.cs, RedisFixture.cs), so the runtime is needed for the Test step as well; tools not installed or run here |
+| E-158 | 17/build | Build: dotnet build eShop.Web.slnf from the repository root | Supported | `.github/workflows/pr-validation.yml:26-27` `ci.yml:44` | the README gives no build command (grep dotnet build in README.md and CONTRIBUTING.md finds none), so the command is taken from CI (pr-validation.yml:27, ci.yml:44, both run at the checkout root); eShop.Web.slnf exists at the root; it was not run here |
+| E-159 | 17/run | Run: aspire run from the repository root | Supported | `README.md:49-55` `aspire.config.json:2-4` | README.md:49-52 gives the command from the repository root; aspire.config.json:2-4 selects src/eShop.AppHost/eShop.AppHost.csproj as the AppHost; README also offers aspire start and Visual Studio (:63-76) as alternatives; needs a running container runtime (:44-45); not run here |
+| E-160 | 17/test | Test: dotnet test --solution eShop.Web.slnf; browser journeys with npm ci, install Chromium, npm run test:e2e | Supported | `README.md:80-92` `global.json:7-9` `package.json:9` | command matches README.md:83 (CI adds --no-build --no-progress --output detailed); the filter lists the unit and functional test projects (slnf:22-29); the --solution form relies on the Microsoft.Testing.Platform runner set at global.json:7-9; functional tests start Postgres and Redis containers so a running container runtime is required; Playwright steps match README.md:89-91 and package.json:9 (npm run test:e2e = playwright test); README says Playwright starts the AppHost itself (:86); tests were not run here |
+| E-161 | 9/order-api-returns-empty-guid-is-not-valid-for-request-id | Order API returns "Empty GUID is not valid for request ID": check that the x-requestid header is present and non-empty; send a new GUID; escalate when the calling client always omits the header | Corrected | `src/Ordering.API/Apis/OrdersApi.cs:22-30` `src/Ordering.API/Apis/OrdersApi.cs:51-59` `tests/Ordering.FunctionalTests/OrderingApiTests.cs:39-49` `src/WebApp/Services/BasketState.cs:79-83` | the message comes only from cancel (:27-29) and ship (:56-58), and only when the header parses to the all-zero GUID: the tests send Guid.Empty.ToString() to trigger it (OrderingApiTests.cs:44, :74); a present, non-empty header holding the zero GUID fails, so 'present and non-empty' was the wrong check, and a missing header binds a required non-nullable Guid, which the framework rejects with its own 400 before this code runs (framework behaviour, not in source: Inferred); fix remedy 'send a new GUID' holds; the storefront always supplies a fresh GUID (BasketState.cs:79-83, OrderingService.cs:15) |
+| E-162 | 9/requestid-is-missing-on-create | "RequestId is missing." on create: same header on POST; retry with a header; escalate when the storefront sends it empty | Supported | `src/Ordering.API/Apis/OrdersApi.cs:118-136` `tests/Ordering.FunctionalTests/OrderingApiTests.cs:119-132` `src/WebApp/Services/BasketState.cs:79-83` `src/WebApp/Services/OrderingService.cs:15` | the response is produced only by the create endpoint when x-requestid parses to the all-zero GUID (:132-136), so 'same header' is the same non-zero-GUID check as the Empty GUID row (corrected in E-161); the escalation hint holds: CheckoutAsync replaces a default RequestId with a new GUID (BasketState.cs:79-83) and OrderingService.cs:15 sends it as the header; the test AddNewEmptyOrder sends the zero GUID with an empty order and asserts only 400, not the message text |
+| E-163 | 9/ship-order-failed-to-process | "Ship order failed to process.": only Paid orders can ship; 500 problem; escalate when the order is Paid and still fails | Supported | `src/Ordering.API/Apis/OrdersApi.cs:70-75` `src/Ordering.Domain/AggregatesModel/OrderAggregate/Order.cs:130-135` `src/Ordering.API/Application/Commands/ShipOrderCommandHandler.cs:19-28` `src/Ordering.API/Application/Commands/IdentifiedCommandHandler.cs:99-102` | SetShippedStatus throws unless the status is Paid (Order.cs:132-135) and IdentifiedCommandHandler swallows the exception into false (:99-102), which the endpoint turns into the 500 problem; the same 500 also results when the order number does not exist (handler returns false at ShipOrderCommandHandler.cs:22-25) or the command fails validation (ShipOrderCommandValidator requires a non-zero OrderNumber), which the Checks cell does not list but the escalation condition (order is Paid and still fails) covers; a repeated request id returns true (Ok) without shipping; status-name vs numeric order id not checked at runtime |
+| E-164 | 9/assistant-panel-says-it-is-not-switched-on | Assistant panel says it is not switched on: check the UseFoundry or Ollama setting; enable one and reopen | Corrected | `src/WebApp/Components/Chatbot/Chatbot.razor:101-113` `src/WebApp/Components/Chatbot/Chatbot.razor:50-62` `src/WebApp/Extensions/Extensions.cs:94-109` `src/eShop.AppHost/AppHost.cs:81-92` `src/eShop.AppHost/Extensions.cs:14-15` | the notice shows when no IChatClient is registered (Chatbot.razor:103-111); WebApp registers one only when OllamaEnabled is true or a chatModel connection string exists (Extensions.cs:97-106); UseFoundry is a real setting (Extensions.cs:14-15 in the AppHost, AppHost.cs:82-86) but Ollama is not: AppHost.cs:88 hard-codes useOllama to false, so enabling it needs a source edit, and the panel's own text and the Checks cell wrongly called it a setting; a connection string supplied outside the AppHost would also clear the notice; the same wording 'Set UseFoundry or enable Ollama' also appears in the section 16 failure-mode table (not edited, outside this row's scope) |
+| E-165 | 9/assistant-answers-my-apologies-but-i-encountered-an-unexpected-error | Assistant answers "My apologies, but I encountered an unexpected error.": check the error log for the chat call; retry once; escalate when the error repeats after one retry | Supported | `src/WebApp/Components/Chatbot/ChatState.cs:74-93` | the text is a fixed assistant message added when GetResponseAsync throws (:84-91) and the exception is logged as 'Error getting chat completions.' at Error level (:88) only if that level is enabled; no retry exists in code, so 'retry once' is operator advice; the failed user message and the apology both stay in the history re-sent on the next turn (:76-78, :90), which the row does not mention; exception causes (provider outage, bad key, model name) are not in source |
+| E-166 | 9/adding-to-cart-through-the-assistant-says-login-needed | Adding to cart through the assistant says login needed: check session state; sign in; escalate when signed-in users still see it | Supported | `src/WebApp/Components/Chatbot/ChatState.cs:136-153` | the message is returned only when the basket gRPC call fails with Unauthenticated (:145-148); any other exception returns 'Unable to add the item to the cart.' (:149-152), so a signed-in user seeing the login text points to a rejected or expired token on the basket call, which is why the escalation hint holds; the gRPC token handling is not read here |
+| E-167 | 9/cancel-order-failed-to-process | "Cancel order failed to process.": order status; Paid and Shipped orders cannot be cancelled; command returns false and a 500 problem; escalate when the order is in a cancellable status and still fails | Supported | `src/Ordering.API/Apis/OrdersApi.cs:41-46` `src/Ordering.Domain/AggregatesModel/OrderAggregate/Order.cs:142-148` `src/Ordering.API/Application/Commands/CancelOrderCommandHandler.cs:19-29` `src/Ordering.API/Application/Commands/IdentifiedCommandHandler.cs:99-102` | SetCancelledStatus throws for Paid and Shipped (Order.cs:144-148); the exception is swallowed into false (IdentifiedCommandHandler.cs:99-102) and the endpoint returns the 500 problem; the same response also results when the order number does not exist (handler :22-25 returns false) or validation fails, not listed in the Checks cell but covered by the escalation condition; a repeated request id returns the duplicate result without cancelling |
+| E-168 | 9/service-stops-at-startup | Service stops at startup: check the database container and migration log; migration errors are logged and rethrown; escalate when the database is up and migration still fails | Supported | `src/Shared/MigrateDbContextExtensions.cs:40-55` `src/Shared/MigrateDbContextExtensions.cs:76-82` | the catch at :48-55 logs 'An error occurred while migrating the database used on context' and rethrows; the migration runs from the hosted service StartAsync (:79-82), so the exception aborts host start; the execution strategy at :44 may retry transient database errors before the throw (provider behaviour not read); stop of the whole process is inferred from the hosted-service start contract, not exercised |
+| E-169 | 9/webhook-post-answers-invalid-token | Webhook post answers "Invalid token": check ValidateToken and the configured token on the receiver; use the token that was registered; escalate when tokens match and the receiver still rejects | Corrected | `src/WebhookClient/Endpoints/WebhookEndpoints.cs:12-29` `src/WebhookClient/Endpoints/WebhookEndpoints.cs:37-52` | the text 'Invalid token' is returned only by the OPTIONS /check probe (:16-28); a POST to /webhook-received with a wrong token returns a bare BadRequest with no body (:51-52) and logs 'NOT processed'; both compare against WebhookClientOptions:Token and apply only when ValidateToken parses to true, read once at endpoint mapping (:13-14), so a changed setting needs a restart; Narrative Checks cell extended to say this; the symptom wording itself was left unchanged |
+| E-170 | 9/invalid-grant-url-when-subscribing | "Invalid grant URL" when subscribing: grant URL must share origin with the hook URL and echo the token; fix the URL or token; escalate when the receiver is reachable and still refused | Supported | `src/Webhooks.API/Apis/WebHooksApi.cs:41-62` `src/Webhooks.API/Services/GrantUrlTesterService.cs:5-35` | the 400 follows any false from TestGrantUrl: different scheme, host or port (:37-45, the cited :7-10 branch), a non-success OPTIONS reply, a missing or different X-eshop-whtoken echo (:22-27), or any exception such as an unreachable host (:29-34); the Checks cell names the first and last of these but not the status code or the exception path |
+| E-171 | 9/subscriptions-id-not-found | "Subscriptions {id} not found": the id belongs to the caller; use an id from the list; escalate when the listed id returns not found | Supported | `src/Webhooks.API/Apis/WebHooksApi.cs:12-19` `src/Webhooks.API/Apis/WebHooksApi.cs:20-33` `src/Webhooks.API/Apis/WebHooksApi.cs:66-82` | get-by-id (:26-32) and delete (:72-81) both filter on id and the caller's user id, and the list (:15-18) is filtered by the same user id, so an id from the caller's own list should not return not found; another user's id is indistinguishable from a missing one |
+| E-172 | 9/item-picture-missing | Item picture missing: item has a picture file name and the file exists in Pics; NotFound by design; escalate when files exist and the route still returns NotFound | Supported | `src/Catalog.API/Apis/CatalogApi.cs:251-267` `src/Catalog.API/Program.cs:7-9` | NotFound is returned for an unknown item id, a null picture file name (:258-261) or a file not found under Pics (:263-267), where the provider is rooted at ContentRoot/Pics (Program.cs:7-9); the storefront reaches the route through the /product-images forwarder (WebApp Program.cs:32), not read further; whether the Pics folder is deployed with the service is not in source |
+| E-173 | 9/order-stays-in-one-status | Order stays in one status: check event bus health and consumer logs; handler failures are logged and dropped; escalate when any order is stuck beyond the grace period | Supported | `src/EventBusRabbitMQ/RabbitMQEventBus.cs:159-181` | the consumer catches every handler exception, logs it as a Warning 'Error Processing message' (:172) and acks (:180) with no dead-letter or retry, so a failed status event is lost; other causes (broker down, processor not running, grace period not elapsed) are not examined in this row; the grace-period length is configuration not read here |
 
 ### A.4 Verification commands
 
@@ -1957,5 +1987,187 @@ grep -nF -- '[Description("Gets information about the chat user")]' 'src/WebApp/
 ```text
 Select-String -LiteralPath 'src/WebApp/Extensions/Extensions.cs' -SimpleMatch -CaseSensitive -Pattern '.AddCookie(options => options.ExpireTimeSpan'
 grep -nF -- '.AddCookie(options => options.ExpireTimeSpan' 'src/WebApp/Extensions/Extensions.cs'
+```
+
+- **E-148** (section 10), expect `src/WebApp/Program.cs:21`
+
+```text
+Select-String -LiteralPath 'src/WebApp/Program.cs' -SimpleMatch -CaseSensitive -Pattern 'app.UseHsts();'
+grep -nF -- 'app.UseHsts();' 'src/WebApp/Program.cs'
+```
+
+- **E-149** (section 10), expect `src/Identity.API/Quickstart/Account/AccountController.cs:60`
+
+```text
+Select-String -LiteralPath 'src/Identity.API/Quickstart/Account/AccountController.cs' -SimpleMatch -CaseSensitive -Pattern '[ValidateAntiForgeryToken]'
+grep -nF -- '[ValidateAntiForgeryToken]' 'src/Identity.API/Quickstart/Account/AccountController.cs'
+```
+
+- **E-150** (section 10), expect `src/Identity.API/Quickstart/Account/AccountController.cs:95`
+
+```text
+Select-String -LiteralPath 'src/Identity.API/Quickstart/Account/AccountController.cs' -SimpleMatch -CaseSensitive -Pattern 'lockoutOnFailure: true'
+grep -nF -- 'lockoutOnFailure: true' 'src/Identity.API/Quickstart/Account/AccountController.cs'
+```
+
+- **E-151** (section 10), expect `src/Catalog.API/Program.cs:8`
+
+```text
+Select-String -LiteralPath 'src/Catalog.API/Program.cs' -SimpleMatch -CaseSensitive -Pattern 'new PhysicalFileProvider(Path.Combine('
+grep -nF -- 'new PhysicalFileProvider(Path.Combine(' 'src/Catalog.API/Program.cs'
+```
+
+- **E-152** (section 10), expect `src/Ordering.API/Application/Validations/CreateOrderCommandValidator.cs:11`
+
+```text
+Select-String -LiteralPath 'src/Ordering.API/Application/Validations/CreateOrderCommandValidator.cs' -SimpleMatch -CaseSensitive -Pattern 'RuleFor(command => command.CardNumber).NotEmpty().Length(12, 19);'
+grep -nF -- 'RuleFor(command => command.CardNumber).NotEmpty().Length(12, 19);' 'src/Ordering.API/Application/Validations/CreateOrderCommandValidator.cs'
+```
+
+- **E-153** (section 10), expect `src/eShop.ServiceDefaults/Extensions.cs:115`
+
+```text
+Select-String -LiteralPath 'src/eShop.ServiceDefaults/Extensions.cs' -SimpleMatch -CaseSensitive -Pattern 'if (app.Environment.IsDevelopment())'
+grep -nF -- 'if (app.Environment.IsDevelopment())' 'src/eShop.ServiceDefaults/Extensions.cs'
+```
+
+- **E-154** (section 16), expect `.github/workflows/pr-validation.yml:27`
+
+```text
+Select-String -LiteralPath '.github/workflows/pr-validation.yml' -SimpleMatch -CaseSensitive -Pattern 'run: dotnet build eShop.Web.slnf'
+grep -nF -- 'run: dotnet build eShop.Web.slnf' '.github/workflows/pr-validation.yml'
+```
+
+- **E-155** (section 16), expect `.github/workflows/playwright.yml:34`
+
+```text
+Select-String -LiteralPath '.github/workflows/playwright.yml' -SimpleMatch -CaseSensitive -Pattern 'run: npm run test:e2e'
+grep -nF -- 'run: npm run test:e2e' '.github/workflows/playwright.yml'
+```
+
+- **E-156** (section 16), expect `README.md:129`
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'aspire deploy'
+grep -nF -- 'aspire deploy' 'README.md'
+```
+
+- **E-157** (section 17), expect `README.md:23`
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'aspire --version'
+grep -nF -- 'aspire --version' 'README.md'
+```
+
+- **E-158** (section 17), expect `.github/workflows/pr-validation.yml:27`
+
+```text
+Select-String -LiteralPath '.github/workflows/pr-validation.yml' -SimpleMatch -CaseSensitive -Pattern 'run: dotnet build eShop.Web.slnf'
+grep -nF -- 'run: dotnet build eShop.Web.slnf' '.github/workflows/pr-validation.yml'
+```
+
+- **E-159** (section 17), expect `README.md:52`
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'aspire run'
+grep -nF -- 'aspire run' 'README.md'
+```
+
+- **E-160** (section 17), expect `README.md:83`
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'dotnet test --solution eShop.Web.slnf'
+grep -nF -- 'dotnet test --solution eShop.Web.slnf' 'README.md'
+```
+
+- **E-161** (section 9), expect `src/Ordering.API/Apis/OrdersApi.cs:27`
+
+```text
+Select-String -LiteralPath 'src/Ordering.API/Apis/OrdersApi.cs' -SimpleMatch -CaseSensitive -Pattern 'requestId == Guid.Empty'
+grep -nF -- 'requestId == Guid.Empty' 'src/Ordering.API/Apis/OrdersApi.cs'
+```
+
+- **E-162** (section 9), expect `src/Ordering.API/Apis/OrdersApi.cs:135`
+
+```text
+Select-String -LiteralPath 'src/Ordering.API/Apis/OrdersApi.cs' -SimpleMatch -CaseSensitive -Pattern 'return TypedResults.BadRequest("RequestId is missing.");'
+grep -nF -- 'return TypedResults.BadRequest("RequestId is missing.");' 'src/Ordering.API/Apis/OrdersApi.cs'
+```
+
+- **E-163** (section 9), expect `src/Ordering.API/Apis/OrdersApi.cs:74`
+
+```text
+Select-String -LiteralPath 'src/Ordering.API/Apis/OrdersApi.cs' -SimpleMatch -CaseSensitive -Pattern 'return TypedResults.Problem(detail: "Ship order failed to process.", statusCode: 500);'
+grep -nF -- 'return TypedResults.Problem(detail: "Ship order failed to process.", statusCode: 500);' 'src/Ordering.API/Apis/OrdersApi.cs'
+```
+
+- **E-164** (section 9), expect `src/eShop.AppHost/AppHost.cs:88`
+
+```text
+Select-String -LiteralPath 'src/eShop.AppHost/AppHost.cs' -SimpleMatch -CaseSensitive -Pattern 'bool useOllama = false;'
+grep -nF -- 'bool useOllama = false;' 'src/eShop.AppHost/AppHost.cs'
+```
+
+- **E-165** (section 9), expect `src/WebApp/Components/Chatbot/ChatState.cs:90`
+
+```text
+Select-String -LiteralPath 'src/WebApp/Components/Chatbot/ChatState.cs' -SimpleMatch -CaseSensitive -Pattern 'My apologies, but I encountered an unexpected error.'
+grep -nF -- 'My apologies, but I encountered an unexpected error.' 'src/WebApp/Components/Chatbot/ChatState.cs'
+```
+
+- **E-166** (section 9), expect `src/WebApp/Components/Chatbot/ChatState.cs:147`
+
+```text
+Select-String -LiteralPath 'src/WebApp/Components/Chatbot/ChatState.cs' -SimpleMatch -CaseSensitive -Pattern 'Unable to add an item to the cart. You must be logged in.'
+grep -nF -- 'Unable to add an item to the cart. You must be logged in.' 'src/WebApp/Components/Chatbot/ChatState.cs'
+```
+
+- **E-167** (section 9), expect `src/Ordering.API/Apis/OrdersApi.cs:45`
+
+```text
+Select-String -LiteralPath 'src/Ordering.API/Apis/OrdersApi.cs' -SimpleMatch -CaseSensitive -Pattern 'return TypedResults.Problem(detail: "Cancel order failed to process.", statusCode: 500);'
+grep -nF -- 'return TypedResults.Problem(detail: "Cancel order failed to process.", statusCode: 500);' 'src/Ordering.API/Apis/OrdersApi.cs'
+```
+
+- **E-168** (section 9), expect `src/Shared/MigrateDbContextExtensions.cs:54`
+
+```text
+Select-String -LiteralPath 'src/Shared/MigrateDbContextExtensions.cs' -SimpleMatch -CaseSensitive -Pattern 'throw;'
+grep -nF -- 'throw;' 'src/Shared/MigrateDbContextExtensions.cs'
+```
+
+- **E-169** (section 9), expect `src/WebhookClient/Endpoints/WebhookEndpoints.cs:28`
+
+```text
+Select-String -LiteralPath 'src/WebhookClient/Endpoints/WebhookEndpoints.cs' -SimpleMatch -CaseSensitive -Pattern 'return TypedResults.BadRequest("Invalid token");'
+grep -nF -- 'return TypedResults.BadRequest("Invalid token");' 'src/WebhookClient/Endpoints/WebhookEndpoints.cs'
+```
+
+- **E-170** (section 9), expect `src/Webhooks.API/Apis/WebHooksApi.cs:61`
+
+```text
+Select-String -LiteralPath 'src/Webhooks.API/Apis/WebHooksApi.cs' -SimpleMatch -CaseSensitive -Pattern 'return TypedResults.BadRequest($"Invalid grant URL: {request.GrantUrl}");'
+grep -nF -- 'return TypedResults.BadRequest($"Invalid grant URL: {request.GrantUrl}");' 'src/Webhooks.API/Apis/WebHooksApi.cs'
+```
+
+- **E-171** (section 9), expect `src/Webhooks.API/Apis/WebHooksApi.cs:32`
+
+```text
+Select-String -LiteralPath 'src/Webhooks.API/Apis/WebHooksApi.cs' -SimpleMatch -CaseSensitive -Pattern 'return TypedResults.NotFound($"Subscriptions {id} not found");'
+grep -nF -- 'return TypedResults.NotFound($"Subscriptions {id} not found");' 'src/Webhooks.API/Apis/WebHooksApi.cs'
+```
+
+- **E-172** (section 9), expect `src/Catalog.API/Apis/CatalogApi.cs:263`
+
+```text
+Select-String -LiteralPath 'src/Catalog.API/Apis/CatalogApi.cs' -SimpleMatch -CaseSensitive -Pattern 'var picture = pictureFileProvider.GetFileInfo(pictureFileName);'
+grep -nF -- 'var picture = pictureFileProvider.GetFileInfo(pictureFileName);' 'src/Catalog.API/Apis/CatalogApi.cs'
+```
+
+- **E-173** (section 9), expect `src/EventBusRabbitMQ/RabbitMQEventBus.cs:177`
+
+```text
+Select-String -LiteralPath 'src/EventBusRabbitMQ/RabbitMQEventBus.cs' -SimpleMatch -CaseSensitive -Pattern 'Even on exception we take the message off the queue.'
+grep -nF -- 'Even on exception we take the message off the queue.' 'src/EventBusRabbitMQ/RabbitMQEventBus.cs'
 ```
 <!-- /appdoc:generated appendix-a -->

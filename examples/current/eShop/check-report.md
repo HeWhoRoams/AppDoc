@@ -1,6 +1,6 @@
 # Check: PASS
 
-**Scope.** Run by AppDoc 2.7.0 (bundle 25b4b70e8137). This Check verifies **resolution and structure**: every Citation points to a real file and line inside the Target (see the Citation register), and every Evidence Register row's anchor text appears in the lines it cites. It does **not** judge whether a claim's wording follows from those lines; that is the source-to-claim audit, recorded in `evidence.jsonl`. A PASS is not an accuracy certification.
+**Scope.** Run by AppDoc 2.7.1 (bundle bf8cdbec967b). This Check verifies **resolution and structure**: every Citation points to a real file and line inside the Target (see the Citation register), and every Evidence Register row's anchor text appears in the lines it cites. It does **not** judge whether a claim's wording follows from those lines; that is the source-to-claim audit, recorded in `evidence.jsonl`. A PASS is not an accuracy certification.
 
 ## Audit exclusions
 
@@ -484,6 +484,7 @@ The audit record declares sections the audit did not cover:
 | 504 | `src/Webhooks.API/Apis/WebHooksApi.cs` | 32 | yes |
 | 504 | `src/Webhooks.API/Apis/WebHooksApi.cs` | 81 | yes |
 | 505 | `src/WebApp/Components/Chatbot/Chatbot.razor` | 50-62 | yes |
+| 505 | `src/eShop.AppHost/AppHost.cs` | 88 | yes |
 | 506 | `src/WebApp/Components/Chatbot/ChatState.cs` | 84-91 | yes |
 | 507 | `src/WebApp/Components/Chatbot/ChatState.cs` | 145-148 | yes |
 | 508 | `src/Catalog.API/Apis/CatalogApi.cs` | 258-267 | yes |
@@ -656,6 +657,7 @@ The audit record declares sections the audit did not cover:
 | 745 | `src/Shared/MigrateDbContextExtensions.cs` | 48-55 | yes |
 | 746 | `src/EventBusRabbitMQ/RabbitMQEventBus.cs` | 170-180 | yes |
 | 747 | `src/WebApp/Components/Chatbot/Chatbot.razor` | 50-62 | yes |
+| 747 | `src/eShop.AppHost/AppHost.cs` | 88 | yes |
 | 748 | `src/Catalog.API/Apis/CatalogApi.cs` | 294-305 | yes |
 | 749 | `src/Webhooks.API/Services/WebhooksSender.cs` | 32 | yes |
 | 755 | `.github/workflows/pr-validation.yml` | 27 | yes |
@@ -731,7 +733,7 @@ The audit record declares sections the audit did not cover:
 
 ## Verification
 
-**Source-to-claim audit:** performed (auditor: independent). 131 rows (16 superseded): 130 Supported, 0 Corrected, 0 Downgraded, 1 Answerable.
+**Source-to-claim audit:** performed (auditor: independent). 157 rows (16 superseded): 153 Supported, 3 Corrected, 0 Downgraded, 1 Answerable.
 
 | Section | IDs with a register row |
 |---|---|

@@ -404,7 +404,7 @@ Sessions use Flask's default signed cookie; the key is in `project/app.py:25` (v
 | Step | Procedure | Evidence |
 |---|---|---|
 | Build | None: nothing to compile; lint with flake8 and black runs in CI | `.github/workflows/main.yml:23-26` |
-| Test | `python -m pytest` in the CI job named `build` | `.github/workflows/main.yml:27-29` |
+| Test | `python -m pytest` in the CI job named `build` | `.github/workflows/main.yml:6`, `.github/workflows/main.yml:27-29` |
 | Deploy | Heroku with `git push heroku main`; the process is `gunicorn project.app:app` | `README.md:1083`, `Procfile:1` |
 | Upgrade | Unknown - see Open questions (Q-2) | Not shown in the repository |
 | Rollback | Unknown - see Open questions (Q-2) | Not shown in the repository |
@@ -452,7 +452,7 @@ No scheduled or background job exists in source; the only workflow trigger is a 
 | Prerequisites | Not applicable | `.` | No command is defined; the pinned runtime is `runtime.txt:1` and the CI Python matrix is `.github/workflows/main.yml:11` |
 | Restore dependencies | `pip install -r requirements.txt` | `.` | `.github/workflows/main.yml:22` |
 | Build | Not applicable | `.` | `Procfile:1` runs the source directly with no compile step |
-| Run | `FLASK_APP=project/app.py python -m flask run -p 5001` | `.` | `README.md:216`, `README.md:1421`, `Procfile:1` |
+| Run | `FLASK_APP=project/app.py python -m flask run -p 5001` | `.` | `README.md:216`, `README.md:1263`, `Procfile:1` |
 | Test | `python -m pytest` | `.` | `.github/workflows/main.yml:29`, `tests/app_test.py:45` |
 
 Python 3.12.0 is pinned (`runtime.txt:1`) and 3.8 to 3.12 run in CI (`.github/workflows/main.yml:11`). Before the first run, create the tables with `python create_db.py` (`README.md:1421`); production uses `gunicorn project.app:app` (`Procfile:1`). `tests/app_test.py:45` checks `test.db` relative to the current directory, so run the tests from the Target root.
@@ -464,17 +464,21 @@ Python 3.12.0 is pinned (`runtime.txt:1`) and 3.8 to 3.12 run in CI (`.github/wo
 
 **Auditor:** independent. **Scope:** fresh agent with no writer notes; opened every cited span in the Target and read the surrounding handler, template, script, test and workflow code, including callers, to judge support rather than resolution; combined sections that allow only one live row per ref into one row with per-item notes; read the committed database files read-only with a SQLite client; generated blocks and diagrams were not audited
 
-Generated blocks written by AppDoc 2.7.0 (bundle 25b4b70e8137).
+Generated blocks written by AppDoc 2.7.1 (bundle bf8cdbec967b).
 
-Audited on 2026-11-23 with AppDoc 2.7.0 (bundle 25b4b70e8137).
+Audited on 2026-11-24 with AppDoc 2.7.1 (bundle bf8cdbec967b).
+
+`seal` writes `claim_sha` and `sealed_by` only on ID rows, workflow (7.x) and per-row section keys. Other section-level rows, Answerable rows and Dismissed rows are never sealed, so they carry no `sealed_by`. C17 `--strict` fails only on `sealed_by: upgrade`, never on an absent key.
 
 Register rows cover: 4 F-1–F-7 (7 of 7) · 6 UI-1–UI-3 (3 of 3) · 8.1 C-1 (1 of 1) · 8.3 X-1 (1 of 1) · 10.1 V-1–V-7 (7 of 7) · 14 Q-1–Q-3, Q-5, Q-6 (5 of 5) · 15 R-2–R-4, R-6–R-12 (10 of 12) · workflows 7.1–7.5 (5 of 5).
 
 Not covered by the audit: 2.1: generated scan-coverage block is owned by the Check and fill, not audited; 3.2: diagram was not compared with source beyond its caption; 12: diagrams were not compared with source beyond their captions; 16.6: generated configuration reference block is owned by the Check and fill, not audited; 16.7: generated scheduled-jobs block is owned by the Check and fill, not audited.
 
+Not audited: generated and opaque blocks (entry-points, scheduled-jobs, closed-questions, appendix-a)
+
 ### A.2 Coverage
 
-53 rows (7 superseded). Current: 40 Supported, 3 Corrected, 1 Downgraded, 1 Dismissed, 1 Answerable. As first audited: 40 Supported, 3 Corrected, 1 Downgraded, 1 Dismissed, 1 Answerable. Each Supported or Corrected row's anchor text was found in its cited lines by the Check.
+70 rows (7 superseded). Current: 55 Supported, 5 Corrected, 1 Downgraded, 1 Dismissed, 1 Answerable. As first audited: 55 Supported, 5 Corrected, 1 Downgraded, 1 Dismissed, 1 Answerable. Each Supported or Corrected row's anchor text was found in its cited lines by the Check.
 
 | Section | IDs with a register row |
 |---|---|
@@ -493,14 +497,14 @@ Not covered by the audit: 2.1: generated scan-coverage block is owned by the Che
 | 7 | 5 | 5 | 0 |
 | 14 | 5 | 5 | 1 |
 | candidates | 0 | 0 | 1 |
-| 10.2 | 1 | 1 | 0 |
-| 16.5 | 1 | 1 | 0 |
-| 17 | 1 | 1 | 0 |
+| 10.2 | 1 | 1 | 1 |
+| 16.5 | 3 | 3 | 1 |
+| 17 | 3 | 3 | 1 |
 | 4 | 5 | 5 | 2 |
 | 6 | 3 | 3 | 0 |
 | 8.1 | 1 | 1 | 0 |
 | 8.3 | 1 | 1 | 0 |
-| 9 | 1 | 1 | 0 |
+| 9 | 5 | 5 | 6 |
 | 15 | 5 | 5 | 5 |
 
 ### A.3 Register
@@ -560,6 +564,23 @@ Not covered by the audit: 2.1: generated scan-coverage block is owned by the Che
 | E-51 | 9 | Troubleshooting rows: Invalid username, Invalid password, logged in/out confirmations, Please log in with 401 and status 0 on delete, Flask default 401 on post, post flash missing, entry-deleted message with the entry still visible (delete of a missing id returns status 1 and flashes), delete status 0 with exception repr, empty-list text, search lists nothing | Downgraded | `project/app.py:80-83` `project/app.py:86` `project/app.py:95` `project/app.py:48-50` `project/app.py:66-67` `project/app.py:71-72` `project/templates/index.html:31-34` `project/app.py:106-109` `project/app.py:110-111` `project/templates/index.html:77` `project/app.py:119-121` | re-audit to cover each currently sampled row: Invalid password, Please log in with 401 and status 0, post flash missing, The entry was deleted with the entry still visible (a delete filters by id, so a missing id deletes zero rows, still commits and flashes), and empty-list text, all supported; still Downgraded because the unmarked SECRET_KEY escalation was downgraded to Inferred in the document |
 | E-52 | 15/R-4 | Make delete a POST with CSRF token and stop deleting on a plain click: delete is a GET route and the script deletes on click | Supported | `project/app.py:99` `project/static/main.js:8` |  |
 | E-53 | 15/R-6 | Add login rate limiting and MFA: the login route has a single username and password check and no limiter is in the dependencies | Supported | `project/app.py:75-88` `requirements.txt:1-8` | absence of a limiter library confirmed by reading all pinned dependencies |
+| E-54 | 10.2/authentication-on-state-changes | Authentication on state changes is Present: /add checks the session inline and /delete uses login_required | Supported | `project/app.py:66-67` `project/app.py:45-51` `project/app.py:99-101` `tests/app_test.py:80-88` | these are the only two state-changing routes (login and logout change only the session); the check is only the presence of the logged_in flag in a cookie signed with a source-constant key (V-2), and there is no CSRF token; test_delete_message asserts status 0 before login and 1 after, there is no test of /add without login |
+| E-55 | 16.5/build | No build step: nothing to compile; flake8 and black lint runs in CI | Supported | `.github/workflows/main.yml:23-26` `Procfile:1` | absence of a build step is shown only by the lack of any build script or compile step in the files read; black runs with --check so it verifies and does not reformat |
+| E-56 | 16.5/test | Tests run with python -m pytest in the CI job named build | Corrected | `.github/workflows/main.yml:6` `.github/workflows/main.yml:27-29` | command and step are supported at main.yml:27-29, but the job id build is at main.yml:6, which the row did not cite (workflow name is Test at line 1); cite added in the Narrative; CI trigger is every push (line 3) on a 3.8-3.12 matrix (line 11); no pytest config file exists in the Target |
+| E-57 | 16.5/deploy | Deploy is Heroku with git push heroku main; the process is gunicorn project.app:app | Supported | `README.md:1083` `Procfile:1` | README.md:1083 is a tutorial instruction, not a deploy script; no workflow step deploys (main.yml has only install, lint, test); whether any environment is actually deployed this way is Unknown (Q-1) |
+| E-58 | 17/restore-dependencies | Restore dependencies: pip install -r requirements.txt from the Target root | Supported | `.github/workflows/main.yml:22` `requirements.txt:1-8` | the CI step runs pip install --upgrade pip first (main.yml:21); README installs packages one at a time instead (README.md:138); requirements.txt sits at the repository root so working directory . is right |
+| E-59 | 17/run | Run: FLASK_APP=project/app.py python -m flask run -p 5001 from the Target root | Corrected | `README.md:216` `README.md:1263` `Procfile:1` `project/app.py:124-125` | command is supported at README.md:216 and again at 1263; the row also cited README.md:1421, which is python create_db.py, not the run command, so the cite was replaced with 1263 in the Narrative; Procfile:1 is the production gunicorn process; the env-var prefix is POSIX shell syntax; the command was not executed |
+| E-60 | 17/test | Test: python -m pytest from the Target root | Supported | `.github/workflows/main.yml:29` `tests/app_test.py:45` `tests/app_test.py:10-23` | test_database checks test.db relative to the current directory (app_test.py:45) so run from the root; the fixture itself builds an absolute test.db path (app_test.py:11-17); tests were not executed |
+| E-61 | 9/delete-returns-status-0-and-a-message-starting-with-the-exception-class | Delete returns status 0 with the repr of the exception as the message | Supported | `project/app.py:103-112` | the HTTP status stays 200 (jsonify default); the escalation to the database owner is advice not shown in the Target; the front-end ignores status 0 (main.js:15-20) so users see only a reload |
+| E-62 | 9/http-401-with-flask-s-default-unauthorized-response-when-posting | Posting without the logged_in session flag aborts with HTTP 401 (Flask default Unauthorized response) | Supported | `project/app.py:66-67` | body is Flask/Werkzeug default, not shown in the Target; the Same trigger as the row above Escalate cell is a reference to the key being a source constant (Inferred, app.py:25) |
+| E-63 | 9/new-entry-was-successfully-posted-missing-after-a-post | The post flash is queued before the redirect and shown on the next page render; if it is missing, check the database | Supported | `project/app.py:69-72` `project/templates/index.html:31-34` | get_flashed_messages is also rendered by search.html:33 and login.html:17, so the message appears on whichever of those pages renders first, not only /; a failed commit would raise before the flash (app.py:70-71) |
+| E-64 | 9/no-entries-yet-add-some | The text No entries yet. Add some! appears when the entries query is empty; check the database in use via DATABASE_URL | Supported | `project/templates/index.html:71-78` `project/app.py:26-31` `tests/app_test.py:52` | the text exists only in index.html (not search.html); which database is in use depends on DATABASE_URL (app.py:26), deployed value unknown (Q-3) |
+| E-65 | 9/please-log-in-with-http-401-and-json-status-0-on-delete | Delete without a session flag returns JSON status 0 and message Please log in. with HTTP 401; the check is whether the session cookie carries logged_in | Supported | `project/app.py:48-50` `project/app.py:99-101` `tests/app_test.py:82-84` | the Escalate cell is marked Inferred (key is a source constant, app.py:25) and the deployed key is not shown (Q-3); the same code also flashes Please log in. (line 49), which shows on a later page render; the test asserts status 0 but not the HTTP code |
+| E-66 | 9/invalid-username-on-the-login-page | Invalid username is shown when the typed username differs from the configured one; the only account source is the source constant | Supported | `project/app.py:80-81` `project/app.py:23` | configured value omitted; deployed value not shown (Q-3); only app.py:23 defines USERNAME and nothing reads it from the environment (app.py:26 reads only DATABASE_URL) |
+| E-67 | 9/invalid-password-on-the-login-page | Invalid password is shown when the username matches but the typed password differs from the configured one; fix is to retype or redeploy if the source value changed | Supported | `project/app.py:82-83` `project/app.py:24` | configured value omitted; the redeploy advice and any deployed override are not shown in the Target (Q-3); tests/app_test.py:55-64 cover the failure outcomes |
+| E-68 | 9/the-entry-was-deleted-with-the-entry-still-visible | Delete of a missing id deletes zero rows, still commits, returns status 1 and flashes The entry was deleted. | Supported | `project/app.py:106-109` | Query.delete does not raise for zero matches, which is SQLAlchemy behavior not shown in the Target; the commit-check escalation at app.py:107 is advice; a real commit failure would raise and return status 0 (app.py:110-111) with no flash |
+| E-69 | 9/you-were-logged-in-you-were-logged-out-shown | You were logged in / You were logged out flashes are normal confirmations after login success and logout | Supported | `project/app.py:85-87` `project/app.py:94-96` | informational row with nothing to escalate; slug chosen from the row text, not named by the plan |
+| E-70 | 9/search-page-lists-nothing | Search lists nothing when a query matches no entry or when no query is sent | Supported | `project/app.py:117-121` `project/templates/search.html:50-57` | matching is a case-insensitive substring test on title or text in the template (search.html:51-52); with no query the template gets no entries so the loop renders nothing; slug chosen from the row text, not named by the plan; search.html:54 uses entry.post_id, which the model lacks (models.py:5), so the heading id is empty (not part of this claim) |
 
 ### A.4 Verification commands
 
@@ -864,5 +885,124 @@ grep -nF -- 'methods=["GET"]' 'project/app.py'
 ```text
 Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'def login():'
 grep -nF -- 'def login():' 'project/app.py'
+```
+
+- **E-54** (section 10), expect `project/app.py:66`
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'if not session.get("logged_in"):'
+grep -nF -- 'if not session.get("logged_in"):' 'project/app.py'
+```
+
+- **E-55** (section 16), expect `.github/workflows/main.yml:26`
+
+```text
+Select-String -LiteralPath '.github/workflows/main.yml' -SimpleMatch -CaseSensitive -Pattern 'black --exclude=env --check .'
+grep -nF -- 'black --exclude=env --check .' '.github/workflows/main.yml'
+```
+
+- **E-56** (section 16), expect `.github/workflows/main.yml:29`
+
+```text
+Select-String -LiteralPath '.github/workflows/main.yml' -SimpleMatch -CaseSensitive -Pattern 'python -m pytest'
+grep -nF -- 'python -m pytest' '.github/workflows/main.yml'
+```
+
+- **E-57** (section 16), expect `Procfile:1`
+
+```text
+Select-String -LiteralPath 'Procfile' -SimpleMatch -CaseSensitive -Pattern 'web: gunicorn project.app:app'
+grep -nF -- 'web: gunicorn project.app:app' 'Procfile'
+```
+
+- **E-58** (section 17), expect `.github/workflows/main.yml:22`
+
+```text
+Select-String -LiteralPath '.github/workflows/main.yml' -SimpleMatch -CaseSensitive -Pattern 'pip install -r requirements.txt'
+grep -nF -- 'pip install -r requirements.txt' '.github/workflows/main.yml'
+```
+
+- **E-59** (section 17), expect `README.md:216`
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern 'FLASK_APP=project/app.py python -m flask run -p 5001'
+grep -nF -- 'FLASK_APP=project/app.py python -m flask run -p 5001' 'README.md'
+```
+
+- **E-60** (section 17), expect `.github/workflows/main.yml:29`
+
+```text
+Select-String -LiteralPath '.github/workflows/main.yml' -SimpleMatch -CaseSensitive -Pattern 'python -m pytest'
+grep -nF -- 'python -m pytest' '.github/workflows/main.yml'
+```
+
+- **E-61** (section 9), expect `project/app.py:111`
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'result = {"status": 0, "message": repr(e)}'
+grep -nF -- 'result = {"status": 0, "message": repr(e)}' 'project/app.py'
+```
+
+- **E-62** (section 9), expect `project/app.py:67`
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'abort(401)'
+grep -nF -- 'abort(401)' 'project/app.py'
+```
+
+- **E-63** (section 9), expect `project/app.py:71`
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'flash("New entry was successfully posted")'
+grep -nF -- 'flash("New entry was successfully posted")' 'project/app.py'
+```
+
+- **E-64** (section 9), expect `project/templates/index.html:77`
+
+```text
+Select-String -LiteralPath 'project/templates/index.html' -SimpleMatch -CaseSensitive -Pattern '<li><em>No entries yet. Add some!</em></li>'
+grep -nF -- '<li><em>No entries yet. Add some!</em></li>' 'project/templates/index.html'
+```
+
+- **E-65** (section 9), expect `project/app.py:50`
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'return jsonify({"status": 0, "message": "Please log in."}), 401'
+grep -nF -- 'return jsonify({"status": 0, "message": "Please log in."}), 401' 'project/app.py'
+```
+
+- **E-66** (section 9), expect `project/app.py:81`
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'error = "Invalid username"'
+grep -nF -- 'error = "Invalid username"' 'project/app.py'
+```
+
+- **E-67** (section 9), expect `project/app.py:83`
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'error = "Invalid password"'
+grep -nF -- 'error = "Invalid password"' 'project/app.py'
+```
+
+- **E-68** (section 9), expect `project/app.py:106`
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'db.session.query(models.Post).filter_by(id=new_id).delete()'
+grep -nF -- 'db.session.query(models.Post).filter_by(id=new_id).delete()' 'project/app.py'
+```
+
+- **E-69** (section 9), expect `project/app.py:95`
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'flash("You were logged out")'
+grep -nF -- 'flash("You were logged out")' 'project/app.py'
+```
+
+- **E-70** (section 9), expect `project/app.py:119`
+
+```text
+Select-String -LiteralPath 'project/app.py' -SimpleMatch -CaseSensitive -Pattern 'if query:'
+grep -nF -- 'if query:' 'project/app.py'
 ```
 <!-- /appdoc:generated appendix-a -->

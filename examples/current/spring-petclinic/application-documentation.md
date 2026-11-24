@@ -486,7 +486,7 @@ No questions were closed by the audit.
 
 ### 15.1 Coverage summary
 
-This document verified from source: <!-- appdoc:count F -->13<!-- /appdoc:count --> functional rows, <!-- appdoc:count V -->6<!-- /appdoc:count --> findings and the schema, build and CI files named in section 2.1 (`pom.xml:1-10`). It did not run the application, inspect static assets, other message bundles or deployed environments. An independent audit with delta passes covered the planned IDs, and its findings were applied to this Narrative by hand; the evidence register holds <!-- appdoc:count rows -->61<!-- /appdoc:count --> live rows, and Appendix A gives the audit state and counts (`docs/appdoc/evidence.jsonl:1`). A reader must confirm the unknowns in section 14, in particular Q-2 and Q-6, before relying on the severity of V-1 and V-3.
+This document verified from source: <!-- appdoc:count F -->13<!-- /appdoc:count --> functional rows, <!-- appdoc:count V -->6<!-- /appdoc:count --> findings and the schema, build and CI files named in section 2.1 (`pom.xml:1-10`). It did not run the application, inspect static assets, other message bundles or deployed environments. An independent audit with delta passes covered the planned IDs, and its findings were applied to this Narrative by hand; the evidence register holds <!-- appdoc:count rows -->80<!-- /appdoc:count --> live rows, and Appendix A gives the audit state and counts (`docs/appdoc/evidence.jsonl:1`). A reader must confirm the unknowns in section 14, in particular Q-2 and Q-6, before relying on the severity of V-1 and V-3.
 
 ## 16. Operations Runbook
 
@@ -573,7 +573,7 @@ No scheduled jobs exist in application source; the Facts list <!-- appdoc:count 
 | Restore dependencies | Not applicable | `.` | The build resolves dependencies itself and CI has no separate restore step: `.github/workflows/maven-build.yml:28-29` |
 | Build | `./mvnw -B verify` | `.` | `.github/workflows/maven-build.yml:29` |
 | Run | `./mvnw spring-boot:run` | `.` | `README.md:28` |
-| Test | `./gradlew build` | `.` | `.github/workflows/gradle-build.yml:31` |
+| Test | `./gradlew build` | `.` | The README defines no test command; CI runs the tests inside this full build: `.github/workflows/gradle-build.yml:31` |
 
 The Gradle equivalent of the run command is `./gradlew bootRun` (`README.md:33`). Both CI build commands compile, run checkstyle and format validation, and run the tests (`pom.xml:205-247`, `build.gradle:61-62`, `build.gradle:70-73`). The application then listens on port 8080 (`README.md:36`). Tests that need Docker are skipped when Docker is unavailable (`src/test/java/org/springframework/samples/petclinic/MySqlIntegrationTests.java:43`).
 
@@ -584,17 +584,21 @@ The Gradle equivalent of the run command is `./gradlew bootRun` (`README.md:33`)
 
 **Auditor:** independent. **Scope:** Each planned claim was read against its cited lines and then traced through the code that controls the result: callers, templates, configuration, schema scripts, workflows and tests. Only files inside the Target were opened. The auditor had no writer notes and did not build or run the application.
 
-Generated blocks written by AppDoc 2.7.0 (bundle 25b4b70e8137).
+Generated blocks written by AppDoc 2.7.1 (bundle bf8cdbec967b).
 
-Audited on 2026-11-23 with AppDoc 2.7.0 (bundle 25b4b70e8137).
+Audited on 2026-11-24 with AppDoc 2.7.1 (bundle bf8cdbec967b).
+
+`seal` writes `claim_sha` and `sealed_by` only on ID rows, workflow (7.x) and per-row section keys. Other section-level rows, Answerable rows and Dismissed rows are never sealed, so they carry no `sealed_by`. C17 `--strict` fails only on `sealed_by: upgrade`, never on an absent key.
 
 Register rows cover: 4 F-1–F-13 (13 of 13) · 6 UI-1–UI-9 (9 of 9) · 8.1 C-1–C-4 (4 of 4) · 8.3 X-1 (1 of 1) · 10.1 V-1–V-6 (6 of 6) · 14 Q-1–Q-6 (6 of 6) · 15 R-1–R-4, R-7, R-8, R-5, R-6, R-9 (9 of 9) · workflows 7.1–7.9 (9 of 9).
 
 Not covered by the audit: 2.1: generated scan coverage block; 3.2: diagram not audited; 4: generated entry point list block only; the sampled feature rows were audited; 12: diagrams not audited; 16.6: generated configuration reference block; 16.7: generated scheduled jobs block.
 
+Not audited: generated and opaque blocks (entry-points, scheduled-jobs, closed-questions, appendix-a)
+
 ### A.2 Coverage
 
-87 rows (26 superseded). Current: 61 Supported, 0 Corrected, 0 Downgraded. As first audited: 52 Supported, 8 Corrected, 1 Downgraded. Each Supported or Corrected row's anchor text was found in its cited lines by the Check.
+106 rows (26 superseded). Current: 79 Supported, 0 Corrected, 1 Downgraded. As first audited: 70 Supported, 8 Corrected, 2 Downgraded. Each Supported or Corrected row's anchor text was found in its cited lines by the Check.
 
 | Section | IDs with a register row |
 |---|---|
@@ -613,14 +617,14 @@ Not covered by the audit: 2.1: generated scan coverage block; 3.2: diagram not a
 | 7 | 9 | 9 | 0 |
 | 14 | 6 | 6 | 0 |
 | candidates | 0 | 0 | 0 |
-| 10.2 | 1 | 1 | 0 |
-| 16.5 | 1 | 1 | 0 |
-| 17 | 1 | 1 | 0 |
+| 10.2 | 2 | 2 | 1 |
+| 16.5 | 3 | 3 | 1 |
+| 17 | 3 | 3 | 1 |
 | 4 | 5 | 5 | 8 |
 | 6 | 5 | 5 | 4 |
 | 8.1 | 4 | 4 | 0 |
 | 8.3 | 1 | 1 | 0 |
-| 9 | 1 | 1 | 0 |
+| 9 | 5 | 5 | 7 |
 | 15 | 5 | 5 | 4 |
 
 ### A.3 Register
@@ -714,6 +718,25 @@ Not covered by the audit: 2.1: generated scan coverage block; 3.2: diagram not a
 | E-85 | 15/R-6 | Remove or protect the /oups demo route and its menu link (addresses V-6) | Supported | `src/main/java/org/springframework/samples/petclinic/system/CrashController.java:31-35` `src/main/resources/templates/fragments/layout.html:56-57` | Premise verified: the route and the menu link exist. Recommendation is judgement |
 | E-86 | 9 | Troubleshooting matrix, every row: unknown owner error page; pet pages; visit Pet with id not found; Pet form is already in use; Pet form invalid date; Visit form date in the future; Owner telephone message; Owner form no banner; Pet type fails to parse; /oups Expected text; Duplicate pet name error page on MySQL | Downgraded (superseded by E-87) | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:68-69` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:80-81` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:182-183` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:70` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:84` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:111-118` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:202-205` `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:72` `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:100-102` `src/main/java/org/springframework/samples/petclinic/owner/Owner.java:62-64` `src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java:59` `src/main/java/org/springframework/samples/petclinic/system/CrashController.java:33-34` `src/main/resources/messages/messages.properties:4` `src/main/resources/messages/messages.properties:8` `src/main/resources/messages/messages.properties:9` `src/main/resources/messages/messages.properties:34` `src/main/resources/db/mysql/schema.sql:47` | Supersedes E-77. All eleven rows checked. Rows 1 to 10 are supported: owner and pet and visit exceptions are thrown at the cited lines with the inclusion condition and Inferred default stated; duplicate resolves to messages.properties:4; typeMismatch.birthDate and typeMismatch.visitDate are defined at messages.properties:8 and 9; telephone.invalid is defined at messages.properties:34; the parse error is thrown at PetTypeFormatter.java:59; the flash is lost per V-5. Row 11 (Duplicate pet name produces an error page on MySQL, response 'The constraint-name match fails on MySQL') states as fact something that depends on MySQL's own violation message lacking the constraint name; the source shows only that the MySQL constraint is unnamed (schema.sql:47) and that the match is on message text (PetController.java:202-205). V-4 and 7.4 mark this Inferred; this row does not. Mark it Inferred |
 | E-87 | 9 | Troubleshooting matrix, every row: unknown owner error page; pet pages; visit Pet with id not found; Pet form is already in use; Pet form invalid date; Visit form date in the future; Owner telephone message; Owner form no banner; Pet type fails to parse; /oups Expected text; Duplicate pet name error page on MySQL, now marked Inferred | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:68-69` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:80-81` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:182-183` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:70` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:84` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:111-118` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:202-205` `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:72` `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:100-102` `src/main/java/org/springframework/samples/petclinic/owner/Owner.java:62-64` `src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java:59` `src/main/java/org/springframework/samples/petclinic/system/CrashController.java:33-34` `src/main/resources/messages/messages.properties:4` `src/main/resources/messages/messages.properties:8` `src/main/resources/messages/messages.properties:9` `src/main/resources/messages/messages.properties:34` `src/main/resources/db/mysql/schema.sql:47` | Supersedes E-86, which was Downgraded because the MySQL row stated an inference as fact. The row is now marked Inferred and cites the unnamed constraint (schema.sql:47) and the message-text match (PetController.java:202-205), which matches the source. The other ten rows were re-read against the current document and still hold as recorded in E-86; the MySQL message content itself remains unverified, which is why Inferred is correct |
+| E-88 | 10.2/input-validation | Input validation is Present: Owner bean constraints (address, city, 10-digit telephone), PetValidator on pet forms, and a visit date-after-today check | Supported | `src/main/java/org/springframework/samples/petclinic/owner/Owner.java:52-65` `src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java:38-59` `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:100-102` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:78` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:96` | Callers checked: @Valid is on the owner create and update handlers (OwnerController.java:78, 154), pet create and update (PetController.java:108, 145) and the visit handler (VisitController.java:98), and PetController.java:96 installs PetValidator as the pet binder validator. The owner search handler has no @Valid. Validation is server-side field checks only; it is not a defence against injection or any control beyond these forms, and that the Hibernate Validator messages render is framework behavior not verified |
+| E-89 | 10.2/mass-assignment-guard-on-id | Mass-assignment guard on id is Present: setDisallowedFields(id, *.id) in OwnerController, PetController (owner and pet binders) and VisitController | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:59-62` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:89-98` `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:51-54` | All three controllers that bind form objects were read; each call sits in an @InitBinder method. Only the id field is guarded; other fields of Owner, Pet and Visit remain bindable by design. The pet form still posts a hidden id input (createOrUpdatePetForm.html:12) which the binder ignores, the pet being loaded by path id; Spring DataBinder behavior of disallowed fields is framework behavior not run |
+| E-90 | 16.5/build | Build is ./mvnw -B verify in CI (Maven workflow) or ./gradlew build (Gradle workflow) | Supported | `.github/workflows/maven-build.yml:28-29` `.github/workflows/gradle-build.yml:30-31` | Both workflow steps read in full (checkout, JDK 17 setup, then the build command). That these run on CI is from the workflow files only; which one is the project's official build, and whether either is run for releases, is not stated in the repository |
+| E-91 | 16.5/test | Tests run inside the same CI build commands (no separate test step) | Supported | `.github/workflows/maven-build.yml:29` `.github/workflows/gradle-build.yml:31` `build.gradle:61-62` | Neither workflow has a separate test step (both files read in full). That mvn verify and gradle build include the test phase is tool convention, not shown in the cited lines; searched pom.xml and build.gradle for skip, surefire and failsafe settings and found none that disable tests. Tests that need Docker are skipped when it is unavailable (MySqlIntegrationTests.java:43), so a CI run without Docker would pass without them |
+| E-92 | 16.5/deploy | The deploy-and-test-cluster workflow applies k8s/ to a throwaway Kind cluster; a production deploy is Unknown | Supported | `.github/workflows/deploy-and-test-cluster.yml:20-26` `.github/workflows/deploy-and-test-cluster.yml:1-12` | The workflow triggers only on pushes and pull requests to main that change k8s/**, creates a Kind cluster with helm/kind-action and then waits for pods (lines 27-30); it deploys the manifests (with whatever image they name), not an image built from this checkout. No other workflow, script or README step deploys anywhere (searched .github and README.md), which supports Unknown for production |
+| E-93 | 17/build | Build step: ./mvnw -B verify from the repository root | Supported | `.github/workflows/maven-build.yml:29` `pom.xml:205-247` | mvnw exists in the repository root (listed). README.md does not document a build command; this command is the CI one, and -B (batch mode) is a CI convenience. The verify lifecycle running tests and checkstyle is tool convention plus the plugin executions at pom.xml:205-247; not run |
+| E-94 | 17/run | Run step: ./mvnw spring-boot:run from the repository root; Gradle equivalent ./gradlew bootRun | Supported | `README.md:28` `README.md:33` `README.md:36` | README.md:25-34 gives both commands and README.md:36 the URL on port 8080. The default profile uses the h2 database (application.properties:2); not run. The port 8080 default is Spring Boot's and no server.port setting exists in application.properties |
+| E-95 | 17/test | Test step: ./gradlew build from the repository root | Downgraded | `.github/workflows/gradle-build.yml:31` `build.gradle:61-62` | The repository defines no test-only command: README.md has none and the only CI test execution is inside the two build commands. ./gradlew build does run the Gradle test task (build.gradle:61-62 configures JUnit Platform) but also assembles, runs checkstyle and format checks, so it is a full build rather than a test command; ./mvnw -B verify (Build row) is the equivalent Maven path. Row kept as a CI-derived command, not as a documented local test command; not run |
+| E-96 | 9/error-page-when-booking-a-visit-for-a-pet-the-owner-does-not-have-the-text-pet-with-id-not-found-for-owner-appears-only-if-error-message-inclusion-is-enabled | Booking a visit for a pet the owner does not have throws 'Pet with id ... not found for owner'; the text shows only if error message inclusion is enabled | Supported | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:71-74` `src/main/resources/templates/error.html:18` `src/main/resources/application.properties:1-29` `src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java:51` | The narrative cites VisitController.java:72 (the throw statement start; the message continues on line 73). The throw is in the @ModelAttribute loader at VisitController.java:64-74, which runs for GET and POST of the visit form; error.html:18 renders ${message}. Default omission of the message text is Spring Boot behavior outside the repository (Inferred, as the document states); searched src/main, src/test, k8s and docker-compose.yml for include-message and found it only at CrashControllerIntegrationTests.java:51 (a test). Not run |
+| E-97 | 9/owner-form-shows-a-telephone-message | Owner form shows a telephone message when the telephone is not exactly 10 digits (bean validation message telephone.invalid) | Supported | `src/main/java/org/springframework/samples/petclinic/owner/Owner.java:62-64` `src/main/resources/messages/messages.properties:34` | The narrative cell cites only Owner.java:62-64; the displayed text 'Telephone must be a 10-digit number' is at messages.properties:34 (not cited in the cell, the key matches). A blank telephone also fails @NotBlank (Owner.java:63), so a second message can show. @Valid on the owner handlers is at OwnerController.java:78 and 154. Interpolation of {telephone.invalid} through the message bundle is Spring Boot validator wiring not verified |
+| E-98 | 9/pet-form-shows-an-invalid-date | Pet form shows 'invalid date' when the birth date is after today (code typeMismatch.birthDate) | Supported | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:115-118` `src/main/resources/messages/messages.properties:8` | Cited lines are the create handler; the update handler repeats the check at PetController.java:158-161. The same message code is also what Spring raises for a birth date that cannot be parsed, which the type=date input (inputField.html) normally prevents; the cell lists only the future-date cause. Not run |
+| E-99 | 9/pet-form-shows-is-already-in-use | Pet form shows 'is already in use' when the owner already has a pet of that name (case-insensitive); the unique index also rejects duplicates | Supported | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:111-113` `src/main/resources/messages/messages.properties:4` `src/main/resources/db/h2/schema.sql:55` `src/test/java/org/springframework/samples/petclinic/PetClinicConcurrencyTests.java:87` | Case-insensitivity comes from Owner.java:147-157 (equalsIgnoreCase). Cited lines are the create handler; the update handler repeats the check at PetController.java:151-155. The text shown is the bundle value 'is already in use' (messages.properties:4, matched by the concurrency test) rather than the code's default 'already exists'; message-code resolution order is Spring behavior not run. The database index is case-sensitive in H2 and was not tested |
+| E-100 | 9/same-error-page-from-the-pet-pages-message-text-only-if-inclusion-is-enabled | PetController throws for an unknown owner, giving the same error page; message text only if inclusion is enabled | Supported | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:70` `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:84` `src/main/resources/application.properties:1-29` `src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java:51` | Lines 70 and 84 are the findOwner and findPet loaders. The cell's check 'confirm owner id and pet id' goes beyond the throw: an unknown pet id for a known owner does not throw (Owner.getPet(Integer) returns null, Owner.java:129-139); only the owner id is verified to cause this page. Default omission of the message text is Spring Boot behavior outside the repository (Inferred, as the document states); searched src/main, src/test, k8s and docker-compose.yml for include-message and found it only at CrashControllerIntegrationTests.java:51 (a test). Not run |
+| E-101 | 9/error-page-after-opening-or-editing-an-unknown-owner-the-text-owner-not-found-with-id-appears-only-if-error-message-inclusion-is-enabled | Unknown owner id throws IllegalArgumentException 'Owner not found with id:' and the error page shows the text only if inclusion is enabled | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:68-69` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:182-183` `src/main/resources/templates/error.html:18` `src/main/resources/application.properties:1-29` `src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java:51` | Narrative cites OwnerController.java:68-69 (findOwner, used by edit) and 182-183 (showOwner); both throw. Default omission of the message text is Spring Boot behavior outside the repository (Inferred, as the document states); include-message appears only at CrashControllerIntegrationTests.java:51 (a test). Not run |
+| E-102 | 9/owner-form-re-shown-with-no-banner | On owner form validation errors the error flash is set but the form view is returned, so no banner shows | Supported | `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:80-81` `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:157-158` `src/main/resources/templates/owners/ownerDetails.html:13` | Same as V-5 (E-63). The error banner exists only in ownerDetails.html:13 (grep of templates), not in the create/update form. Flash-needs-redirect is framework behavior not run; the narrative cell cites only the create handler (update at 157-158) |
+| E-103 | 9/visit-form-says-the-date-must-be-in-the-future | Visit form shows 'Visit date must be in the future' when the date is not after today | Supported | `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:100-102` `src/main/resources/messages/messages.properties:9` | Code typeMismatch.visitDate resolves to messages.properties:9; check is not-after-today, matching the cell. Message-code resolution is Spring behavior not run |
+| E-104 | 9/pet-type-fails-to-parse | Pet type formatter throws ParseException 'type not found:' when the submitted type name does not exist | Supported | `src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java:59` | The throw follows a loop over findPetTypes (PetTypeFormatter.java:50-58). How the ParseException surfaces to the user (binding error vs error page) is framework behavior not verified; the select-based form normally sends valid names |
+| E-105 | 9/error-page-after-opening-oups-it-shows-expected-controller-used-to-showcase-what-happens-when-an-exception-is-thrown-only-if-error-message-inclusion-is-enabled | /oups intentionally throws a RuntimeException; the Expected text shows only if inclusion is enabled | Supported | `src/main/java/org/springframework/samples/petclinic/system/CrashController.java:33-34` `src/main/resources/application.properties:1-29` `src/test/java/org/springframework/samples/petclinic/system/CrashControllerIntegrationTests.java:51` | Message text is split across two string literals (lines 34). Default omission of the message text is Spring Boot behavior outside the repository (Inferred, as the document states); include-message appears only at CrashControllerIntegrationTests.java:51 (a test). Not run |
+| E-106 | 9/duplicate-pet-name-produces-an-error-page-on-mysql | Inferred: on MySQL the unnamed unique constraint does not match the unique_owner_pet_name check, so a racing duplicate gives an error page | Supported | `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:202-205` `src/main/resources/db/mysql/schema.sql:47` | Code matches the message against unique_owner_pet_name (line 204) and the MySQL schema line 47 names no constraint; MySQL's actual error text was not verified, hence Inferred (as the cell says). Same as V-4 |
 
 ### A.4 Verification commands
 
@@ -1144,5 +1167,131 @@ grep -nF -- 'public String triggerException()' 'src/main/java/org/springframewor
 ```text
 Select-String -LiteralPath 'src/main/resources/messages/messages.properties' -SimpleMatch -CaseSensitive -Pattern 'duplicate=is already in use'
 grep -nF -- 'duplicate=is already in use' 'src/main/resources/messages/messages.properties'
+```
+
+- **E-88** (section 10), expect `src/main/java/org/springframework/samples/petclinic/owner/Owner.java:64`
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/Owner.java' -SimpleMatch -CaseSensitive -Pattern '@Pattern(regexp = "\\d{10}", message = "{telephone.invalid}")'
+grep -nF -- '@Pattern(regexp = "\\d{10}", message = "{telephone.invalid}")' 'src/main/java/org/springframework/samples/petclinic/owner/Owner.java'
+```
+
+- **E-89** (section 10), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:61`
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'dataBinder.setDisallowedFields("id", "*.id");'
+grep -nF -- 'dataBinder.setDisallowedFields("id", "*.id");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-90** (section 16), expect `.github/workflows/maven-build.yml:29`
+
+```text
+Select-String -LiteralPath '.github/workflows/maven-build.yml' -SimpleMatch -CaseSensitive -Pattern 'run: ./mvnw -B verify'
+grep -nF -- 'run: ./mvnw -B verify' '.github/workflows/maven-build.yml'
+```
+
+- **E-91** (section 16), expect `.github/workflows/gradle-build.yml:31`
+
+```text
+Select-String -LiteralPath '.github/workflows/gradle-build.yml' -SimpleMatch -CaseSensitive -Pattern 'run: ./gradlew build'
+grep -nF -- 'run: ./gradlew build' '.github/workflows/gradle-build.yml'
+```
+
+- **E-92** (section 16), expect `.github/workflows/deploy-and-test-cluster.yml:25`
+
+```text
+Select-String -LiteralPath '.github/workflows/deploy-and-test-cluster.yml' -SimpleMatch -CaseSensitive -Pattern 'kubectl apply -f k8s/'
+grep -nF -- 'kubectl apply -f k8s/' '.github/workflows/deploy-and-test-cluster.yml'
+```
+
+- **E-93** (section 17), expect `.github/workflows/maven-build.yml:29`
+
+```text
+Select-String -LiteralPath '.github/workflows/maven-build.yml' -SimpleMatch -CaseSensitive -Pattern 'run: ./mvnw -B verify'
+grep -nF -- 'run: ./mvnw -B verify' '.github/workflows/maven-build.yml'
+```
+
+- **E-94** (section 17), expect `README.md:28`
+
+```text
+Select-String -LiteralPath 'README.md' -SimpleMatch -CaseSensitive -Pattern './mvnw spring-boot:run'
+grep -nF -- './mvnw spring-boot:run' 'README.md'
+```
+
+- **E-96** (section 9), expect `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:72`
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java' -SimpleMatch -CaseSensitive -Pattern 'throw new IllegalArgumentException('
+grep -nF -- 'throw new IllegalArgumentException(' 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java'
+```
+
+- **E-97** (section 9), expect `src/main/java/org/springframework/samples/petclinic/owner/Owner.java:64`
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/Owner.java' -SimpleMatch -CaseSensitive -Pattern '@Pattern(regexp = "\\d{10}", message = "{telephone.invalid}")'
+grep -nF -- '@Pattern(regexp = "\\d{10}", message = "{telephone.invalid}")' 'src/main/java/org/springframework/samples/petclinic/owner/Owner.java'
+```
+
+- **E-98** (section 9), expect `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:117`
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -CaseSensitive -Pattern 'result.rejectValue("birthDate", "typeMismatch.birthDate");'
+grep -nF -- 'result.rejectValue("birthDate", "typeMismatch.birthDate");' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
+```
+
+- **E-99** (section 9), expect `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:112`
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -CaseSensitive -Pattern 'result.rejectValue("name", "duplicate", "already exists");'
+grep -nF -- 'result.rejectValue("name", "duplicate", "already exists");' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
+```
+
+- **E-100** (section 9), expect `src/main/java/org/springframework/samples/petclinic/owner/PetController.java:70`
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java' -SimpleMatch -CaseSensitive -Pattern 'Owner owner = optionalOwner.orElseThrow(() -> new IllegalArgumentException('
+grep -nF -- 'Owner owner = optionalOwner.orElseThrow(() -> new IllegalArgumentException(' 'src/main/java/org/springframework/samples/petclinic/owner/PetController.java'
+```
+
+- **E-101** (section 9), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:183`
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern '"Owner not found with id: " + ownerId + ". Please ensure the ID is correct "'
+grep -nF -- '"Owner not found with id: " + ownerId + ". Please ensure the ID is correct "' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-102** (section 9), expect `src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java:80`
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java' -SimpleMatch -CaseSensitive -Pattern 'redirectAttributes.addFlashAttribute("error", "There was an error in creating the owner.");'
+grep -nF -- 'redirectAttributes.addFlashAttribute("error", "There was an error in creating the owner.");' 'src/main/java/org/springframework/samples/petclinic/owner/OwnerController.java'
+```
+
+- **E-103** (section 9), expect `src/main/java/org/springframework/samples/petclinic/owner/VisitController.java:101`
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java' -SimpleMatch -CaseSensitive -Pattern 'result.rejectValue("date", "typeMismatch.visitDate");'
+grep -nF -- 'result.rejectValue("date", "typeMismatch.visitDate");' 'src/main/java/org/springframework/samples/petclinic/owner/VisitController.java'
+```
+
+- **E-104** (section 9), expect `src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java:59`
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java' -SimpleMatch -CaseSensitive -Pattern 'throw new ParseException("type not found: " + text, 0);'
+grep -nF -- 'throw new ParseException("type not found: " + text, 0);' 'src/main/java/org/springframework/samples/petclinic/owner/PetTypeFormatter.java'
+```
+
+- **E-105** (section 9), expect `src/main/java/org/springframework/samples/petclinic/system/CrashController.java:33`
+
+```text
+Select-String -LiteralPath 'src/main/java/org/springframework/samples/petclinic/system/CrashController.java' -SimpleMatch -CaseSensitive -Pattern 'throw new RuntimeException('
+grep -nF -- 'throw new RuntimeException(' 'src/main/java/org/springframework/samples/petclinic/system/CrashController.java'
+```
+
+- **E-106** (section 9), expect `src/main/resources/db/mysql/schema.sql:47`
+
+```text
+Select-String -LiteralPath 'src/main/resources/db/mysql/schema.sql' -SimpleMatch -CaseSensitive -Pattern 'UNIQUE (owner_id, name)'
+grep -nF -- 'UNIQUE (owner_id, name)' 'src/main/resources/db/mysql/schema.sql'
 ```
 <!-- /appdoc:generated appendix-a -->

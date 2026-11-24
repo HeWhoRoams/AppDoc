@@ -1,6 +1,6 @@
 # Check: PASS
 
-**Scope.** Run by AppDoc 2.7.0 (bundle 25b4b70e8137). This Check verifies **resolution and structure**: every Citation points to a real file and line inside the Target (see the Citation register), and every Evidence Register row's anchor text appears in the lines it cites. It does **not** judge whether a claim's wording follows from those lines; that is the source-to-claim audit, recorded in `evidence.jsonl`. A PASS is not an accuracy certification.
+**Scope.** Run by AppDoc 2.7.1 (bundle bf8cdbec967b). This Check verifies **resolution and structure**: every Citation points to a real file and line inside the Target (see the Citation register), and every Evidence Register row's anchor text appears in the lines it cites. It does **not** judge whether a claim's wording follows from those lines; that is the source-to-claim audit, recorded in `evidence.jsonl`. A PASS is not an accuracy certification.
 
 ## Audit exclusions
 
@@ -371,6 +371,7 @@ Advisory only; this is not a problem.
 | 400 | `project/app.py` | 25 | yes |
 | 406 | `.github/workflows/main.yml` | 23-26 | yes |
 | 407 | `.github/workflows/main.yml` | 27-29 | yes |
+| 407 | `.github/workflows/main.yml` | 6 | yes |
 | 408 | `Procfile` | 1 | yes |
 | 408 | `README.md` | 1083 | yes |
 | 413 | `project/app.py` | 23-25 | yes |
@@ -393,7 +394,7 @@ Advisory only; this is not a problem.
 | 453 | `.github/workflows/main.yml` | 22 | yes |
 | 454 | `Procfile` | 1 | yes |
 | 455 | `Procfile` | 1 | yes |
-| 455 | `README.md` | 1421 | yes |
+| 455 | `README.md` | 1263 | yes |
 | 455 | `README.md` | 216 | yes |
 | 456 | `.github/workflows/main.yml` | 29 | yes |
 | 456 | `tests/app_test.py` | 45 | yes |
@@ -405,7 +406,7 @@ Advisory only; this is not a problem.
 
 ## Verification
 
-**Source-to-claim audit:** performed (auditor: independent). 46 rows (7 superseded): 40 Supported, 3 Corrected, 1 Downgraded, 1 Dismissed, 1 Answerable.
+**Source-to-claim audit:** performed (auditor: independent). 63 rows (7 superseded): 55 Supported, 5 Corrected, 1 Downgraded, 1 Dismissed, 1 Answerable.
 
 | Section | IDs with a register row |
 |---|---|

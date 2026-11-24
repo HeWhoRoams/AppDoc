@@ -1,6 +1,6 @@
 {
  "advisories": [],
- "doc_sha": "7e6eb805e7d5",
+ "doc_sha": "616be66196d2",
  "floor": {
   "fraction": "0.25",
   "minimum": 5
@@ -57,7 +57,8 @@
   },
   {
    "ids": [
-    "10.2"
+    "10.2/input-validation",
+    "10.2/mass-assignment-guard-on-id"
    ],
    "items": [
     "Input validation",
@@ -69,7 +70,9 @@
   },
   {
    "ids": [
-    "16.5"
+    "16.5/build",
+    "16.5/test",
+    "16.5/deploy"
    ],
    "items": [
     "Build",
@@ -82,7 +85,9 @@
   },
   {
    "ids": [
-    "17"
+    "17/build",
+    "17/run",
+    "17/test"
    ],
    "items": [
     "Build",
@@ -95,11 +100,11 @@
   },
   {
    "ids": [
+    "F-1",
+    "F-2",
+    "F-4",
     "F-6",
-    "F-8",
-    "F-10",
-    "F-11",
-    "F-12"
+    "F-11"
    ],
    "k": 5,
    "mode": "sampled",
@@ -108,11 +113,11 @@
   },
   {
    "ids": [
-    "UI-1",
     "UI-3",
     "UI-4",
-    "UI-6",
-    "UI-9"
+    "UI-5",
+    "UI-7",
+    "UI-8"
    ],
    "k": 5,
    "mode": "sampled",
@@ -142,14 +147,18 @@
   },
   {
    "ids": [
-    "9"
+    "9/error-page-after-opening-or-editing-an-unknown-owner-the-text-owner-not-found-with-id-appears-only-if-error-message-inclusion-is-enabled",
+    "9/error-page-when-booking-a-visit-for-a-pet-the-owner-does-not-have-the-text-pet-with-id-not-found-for-owner-appears-only-if-error-message-inclusion-is-enabled",
+    "9/pet-form-shows-is-already-in-use",
+    "9/pet-form-shows-an-invalid-date",
+    "9/owner-form-re-shown-with-no-banner"
    ],
    "items": [
-    "Same error page from the pet pages (message text only if inclusion is enabled)",
-    "Visit form says the date must be in the future",
-    "Owner form shows a telephone message",
-    "Owner form re-shown with no banner",
-    "Pet type fails to parse"
+    "Error page after opening or editing an unknown owner (the text \"Owner not found with id:\" appears only if error message inclusion is enabled)",
+    "Error page when booking a visit for a pet the owner does not have (the text \"Pet with id ... not found for owner\" appears only if error message inclusion is enabled)",
+    "Pet form shows \"is already in use\"",
+    "Pet form shows an invalid date",
+    "Owner form re-shown with no banner"
    ],
    "k": 5,
    "mode": "sampled",
@@ -158,9 +167,9 @@
   },
   {
    "ids": [
-    "R-1",
     "R-3",
-    "R-5",
+    "R-4",
+    "R-7",
     "R-8",
     "R-9"
    ],

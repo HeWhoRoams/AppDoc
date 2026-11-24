@@ -1,6 +1,6 @@
 {
  "advisories": [],
- "doc_sha": "cc86d1ffc3e2",
+ "doc_sha": "8fda3ff57006",
  "floor": {
   "fraction": "0.25",
   "minimum": 5
@@ -53,7 +53,7 @@
   },
   {
    "ids": [
-    "10.2"
+    "10.2/authentication-on-state-changes"
    ],
    "items": [
     "Authentication on state changes"
@@ -64,7 +64,9 @@
   },
   {
    "ids": [
-    "16.5"
+    "16.5/build",
+    "16.5/test",
+    "16.5/deploy"
    ],
    "items": [
     "Build",
@@ -77,7 +79,9 @@
   },
   {
    "ids": [
-    "17"
+    "17/restore-dependencies",
+    "17/run",
+    "17/test"
    ],
    "items": [
     "Restore dependencies",
@@ -94,7 +98,7 @@
     "F-2",
     "F-4",
     "F-5",
-    "F-6"
+    "F-7"
    ],
    "k": 5,
    "mode": "sampled",
@@ -132,11 +136,15 @@
   },
   {
    "ids": [
-    "9"
+    "9/invalid-username-on-the-login-page",
+    "9/invalid-password-on-the-login-page",
+    "9/new-entry-was-successfully-posted-missing-after-a-post",
+    "9/the-entry-was-deleted-with-the-entry-still-visible",
+    "9/no-entries-yet-add-some"
    ],
    "items": [
+    "\"Invalid username\" on the login page",
     "\"Invalid password\" on the login page",
-    "\"Please log in.\" with HTTP 401 and JSON status 0 on delete",
     "\"New entry was successfully posted\" missing after a post",
     "\"The entry was deleted.\" with the entry still visible",
     "\"No entries yet. Add some!\""
@@ -151,8 +159,8 @@
     "R-2",
     "R-4",
     "R-6",
-    "R-8",
-    "R-9"
+    "R-10",
+    "R-12"
    ],
    "k": 5,
    "mode": "sampled",

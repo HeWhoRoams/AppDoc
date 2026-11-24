@@ -1,6 +1,6 @@
 {
  "advisories": [],
- "doc_sha": "1e5156451378",
+ "doc_sha": "6f95ae3d41fa",
  "floor": {
   "fraction": "0.25",
   "minimum": 5
@@ -74,7 +74,12 @@
   },
   {
    "ids": [
-    "10.2"
+    "10.2/tls-for-the-storefront",
+    "10.2/csrf-protection",
+    "10.2/account-lockout",
+    "10.2/catalog-picture-path-confinement",
+    "10.2/order-input-validation",
+    "10.2/health-endpoints-limited-to-development"
    ],
    "items": [
     "TLS for the storefront",
@@ -90,7 +95,9 @@
   },
   {
    "ids": [
-    "16.5"
+    "16.5/build",
+    "16.5/test",
+    "16.5/deploy"
    ],
    "items": [
     "Build",
@@ -103,7 +110,10 @@
   },
   {
    "ids": [
-    "17"
+    "17/prerequisites",
+    "17/build",
+    "17/run",
+    "17/test"
    ],
    "items": [
     "Prerequisites",
@@ -118,10 +128,10 @@
   {
    "ids": [
     "F-4",
-    "F-5",
+    "F-6",
     "F-8",
-    "F-10",
-    "F-16"
+    "F-9",
+    "F-14"
    ],
    "k": 5,
    "mode": "sampled",
@@ -130,12 +140,12 @@
   },
   {
    "ids": [
-    "UI-1",
-    "UI-8",
-    "UI-13",
-    "UI-18",
-    "UI-22",
-    "UI-23"
+    "UI-2",
+    "UI-4",
+    "UI-5",
+    "UI-7",
+    "UI-17",
+    "UI-21"
    ],
    "k": 6,
    "mode": "sampled",
@@ -146,8 +156,8 @@
    "ids": [
     "C-1",
     "C-2",
-    "C-4",
-    "C-5",
+    "C-3",
+    "C-6",
     "C-8"
    ],
    "k": 5,
@@ -157,10 +167,10 @@
   },
   {
    "ids": [
-    "X-1",
     "X-3",
     "X-6",
-    "X-9",
+    "X-8",
+    "X-11",
     "X-12"
    ],
    "k": 5,
@@ -170,14 +180,18 @@
   },
   {
    "ids": [
-    "9"
+    "9/cancel-order-failed-to-process",
+    "9/ship-order-failed-to-process",
+    "9/invalid-grant-url-when-subscribing",
+    "9/assistant-panel-says-it-is-not-switched-on",
+    "9/order-stays-in-one-status"
    ],
    "items": [
-    "Order API returns \"Empty GUID is not valid for request ID\"",
-    "\"RequestId is missing.\" on create",
-    "Webhook post answers \"Invalid token\"",
+    "\"Cancel order failed to process.\"",
+    "\"Ship order failed to process.\"",
     "\"Invalid grant URL\" when subscribing",
-    "Assistant panel says it is not switched on"
+    "Assistant panel says it is not switched on",
+    "Order stays in one status"
    ],
    "k": 5,
    "mode": "sampled",
@@ -186,10 +200,10 @@
   },
   {
    "ids": [
+    "R-2",
     "R-3",
-    "R-8",
     "R-9",
-    "R-14",
+    "R-10",
     "R-15",
     "R-18"
    ],
