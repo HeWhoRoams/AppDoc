@@ -46,7 +46,7 @@ PENDING: dict = {
     # --- 4D: guards
     # --- 4E: effective protection (T28.60-T28.66 landed; no entries left)
     # --- 4H: Check rules
-    "test_area_coverage_c22_fails_when_an_area_is_missing_from_4_1": ("T28.A1", "missing C22: the Check does not require every area in 4.1"),
+    # (T28.A1 landed: area-coverage is an ordinary regression test)
 }
 
 
@@ -1583,7 +1583,6 @@ class Slice1CheckRules(CorpusCase):
 
     def test_area_coverage_c22_fails_when_an_area_is_missing_from_4_1(self):
         r = self.case("area-coverage")
-        self.assertEqual(r.code, 0, "today's rules pass this document: only the new rule can fail it\n" + r.report)
         areas = [dtl(f).get("mvc_area_path") for f in r.facts_of("entry_point") if dtl(f).get("mvc_area_path")]
         need(areas, "mvc_area_path", "the area's entry points carry no mvc_area_path")
         need("C22" in r.rules(), "C22", "the Check does not require every area in 4.1")
@@ -1612,7 +1611,7 @@ class Slice1Registry(unittest.TestCase):
                 self.assertRegex(tb, r"^(tests\.test_corpus\.)?Missing: missing " + re.escape(m.group(1)),
                                  f"{name} ({task}) fails for another reason: {tb}")
                 checked += 1
-        self.assertGreaterEqual(checked, 1)
+        self.assertGreaterEqual(checked, 0)   # no entry left once T28.A1 landed: the loop then checks nothing
 
 
 def _apply_pending():
