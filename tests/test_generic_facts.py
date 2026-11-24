@@ -455,5 +455,180 @@ class ConfigRoleSplitTests(unittest.TestCase):
         self.assertIs(d["secret_location"], True)
 
 
+CSPROJ_WEB = """<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants);TRACE;DEBUG;STAGING_BUILD</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>RELEASE;$(UserMacro);not valid</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+</Project>
+"""
+
+CSPROJ_LEGACY_WINFORMS = """<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <DefineConstants>LEGACY</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+</Project>
+"""
+
+PUBXML = """<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <WebPublishMethod>MSDeploy</WebPublishMethod>
+    <LastUsedBuildConfiguration>Release</LastUsedBuildConfiguration>
+    <MSDeployServiceURL>https://deploy-user:hunter2@Web01.example.test:8172/msdeploy.axd?token=abc123</MSDeployServiceURL>
+    <UserName>deploy-user</UserName>
+    <Password>hunter2</Password>
+    <PublishUrl>C:\\publish\\site</PublishUrl>
+  </PropertyGroup>
+</Project>
+"""
+
+
+def _one(facts, kind):
+    got = [f for f in facts if f.kind == kind]
+    return got
+
+
+class ProjectFactsTests(unittest.TestCase):
+    def _project(self, path, text, **kw):
+        return list(generic.extract(path, text, **kw))
+
+    def test_web_sdk_project_fact(self):
+        (p,) = _one(self._project("src/App/App.csproj", CSPROJ_WEB), "project")
+        self.assertEqual((p.path, p.name, p.line, p.stack), ("src/App/App.csproj", "App", 1, "generic"))
+        d = p.detail_dict()
+        self.assertEqual((d["sdk"], d["kind"], d["web"], d["test"]), ("Microsoft.NET.Sdk.Web", "web", True, False))
+        self.assertNotIn("output_type", d)  # not declared, not guessed
+
+    def test_legacy_winforms_project_fact(self):
+        (p,) = _one(self._project("Tools/Desk.csproj", CSPROJ_LEGACY_WINFORMS, raw=CSPROJ_LEGACY_WINFORMS.encode()), "project")
+        d = p.detail_dict()
+        self.assertEqual((d["output_type"], d["kind"], d["web"], d["test"]), ("winexe", "winforms", False, False))
+        self.assertNotIn("sdk", d)
+        self.assertEqual(p.line, 2)
+
+    def test_project_kinds(self):
+        def kind(body, sdk="Microsoft.NET.Sdk"):
+            text = f'<Project Sdk="{sdk}">{body}</Project>'
+            return _one(self._project("X.csproj", text), "project")[0].detail_dict()
+        self.assertEqual(kind("<PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>")["kind"], "console")
+        self.assertEqual(kind("")["kind"], "library")
+        t = kind('<ItemGroup><PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0"/></ItemGroup>'
+                 '<PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>')
+        self.assertEqual((t["kind"], t["test"]), ("test", True))
+        for pkg in ("xunit", "NUnit", "MSTest.TestFramework", "NUnit3TestAdapter"):
+            self.assertTrue(kind(f'<ItemGroup><PackageReference Include="{pkg}"/></ItemGroup>')["test"], pkg)
+        self.assertTrue(kind("<PropertyGroup><IsTestProject>true</IsTestProject></PropertyGroup>")["test"])
+        w = kind('<ItemGroup><FrameworkReference Include="Microsoft.AspNetCore.App"/></ItemGroup>')
+        self.assertEqual((w["kind"], w["web"]), ("web", True))
+        self.assertTrue(kind('<ItemGroup><PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.9"/></ItemGroup>')["web"])
+        self.assertTrue(kind('<ItemGroup><Reference Include="System.Web.Mvc, Version=5.2.9.0"/></ItemGroup>')["web"])
+        self.assertTrue(kind("<PropertyGroup><ProjectTypeGuids>{349C5851-65DF-11DA-9384-00065B846F21};"
+                             "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids></PropertyGroup>")["web"])
+        self.assertEqual(kind("<PropertyGroup><UseWPF>true</UseWPF></PropertyGroup>")["kind"], "winforms")
+        self.assertEqual(kind("<PropertyGroup><OutputType>Weird</OutputType></PropertyGroup>")["output_type"], "other")
+        # a project that is neither a Web SDK nor has web references is not web
+        self.assertFalse(kind("")["web"])
+
+    def test_build_defines_per_configuration(self):
+        defs = _one(self._project("src/App/App.csproj", CSPROJ_WEB), "build_define")
+        by = {f.detail_dict()["config"]: f for f in defs}
+        self.assertEqual(sorted(by), ["Debug", "Release"])
+        dbg = by["Debug"].detail_dict()
+        self.assertEqual(dbg["symbols"], ["DEBUG", "STAGING_BUILD", "TRACE"])
+        self.assertIs(dbg["inherits"], True)
+        self.assertEqual(by["Debug"].line, 6)  # the DefineConstants start tag
+        rel = by["Release"].detail_dict()
+        self.assertEqual(rel["symbols"], ["RELEASE"])  # macros and non-identifiers are dropped
+        self.assertIs(rel["inherits"], False)
+
+    def test_unconditional_define_is_all_configurations(self):
+        (b,) = _one(self._project("D.csproj", CSPROJ_LEGACY_WINFORMS), "build_define")
+        self.assertEqual(b.detail_dict()["config"], "*")
+        self.assertEqual(b.detail_dict()["symbols"], ["LEGACY"])
+
+    def test_publish_profile_host_only(self):
+        facts = self._project("Web/Properties/PublishProfiles/Prod-Web01.pubxml", PUBXML)
+        (pp,) = _one(facts, "publish_profile")
+        d = pp.detail_dict()
+        self.assertEqual(pp.name, "Prod-Web01")
+        self.assertEqual((d["build_config"], d["method"], d["host"]), ("Release", "MSDeploy", "web01.example.test"))
+        blob = repr(pp)
+        for leak in ("deploy-user", "hunter2", "abc123", "8172", "msdeploy", "site\\"):
+            self.assertNotIn(leak, blob)
+
+    def test_publish_profile_hosts_and_filesystem(self):
+        def host(prop, value):
+            text = f"<Project><PropertyGroup><WebPublishMethod>FileSystem</WebPublishMethod><{prop}>{value}</{prop}></PropertyGroup></Project>"
+            (pp,) = _one(self._project("P.pubxml", text), "publish_profile")
+            return pp.detail_dict().get("host")
+        self.assertEqual(host("MSDeployServiceURL", "Web02"), "web02")
+        self.assertEqual(host("MSDeployServiceURL", "web02.example.test:8172"), "web02.example.test")
+        self.assertEqual(host("PublishUrl", "ftp://ftp.example.test/site"), "ftp.example.test")
+        self.assertEqual(host("PublishUrl", "\\\\fs01\\share\\app"), "fs01")
+        self.assertIsNone(host("PublishUrl", "C:\\inetpub\\site"))   # a local folder is not a host
+        self.assertIsNone(host("PublishUrl", "$(PublishDir)site"))
+
+    def test_pubxml_user_never_read(self):
+        self.assertEqual(self._project("Web/Properties/PublishProfiles/Prod.pubxml.user", PUBXML), [])
+        self.assertEqual(self._project("a/b.PubXml.User", PUBXML), [])
+
+    def test_filename_case_insensitive(self):
+        self.assertTrue(_one(self._project("A/APP.CSPROJ", CSPROJ_WEB), "project"))
+        self.assertTrue(_one(self._project("A/P/Prod.PUBXML", PUBXML), "publish_profile"))
+
+    def test_malformed_project_one_config_unparsed_dependencies_kept(self):
+        text = '<Project Sdk="Microsoft.NET.Sdk"><ItemGroup><PackageReference Include="Foo" Version="1.0"/></ItemGroup>'
+        facts = self._project("Bad.csproj", text)
+        (u,) = _one(facts, "config_unparsed")
+        self.assertEqual((u.detail_dict()["reason"], u.path, u.line), ("malformed", "Bad.csproj", None))
+        self.assertEqual(_one(facts, "project") + _one(facts, "build_define"), [])
+        self.assertEqual([f.name for f in _one(facts, "dependency")], ["Foo"])  # the regex dependency read still runs
+
+    def test_doctype_project_rejected_with_reason(self):
+        facts = self._project("D.csproj", '<!DOCTYPE Project [<!ENTITY a "b">]><Project/>')
+        self.assertEqual([f.detail_dict()["reason"] for f in _one(facts, "config_unparsed")], ["dtd"])
+
+    def test_raw_bytes_honoured_text_fallback_same_facts(self):
+        a = self._project("A.csproj", CSPROJ_WEB, raw=CSPROJ_WEB.encode("utf-8"))
+        b = self._project("A.csproj", CSPROJ_WEB)
+        c = self._project("A.csproj", CSPROJ_WEB, raw=b"\xef\xbb\xbf" + CSPROJ_WEB.encode("utf-8"))
+        self.assertEqual(a, b)
+        self.assertEqual(a, c)
+
+    def test_msbuild_property_names_case_insensitive_and_legacy_test_reference(self):
+        text = ('<Project><PropertyGroup><outputtype>Exe</outputtype><DEFINECONSTANTS>A1</DEFINECONSTANTS></PropertyGroup>'
+                '<ItemGroup><Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0"/>'
+                '</ItemGroup></Project>')
+        facts = self._project("T.csproj", text)
+        d = _one(facts, "project")[0].detail_dict()
+        self.assertEqual((d["output_type"], d["kind"], d["test"]), ("exe", "test", True))
+        self.assertEqual(_one(facts, "build_define")[0].detail_dict()["symbols"], ["A1"])
+        (pp,) = _one(self._project("P.pubxml", "<Project><PropertyGroup><publishUrl>\\\\fs01\\portal$</publishUrl>"
+                                               "</PropertyGroup></Project>"), "publish_profile")
+        self.assertEqual(pp.detail_dict()["host"], "fs01")
+
+    def test_facts_are_conformant(self):
+        from appdoc import facts as F
+        for path, text in (("A.csproj", CSPROJ_WEB), ("B.csproj", CSPROJ_LEGACY_WINFORMS),
+                           ("P/PublishProfiles/Prod.pubxml", PUBXML), ("Bad.csproj", "<Project>")):
+            for f in self._project(path, text):
+                self.assertIn(f.kind, F.KINDS)
+                self.assertLessEqual({k for k, _ in f.detail}, F.DETAIL_KEYS[f.kind], (path, f.kind))
+
+
 if __name__ == "__main__":
     unittest.main()

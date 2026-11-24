@@ -30,7 +30,11 @@ SAMPLES = os.path.join(os.path.dirname(__file__), "samples")
 
 # Kinds that stacks.generic.extract emits (it is not a registered Stack): exempt from per-stack capability checks.
 # A literal on purpose: adding a generic kind must be a deliberate edit here and in generic.GENERIC_KINDS.
-GENERIC_KINDS = frozenset({"config_key", "connection", "dependency", "file", "owner_file", "schema_object", "smell"})
+GENERIC_KINDS = frozenset({"build_define", "config_external", "config_key", "config_unparsed", "connection",
+                           "context_directive", "dependency", "file", "owner_file", "project", "publish_profile",
+                           "schema_object", "smell"})
+# Generic kinds declared above that no reader emits yet; each leaves this set with the task that adds its reader.
+GENERIC_KINDS_NOT_YET_EMITTED = frozenset({"config_external"})   # T28.32 (configSource, appSettings file=)
 
 
 def _extract(sample_dir: str) -> dict:
@@ -173,10 +177,14 @@ class ConformanceTests(unittest.TestCase):
 
     def test_generic_kinds_exempt(self):
         emitted = set()
-        for d in sorted(os.listdir(SAMPLES)):
-            if os.path.isdir(os.path.join(SAMPLES, d)):
-                emitted |= {f["kind"] for f in _extract(os.path.join(SAMPLES, d))["facts"] if f["stack"] == "generic"}
-        self.assertEqual(emitted, set(GENERIC_KINDS), "generic.extract emits a kind the literal does not list (or the reverse)")
+        targets = [os.path.join(SAMPLES, d) for d in sorted(os.listdir(SAMPLES))
+                   if os.path.isdir(os.path.join(SAMPLES, d))]
+        # a .NET project target (csproj, pubxml, a malformed project, context directives) has no stack sample
+        targets.append(os.path.join(os.path.dirname(__file__), "fixtures", "dotnet-project"))
+        for t in targets:
+            emitted |= {f["kind"] for f in _extract(t)["facts"] if f["stack"] == "generic"}
+        self.assertEqual(emitted, set(GENERIC_KINDS - GENERIC_KINDS_NOT_YET_EMITTED),
+                         "generic.extract emits a kind the literal does not list (or the reverse)")
         self.assertEqual(generic.GENERIC_KINDS, GENERIC_KINDS)
         for name in MODULES:  # owner_file is the generic reader's alone
             self.assertNotIn("owner_file", self._kinds_of(self._capabilities(name)), name)

@@ -139,6 +139,10 @@ class ReaderTests(unittest.TestCase):
         self.assertEqual(D.enum_value("compilation", "targetFramework", "4.8"), "other")
         self.assertEqual(D.enum_value("unknownElement", "mode", "off"), "other")
 
+    def test_element_text_is_stripped_and_includes_cdata(self):
+        doc = D.parse(b"<c><a>\n  Exe \n</a><b><![CDATA[ x<y ]]></b><!-- no --></c>")
+        self.assertEqual((doc.root.find("a").text, doc.root.find("b").text), ("Exe", "x<y"))
+
 
 if __name__ == "__main__":
     unittest.main()

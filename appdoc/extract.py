@@ -216,7 +216,7 @@ def _extract_file(root: str, sf: scan.SourceFile, detected: dict,
     owners = sorted(sid for sid, (st, _) in detected.items() if sf.ext in st.extensions)
     detail["stacks"] = owners
     facts = [F.Fact.make("file", "generic", sf.path, None, sf.path, **detail)]
-    found = list(generic.extract(sf.path, text, sib))
+    found = list(generic.extract(sf.path, text, sib, raw))
     for sid in owners:
         found.extend(detected[sid][0].extract(sf.path, text))
     found.extend(smells.extract(sf.path, text, owners))

@@ -42,6 +42,8 @@ class Node:
     xdt: dict
     line: int
     children: list = field(default_factory=list)
+    text: str = ""   # the element's own character data (CDATA included), stripped; a leaf value such as <OutputType>
+    text: str = ""   # the element's own character data (CDATA included), stripped; a leaf value such as <OutputType>
 
     def find(self, *path: str) -> "Node | None":
         """First descendant reached by following ``path`` names through first matching children."""
@@ -107,9 +109,14 @@ def parse(data: bytes, max_bytes: int = SOFT_CAP, encoding: "str | None" = None)
         (stack[-1].children if stack else top).append(node)
         stack.append(node)
 
+    def chars(data):
+        if stack:
+            stack[-1].text += data
+
     def end(_name):
         state["depth"] -= 1
-        stack.pop()
+        node = stack.pop()
+        node.text = node.text.strip()
 
     def reject_dtd(*_a):
         raise _Reject("dtd")
@@ -117,6 +124,7 @@ def parse(data: bytes, max_bytes: int = SOFT_CAP, encoding: "str | None" = None)
     parser = _expat.ParserCreate(encoding, namespace_separator=" ")
     parser.StartElementHandler = start
     parser.EndElementHandler = end
+    parser.CharacterDataHandler = chars
     parser.StartDoctypeDeclHandler = reject_dtd
     parser.EntityDeclHandler = reject_dtd
     parser.SetParamEntityParsing(_expat.XML_PARAM_ENTITY_PARSING_NEVER)
