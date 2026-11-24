@@ -21,6 +21,27 @@ def _with_widget_table():
     return mock.patch.multiple(spec, TABLES=tables, ID_CLASSES=spec.id_classes(tables))
 
 
+class GeneratedRegistry(unittest.TestCase):
+    def test_generated_keys_unique(self):
+        names = list(spec.GENERATED.values())
+        self.assertEqual(len(names), len(set(names)), "one block name per key, no name twice")
+        self.assertEqual(len(spec.GENERATED), len(set(spec.GENERATED)))
+        # the five 2.8 blocks have their own subsection each (section number -> name)
+        self.assertEqual(spec.GENERATED_2_8, {"2.4": "repo-docs", "5.4": "access-model", "8.1": "connections",
+                                              "8.3": "integrations", "16.8": "pipeline"})
+        for key, name in spec.GENERATED_2_8.items():
+            self.assertEqual(spec.GENERATED[key], name)
+        self.assertEqual(sorted(n for n in names if n not in spec.GENERATED_2_8.values()),
+                         sorted(["scan-coverage", "entry-points", "closed-questions", "config-reference",
+                                 "scheduled-jobs", "appendix-a"]))
+
+    def test_2_8_blocks_are_required_and_listed_only_from_2_8(self):
+        self.assertEqual(set(spec.generated_blocks((2, 7)).values()) & set(spec.GENERATED_2_8.values()), set())
+        self.assertEqual(spec.generated_blocks((2, 8)), spec.GENERATED)
+        self.assertEqual(spec.opaque_blocks((2, 7)), spec.OPAQUE_BLOCKS[:4])
+        self.assertEqual(spec.opaque_blocks((2, 8)), spec.OPAQUE_BLOCKS)
+
+
 class IdClassTable(unittest.TestCase):
     def test_derived_from_the_tables(self):
         self.assertEqual(list(spec.ID_CLASSES), ["F-", "UI-", "C-", "X-", "V-", "Q-", "R-"])

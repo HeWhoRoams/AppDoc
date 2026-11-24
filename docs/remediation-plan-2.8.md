@@ -507,9 +507,9 @@ All four new block markers and headings ship in **2.8.0**, so 2.9.0 needs no tem
 | `connections` | 8.1 | lists `connection` Facts (C- IDs section); E7 is an 8.1 finding |
 | `integrations` | 8.3 | external calls only (X- IDs) |
 | `pipeline` | 16.8 "Pipeline (generated)" | markers 2.8, content 2.9 |
-| `repo-docs` | **2.2** "Repository documentation (generated)" | not in 2.1, which already holds `scan-coverage`. **Verify 2.2 is free in `template_spec` at the start of the work.** |
+| `repo-docs` | **2.4** "Repository documentation (generated)" | 2.2 is the hand-written "Purpose and users" and 2.1 already holds `scan-coverage`; 2.4 was verified free (T28.90). |
 
-All five are added to `template_spec.OPAQUE_BLOCKS` and the same step updates `check._c7_blocks`, `fingerprint.claim_sha` masking, `fill.RENDERERS`, and 2.7's `doc_sha`. Without opacity, (a) block tables and IDs are parsed as Narrative by C1/C9/C10, and (b) a register row sealed against section 5.4 or 8.3 would change its seal when 2.9 fills the block, and C11 would fail "the text changed after it was audited". Tests: `test_check::test_new_blocks_are_opaque`, `::test_seal_survives_block_content_change`, `test_template_spec::test_generated_keys_unique`. C9 gains the 5.4, 2.2 and 16.8 headings.
+All five are added to `template_spec.OPAQUE_BLOCKS` and the same step updates `check._c7_blocks`, `fingerprint.claim_sha` masking, `fill.RENDERERS`, and 2.7's `doc_sha`. Without opacity, (a) block tables and IDs are parsed as Narrative by C1/C9/C10, and (b) a register row sealed against section 5.4 or 8.3 would change its seal when 2.9 fills the block, and C11 would fail "the text changed after it was audited". Tests: `test_check::test_new_blocks_are_opaque`, `::test_seal_survives_block_content_change`, `test_template_spec::test_generated_keys_unique`. C9 gains the 5.4, 2.4 and 16.8 headings.
 
 **R4 wording.** Each block states what a script read, says "N of M" for every capped list (the first 60 / 40 rows), and says which reader produced a "none": a Stack for stack-fed content, "the generic reader" for generic-fed content (CI, documents, projects). Prefer closed phrases for "none" sentences so 2.9 can change content without rewriting a pinned sentence.
 
@@ -542,7 +542,7 @@ Both blocks build on the aggregation in `appdoc/integration.py` (R5; V41), which
 
 One row per `ci_job` (stage, trigger, environment, build configuration, step classes, `parse_confidence`); test suites; the negative-claim trailer under the W8.5 rules; unresolved references; CI files present but not read. **Tests:** `::test_pipeline_block`, `::test_pipeline_no_test_trailer`, `::test_pipeline_partial_suppresses_trailer`, `::test_pipeline_unresolved_disclosed`.
 
-### 6.4 `repo-docs` (2.2) — markers 2.8, content 2.9
+### 6.4 `repo-docs` (2.4) — markers 2.8, content 2.9
 
 `doc_file` Facts with topics, copies-of-documentation candidates, and `doc_mentions_config_key`. The SKILL rule requires reading every file tagged `owner`, `environment`, `operations`, `logging`, `maintenance` or `scheduled` before writing §11, §14 or §16. **Test:** `::test_repo_docs_block`.
 

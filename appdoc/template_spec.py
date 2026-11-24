@@ -167,12 +167,18 @@ TABLES = {
 TABLES_SINCE = {"17": (2, 7)}   # a table of a section a later template added (see SECTIONS_SINCE)
 
 # Generated blocks: `appdoc fill` writes them from facts.json; the Check fails if they differ.
-# The key is the section it sits in; "appendix" is the unnumbered Appendix A heading.
+# The key is the section it sits in; "appendix" is the unnumbered Appendix A heading. One block per key.
+GENERATED_2_8 = {"2.4": "repo-docs", "5.4": "access-model", "8.1": "connections", "8.3": "integrations",
+                 "16.8": "pipeline"}
+# repo-docs sits in 2.4, not 2.2: the template's 2.2 is "Purpose and users" (hand-written), and 2.1 already holds
+# scan-coverage; 2.4 is the nearest subsection of section 2 that no heading or block uses.
 GENERATED = {"2.1": "scan-coverage", "4": "entry-points", "14": "closed-questions", "16.6": "config-reference",
-             "16.7": "scheduled-jobs", "appendix": "appendix-a"}
+             "16.7": "scheduled-jobs", "appendix": "appendix-a", **GENERATED_2_8}
 # A block a template added after 2.4: name -> the first template version that carries it. An older document is
-# not asked for it.
-GENERATED_SINCE = {"closed-questions": (2, 7)}
+# not asked for it. The 2.8 blocks are registered here and in OPAQUE_BLOCKS ahead of the template bump (T28.A4):
+# a document stamped 2.7 is never required to carry them, and the one place that reads the version
+# (`generated_blocks`, `opaque_blocks`) switches them on for a 2.8 stamp with no further change.
+GENERATED_SINCE = {"closed-questions": (2, 7), **{name: (2, 8) for name in GENERATED_2_8.values()}}
 
 
 def generated_blocks(version: tuple) -> dict:
@@ -181,8 +187,17 @@ def generated_blocks(version: tuple) -> dict:
 
 
 # Generated blocks the Check does not read as Narrative: their tables, IDs and Citations are not the
-# writer's (a Citation inside one does not count as the document citing that file).
-OPAQUE_BLOCKS = ("entry-points", "scheduled-jobs", "closed-questions", "appendix-a")
+# writer's (a Citation inside one does not count as the document citing that file). The 2.8 blocks are opaque
+# whatever the stamp (masking a block a document does not carry changes nothing), so a fingerprint or a seal
+# never moves when a later release fills one; only the "not audited" line of A.1 and the requirement to carry the
+# block depend on the stamp (`opaque_blocks`, `generated_blocks`).
+OPAQUE_BLOCKS = ("entry-points", "scheduled-jobs", "closed-questions", "appendix-a",
+                 "access-model", "connections", "integrations", "pipeline", "repo-docs")
+
+
+def opaque_blocks(version: tuple) -> tuple:
+    """The opaque blocks a document of this template version carries (what A.1 names as not audited)."""
+    return tuple(n for n in OPAQUE_BLOCKS if n not in GENERATED_2_8.values() or version >= (2, 8))
 
 # The tables whose rows have no IDs but are sampled by the audit plan (the symptom names the row).
 ROW_SAMPLED = ("9",)

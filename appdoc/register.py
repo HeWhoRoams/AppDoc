@@ -16,7 +16,8 @@ import re
 
 from . import scan
 from .citations import parse_span
-from .template_spec import OPAQUE_BLOCKS, version_tuple
+from . import template_spec as _spec
+from .template_spec import version_tuple
 from .textutil import plural
 
 REGISTER = "evidence.jsonl"
@@ -462,15 +463,17 @@ def _provenance_lines(reg: Register | None) -> list[str]:
     return out
 
 
-def _not_audited_lines() -> list[str]:
+def _not_audited_lines(opaque=None) -> list[str]:
     """The one A.1 line that names the blocks no audit row covers (ADR 0015). Only the opaque blocks are unaudited;
-    scan-coverage and config-reference are audited."""
-    return ["", f"Not audited: generated and opaque blocks ({', '.join(OPAQUE_BLOCKS)})"]
+    scan-coverage and config-reference are audited. `opaque` is the list the document's template carries
+    (`template_spec.opaque_blocks`); by default that of the running template."""
+    names = _spec.opaque_blocks(version_tuple(_spec.TEMPLATE_VERSION)) if opaque is None else opaque
+    return ["", f"Not audited: generated and opaque blocks ({', '.join(names)})"]
 
 
 def appendix_markdown(reg: Register | None, facts: dict | None = None, coverage=None,
                       root: str | None = None, blocks_by: dict | None = None, plan: dict | None = None,
-                      coverage_ids=None, list_missing: bool = False) -> str:
+                      coverage_ids=None, list_missing: bool = False, opaque=None) -> str:
     """Body of Appendix A (the `appendix-a` generated block), computed from the register.
 
     reg is None when evidence.jsonl does not exist. coverage is check.coverage() output, or None to omit it.
@@ -480,9 +483,10 @@ def appendix_markdown(reg: Register | None, facts: dict | None = None, coverage=
     coverage_ids is check.coverage_detail(...): A.1 prints the computed coverage line from it.
     plan is the audit plan (audit-plan.json); when given, A.2 shows planned / audited / extra per section.
     list_missing (a template 2.7 document): A.2 names the E-ids no row carries.
+    opaque: the opaque blocks A.1 names as not audited (None: those of the running template).
     """
     out = ["### A.1 Audit state", "", *_audit_state(reg), *_blocks_lines(reg, blocks_by),
-           *_provenance_lines(reg), *_scope_lines(reg, coverage_ids), *_not_audited_lines()]
+           *_provenance_lines(reg), *_scope_lines(reg, coverage_ids), *_not_audited_lines(opaque)]
     if reg is not None and reg.performed:
         out += ["", "### A.2 Coverage", "", *_coverage(reg, coverage, plan, list_missing),
                 "", "### A.3 Register", "", *_table(reg),

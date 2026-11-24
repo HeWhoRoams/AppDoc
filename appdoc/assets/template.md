@@ -49,6 +49,12 @@ CONVENTIONS:
 ### 2.3 System boundary
 <!-- appdoc:guide What is inside the Target and which external systems it touches. -->
 
+### 2.4 Repository documentation (generated)
+<!-- appdoc:guide The generated block below lists the documentation files in the repository. Do not edit it: run `appdoc fill`. -->
+
+<!-- appdoc:generated repo-docs -->
+<!-- /appdoc:generated repo-docs -->
+
 ## 3. Architecture
 <!-- appdoc:guide Fed by: folders, entry points, `connection` Facts, `auth_check` Facts. Every paragraph/list item needs a Citation, **Inferred:**, or Unknown. -->
 
@@ -98,6 +104,12 @@ Include rows a role must NOT have, and a token/scope view where the API is scope
 
 **Restriction:** do not infer a permission from a visible control or a granted scope; enforcement is the code cited in 5.2.
 
+### 5.4 Application-layer access (generated)
+<!-- appdoc:guide The generated block below states the application-layer access model the extractor read. Do not edit it: run `appdoc fill`. -->
+
+<!-- appdoc:generated access-model -->
+<!-- /appdoc:generated access-model -->
+
 ## 6. UI Catalog
 <!-- appdoc:guide Fed by: `entry_point` Facts of type page, their inputs. Start with: "Source-only catalog; no screenshots or live session."
 One row per page or screen, IDs UI-1, UI-2, ... Cover every UI project (web, identity, admin, mobile);
@@ -122,6 +134,9 @@ must list every item; otherwise write "N of M shown" with M taken from source. W
 | ID | Name | Kind | Configured at | Used by |
 |---|---|---|---|---|
 
+<!-- appdoc:generated connections -->
+<!-- /appdoc:generated connections -->
+
 ### 8.2 Stored procedures and SQL
 <!-- appdoc:guide Stored procedures and SQL used, by caller, each cited. If none, say so and name the data-access mechanism (ORM etc.). -->
 
@@ -130,6 +145,9 @@ must list every item; otherwise write "N of M shown" with M taken from source. W
 
 | ID | Call | Direction | Caller | Notes |
 |---|---|---|---|---|
+
+<!-- appdoc:generated integrations -->
+<!-- /appdoc:generated integrations -->
 
 ### 8.4 Data entities and sensitivity
 <!-- appdoc:guide Main entities/tables, key fields, where defined, and sensitivity (PII, credentials, financial, public).
@@ -258,6 +276,12 @@ The audit plans each row that is not Unknown as `16.5/<slug>` (the slug is the l
 
 <!-- appdoc:generated scheduled-jobs -->
 <!-- /appdoc:generated scheduled-jobs -->
+
+### 16.8 Pipeline (generated)
+<!-- appdoc:guide The generated block below lists the build and deployment pipeline the extractor read. Do not edit it: run `appdoc fill`. -->
+
+<!-- appdoc:generated pipeline -->
+<!-- /appdoc:generated pipeline -->
 
 ## 17. Build, Run and Test Locally
 <!-- appdoc:guide Fed by: build files, runtime pins, README, CI steps. Every command is cited where it is defined (a Citation with a line in Evidence).

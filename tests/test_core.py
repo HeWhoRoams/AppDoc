@@ -724,7 +724,7 @@ class UpgradeStepTableTests(unittest.TestCase):
                 self.assertTrue(spec.TABLES[op[1]].required_rows, op)
         # everything the current template carries beyond a bare 2.0 document is added by some step ...
         self.assertTrue(set(spec.REQUIRED_SUBSECTIONS) <= {o[1] for o in self.ops() if o[0] == "subsection"})
-        self.assertEqual({o[1] for o in self.ops() if o[0] == "block"}, set(spec.GENERATED.values()))
+        self.assertEqual({o[1] for o in self.ops() if o[0] == "block"}, set(spec.generated_blocks((2, 7)).values()))   # the 2.8 blocks come with its step (T28.A4)
         self.assertTrue(any(o[0] == "appendix" for o in self.ops()))
         tables = {o[1] for o in self.ops() if o[0] == "reshape"} | {"17"}   # 17 comes with its section
         self.assertEqual(tables, set(spec.TABLES) - {"16.6"})              # 16.6 is the generated block's table
@@ -734,6 +734,8 @@ class UpgradeStepTableTests(unittest.TestCase):
         for n, since in spec.SECTIONS_SINCE.items():
             self.assertIn(("section", str(n)), self.ops(".".join(map(str, since))))
         for name, since in spec.GENERATED_SINCE.items():
+            if since > spec.version_tuple(spec.TEMPLATE_VERSION):
+                continue   # a block registered ahead of its template (the 2.8 blocks): its step comes with the bump (T28.A4)
             self.assertIn(("block", name), self.ops(".".join(map(str, since))))
         # the 2.2 to 2.4 renames and insertions a 2.1 or 2.2 document needs
         self.assertIn(("rename", "5.3", "Area", "Capability"), self.ops("2.3"))
@@ -823,7 +825,7 @@ class UpgradeTests(unittest.TestCase):
             self.assertTrue(heads[str(n)].title.startswith(title), (n, title))
         for key, title in spec.REQUIRED_SUBSECTIONS.items():                     # every required subsection
             self.assertEqual(heads[key].title, title, key)
-        self.assertEqual(sorted(n for n, _, _ in fill.blocks(text)), sorted(spec.GENERATED.values()))
+        self.assertEqual(sorted(n for n, _, _ in fill.blocks(text)), sorted(spec.generated_blocks((2, 7)).values()))
         for key in ("4", "4.1", "6", "8.1", "11"):                               # the mechanical headers and rows
             self.assertTrue(spec.TABLES[key].header_ok([dm.cell_text(c) for c in dm.first_table(lines, heads[key]).header]), key)
         self.assertIn(spec.RESTRICTION_LINE, text)
@@ -1046,7 +1048,8 @@ class VersionCompareTests(unittest.TestCase):
         self.assertEqual(spec.TEMPLATE_VERSION, "2.7")
         self.assertEqual(spec.STAMP, "<!-- appdoc:template 2.7 -->")
         self.assertEqual(spec.sections(spec.version_tuple(spec.TEMPLATE_VERSION)), spec.SECTIONS)
-        self.assertEqual(spec.generated_blocks(spec.version_tuple(spec.TEMPLATE_VERSION)), spec.GENERATED)
+        self.assertEqual(spec.generated_blocks(spec.version_tuple(spec.TEMPLATE_VERSION)),
+                         {k: v for k, v in spec.GENERATED.items() if v not in spec.GENERATED_2_8.values()})   # 2.8 blocks: T28.A4
         path = os.path.join(os.path.dirname(HERE), "appdoc", "assets", "template.md")
         with open(path, encoding="utf-8") as fh:
             text = fh.read()

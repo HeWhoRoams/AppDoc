@@ -18,7 +18,7 @@ class SkillGuidance(unittest.TestCase):
     def test_only_opaque_blocks_are_unaudited(self):
         from appdoc import template_spec
         skill = _read("SKILL.md")
-        self.assertEqual(template_spec.OPAQUE_BLOCKS,
+        self.assertEqual(template_spec.opaque_blocks((2, 7)),
                          ("entry-points", "scheduled-jobs", "closed-questions", "appendix-a"))
         self.assertIn("Only the opaque generated blocks are not audited", skill)
         self.assertIn("Scan coverage and the configuration reference are audited text", skill)

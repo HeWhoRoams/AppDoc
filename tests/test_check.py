@@ -492,8 +492,89 @@ class CheckTests(unittest.TestCase):
         self.assertIn("generated block 'closed-questions' is missing from 14", report)
         code, report, _ = self.run27(self.with_cq())
         self.assertEqual(code, 0, report)
-        self.assertEqual(spec.generated_blocks((2, 4)), {k: v for k, v in spec.GENERATED.items() if k != "14"})
-        self.assertEqual(spec.generated_blocks((2, 7)), spec.GENERATED)
+        old = {k: v for k, v in spec.GENERATED.items() if v not in spec.GENERATED_2_8.values()}
+        self.assertEqual(spec.generated_blocks((2, 4)), {k: v for k, v in old.items() if k != "14"})
+        self.assertEqual(spec.generated_blocks((2, 7)), old)      # the 2.8 blocks are required from a 2.8 stamp only
+        self.assertEqual(spec.generated_blocks((2, 8)), spec.GENERATED)
+
+    # --- 2.8: the five new generated blocks are registered, opaque and unaudited (T28.90)
+
+    BLOCKS_2_8 = (("2.4", "repo-docs"), ("5.4", "access-model"), ("8.1", "connections"), ("8.3", "integrations"),
+                  ("16.8", "pipeline"))
+
+    @staticmethod
+    def _gen_block(name, body=""):
+        return f"<!-- appdoc:generated {name} -->\n{body}\n<!-- /appdoc:generated {name} -->"
+
+    def with_2_8_blocks(self, body=""):
+        """The 2.7 test document with the five 2.8 blocks added, each holding `body`."""
+        mk = lambda n: self._gen_block(n, body)   # noqa: E731
+        return build_doc({
+            2: SECTION_BODY[2] + "\n\n### 2.4 Repository documentation (generated)\n\n" + mk("repo-docs"),
+            5: SECTION_BODY[5] + "\n\n### 5.4 Application-layer access (generated)\n\n" + mk("access-model"),
+            8: SECTION_BODY[8].replace("\n\n### 8.2", "\n\n" + mk("connections") + "\n\n### 8.2")
+                              .replace("\n\n### 8.4", "\n\n" + mk("integrations") + "\n\n### 8.4"),
+            16: SECTION_BODY[16] + "\n\n### 16.8 Pipeline (generated)\n\n" + mk("pipeline")})
+
+    def test_new_blocks_are_opaque(self):
+        from appdoc import docmodel as dm
+        for key, name in self.BLOCKS_2_8:
+            self.assertEqual(spec.GENERATED[key], name)
+            self.assertIn(name, spec.OPAQUE_BLOCKS)
+            self.assertIn(name, spec.opaque_blocks((2, 8)))
+            self.assertNotIn(name, spec.opaque_blocks((2, 7)))    # A.1 of a 2.7 document does not name them
+        # what a block says changes neither the audit fingerprint nor the text the Check reads, tables and IDs
+        # and Citations inside it included (a Citation in a block is not the document citing that file)
+        a = self.with_2_8_blocks("Nothing was extracted.")
+        b = self.with_2_8_blocks("| ID | Name |\n|---|---|\n| C-9 | `app/main.py:10` |\n\nQ-77 is open.")
+        self.assertEqual(fingerprint.doc_sha(a), fingerprint.doc_sha(b))
+        self.assertEqual(fingerprint.document_text(a, pad=False), fingerprint.document_text(b, pad=False))
+        for needle in ("C-9", "Q-77", "app/main.py:10"):
+            self.assertNotIn(needle, fingerprint.document_text(b))
+            self.assertNotIn(needle, dm.strip_comments(dm.mask_blocks(b, tuple(spec.GENERATED.values()))))
+        # a 2.7 document is never asked for them ...
+        code, report, _ = self.run27()
+        self.assertEqual(code, 0, report)
+        # ... and a 2.8 stamp asks for each (the registry's one version switch; T28.A4 bumps the template)
+        found = []
+        check._c7_blocks(self.doc27(), {}, None, None, None, lambda *x: found.append(x), (2, 8))
+        self.assertEqual(sorted(m.split("'")[1] for _, _, m, _ in found if "is missing" in m),
+                         sorted(n for _, n in self.BLOCKS_2_8))
+        found.clear()
+        check._c7_blocks(self.doc27(), {}, None, None, None, lambda *x: found.append(x), (2, 7))
+        self.assertEqual(found, [])
+
+    def test_seal_survives_block_content_change(self):
+        """A register row sealed against a section that holds a 2.8 block keeps its seal when a later release
+        fills the block (2.9): the block is masked from claim_sha and doc_sha."""
+        rows = [dict(ROWS[0]), dict(ROWS[1]),
+                {"id": "E-3", "ref": "8.3/X-1", "claim": "The health ping is the only external call", "result": "Supported",
+                 "cites": ["app/main.py:8"], "anchor": "line 8", "limitation": "none"},
+                {"id": "E-4", "ref": "8.1/C-1", "claim": "The database connection is configured", "result": "Supported",
+                 "cites": ["app/main.py:6"], "anchor": "line 6", "limitation": "none"}]
+        self.write_register(AUDIT, rows)
+        code, report, _ = self.run27(self.with_2_8_blocks())              # fills the blocks and seals the register
+        self.assertEqual(code, 0, report)
+        path = os.path.join(self.out, "application-documentation.md")
+        with open(path, encoding="utf-8") as fh:
+            sealed = fh.read()
+        with open(os.path.join(self.out, check.REGISTER), encoding="utf-8") as fh:
+            before = fh.read()
+        self.assertEqual(before.count("claim_sha"), 4)
+        for _, name in self.BLOCKS_2_8:
+            self.assertIn(f"<!-- appdoc:generated {name} -->\n", sealed)
+        changed = sealed
+        for _, name in self.BLOCKS_2_8:
+            m = re.search(rf"(<!-- appdoc:generated {name} -->)(.*?)(<!-- /appdoc:generated {name} -->)", changed, re.S)
+            changed = changed.replace(m.group(0), f"{m.group(1)}\n| ID | Call |\n|---|---|\n| X-1 | a row a later release writes |\n| C-1 | likewise |\n"
+                                                  f"{m.group(3)}")
+        self.assertNotEqual(changed, sealed)
+        self.assertEqual(fingerprint.doc_sha(changed), fingerprint.doc_sha(sealed))
+        code, report, _ = self.run_check(changed, filled=False, seal=False)
+        self.assertEqual(code, 0, report)
+        self.assertNotIn("changed after", report)
+        with open(os.path.join(self.out, check.REGISTER), encoding="utf-8") as fh:
+            self.assertEqual(fh.read(), before)                           # nothing resealed, nothing lost
 
     # --- notes.jsonl (T27.11, C18 in T27.12)
 

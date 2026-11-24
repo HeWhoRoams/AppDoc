@@ -51,8 +51,20 @@ class AppendixMarkdownTests(unittest.TestCase):
             lines = [l for l in a1.splitlines() if l.startswith("Not audited:")]
             self.assertEqual(len(lines), 1, a1)
             names = lines[0].split("(", 1)[1].rstrip(")").split(", ")
-            self.assertEqual(tuple(names), spec.OPAQUE_BLOCKS)
+            self.assertEqual(tuple(names), spec.opaque_blocks(spec.version_tuple(spec.TEMPLATE_VERSION)))
             self.assertTrue(lines[0].startswith("Not audited: generated and opaque blocks ("))
+
+    def test_not_audited_line_lists_the_2_8_blocks(self):
+        from appdoc import template_spec as spec
+        new = ("access-model", "connections", "integrations", "pipeline", "repo-docs")
+        for reg in (reg_of(row(1)), None):
+            a1 = block(appendix_markdown(reg, {}, opaque=spec.opaque_blocks((2, 8))), "A.1 Audit state")
+            line = next(l for l in a1.splitlines() if l.startswith("Not audited:"))
+            names = tuple(line.split("(", 1)[1].rstrip(")").split(", "))
+            self.assertEqual(names, spec.OPAQUE_BLOCKS)                       # generated, not retyped
+            self.assertTrue(set(new) <= set(names))
+            old = block(appendix_markdown(reg, {}, opaque=spec.opaque_blocks((2, 7))), "A.1 Audit state")
+            self.assertTrue(all(n not in old for n in new), old)              # a 2.7 document's line is unchanged
 
     def test_dismissed_and_answerable_parse_and_count(self):
         reg = reg_of(row(1), row(2, "Dismissed", ref="smell/ab12cd34", anchor="", cites=()),
