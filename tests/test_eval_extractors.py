@@ -15,7 +15,11 @@ SAMPLES = os.path.join(ROOT, "tests", "samples")
 
 
 def _dirs(path):
-    return sorted(d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d)) and d not in ("docs", "__pycache__"))
+    """Case and sample folders that carry their own answer key. Shared Targets (``_targets``) and the cases that are
+    a delta over one (a ``_target`` marker file, tests/test_corpus.py T28.00) are asserted there, not keyed here."""
+    return sorted(d for d in os.listdir(path)
+                  if os.path.isdir(os.path.join(path, d)) and d not in ("docs", "__pycache__") and not d.startswith("_")
+                  and not os.path.isfile(os.path.join(path, d, "_target")))
 
 
 def doc(facts=(), stacks=(), scan=None):

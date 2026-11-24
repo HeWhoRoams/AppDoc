@@ -1,0 +1,8 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/url-auth-merge",
+  "exhaustive": false,
+  "note": "URL authorization chain per handler; asserted in tests/test_corpus.py (Slice1Protection). No row is scored here: the 2.8 Fact kinds do not exist yet.",
+  "must_exist": [],
+  "must_not_exist": []
+}

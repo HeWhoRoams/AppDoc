@@ -1,0 +1,8 @@
+{
+  "type": "extractor",
+  "target": "tests/corpus/area-coverage",
+  "exhaustive": false,
+  "note": "C22 Check case (every area in 4.1); asserted in tests/test_corpus.py. No row is scored here: the 2.8 Fact kinds do not exist yet.",
+  "must_exist": [],
+  "must_not_exist": []
+}

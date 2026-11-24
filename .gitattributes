@@ -12,3 +12,6 @@
 *.mmd  text eol=lf
 # Vendored third-party code: not ours to diff or lint.
 .appdoc/templates/html/vendor/** -diff linguist-vendored
+
+# Shared corpus Targets keep their byte-exact config files (BOM, CRLF).
+tests/corpus/_targets/**/*.config -text

@@ -33,7 +33,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 SAMPLES = os.path.join(HERE, "samples")
 SAMPLE_NAMES = sorted(d for d in os.listdir(SAMPLES) if os.path.isdir(os.path.join(SAMPLES, d)) and d != "docs")
-CORPUS_NAMES = sorted(d for d in os.listdir(CORPUS) if os.path.isdir(os.path.join(CORPUS, d)))
+CORPUS_NAMES = sorted(d for d in os.listdir(CORPUS) if os.path.isdir(os.path.join(CORPUS, d)) and not d.startswith("_"))
 TARGETS = [(n, os.path.join(SAMPLES, n)) for n in SAMPLE_NAMES] + [(n, os.path.join(CORPUS, n)) for n in CORPUS_NAMES]
 
 
@@ -208,6 +208,9 @@ class OrderAndLocation(Tmp):
 # R13: nothing in appdoc/ may read the clock, the process, a random source or the environment.
 # Allow-list: os.environ["APPDOC_CI"] (a test-harness switch that cannot change output) and
 # os.cpu_count() in extract.py's `if workers is None:` default (the pool size cannot change output).
+# The other APPDOC_ switches are read by tools/, eval/ and tests only, never by appdoc/: APPDOC_EVAL_ROOT (local clones for
+# the narrative eval, eval/score.py, tools/release.py) and APPDOC_ACCEPTANCE_KEYS (the folder of private acceptance
+# answer keys and denylist.txt, tools/acceptance.py and tests/test_corpus.py).
 AMBIENT_CALLS = {"datetime.now", "datetime.utcnow", "datetime.today", "date.today", "time.time", "time.time_ns",
                  "time.monotonic", "time.perf_counter", "os.getpid", "os.getppid", "os.environ", "os.getenv",
                  "os.urandom", "os.cpu_count", "os.getlogin", "getpass.getuser", "socket.gethostname",

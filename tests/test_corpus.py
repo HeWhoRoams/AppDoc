@@ -35,9 +35,50 @@ from tests.template_pin import run_as_2_4, run_as_stamped
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CORPUS = os.path.join(HERE, "corpus")
+SHARED = os.path.join(CORPUS, "_targets")     # shared Targets (T28.00); never run as cases (names start with "_")
+TARGET_FILE = "_target"                       # a case folder holding this file runs against a shared Target
 
 # test method name -> (task ID, why it fails today). Delete the entry when the task lands.
 PENDING: dict = {
+    # --- 4C: shared config reader, settings, transforms, rules
+    "test_webconfig_security_settings_per_configuration": ("T28.30", "missing security_setting: no .config setting Facts yet"),
+    "test_webconfig_malformed_file_is_one_config_unparsed": ("T28.30", "missing config_unparsed: .config files are not read by a Stack yet"),
+    "test_webconfig_security_machinekey_class_no_value": ("T28.30", "missing security_setting: no machineKey class Fact yet"),
+    "test_xdt_supported_transforms_effective": ("T28.34", "missing security_setting: no per-configuration effective values yet"),
+    "test_xdt_odd_transform_is_flagged_unsupported": ("T28.35", "missing config_transform: no transform Facts yet"),
+    "test_xdt_overridden_in_recorded_without_values": ("T28.36", "missing overridden_in: base keys carry no overridden_in yet"),
+    "test_windows_auth_iis_anonymous_is_unknown_and_disclosed": ("T28.38", "missing host_auth: no host_auth Fact yet"),
+    "test_owin_none_is_disclosed": ("T28.38", "missing host_auth: no host_auth Fact yet"),
+    "test_xdt_transformed_access_rules": ("T28.40", "missing access_rule: no access_rule Facts yet"),
+    "test_secrets_never_recorded_named_users_counted_not_recorded": ("T28.40", "missing users_named: access rules carry no users_named count"),
+    "test_location_path_forms": ("T28.41", "missing access_rule: no access_rule Facts yet"),
+    "test_nested_webconfig_scope_paths": ("T28.41", "missing access_rule: no access_rule Facts yet"),
+    "test_location_allow_override_and_system_webserver_only": ("T28.42", "missing access_rule: no access_rule Facts yet"),
+    "test_secrets_never_recorded_wcf_address_is_scheme_and_host": ("T28.37", "missing external_call: WCF client endpoints are not read yet"),
+    # --- 4B: classification and route fidelity
+    "test_core_false_positive_old_style_projects_are_aspnet": ("T28.11", "missing classification: aspnet-core is still detected from old-style projects"),
+    "test_stack_markers_in_fixtures_and_tooling_are_ignored": ("T28.11", "missing ignored_markers: no stack records dropped markers yet"),
+    # --- 4C: project and publish Facts
+    # --- 4D: guards
+    "test_custom_guard_external_attribute_is_a_candidate": ("T28.51", "missing guard_candidate: no guard_candidate Facts yet"),
+    "test_custom_guard_declared_in_context_is_auth_check_declared": ("T28.52", "missing auth_check: no declared auth_check yet"),
+    "test_custom_guard_arguments_arity_and_credential_constant": ("T28.53", "missing guard_use: no guard_use Facts yet"),
+    "test_custom_guard_auth_method_promotion_lists_constants": ("T28.54", "missing auth_check: no promoted auth_check via=call yet"),
+    "test_secrets_never_recorded_secret_constant_is_not_resolved": ("T28.53", "missing const_def: no const_def Facts yet"),
+    # --- 4E: effective protection (after the first slice)
+    "test_core_fallback_policy_mechanism_only_no_reach": ("T28.60", "missing guard_mechanism: entry_points carry no guard_mechanism yet"),
+    "test_core_absence_claim_only_without_auth_services": ("T28.60", "missing guard_mechanism: entry_points carry no guard_mechanism yet"),
+    "test_route_aliases_all_checked_and_open_route_is_unknown": ("T28.61", "missing reach_anon: entry_points carry no reach yet"),
+    "test_url_auth_chain_merge": ("T28.62", "missing reach_anon: entry_points carry no reach yet"),
+    "test_nested_webconfig_applies_by_url_prefix_not_area_folder": ("T28.62", "missing reach_anon: entry_points carry no reach yet"),
+    "test_filter_composition": ("T28.63", "missing reach_anon: entry_points carry no reach yet"),
+    "test_owin_with_mode_none_is_unknown": ("T28.65", "missing reach: entry_points carry no reach yet"),
+    "test_verbless_actions_are_any_and_state_changing_is_tristate": ("T28.66", "missing verbs_declared: entry_points carry no verbs_declared yet"),
+    "test_verbless_web_api_verb_from_name_convention": ("T28.66", "missing verbs: entry_points carry no verbs yet"),
+    # --- 4H: Check rules
+    "test_config_not_reviewed_c21_fails_without_a_lined_citation": ("T28.A0", "missing C21: no rule requires Web.config to be cited"),
+    "test_config_not_reviewed_c21_passes_with_a_lined_citation_outside_blocks": ("T28.A0", "missing C21: no rule requires Web.config to be cited"),
+    "test_area_coverage_c22_fails_when_an_area_is_missing_from_4_1": ("T28.A1", "missing C22: the Check does not require every area in 4.1"),
 }
 
 
@@ -71,8 +112,27 @@ class CaseResult:
             return fh.read()
 
 
-def run_case(name, strict=False, require_audit=False, tmp=None):
+def materialize_shared_target(spec, dest):
+    """Copy the shared Target ``spec`` into ``dest``: ``<base>`` or ``<base>+<overlay>[+<overlay>...]``.
+
+    The base is ``_targets/<base>/``; each overlay is ``_targets/<base>+<overlay>/`` and holds only its delta (new
+    files, and changed files whole). Overlays are copied over the base in the order given; the shared folders are
+    only read, never changed.
+    """
+    base, *overlays = spec.strip().split("+")
+    for folder in [base] + [f"{base}+{o}" for o in overlays]:
+        src = os.path.join(SHARED, folder)
+        if not os.path.isdir(src):
+            raise FileNotFoundError(f"no shared Target folder {folder!r} under {SHARED}")
+        shutil.copytree(src, dest, ignore=shutil.ignore_patterns("__pycache__"), dirs_exist_ok=True)
+
+
+def run_case(name, strict=False, require_audit=False, tmp=None, files=None):
     """Copy corpus/<name> to a temp dir, then extract, seal, fill and check. Returns CaseResult.
+
+    A case folder holding a ``_target`` file (one line, e.g. ``mvc5-classic+owin``) is the delta over that shared
+    Target: the shared Target is copied first and the case folder's own files go on top. ``files`` maps a relative
+    path to text written into the copy before extraction (a case variant without a second case folder).
 
     The temp dir is removed by the caller through ``tmp`` (a TemporaryDirectory) or leaked to the
     OS temp cleaner when none is given; tests always pass ``tmp``.
@@ -82,7 +142,17 @@ def run_case(name, strict=False, require_audit=False, tmp=None):
         raise FileNotFoundError(f"no corpus case {name!r} under {CORPUS}")
     tmp = tmp or tempfile.TemporaryDirectory()
     target = os.path.join(tmp.name, name)
-    shutil.copytree(src, target, ignore=shutil.ignore_patterns("__pycache__"))
+    marker = os.path.join(src, TARGET_FILE)
+    ignore = shutil.ignore_patterns("__pycache__", TARGET_FILE)
+    if os.path.isfile(marker):
+        with open(marker, encoding="utf-8") as fh:
+            materialize_shared_target(fh.read(), target)
+    shutil.copytree(src, target, ignore=ignore, dirs_exist_ok=True)
+    for rel, text in (files or {}).items():
+        path = os.path.join(target, *rel.split("/"))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
     out = os.path.join(target, "docs", "appdoc")
     log = io.StringIO()
     fill_code = code = None
@@ -130,7 +200,7 @@ class Scaffold(CorpusCase):
             with self.subTest(test=name):
                 self.assertTrue(hasattr(CorpusCase, name) or any(
                     hasattr(c, name) for c in CorpusCase.__subclasses__()), f"{name} ({task}) is not a test")
-                self.assertTrue(re.fullmatch(r"T\d\d\.\d\d", task), task)
+                self.assertTrue(re.fullmatch(r"T\d\d\.[A-Z0-9]\d", task), task)
                 self.assertTrue(reason.strip())
 
 
@@ -778,6 +848,802 @@ class UpgradeCases(CorpusCase):
     def _snapshot(path):
         with open(path, "rb") as fh:
             return fh.read()
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Release 2.8.0, stream 4A (Phase 0): shared Targets (T28.00-T28.02) and the slice-1 corpus cases (T28.03).
+#
+# New-behaviour cases fail today with ``Missing`` (an AssertionError subclass raised by ``need``/``need_fact``) and
+# are listed in PENDING with the task that makes them pass. ``test_new_cases_fail_for_their_stated_reason`` runs every
+# such test and checks that it fails with ``Missing`` naming the token the PENDING reason starts with ("missing X:"),
+# so a case that fails for another reason (a crash, a bad Target, a typo) turns the suite red.
+# Assertions read Facts and Check output only. Every Target name here is invented (Contoso.*).
+# ---------------------------------------------------------------------------------------------------------------
+
+class Missing(AssertionError):
+    """The 2.8 behaviour a case pins is not there yet (the stated reason a PENDING case fails)."""
+
+
+def need(cond, token, text=""):
+    if not cond:
+        raise Missing(f"missing {token}" + (f": {text}" if text else ""))
+
+
+def need_fact(r, kind, **detail):
+    found = r.facts_of(kind, **detail)
+    need(found, kind, f"no {kind} Fact with {detail}")
+    return found
+
+
+def dtl(f):
+    return f.get("detail") or {}
+
+
+def facts_at(r, kind, path=None, name=None, **detail):
+    """Facts of a kind, optionally at a path and/or with a name, whose detail holds the given pairs."""
+    return [f for f in r.facts_of(kind, **detail)
+            if (path is None or f["path"] == path) and (name is None or f["name"] == name)]
+
+
+def as_list(v):
+    return [] if v is None else (list(v) if isinstance(v, (list, tuple)) else [v])
+
+
+def lower_set(v):
+    return {str(x).lower() for x in as_list(v)}
+
+
+def entries_of(r, handler):
+    return sorted((f for f in r.facts_of("entry_point") if dtl(f).get("handler") == handler),
+                  key=lambda f: (f["path"], f["line"] or 0, f["name"]))
+
+
+def need_entry(r, handler, key):
+    """The detail of the first entry_point of ``handler``; ``Missing`` (token ``key``) when it lacks ``key``."""
+    found = entries_of(r, handler)
+    need(found, "entry_point", f"no entry_point for handler {handler}")
+    need(key in dtl(found[0]), key, f"entry_point {handler} has no {key}")
+    return dtl(found[0])
+
+
+def scope_of(f):
+    """An access_rule's scope_path relative to the web project root, lower-cased, no slashes at the ends."""
+    s = str(dtl(f).get("scope_path") or "").replace("\\", "/").strip("/").lower()
+    if s == "contoso.portal" or s == ".":
+        return ""
+    return s[len("contoso.portal/"):] if s.startswith("contoso.portal/") else s
+
+
+def rules_of(r, path, config="base", scope=""):
+    got = [f for f in r.facts_of("access_rule", config=config) if f["path"] == path and scope_of(f) == scope]
+    return sorted(got, key=lambda f: dtl(f).get("order") or 0)
+
+
+def case_text(r):
+    """Everything a run wrote for the reader: facts.json plus facts-summary.md (R18/R19 scans)."""
+    parts = [json.dumps(r.facts, sort_keys=True)]
+    summary = os.path.join(r.out, "facts-summary.md")
+    if os.path.isfile(summary):
+        with open(summary, encoding="utf-8") as fh:
+            parts.append(fh.read())
+    return "\n".join(parts)
+
+
+def target_lines(r, rel):
+    with open(os.path.join(r.target, *rel.split("/")), "rb") as fh:
+        raw = fh.read()
+    return raw.decode("utf-8-sig").replace("\r\n", "\n").split("\n")
+
+
+def line_of(r, rel, needle):
+    """1-based line of the first line of a Target file that contains ``needle`` (BOM and CRLF aware)."""
+    for n, text in enumerate(target_lines(r, rel), 1):
+        if needle in text:
+            return n
+    raise AssertionError(f"{needle!r} not in {rel}")
+
+
+def tree_bytes(root):
+    out = {}
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d != "__pycache__"]
+        for n in filenames:
+            full = os.path.join(dirpath, n)
+            with open(full, "rb") as fh:
+                out[os.path.relpath(full, root).replace(os.sep, "/")] = fh.read()
+    return out
+
+
+PORTAL = "Contoso.Portal/"
+WEB_CONFIG = PORTAL + "Web.config"
+MINI_CASES = ("location-paths", "url-auth-merge", "nested-webconfig", "route-aliases", "filter-composition",
+              "config-not-reviewed", "area-coverage")
+# Every made-up secret the shared Target carries; none may appear in any Fact or summary (R18, R19).
+TARGET_SECRETS = ("not-a-real-credential-0001", "not-a-real-password-0002", "not-a-real-token-0003",
+                  "not-a-real-password-0004", "not-a-real-password-0005", "not-a-real-password-0006",
+                  "not-a-real-pw", "0123456789ABCDEF0123456789ABCDEF", "FEDCBA9876543210FEDCBA9876543210",
+                  "InventedEncryptedBlobMarker0001", "svcuser", "token=abc", "deploy-stg-user")
+
+
+class SharedTargets(CorpusCase):
+    """T28.00-T28.02: the shared-Target helper and the invented ``mvc5-classic`` Target."""
+
+    def _case_dirs(self):
+        return [os.path.join(SHARED, d) for d in sorted(os.listdir(SHARED))] + \
+               [os.path.join(CORPUS, d) for d in MINI_CASES]
+
+    # --- T28.00
+    def test_shared_target_overlay_copies_only_delta(self):
+        base_dir = os.path.join(SHARED, "mvc5-classic")
+        base = tree_bytes(base_dir)
+        for overlay in ("owin", "core", "webapi"):
+            with self.subTest(overlay=overlay):
+                delta = tree_bytes(os.path.join(SHARED, f"mvc5-classic+{overlay}"))
+                self.assertTrue(delta, "an overlay holds at least its delta")
+                self.assertLess(len(delta), len(base) // 4, "an overlay is a delta, not a second copy of the Target")
+                for rel, data in delta.items():          # a delta file is new or changed, never a verbatim copy
+                    self.assertNotEqual(base.get(rel), data, f"{rel} is unchanged from the base")
+                with tempfile.TemporaryDirectory() as tmp:
+                    dest = os.path.join(tmp, "t")
+                    materialize_shared_target(f"mvc5-classic+{overlay}", dest)
+                    got = tree_bytes(dest)
+                self.assertEqual(set(got), set(base) | set(delta))
+                for rel in base:
+                    self.assertEqual(got[rel], delta.get(rel, base[rel]), rel)
+                self.assertEqual(tree_bytes(base_dir), base, "the shared base must not change")
+        with tempfile.TemporaryDirectory() as tmp:       # two overlays stack
+            materialize_shared_target("mvc5-classic+owin+core", os.path.join(tmp, "t"))
+            self.assertTrue(os.path.isfile(os.path.join(tmp, "t", "Contoso.Portal.Core", "Program.cs")))
+            self.assertTrue(os.path.isfile(os.path.join(tmp, "t", "Contoso.Portal", "Startup.cs")))
+        with self.assertRaises(FileNotFoundError):
+            materialize_shared_target("mvc5-classic+nope", tempfile.mkdtemp())
+
+    def test_case_runs_against_the_owin_overlay(self):
+        r = self.case("owin-none")
+        self.assertTrue(facts_at(r, "file", PORTAL + "Startup.cs"), "an overlay file is in the run")
+        self.assertTrue(facts_at(r, "file", PORTAL + "Controllers/HomeController.cs"), "a base file is in the run")
+        self.assertFalse(facts_at(r, "file", "_target"), "the marker file is not part of the Target")
+        self.assertIn('<authentication mode="None" />', "\n".join(target_lines(r, WEB_CONFIG)))
+        with open(os.path.join(SHARED, "mvc5-classic", "Contoso.Portal", "Web.config"), "rb") as fh:
+            self.assertIn(b'<authentication mode="Windows" />', fh.read(), "the base stays Windows")
+
+    def test_case_variant_files_are_written_before_extraction(self):
+        r = self.case("verbless-actions", files={"Extra/note.txt": "hello\n"})
+        self.assertTrue(facts_at(r, "file", "Extra/note.txt"))
+
+    # --- T28.01
+    def test_invented_target_uses_invented_names(self):
+        ns = re.compile(r"(?m)^\s*namespace\s+([\w.]+)")
+        seen = 0
+        for root in self._case_dirs():
+            for rel, data in tree_bytes(root).items():
+                text = data.decode("utf-8", "replace")
+                if rel.endswith(".cs"):
+                    for m in ns.finditer(text):
+                        seen += 1
+                        self.assertTrue(m.group(1).startswith("Contoso."), f"{rel}: namespace {m.group(1)}")
+                if rel.endswith(".csproj"):
+                    for m in re.finditer(r"<RootNamespace>([^<]+)<", text):
+                        self.assertTrue(m.group(1).startswith("Contoso."), f"{rel}: {m.group(1)}")
+        self.assertGreater(seen, 20)
+
+    @unittest.skipUnless(os.environ.get("APPDOC_ACCEPTANCE_KEYS"), "APPDOC_ACCEPTANCE_KEYS is not set (local check)")
+    def test_invented_target_has_no_denylisted_token(self):
+        deny = os.path.join(os.environ["APPDOC_ACCEPTANCE_KEYS"], "denylist.txt")
+        if not os.path.isfile(deny):
+            self.skipTest("no denylist.txt in APPDOC_ACCEPTANCE_KEYS")
+        with open(deny, encoding="utf-8") as fh:
+            tokens = [t.strip().lower() for t in fh if t.strip() and not t.startswith("#")]
+        for root in self._case_dirs():
+            for rel, data in tree_bytes(root).items():
+                text = (rel + "\n" + data.decode("utf-8", "replace")).lower()
+                for t in tokens:
+                    self.assertNotIn(t, text, f"{root}/{rel}")
+
+    def test_invented_target_shapes_in_code(self):
+        code = {rel: data.decode("utf-8") for rel, data in tree_bytes(os.path.join(SHARED, "mvc5-classic")).items()
+                if rel.endswith(".cs")}
+        joined = "\n".join(code.values())
+        for needle in ('[RouteArea("Billing", AreaPrefix = "billing")]', "[RouteArea(AreaPrefix = \"uploads\")]",
+                       '[RouteArea("", AreaPrefix = "")]', "[ RouteArea ( AreaPrefix=", "[AllowAnonymous]",
+                       "HasRole(IPrincipal user, string roleA, string groupB)", "#if DEBUG", "#elif STAGING",
+                       "SharedControllerBase", "Accounts.ServicePassword", 'MvcApplication.Mode == "Production"'):
+            self.assertIn(needle, joined, needle)
+        guard = re.findall(r"\[ContosoGuard\(([^\]]*)\)\]", joined)
+        self.assertEqual(sorted(g.count(",") + 1 for g in guard), [4, 4, 4, 5])
+        self.assertEqual(len(re.findall(r"\[ContosoLayout\(", joined)), 3)    # a non-guard external attribute, three uses
+        self.assertIn("Contoso.Portal.Areas.Archive.Controllers",
+                      code[PORTAL + "Areas/Reports/Controllers/ExportController.cs"])   # namespace names another area
+        self.assertIn("filters.Add(new HandleErrorAttribute());", joined)
+        self.assertNotIn("Authorize", code[PORTAL + "App_Start/FilterConfig.cs"])
+
+    # --- T28.02
+    def test_invented_target_config_shape(self):
+        from appdoc import dotnetcfg
+        files = tree_bytes(os.path.join(SHARED, "mvc5-classic"))
+        raw = files[WEB_CONFIG]
+        self.assertTrue(raw.startswith(b"\xef\xbb\xbf"), "Web.config is UTF-8 with a BOM")
+        self.assertIn(b"\r\n", raw)
+        self.assertNotIn(b"\n", raw.replace(b"\r\n", b""), "CRLF throughout")
+        root = dotnetcfg.parse(raw).root
+        self.assertEqual(len(root.findall("location")), 15)
+        paths = [n.attrs.get("path") for n in root.findall("location")]
+        self.assertEqual(sorted(paths), sorted(
+            ["Content", "Scripts", "OldPrintJobs", "Archive2019", "Health", "Info/Welcome", "Account/Login",
+             "Unsubscribe.aspx", "Account", "Profile", "Orders", "Dashboard", "Billing", "Admin/Tools",
+             "Billing/Refunds"]))
+        self.assertEqual(sorted(dotnetcfg.transform_config_name(p) for p in files if p.startswith(PORTAL)
+                                and dotnetcfg.transform_config_name(p)), ["Debug", "Odd", "Release", "Staging"])
+        self.assertIn(PORTAL + "Areas/Reports/Web.config", files)
+        self.assertIn(PORTAL + "Areas/Public/web.config", files, "one lower-case web.config")
+        self.assertIn(PORTAL + "Properties/PublishProfiles/Staging.pubxml.user", files)
+        self.assertIn("Training|AnyCPU", files[PORTAL + "Contoso.Portal.csproj"].decode())
+        self.assertNotIn(b"Web.Training.config", files[PORTAL + "Contoso.Portal.csproj"], "a configuration with no transform")
+        win = [p for p in files if p.endswith(".csproj") and not p.startswith(("fixtures/", "tests/"))]
+        core_dir = os.path.join(SHARED, "mvc5-classic+core")
+        self.assertIn("<OutputType>WinExe</OutputType>", files["Contoso.Portal.Harness/Contoso.Portal.Harness.csproj"].decode())
+        self.assertIn("Microsoft.NET.Sdk.Web", tree_bytes(core_dir)["Contoso.Portal.Core/Contoso.Portal.Core.csproj"].decode())
+        self.assertEqual(len(win), 3)
+        self.assertIn("[TestMethod]", files["Contoso.Portal.Tests/HomeControllerTests.cs"].decode())
+        for rel in ("fixtures/sample-core-app/Program.cs", "tests/powershell/fixtures/sample-app/Program.cs",
+                    "tooling/package.json"):
+            self.assertIn(rel, files)
+        pkg = json.loads(files["tooling/package.json"])
+        self.assertTrue(all(k.startswith("@types/") or k == "typescript" for k in pkg["devDependencies"]))
+
+    def test_invented_target_config_parses(self):
+        from appdoc import dotnetcfg
+        files = tree_bytes(os.path.join(SHARED, "mvc5-classic"))
+        unparsed = {}
+        for rel, data in files.items():
+            if dotnetcfg.is_config_name(rel) or dotnetcfg.transform_config_name(rel):
+                doc = dotnetcfg.parse(data)
+                if doc.unparsed:
+                    unparsed[rel] = doc.unparsed
+        # Deviation from the breakdown's wording (plan 4.2 wins): Web.Odd.config is well formed (XPath and
+        # InsertAfter, to prove "unknown"); the one deliberately malformed file is Areas/Legacy/Web.config.
+        self.assertEqual(unparsed, {PORTAL + "Areas/Legacy/Web.config": "malformed"})
+        self.assertFalse(dotnetcfg.is_pubxml_name(PORTAL + "Properties/PublishProfiles/Staging.pubxml.user"))
+        self.assertTrue(dotnetcfg.is_pubxml_name(PORTAL + "Properties/PublishProfiles/Staging.pubxml"))
+
+    def test_invented_target_extracts_and_skips_pubxml_user(self):
+        r = self.case("webconfig-security")
+        self.assertEqual([f for f in r.facts["facts"] if f["path"].endswith(".pubxml.user") and f["kind"] != "file"], [])
+        self.assertNotIn("InventedEncryptedBlobMarker0001", case_text(r), "a .pubxml.user is never read")
+
+
+
+class Slice1Config(CorpusCase):
+    """Shared-Target cases for W13/W1/W2 (4C). PENDING names the task whose landing makes each pass."""
+
+    # --- webconfig-security
+    def test_webconfig_security_settings_per_configuration(self):
+        r = self.case("webconfig-security")
+        auth = need_fact(r, "security_setting", name="system.web/authentication@mode", value="windows", config="base")
+        self.assertEqual(auth[0]["path"], WEB_CONFIG)
+        self.assertEqual(auth[0]["line"], line_of(r, WEB_CONFIG, "<authentication"), "BOM and CRLF keep line numbers")
+        want = [("system.web/compilation@debug", "base", "true", "base"), ("system.web/compilation@debug", "Debug", "true", None),
+                ("system.web/compilation@debug", "Staging", "absent", "transformed"),
+                ("system.web/compilation@debug", "Release", "absent", "transformed"),
+                ("system.web/compilation@debug", "Training", "true", "base"),
+                ("system.web/customErrors@mode", "base", "off", "base"),
+                ("system.web/customErrors@mode", "Staging", "off", None),
+                ("system.web/customErrors@mode", "Release", "remoteonly", "transformed"),
+                ("system.web/forms@requireSSL", "base", "absent", "base"),
+                ("system.web/identity@impersonate", "base", "absent", "base")]
+        for name, config, value, status in want:
+            kw = {"name": name, "config": config, "value": value}
+            if status:
+                kw["config_status"] = status
+            need_fact(r, "security_setting", **kw)
+        trace = need_fact(r, "security_setting", name="system.web/trace@enabled", config="base")
+        self.assertTrue(dtl(trace[0]).get("local_only"), "trace localOnly is recorded")
+
+    def test_webconfig_malformed_file_is_one_config_unparsed(self):
+        r = self.case("webconfig-security")
+        bad = need_fact(r, "config_unparsed")
+        self.assertEqual([(f["path"], dtl(f).get("reason")) for f in bad],
+                         [(PORTAL + "Areas/Legacy/Web.config", "malformed")], "one Fact, no partial tree")
+        self.assertFalse([f for f in r.facts_of("access_rule") if f["path"] == PORTAL + "Areas/Legacy/Web.config"])
+
+    def test_webconfig_security_machinekey_class_no_value(self):
+        r = self.case("webconfig-security")
+        key = need_fact(r, "security_setting", name="system.web/machineKey", value="literal_hex", config="base")
+        self.assertTrue(dtl(key[0]).get("secret_location"))
+        self.assertEqual(key[0]["line"], line_of(r, WEB_CONFIG, "<machineKey"))
+        text = case_text(r)
+        for hexkey in ("0123456789ABCDEF0123456789ABCDEF", "FEDCBA9876543210FEDCBA9876543210"):
+            self.assertNotIn(hexkey, text, "no key value is ever recorded")
+
+    # --- xdt-effective
+    def test_xdt_supported_transforms_effective(self):
+        r = self.case("xdt-effective")
+        need_fact(r, "security_setting", name="system.web/compilation@debug", config="Staging", value="absent",
+                  config_status="transformed")       # RemoveAttributes, under a namespace prefix other than xdt
+        need_fact(r, "security_setting", name="system.web/compilation@debug", config="Release", value="absent")
+        need_fact(r, "security_setting", name="system.web/compilation@debug", config="base", value="true")
+        need_fact(r, "security_setting", name="system.web/compilation@debug", config="Training", value="true",
+                  config_status="base")              # a configuration with no transform is the base
+        need_fact(r, "security_setting", name="system.web/customErrors@mode", config="Release", value="remoteonly",
+                  config_status="transformed")       # SetAttributes without an attribute list sets all of them
+        need_fact(r, "security_setting", name="system.web/customErrors@mode", config="base", value="off")
+        need_fact(r, "security_setting", name="system.web/trace@enabled", config="Release", value="absent",
+                  config_status="transformed")       # RemoveAll with no locator
+        need_fact(r, "security_setting", name="system.web/httpCookies@requireSSL", config="Release", value="true")
+        need_fact(r, "security_setting", name="system.web/httpCookies@httpOnlyCookies", config="Release", value="true")
+        # SetAttributes(requireSSL) lists one attribute: httpOnlyCookies="false" in the transform is not applied
+
+    def test_xdt_transformed_access_rules(self):
+        r = self.case("xdt-effective")
+        rel = rules_of(r, WEB_CONFIG, "Release")
+        need(rel, "access_rule", "no Release rules at the project root")
+        self.assertEqual([(dtl(f)["effect"], bool(dtl(f).get("anon")), bool(dtl(f).get("all"))) for f in rel],
+                         [("deny", True, False), ("allow", False, True)], "Replace swaps the root authorization")
+        self.assertTrue(all(dtl(f).get("config_status") == "transformed" for f in rel))
+        base = rules_of(r, WEB_CONFIG, "base")
+        self.assertEqual([dtl(f)["effect"] for f in base], ["allow", "allow", "deny"])
+        self.assertEqual(lower_set(dtl(base[0]).get("roles")), {"portalusers", "portaladmins"})
+        self.assertEqual(dtl(base[1]).get("users_named"), 2)
+        for config in ("Staging", "Training"):     # a transform that leaves authorization alone, and no transform at all
+            self.assertEqual([dtl(f)["effect"] for f in rules_of(r, WEB_CONFIG, config)], ["allow", "allow", "deny"], config)
+        self.assertEqual(dtl(rules_of(r, WEB_CONFIG, "Training")[0]).get("config_status"), "base")
+        billing = rules_of(r, WEB_CONFIG, "Release", "billing")
+        self.assertEqual([dtl(f)["effect"] for f in billing], ["allow", "allow", "deny", "allow"])
+        self.assertEqual(lower_set(dtl(billing[-1]).get("roles")), {"interns"}, "Insert appends after deny *")
+        self.assertGreater(dtl(billing[-1])["order"], dtl(billing[2])["order"])
+        odd = rules_of(r, WEB_CONFIG, "Odd")
+        self.assertTrue(odd and all(dtl(f).get("config_status") == "unknown_transform" for f in odd),
+                        "everything derived from an unsupported transform is unknown for that configuration")
+
+    def test_xdt_odd_transform_is_flagged_unsupported(self):
+        r = self.case("xdt-effective")
+        odd = need_fact(r, "config_transform", config="Odd")
+        by_op = {dtl(f).get("operation"): dtl(f) for f in odd}
+        self.assertIn("InsertAfter", by_op)
+        self.assertIs(by_op["InsertAfter"].get("supported"), False)
+        self.assertTrue(any(dtl(f).get("locator") == "XPath" and dtl(f).get("supported") is False for f in odd))
+        for f in r.facts_of("config_transform", config="Release"):
+            self.assertIs(dtl(f).get("supported"), True)
+
+    def test_xdt_overridden_in_recorded_without_values(self):
+        r = self.case("xdt-effective")
+        env = facts_at(r, "config_key", WEB_CONFIG, "Environment")
+        need(env and "overridden_in" in dtl(env[0]), "overridden_in", "Environment is overridden per configuration")
+        self.assertEqual(as_list(dtl(env[0])["overridden_in"]), ["Debug", "Release", "Staging"])
+        ids = facts_at(r, "config_key", WEB_CONFIG, "TesterIds")
+        self.assertEqual(as_list(dtl(ids[0]).get("overridden_in")), ["Release"])
+        conn = facts_at(r, "connection", WEB_CONFIG, "PortalDb")
+        self.assertEqual(as_list(dtl(conn[0]).get("overridden_in")), ["Release", "Staging"])
+        self.assertNotIn("E1001", json.dumps([dtl(f) for f in env + ids]), "no values")
+
+    # --- location-paths / nested-webconfig (access_rule only)
+    def test_location_path_forms(self):
+        r = self.case("location-paths")
+        need_fact(r, "access_rule", config="base")
+        by_role = {}
+        for f in r.facts_of("access_rule", config="base"):
+            for role in lower_set(dtl(f).get("roles")):
+                by_role[role] = f
+        for role in ("dot", "empty", "absent"):    # ".", "" and no path all mean "this folder and below"
+            self.assertEqual(scope_of(by_role[role]), "", role)
+        self.assertEqual(scope_of(by_role["tilde"]), "admin", "a leading ~/ is stripped")
+        self.assertEqual(scope_of(by_role["mixedcase"]), "admintools", "paths are case-insensitive")
+        self.assertNotEqual(scope_of(by_role["mixedcase"]), scope_of(by_role["tilde"]), "segment boundary")
+
+    def test_location_allow_override_and_system_webserver_only(self):
+        r = self.case("location-paths")
+        need_fact(r, "access_rule", config="base")
+        locked = [f for f in r.facts_of("access_rule", config="base") if dtl(f).get("effect") == "deny" and scope_of(f) == "locked"]
+        need(locked and "allow_override" in dtl(locked[0]), "allow_override", "allowOverride is not recorded")
+        self.assertIs(dtl(locked[0]).get("allow_override"), False)
+        private = [f for f in r.facts_of("access_rule", config="base") if scope_of(f) == "private"]
+        self.assertIs(dtl(private[0]).get("inherit_in_child_apps"), False, "disclosed, not evaluated")
+        self.assertEqual([f for f in r.facts_of("access_rule") if scope_of(f) == "legacy"], [],
+                         "a <location> with only system.webServer is not ASP.NET authorization")
+
+    def test_nested_webconfig_scope_paths(self):
+        r = self.case("nested-webconfig")
+        admin = need_fact(r, "access_rule", config="base", scope_path="Admin")
+        self.assertEqual(sorted(dtl(f)["effect"] for f in admin), ["allow", "deny"])
+        self.assertEqual({f["path"] for f in admin}, {"Admin/Web.config"})
+        area = [f for f in r.facts_of("access_rule") if f["path"] == "Areas/Reports/Web.config"]
+        self.assertEqual({scope_of(f) for f in area}, {"areas/reports"}, "the folder of the file, not the routed URL")
+
+    # --- windows-auth-iis / owin-none
+    def test_windows_auth_iis_anonymous_is_unknown_and_disclosed(self):
+        r = self.case("windows-auth-iis")
+        host = need_fact(r, "host_auth")
+        self.assertEqual(dtl(host[0]).get("iis_anonymous"), "unknown")
+        self.assertNotEqual(dtl(host[0]).get("source"), "config", "no read file sets anonymousAuthentication")
+        self.assertIs(dtl(host[0]).get("owin_auth"), False)
+        self.assertIs(dtl(host[0]).get("iis_authorization_present"), False)
+        legacy = self.case("location-paths")
+        self.assertTrue(legacy.facts_of("host_auth", iis_authorization_present=True),
+                        "system.webServer authorization is recorded as IIS rules, not evaluated")
+
+    def test_owin_none_is_disclosed(self):
+        r = self.case("owin-none")
+        need_fact(r, "host_auth", owin_auth=True)
+        need_fact(r, "security_setting", name="system.web/authentication@mode", value="none", config="base")
+
+
+class Slice1Code(CorpusCase):
+    """Shared-Target cases for W3, W5, W6 (4B, 4D)."""
+
+    # --- core-false-positive / stack-markers / winforms-handlers
+    def _stack_ids(self, r):
+        return [s.get("name") for s in r.facts["stacks"]]
+
+    def test_core_false_positive_old_style_projects_are_aspnet(self):
+        r = self.case("core-false-positive")
+        ids = self._stack_ids(r)
+        need("aspnet-core" not in ids, "classification", f"aspnet-core is detected from sample projects: {ids}")
+        self.assertIn("aspnet", ids)
+
+    def test_core_false_positive_old_style_project_files_are_not_core_markers(self):
+        r = self.case("core-false-positive")
+        markers = [m for s in r.facts["stacks"] if s.get("name") == "aspnet-core"
+                   for m in as_list(dtl(s).get("marker_files"))]
+        self.assertEqual([m for m in markers if m.startswith("Contoso.Portal")], [],
+                         "a .csproj plus Program.cs (WinForms, test project) is not ASP.NET Core")
+        aspnet = [s for s in r.facts["stacks"] if s.get("name") == "aspnet"]
+        self.assertTrue(aspnet and any(m.startswith("Contoso.Portal/") for m in dtl(aspnet[0]).get("marker_files", [])))
+
+    def test_stack_markers_in_fixtures_and_tooling_are_ignored(self):
+        r = self.case("stack-markers")
+        ignored = sum(int(dtl(s).get("ignored_markers") or 0) for s in r.facts["stacks"])
+        need(ignored >= 1, "ignored_markers", "no stack records the markers it dropped")
+        ids = self._stack_ids(r)
+        self.assertNotIn("aspnet-core", ids)
+        self.assertNotIn("node-express", ids)
+        stray = [f for f in r.facts["facts"] if f["kind"] != "file" and f["path"].startswith(("fixtures/", "tests/"))]
+        self.assertEqual(stray, [], "fixture projects contribute no Facts")
+
+    def test_winforms_handlers_are_not_web_entry_points(self):
+        r = self.case("winforms-handlers")
+        web = [f for f in r.facts_of("entry_point") if f["path"].startswith("Contoso.Portal.Harness/")
+               and dtl(f).get("type") != "desktop"]
+        need(not web, "classification", f"WinForms code produces web entry points: {[f['name'] for f in web]}")
+        self.assertEqual([f for f in r.facts_of("entry_point") if dtl(f).get("class") == "HarnessController"], [])
+        self.assertTrue(r.facts_of("entry_point", handler="HomeController.Index"), "MVC controllers still found")
+
+    def test_winforms_harness_is_one_desktop_entry_point(self):
+        r = self.case("winforms-handlers")
+        desktop = need_fact(r, "entry_point", type="desktop")
+        self.assertEqual([f["path"] for f in desktop], ["Contoso.Portal.Harness/Program.cs"])
+        self.assertEqual(desktop[0]["line"], line_of(r, "Contoso.Portal.Harness/Program.cs", "static void Main"))
+        self.assertTrue(facts_at(r, "ui_page", "Contoso.Portal.Harness/HarnessForm.cs"), "the form is a page")
+        core = [f for f in r.facts_of("entry_point", type="desktop") if f["path"].startswith("Contoso.Portal.Core/")]
+        self.assertEqual(core, [], "a Core web Exe is not desktop")
+        caps = [c for s in r.facts["stacks"] for c in as_list(dtl(s).get("capabilities"))]
+        self.assertIn("entry_point.desktop", caps)
+
+    # --- build-defines / publish-profile
+    def test_build_defines_per_configuration(self):
+        r = self.case("build-defines")
+        csproj = PORTAL + "Contoso.Portal.csproj"
+        want = {"Debug": ["DEBUG", "TRACE"], "Staging": ["STAGING", "TRACE"], "Release": ["TRACE"],
+                "Odd": ["ODD", "TRACE"], "Training": ["TRAINING"]}
+        got = {dtl(f)["config"]: f for f in need_fact(r, "build_define") if f["path"] == csproj}
+        self.assertEqual(sorted(got), sorted(want))
+        for config, symbols in want.items():
+            self.assertEqual(as_list(dtl(got[config]).get("symbols")), symbols, config)
+        self.assertIs(dtl(got["Training"]).get("inherits"), True, "$(DefineConstants) is inherited")
+        self.assertFalse(dtl(got["Debug"]).get("inherits"))
+
+    def test_project_facts_from_csproj(self):
+        r = self.case("build-defines")
+        need_fact(r, "build_define")
+        kinds = {f["path"]: dtl(f) for f in r.facts_of("project")}
+        self.assertEqual(kinds[PORTAL + "Contoso.Portal.csproj"].get("kind"), "web")
+        self.assertEqual(str(kinds["Contoso.Portal.Harness/Contoso.Portal.Harness.csproj"].get("output_type")).lower(), "winexe")
+        self.assertEqual(kinds["Contoso.Portal.Harness/Contoso.Portal.Harness.csproj"].get("kind"), "winforms")
+        self.assertEqual(kinds["Contoso.Portal.Tests/Contoso.Portal.Tests.csproj"].get("kind"), "test")
+        self.assertIs(kinds["Contoso.Portal.Tests/Contoso.Portal.Tests.csproj"].get("test"), True)
+
+    def test_publish_profile_host_only(self):
+        r = self.case("publish-profile")
+        prof = {f["name"]: dtl(f) for f in need_fact(r, "publish_profile")}
+        self.assertEqual(sorted(prof), ["Production", "Staging"])
+        self.assertEqual((prof["Staging"].get("build_config"), prof["Staging"].get("method"), prof["Staging"].get("host")),
+                         ("Staging", "MSDeploy", "deploy-stg.contoso.test"))
+        self.assertEqual((prof["Production"].get("build_config"), prof["Production"].get("method"),
+                          prof["Production"].get("host")), ("Release", "FileSystem", "deploy.contoso.test"))
+        text = case_text(r)
+        for leak in ("deploy-stg-user", "InventedEncryptedBlobMarker0001", "msdeploy.axd", "launch=1"):
+            self.assertNotIn(leak, text)
+        self.assertEqual([f for f in r.facts_of("publish_profile") if f["path"].endswith(".pubxml.user")], [])
+
+    # --- route-area
+    def _route(self, r, handler):
+        found = entries_of(r, handler)
+        need(found, "entry_point", handler)
+        return found
+
+    def test_route_area_three_styles_and_prefixes(self):
+        r = self.case("route-area")
+        inv = self._route(r, "InvoicesController.Index")[0]
+        need("mvc_area" in dtl(inv), "mvc_area", "no mvc_area on an MVC entry_point")
+        self.assertEqual((inv["name"], dtl(inv)["mvc_area"], dtl(inv).get("mvc_area_path")),
+                         ("/billing/invoices/{id:int?}", "Billing", "Areas/Billing"))          # name plus AreaPrefix
+        batch = self._route(r, "BatchController.Run")[0]
+        self.assertEqual((batch["name"], dtl(batch).get("mvc_area"), dtl(batch).get("mvc_area_path")),
+                         ("/uploads/batch/run", "Uploads", "Areas/Uploads"))                   # prefix only, spaced attributes
+        root = self._route(r, "RootController.Index")[0]
+        self.assertEqual(root["name"], "/about")
+        self.assertNotIn("mvc_area_path", dtl(root), "an empty RouteArea is the root: no area_path")
+        self.assertIn(dtl(root).get("mvc_area", ""), ("", None))
+
+    def test_route_area_registration_literal_and_folder_win(self):
+        r = self.case("route-area")
+        regs = {f["path"].split("/")[-1]: f for f in r.facts_of("entry_point", type="route") if "handler" not in dtl(f)}
+        self.assertEqual(regs["PublicAreaRegistration.cs"]["name"], "/info/{controller}/{action}/{id}",
+                         "the area URL is the registration literal, not the folder name")
+        self.assertEqual(dtl(regs["PublicAreaRegistration.cs"]).get("mvc_area_path"), "Areas/Public")
+        self.assertEqual(regs["ReportsAreaRegistration.cs"]["name"], "/reports/{controller}/{action}/{id}")
+        self.assertFalse([f for f in r.facts_of("entry_point") if f["name"].lower().startswith("/public/")])
+        export = self._route(r, "ExportController.Index")[0]
+        self.assertEqual((dtl(export).get("mvc_area"), dtl(export).get("mvc_area_path")), ("Reports", "Areas/Reports"),
+                         "the folder wins over a namespace that names another area")
+
+    def test_route_area_tilde_and_attribute_routes_exclude_conventional(self):
+        r = self.case("route-area")
+        self.assertEqual([f["name"] for f in self._route(r, "RootController.Status")], ["/status"], "~/ ignores the prefix")
+        self.assertEqual([f["name"] for f in self._route(r, "AccountController.Login")], ["/signin"],
+                         "an action with [Route] is not reachable by the conventional route")
+        home = self._route(r, "HomeController.Index")[0]
+        self.assertNotIn("mvc_area_path", dtl(home))
+        self.assertEqual([f["name"] for f in self._route(r, "RootController.Team")], ["/about/team/{name?}"],
+                         "no duplicate, optional parameter kept")
+        in_areas = [f for f in r.facts_of("entry_point", type="route") if "/Areas/" in f["path"] and "handler" in dtl(f)]
+        self.assertTrue(in_areas)
+        self.assertTrue(all(dtl(f).get("mvc_area") and dtl(f).get("mvc_area_path") for f in in_areas),
+                        "every MVC entry_point under Areas/ carries mvc_area and mvc_area_path")
+
+    # --- custom-guard / secrets-never-recorded
+    def test_custom_guard_external_attribute_is_a_candidate(self):
+        r = self.case("custom-guard")
+        cands = {dtl(f)["attribute"]: dtl(f) for f in need_fact(r, "guard_candidate")}
+        self.assertGreaterEqual(int(cands["ContosoGuard"]["uses"]), 3)
+        self.assertEqual(as_list(cands["ContosoGuard"]["arity_set"]), [4, 5])
+        self.assertIn("ContosoLayout", cands, "a non-guard attribute used three times is listed too (layout injection)")
+        self.assertEqual(as_list(cands["ContosoLayout"]["arity_set"]), [1])
+
+    def test_custom_guard_declared_in_context_is_auth_check_declared(self):
+        r = self.case("custom-guard", files={"appdoc-context.md": "Auth attributes: ContosoGuard\n"})
+        declared = need_fact(r, "auth_check", via="declared")
+        self.assertTrue(all("ContosoGuard" in f["name"] for f in declared))
+        self.assertEqual([f for f in r.facts_of("guard_candidate") if dtl(f).get("attribute") == "ContosoGuard"], [],
+                         "a declared attribute is no longer a candidate")
+        need_fact(r, "context_directive", directive="Auth attributes")
+
+    def test_custom_guard_arguments_arity_and_credential_constant(self):
+        r = self.case("custom-guard")
+        uses = [dtl(f) | {"path": f["path"]} for f in need_fact(r, "guard_use", attribute="ContosoGuard")]
+        inv = [u for u in uses if u["path"].endswith("InvoicesController.cs")]
+        self.assertEqual(sorted((u["scope"], u["arity"]) for u in inv), [("class", 5), ("method", 4)],
+                         "the method-level use overrides the class-level use with a different arity")
+        cls = next(u for u in inv if u["scope"] == "class")
+        self.assertEqual(as_list(cls["arg_kinds"])[-1], "secret", "the credential constant is a secret argument")
+        self.assertEqual((cls.get("role_ref"), cls.get("role")), ("Roles.Finance", "FinanceStaff"))
+        self.assertNotIn("not-a-real-credential-0001", case_text(r))
+
+    def test_custom_guard_auth_method_promotion_lists_constants(self):
+        r = self.case("custom-guard")
+        calls = need_fact(r, "auth_check", via="call")
+        roles = set()
+        for f in calls:
+            roles |= lower_set(dtl(f).get("roles"))
+        self.assertTrue({"portaladmins", "financestaff"} <= roles, roles)
+        self.assertTrue(all("HasRole" in f["name"] for f in calls))
+
+    def test_secrets_never_recorded_secret_constant_is_not_resolved(self):
+        r = self.case("secrets-never-recorded")
+        secret = need_fact(r, "const_def", qualified="Accounts.ServicePassword")
+        self.assertIs(dtl(secret[0]).get("secret"), True)
+        self.assertNotIn("value", dtl(secret[0]), "R19: a secret constant is never value-resolved")
+        role = need_fact(r, "const_def", qualified="Roles.Admin")
+        self.assertEqual(dtl(role[0]).get("value"), "PortalAdmins")
+        modes = [as_list(dtl(f).get("under_if")) for f in r.facts_of("const_def", qualified="MvcApplication.Mode")]
+        self.assertIn(["DEBUG"], modes)
+        self.assertIn(["STAGING"], modes)
+
+    def test_secrets_never_recorded_wcf_address_is_scheme_and_host(self):
+        r = self.case("secrets-never-recorded")
+        svc = need_fact(r, "external_call", type="service", via="Contoso.Portal.IReportService")
+        self.assertEqual(svc[0]["name"], "https://reports.contoso.test:8443")
+        text = case_text(r)
+        for leak in ("svcuser", "not-a-real-pw", "token=abc", "frag"):
+            self.assertNotIn(leak, text)
+
+    def test_secrets_never_recorded_named_users_counted_not_recorded(self):
+        r = self.case("secrets-never-recorded")
+        root = [f for f in rules_of(r, WEB_CONFIG, "base") if dtl(f).get("users_named")]
+        need(root, "users_named", "access_rule has no users_named count")
+        self.assertEqual([dtl(f)["users_named"] for f in root], [2])
+        billing = [dtl(f).get("users_named") for f in rules_of(r, WEB_CONFIG, "base", "billing") if dtl(f).get("users_named")]
+        self.assertEqual(billing, [2], "CONTOSO\\pat and contoso\\PAT are one user")
+        self.assertNotRegex(case_text(r).lower(), r"contoso\\+(pat|sam)\b")
+
+    def test_secrets_never_recorded_no_secret_value_in_any_fact_or_summary(self):
+        r = self.case("secrets-never-recorded")
+        text = case_text(r)
+        self.assertEqual([s for s in TARGET_SECRETS if s in text], [])
+        self.assertTrue(facts_at(r, "config_key", name="ReportServerPassword"), "the secret's location is still recorded")
+        pw = facts_at(r, "config_key", name="ReportServerPassword")[0]
+        self.assertTrue(dtl(pw).get("secret_location"))
+
+
+class Slice1Protection(CorpusCase):
+    """W4 cases (effective protection per handler, 4E). Own tiny Targets give crisp chains; they land after the
+    first slice, so PENDING names T28.6x tasks."""
+
+    def _reach(self, r, handler):
+        d = need_entry(r, handler, "reach_anon")
+        return d
+
+    def test_url_auth_chain_merge(self):
+        r = self.case("url-auth-merge")
+        want = {"FallThroughController.Index": ("deny", "deny"),      # allow roles only falls through
+                "WinsController.Index": ("allow", "allow"),             # first match wins
+                "ChildController.Index": ("allow", "deny"),            # a child folder's file before the parent
+                "ClearedController.Index": ("allow", "allow"),         # <clear/> then the implicit allow *
+                "RemovedController.Index": ("allow", "allow"),         # <remove users="*"/> drops the inherited deny
+                "TieController.Index": ("allow", "allow"),             # same segment count: document order
+                "VerbsController.List": ("allow", "allow"),
+                "VerbsController.Save": ("deny", "deny"),              # deny verbs="POST"
+                "HomeController.Index": ("deny", "deny")}
+        for handler, (anon, auth) in want.items():
+            d = self._reach(r, handler)
+            self.assertEqual((handler, d["reach_anon"], d.get("reach_auth")), (handler, anon, auth))
+        self.assertEqual(self._reach(r, "NamedController.Index")["reach_anon"], "unknown", "a named user before the decision")
+        self.assertEqual(self._reach(r, "FallThroughController.Index")["reach"], "role_restricted")
+        self.assertEqual(lower_set(self._reach(r, "FallThroughController.Index")["reach_roles"]), {"admins", "staff"})
+        self.assertEqual(self._reach(r, "WinsController.Index")["reach"], "no_app_restriction")
+
+    def test_nested_webconfig_applies_by_url_prefix_not_area_folder(self):
+        r = self.case("nested-webconfig")
+        admin = self._reach(r, "AdminController.Index")
+        self.assertEqual((admin["reach_anon"], admin["reach"]), ("deny", "role_restricted"))
+        self.assertEqual(lower_set(admin["reach_roles"]), {"admins"})
+        export = self._reach(r, "ExportController.Index")      # URL /reports/Export/Index: Areas/Reports/Web.config does not apply
+        self.assertEqual((export["reach_anon"], export["reach"]), ("allow", "no_app_restriction"))
+
+    def test_route_aliases_all_checked_and_open_route_is_unknown(self):
+        r = self.case("route-aliases")
+        home = self._reach(r, "HomeController.Index")
+        urls = {("/" + str(u).strip("/")).lower() for u in as_list(home.get("url_set"))}
+        self.assertTrue({"/", "/home", "/home/index"} <= urls, urls)
+        self.assertEqual(home["reach_anon"], "allow", "a rule on Home/Index does not protect / or /Home")
+        docs = self._reach(r, "DocsController.Show")
+        self.assertEqual(docs.get("url_set"), "open")
+        self.assertEqual(docs["reach_anon"], "unknown")
+        self.assertIn("url_set_open", as_list(docs.get("reasons")))
+
+    def test_filter_composition(self):
+        r = self.case("filter-composition")
+        got = {h: (self._reach(r, h)["reach_anon"], self._reach(r, h).get("reach_auth")) for h in (
+            "PlainController.Index", "OpenController.Index", "LockedController.Index", "OverrideController.Index",
+            "BothController.Index", "OrphanController.Index")}
+        self.assertEqual(got["PlainController.Index"], ("deny", "allow"), "the global AuthorizeAttribute applies")
+        self.assertEqual(got["OpenController.Index"][0], "allow", "[AllowAnonymous] on the controller disables Authorize")
+        self.assertEqual(got["LockedController.Index"][0], "deny", "...but not a URL deny")
+        self.assertEqual(got["OverrideController.Index"][0], "allow", "[OverrideAuthorization] clears outer filters")
+        self.assertEqual(got["BothController.Index"], ("deny", "deny"), "Roles and Users on one attribute are ANDed")
+        self.assertEqual(got["OrphanController.Index"][0], "unknown", "an unresolved base type is unknown")
+        orphan = dtl(entries_of(r, "OrphanController.Index")[0])
+        self.assertIn("unknown", as_list(orphan.get("guard_mechanism")))
+
+    def test_core_fallback_policy_mechanism_only_no_reach(self):
+        r = self.case("core-fallback-policy")
+        d = need_entry(r, "StatusController.Get", "guard_mechanism")
+        self.assertNotIn("reach", d)
+        self.assertNotIn("reach_anon", d)
+        self.assertNotEqual(as_list(d["guard_mechanism"]), ["none"], "AddAuthorization is registered: no absence claim")
+
+    def test_core_absence_claim_only_without_auth_services(self):
+        bare = ("var builder = WebApplication.CreateBuilder(args);\nbuilder.Services.AddControllers();\n"
+                "var app = builder.Build();\napp.MapControllers();\napp.Run();\n")
+        r = self.case("core-fallback-policy", files={"Contoso.Portal.Core/Program.cs": bare})
+        d = need_entry(r, "StatusController.Get", "guard_mechanism")
+        self.assertEqual(as_list(d["guard_mechanism"]), ["none"], "no auth service of any kind is registered")
+        reset = dtl(entries_of(r, "StatusController.Reset")[0])
+        self.assertNotEqual(as_list(reset["guard_mechanism"]), ["none"])
+
+    def test_owin_with_mode_none_is_unknown(self):
+        r = self.case("owin-none")
+        d = need_entry(r, "UploadsController.Save", "reach")
+        self.assertEqual(d["reach"], "unknown")
+        self.assertIn("owin", as_list(d.get("reasons")))
+
+    def test_verbless_actions_are_any_and_state_changing_is_tristate(self):
+        r = self.case("verbless-actions")
+        sub = need_entry(r, "HomeController.Subscribe", "verbs_declared")
+        self.assertIs(sub["verbs_declared"], False)
+        self.assertEqual(as_list(sub["verbs"]), ["any"], "a verb-less MVC 5 action accepts every verb")
+        self.assertEqual((str(sub["state_changing"]).lower(), sub.get("writes")), ("true", True), "any verb with a write hit")
+        contact = dtl(entries_of(r, "HomeController.Contact")[0])
+        self.assertEqual(str(contact["state_changing"]).lower(), "unknown", "verb-less with no write hit")
+        self.assertEqual(str(dtl(entries_of(r, "AccountController.Details")[0])["state_changing"]).lower(), "false")
+        self.assertEqual(str(dtl(entries_of(r, "AccountController.Manage")[0])["state_changing"]).lower(), "true")
+
+    def test_verbless_web_api_verb_from_name_convention(self):
+        r = self.case("verbless-actions")
+        post = need_entry(r, "ItemsController.PostItem", "verbs")
+        self.assertEqual(as_list(post["verbs"]), ["POST"])
+        self.assertIs(post.get("verbs_declared"), False)
+        self.assertEqual(str(post["state_changing"]).lower(), "true")
+        self.assertEqual(as_list(dtl(entries_of(r, "ItemsController.GetItems")[0])["verbs"]), ["GET"])
+
+
+# ---- Check cases (their own docs/appdoc): C21 and C22 are written to the new rules.
+
+def _recheck(r, narrative):
+    """Write ``narrative`` over the case's Narrative and run the Check again in process."""
+    with open(os.path.join(r.out, check.NARRATIVE), "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(narrative)
+    with contextlib.redirect_stdout(io.StringIO()):
+        seal.seal_register(r.target, r.out)
+        code = run_as_stamped(narrative, check.run, r.target, r.out, False, False)
+    with open(os.path.join(r.out, "check-report.md"), encoding="utf-8") as fh:
+        return code, fh.read()
+
+
+class Slice1CheckRules(CorpusCase):
+    def test_config_not_reviewed_c21_fails_without_a_lined_citation(self):
+        r = self.case("config-not-reviewed")
+        self.assertEqual(r.code, 0, "today's rules pass this document: only the new rule can fail it\n" + r.report)
+        need("C21" in r.rules(), "C21", "the Check does not require Web.config to be cited")
+        self.assertEqual(r.code, 2, r.report)
+        self.assertIn("this file is mandatory input (R16); read it and cite what it shows, redacting values", r.report)
+        self.assertIn("Web.config", r.report)
+
+    def test_config_not_reviewed_c21_passes_with_a_lined_citation_outside_blocks(self):
+        r = self.case("config-not-reviewed")
+        need("C21" in r.rules(), "C21", "the Check does not require Web.config to be cited")
+        text = r.narrative
+        marker = "- The admin check is made at `app/main.py:4`."
+        self.assertIn(marker, text)
+        bare = text.replace(marker, marker + "\n- Windows authentication is set in `Web.config`.")
+        code, report = _recheck(r, bare)
+        self.assertIn("C21", re.findall(r"^## (C\d+) ", report, re.M), "a bare file name is not a lined citation")
+        lined = text.replace(marker, marker + "\n- Windows authentication is set at `Web.config:4`, and only role Staff is allowed at `Web.config:6`.")
+        code, report = _recheck(r, lined)
+        self.assertNotIn("C21", re.findall(r"^## (C\d+) ", report, re.M), report)
+        self.assertEqual(code, 0, report)
+
+    def test_area_coverage_c22_fails_when_an_area_is_missing_from_4_1(self):
+        r = self.case("area-coverage")
+        self.assertEqual(r.code, 0, "today's rules pass this document: only the new rule can fail it\n" + r.report)
+        areas = [dtl(f).get("mvc_area_path") for f in r.facts_of("entry_point") if dtl(f).get("mvc_area_path")]
+        need(areas, "mvc_area_path", "the area's entry points carry no mvc_area_path")
+        need("C22" in r.rules(), "C22", "the Check does not require every area in 4.1")
+        self.assertEqual(r.code, 2, r.report)
+        self.assertIn("Areas/Billing", r.report)
+        self.assertEqual(areas, ["Areas/Billing"])
+
+
+class Slice1Registry(unittest.TestCase):
+    def test_new_cases_fail_for_their_stated_reason(self):
+        """Every PENDING test of these classes fails today with ``Missing`` naming the token its reason starts with
+        ("missing <token>: ..."): not a crash, a bad Target or an unrelated assertion (T28.03)."""
+        checked = 0
+        for cls in (Slice1Config, Slice1Code, Slice1Protection, Slice1CheckRules):
+            for name, (task, reason) in sorted(PENDING.items()):
+                if name not in vars(cls):
+                    continue
+                m = re.match(r"missing (\S+?):", reason)
+                self.assertTrue(m, f"{name}: the PENDING reason must start with 'missing <token>:'")
+                result = unittest.TestResult()
+                cls(name).run(result)
+                self.assertEqual(result.unexpectedSuccesses, [], f"{name} ({task}) passes: delete its PENDING entry")
+                self.assertEqual(result.errors, [], name)
+                self.assertEqual(len(result.expectedFailures), 1, f"{name}: {result.skipped}")
+                tb = result.expectedFailures[0][1].strip().splitlines()[-1]
+                self.assertRegex(tb, r"^(tests\.test_corpus\.)?Missing: missing " + re.escape(m.group(1)),
+                                 f"{name} ({task}) fails for another reason: {tb}")
+                checked += 1
+        self.assertGreaterEqual(checked, 1)
 
 
 def _apply_pending():
