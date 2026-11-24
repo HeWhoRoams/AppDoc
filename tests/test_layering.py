@@ -22,7 +22,7 @@ ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
 RANK = {
     # 0: no appdoc imports
     "textutil": 0, "textnorm": 0, "docmodel": 0, "facts": 0, "citations": 0, "secrets": 0, "context": 0,
-    "integration": 0,
+    "integration": 0, "urlauth": 0,
     # shared .NET XML config reader (stdlib only, returns plain data; stacks and generic call it)
     "dotnetcfg": 0,
     # per-file .NET security settings and rules (imports facts, dotnetcfg); the join post-pass sits above it
