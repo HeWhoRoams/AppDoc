@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.7.1 (unreleased)
+## Unreleased
 
 ### Changed
 - Six 2.7.0 additions that the 2.7 plan did not list are now recorded in `docs/remediation-plan-2.7.md` ("Changes made during implementation"): the C1 extensions for Go, protobuf, Ruby, PHP, Kotlin and Terraform files; `audit-plan --check`; the "Fix advisories" run step; auditors covering every row of a sampled section after any edit; `Audit floor:` percent syntax; and fill-before-seal (S6.1). ADR 0015 has an amendment for the last three audit rules.
