@@ -1,11 +1,11 @@
 {
   "aspnet-core/auth_check": {
-    "expected": 6,
-    "found": 6,
+    "expected": 8,
+    "found": 8,
     "fp": 0,
     "precision": 1.0,
     "recall": 1.0,
-    "tp": 6
+    "tp": 8
   },
   "aspnet-core/config_key": {
     "expected": 6,
@@ -23,6 +23,22 @@
     "recall": 1.0,
     "tp": 2
   },
+  "aspnet-core/const_def": {
+    "expected": 2,
+    "found": 2,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 2
+  },
+  "aspnet-core/controller_class": {
+    "expected": 6,
+    "found": 6,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 6
+  },
   "aspnet-core/data_access": {
     "expected": 18,
     "found": 18,
@@ -32,12 +48,12 @@
     "tp": 18
   },
   "aspnet-core/entry_point": {
-    "expected": 37,
-    "found": 37,
+    "expected": 41,
+    "found": 41,
     "fp": 0,
     "precision": 1.0,
     "recall": 1.0,
-    "tp": 37
+    "tp": 41
   },
   "aspnet-core/external_call": {
     "expected": 10,
@@ -47,6 +63,30 @@
     "recall": 1.0,
     "tp": 10
   },
+  "aspnet-core/guard_candidate": {
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
+  },
+  "aspnet-core/guard_class": {
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
+  },
+  "aspnet-core/guard_use": {
+    "expected": 8,
+    "found": 8,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 8
+  },
   "aspnet-core/message": {
     "expected": 5,
     "found": 5,
@@ -54,6 +94,14 @@
     "precision": 1.0,
     "recall": 1.0,
     "tp": 5
+  },
+  "aspnet-core/method_call": {
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
   },
   "aspnet-core/stack": {
     "expected": 4,
@@ -71,13 +119,21 @@
     "recall": 1.0,
     "tp": 4
   },
+  "aspnet/access_rule": {
+    "expected": 0,
+    "found": 0,
+    "fp": 8,
+    "precision": 0.0,
+    "recall": null,
+    "tp": 0
+  },
   "aspnet/auth_check": {
-    "expected": 4,
-    "found": 4,
+    "expected": 5,
+    "found": 5,
     "fp": 0,
     "precision": 1.0,
     "recall": 1.0,
-    "tp": 4
+    "tp": 5
   },
   "aspnet/config_key": {
     "expected": 2,
@@ -87,6 +143,14 @@
     "recall": 1.0,
     "tp": 2
   },
+  "aspnet/config_transform": {
+    "expected": 0,
+    "found": 0,
+    "fp": 1,
+    "precision": 0.0,
+    "recall": null,
+    "tp": 0
+  },
   "aspnet/connection": {
     "expected": 2,
     "found": 2,
@@ -94,6 +158,22 @@
     "precision": 1.0,
     "recall": 1.0,
     "tp": 2
+  },
+  "aspnet/const_def": {
+    "expected": 3,
+    "found": 3,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 3
+  },
+  "aspnet/controller_class": {
+    "expected": 3,
+    "found": 3,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 3
   },
   "aspnet/data_access": {
     "expected": 7,
@@ -104,12 +184,12 @@
     "tp": 7
   },
   "aspnet/entry_point": {
-    "expected": 23,
-    "found": 23,
+    "expected": 25,
+    "found": 25,
     "fp": 0,
     "precision": 1.0,
     "recall": 1.0,
-    "tp": 23
+    "tp": 25
   },
   "aspnet/external_call": {
     "expected": 4,
@@ -119,6 +199,38 @@
     "recall": 1.0,
     "tp": 4
   },
+  "aspnet/guard_candidate": {
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
+  },
+  "aspnet/guard_class": {
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
+  },
+  "aspnet/guard_use": {
+    "expected": 5,
+    "found": 5,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 5
+  },
+  "aspnet/host_auth": {
+    "expected": 0,
+    "found": 0,
+    "fp": 1,
+    "precision": 0.0,
+    "recall": null,
+    "tp": 0
+  },
   "aspnet/message": {
     "expected": 7,
     "found": 7,
@@ -126,6 +238,22 @@
     "precision": 1.0,
     "recall": 1.0,
     "tp": 7
+  },
+  "aspnet/method_call": {
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
+  },
+  "aspnet/security_setting": {
+    "expected": 0,
+    "found": 0,
+    "fp": 41,
+    "precision": 0.0,
+    "recall": null,
+    "tp": 0
   },
   "aspnet/smell": {
     "expected": 1,
