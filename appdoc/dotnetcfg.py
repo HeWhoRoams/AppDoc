@@ -198,3 +198,58 @@ def enum_value(element: str, attr: str, value: "str | None") -> str:
     allowed = ENUMS.get((element, attr))
     v = (value or "").strip().lower()
     return v if allowed and v in allowed else "other"
+
+
+# ---------------------------------------------------------------- appSettings traits (W11: counts and a year, never values)
+
+ID_LIST_WORDS = frozenset({"users", "admins", "testers", "owners", "allowed", "exempt", "ignore", "ids", "positions"})
+YEAR_WORDS = frozenset({"year", "fiscal", "fy", "horizon", "through", "until", "expire", "expiry", "end", "max"})
+# words that mark a count, a size or a time span: such a key is not a calendar horizon even when it contains "Max"
+NOT_YEAR_WORDS = frozenset({"port", "timeout", "size", "length", "count", "retries", "retry", "connections", "threads",
+                            "interval", "seconds", "milliseconds", "ms", "minutes", "bytes", "rows", "items", "limit"})
+_CAMEL = re.compile(r"[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z]+|[A-Z]+|\d+")
+_IDS_TAIL = re.compile(r"(?:Ids|IDs|ids)$")
+
+
+def key_words(key: str) -> list:
+    """The lower-case words of a config key: split on separators, then on camel-case humps (``FiscalYearEnd`` gives
+    fiscal, year, end). A trailing ``Ids`` or ``IDs`` is the word ``ids``."""
+    out = []
+    for chunk in re.split(r"[^A-Za-z0-9]+", key or ""):
+        if not chunk:
+            continue
+        if chunk.isupper() or chunk.islower() or chunk.isdigit():
+            out.append(chunk.lower())
+            continue
+        tail = _IDS_TAIL.search(chunk)
+        head = chunk[:tail.start()] if tail else chunk
+        out.extend(w.lower() for w in _CAMEL.findall(head))
+        if tail:
+            out.append("ids")
+    return out
+
+
+def id_list_count(key: str, value: str) -> int:
+    """The number of tokens when ``value`` is a comma list of three or more tokens of one shape (all digits, or all
+    lower-case alphanumerics containing a letter) under a key whose last word is in ``ID_LIST_WORDS``; otherwise 0.
+    Only the count leaves this function (R18)."""
+    words = key_words(key)
+    if not words or words[-1] not in ID_LIST_WORDS:
+        return 0
+    tokens = [t.strip() for t in (value or "").split(",")]
+    if len(tokens) < 3 or any(not t for t in tokens):
+        return 0
+    shapes = {"d" if t.isdigit() else "a" if re.fullmatch(r"[a-z0-9]+", t) else "" for t in tokens}
+    return len(tokens) if len(shapes) == 1 and "" not in shapes else 0
+
+
+def year_value(key: str, value: str) -> "int | None":
+    """The year when ``value`` is a bare 4-digit year (1900 to 2199) under a key with a horizon word and no count or
+    time-span word; otherwise None."""
+    words = set(key_words(key))
+    if not words & YEAR_WORDS or words & NOT_YEAR_WORDS:
+        return None
+    v = (value or "").strip()
+    if re.fullmatch(r"\d{4}", v) and 1900 <= int(v) <= 2199:
+        return int(v)
+    return None

@@ -196,9 +196,9 @@ def _dep(path, line, name, version, manager) -> Fact:
     return Fact.make("dependency", STACK_ID, path, line, name, version=version or "", manager=manager)
 
 
-def _cfg(path, line, key, source, role="app") -> Fact:
+def _cfg(path, line, key, source, role="app", **extra) -> Fact:
     return Fact.make("config_key", STACK_ID, path, line, key, source=source, role=role, use="define",
-                     secret_location=is_secret_key(key))
+                     secret_location=is_secret_key(key), **extra)
 
 
 def _with_role(f: Fact, role: str) -> Fact:
@@ -242,7 +242,21 @@ def _dotnet_config(path, text):
                 secret = is_secret_key(key) or bool(find_secret_shapes(value))
                 yield _conn(path, line, key, "database", secret)
             else:
-                yield _cfg(path, line, key, _name(path))
+                yield _cfg(path, line, key, _name(path), **_traits(key, attrs.get("value", "")))
+
+
+def _traits(key: str, value: str) -> dict:
+    """Counts and a year, never a value (R18, R19): ``list_count`` for an identifier list, ``year`` for a horizon key."""
+    if is_secret_key(key):
+        return {}
+    out = {}
+    n = dotnetcfg.id_list_count(key, value)
+    if n:
+        out["list_count"] = n
+    y = dotnetcfg.year_value(key, value)
+    if y:
+        out["year"] = y
+    return out
 
 
 # ---------------------------------------------------------------- JSON config

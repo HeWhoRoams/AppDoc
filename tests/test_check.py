@@ -2058,6 +2058,16 @@ class CheckTests(unittest.TestCase):
         self.with_facts(self.smell("aaaa0008", 8))
         self.assertEqual(self.fired(ranged), {"C12"})
 
+    def test_c12_only_obliging_patterns(self):
+        for pattern in ("deref-before-null-check", "dead-null-fallback", "hardcoded-production-mode",
+                        "config-year-horizon", "debug-setting-in-debug-config"):
+            self.with_facts(self.smell("aaaa0007", 7, pattern=pattern))
+            self.assertEqual(self.fired(build_doc()), set(), pattern)
+        for pattern in ("machinekey-in-config", "named-user-access-rule", "duplicate-config-key",
+                        "debug-setting-in-nondebug-config", "identifier-list-in-config"):
+            self.with_facts(self.smell("aaaa0007", 7, pattern=pattern))
+            self.assertEqual(self.fired(build_doc()), {"C12"}, pattern)
+
     def test_c12_message_prints_the_fid_pattern_location_and_fix(self):
         self.with_facts(self.smell("aaaa0009", 9))
         code, report, out = self.run_check(build_doc())

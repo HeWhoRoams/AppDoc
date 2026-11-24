@@ -19,6 +19,7 @@ from . import fingerprint
 from . import notes as notes_mod
 from . import register as reg_mod
 from . import scan
+from . import smells as smells_mod
 from . import template_spec as spec
 from .citations import KNOWN_BARE_FILES, OWNER_CONTEXT, Citation, find_citations, parse_span
 from .facts import fact_id
@@ -608,8 +609,9 @@ def _cited_paths(target, cache, cites) -> set[str]:
 
 
 def uncited_smells(target, cache, lines, heads, facts) -> list[tuple[str, dict]]:
-    """(fid, smell Fact) of every non-test smell Fact no 10.1 row cites (the path, and a line that covers it)."""
-    smells = sorted((f for f in facts.get("facts", []) if f.get("kind") == "smell" and not f["detail"].get("test")),
+    """(fid, smell Fact) of every obliging, non-test smell Fact no 10.1 row cites (the path, and a line that covers it)."""
+    smells = sorted((f for f in facts.get("facts", []) if f.get("kind") == "smell" and not f["detail"].get("test")
+                     and f["detail"].get("pattern") in smells_mod.OBLIGING),   # the others are summary-only (W11 C)
                     key=lambda f: (f["path"], f.get("line") or 0, f["detail"].get("fid", "")))
     if not smells:
         return []

@@ -73,7 +73,7 @@ DETAIL_KEYS = {
     "data_access": frozenset(
         "builder class entity namespace native operation orm property statement type via".split()),
     "connection": frozenset("class overridden_in secret_location source type".split()),
-    "config_key": frozenset("overridden_in read_kind role secret_location secret_ref source use via".split()),
+    "config_key": frozenset("list_count overridden_in read_kind role secret_location secret_ref source use via year".split()),
     "dependency": frozenset("manager mode version".split()),
     "external_call": frozenset("call client config_key method mode operation type via".split()),
     "auth_check": frozenset(
@@ -81,7 +81,7 @@ DETAIL_KEYS = {
         "scope users_named via".split()),
     "message": frozenset("context exception".split()),
     "ownership": frozenset("commits contributors first_commit last_commit role source".split()),  # counts and dates, no names (R18)
-    "smell": frozenset("constant fid pattern".split()),
+    "smell": frozenset("configs constant count fid overridden_in pattern sources".split()),
     "schema_object": frozenset("columns dialect expression type unique".split()),
     "owner_file": frozenset("entries kind".split()),
     "ui_page": frozenset("root route type x_class".split()),
@@ -167,8 +167,9 @@ class Fact:
     def from_json(cls, d: dict) -> "Fact":
         """Reconstruct a Fact from its ``to_json()`` dict. Exact round-trip:
         ``from_json(f.to_json()) == f`` (detail collections come back as tuples, as in ``make``)."""
-        detail = tuple(sorted((k, (tuple(v) if isinstance(v, list) else v))
-                              for k, v in d["detail"].items()))
+        detail = tuple(sorted((k, (tuple(tuple(x) if isinstance(x, list) else x for x in v)
+                                   if isinstance(v, list) else v))
+                              for k, v in d["detail"].items()))   # ``sources`` is a list of tuples: freeze both levels
         return cls(d["kind"], d["stack"], d["path"], d["line"], d["name"], detail)
 
 

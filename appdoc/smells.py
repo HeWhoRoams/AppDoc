@@ -4,6 +4,11 @@ Called once per non-skipped file by ``extract``. Never records a secret value.
 Each Fact: kind "smell", name = human sentence, detail pattern=<id>, fid=<facts.fact_id>.
 
 Patterns favour precision over recall: a candidate is a place for the auditor to look, not a verdict.
+
+Two passes (plan 2.8 W11): ``extract`` reads one file's text (cached per file); ``from_facts`` reads only Facts after
+the post-passes, so it is deterministic and the same for every worker count and cache state (P3). The two passes never
+emit the same pattern, with one exception: ``hardcoded-production-mode`` is found in text but needs the project Facts to
+know the project's output type, so ``extract`` emits it and ``apply`` keeps only the hits ``from_facts`` confirms.
 """
 
 from __future__ import annotations
@@ -12,10 +17,29 @@ import re
 from bisect import bisect_right
 from typing import Iterable
 
+from . import dotnetcfg
 from .facts import Fact, fact_id, is_test_path
 from .stacks.base import strip_comments
 
 MAX_CHARS = 1_000_000  # larger files are skipped (the walk already drops files over 2 MB)
+
+# Patterns that oblige C12 (cite in 10.1 or dismiss in the register). Deterministic reads of declared configuration
+# values oblige from the release that ships them (plan 2.8 W11 part C). The patterns of 2.7 and earlier keep their
+# obligation until the labelled-set gate (T28.75) measures them. A heuristic added in 2.8 is summary-only until then.
+DETERMINISTIC = frozenset({"machinekey-in-config", "named-user-access-rule", "duplicate-config-key",
+                           "debug-setting-in-nondebug-config", "identifier-list-in-config"})
+GRANDFATHERED = frozenset({"actuator-exposed", "distinct-auth-errors", "flash-without-redirect",
+                           "hardcoded-credential-constant", "logger-type-mismatch", "state-change-on-get",
+                           "unescaped-template-output"})
+OBLIGING = DETERMINISTIC | GRANDFATHERED
+
+# Patterns whose detector runs for a Stack, so the summary can say "none" for a pattern that ran without a hit.
+PATTERNS_BY_STACK = {
+    "aspnet": ("machinekey-in-config", "named-user-access-rule", "duplicate-config-key",
+               "debug-setting-in-nondebug-config", "debug-setting-in-debug-config", "identifier-list-in-config",
+               "deref-before-null-check",
+               "deref-in-null-branch", "dead-null-fallback", "hardcoded-production-mode", "config-year-horizon"),
+}
 
 # ---------------------------------------------------------------------------
 # Shared helpers
@@ -25,9 +49,10 @@ MAX_CHARS = 1_000_000  # larger files are skipped (the walk already drops files 
 class _Ctx:
     """One file under analysis. Comment-stripped copies are made lazily and keep every offset."""
 
-    def __init__(self, path: str, text: str):
+    def __init__(self, path: str, text: str, stacks=()):
         self.path = path
         self.text = text
+        self.stacks = tuple(stacks)
         self._styles: dict[str, str] = {}
         self._starts: list[int] | None = None
 
@@ -690,12 +715,405 @@ def _credentials(ctx: _Ctx, kind: str):
 
 
 # ---------------------------------------------------------------------------
+# 8. duplicate-config-key (.config text; plan 2.8 W11)
+# ---------------------------------------------------------------------------
+
+_TRANSFORM_NAME = re.compile(r"(?i)^(?:web|app)\.[^.]+\.config$")
+_XDT_NS = re.compile(r"(?i)schemas\.microsoft\.com/XML-Document-Transform")
+_APPSETTINGS = re.compile(r"<appSettings\b([^>]*)>(.*?)</appSettings\s*>", re.I | re.S)
+_CFG_ELEMENT = re.compile(r"<(add|remove|clear)\b([^>]*?)/?>", re.I)
+_CFG_ATTR = re.compile(r"""([A-Za-z_][\w:.-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')""")
+
+
+def _duplicate_keys(ctx: _Ctx):
+    """The same key added twice in one ``appSettings`` section: the later ``add`` silently wins.
+
+    Transform files are excluded (a transform repeats keys by design: they carry the locator, not a second value),
+    and so is a section with ``file=`` or ``configSource=`` (an external file may override a value, so the Target
+    alone cannot say which one wins). A ``remove`` or ``clear`` between the two adds makes the second one legal.
+    """
+    base = ctx.path.rsplit("/", 1)[-1]
+    if _TRANSFORM_NAME.match(base) or _XDT_NS.search(ctx.text):
+        return
+    clean = ctx.code("xml")
+    for sec in _APPSETTINGS.finditer(clean):
+        attrs = {m.group(1).lower() for m in _CFG_ATTR.finditer(sec.group(1))}
+        if attrs & {"file", "configsource"}:
+            continue
+        seen: set = set()
+        for el in _CFG_ELEMENT.finditer(sec.group(2)):
+            kind = el.group(1).lower()
+            if kind == "clear":
+                seen.clear()
+                continue
+            key = None
+            for m in _CFG_ATTR.finditer(el.group(2)):
+                if m.group(1).lower() == "key":
+                    key = m.group(2) if m.group(2) is not None else m.group(3)
+            if key is None:
+                continue
+            if kind == "remove":
+                seen.discard(key)
+            elif key in seen:
+                yield _hit("duplicate-config-key", ctx.line(sec.start(2) + el.start()),
+                           "an appSettings key is added twice in one section: the later value wins and the earlier "
+                           "one is dead")
+            else:
+                seen.add(key)
+
+
+# ---------------------------------------------------------------------------
+# 9. Null patterns (.cs; plan 2.8 W11, soundness rules A I-13)
+# ---------------------------------------------------------------------------
+
+
+def _cs_code(text: str) -> str:
+    """C# source with comments, string literals and char literals blanked (offsets and newlines kept)."""
+    out, i, n = [], 0, len(text)
+    while i < n:
+        c, two = text[i], text[i:i + 2]
+        if two == "//":
+            j = text.find("\n", i)
+            j = n if j < 0 else j
+            out.append(" " * (j - i))
+            i = j
+        elif two == "/*":
+            j = text.find("*/", i + 2)
+            j = n if j < 0 else j + 2
+            out.append(re.sub(r"[^\n]", " ", text[i:j]))
+            i = j
+        elif c == '"' or (c in "@$" and re.match(r'[@$]{1,2}"', text[i:i + 3])):
+            m = re.match(r'[@$]{0,2}"', text[i:])
+            verbatim = "@" in m.group(0)
+            j = i + m.end()
+            while j < n:
+                if verbatim and text[j] == '"' and text[j + 1:j + 2] == '"':
+                    j += 2
+                    continue
+                if not verbatim and text[j] == "\\":
+                    j += 2
+                    continue
+                if text[j] == '"' or (not verbatim and text[j] == "\n"):
+                    break
+                j += 1
+            j = min(n, j + 1)
+            out.append(re.sub(r"[^\n]", " ", text[i:j]))
+            i = j
+        elif c == "'":
+            m = re.match(r"'(?:\\.[^'\n]*|[^'\\\n])'", text[i:])
+            if m:
+                out.append(" " * m.end())
+                i += m.end()
+            else:
+                out.append(c)
+                i += 1
+        else:
+            out.append(c)
+            i += 1
+    return "".join(out)
+
+
+_CTRL_WORDS = frozenset("if else for foreach while do switch try catch finally using lock fixed unsafe checked "
+                        "unchecked return throw new case default when delegate nameof typeof sizeof".split())
+_EXIT = re.compile(r"\b(?:goto|return|throw|break|continue)\b")
+_LABEL = re.compile(r"^\s*(?!case\b|default\b)[A-Za-z_]\w*\s*:(?!:)")
+_OBJECT_METHODS = frozenset({"ToString", "Equals", "GetType", "GetHashCode"})
+_COMPOUND_START = re.compile(r"(?:if|for|foreach|while|do|switch|try|using|lock|else|fixed|unsafe|checked|unchecked|"
+                             r"case|default|return|throw|yield|goto|break|continue)\b")
+_NULL_COND = re.compile(r"(?:([A-Za-z_]\w*)\s*==\s*null|([A-Za-z_]\w*)\s+is\s+null|null\s*==\s*([A-Za-z_]\w*))")
+_NOT_A_TYPE = r"(?!(?:return|new|else|throw|in|is|as|await|yield|case|goto|out|ref|using)\b)"
+
+
+def _method_bodies(code: str):
+    """(params, open, close) of every method, constructor or local function body (a brace block whose header is a
+    call-shaped declaration, not control flow, a lambda, an initializer or a type)."""
+    out = []
+    for o, c in _blocks(code):
+        start = max(code.rfind(";", 0, o), code.rfind("{", 0, o), code.rfind("}", 0, o)) + 1
+        head = code[start:o].strip()
+        while head.startswith("["):
+            k = _match_close(head, 0, "[", "]")
+            if k < 0:
+                break
+            head = head[k + 1:].lstrip()
+        p = head.find("(")
+        if p <= 0 or "=>" in head or "=" in head[:p]:
+            continue
+        q = _match_close(head, p, "(", ")")
+        if q < 0 or not re.match(r"^\s*(?::\s*(?:base|this)\s*\(.*\)\s*)?(?:where\b.*)?$", head[q + 1:], re.S):
+            continue
+        m = re.search(r"([A-Za-z_]\w*)\s*(?:<[^()]*>)?\s*$", head[:p])
+        if not m or m.group(1) in _CTRL_WORDS or re.search(r"\bnew\b", head[:p]):
+            continue
+        out.append((head[p + 1:q], o, c))
+    return out
+
+
+def _innermost(methods, offset):
+    best = None
+    for m in methods:
+        if m[1] < offset < m[2] and (best is None or m[1] > best[1]):
+            best = m
+    return best
+
+
+def _split_top(text: str, sep: str) -> list:
+    out, depth, cur = [], 0, []
+    for ch in text:
+        if ch in "([{<":
+            depth += 1
+        elif ch in ")]}>":
+            depth -= 1
+        if ch == sep and depth <= 0:
+            out.append("".join(cur))
+            cur = []
+        else:
+            cur.append(ch)
+    out.append("".join(cur))
+    return out
+
+
+def _declared(name: str, params: str, body: str) -> bool:
+    """``name`` is a parameter or a local of the method whose parameter list and body text are given."""
+    for part in _split_top(params, ","):
+        part = re.sub(r"^\s*(?:\[[^\]]*\]\s*)*(?:(?:ref|out|in|params|this)\s+)*", "", part)
+        part = part.split("=", 1)[0].strip()
+        m = re.search(r"\s([A-Za-z_]\w*)$", part)
+        if m and m.group(1) == name:
+            return True
+    return bool(re.search(
+        rf"(?<![\w.]){_NOT_A_TYPE}[A-Za-z_][\w.]*(?:<[^<>;(){{}}]*>)?(?:\[[,\s]*\])*\??\s+{re.escape(name)}\s*"
+        rf"(?:=(?!=)|;|,|\)|\bin\b)", body))
+
+
+def _items(code: str, o: int, c: int):
+    """Statements directly in the block ``code[o] == '{'``..``code[c] == '}'`` as (start, end) offsets: a simple statement
+    ends with ``;``; a compound one ends at its closing brace unless ``else``, ``catch``, ``finally`` or a ``do``'s
+    ``while`` follows, or the brace belongs to an expression (an initializer followed by ``;``, ``,``, ``)`` or ``.``)."""
+    out, j = [], o + 1
+    while j < c:
+        while j < c and code[j].isspace():
+            j += 1
+        if j >= c:
+            break
+        s, depth = j, 0
+        while j < c:
+            ch = code[j]
+            if ch in "([":
+                depth += 1
+            elif ch in ")]":
+                depth -= 1
+            elif ch == "{":
+                k = _match_close(code, j, "{", "}")
+                if k < 0 or k > c:
+                    j = c
+                    break
+                if depth > 0:
+                    j = k + 1
+                    continue
+                tail = code[k + 1:c].lstrip()
+                if (re.match(r"(?:else|catch|finally)\b", tail)
+                        or (re.match(r"do\b", code[s:j]) and re.match(r"while\b", tail))
+                        or tail[:1] in (";", ",", ")", ".")):
+                    j = k + 1
+                    continue
+                j = k + 1
+                break
+            elif ch == ";" and depth <= 0:
+                j += 1
+                break
+            j += 1
+        out.append((s, min(j, c)))
+    return out
+
+
+def _var_use(name: str) -> dict:
+    n = re.escape(name)
+    return {
+        "assign": re.compile(rf"(?<![\w.@]){n}\s*(?:=(?!=)|\+\+|--|\?\?=|[-+*/%&|^]=)|(?:\+\+|--)\s*{n}\b"
+                             rf"|\b(?:out|ref)\s+(?:var\s+|[A-Za-z_][\w.<>\[\]?]*\s+)?{n}\b"),
+        "tested": re.compile(rf"(?<![\w.@]){n}\s*(?:==|!=|\?\.|\?\?|\?\[)|(?:==|!=)\s*{n}\b"
+                             rf"|(?<![\w.@]){n}\s+(?:is|as)\b"),
+        "deref": re.compile(rf"(?<![\w.@$]){n}\s*(?:\[|\.\s*([A-Za-z_]\w*))"),
+    }
+
+
+def _first_deref(stmt: str, use: dict):
+    """Offset in ``stmt`` of the first sound dereference of the variable: ``x.Prop``, ``x.Field``, ``x[...]`` or a call of
+    ``ToString|Equals|GetType|GetHashCode`` (any other call may be an extension method, which is legal on null)."""
+    if "=>" in stmt or re.search(r"\b(?:nameof|typeof|sizeof|delegate)\b", stmt) or use["tested"].search(stmt):
+        return None
+    for m in use["deref"].finditer(stmt):
+        member = m.group(1)
+        if member:
+            tail = stmt[m.end():]
+            if re.match(r"\s*(?:<[\w\s,.<>?\[\]]*>\s*)?\(", tail) and member not in _OBJECT_METHODS:
+                continue
+        return m.start()
+    return None
+
+
+def _null_ifs(code: str, items):
+    """(index, variable, offset of the condition's closing paren) of every item that is ``if (x == null)``,
+    ``if (x is null)`` or ``if (null == x)`` and nothing else."""
+    for idx, (s, e) in enumerate(items):
+        m = re.match(r"if\s*\(", code[s:e])
+        if not m:
+            continue
+        p = s + m.end() - 1
+        q = _match_close(code, p, "(", ")")
+        if q < 0 or q >= e:
+            continue
+        cond = _NULL_COND.fullmatch(code[p + 1:q].strip())
+        if cond:
+            yield idx, next(g for g in cond.groups() if g), q
+
+
+def _is_dead_item(text: str) -> bool:
+    return bool(_EXIT.search(text) or _LABEL.match(text))
+
+
+def _simple(text: str) -> bool:
+    return "{" not in text and not _COMPOUND_START.match(text) and text.rstrip().endswith(";")
+
+
+def _null_patterns(ctx: _Ctx):
+    code = _cs_code(ctx.text)
+    methods = _method_bodies(code)
+    for o, c in _blocks(code):
+        items = _items(code, o, c)
+        if not items:
+            continue
+        method = _innermost(methods, o + 1)
+        if method is None:
+            continue
+        params, mo, mc = method
+        body = code[mo:mc]
+        for j, x, cond_end in _null_ifs(code, items):
+            if not _declared(x, params, body):
+                continue
+            use = _var_use(x)
+            # deref-before-null-check: the clean run of statements just before the check
+            lo = j
+            while lo > 0:
+                text = code[items[lo - 1][0]:items[lo - 1][1]]
+                if use["assign"].search(text) or _is_dead_item(text):
+                    break
+                lo -= 1
+            for i in range(lo, j):
+                s, e = items[i]
+                text = code[s:e]
+                off = _first_deref(text, use) if _simple(text) else None
+                if off is not None:
+                    yield _hit("deref-before-null-check", ctx.line(s + off),
+                               f"a member of a local is accessed on line {ctx.line(s + off)} before its null check on "
+                               f"line {ctx.line(items[j][0])} (no assignment between)")
+                    break
+            # deref-in-null-branch: a direct statement of the branch that runs when x is null
+            s, e = items[j]
+            rest = cond_end + 1
+            while rest < e and code[rest].isspace():
+                rest += 1
+            if rest >= e:
+                continue
+            if code[rest] == "{":
+                close = _match_close(code, rest, "{", "}")
+                branch = _items(code, rest, close) if close > 0 else []
+            else:
+                branch = [(rest, e)]
+            for a, b in branch:
+                text = code[a:b]
+                if use["assign"].search(text) or _is_dead_item(text):
+                    break
+                off = _first_deref(text, use) if _simple(text) else None
+                if off is not None:
+                    yield _hit("deref-in-null-branch", ctx.line(a + off),
+                               f"a member of a local is accessed on line {ctx.line(a + off)} inside the branch that "
+                               f"runs when it is null (check on line {ctx.line(s)})")
+                    break
+
+
+_LOG_USING = re.compile(r"(?m)^\s*using\s+(?:log4net|NLog|Common\.Logging)\b")
+_LOG_FQ = re.compile(r"\b(?:log4net|NLog|Common\.Logging)\s*\.\s*LogManager\b")
+_LOG_TYPE_DECL = re.compile(r"\b(?:class|interface|struct|enum|record)\s+(?:LogManager|ILog|Logger)\b")
+_LOG_FACTORY = (r"(?:(?:log4net|NLog|Common\.Logging)\s*\.\s*|(?<![\w.]))LogManager\s*\.\s*"
+                r"(?:GetLogger|GetCurrentClassLogger)\s*\(")
+_LOG_TYPES = r"(?:log4net\s*\.\s*|NLog\s*\.\s*|Common\.Logging\s*\.\s*)?(?:ILog|Logger)"
+_LOG_DECL = re.compile(rf"(?<![\w.])((?:private\s+(?:static\s+)?readonly\s+(?:static\s+)?)?){_LOG_TYPES}\s+"
+                       rf"([A-Za-z_]\w*)\s*=\s*{_LOG_FACTORY}")
+
+
+def _dead_null_fallback(ctx: _Ctx):
+    """``ILog log = LogManager.GetLogger(...)`` is never null, so ``if (log == null) { fallback }`` cannot run. Sound only
+    for the unqualified factory call on the logging library's ``LogManager`` (not an instance, not an extension method),
+    an explicitly typed local or a ``private`` ``readonly`` field whose only assignment is that call, the library
+    imported by ``using`` or used fully qualified, and no type of this file named ``LogManager``, ``ILog`` or ``Logger``."""
+    code = _cs_code(ctx.text)
+    if not (_LOG_USING.search(code) or _LOG_FQ.search(code)) or _LOG_TYPE_DECL.search(code):
+        return
+    methods = _method_bodies(code)
+    blocks = _blocks(code)
+    for d in _LOG_DECL.finditer(code):
+        readonly, name = d.group(1).strip() != "", d.group(2)
+        method = _innermost(methods, d.start())
+        if method is None:
+            if not readonly:
+                continue            # a field that is not readonly may be assigned from anywhere
+            scope = (0, len(code))
+        else:
+            if readonly:
+                continue
+            scope = (method[1], method[2])
+        text = code[scope[0]:scope[1]]
+        use = _var_use(name)
+        if len(use["assign"].findall(text)) != 1:
+            continue
+        for o, c in blocks:
+            if not (scope[0] <= o < scope[1]):
+                continue
+            items = _items(code, o, c)
+            for j, x, _q in _null_ifs(code, items):
+                if x == name:
+                    yield _hit("dead-null-fallback", ctx.line(items[j][0]),
+                               "the null branch cannot run: no assignment in this file gives the variable a null value")
+
+
+# ---------------------------------------------------------------------------
+# 10. hardcoded-production-mode (.cs, joined to the project's output type in apply)
+# ---------------------------------------------------------------------------
+
+_MAIN = re.compile(r"\bstatic\s+(?:async\s+)?(?:void|int|Task(?:\s*<\s*int\s*>)?)\s+Main\s*\(")
+_MODE_ASSIGN = re.compile(r"(?<![\w.])(?:[A-Za-z_]\w*\s*\.\s*)*(\w*[Mm]ode\w*)\s*(?<![=!<>])=(?!=)\s*"
+                          r"[A-Za-z_][\w.]*\s*\.\s*Production\s*(?=[;,})])")
+
+
+def _production_mode(ctx: _Ctx):
+    """A mode property or field assigned an enum member named ``Production`` in the file that holds ``Main``. Emitted for
+    every such file; ``apply`` keeps it only for a project whose output type is ``Exe`` or ``WinExe``."""
+    code = _cs_code(ctx.text)
+    if not _MAIN.search(code):
+        return
+    for m in _MODE_ASSIGN.finditer(code):
+        yield _hit("hardcoded-production-mode", ctx.line(m.start()),
+                   "a mode is assigned the Production member in the file that holds Main: the application starts "
+                   "in production mode whatever the configuration says")
+
+
+def _classic_net(ctx: _Ctx, handler):
+    """Run a .NET Framework text pattern only for files a classic ASP.NET Stack owns (the pattern is specified on that
+    shape; the public .NET Core examples stay unchanged)."""
+    return handler(ctx) if "aspnet" in ctx.stacks else ()
+
+
+# ---------------------------------------------------------------------------
 # Dispatch
 # ---------------------------------------------------------------------------
 
 _BY_EXT = {
     ".cs": (_logger_mismatch, lambda c: _distinct_auth(c, "c"), lambda c: _unescaped_razor(c, "c"),
-            _state_aspnet, lambda c: _credentials(c, "cs")),
+            _state_aspnet, lambda c: _credentials(c, "cs"), lambda c: _classic_net(c, _null_patterns),
+            lambda c: _classic_net(c, _dead_null_fallback), _production_mode),
+    ".config": (_duplicate_keys,),
     ".cshtml": (lambda c: _unescaped_razor(c, "xml"),),
     ".razor": (lambda c: _unescaped_razor(c, "xml"),),
     ".java": (_flash_without_redirect, lambda c: _distinct_auth(c, "c"), _state_spring,
@@ -726,7 +1144,7 @@ def extract(path: str, text: str, stacks: list[str]) -> Iterable[Fact]:
         return ()
     path = path.replace("\\", "/")
     stack = stacks[0] if stacks else "generic"
-    ctx = _Ctx(path, text)
+    ctx = _Ctx(path, text, stacks)
     out, seen = [], set()
     for handler in handlers:
         for pattern, line, name, detail in handler(ctx):
@@ -737,3 +1155,102 @@ def extract(path: str, text: str, stacks: list[str]) -> Iterable[Fact]:
             out.append(Fact.make("smell", stack, path, line, name, pattern=pattern,
                                  fid=fact_id("smell", pattern, path, line), **detail))
     return out
+
+
+# ---------------------------------------------------------------------------
+# Facts-level pass (plan 2.8 W11 part A)
+# ---------------------------------------------------------------------------
+
+_DEBUG_SETTINGS = {"system.web/compilation@debug": "true", "system.web/customErrors@mode": "off"}
+_JOINED_PATTERNS = frozenset({"hardcoded-production-mode"})   # found in text, confirmed against project Facts
+
+
+def _source(f: Fact) -> tuple:
+    return (f.path, f.line or 0, f.kind, f.name)
+
+
+def from_facts(facts) -> list:
+    """The smell Facts that follow from other Facts alone (no file is read, no clock, no ordering dependence).
+
+    ``fid = fact_id("smell", pattern, path, line)``; ``sources`` are ``(path, line, kind, name)`` tuples of the Facts the
+    hit rests on. A message never echoes a name or a value (R18, R19); counts and configuration names are details.
+    """
+    facts = sorted(facts, key=lambda f: f.sort_key())
+    out: dict = {}
+
+    def add(pattern, anchor: Fact, name, sources, **detail):
+        key = (pattern, anchor.path, anchor.line)
+        if key in out:
+            return
+        f = Fact.make("smell", anchor.stack, anchor.path, anchor.line, name, pattern=pattern,
+                      fid=fact_id("smell", pattern, anchor.path, anchor.line), sources=sorted(set(sources)), **detail)
+        if is_test_path(anchor.path) or anchor.detail_dict().get("test"):
+            f = f.as_test()
+        out[key] = f
+
+    settings: dict = {}
+    for f in facts:
+        d = f.detail_dict()
+        if f.kind == "security_setting":
+            if f.name.endswith("/machineKey") and d.get("value") == "literal_hex":
+                add("machinekey-in-config", f, "literal cryptographic key material is kept in configuration",
+                    [_source(f)])
+            if f.name in _DEBUG_SETTINGS:
+                settings.setdefault((f.path, f.name), []).append((f, d))
+        elif f.kind == "access_rule" and d.get("users_named", 0) > 0:
+            add("named-user-access-rule", f, "an access rule names individual users instead of roles", [_source(f)],
+                count=int(d["users_named"]))
+        elif f.kind == "config_key" and d.get("list_count", 0) >= 3:
+            add("identifier-list-in-config", f,
+                f"an appSettings value is a list of {int(d['list_count'])} identifiers kept in configuration",
+                [_source(f)], count=int(d["list_count"]), **({"overridden_in": d["overridden_in"]}
+                                                            if d.get("overridden_in") else {}))
+
+    for (path, name), group in sorted(settings.items()):
+        named = [(f, d) for f, d in group if d.get("config") != "base"]
+        evaluable = named or group          # a configuration without a transform inherits the base (R17)
+        bad = _DEBUG_SETTINGS[name]
+        flagged = [(f, d) for f, d in evaluable
+                   if d.get("value") == bad and d.get("config_status") in ("base", "transformed")]
+        nondebug = [(f, d) for f, d in flagged if str(d.get("config", "")).lower() != "debug"]
+        debug = [(f, d) for f, d in flagged if str(d.get("config", "")).lower() == "debug"]
+        if nondebug:
+            anchor = min((f for f, _ in nondebug), key=lambda f: f.line or 0)
+            add("debug-setting-in-nondebug-config", anchor,
+                "a debug-time setting is on in the effective configuration of a build configuration that is not Debug",
+                [_source(f) for f, _ in nondebug], configs=sorted({str(d.get("config")) for _, d in nondebug}))
+        if debug:
+            anchor = min((f for f, _ in debug), key=lambda f: f.line or 0)
+            add("debug-setting-in-debug-config", anchor,
+                "a debug-time setting is on in the Debug build configuration (listed for completeness)",
+                [_source(f) for f, _ in debug], configs=["Debug"])
+
+    year = next((int(f.detail_dict()["value"]) for f in facts
+                 if f.kind == "context_directive" and f.detail_dict().get("directive") == "reference_year"
+                 and re.fullmatch(r"\d{4}", str(f.detail_dict().get("value", "")))), None)
+    if year is not None:
+        for f in facts:
+            y = f.detail_dict().get("year") if f.kind == "config_key" else None
+            if y and abs(int(y) - year) <= 1:
+                add("config-year-horizon", f,
+                    "a configuration value is a year within one year of the declared reference year; if it is a "
+                    "limit, confirm with the owner", [_source(f)])
+
+    projects = sorted(((f.path.rsplit("/", 1)[0] if "/" in f.path else "", f.detail_dict()) for f in facts
+                       if f.kind == "project" and f.detail_dict().get("kind") != "solution"),
+                      key=lambda t: -len(t[0]))
+    for f in facts:
+        if f.kind == "smell" and f.detail_dict().get("pattern") == "hardcoded-production-mode":
+            proj = next((d for folder, d in projects if folder == "" or f.path.startswith(folder + "/")), None)
+            if proj and proj.get("kind") in ("winforms", "console") and not proj.get("test") \
+                    and proj.get("output_type") in ("winexe", "exe"):
+                out.setdefault(("hardcoded-production-mode", f.path, f.line), f)
+    return sorted(out.values(), key=lambda f: f.sort_key())
+
+
+def apply(facts: list) -> list:
+    """``facts`` with the Facts-level smells added. The provisional text hits of ``_JOINED_PATTERNS`` are replaced by the
+    ones ``from_facts`` confirms (a project that is not an ``Exe`` or ``WinExe`` project drops them)."""
+    new = from_facts(facts)
+    kept = [f for f in facts if not (f.kind == "smell" and f.detail_dict().get("pattern") in _JOINED_PATTERNS)]
+    return kept + new

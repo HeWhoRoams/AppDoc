@@ -6,11 +6,12 @@ from collections import Counter, defaultdict
 
 from .facts import fact_id
 from .integration import render_integration_view
+from .smells import OBLIGING, PATTERNS_BY_STACK
 
 LIST_CAP = 50
 FOLDER_CAP = 25
 SCHEMA_CAP = 40
-PATTERN_STACKS = ("python-flask", "java-spring", "aspnet-core", "node-express", "classic-asp")
+PATTERN_STACKS = ("python-flask", "java-spring", "aspnet", "aspnet-core", "node-express", "classic-asp")
 LISTED_KINDS = (
     ("entry_point", "Entry points"),
     ("data_access", "Data access"),
@@ -132,11 +133,17 @@ def ui_pages(facts: list[dict]) -> list[str]:
     return out + [""] + _shown(min(len(items), LIST_CAP), len(items))
 
 
+NOT_OBLIGING = "candidate (not an obligation)"
+
+
 def finding_candidates(facts: list[dict], stacks: list[dict]) -> list[str]:
     smells = [f for f in facts if f["kind"] == "smell" and not f["detail"].get("test")]
+    ran = sorted({p for s in stacks for p in PATTERNS_BY_STACK.get(s["name"], ())})
+    notes = _year_notice(facts) if any(s["name"] in PATTERNS_BY_STACK for s in stacks) else []
     if not smells:
         if any(s["name"] in PATTERN_STACKS for s in stacks):
-            return ["## Finding candidates", "", "Finding candidates: none extracted. This is not proof of absence.", ""]
+            return ["## Finding candidates", "", "Finding candidates: none extracted. This is not proof of absence.", ""] + (
+                [f"Patterns that ran with no hit: {', '.join(f'`{p}`' for p in ran)}.", ""] if ran else []) + notes
         return []
     by_pattern: dict[str, list[dict]] = defaultdict(list)
     for f in smells:
@@ -146,10 +153,23 @@ def finding_candidates(facts: list[dict], stacks: list[dict]) -> list[str]:
         group = sorted(by_pattern[pattern], key=lambda f: (f["path"], f["line"] or 0))
         first = group[:3]
         ids = [f["detail"].get("fid") or fact_id("smell", pattern, f["path"], f["line"]) for f in first]
-        out.append(f"| `{pattern}` | {len(group)} | " + ", ".join(_cite(f) for f in first)
+        label = "" if pattern in OBLIGING else f" {NOT_OBLIGING}"
+        out.append(f"| `{pattern}`{label} | {len(group)} | " + ", ".join(_cite(f) for f in first)
                    + " | " + ", ".join(f"`{i}`" for i in ids) + " |")
     out.append("")
-    return out
+    quiet = [p for p in ran if p not in by_pattern]
+    if quiet:
+        out += [f"Patterns that ran with no hit: {', '.join(f'`{p}`' for p in quiet)}.", ""]
+    return out + notes
+
+
+def _year_notice(facts: list[dict]) -> list[str]:
+    """``config-year-horizon`` needs ``Reference year:`` in ``appdoc-context.md`` (no clock, P3); say so when it matters."""
+    declared = any(f["kind"] == "context_directive" and f["detail"].get("directive") == "reference_year" for f in facts)
+    if declared or not any(f["kind"] == "config_key" and f["detail"].get("year") for f in facts):
+        return []
+    return ["`config-year-horizon` is off: a configuration key holds a year and no `Reference year:` is declared in "
+            "`appdoc-context.md`.", ""]
 
 
 def unclassified_attributes(facts: list[dict], stacks: list[dict]) -> list[str]:

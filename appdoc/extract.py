@@ -359,6 +359,7 @@ def extract(root: str, out_dir: str, workers: int | None = None, skip_tests: boo
     facts = _config_roles(facts)
     facts = configs.apply(facts)             # W1/W2: effective .config values per build configuration
     facts = aspnet_guards.promote(facts)     # W3: guard joins over the raw per-file Facts
+    facts = smells.apply(facts)              # W11 part A: finding candidates that follow from Facts alone
     facts = _match_directives(facts)
 
     for sid, (st, markers) in sorted(detected.items()):
