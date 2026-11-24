@@ -33,9 +33,9 @@ SKILL_STEPS = (
          "fix every advisory before the audit plan: the plan's sample is seeded by doc_sha, so a later Narrative "
          "edit reshuffles it"),
     Step("Audit plan", "audit-plan <target>",
-         "writes audit-plan.json: the IDs the audit must cover, a sample chosen by the tool"),
+         "writes audit-plan.json: the IDs and per-row keys (<section>/<slug>) the audit must cover, a sample chosen by the tool"),
     Step("Audit", None,
-         "a fresh agent audits every planned ID (more if useful) and writes evidence.jsonl; for every 10.1 finding "
+         "a fresh agent audits every planned ID and per-row key (more if useful) and writes evidence.jsonl; for every 10.1 finding "
          "it audits, it also checks that the cited finding-candidate id and line range support the claim; only the "
          "opaque generated blocks are not audited"),
     Step("Seal", "seal <target> --audit --date <YYYY-MM-DD>",

@@ -19,7 +19,7 @@ COMMAND_HELP = {
     "render": "write application-documentation.html",
     "seal": "write claim_sha into the register rows that lack one; --audit --date records the audit",
     "build": "seal (rows and notes), fill, check and render in one step",
-    "audit-plan": "write docs/appdoc/audit-plan.json: the ids the independent audit must cover (a sample is "
+    "audit-plan": "write docs/appdoc/audit-plan.json: the ids and per-row keys the independent audit must cover (a sample is "
                   "chosen by the tool)",
     "upgrade": "bring a document of an older template to the running one: add the missing headings, blocks, "
                "columns and rows, keep every line of text, then extract and fill; the rest is for a person",
@@ -75,7 +75,7 @@ def build_parser() -> argparse.ArgumentParser:
                             help="process-pool workers for the regeneration; default min(cpu,8); 0 = serial")
         if name == "audit-plan":
             sp.add_argument("--check", action="store_true",
-                            help="write nothing: print the planned ids on disk and a fresh computation; "
+                            help="write nothing: print the planned ids and keys on disk and a fresh computation; "
                                  "exit 0 when equal, 2 when the plan is stale or missing")
         if name == "upgrade":
             sp.add_argument("--no-ownership", action="store_true", help="skip git ownership Facts")

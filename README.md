@@ -46,7 +46,7 @@ All commands:
 | `appdoc seal <target>` | `--out OUT`, `--audit`, `--date DATE` | write claim_sha into the register rows that lack one; --audit --date records the audit |
 | `appdoc build <target>` | `--out OUT`, `--expand-citations`, `--require-audit`, `--strict` | seal (rows and notes), fill, check and render in one step |
 | `appdoc gate <target>` | `--out OUT`, `--workers WORKERS`, `--require-audit`, `--strict` | CI gate: regenerate the Facts and compare with the committed facts.json, then check; exit 0 pass, 1 tool error, 2 Facts changed, 3 AppDoc upgraded |
-| `appdoc audit-plan <target>` | `--out OUT`, `--check` | write docs/appdoc/audit-plan.json: the ids the independent audit must cover (a sample is chosen by the tool) |
+| `appdoc audit-plan <target>` | `--out OUT`, `--check` | write docs/appdoc/audit-plan.json: the ids and per-row keys the independent audit must cover (a sample is chosen by the tool) |
 | `appdoc upgrade <target>` | `--out OUT`, `--workers WORKERS`, `--no-ownership` | bring a document of an older template to the running one: add the missing headings, blocks, columns and rows, keep every line of text, then extract and fill; the rest is for a person |
 <!-- /appdoc-self:generated commands -->
 
@@ -123,7 +123,7 @@ Rules C1-C20. Each rule fails or is not reported; there is no score.
 | C16 | Universal claims cite single lines | a universal claim (all, every, never) cites only single lines | advisory; fails under `--strict` |
 | C17 | Audit scope names the method only | the audit record's scope text holds an ID or a digit; with `--require-audit` the record lacks `audited_on`, `audited_with`, `audited_bundle` or `doc_sha`, and with `--strict` a row was sealed at upgrade (all fail from template 2.7) | advisory before template 2.7; fails from 2.7 |
 | C18 | Notes match their block | a note in `notes.jsonl` names an unknown block, was written about an older version of its block (`block_sha`), or cites a file that does not resolve; the label `Known extractor limitation:` is written in the Narrative outside a generated block (fails from template 2.7) | advisory before template 2.7; fails from 2.7 |
-| C19 | Audit follows the plan | with `--require-audit` on template 2.7, `audit-plan.json` is missing or differs from a fresh computation, or a planned id has no live register row (a section listed under `exclusions` is not required) | fails |
+| C19 | Audit follows the plan | with `--require-audit` on template 2.7, `audit-plan.json` is missing or differs from a fresh computation, or a planned id or per-row key has no live register row (a section listed under `exclusions` is not required) | fails |
 | C20 | Citation precision | a range over 100 lines is a claim's only lined Citation in section 4, 7 or 10, or a section 4 or 10.1 table cell holds more than 5 Citations | advisory; fails under `--strict` |
 
 Previews of template 2.7 rules. On a template 2.4 document these are advisories, listed in `check-report.md` as "fails from template 2.7"; they fail only on a document stamped 2.7:

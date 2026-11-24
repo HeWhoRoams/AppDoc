@@ -151,8 +151,8 @@ class SkillDoc(unittest.TestCase):
         "holds exactly one backticked command and nothing else",
         "a sentence that carries a count marker still needs a citation (c5)",
         "`\\|`",
-        "one combined row with per-item notes in `limitation`",
-        "a failing item makes the whole row Corrected or Downgraded",
+        "one row per planned key",
+        "never one combined row for the section",
     )
 
     def test_s6_writing_rules_in_skill_and_template_guide(self):
@@ -168,7 +168,7 @@ class SkillDoc(unittest.TestCase):
         self.assertIn("exactly one backticked command and nothing else", guide17)
         for sec in ("## 9. ", "### 10.2 ", "### 16.5 "):
             part = template.split(sec)[1][:900]
-            self.assertIn("one combined row", part, sec)
+            self.assertIn("one register row per planned key", part, sec)
 
     S7_RULES = (
         # (a) C16 and C20 under What the Check enforces

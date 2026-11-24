@@ -18,7 +18,7 @@ CONVENTIONS:
   - A backticked file name is a Citation even in a negative sentence: write a name that does not exist without backticks (appdoc-context.md does not exist), or C1 fails.
   - A sentence that carries a count marker still needs a Citation (C5).
   - A `|` inside a table cell must be written `\|`.
-  - A ref allows one live register row. Where a section has several planned items under one ref (9, 10.2, 16.5, 17) the auditor writes one combined row with per-item notes in `limitation`; a failing item makes the whole row Corrected or Downgraded.
+  - A ref allows one live register row. Sections 10.2 (Present controls), 16.5, 17 and the sampled rows of section 9 are planned per row: `audit-plan` names a key `<section>/<slug>` for each (the slug is the lower-cased first cell, non-alphanumerics to `-`; a repeat gets `-2`, `-3`), and the auditor writes one row per planned key with that key as its ref, never one combined row for the section. C19 fails any planned key without a live row.
   - Section 11 Status is Cited, Inferred or Unknown.
   - C16 universal claims cite only single lines: a sentence with all, any, each, every, always, never, whole or entire needs the covering range (`path:start-end`) or **Inferred:**. C20 citation precision: a cell may cite at most 5 sources, each range at most 100 lines, and a wide range that is the claim's only lined Citation fails. A plain `build` prints both as advisories and `check --strict` fails on them: fix them before the audit plan.
 - Section 17 (Build, Run and Test Locally): the Command cell holds exactly one backticked command and nothing else (extra commands and prose go under the table). In each Command cell write a backticked command, `Unknown - see Open questions.` (the repository does not show it; also a row in section 14), or `Not applicable` (cite the evidence). Any row but an Unknown one cites its Evidence with a lined Citation (C9).
@@ -149,7 +149,7 @@ Cite the code; where there is no handling, say "none" and cite where you looked.
 ## 9. Troubleshooting Matrix
 <!-- appdoc:guide Fed by: `message` Facts and error branches in source. One cited row per symptom.
 "Escalate when" must be a concrete trigger (e.g. "after one retry", "if the queue is down"); use Unknown at most once.
-The audit covers this section with one combined row (one ref, one live row): per-item notes in `limitation`. -->
+The audit plans each sampled row as `9/<slug>` (the slug is the lower-cased first cell, non-alphanumerics to `-`): one register row per planned key, that key as its ref. -->
 
 | Symptom | Checks | Known response | Escalate when |
 |---|---|---|---|
@@ -171,7 +171,7 @@ Low = hygiene or informational. -->
 <!-- appdoc:guide Consider at least: TLS, CSRF, MFA, cookie flags, rate limiting, audit-log integrity, backup and recovery, production secret management.
 Status: "Verified absent" (you confirmed in source that the control does not exist), "Not established" (the code cannot show it),
 or "Present" (cite it). Every control that is not Present needs a row in 15 or 14 naming it (C10).
-The audit covers this section with one combined row (one ref, one live row): per-item notes in `limitation`. -->
+The audit plans each Present control as `10.2/<slug>` (the slug is the lower-cased first cell, non-alphanumerics to `-`): one register row per planned key, that key as its ref. -->
 
 | Control | Status | Where looked |
 |---|---|---|
@@ -242,7 +242,7 @@ Severity: Critical, High, Medium, Low. Effort: S, M, L. IDs R-1, R-2, ... -->
 ### 16.5 Deployment and change process
 <!-- appdoc:guide One row per step, all eight required (C9): Build, Test, Deploy, Upgrade, Rollback, Backup, Restore, Secret rotation.
 Attribute each to the job, script or command that does it, cited; Unknown if the repository does not show it.
-The audit covers this section with one combined row (one ref, one live row): per-item notes in `limitation`. -->
+The audit plans each row that is not Unknown as `16.5/<slug>` (the slug is the lower-cased first cell, non-alphanumerics to `-`): one register row per planned key, that key as its ref. -->
 
 | Step | Procedure | Evidence |
 |---|---|---|
@@ -262,7 +262,7 @@ The audit covers this section with one combined row (one ref, one live row): per
 ## 17. Build, Run and Test Locally
 <!-- appdoc:guide Fed by: build files, runtime pins, README, CI steps. Every command is cited where it is defined (a Citation with a line in Evidence).
 All five rows are required (C9). Command is one of: a backticked command; `Unknown - see Open questions.` (the repository does not show it; also add a row to section 14); `Not applicable` (cite the evidence, for example the file that shows there is nothing to build). Working directory is the folder the command runs in, relative to the Target (`.` for the root).
-The Command cell holds exactly one backticked command and nothing else; put extra commands and prose under the table. The audit covers this section with one combined row (one ref, one live row): per-item notes in `limitation`. -->
+The Command cell holds exactly one backticked command and nothing else; put extra commands and prose under the table. A chain (`a`, then `b`) fails C9: use one command or one wrapper script. The audit plans each row that is not Unknown or Not applicable as `17/<slug>` (the slug is the lower-cased first cell, non-alphanumerics to `-`): one register row per planned key, that key as its ref. -->
 
 | Step | Command | Working directory | Evidence |
 |---|---|---|---|
