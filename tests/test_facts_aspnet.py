@@ -322,5 +322,68 @@ class RouteFidelity(unittest.TestCase):
             self.assertEqual(f["detail"]["mvc_area_path"], "Areas/Admin")
 
 
+class DetectIn(unittest.TestCase):
+    """T28.25: ``aspnet.detect_in`` reads files, so a Web.config-only or Web API-only classic project is detected."""
+    WEB_CONFIG = '<?xml version="1.0"?>\n<configuration>\n  <system.web>\n    <authentication mode="Windows" />\n  </system.web>\n</configuration>\n'
+    CORE_STUB = ('<?xml version="1.0"?>\n<configuration>\n  <system.webServer>\n    <handlers>'
+                 '<add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" /></handlers>\n'
+                 '  </system.webServer>\n</configuration>\n')
+    API = ("using System.Web.Http;\nnamespace Contoso.Api\n{\n    public class ItemsController : ApiController\n    {\n"
+           "        public string Get(int id) { return \"x\"; }\n    }\n}\n")
+
+    def _root(self, files):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        for rel, body in files.items():
+            full = os.path.join(tmp.name, *rel.split("/"))
+            os.makedirs(os.path.dirname(full), exist_ok=True)
+            with open(full, "w", encoding="utf-8") as fh:
+                fh.write(body)
+        return tmp.name
+
+    def _detect(self, files):
+        from appdoc import stacks
+        from appdoc.stacks import aspnet
+        root = self._root(files)
+        return stacks.detect(aspnet.STACK, sorted(files), root)[0]
+
+    def test_detect_in_webconfig_only_project(self):
+        self.assertEqual(self._detect({"Web.config": self.WEB_CONFIG}), ["Web.config"])
+        self.assertEqual(self._detect({"src/App/web.config": self.WEB_CONFIG, "src/App/App.csproj": "<Project/>"}),
+                         ["src/App/web.config"], "any case, any folder")
+        root = self._root({"Web.config": self.WEB_CONFIG})
+        with tempfile.TemporaryDirectory() as out:
+            doc = json.loads(extract.extract(root, out, workers=0, use_cache=False)[0])
+        self.assertIn("aspnet", [s["name"] for s in doc["stacks"]])
+        self.assertTrue([f for f in doc["facts"] if f["kind"] == "security_setting" and f["stack"] == "aspnet"])
+
+    def test_webconfig_without_system_web_is_not_a_marker(self):
+        self.assertEqual(self._detect({"web.config": self.CORE_STUB}), [], "an IIS hosting stub for ASP.NET Core")
+        self.assertEqual(self._detect({"web.config": "<configuration><system.web"}), [], "malformed")
+
+    def test_classic_asp_site_with_a_webconfig_is_not_aspnet(self):
+        self.assertEqual(self._detect({"web.config": self.WEB_CONFIG, "index.asp": "<% %>"}), [])
+
+    def test_detect_in_webapi_only_project(self):
+        self.assertEqual(self._detect({"Controllers/ItemsController.cs": self.API}), ["Controllers/ItemsController.cs"])
+        core = self.API.replace("System.Web.Http", "Microsoft.AspNetCore.Mvc")
+        self.assertEqual(self._detect({"Controllers/ItemsController.cs": core}), [])
+
+    def test_detect_in_keeps_no_state_between_calls(self):
+        from appdoc.stacks import aspnet
+        classic = {"Web.config": self.WEB_CONFIG}
+        other = {"README.md": "# nothing", "tools/build.cs": "class A {}"}
+        before = dict(vars(aspnet.STACK))
+        alone = (self._detect(classic), self._detect(other))
+        interleaved = []
+        a, b = self._root(classic), self._root(other)
+        from appdoc import stacks
+        for _ in range(2):
+            interleaved.append((stacks.detect(aspnet.STACK, sorted(classic), a)[0], stacks.detect(aspnet.STACK, sorted(other), b)[0]))
+        self.assertEqual(interleaved, [alone, alone], "two interleaved Targets give the results of two separate runs")
+        self.assertEqual(dict(vars(aspnet.STACK)), before, "detection stores nothing on the Stack")
+        self.assertEqual(before, {}, "no per-run attribute on the Stack instance at all")
+
+
 if __name__ == "__main__":
     unittest.main()

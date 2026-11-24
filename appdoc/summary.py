@@ -171,6 +171,58 @@ def unclassified_attributes(facts: list[dict], stacks: list[dict]) -> list[str]:
     return out + [""] + _shown(min(len(cands), LIST_CAP), len(cands))
 
 
+def _dirname(path: str) -> str:
+    return path.rsplit("/", 1)[0] if "/" in path else ""
+
+
+def _inside(path: str, folder: str) -> bool:
+    return folder == "" or path == folder or path.startswith(folder + "/")
+
+
+def unmatched_rules(facts: list[dict]) -> list[dict]:
+    """Access rules whose ``scope_path`` names no route prefix and no folder or file of the Target (stale rules).
+
+    ``facts`` are the Facts file's dicts. Only base rules are listed, once each, as ``{path, line, scope_path, effect}``
+    sorted by path and line. A rule for the application root (empty scope) is never unmatched. The scope is relative to
+    the web application root (the outermost folder holding a ``Web.config``); matching is case-insensitive on whole
+    path segments, so ``Admin`` does not match the folder ``AdminTools``. Summary only: this is not a Fact kind.
+    """
+    files = [f["path"] for f in facts if f["kind"] == "file"]
+    web_dirs = sorted({_dirname(p) for p in files if p.rsplit("/", 1)[-1].lower() == "web.config"})
+    roots = [d for d in web_dirs if not any(o != d and _inside(d, o) for o in web_dirs)]
+    routes = [tuple(s for s in str(f["name"]).lower().split("/") if s)
+              for f in facts if f["kind"] == "entry_point" and str(f["name"]).startswith("/")]
+    out = []
+    for f in facts:
+        d = f.get("detail", {})
+        if f["kind"] != "access_rule" or d.get("config") != "base" or not d.get("scope_path"):
+            continue
+        segs = tuple(s for s in d["scope_path"].lower().split("/") if s)
+        root = max((r for r in roots if _inside(f["path"], r)), key=len, default="")
+        wanted = ((root + "/" if root else "") + d["scope_path"]).lower().rstrip("/")
+        if any(p.lower() == wanted or p.lower().startswith(wanted + "/") for p in files) \
+                or any(r[:len(segs)] == segs for r in routes):
+            continue
+        out.append({"path": f["path"], "line": f.get("line"), "scope_path": d["scope_path"], "effect": d.get("effect")})
+    return sorted(out, key=lambda x: (x["path"], x["line"] or 0, x["effect"] or ""))
+
+
+def access_rules_matching_nothing(facts: list[dict]) -> list[str]:
+    """Summary section for ``unmatched_rules``; nothing when the Target has no access rules."""
+    if not any(f["kind"] == "access_rule" for f in facts):
+        return []
+    rows = unmatched_rules(facts)
+    if not rows:
+        return ["## Access rules matching nothing", "", "None: every rule path names a route prefix, a folder or a file.", ""]
+    out = ["## Access rules matching nothing", "",
+           "Rules whose path matches no route prefix and no folder or file in the Target: stale rules, or routes the "
+           "extractors do not see. Confirm with the owner before calling the path protected or open.", "",
+           "| Rule | Scope | Location |", "|---|---|---|"]
+    for r in rows[:LIST_CAP]:
+        out.append(f"| {r['effect']} | `{r['scope_path']}` | {_cite(r)} |")
+    return out + [""] + _shown(min(len(rows), LIST_CAP), len(rows))
+
+
 def render_summary(doc: dict) -> str:
     facts = doc["facts"]
     stacks = doc["stacks"]
@@ -251,6 +303,7 @@ def render_summary(doc: dict) -> str:
     out += ownership_files(facts)
     out += ui_pages(facts)
     out += unclassified_attributes(facts, stacks)
+    out += access_rules_matching_nothing(facts)
     out += finding_candidates(facts, stacks)
 
     return "\n".join(out).rstrip() + "\n"

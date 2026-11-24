@@ -40,21 +40,7 @@ TARGET_FILE = "_target"                       # a case folder holding this file 
 
 # test method name -> (task ID, why it fails today). Delete the entry when the task lands.
 PENDING: dict = {
-    # --- 4C: shared config reader, settings, transforms, rules
-    "test_webconfig_security_settings_per_configuration": ("T28.30", "missing security_setting: no .config setting Facts yet"),
-    "test_webconfig_malformed_file_is_one_config_unparsed": ("T28.30", "missing config_unparsed: .config files are not read by a Stack yet"),
-    "test_webconfig_security_machinekey_class_no_value": ("T28.30", "missing security_setting: no machineKey class Fact yet"),
-    "test_xdt_supported_transforms_effective": ("T28.34", "missing security_setting: no per-configuration effective values yet"),
-    "test_xdt_odd_transform_is_flagged_unsupported": ("T28.35", "missing config_transform: no transform Facts yet"),
-    "test_xdt_overridden_in_recorded_without_values": ("T28.36", "missing overridden_in: base keys carry no overridden_in yet"),
-    "test_windows_auth_iis_anonymous_is_unknown_and_disclosed": ("T28.38", "missing host_auth: no host_auth Fact yet"),
-    "test_owin_none_is_disclosed": ("T28.38", "missing host_auth: no host_auth Fact yet"),
-    "test_xdt_transformed_access_rules": ("T28.40", "missing access_rule: no access_rule Facts yet"),
-    "test_secrets_never_recorded_named_users_counted_not_recorded": ("T28.40", "missing users_named: access rules carry no users_named count"),
-    "test_location_path_forms": ("T28.41", "missing access_rule: no access_rule Facts yet"),
-    "test_nested_webconfig_scope_paths": ("T28.41", "missing access_rule: no access_rule Facts yet"),
-    "test_location_allow_override_and_system_webserver_only": ("T28.42", "missing access_rule: no access_rule Facts yet"),
-    "test_secrets_never_recorded_wcf_address_is_scheme_and_host": ("T28.37", "missing external_call: WCF client endpoints are not read yet"),
+    # --- 4C: shared config reader, settings, transforms, rules (T28.30-T28.44 landed; no entries left)
     # --- 4B: classification and route fidelity
     "test_stack_markers_in_fixtures_and_tooling_are_ignored": ("T28.11", "missing ignored_markers: no stack records dropped markers yet"),
     # --- 4C: project and publish Facts

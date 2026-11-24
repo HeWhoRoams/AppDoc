@@ -34,7 +34,7 @@ GENERIC_KINDS = frozenset({"build_define", "config_external", "config_key", "con
                            "context_directive", "dependency", "file", "owner_file", "project", "publish_profile",
                            "schema_object", "smell"})
 # Generic kinds declared above that no reader emits yet; each leaves this set with the task that adds its reader.
-GENERIC_KINDS_NOT_YET_EMITTED = frozenset({"config_external"})   # T28.32 (configSource, appSettings file=)
+GENERIC_KINDS_NOT_YET_EMITTED = frozenset()   # every generic kind has its reader (config_external: T28.32)
 
 
 def _extract(sample_dir: str) -> dict:

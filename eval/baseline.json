@@ -120,12 +120,12 @@
     "tp": 4
   },
   "aspnet/access_rule": {
-    "expected": 0,
-    "found": 0,
-    "fp": 8,
-    "precision": 0.0,
-    "recall": null,
-    "tp": 0
+    "expected": 8,
+    "found": 8,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 8
   },
   "aspnet/auth_check": {
     "expected": 5,
@@ -144,12 +144,12 @@
     "tp": 2
   },
   "aspnet/config_transform": {
-    "expected": 0,
-    "found": 0,
-    "fp": 1,
-    "precision": 0.0,
-    "recall": null,
-    "tp": 0
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
   },
   "aspnet/connection": {
     "expected": 2,
@@ -224,12 +224,12 @@
     "tp": 5
   },
   "aspnet/host_auth": {
-    "expected": 0,
-    "found": 0,
-    "fp": 1,
-    "precision": 0.0,
-    "recall": null,
-    "tp": 0
+    "expected": 1,
+    "found": 1,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 1
   },
   "aspnet/message": {
     "expected": 7,
@@ -248,12 +248,12 @@
     "tp": 1
   },
   "aspnet/security_setting": {
-    "expected": 0,
-    "found": 0,
-    "fp": 41,
-    "precision": 0.0,
-    "recall": null,
-    "tp": 0
+    "expected": 41,
+    "found": 41,
+    "fp": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 41
   },
   "aspnet/smell": {
     "expected": 1,

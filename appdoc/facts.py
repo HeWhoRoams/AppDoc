@@ -72,10 +72,10 @@ DETAIL_KEYS = {
         "schedule scheduler source type usage view".split()),
     "data_access": frozenset(
         "builder class entity namespace native operation orm property statement type via".split()),
-    "connection": frozenset("class secret_location source type".split()),
-    "config_key": frozenset("read_kind role secret_location secret_ref source use via".split()),
+    "connection": frozenset("class overridden_in secret_location source type".split()),
+    "config_key": frozenset("overridden_in read_kind role secret_location secret_ref source use via".split()),
     "dependency": frozenset("manager mode version".split()),
-    "external_call": frozenset("call client method mode operation type via".split()),
+    "external_call": frozenset("call client config_key method mode operation type via".split()),
     "auth_check": frozenset(
         "api_pipeline applies_to arity mechanism namespace overrides_authorization policy role_guard role_refs roles "
         "scope users_named via".split()),
@@ -86,13 +86,14 @@ DETAIL_KEYS = {
     "owner_file": frozenset("entries kind".split()),
     "ui_page": frozenset("root route type x_class".split()),
     "security_setting": frozenset(
-        "config config_status local_only overridden_in reason secret_location value".split()),
+        "config config_status count local_only name overridden_in reason secret_location value".split()),
     "access_rule": frozenset(
-        "all allow_override anon config config_status domain_qualified effect file inherit_in_child_apps order "
-        "reason_codes roles scope_path users_named verbs".split()),
+        "all allow_override anon config config_status domain_qualified effect file inherit_in_child_apps location "
+        "order reason_codes roles scope_path users_named verbs".split()),
     "access_rule_unmatched": frozenset("effect file order scope_path".split()),
     "config_transform": frozenset(
-        "attributes config locator operation recognised supported target_path unsupported_reason".split()),
+        "arglist attributes config locator locator_attrs match operation recognised rules supported target_path "
+        "unsupported_reason".split()),
     "config_external": frozenset("element resolved target".split()),
     "config_unparsed": frozenset("reason".split()),
     "guard_class": frozenset("authorization_capable base_list base_external overrides_authorization".split()),
@@ -101,7 +102,7 @@ DETAIL_KEYS = {
         "scope users_named users_ref".split()),
     "guard_candidate": frozenset("arity_set attribute uses".split()),
     "const_def": frozenset("qualified secret under_if value".split()),
-    "project": frozenset("kind output_type sdk test web".split()),
+    "project": frozenset("configs iis_express kind output_type sdk test transform_lookup web".split()),
     "build_define": frozenset("config inherits symbols".split()),
     "publish_profile": frozenset("build_config host method".split()),
     "context_directive": frozenset("context_unmatched directive names value".split()),

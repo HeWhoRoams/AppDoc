@@ -10,11 +10,12 @@ The shared ``dotnet_*`` helpers at the bottom half are reused by ``aspnet_core``
 from __future__ import annotations
 
 import bisect
+import os
 import re
 from typing import Iterable
 from urllib.parse import urlsplit
 
-from .. import aspnet_guards
+from .. import aspnet_guards, dotnetcfg, dotnetsec, scan
 from ..facts import Fact
 from ..secrets import find_secret_shapes, is_secret_key
 from .base import Stack, strip_comments
@@ -709,6 +710,39 @@ def _strip_markup_comments(text: str) -> str:
     return re.sub(r"@\*.*?\*@", _blank, text, flags=re.S)
 
 
+# --------------------------------------------------------------------------- detection helpers (T28.25)
+
+_MAX_DETECT_BYTES = 1024 * 1024
+_WEB_API_CODE = re.compile(r"\bSystem\.Web\.Http\b")
+_API_CONTROLLER = re.compile(r":\s*(?:[\w.]+\s*,\s*)*(?:System\.Web\.Http\.)?ApiController\b")
+
+
+def _read_small(root: str, rel: str) -> str:
+    full = os.path.join(root, rel)
+    try:
+        if os.path.getsize(full) > _MAX_DETECT_BYTES:
+            return ""
+        return scan.read_text(root, rel)[0]
+    except OSError:
+        return ""
+
+
+def _has_system_web(root: str, rel: str) -> bool:
+    """A Web.config whose ``configuration`` holds a ``system.web`` section (an IIS-hosting stub for ASP.NET Core only
+    has ``system.webServer``)."""
+    text = _read_small(root, rel)
+    if "<system.web" not in text:
+        return False
+    doc = dotnetcfg.parse(text.encode("utf-8"), encoding="utf-8")
+    return doc.root is not None and doc.root.name == "configuration" and doc.root.find("system.web") is not None
+
+
+def _is_web_api_source(root: str, rel: str) -> bool:
+    text = _read_small(root, rel)
+    return "ApiController" in text and bool(_WEB_API_CODE.search(text)) and bool(_API_CONTROLLER.search(text)) \
+        and "Microsoft.AspNetCore" not in text
+
+
 # --------------------------------------------------------------------------- the Stack
 
 class AspNetStack(Stack):
@@ -716,32 +750,47 @@ class AspNetStack(Stack):
     capabilities = frozenset((
         "auth_check config_key connection const_def controller_class data_access entry_point.route "
         "entry_point.page entry_point.handler entry_point.desktop external_call guard_candidate guard_class guard_use "
-        "message method_call smell ui_page"
+        "message method_call smell ui_page host_auth security_setting access_rule config_transform"
     ).split())
-    extensions = frozenset({".aspx", ".ascx", ".master", ".asax", ".cs", ".vb", ".cshtml"})
+    extensions = frozenset({".aspx", ".ascx", ".master", ".asax", ".cs", ".vb", ".cshtml", ".config"})
 
-    def __init__(self):
-        self._web_target = False
-
+    # No state on ``self`` (T28.25): ``extract`` only runs for a Target on which this Stack was detected, so every
+    # ``.cs`` helper of a Web Forms/MVC Target is read; detection returns its markers and keeps nothing.
     def detect(self, files):
+        """Path-only check, used when the Target root is unknown. ``detect_in`` is the full test."""
         markers = sorted(p for p in files if p.lower().endswith((".aspx", ".ascx", ".master", ".asax")))
         if any(p.rsplit("/", 1)[-1].lower() == "global.asax" for p in files):
             markers += sorted(p for p in files
                               if p.lower().endswith(".cs") and "controllers/" in ("/" + p.lower()))
-        markers = sorted(set(markers))
-        # Remembered so that plain .cs helpers in a Web Forms/MVC Target (no System.Web reference) are still read.
-        self._web_target = bool(markers)
-        return markers[:20]
+        return sorted(set(markers))[:20]
+
+    def detect_in(self, files, root):
+        """``detect`` plus the classic projects it cannot see by path: a ``Web.config`` with a ``system.web`` section
+        (no Web Forms pages, no ``Global.asax``) and Web API-only projects (a ``System.Web.Http`` ``ApiController``).
+        Returns the sorted marker files; the result depends only on the arguments (process pool safe)."""
+        files = list(files)
+        markers = set(self.detect(files))
+        classic_asp = any(p.lower().endswith((".asp", "global.asa")) for p in files)   # a Classic ASP site may ship a web.config
+        for p in files:
+            low = p.lower()
+            if low.endswith("/web.config") or low == "web.config":
+                if not classic_asp and _has_system_web(root, p):
+                    markers.add(p)
+            elif low.endswith(".cs") and _is_web_api_source(root, p):
+                markers.add(p)
+        return sorted(markers)[:20]
 
     def extract(self, path, text):
         ext = "." + path.rsplit(".", 1)[-1].lower() if "." in path.rsplit("/", 1)[-1] else ""
         if ext in (".cs", ".vb"):
             if "Microsoft.AspNetCore" in text:
                 return
-            if "System.Web" not in text and not self._web_target:
-                return
             yield from self._code(path, text, ext == ".vb")
             yield from integrations.scan_facts("dotnet", STACK_ID, path, strip_comments(text, "c"))
+            if ext == ".cs":
+                yield from dotnetsec.code_facts(path, strip_comments(text, "c"))
+        elif ext == ".config":
+            yield from dotnetsec.config_facts(path, text)
         elif ext in (".aspx", ".ascx", ".master", ".asax"):
             yield from self._markup(path, text, ext)
         elif ext == ".cshtml":

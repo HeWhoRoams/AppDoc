@@ -25,6 +25,8 @@ RANK = {
     "integration": 0,
     # shared .NET XML config reader (stdlib only, returns plain data; stacks and generic call it)
     "dotnetcfg": 0,
+    # per-file .NET security settings and rules (imports facts, dotnetcfg); the join post-pass sits above it
+    "dotnetsec": 1, "configs": 2,
     # 1
     "template_spec": 1, "scan": 1, "version": 1, "stacks.base": 1, "summary": 1,
     # 2: register and notes are peers; workflow is the text tables only

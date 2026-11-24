@@ -17,7 +17,7 @@ import json
 import re
 from typing import Iterable
 
-from .. import dotnetcfg
+from .. import dotnetcfg, dotnetsec
 from ..facts import Fact, is_test_path
 from ..secrets import is_secret_key, find_secret_shapes
 from .base import iter_matches, line_of, strip_comments
@@ -156,6 +156,7 @@ def extract(path: str, text: str, siblings: set[str] | None = None, raw: bytes |
         yield from _ddl(path, text)
     elif low in ("web.config", "app.config") or (low.endswith(".config") and "<configuration" in text[:2000]):
         yield from _roled(path, _dotnet_config(path, text), siblings)
+        yield from dotnetsec.generic_facts(path, text, raw)
     elif CONFIG_NAMES_JSON.match(n):
         yield from _roled(path, _json_config(path, text), siblings)
     elif low.endswith((".properties", ".yml", ".yaml", ".ini")):
@@ -177,6 +178,8 @@ def extract(path: str, text: str, siblings: set[str] | None = None, raw: bytes |
         yield from _pubxml(path, text, raw)
     elif low == "packages.config":
         yield from _packages_config(path, text)
+    elif low.endswith(".sln"):
+        yield from _solution(path, text)
     elif low == "gemfile":
         for ln, m in iter_matches(_GEM_RE, text):
             yield _dep(path, ln, m.group(1), m.group(2), "bundler")
@@ -504,6 +507,15 @@ def _csproj(path, text, raw=None):
     kind = ("test" if is_test else "web" if is_web else "winforms" if desktop
             else "console" if out_type == "exe" else "library")
     detail = {"test": is_test, "web": is_web}
+    configs = sorted({_config_of(c) for _n, _e, c in props if c} - {"*", "unknown"})
+    configs += sorted({_config_of(g.attrs.get("Condition")) for g in root.findall("PropertyGroup")
+                       if g.attrs.get("Condition")} - {"*", "unknown"} - set(configs))
+    if configs:
+        detail["configs"] = configs
+    if any(n == "projectconfigtransformfilename" for n, _e, _c in props):
+        detail["transform_lookup"] = "unknown"      # a custom transform file name: the lookup cannot be evaluated (R17)
+    if any(n.startswith("iisexpress") or n == "useiisexpress" for n, _e, _c in props):
+        detail["iis_express"] = True                # dev-only host values (disclosed as csproj_dev_only, never used for reach)
     if re.match(r"^[A-Za-z][\w.]*$", sdk):
         detail["sdk"] = sdk
     if out_type:
@@ -519,6 +531,21 @@ def _csproj(path, text, raw=None):
         yield Fact.make("build_define", STACK_ID, path, e.line, _config_of(cond), config=_config_of(cond),
                         symbols=sorted({t for t in toks if _DEFINE_TOKEN.match(t)}),
                         inherits="$(DefineConstants)" in toks)
+
+
+_SLN_CONFIG = re.compile(r"(?m)^\s*([^|=\r\n]+)\|[^=\r\n]+=\s*\1\|")
+
+
+def _solution(path, text):
+    """A solution's ``SolutionConfigurationPlatforms`` names, as one ``project`` Fact of kind ``solution``."""
+    m = re.search(r"(?s)GlobalSection\(SolutionConfigurationPlatforms\)[^\n]*\n(.*?)EndGlobalSection", text)
+    if not m:
+        return
+    names = sorted({c.strip() for c in _SLN_CONFIG.findall(m.group(1)) if c.strip()})
+    if names:
+        base = Fact.make("project", STACK_ID, path, line_of(text, m.start()), _stem(path), configs=names)
+        yield Fact(base.kind, base.stack, base.path, base.line, base.name,
+                   tuple(sorted(base.detail + (("kind", "solution"),))))
 
 
 def _stem(path: str) -> str:
